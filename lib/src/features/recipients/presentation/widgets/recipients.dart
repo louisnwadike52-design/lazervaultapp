@@ -612,7 +612,7 @@ class _RecipientsState extends State<Recipients> {
                         child: Padding(
                           padding: EdgeInsets.all(8.w),
                           child: Icon(
-                            Icons.more_horiz,
+                            Icons.more_vert,
                             color: Colors.grey[600],
                             size: 22.w,
                           ),

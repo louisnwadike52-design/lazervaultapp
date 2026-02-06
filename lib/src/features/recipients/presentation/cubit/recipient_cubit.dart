@@ -11,6 +11,22 @@ import 'package:lazervault/src/features/recipients/domain/usecases/update_alias_
 import 'package:lazervault/src/features/recipients/domain/usecases/delete_recipient_usecase.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 
+class PaginatedRecipientsResult {
+  final List<RecipientModel> recipients;
+  final bool hasMore;
+  final int currentPage;
+  final int totalItems;
+  final int totalPages;
+
+  const PaginatedRecipientsResult({
+    required this.recipients,
+    required this.hasMore,
+    required this.currentPage,
+    required this.totalItems,
+    required this.totalPages,
+  });
+}
+
 class RecipientCubit extends Cubit<RecipientState> {
   final GetRecipientsUseCase _getRecipientsUseCase;
   final AddRecipientUseCase _addRecipientUseCase;
@@ -20,6 +36,16 @@ class RecipientCubit extends Cubit<RecipientState> {
   final SWRCacheManager? _cacheManager;
 
   StreamSubscription<SWRResult<List<RecipientModel>>>? _cacheSubscription;
+
+  // Pagination state
+  int _currentPage = 1;
+  int _pageSize = 20;
+  bool _hasMore = true;
+  int _totalItems = 0;
+  int _totalPages = 0;
+  String? _lastCountryCode;
+  String? _lastCurrency;
+  bool? _lastFavoritesOnly;
 
   RecipientCubit({
     required GetRecipientsUseCase getRecipientsUseCase,
@@ -42,8 +68,8 @@ class RecipientCubit extends Cubit<RecipientState> {
     return super.close();
   }
 
-  String _getCacheKey({String? countryCode, String? currency, bool? favoritesOnly}) {
-    return 'recipients:${countryCode ?? 'all'}:${currency ?? 'all'}:${favoritesOnly ?? false}';
+  String _getCacheKey({String? countryCode, String? currency, bool? favoritesOnly, int? page}) {
+    return 'recipients:${countryCode ?? 'all'}:${currency ?? 'all'}:${favoritesOnly ?? false}:${page ?? 1}';
   }
 
   Future<void> getRecipients({
@@ -55,6 +81,13 @@ class RecipientCubit extends Cubit<RecipientState> {
   }) async {
     if (isClosed) return;
 
+    // Reset pagination state for new fetch
+    _currentPage = 1;
+    _hasMore = true;
+    _lastCountryCode = countryCode;
+    _lastCurrency = currency;
+    _lastFavoritesOnly = favoritesOnly;
+
     // Cancel any existing subscription
     await _cacheSubscription?.cancel();
 
@@ -62,73 +95,108 @@ class RecipientCubit extends Cubit<RecipientState> {
       countryCode: countryCode,
       currency: currency,
       favoritesOnly: favoritesOnly,
+      page: 1,
     );
 
-    // Use SWR cache if available
-    if (_cacheManager != null && !forceRefresh) {
-      _cacheSubscription = _cacheManager!.get<List<RecipientModel>>(
-        key: cacheKey,
-        fetcher: () => _fetchRecipients(
-          accessToken: accessToken,
-          countryCode: countryCode,
-          currency: currency,
-          favoritesOnly: favoritesOnly,
-        ),
-        config: CacheConfig.recipients,
-        deserializer: (json) {
-          final list = (jsonDecode(json) as List);
-          return list.map((e) => RecipientModel.fromJson(e as Map<String, dynamic>)).toList();
-        },
-        serializer: (data) => jsonEncode(data.map((e) => e.toJson()).toList()),
-      ).listen(
-        (result) {
-          if (isClosed) return;
-          if (result.data != null) {
-            final currentState = state;
-            if (currentState is RecipientLoaded && result.isRevalidating) {
-              // Keep existing data, just update flags
-              emit(currentState.copyWith(
-                isStale: result.isStale,
-                isRevalidating: result.isRevalidating,
-              ));
-            } else {
-              emit(RecipientLoaded(
-                result.data!,
-                isStale: result.isStale,
-                isRevalidating: result.isRevalidating,
-              ));
-            }
-          } else if (result.error != null) {
-            // Only emit error if we don't have cached data
-            if (state is! RecipientLoaded) {
-              emit(RecipientError(result.error.toString()));
-            }
-          }
-        },
-        onError: (error) {
-          if (isClosed) return;
-          if (state is! RecipientLoaded) {
-            emit(RecipientError(error.toString()));
-          }
-        },
+    // Use SWR cache if available (bypass for paginated queries to avoid complexity)
+    // For pagination, we'll fetch directly
+    emit(RecipientLoading());
+    try {
+      final result = await _fetchRecipientsPaginated(
+        accessToken: accessToken,
+        countryCode: countryCode,
+        currency: currency,
+        favoritesOnly: favoritesOnly,
+        page: 1,
       );
-    } else {
-      // Fallback to direct fetch without caching
-      emit(RecipientLoading());
-      try {
-        final recipients = await _fetchRecipients(
-          accessToken: accessToken,
-          countryCode: countryCode,
-          currency: currency,
-          favoritesOnly: favoritesOnly,
-        );
-        if (isClosed) return;
-        emit(RecipientLoaded(recipients));
-      } catch (e) {
-        if (isClosed) return;
-        emit(RecipientError(e.toString()));
-      }
+      if (isClosed) return;
+
+      _currentPage = result.currentPage;
+      // If fewer items than page size returned, no more pages to fetch
+      _hasMore = result.hasMore && result.recipients.length >= _pageSize;
+      _totalItems = result.totalItems;
+      _totalPages = result.totalPages;
+
+      emit(RecipientLoaded(
+        result.recipients,
+        hasMore: _hasMore,
+        currentPage: result.currentPage,
+        totalItems: result.totalItems,
+        totalPages: result.totalPages,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(RecipientError(e.toString()));
     }
+  }
+
+  Future<void> loadMoreRecipients({
+    required String accessToken,
+  }) async {
+    if (isClosed || !_hasMore) return;
+
+    final currentState = state;
+    if (currentState is! RecipientLoaded) return;
+
+    // Show loading more state
+    emit(RecipientLoadingMore(
+      currentRecipients: currentState.recipients,
+      hasMore: currentState.hasMore,
+      currentPage: currentState.currentPage,
+    ));
+
+    try {
+      final nextPage = _currentPage + 1;
+      final result = await _fetchRecipientsPaginated(
+        accessToken: accessToken,
+        countryCode: _lastCountryCode,
+        currency: _lastCurrency,
+        favoritesOnly: _lastFavoritesOnly,
+        page: nextPage,
+      );
+      if (isClosed) return;
+
+      _currentPage = result.currentPage;
+      // If fewer items than page size or empty, no more pages
+      _hasMore = result.hasMore && result.recipients.length >= _pageSize;
+      _totalItems = result.totalItems;
+      _totalPages = result.totalPages;
+
+      // Append new recipients to existing list
+      final updatedRecipients = [...currentState.recipients, ...result.recipients];
+      emit(RecipientLoaded(
+        updatedRecipients,
+        hasMore: _hasMore,
+        currentPage: result.currentPage,
+        totalItems: result.totalItems,
+        totalPages: result.totalPages,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      // Revert to previous state on error
+      emit(currentState);
+    }
+  }
+
+  Future<PaginatedRecipientsResult> _fetchRecipientsPaginated({
+    required String accessToken,
+    String? countryCode,
+    String? currency,
+    bool? favoritesOnly,
+    required int page,
+  }) async {
+    final result = await _getRecipientsUseCase.callPaginated(
+      accessToken: accessToken,
+      countryCode: countryCode,
+      currency: currency,
+      favoritesOnly: favoritesOnly,
+      page: page,
+      pageSize: _pageSize,
+    );
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (recipients) => recipients,
+    );
   }
 
   Future<List<RecipientModel>> _fetchRecipients({
@@ -148,6 +216,12 @@ class RecipientCubit extends Cubit<RecipientState> {
       (recipients) => recipients,
     );
   }
+
+  // Getters for pagination state
+  bool get hasMore => _hasMore;
+  int get currentPage => _currentPage;
+  int get totalItems => _totalItems;
+  int get totalPages => _totalPages;
 
   Future<void> addRecipient({
     required RecipientModel recipient,
@@ -190,7 +264,7 @@ class RecipientCubit extends Cubit<RecipientState> {
          return r;
        }).toList();
        if (isClosed) return;
-       emit(RecipientLoaded(updatedRecipients));
+       emit(previousState.copyWith(recipients: updatedRecipients));
     }
 
     try {
@@ -229,7 +303,7 @@ class RecipientCubit extends Cubit<RecipientState> {
         return r;
       }).toList();
       if (isClosed) return;
-      emit(RecipientLoaded(updatedRecipients));
+      emit(previousState.copyWith(recipients: updatedRecipients));
     }
 
     try {
@@ -267,7 +341,7 @@ class RecipientCubit extends Cubit<RecipientState> {
           .where((r) => r.id != recipientId)
           .toList();
       if (isClosed) return;
-      emit(RecipientLoaded(updatedRecipients));
+      emit(previousState.copyWith(recipients: updatedRecipients));
     }
 
     try {

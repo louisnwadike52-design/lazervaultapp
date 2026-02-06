@@ -1,208 +1,159 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: ai_scan.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:async' as $async;
-
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'ai_scan.pb.dart' as $3;
+import 'package:protobuf/protobuf.dart' as $pb;
+
+import 'ai_scan.pb.dart' as $4;
+
 export 'ai_scan.pb.dart';
 
+@$pb.GrpcServiceName('ai_scan.AiScanService')
 class AiScanServiceClient extends $grpc.Client {
-  static final _$startScanSession = $grpc.ClientMethod<
-          $3.StartScanSessionRequest, $3.StartScanSessionResponse>(
+  static final _$startScanSession = $grpc.ClientMethod<$4.StartScanSessionRequest, $4.StartScanSessionResponse>(
       '/ai_scan.AiScanService/StartScanSession',
-      ($3.StartScanSessionRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $3.StartScanSessionResponse.fromBuffer(value));
-  static final _$processImage =
-      $grpc.ClientMethod<$3.ProcessImageRequest, $3.ProcessImageResponse>(
-          '/ai_scan.AiScanService/ProcessImage',
-          ($3.ProcessImageRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $3.ProcessImageResponse.fromBuffer(value));
-  static final _$sendChatMessage =
-      $grpc.ClientMethod<$3.SendChatMessageRequest, $3.SendChatMessageResponse>(
-          '/ai_scan.AiScanService/SendChatMessage',
-          ($3.SendChatMessageRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $3.SendChatMessageResponse.fromBuffer(value));
-  static final _$generatePaymentInstruction = $grpc.ClientMethod<
-          $3.GeneratePaymentInstructionRequest,
-          $3.GeneratePaymentInstructionResponse>(
+      ($4.StartScanSessionRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $4.StartScanSessionResponse.fromBuffer(value));
+  static final _$processImage = $grpc.ClientMethod<$4.ProcessImageRequest, $4.ProcessImageResponse>(
+      '/ai_scan.AiScanService/ProcessImage',
+      ($4.ProcessImageRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $4.ProcessImageResponse.fromBuffer(value));
+  static final _$sendChatMessage = $grpc.ClientMethod<$4.SendChatMessageRequest, $4.SendChatMessageResponse>(
+      '/ai_scan.AiScanService/SendChatMessage',
+      ($4.SendChatMessageRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $4.SendChatMessageResponse.fromBuffer(value));
+  static final _$generatePaymentInstruction = $grpc.ClientMethod<$4.GeneratePaymentInstructionRequest, $4.GeneratePaymentInstructionResponse>(
       '/ai_scan.AiScanService/GeneratePaymentInstruction',
-      ($3.GeneratePaymentInstructionRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $3.GeneratePaymentInstructionResponse.fromBuffer(value));
-  static final _$processPayment = $grpc.ClientMethod<
-          $3.ScanProcessPaymentRequest, $3.ScanProcessPaymentResponse>(
+      ($4.GeneratePaymentInstructionRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $4.GeneratePaymentInstructionResponse.fromBuffer(value));
+  static final _$processPayment = $grpc.ClientMethod<$4.ScanProcessPaymentRequest, $4.ScanProcessPaymentResponse>(
       '/ai_scan.AiScanService/ProcessPayment',
-      ($3.ScanProcessPaymentRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $3.ScanProcessPaymentResponse.fromBuffer(value));
-  static final _$getScanHistory =
-      $grpc.ClientMethod<$3.GetScanHistoryRequest, $3.GetScanHistoryResponse>(
-          '/ai_scan.AiScanService/GetScanHistory',
-          ($3.GetScanHistoryRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $3.GetScanHistoryResponse.fromBuffer(value));
+      ($4.ScanProcessPaymentRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $4.ScanProcessPaymentResponse.fromBuffer(value));
+  static final _$getScanHistory = $grpc.ClientMethod<$4.GetScanHistoryRequest, $4.GetScanHistoryResponse>(
+      '/ai_scan.AiScanService/GetScanHistory',
+      ($4.GetScanHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $4.GetScanHistoryResponse.fromBuffer(value));
 
   AiScanServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
-      : super(channel, options: options, interceptors: interceptors);
+      : super(channel, options: options,
+        interceptors: interceptors);
 
-  $grpc.ResponseFuture<$3.StartScanSessionResponse> startScanSession(
-      $3.StartScanSessionRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$4.StartScanSessionResponse> startScanSession($4.StartScanSessionRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$startScanSession, request, options: options);
   }
 
-  $grpc.ResponseFuture<$3.ProcessImageResponse> processImage(
-      $3.ProcessImageRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$4.ProcessImageResponse> processImage($4.ProcessImageRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$processImage, request, options: options);
   }
 
-  $grpc.ResponseFuture<$3.SendChatMessageResponse> sendChatMessage(
-      $3.SendChatMessageRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$4.SendChatMessageResponse> sendChatMessage($4.SendChatMessageRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$sendChatMessage, request, options: options);
   }
 
-  $grpc.ResponseFuture<$3.GeneratePaymentInstructionResponse>
-      generatePaymentInstruction($3.GeneratePaymentInstructionRequest request,
-          {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$generatePaymentInstruction, request,
-        options: options);
+  $grpc.ResponseFuture<$4.GeneratePaymentInstructionResponse> generatePaymentInstruction($4.GeneratePaymentInstructionRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$generatePaymentInstruction, request, options: options);
   }
 
-  $grpc.ResponseFuture<$3.ScanProcessPaymentResponse> processPayment(
-      $3.ScanProcessPaymentRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$4.ScanProcessPaymentResponse> processPayment($4.ScanProcessPaymentRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$processPayment, request, options: options);
   }
 
-  $grpc.ResponseFuture<$3.GetScanHistoryResponse> getScanHistory(
-      $3.GetScanHistoryRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$4.GetScanHistoryResponse> getScanHistory($4.GetScanHistoryRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getScanHistory, request, options: options);
   }
 }
 
+@$pb.GrpcServiceName('ai_scan.AiScanService')
 abstract class AiScanServiceBase extends $grpc.Service {
   $core.String get $name => 'ai_scan.AiScanService';
 
   AiScanServiceBase() {
-    $addMethod($grpc.ServiceMethod<$3.StartScanSessionRequest,
-            $3.StartScanSessionResponse>(
+    $addMethod($grpc.ServiceMethod<$4.StartScanSessionRequest, $4.StartScanSessionResponse>(
         'StartScanSession',
         startScanSession_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $3.StartScanSessionRequest.fromBuffer(value),
-        ($3.StartScanSessionResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$3.ProcessImageRequest, $3.ProcessImageResponse>(
-            'ProcessImage',
-            processImage_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $3.ProcessImageRequest.fromBuffer(value),
-            ($3.ProcessImageResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$3.SendChatMessageRequest,
-            $3.SendChatMessageResponse>(
+        ($core.List<$core.int> value) => $4.StartScanSessionRequest.fromBuffer(value),
+        ($4.StartScanSessionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$4.ProcessImageRequest, $4.ProcessImageResponse>(
+        'ProcessImage',
+        processImage_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $4.ProcessImageRequest.fromBuffer(value),
+        ($4.ProcessImageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$4.SendChatMessageRequest, $4.SendChatMessageResponse>(
         'SendChatMessage',
         sendChatMessage_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $3.SendChatMessageRequest.fromBuffer(value),
-        ($3.SendChatMessageResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$3.GeneratePaymentInstructionRequest,
-            $3.GeneratePaymentInstructionResponse>(
+        ($core.List<$core.int> value) => $4.SendChatMessageRequest.fromBuffer(value),
+        ($4.SendChatMessageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$4.GeneratePaymentInstructionRequest, $4.GeneratePaymentInstructionResponse>(
         'GeneratePaymentInstruction',
         generatePaymentInstruction_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $3.GeneratePaymentInstructionRequest.fromBuffer(value),
-        ($3.GeneratePaymentInstructionResponse value) =>
-            value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$3.ScanProcessPaymentRequest,
-            $3.ScanProcessPaymentResponse>(
+        ($core.List<$core.int> value) => $4.GeneratePaymentInstructionRequest.fromBuffer(value),
+        ($4.GeneratePaymentInstructionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$4.ScanProcessPaymentRequest, $4.ScanProcessPaymentResponse>(
         'ProcessPayment',
         processPayment_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $3.ScanProcessPaymentRequest.fromBuffer(value),
-        ($3.ScanProcessPaymentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$3.GetScanHistoryRequest,
-            $3.GetScanHistoryResponse>(
+        ($core.List<$core.int> value) => $4.ScanProcessPaymentRequest.fromBuffer(value),
+        ($4.ScanProcessPaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$4.GetScanHistoryRequest, $4.GetScanHistoryResponse>(
         'GetScanHistory',
         getScanHistory_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $3.GetScanHistoryRequest.fromBuffer(value),
-        ($3.GetScanHistoryResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $4.GetScanHistoryRequest.fromBuffer(value),
+        ($4.GetScanHistoryResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$3.StartScanSessionResponse> startScanSession_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$3.StartScanSessionRequest> request) async {
+  $async.Future<$4.StartScanSessionResponse> startScanSession_Pre($grpc.ServiceCall call, $async.Future<$4.StartScanSessionRequest> request) async {
     return startScanSession(call, await request);
   }
 
-  $async.Future<$3.ProcessImageResponse> processImage_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$3.ProcessImageRequest> request) async {
+  $async.Future<$4.ProcessImageResponse> processImage_Pre($grpc.ServiceCall call, $async.Future<$4.ProcessImageRequest> request) async {
     return processImage(call, await request);
   }
 
-  $async.Future<$3.SendChatMessageResponse> sendChatMessage_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$3.SendChatMessageRequest> request) async {
+  $async.Future<$4.SendChatMessageResponse> sendChatMessage_Pre($grpc.ServiceCall call, $async.Future<$4.SendChatMessageRequest> request) async {
     return sendChatMessage(call, await request);
   }
 
-  $async.Future<$3.GeneratePaymentInstructionResponse>
-      generatePaymentInstruction_Pre($grpc.ServiceCall call,
-          $async.Future<$3.GeneratePaymentInstructionRequest> request) async {
+  $async.Future<$4.GeneratePaymentInstructionResponse> generatePaymentInstruction_Pre($grpc.ServiceCall call, $async.Future<$4.GeneratePaymentInstructionRequest> request) async {
     return generatePaymentInstruction(call, await request);
   }
 
-  $async.Future<$3.ScanProcessPaymentResponse> processPayment_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$3.ScanProcessPaymentRequest> request) async {
+  $async.Future<$4.ScanProcessPaymentResponse> processPayment_Pre($grpc.ServiceCall call, $async.Future<$4.ScanProcessPaymentRequest> request) async {
     return processPayment(call, await request);
   }
 
-  $async.Future<$3.GetScanHistoryResponse> getScanHistory_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$3.GetScanHistoryRequest> request) async {
+  $async.Future<$4.GetScanHistoryResponse> getScanHistory_Pre($grpc.ServiceCall call, $async.Future<$4.GetScanHistoryRequest> request) async {
     return getScanHistory(call, await request);
   }
 
-  $async.Future<$3.StartScanSessionResponse> startScanSession(
-      $grpc.ServiceCall call, $3.StartScanSessionRequest request);
-  $async.Future<$3.ProcessImageResponse> processImage(
-      $grpc.ServiceCall call, $3.ProcessImageRequest request);
-  $async.Future<$3.SendChatMessageResponse> sendChatMessage(
-      $grpc.ServiceCall call, $3.SendChatMessageRequest request);
-  $async.Future<$3.GeneratePaymentInstructionResponse>
-      generatePaymentInstruction(
-          $grpc.ServiceCall call, $3.GeneratePaymentInstructionRequest request);
-  $async.Future<$3.ScanProcessPaymentResponse> processPayment(
-      $grpc.ServiceCall call, $3.ScanProcessPaymentRequest request);
-  $async.Future<$3.GetScanHistoryResponse> getScanHistory(
-      $grpc.ServiceCall call, $3.GetScanHistoryRequest request);
+  $async.Future<$4.StartScanSessionResponse> startScanSession($grpc.ServiceCall call, $4.StartScanSessionRequest request);
+  $async.Future<$4.ProcessImageResponse> processImage($grpc.ServiceCall call, $4.ProcessImageRequest request);
+  $async.Future<$4.SendChatMessageResponse> sendChatMessage($grpc.ServiceCall call, $4.SendChatMessageRequest request);
+  $async.Future<$4.GeneratePaymentInstructionResponse> generatePaymentInstruction($grpc.ServiceCall call, $4.GeneratePaymentInstructionRequest request);
+  $async.Future<$4.ScanProcessPaymentResponse> processPayment($grpc.ServiceCall call, $4.ScanProcessPaymentRequest request);
+  $async.Future<$4.GetScanHistoryResponse> getScanHistory($grpc.ServiceCall call, $4.GetScanHistoryRequest request);
 }

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../../services/lock_funds_pdf_service.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class LockWithdrawalSuccessScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -207,7 +208,7 @@ class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScree
             ),
             SizedBox(height: 8.h),
             Text(
-              '${widget.lockFund.currency} ${widget.amountReturned.toStringAsFixed(2)}',
+              '${CurrencySymbols.getSymbol(widget.lockFund.currency)}${widget.amountReturned.toStringAsFixed(2)}',
               style: GoogleFonts.inter(
                 fontSize: 36.sp,
                 fontWeight: FontWeight.w700,
@@ -263,17 +264,17 @@ class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScree
             _buildReceiptRow('Lock Name', widget.lockFund.displayName),
             _buildReceiptRow(
               'Principal',
-              '${widget.lockFund.currency} ${widget.lockFund.amount.toStringAsFixed(2)}',
+              '${CurrencySymbols.getSymbol(widget.lockFund.currency)}${widget.lockFund.amount.toStringAsFixed(2)}',
             ),
             _buildReceiptRow(
               'Interest Earned',
-              '+${widget.lockFund.currency} ${widget.interestEarned.toStringAsFixed(2)}',
+              '+${CurrencySymbols.getSymbol(widget.lockFund.currency)}${widget.interestEarned.toStringAsFixed(2)}',
               valueColor: const Color(0xFF10B981),
             ),
             if (widget.penaltyAmount > 0)
               _buildReceiptRow(
                 'Penalty',
-                '-${widget.lockFund.currency} ${widget.penaltyAmount.toStringAsFixed(2)}',
+                '-${CurrencySymbols.getSymbol(widget.lockFund.currency)}${widget.penaltyAmount.toStringAsFixed(2)}',
                 valueColor: const Color(0xFFEF4444),
               ),
             _buildReceiptRow(
@@ -295,7 +296,7 @@ class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScree
                   ),
                 ),
                 Text(
-                  '${widget.lockFund.currency} ${widget.amountReturned.toStringAsFixed(2)}',
+                  '${CurrencySymbols.getSymbol(widget.lockFund.currency)}${widget.amountReturned.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,

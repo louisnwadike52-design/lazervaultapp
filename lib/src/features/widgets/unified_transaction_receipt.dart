@@ -40,7 +40,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   late Animation<double> _fadeAnimation;
   final ScreenshotController _screenshotController = ScreenshotController();
   final ValueNotifier<bool> _isCapturing = ValueNotifier(false);
-  bool _isBusy = false;
+  bool _isDownloading = false;
+  bool _isSharing = false;
 
   UnifiedTransaction get tx => widget.transaction;
 
@@ -225,21 +226,39 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   Widget _buildHeader() {
+    final isTransfer = tx.serviceType == TransactionServiceType.transfer;
+
     return Column(
       children: [
-        Container(
-          width: 48.w,
-          height: 48.w,
-          decoration: const BoxDecoration(
-            color: Color(0xFF10B981),
-            shape: BoxShape.circle,
+        // Success icon for transfers, or service icon
+        if (isTransfer)
+          Container(
+            width: 48.w,
+            height: 48.w,
+            decoration: const BoxDecoration(
+              color: Color(0xFF10B981),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.check,
+              color: Colors.white,
+              size: 26.sp,
+            ),
+          )
+        else
+          Container(
+            width: 48.w,
+            height: 48.w,
+            decoration: BoxDecoration(
+              color: tx.serviceType.color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              tx.serviceType.icon,
+              color: tx.serviceType.color,
+              size: 26.sp,
+            ),
           ),
-          child: Icon(
-            Icons.check,
-            color: Colors.white,
-            size: 26.sp,
-          ),
-        ),
         SizedBox(height: 10.h),
         Text(
           _formattedAmount,
@@ -262,23 +281,17 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 10.h),
+        // Status and timestamp row - no background color, plain text
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: tx.status.color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Text(
-                tx.status.displayName,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: tx.status.color,
-                  fontFamily: 'Inter',
-                ),
+            Text(
+              tx.status.displayName,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                color: _labelColor,
+                fontFamily: 'Inter',
               ),
             ),
             SizedBox(width: 8.w),
@@ -388,7 +401,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           SizedBox(height: 6.h),
           Center(
             child: Text(
-              _reference,
+              _sanitizeText(_reference),
               style: TextStyle(
                 fontSize: 10.sp,
                 color: _labelColor,
@@ -404,6 +417,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   Widget _buildDetailRow(_DetailEntry entry) {
+    final sanitizedValue = _sanitizeText(entry.value);
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
       child: Row(
@@ -424,12 +438,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
             child: GestureDetector(
               onLongPress: entry.copyable
                   ? () {
-                      Clipboard.setData(ClipboardData(text: entry.value));
+                      Clipboard.setData(ClipboardData(text: sanitizedValue));
                       _showSnackbar('Copied to clipboard');
                     }
                   : null,
               child: Text(
-                entry.value,
+                sanitizedValue,
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w500,
@@ -447,83 +461,57 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     );
   }
 
+  /// Sanitize text to remove non-printable ASCII characters while preserving
+  /// visible characters, Unicode, emojis, and proper formatting.
+  String _sanitizeText(String input) {
+    // Remove control characters (0x00-0x1F) except common whitespace (tab, newline, carriage return)
+    // Also remove the Unicode special characters that might cause display issues
+    return input.replaceAll(RegExp(r'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]'), '');
+  }
+
   /// Check if this transaction type supports PDF receipts
   bool get _supportsPdfReceipt => tx.serviceType == TransactionServiceType.transfer;
 
   Widget _buildActionButtons() {
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
-      child: _isBusy
-          ? Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 10.h),
-                child: SizedBox(
-                  width: 22.w,
-                  height: 22.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Primary actions - PDF for transfers, screenshot for others
-                Row(
-                  children: [
-                    Expanded(
-                      child: _actionButton(
-                        icon: Icons.picture_as_pdf_outlined,
-                        label: _supportsPdfReceipt ? 'Save PDF' : 'Save',
-                        onTap: _supportsPdfReceipt ? _downloadPdfReceipt : _downloadReceipt,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _actionButton(
-                        icon: Icons.share_outlined,
-                        label: _supportsPdfReceipt ? 'Share PDF' : 'Share',
-                        onTap: _supportsPdfReceipt ? _sharePdfReceipt : _shareReceipt,
-                      ),
-                    ),
-                  ],
-                ),
-                // Secondary action - image option for transfers
-                if (_supportsPdfReceipt) ...[
-                  SizedBox(height: 8.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _actionButton(
-                          icon: Icons.image_outlined,
-                          label: 'Save Image',
-                          onTap: _downloadReceipt,
-                          isSecondary: true,
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: _actionButton(
-                          icon: Icons.photo_outlined,
-                          label: 'Share Image',
-                          onTap: _shareReceipt,
-                          isSecondary: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
+      child: Row(
+        children: [
+          Expanded(
+            child: _actionButton(
+              icon: _isDownloading ? null : Icons.download_outlined,
+              label: 'Download',
+              isLoading: _isDownloading,
+              onTap: _isDownloading
+                  ? () {}
+                  : _supportsPdfReceipt
+                      ? _downloadPdfReceipt
+                      : _downloadReceipt,
             ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: _actionButton(
+              icon: _isSharing ? null : Icons.share_outlined,
+              label: 'Share',
+              isLoading: _isSharing,
+              onTap: _isSharing
+                  ? () {}
+                  : _supportsPdfReceipt
+                      ? _sharePdfReceipt
+                      : _shareReceipt,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _actionButton({
-    required IconData icon,
+    IconData? icon,
     required String label,
     required VoidCallback onTap,
+    bool isLoading = false,
     bool isSecondary = false,
   }) {
     return Material(
@@ -537,8 +525,22 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: isSecondary ? _labelColor : Colors.white, size: isSecondary ? 16.sp : 18.sp),
-              SizedBox(width: 8.w),
+              if (isLoading)
+                SizedBox(
+                  width: 16.sp,
+                  height: 16.sp,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              else if (icon != null)
+                Icon(
+                  icon,
+                  color: isSecondary ? _labelColor : Colors.white,
+                  size: isSecondary ? 16.sp : 18.sp,
+                ),
+              if (!isLoading && icon != null) SizedBox(width: 8.w),
               Text(
                 label,
                 style: TextStyle(
@@ -607,8 +609,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   Future<void> _downloadReceipt() async {
-    if (_isBusy) return;
-    setState(() => _isBusy = true);
+    if (_isDownloading) return;
+    setState(() => _isDownloading = true);
     try {
       PermissionStatus status;
       if (Platform.isAndroid) {
@@ -664,13 +666,13 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     } catch (e) {
       _showSnackbar('Error saving receipt: $e', isError: true);
     } finally {
-      if (mounted) setState(() => _isBusy = false);
+      if (mounted) setState(() => _isDownloading = false);
     }
   }
 
   Future<void> _shareReceipt() async {
-    if (_isBusy) return;
-    setState(() => _isBusy = true);
+    if (_isSharing) return;
+    setState(() => _isSharing = true);
     try {
       final imageBytes = await _captureScreenshot();
       if (imageBytes == null) {
@@ -694,14 +696,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     } catch (e) {
       _showSnackbar('Error sharing receipt: $e', isError: true);
     } finally {
-      if (mounted) setState(() => _isBusy = false);
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 
   /// Download PDF receipt for transfers
   Future<void> _downloadPdfReceipt() async {
-    if (_isBusy) return;
-    setState(() => _isBusy = true);
+    if (_isDownloading) return;
+    setState(() => _isDownloading = true);
     try {
       // Request storage permission on Android
       PermissionStatus status;
@@ -727,18 +729,18 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         transaction: tx,
       );
 
-      _showSnackbar('PDF receipt saved successfully');
+      _showSnackbar('PDF receipt saved to $filePath');
     } catch (e) {
       _showSnackbar('Error saving PDF receipt: $e', isError: true);
     } finally {
-      if (mounted) setState(() => _isBusy = false);
+      if (mounted) setState(() => _isDownloading = false);
     }
   }
 
   /// Share PDF receipt for transfers
   Future<void> _sharePdfReceipt() async {
-    if (_isBusy) return;
-    setState(() => _isBusy = true);
+    if (_isSharing) return;
+    setState(() => _isSharing = true);
     try {
       await TransferPdfService.shareReceipt(
         transaction: tx,
@@ -746,7 +748,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     } catch (e) {
       _showSnackbar('Error sharing PDF receipt: $e', isError: true);
     } finally {
-      if (mounted) setState(() => _isBusy = false);
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 
@@ -764,14 +766,24 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   String _formatKey(String key) {
-    final result = key.replaceAllMapped(
-      RegExp(r'[_]'),
-      (_) => ' ',
-    ).replaceAllMapped(
-      RegExp(r'[A-Z]'),
-      (match) => ' ${match.group(0)}',
-    ).trim();
+    // First replace underscores with spaces
+    var result = key.replaceAll('_', ' ');
+    // Then insert space before capital letters only if not already preceded by space
+    // This prevents double-spacing for already formatted keys like "Source Account"
+    final buffer = StringBuffer();
+    for (int i = 0; i < result.length; i++) {
+      final char = result[i];
+      if (char.toUpperCase() == char && char.toLowerCase() != char) {
+        // It's an uppercase letter
+        if (i > 0 && result[i - 1] != ' ') {
+          buffer.write(' ');
+        }
+      }
+      buffer.write(char);
+    }
+    result = buffer.toString().trim();
     if (result.isEmpty) return key;
+    // Capitalize first letter
     return result[0].toUpperCase() + result.substring(1);
   }
 }

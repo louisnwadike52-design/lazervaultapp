@@ -254,19 +254,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
 
   // Tag Pay Routes
   static const String tagPay = '/tag-pay';
-  static const String createTagPay = '/tag-pay/create';
-  static const String sendMoneyTagPay = '/tag-pay/send';
-  static const String requestMoneyTagPay = '/tag-pay/request';
-  static const String tagPayTransactions = '/tag-pay/transactions';
-  static const String pendingRequests = '/tag-pay/requests';
   static const String searchUsers = '/tag-pay/search';
   static const String createTag = '/tag-pay/create-tag';
   static const String tagAmount = '/tag-pay/tag-amount';
-  static const String myTags = '/tag-pay/my-tags';
-  static const String outgoingTags = '/tag-pay/outgoing-tags';
-  static const String incomingTags = '/tag-pay/incoming-tags';
   static const String tagPaymentConfirmation = '/tag-pay/payment-confirmation';
-  static const String tagPayProcessing = '/tag-pay-processing';
   static const String tagPaymentReceipt = '/tag-payment-receipt';
   static const String tagCreationProcessing = '/tag-creation-processing';
   static const String tagCreationReceipt = '/tag-creation-receipt';

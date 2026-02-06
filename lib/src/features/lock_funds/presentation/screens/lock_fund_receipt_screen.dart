@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../../services/lock_funds_pdf_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Receipt screen displayed after successfully creating a lock fund.
 ///
@@ -79,21 +80,6 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
-    }
-  }
-
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'NGN':
-        return '\u20A6';
-      case 'USD':
-        return '\$';
-      case 'GBP':
-        return '\u00A3';
-      case 'EUR':
-        return '\u20AC';
-      default:
-        return currency;
     }
   }
 
@@ -198,7 +184,7 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
   }
 
   Widget _buildAmountCard() {
-    final currencySymbol = _getCurrencySymbol(lockFund.currency);
+    final currencySymbol = CurrencySymbols.getSymbol(lockFund.currency);
 
     return Container(
       width: double.infinity,
@@ -325,7 +311,7 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
   }
 
   Widget _buildExpectedReturns() {
-    final currencySymbol = _getCurrencySymbol(lockFund.currency);
+    final currencySymbol = CurrencySymbols.getSymbol(lockFund.currency);
     final calc = interestCalculation!;
 
     return Container(

@@ -27,6 +27,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
   late TextEditingController _descriptionController;
   late TextEditingController _targetAmountController;
   late TextEditingController _regularAmountController;
+  late TextEditingController _whatsappLinkController;
+  late TextEditingController _telegramLinkController;
   late DateTime _deadline;
   late ContributionStatus _selectedStatus;
   late bool _autoPayEnabled;
@@ -49,6 +51,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     _regularAmountController = TextEditingController(
       text: c.regularAmount != null ? (c.regularAmount! / 100).toStringAsFixed(0) : '',
     );
+    _whatsappLinkController = TextEditingController(text: c.whatsappGroupLink ?? '');
+    _telegramLinkController = TextEditingController(text: c.telegramGroupLink ?? '');
     _deadline = c.deadline;
     _selectedStatus = c.status;
     _autoPayEnabled = c.autoPayEnabled;
@@ -66,6 +70,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     _descriptionController.addListener(_onFieldChanged);
     _targetAmountController.addListener(_onFieldChanged);
     _regularAmountController.addListener(_onFieldChanged);
+    _whatsappLinkController.addListener(_onFieldChanged);
+    _telegramLinkController.addListener(_onFieldChanged);
     _gracePeriodController.addListener(_onFieldChanged);
     _penaltyAmountController.addListener(_onFieldChanged);
   }
@@ -76,6 +82,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     _descriptionController.dispose();
     _targetAmountController.dispose();
     _regularAmountController.dispose();
+    _whatsappLinkController.dispose();
+    _telegramLinkController.dispose();
     _gracePeriodController.dispose();
     _penaltyAmountController.dispose();
     super.dispose();
@@ -88,7 +96,9 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         _deadline != c.deadline ||
         _selectedStatus != c.status ||
         _autoPayEnabled != c.autoPayEnabled ||
-        _allowPartialPayments != c.allowPartialPayments;
+        _allowPartialPayments != c.allowPartialPayments ||
+        _whatsappLinkController.text != (c.whatsappGroupLink ?? '') ||
+        _telegramLinkController.text != (c.telegramGroupLink ?? '');
 
     if (hasChanges != _hasChanges) {
       setState(() {
@@ -184,6 +194,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
                   _buildDeadlineField(),
                   SizedBox(height: 20.h),
                   _buildStatusSelector(),
+                  SizedBox(height: 24.h),
+                  _buildExternalLinksSection(),
                   SizedBox(height: 24.h),
                   _buildSettingsSection(),
                   SizedBox(height: 32.h),
@@ -496,6 +508,82 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
                 ),
               );
             }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExternalLinksSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.link,
+              color: const Color.fromARGB(255, 78, 3, 208),
+              size: 18.sp,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              'Social Media Links (Optional)',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          'Add WhatsApp or Telegram links for this contribution',
+          style: GoogleFonts.inter(
+            color: Colors.grey[400],
+            fontSize: 12.sp,
+          ),
+        ),
+        SizedBox(height: 16.h),
+        TextFormField(
+          controller: _whatsappLinkController,
+          style: GoogleFonts.inter(color: Colors.white),
+          decoration: _inputDecoration(
+            'https://chat.whatsapp.com/...',
+          ).copyWith(
+            prefixIcon: Icon(
+              Icons.message,
+              color: const Color(0xFF25D366),
+              size: 20.sp,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(
+                color: Color(0xFF25D366),
+                width: 2,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 12.h),
+        TextFormField(
+          controller: _telegramLinkController,
+          style: GoogleFonts.inter(color: Colors.white),
+          decoration: _inputDecoration(
+            'https://t.me/...',
+          ).copyWith(
+            prefixIcon: Icon(
+              Icons.send,
+              color: const Color(0xFF0088CC),
+              size: 20.sp,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(
+                color: Color(0xFF0088CC),
+                width: 2,
+              ),
+            ),
           ),
         ),
       ],
@@ -868,18 +956,35 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
 
   void _saveChanges() {
     if (_formKey.currentState!.validate()) {
-      final targetAmount = !_hasPayments
-          ? int.parse(_targetAmountController.text) * 100
-          : null;
+      final c = widget.contribution;
 
-      context.read<GroupAccountCubit>().updateContributionDetails(
-        contributionId: widget.contribution.id,
+      // Build metadata with external links
+      final metadata = Map<String, dynamic>.from(c.metadata ?? {});
+
+      // Update WhatsApp link
+      if (_whatsappLinkController.text.trim().isNotEmpty) {
+        metadata['whatsapp_group_link'] = _whatsappLinkController.text.trim();
+      } else {
+        metadata.remove('whatsapp_group_link');
+      }
+
+      // Update Telegram link
+      if (_telegramLinkController.text.trim().isNotEmpty) {
+        metadata['telegram_group_link'] = _telegramLinkController.text.trim();
+      } else {
+        metadata.remove('telegram_group_link');
+      }
+
+      // Create updated contribution object
+      final updatedContribution = c.copyWith(
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
-        targetAmount: targetAmount,
         deadline: _deadline,
         status: _selectedStatus,
+        metadata: metadata,
       );
+
+      context.read<GroupAccountCubit>().updateContributionDetails(updatedContribution);
     }
   }
 

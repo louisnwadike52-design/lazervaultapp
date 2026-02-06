@@ -1,9 +1,13 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: voice_session.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
@@ -11,28 +15,29 @@ import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class StartVoiceSessionRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'StartVoiceSessionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceName')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferredAgentLanguage')
-    ..hasRequiredFields = false
-  ;
-
-  StartVoiceSessionRequest._() : super();
   factory StartVoiceSessionRequest({
     $core.String? serviceName,
     $core.String? preferredAgentLanguage,
   }) {
-    final _result = create();
+    final $result = create();
     if (serviceName != null) {
-      _result.serviceName = serviceName;
+      $result.serviceName = serviceName;
     }
     if (preferredAgentLanguage != null) {
-      _result.preferredAgentLanguage = preferredAgentLanguage;
+      $result.preferredAgentLanguage = preferredAgentLanguage;
     }
-    return _result;
+    return $result;
   }
+  StartVoiceSessionRequest._() : super();
   factory StartVoiceSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory StartVoiceSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'StartVoiceSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'serviceName')
+    ..aOS(2, _omitFieldNames ? '' : 'preferredAgentLanguage')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -42,8 +47,10 @@ class StartVoiceSessionRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  StartVoiceSessionRequest copyWith(void Function(StartVoiceSessionRequest) updates) => super.copyWith((message) => updates(message as StartVoiceSessionRequest)) as StartVoiceSessionRequest; // ignore: deprecated_member_use
+  StartVoiceSessionRequest copyWith(void Function(StartVoiceSessionRequest) updates) => super.copyWith((message) => updates(message as StartVoiceSessionRequest)) as StartVoiceSessionRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static StartVoiceSessionRequest create() => StartVoiceSessionRequest._();
   StartVoiceSessionRequest createEmptyInstance() => create();
@@ -52,6 +59,7 @@ class StartVoiceSessionRequest extends $pb.GeneratedMessage {
   static StartVoiceSessionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<StartVoiceSessionRequest>(create);
   static StartVoiceSessionRequest? _defaultInstance;
 
+  /// Service name for routing to specific voice agent (e.g., "stocks", "transfers", "crypto")
   @$pb.TagNumber(1)
   $core.String get serviceName => $_getSZ(0);
   @$pb.TagNumber(1)
@@ -61,6 +69,7 @@ class StartVoiceSessionRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearServiceName() => clearField(1);
 
+  /// Preferred language for the voice agent (optional)
   @$pb.TagNumber(2)
   $core.String get preferredAgentLanguage => $_getSZ(1);
   @$pb.TagNumber(2)
@@ -72,16 +81,6 @@ class StartVoiceSessionRequest extends $pb.GeneratedMessage {
 }
 
 class StartVoiceSessionResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'StartVoiceSessionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roomName')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'livekitToken')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'agentId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'agentUrl')
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'agentPort', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  StartVoiceSessionResponse._() : super();
   factory StartVoiceSessionResponse({
     $core.String? roomName,
     $core.String? livekitToken,
@@ -89,26 +88,37 @@ class StartVoiceSessionResponse extends $pb.GeneratedMessage {
     $core.String? agentUrl,
     $core.int? agentPort,
   }) {
-    final _result = create();
+    final $result = create();
     if (roomName != null) {
-      _result.roomName = roomName;
+      $result.roomName = roomName;
     }
     if (livekitToken != null) {
-      _result.livekitToken = livekitToken;
+      $result.livekitToken = livekitToken;
     }
     if (agentId != null) {
-      _result.agentId = agentId;
+      $result.agentId = agentId;
     }
     if (agentUrl != null) {
-      _result.agentUrl = agentUrl;
+      $result.agentUrl = agentUrl;
     }
     if (agentPort != null) {
-      _result.agentPort = agentPort;
+      $result.agentPort = agentPort;
     }
-    return _result;
+    return $result;
   }
+  StartVoiceSessionResponse._() : super();
   factory StartVoiceSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory StartVoiceSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'StartVoiceSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'roomName')
+    ..aOS(2, _omitFieldNames ? '' : 'livekitToken')
+    ..aOS(3, _omitFieldNames ? '' : 'agentId')
+    ..aOS(4, _omitFieldNames ? '' : 'agentUrl')
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'agentPort', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -118,8 +128,10 @@ class StartVoiceSessionResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  StartVoiceSessionResponse copyWith(void Function(StartVoiceSessionResponse) updates) => super.copyWith((message) => updates(message as StartVoiceSessionResponse)) as StartVoiceSessionResponse; // ignore: deprecated_member_use
+  StartVoiceSessionResponse copyWith(void Function(StartVoiceSessionResponse) updates) => super.copyWith((message) => updates(message as StartVoiceSessionResponse)) as StartVoiceSessionResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static StartVoiceSessionResponse create() => StartVoiceSessionResponse._();
   StartVoiceSessionResponse createEmptyInstance() => create();
@@ -174,24 +186,26 @@ class StartVoiceSessionResponse extends $pb.GeneratedMessage {
   void clearAgentPort() => clearField(5);
 }
 
+/// Voice note processing request - accepts multipart form data file upload
 class ProcessVoiceNoteRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessVoiceNoteRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txHistory')
-    ..hasRequiredFields = false
-  ;
-
-  ProcessVoiceNoteRequest._() : super();
   factory ProcessVoiceNoteRequest({
     $core.String? txHistory,
   }) {
-    final _result = create();
+    final $result = create();
     if (txHistory != null) {
-      _result.txHistory = txHistory;
+      $result.txHistory = txHistory;
     }
-    return _result;
+    return $result;
   }
+  ProcessVoiceNoteRequest._() : super();
   factory ProcessVoiceNoteRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessVoiceNoteRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessVoiceNoteRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'txHistory')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -201,8 +215,10 @@ class ProcessVoiceNoteRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessVoiceNoteRequest copyWith(void Function(ProcessVoiceNoteRequest) updates) => super.copyWith((message) => updates(message as ProcessVoiceNoteRequest)) as ProcessVoiceNoteRequest; // ignore: deprecated_member_use
+  ProcessVoiceNoteRequest copyWith(void Function(ProcessVoiceNoteRequest) updates) => super.copyWith((message) => updates(message as ProcessVoiceNoteRequest)) as ProcessVoiceNoteRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ProcessVoiceNoteRequest create() => ProcessVoiceNoteRequest._();
   ProcessVoiceNoteRequest createEmptyInstance() => create();
@@ -221,17 +237,8 @@ class ProcessVoiceNoteRequest extends $pb.GeneratedMessage {
   void clearTxHistory() => clearField(1);
 }
 
+/// Voice note processing response
 class ProcessVoiceNoteResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessVoiceNoteResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'response')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transcribedText')
-    ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processingTimeMs')
-    ..hasRequiredFields = false
-  ;
-
-  ProcessVoiceNoteResponse._() : super();
   factory ProcessVoiceNoteResponse({
     $core.bool? success,
     $core.String? msg,
@@ -239,26 +246,37 @@ class ProcessVoiceNoteResponse extends $pb.GeneratedMessage {
     $core.String? transcribedText,
     $fixnum.Int64? processingTimeMs,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
     if (response != null) {
-      _result.response = response;
+      $result.response = response;
     }
     if (transcribedText != null) {
-      _result.transcribedText = transcribedText;
+      $result.transcribedText = transcribedText;
     }
     if (processingTimeMs != null) {
-      _result.processingTimeMs = processingTimeMs;
+      $result.processingTimeMs = processingTimeMs;
     }
-    return _result;
+    return $result;
   }
+  ProcessVoiceNoteResponse._() : super();
   factory ProcessVoiceNoteResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessVoiceNoteResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessVoiceNoteResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..aOS(3, _omitFieldNames ? '' : 'response')
+    ..aOS(4, _omitFieldNames ? '' : 'transcribedText')
+    ..aInt64(5, _omitFieldNames ? '' : 'processingTimeMs')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -268,8 +286,10 @@ class ProcessVoiceNoteResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessVoiceNoteResponse copyWith(void Function(ProcessVoiceNoteResponse) updates) => super.copyWith((message) => updates(message as ProcessVoiceNoteResponse)) as ProcessVoiceNoteResponse; // ignore: deprecated_member_use
+  ProcessVoiceNoteResponse copyWith(void Function(ProcessVoiceNoteResponse) updates) => super.copyWith((message) => updates(message as ProcessVoiceNoteResponse)) as ProcessVoiceNoteResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ProcessVoiceNoteResponse create() => ProcessVoiceNoteResponse._();
   ProcessVoiceNoteResponse createEmptyInstance() => create();
@@ -324,3 +344,6 @@ class ProcessVoiceNoteResponse extends $pb.GeneratedMessage {
   void clearProcessingTimeMs() => clearField(5);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

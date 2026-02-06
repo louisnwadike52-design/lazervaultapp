@@ -56,6 +56,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   final _penaltyAmountController = TextEditingController();
   final _gracePeriodController = TextEditingController();
   final _minimumBalanceController = TextEditingController();
+  final _whatsappLinkController = TextEditingController();
+  final _telegramLinkController = TextEditingController();
 
   // Form values
   ContributionType _selectedType = ContributionType.oneTime;
@@ -128,6 +130,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     _penaltyAmountController.dispose();
     _gracePeriodController.dispose();
     _minimumBalanceController.dispose();
+    _whatsappLinkController.dispose();
+    _telegramLinkController.dispose();
     super.dispose();
   }
 
@@ -350,6 +354,21 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       debugPrint('🔵 Backend rotation order: $backendRotationOrder');
     }
 
+    // Build metadata with external links
+    final Map<String, dynamic>? metadata;
+    if (_whatsappLinkController.text.trim().isNotEmpty ||
+        _telegramLinkController.text.trim().isNotEmpty) {
+      metadata = {};
+      if (_whatsappLinkController.text.trim().isNotEmpty) {
+        metadata!['whatsapp_group_link'] = _whatsappLinkController.text.trim();
+      }
+      if (_telegramLinkController.text.trim().isNotEmpty) {
+        metadata!['telegram_group_link'] = _telegramLinkController.text.trim();
+      }
+    } else {
+      metadata = null;
+    }
+
     cubit.createNewContribution(
       groupId: widget.groupId,
       title: _titleController.text.trim(),
@@ -368,6 +387,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       gracePeriodDays: _visibleOptionalFields.contains('penalty') ? gracePeriodDays : null,
       allowPartialPayments: _allowPartialPayments,
       minimumBalance: _visibleOptionalFields.contains('minimumBalance') ? minimumBalance : null,
+      metadata: metadata,
     );
   }
 
@@ -770,6 +790,44 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           _buildDatePicker(
             selectedDate: _selectedDeadline,
             onDateSelected: (date) => setState(() => _selectedDeadline = date),
+          ),
+          SizedBox(height: 24.h),
+
+          // Optional: Social Media Links
+          Row(
+            children: [
+              Icon(
+                Icons.link,
+                color: const Color.fromARGB(255, 78, 3, 208),
+                size: 18.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Social Media Links (Optional)',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Add WhatsApp or Telegram links for this contribution',
+            style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[400]),
+          ),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _whatsappLinkController,
+            hint: 'https://chat.whatsapp.com/...',
+            prefixIcon: Icon(Icons.message, color: const Color(0xFF25D366), size: 18.sp),
+          ),
+          SizedBox(height: 12.h),
+          _buildTextField(
+            controller: _telegramLinkController,
+            hint: 'https://t.me/...',
+            prefixIcon: Icon(Icons.send, color: const Color(0xFF0088CC), size: 18.sp),
           ),
 
           SizedBox(height: 40.h),
@@ -1224,6 +1282,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     int maxLines = 1,
     int? maxLength,
     bool hasError = false,
+    Widget? prefixIcon,
   }) {
     final errorColor = const Color(0xFFEF4444);
     final normalColor = const Color(0xFF2D2D2D);
@@ -1243,6 +1302,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         filled: true,
         fillColor: hasError ? errorColor.withValues(alpha: 0.1) : const Color(0xFF1F1F1F),
         counterText: '',
+        prefixIcon: prefixIcon,
+        prefixIconColor: Colors.grey[400],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(color: hasError ? errorColor : normalColor),

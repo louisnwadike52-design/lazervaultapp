@@ -13,6 +13,7 @@ abstract class InvoiceRepository {
 
   // Specific Operations
   Future<Invoice> sendInvoice(String invoiceId);
+  Future<void> sendInvoiceToEmail(String invoiceId, String email);
   Future<Invoice> markInvoiceAsPaid(String invoiceId, PaymentMethod paymentMethod, String? paymentReference, {String? pin, String? verificationToken});
   Future<Invoice> cancelInvoice(String invoiceId);
   Future<String> generateQRCode(String invoiceId);

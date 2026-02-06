@@ -8,6 +8,7 @@ abstract class GroupAccountRepository {
     required String name,
     required String description,
     required String adminId,
+    Map<String, dynamic>? metadata,
   });
   Future<GroupAccount> updateGroup(GroupAccount group);
   Future<void> deleteGroup(String groupId);
@@ -56,6 +57,7 @@ abstract class GroupAccountRepository {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    Map<String, dynamic>? metadata,
   });
   Future<Contribution> updateContribution(Contribution contribution);
   Future<void> deleteContribution(String contributionId);

@@ -4,6 +4,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart' as grpc;
 import 'package:lazervault/src/generated/google/protobuf/wrappers.pb.dart';
 
@@ -46,6 +47,54 @@ class RecipientRepositoryImpl implements IRecipientRepository {
       });
 
       return Right(response.recipients.map(RecipientModel.fromProto).toList());
+    } catch (e) {
+      return Left(
+          Failure(message: 'Failed to get recipients: $e', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PaginatedRecipientsResult>> getRecipientsPaginated({
+    required String accessToken,
+    String? countryCode,
+    String? currency,
+    bool? favoritesOnly,
+    required int page,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        final request = grpc.ListRecipientsRequest();
+
+        if (countryCode != null) {
+          request.countryCode = countryCode;
+        }
+        if (currency != null) {
+          request.currency = currency;
+        }
+        if (favoritesOnly != null) {
+          request.favoritesOnly = favoritesOnly;
+        }
+
+        // Set pagination parameters
+        request.page = page;
+        request.pageSize = pageSize;
+
+        return await _client.listRecipients(
+          request,
+          options: callOptions,
+        );
+      });
+
+      final paginationInfo = response.pagination;
+      return Right(PaginatedRecipientsResult(
+        recipients: response.recipients.map(RecipientModel.fromProto).toList(),
+        hasMore: paginationInfo.hasNext,
+        currentPage: paginationInfo.currentPage,
+        totalItems: paginationInfo.totalItems,
+        totalPages: paginationInfo.totalPages,
+      ));
     } catch (e) {
       return Left(
           Failure(message: 'Failed to get recipients: $e', statusCode: 500));

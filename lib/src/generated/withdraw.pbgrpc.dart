@@ -1,88 +1,79 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: withdraw.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:async' as $async;
-
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'withdraw.pb.dart' as $34;
+import 'package:protobuf/protobuf.dart' as $pb;
+
+import 'withdraw.pb.dart' as $41;
+
 export 'withdraw.pb.dart';
 
+@$pb.GrpcServiceName('pb.WithdrawService')
 class WithdrawServiceClient extends $grpc.Client {
-  static final _$initiateWithdrawal = $grpc.ClientMethod<
-          $34.InitiateWithdrawalRequest, $34.InitiateWithdrawalResponse>(
+  static final _$initiateWithdrawal = $grpc.ClientMethod<$41.InitiateWithdrawalRequest, $41.InitiateWithdrawalResponse>(
       '/pb.WithdrawService/InitiateWithdrawal',
-      ($34.InitiateWithdrawalRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $34.InitiateWithdrawalResponse.fromBuffer(value));
-  static final _$getWithdrawalDetails = $grpc.ClientMethod<
-          $34.GetWithdrawalDetailsRequest, $34.GetWithdrawalDetailsResponse>(
+      ($41.InitiateWithdrawalRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $41.InitiateWithdrawalResponse.fromBuffer(value));
+  static final _$getWithdrawalDetails = $grpc.ClientMethod<$41.GetWithdrawalDetailsRequest, $41.GetWithdrawalDetailsResponse>(
       '/pb.WithdrawService/GetWithdrawalDetails',
-      ($34.GetWithdrawalDetailsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $34.GetWithdrawalDetailsResponse.fromBuffer(value));
+      ($41.GetWithdrawalDetailsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $41.GetWithdrawalDetailsResponse.fromBuffer(value));
 
   WithdrawServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
-      : super(channel, options: options, interceptors: interceptors);
+      : super(channel, options: options,
+        interceptors: interceptors);
 
-  $grpc.ResponseFuture<$34.InitiateWithdrawalResponse> initiateWithdrawal(
-      $34.InitiateWithdrawalRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$41.InitiateWithdrawalResponse> initiateWithdrawal($41.InitiateWithdrawalRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$initiateWithdrawal, request, options: options);
   }
 
-  $grpc.ResponseFuture<$34.GetWithdrawalDetailsResponse> getWithdrawalDetails(
-      $34.GetWithdrawalDetailsRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$41.GetWithdrawalDetailsResponse> getWithdrawalDetails($41.GetWithdrawalDetailsRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getWithdrawalDetails, request, options: options);
   }
 }
 
+@$pb.GrpcServiceName('pb.WithdrawService')
 abstract class WithdrawServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.WithdrawService';
 
   WithdrawServiceBase() {
-    $addMethod($grpc.ServiceMethod<$34.InitiateWithdrawalRequest,
-            $34.InitiateWithdrawalResponse>(
+    $addMethod($grpc.ServiceMethod<$41.InitiateWithdrawalRequest, $41.InitiateWithdrawalResponse>(
         'InitiateWithdrawal',
         initiateWithdrawal_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $34.InitiateWithdrawalRequest.fromBuffer(value),
-        ($34.InitiateWithdrawalResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$34.GetWithdrawalDetailsRequest,
-            $34.GetWithdrawalDetailsResponse>(
+        ($core.List<$core.int> value) => $41.InitiateWithdrawalRequest.fromBuffer(value),
+        ($41.InitiateWithdrawalResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$41.GetWithdrawalDetailsRequest, $41.GetWithdrawalDetailsResponse>(
         'GetWithdrawalDetails',
         getWithdrawalDetails_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $34.GetWithdrawalDetailsRequest.fromBuffer(value),
-        ($34.GetWithdrawalDetailsResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $41.GetWithdrawalDetailsRequest.fromBuffer(value),
+        ($41.GetWithdrawalDetailsResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$34.InitiateWithdrawalResponse> initiateWithdrawal_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.InitiateWithdrawalRequest> request) async {
+  $async.Future<$41.InitiateWithdrawalResponse> initiateWithdrawal_Pre($grpc.ServiceCall call, $async.Future<$41.InitiateWithdrawalRequest> request) async {
     return initiateWithdrawal(call, await request);
   }
 
-  $async.Future<$34.GetWithdrawalDetailsResponse> getWithdrawalDetails_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$34.GetWithdrawalDetailsRequest> request) async {
+  $async.Future<$41.GetWithdrawalDetailsResponse> getWithdrawalDetails_Pre($grpc.ServiceCall call, $async.Future<$41.GetWithdrawalDetailsRequest> request) async {
     return getWithdrawalDetails(call, await request);
   }
 
-  $async.Future<$34.InitiateWithdrawalResponse> initiateWithdrawal(
-      $grpc.ServiceCall call, $34.InitiateWithdrawalRequest request);
-  $async.Future<$34.GetWithdrawalDetailsResponse> getWithdrawalDetails(
-      $grpc.ServiceCall call, $34.GetWithdrawalDetailsRequest request);
+  $async.Future<$41.InitiateWithdrawalResponse> initiateWithdrawal($grpc.ServiceCall call, $41.InitiateWithdrawalRequest request);
+  $async.Future<$41.GetWithdrawalDetailsResponse> getWithdrawalDetails($grpc.ServiceCall call, $41.GetWithdrawalDetailsRequest request);
 }

@@ -1,47 +1,19 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: invoice.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class Invoice extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Invoice', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceNumber')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientEmail')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dueDate')
-    ..pc<InvoiceItem>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
-    ..a<$core.double>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tax', $pb.PbFieldType.OD)
-    ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'discount', $pb.PbFieldType.OD)
-    ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
-    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentReference')
-    ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt')
-    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
-    ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
-    ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
-    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
-    ..pc<TaggedUser>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedUsers', $pb.PbFieldType.PM, subBuilder: TaggedUser.create)
-    ..aOB(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isUnlocked')
-    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unlockPaymentRef')
-    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerEmail')
-    ..aOS(26, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerLogoUrl')
-    ..aOS(27, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientLogoUrl')
-    ..hasRequiredFields = false
-  ;
-
-  Invoice._() : super();
   factory Invoice({
     $core.String? id,
     $core.String? userId,
@@ -71,92 +43,125 @@ class Invoice extends $pb.GeneratedMessage {
     $core.String? payerLogoUrl,
     $core.String? recipientLogoUrl,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (invoiceNumber != null) {
-      _result.invoiceNumber = invoiceNumber;
+      $result.invoiceNumber = invoiceNumber;
     }
     if (recipientEmail != null) {
-      _result.recipientEmail = recipientEmail;
+      $result.recipientEmail = recipientEmail;
     }
     if (recipientName != null) {
-      _result.recipientName = recipientName;
+      $result.recipientName = recipientName;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (dueDate != null) {
-      _result.dueDate = dueDate;
+      $result.dueDate = dueDate;
     }
     if (items != null) {
-      _result.items.addAll(items);
+      $result.items.addAll(items);
     }
     if (tax != null) {
-      _result.tax = tax;
+      $result.tax = tax;
     }
     if (discount != null) {
-      _result.discount = discount;
+      $result.discount = discount;
     }
     if (totalAmount != null) {
-      _result.totalAmount = totalAmount;
+      $result.totalAmount = totalAmount;
     }
     if (paymentReference != null) {
-      _result.paymentReference = paymentReference;
+      $result.paymentReference = paymentReference;
     }
     if (paidAt != null) {
-      _result.paidAt = paidAt;
+      $result.paidAt = paidAt;
     }
     if (notes != null) {
-      _result.notes = notes;
+      $result.notes = notes;
     }
     if (metadata != null) {
-      _result.metadata = metadata;
+      $result.metadata = metadata;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
     if (taggedUsers != null) {
-      _result.taggedUsers.addAll(taggedUsers);
+      $result.taggedUsers.addAll(taggedUsers);
     }
     if (isUnlocked != null) {
-      _result.isUnlocked = isUnlocked;
+      $result.isUnlocked = isUnlocked;
     }
     if (unlockPaymentRef != null) {
-      _result.unlockPaymentRef = unlockPaymentRef;
+      $result.unlockPaymentRef = unlockPaymentRef;
     }
     if (payerEmail != null) {
-      _result.payerEmail = payerEmail;
+      $result.payerEmail = payerEmail;
     }
     if (payerLogoUrl != null) {
-      _result.payerLogoUrl = payerLogoUrl;
+      $result.payerLogoUrl = payerLogoUrl;
     }
     if (recipientLogoUrl != null) {
-      _result.recipientLogoUrl = recipientLogoUrl;
+      $result.recipientLogoUrl = recipientLogoUrl;
     }
-    return _result;
+    return $result;
   }
+  Invoice._() : super();
   factory Invoice.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Invoice.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Invoice', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'accountId')
+    ..aOS(4, _omitFieldNames ? '' : 'invoiceNumber')
+    ..aOS(5, _omitFieldNames ? '' : 'recipientEmail')
+    ..aOS(6, _omitFieldNames ? '' : 'recipientName')
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(8, _omitFieldNames ? '' : 'currency')
+    ..aOS(9, _omitFieldNames ? '' : 'status')
+    ..aOS(10, _omitFieldNames ? '' : 'description')
+    ..aOS(11, _omitFieldNames ? '' : 'dueDate')
+    ..pc<InvoiceItem>(12, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
+    ..a<$core.double>(13, _omitFieldNames ? '' : 'tax', $pb.PbFieldType.OD)
+    ..a<$core.double>(14, _omitFieldNames ? '' : 'discount', $pb.PbFieldType.OD)
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..aOS(16, _omitFieldNames ? '' : 'paymentReference')
+    ..aOS(17, _omitFieldNames ? '' : 'paidAt')
+    ..aOS(18, _omitFieldNames ? '' : 'notes')
+    ..aOS(19, _omitFieldNames ? '' : 'metadata')
+    ..aOS(20, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(21, _omitFieldNames ? '' : 'updatedAt')
+    ..pc<TaggedUser>(22, _omitFieldNames ? '' : 'taggedUsers', $pb.PbFieldType.PM, subBuilder: TaggedUser.create)
+    ..aOB(23, _omitFieldNames ? '' : 'isUnlocked')
+    ..aOS(24, _omitFieldNames ? '' : 'unlockPaymentRef')
+    ..aOS(25, _omitFieldNames ? '' : 'payerEmail')
+    ..aOS(26, _omitFieldNames ? '' : 'payerLogoUrl')
+    ..aOS(27, _omitFieldNames ? '' : 'recipientLogoUrl')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -166,8 +171,10 @@ class Invoice extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Invoice copyWith(void Function(Invoice) updates) => super.copyWith((message) => updates(message as Invoice)) as Invoice; // ignore: deprecated_member_use
+  Invoice copyWith(void Function(Invoice) updates) => super.copyWith((message) => updates(message as Invoice)) as Invoice;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static Invoice create() => Invoice._();
   Invoice createEmptyInstance() => create();
@@ -409,38 +416,39 @@ class Invoice extends $pb.GeneratedMessage {
 }
 
 class InvoiceItem extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InvoiceItem', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quantity', $pb.PbFieldType.O3)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unitPrice', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  InvoiceItem._() : super();
   factory InvoiceItem({
     $core.String? description,
     $core.int? quantity,
     $core.double? unitPrice,
     $core.double? total,
   }) {
-    final _result = create();
+    final $result = create();
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (quantity != null) {
-      _result.quantity = quantity;
+      $result.quantity = quantity;
     }
     if (unitPrice != null) {
-      _result.unitPrice = unitPrice;
+      $result.unitPrice = unitPrice;
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
-    return _result;
+    return $result;
   }
+  InvoiceItem._() : super();
   factory InvoiceItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InvoiceItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvoiceItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'description')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'quantity', $pb.PbFieldType.O3)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'unitPrice', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'total', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -450,8 +458,10 @@ class InvoiceItem extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InvoiceItem copyWith(void Function(InvoiceItem) updates) => super.copyWith((message) => updates(message as InvoiceItem)) as InvoiceItem; // ignore: deprecated_member_use
+  InvoiceItem copyWith(void Function(InvoiceItem) updates) => super.copyWith((message) => updates(message as InvoiceItem)) as InvoiceItem;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static InvoiceItem create() => InvoiceItem._();
   InvoiceItem createEmptyInstance() => create();
@@ -497,21 +507,8 @@ class InvoiceItem extends $pb.GeneratedMessage {
   void clearTotal() => clearField(4);
 }
 
+/// Tagged user on an invoice
 class TaggedUser extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TaggedUser', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedAt')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'viewedAt')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt')
-    ..hasRequiredFields = false
-  ;
-
-  TaggedUser._() : super();
   factory TaggedUser({
     $core.String? userId,
     $core.String? username,
@@ -523,38 +520,53 @@ class TaggedUser extends $pb.GeneratedMessage {
     $core.String? viewedAt,
     $core.String? paidAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (username != null) {
-      _result.username = username;
+      $result.username = username;
     }
     if (firstName != null) {
-      _result.firstName = firstName;
+      $result.firstName = firstName;
     }
     if (lastName != null) {
-      _result.lastName = lastName;
+      $result.lastName = lastName;
     }
     if (profilePicture != null) {
-      _result.profilePicture = profilePicture;
+      $result.profilePicture = profilePicture;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (taggedAt != null) {
-      _result.taggedAt = taggedAt;
+      $result.taggedAt = taggedAt;
     }
     if (viewedAt != null) {
-      _result.viewedAt = viewedAt;
+      $result.viewedAt = viewedAt;
     }
     if (paidAt != null) {
-      _result.paidAt = paidAt;
+      $result.paidAt = paidAt;
     }
-    return _result;
+    return $result;
   }
+  TaggedUser._() : super();
   factory TaggedUser.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TaggedUser.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TaggedUser', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'username')
+    ..aOS(3, _omitFieldNames ? '' : 'firstName')
+    ..aOS(4, _omitFieldNames ? '' : 'lastName')
+    ..aOS(5, _omitFieldNames ? '' : 'profilePicture')
+    ..aOS(6, _omitFieldNames ? '' : 'status')
+    ..aOS(7, _omitFieldNames ? '' : 'taggedAt')
+    ..aOS(8, _omitFieldNames ? '' : 'viewedAt')
+    ..aOS(9, _omitFieldNames ? '' : 'paidAt')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -564,8 +576,10 @@ class TaggedUser extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TaggedUser copyWith(void Function(TaggedUser) updates) => super.copyWith((message) => updates(message as TaggedUser)) as TaggedUser; // ignore: deprecated_member_use
+  TaggedUser copyWith(void Function(TaggedUser) updates) => super.copyWith((message) => updates(message as TaggedUser)) as TaggedUser;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TaggedUser create() => TaggedUser._();
   TaggedUser createEmptyInstance() => create();
@@ -656,23 +670,8 @@ class TaggedUser extends $pb.GeneratedMessage {
   void clearPaidAt() => clearField(9);
 }
 
+/// Invoice statistics
 class InvoiceStatistics extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InvoiceStatistics', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSent', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalReceived', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPaid', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPending', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalOverdue', $pb.PbFieldType.O3)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountSent', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountReceived', $pb.PbFieldType.OD)
-    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
-    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
-    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountOverdue', $pb.PbFieldType.OD)
-    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'collectionRate', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  InvoiceStatistics._() : super();
   factory InvoiceStatistics({
     $core.int? totalSent,
     $core.int? totalReceived,
@@ -686,44 +685,61 @@ class InvoiceStatistics extends $pb.GeneratedMessage {
     $core.double? totalAmountOverdue,
     $core.double? collectionRate,
   }) {
-    final _result = create();
+    final $result = create();
     if (totalSent != null) {
-      _result.totalSent = totalSent;
+      $result.totalSent = totalSent;
     }
     if (totalReceived != null) {
-      _result.totalReceived = totalReceived;
+      $result.totalReceived = totalReceived;
     }
     if (totalPaid != null) {
-      _result.totalPaid = totalPaid;
+      $result.totalPaid = totalPaid;
     }
     if (totalPending != null) {
-      _result.totalPending = totalPending;
+      $result.totalPending = totalPending;
     }
     if (totalOverdue != null) {
-      _result.totalOverdue = totalOverdue;
+      $result.totalOverdue = totalOverdue;
     }
     if (totalAmountSent != null) {
-      _result.totalAmountSent = totalAmountSent;
+      $result.totalAmountSent = totalAmountSent;
     }
     if (totalAmountReceived != null) {
-      _result.totalAmountReceived = totalAmountReceived;
+      $result.totalAmountReceived = totalAmountReceived;
     }
     if (totalAmountPaid != null) {
-      _result.totalAmountPaid = totalAmountPaid;
+      $result.totalAmountPaid = totalAmountPaid;
     }
     if (totalAmountPending != null) {
-      _result.totalAmountPending = totalAmountPending;
+      $result.totalAmountPending = totalAmountPending;
     }
     if (totalAmountOverdue != null) {
-      _result.totalAmountOverdue = totalAmountOverdue;
+      $result.totalAmountOverdue = totalAmountOverdue;
     }
     if (collectionRate != null) {
-      _result.collectionRate = collectionRate;
+      $result.collectionRate = collectionRate;
     }
-    return _result;
+    return $result;
   }
+  InvoiceStatistics._() : super();
   factory InvoiceStatistics.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InvoiceStatistics.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvoiceStatistics', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'totalSent', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalReceived', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalPaid', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPending', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'totalOverdue', $pb.PbFieldType.O3)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'totalAmountSent', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'totalAmountReceived', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'totalAmountOverdue', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'collectionRate', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -733,8 +749,10 @@ class InvoiceStatistics extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InvoiceStatistics copyWith(void Function(InvoiceStatistics) updates) => super.copyWith((message) => updates(message as InvoiceStatistics)) as InvoiceStatistics; // ignore: deprecated_member_use
+  InvoiceStatistics copyWith(void Function(InvoiceStatistics) updates) => super.copyWith((message) => updates(message as InvoiceStatistics)) as InvoiceStatistics;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static InvoiceStatistics create() => InvoiceStatistics._();
   InvoiceStatistics createEmptyInstance() => create();
@@ -843,28 +861,9 @@ class InvoiceStatistics extends $pb.GeneratedMessage {
   void clearCollectionRate() => clearField(11);
 }
 
+/// ===== CREATE INVOICE =====
+/// NOTE: user_id extracted from JWT token, not from request
 class CreateInvoiceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientEmail')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dueDate')
-    ..pc<InvoiceItem>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
-    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tax', $pb.PbFieldType.OD)
-    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'discount', $pb.PbFieldType.OD)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
-    ..pPS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedUserIds')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerEmail')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerLogoUrl')
-    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientLogoUrl')
-    ..hasRequiredFields = false
-  ;
-
-  CreateInvoiceRequest._() : super();
   factory CreateInvoiceRequest({
     $core.String? accountId,
     $core.String? recipientEmail,
@@ -883,59 +882,81 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
     $core.String? payerLogoUrl,
     $core.String? recipientLogoUrl,
   }) {
-    final _result = create();
+    final $result = create();
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (recipientEmail != null) {
-      _result.recipientEmail = recipientEmail;
+      $result.recipientEmail = recipientEmail;
     }
     if (recipientName != null) {
-      _result.recipientName = recipientName;
+      $result.recipientName = recipientName;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (dueDate != null) {
-      _result.dueDate = dueDate;
+      $result.dueDate = dueDate;
     }
     if (items != null) {
-      _result.items.addAll(items);
+      $result.items.addAll(items);
     }
     if (tax != null) {
-      _result.tax = tax;
+      $result.tax = tax;
     }
     if (discount != null) {
-      _result.discount = discount;
+      $result.discount = discount;
     }
     if (notes != null) {
-      _result.notes = notes;
+      $result.notes = notes;
     }
     if (taggedUserIds != null) {
-      _result.taggedUserIds.addAll(taggedUserIds);
+      $result.taggedUserIds.addAll(taggedUserIds);
     }
     if (idempotencyKey != null) {
-      _result.idempotencyKey = idempotencyKey;
+      $result.idempotencyKey = idempotencyKey;
     }
     if (payerEmail != null) {
-      _result.payerEmail = payerEmail;
+      $result.payerEmail = payerEmail;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (payerLogoUrl != null) {
-      _result.payerLogoUrl = payerLogoUrl;
+      $result.payerLogoUrl = payerLogoUrl;
     }
     if (recipientLogoUrl != null) {
-      _result.recipientLogoUrl = recipientLogoUrl;
+      $result.recipientLogoUrl = recipientLogoUrl;
     }
-    return _result;
+    return $result;
   }
+  CreateInvoiceRequest._() : super();
   factory CreateInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'recipientEmail')
+    ..aOS(3, _omitFieldNames ? '' : 'recipientName')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'description')
+    ..aOS(6, _omitFieldNames ? '' : 'dueDate')
+    ..pc<InvoiceItem>(7, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'tax', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'discount', $pb.PbFieldType.OD)
+    ..aOS(10, _omitFieldNames ? '' : 'notes')
+    ..pPS(11, _omitFieldNames ? '' : 'taggedUserIds')
+    ..aOS(12, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(13, _omitFieldNames ? '' : 'payerEmail')
+    ..aOS(14, _omitFieldNames ? '' : 'currency')
+    ..aOS(15, _omitFieldNames ? '' : 'payerLogoUrl')
+    ..aOS(16, _omitFieldNames ? '' : 'recipientLogoUrl')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -945,8 +966,10 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateInvoiceRequest copyWith(void Function(CreateInvoiceRequest) updates) => super.copyWith((message) => updates(message as CreateInvoiceRequest)) as CreateInvoiceRequest; // ignore: deprecated_member_use
+  CreateInvoiceRequest copyWith(void Function(CreateInvoiceRequest) updates) => super.copyWith((message) => updates(message as CreateInvoiceRequest)) as CreateInvoiceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateInvoiceRequest create() => CreateInvoiceRequest._();
   CreateInvoiceRequest createEmptyInstance() => create();
@@ -1089,28 +1112,29 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
 }
 
 class CreateInvoiceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreateInvoiceResponse._() : super();
   factory CreateInvoiceResponse({
     Invoice? invoice,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoice != null) {
-      _result.invoice = invoice;
+      $result.invoice = invoice;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreateInvoiceResponse._() : super();
   factory CreateInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1120,8 +1144,10 @@ class CreateInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateInvoiceResponse copyWith(void Function(CreateInvoiceResponse) updates) => super.copyWith((message) => updates(message as CreateInvoiceResponse)) as CreateInvoiceResponse; // ignore: deprecated_member_use
+  CreateInvoiceResponse copyWith(void Function(CreateInvoiceResponse) updates) => super.copyWith((message) => updates(message as CreateInvoiceResponse)) as CreateInvoiceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateInvoiceResponse create() => CreateInvoiceResponse._();
   CreateInvoiceResponse createEmptyInstance() => create();
@@ -1151,18 +1177,8 @@ class CreateInvoiceResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// Pagination metadata
 class PaginationInfo extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrevious')
-    ..hasRequiredFields = false
-  ;
-
-  PaginationInfo._() : super();
   factory PaginationInfo({
     $core.int? currentPage,
     $core.int? pageSize,
@@ -1171,29 +1187,41 @@ class PaginationInfo extends $pb.GeneratedMessage {
     $core.bool? hasNext,
     $core.bool? hasPrevious,
   }) {
-    final _result = create();
+    final $result = create();
     if (currentPage != null) {
-      _result.currentPage = currentPage;
+      $result.currentPage = currentPage;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
     if (totalCount != null) {
-      _result.totalCount = totalCount;
+      $result.totalCount = totalCount;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
     if (hasNext != null) {
-      _result.hasNext = hasNext;
+      $result.hasNext = hasNext;
     }
     if (hasPrevious != null) {
-      _result.hasPrevious = hasPrevious;
+      $result.hasPrevious = hasPrevious;
     }
-    return _result;
+    return $result;
   }
+  PaginationInfo._() : super();
   factory PaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaginationInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPrevious')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1203,8 +1231,10 @@ class PaginationInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PaginationInfo copyWith(void Function(PaginationInfo) updates) => super.copyWith((message) => updates(message as PaginationInfo)) as PaginationInfo; // ignore: deprecated_member_use
+  PaginationInfo copyWith(void Function(PaginationInfo) updates) => super.copyWith((message) => updates(message as PaginationInfo)) as PaginationInfo;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PaginationInfo create() => PaginationInfo._();
   PaginationInfo createEmptyInstance() => create();
@@ -1268,20 +1298,9 @@ class PaginationInfo extends $pb.GeneratedMessage {
   void clearHasPrevious() => clearField(6);
 }
 
+/// ===== GET INVOICES =====
+/// NOTE: user_id extracted from JWT token, not from request
 class GetInvoicesRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoicesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate')
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
-    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetInvoicesRequest._() : super();
   factory GetInvoicesRequest({
     $core.String? accountId,
     $core.String? status,
@@ -1292,35 +1311,49 @@ class GetInvoicesRequest extends $pb.GeneratedMessage {
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (startDate != null) {
-      _result.startDate = startDate;
+      $result.startDate = startDate;
     }
     if (endDate != null) {
-      _result.endDate = endDate;
+      $result.endDate = endDate;
     }
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
     if (offset != null) {
-      _result.offset = offset;
+      $result.offset = offset;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetInvoicesRequest._() : super();
   factory GetInvoicesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetInvoicesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoicesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..aOS(3, _omitFieldNames ? '' : 'startDate')
+    ..aOS(4, _omitFieldNames ? '' : 'endDate')
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1330,8 +1363,10 @@ class GetInvoicesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoicesRequest copyWith(void Function(GetInvoicesRequest) updates) => super.copyWith((message) => updates(message as GetInvoicesRequest)) as GetInvoicesRequest; // ignore: deprecated_member_use
+  GetInvoicesRequest copyWith(void Function(GetInvoicesRequest) updates) => super.copyWith((message) => updates(message as GetInvoicesRequest)) as GetInvoicesRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvoicesRequest create() => GetInvoicesRequest._();
   GetInvoicesRequest createEmptyInstance() => create();
@@ -1414,16 +1449,6 @@ class GetInvoicesRequest extends $pb.GeneratedMessage {
 }
 
 class GetInvoicesResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoicesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..pc<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoices', $pb.PbFieldType.PM, subBuilder: Invoice.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
-    ..aOM<PaginationInfo>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetInvoicesResponse._() : super();
   factory GetInvoicesResponse({
     $core.Iterable<Invoice>? invoices,
     $core.int? total,
@@ -1431,26 +1456,37 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
     $core.double? totalAmountPaid,
     PaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoices != null) {
-      _result.invoices.addAll(invoices);
+      $result.invoices.addAll(invoices);
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
     if (totalAmountPending != null) {
-      _result.totalAmountPending = totalAmountPending;
+      $result.totalAmountPending = totalAmountPending;
     }
     if (totalAmountPaid != null) {
-      _result.totalAmountPaid = totalAmountPaid;
+      $result.totalAmountPaid = totalAmountPaid;
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  GetInvoicesResponse._() : super();
   factory GetInvoicesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetInvoicesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoicesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..pc<Invoice>(1, _omitFieldNames ? '' : 'invoices', $pb.PbFieldType.PM, subBuilder: Invoice.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
+    ..aOM<PaginationInfo>(5, _omitFieldNames ? '' : 'pagination', subBuilder: PaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1460,8 +1496,10 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoicesResponse copyWith(void Function(GetInvoicesResponse) updates) => super.copyWith((message) => updates(message as GetInvoicesResponse)) as GetInvoicesResponse; // ignore: deprecated_member_use
+  GetInvoicesResponse copyWith(void Function(GetInvoicesResponse) updates) => super.copyWith((message) => updates(message as GetInvoicesResponse)) as GetInvoicesResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvoicesResponse create() => GetInvoicesResponse._();
   GetInvoicesResponse createEmptyInstance() => create();
@@ -1512,24 +1550,27 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
   PaginationInfo ensurePagination() => $_ensure(4);
 }
 
+/// ===== GET INVOICE =====
+/// NOTE: user_id extracted from JWT token, not from request
 class GetInvoiceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..hasRequiredFields = false
-  ;
-
-  GetInvoiceRequest._() : super();
   factory GetInvoiceRequest({
     $core.String? invoiceId,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
-    return _result;
+    return $result;
   }
+  GetInvoiceRequest._() : super();
   factory GetInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1539,8 +1580,10 @@ class GetInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoiceRequest copyWith(void Function(GetInvoiceRequest) updates) => super.copyWith((message) => updates(message as GetInvoiceRequest)) as GetInvoiceRequest; // ignore: deprecated_member_use
+  GetInvoiceRequest copyWith(void Function(GetInvoiceRequest) updates) => super.copyWith((message) => updates(message as GetInvoiceRequest)) as GetInvoiceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvoiceRequest create() => GetInvoiceRequest._();
   GetInvoiceRequest createEmptyInstance() => create();
@@ -1560,23 +1603,24 @@ class GetInvoiceRequest extends $pb.GeneratedMessage {
 }
 
 class GetInvoiceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetInvoiceResponse._() : super();
   factory GetInvoiceResponse({
     Invoice? invoice,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoice != null) {
-      _result.invoice = invoice;
+      $result.invoice = invoice;
     }
-    return _result;
+    return $result;
   }
+  GetInvoiceResponse._() : super();
   factory GetInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1586,8 +1630,10 @@ class GetInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoiceResponse copyWith(void Function(GetInvoiceResponse) updates) => super.copyWith((message) => updates(message as GetInvoiceResponse)) as GetInvoiceResponse; // ignore: deprecated_member_use
+  GetInvoiceResponse copyWith(void Function(GetInvoiceResponse) updates) => super.copyWith((message) => updates(message as GetInvoiceResponse)) as GetInvoiceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvoiceResponse create() => GetInvoiceResponse._();
   GetInvoiceResponse createEmptyInstance() => create();
@@ -1608,18 +1654,9 @@ class GetInvoiceResponse extends $pb.GeneratedMessage {
   Invoice ensureInvoice() => $_ensure(0);
 }
 
+/// ===== PAY INVOICE =====
+/// NOTE: user_id extracted from JWT token, not from request
 class PayInvoiceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PayInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..hasRequiredFields = false
-  ;
-
-  PayInvoiceRequest._() : super();
   factory PayInvoiceRequest({
     $core.String? invoiceId,
     $core.String? accountId,
@@ -1628,29 +1665,41 @@ class PayInvoiceRequest extends $pb.GeneratedMessage {
     $core.String? verificationToken,
     $core.String? transactionId,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (pin != null) {
-      _result.pin = pin;
+      $result.pin = pin;
     }
     if (idempotencyKey != null) {
-      _result.idempotencyKey = idempotencyKey;
+      $result.idempotencyKey = idempotencyKey;
     }
     if (verificationToken != null) {
-      _result.verificationToken = verificationToken;
+      $result.verificationToken = verificationToken;
     }
     if (transactionId != null) {
-      _result.transactionId = transactionId;
+      $result.transactionId = transactionId;
     }
-    return _result;
+    return $result;
   }
+  PayInvoiceRequest._() : super();
   factory PayInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PayInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PayInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..aOS(2, _omitFieldNames ? '' : 'accountId')
+    ..aOS(3, _omitFieldNames ? '' : 'pin')
+    ..aOS(4, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(5, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(6, _omitFieldNames ? '' : 'transactionId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1660,8 +1709,10 @@ class PayInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PayInvoiceRequest copyWith(void Function(PayInvoiceRequest) updates) => super.copyWith((message) => updates(message as PayInvoiceRequest)) as PayInvoiceRequest; // ignore: deprecated_member_use
+  PayInvoiceRequest copyWith(void Function(PayInvoiceRequest) updates) => super.copyWith((message) => updates(message as PayInvoiceRequest)) as PayInvoiceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PayInvoiceRequest create() => PayInvoiceRequest._();
   PayInvoiceRequest createEmptyInstance() => create();
@@ -1726,38 +1777,39 @@ class PayInvoiceRequest extends $pb.GeneratedMessage {
 }
 
 class PayInvoiceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PayInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newBalance', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentReference')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  PayInvoiceResponse._() : super();
   factory PayInvoiceResponse({
     Invoice? invoice,
     $core.double? newBalance,
     $core.String? paymentReference,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoice != null) {
-      _result.invoice = invoice;
+      $result.invoice = invoice;
     }
     if (newBalance != null) {
-      _result.newBalance = newBalance;
+      $result.newBalance = newBalance;
     }
     if (paymentReference != null) {
-      _result.paymentReference = paymentReference;
+      $result.paymentReference = paymentReference;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  PayInvoiceResponse._() : super();
   factory PayInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PayInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PayInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'paymentReference')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1767,8 +1819,10 @@ class PayInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PayInvoiceResponse copyWith(void Function(PayInvoiceResponse) updates) => super.copyWith((message) => updates(message as PayInvoiceResponse)) as PayInvoiceResponse; // ignore: deprecated_member_use
+  PayInvoiceResponse copyWith(void Function(PayInvoiceResponse) updates) => super.copyWith((message) => updates(message as PayInvoiceResponse)) as PayInvoiceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PayInvoiceResponse create() => PayInvoiceResponse._();
   PayInvoiceResponse createEmptyInstance() => create();
@@ -1816,29 +1870,32 @@ class PayInvoiceResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(4);
 }
 
+/// ===== CANCEL INVOICE =====
+/// NOTE: user_id extracted from JWT token, not from request
 class CancelInvoiceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
-    ..hasRequiredFields = false
-  ;
-
-  CancelInvoiceRequest._() : super();
   factory CancelInvoiceRequest({
     $core.String? invoiceId,
     $core.String? reason,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
     if (reason != null) {
-      _result.reason = reason;
+      $result.reason = reason;
     }
-    return _result;
+    return $result;
   }
+  CancelInvoiceRequest._() : super();
   factory CancelInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1848,8 +1905,10 @@ class CancelInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelInvoiceRequest copyWith(void Function(CancelInvoiceRequest) updates) => super.copyWith((message) => updates(message as CancelInvoiceRequest)) as CancelInvoiceRequest; // ignore: deprecated_member_use
+  CancelInvoiceRequest copyWith(void Function(CancelInvoiceRequest) updates) => super.copyWith((message) => updates(message as CancelInvoiceRequest)) as CancelInvoiceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelInvoiceRequest create() => CancelInvoiceRequest._();
   CancelInvoiceRequest createEmptyInstance() => create();
@@ -1878,28 +1937,29 @@ class CancelInvoiceRequest extends $pb.GeneratedMessage {
 }
 
 class CancelInvoiceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CancelInvoiceResponse._() : super();
   factory CancelInvoiceResponse({
     Invoice? invoice,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoice != null) {
-      _result.invoice = invoice;
+      $result.invoice = invoice;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CancelInvoiceResponse._() : super();
   factory CancelInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1909,8 +1969,10 @@ class CancelInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelInvoiceResponse copyWith(void Function(CancelInvoiceResponse) updates) => super.copyWith((message) => updates(message as CancelInvoiceResponse)) as CancelInvoiceResponse; // ignore: deprecated_member_use
+  CancelInvoiceResponse copyWith(void Function(CancelInvoiceResponse) updates) => super.copyWith((message) => updates(message as CancelInvoiceResponse)) as CancelInvoiceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelInvoiceResponse create() => CancelInvoiceResponse._();
   CancelInvoiceResponse createEmptyInstance() => create();
@@ -1940,24 +2002,27 @@ class CancelInvoiceResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// ===== SEND INVOICE REMINDER =====
+/// NOTE: user_id extracted from JWT token, not from request
 class SendInvoiceReminderRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendInvoiceReminderRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..hasRequiredFields = false
-  ;
-
-  SendInvoiceReminderRequest._() : super();
   factory SendInvoiceReminderRequest({
     $core.String? invoiceId,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
-    return _result;
+    return $result;
   }
+  SendInvoiceReminderRequest._() : super();
   factory SendInvoiceReminderRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendInvoiceReminderRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendInvoiceReminderRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1967,8 +2032,10 @@ class SendInvoiceReminderRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendInvoiceReminderRequest copyWith(void Function(SendInvoiceReminderRequest) updates) => super.copyWith((message) => updates(message as SendInvoiceReminderRequest)) as SendInvoiceReminderRequest; // ignore: deprecated_member_use
+  SendInvoiceReminderRequest copyWith(void Function(SendInvoiceReminderRequest) updates) => super.copyWith((message) => updates(message as SendInvoiceReminderRequest)) as SendInvoiceReminderRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SendInvoiceReminderRequest create() => SendInvoiceReminderRequest._();
   SendInvoiceReminderRequest createEmptyInstance() => create();
@@ -1988,28 +2055,29 @@ class SendInvoiceReminderRequest extends $pb.GeneratedMessage {
 }
 
 class SendInvoiceReminderResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendInvoiceReminderResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sent')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  SendInvoiceReminderResponse._() : super();
   factory SendInvoiceReminderResponse({
     $core.bool? sent,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (sent != null) {
-      _result.sent = sent;
+      $result.sent = sent;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  SendInvoiceReminderResponse._() : super();
   factory SendInvoiceReminderResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendInvoiceReminderResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendInvoiceReminderResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'sent')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2019,8 +2087,10 @@ class SendInvoiceReminderResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendInvoiceReminderResponse copyWith(void Function(SendInvoiceReminderResponse) updates) => super.copyWith((message) => updates(message as SendInvoiceReminderResponse)) as SendInvoiceReminderResponse; // ignore: deprecated_member_use
+  SendInvoiceReminderResponse copyWith(void Function(SendInvoiceReminderResponse) updates) => super.copyWith((message) => updates(message as SendInvoiceReminderResponse)) as SendInvoiceReminderResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SendInvoiceReminderResponse create() => SendInvoiceReminderResponse._();
   SendInvoiceReminderResponse createEmptyInstance() => create();
@@ -2048,29 +2118,176 @@ class SendInvoiceReminderResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
-class UpdateInvoiceStatusRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateInvoiceStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+/// ===== SEND INVOICE TO EMAIL =====
+/// NOTE: user_id extracted from JWT token, not from request
+class SendInvoiceToEmailRequest extends $pb.GeneratedMessage {
+  factory SendInvoiceToEmailRequest({
+    $core.String? invoiceId,
+    $core.String? email,
+    $core.String? locale,
+  }) {
+    final $result = create();
+    if (invoiceId != null) {
+      $result.invoiceId = invoiceId;
+    }
+    if (email != null) {
+      $result.email = email;
+    }
+    if (locale != null) {
+      $result.locale = locale;
+    }
+    return $result;
+  }
+  SendInvoiceToEmailRequest._() : super();
+  factory SendInvoiceToEmailRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SendInvoiceToEmailRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendInvoiceToEmailRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..aOS(2, _omitFieldNames ? '' : 'email')
+    ..aOS(3, _omitFieldNames ? '' : 'locale')
     ..hasRequiredFields = false
   ;
 
-  UpdateInvoiceStatusRequest._() : super();
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SendInvoiceToEmailRequest clone() => SendInvoiceToEmailRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SendInvoiceToEmailRequest copyWith(void Function(SendInvoiceToEmailRequest) updates) => super.copyWith((message) => updates(message as SendInvoiceToEmailRequest)) as SendInvoiceToEmailRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SendInvoiceToEmailRequest create() => SendInvoiceToEmailRequest._();
+  SendInvoiceToEmailRequest createEmptyInstance() => create();
+  static $pb.PbList<SendInvoiceToEmailRequest> createRepeated() => $pb.PbList<SendInvoiceToEmailRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SendInvoiceToEmailRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SendInvoiceToEmailRequest>(create);
+  static SendInvoiceToEmailRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get invoiceId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set invoiceId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasInvoiceId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearInvoiceId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get email => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set email($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasEmail() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearEmail() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get locale => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set locale($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasLocale() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLocale() => clearField(3);
+}
+
+class SendInvoiceToEmailResponse extends $pb.GeneratedMessage {
+  factory SendInvoiceToEmailResponse({
+    $core.bool? sent,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (sent != null) {
+      $result.sent = sent;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  SendInvoiceToEmailResponse._() : super();
+  factory SendInvoiceToEmailResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SendInvoiceToEmailResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendInvoiceToEmailResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'sent')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SendInvoiceToEmailResponse clone() => SendInvoiceToEmailResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SendInvoiceToEmailResponse copyWith(void Function(SendInvoiceToEmailResponse) updates) => super.copyWith((message) => updates(message as SendInvoiceToEmailResponse)) as SendInvoiceToEmailResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SendInvoiceToEmailResponse create() => SendInvoiceToEmailResponse._();
+  SendInvoiceToEmailResponse createEmptyInstance() => create();
+  static $pb.PbList<SendInvoiceToEmailResponse> createRepeated() => $pb.PbList<SendInvoiceToEmailResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SendInvoiceToEmailResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SendInvoiceToEmailResponse>(create);
+  static SendInvoiceToEmailResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get sent => $_getBF(0);
+  @$pb.TagNumber(1)
+  set sent($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSent() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSent() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+/// ===== UPDATE INVOICE STATUS =====
+/// NOTE: user_id extracted from JWT token, not from request
+class UpdateInvoiceStatusRequest extends $pb.GeneratedMessage {
   factory UpdateInvoiceStatusRequest({
     $core.String? invoiceId,
     $core.String? status,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
-    return _result;
+    return $result;
   }
+  UpdateInvoiceStatusRequest._() : super();
   factory UpdateInvoiceStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateInvoiceStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInvoiceStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2080,8 +2297,10 @@ class UpdateInvoiceStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateInvoiceStatusRequest copyWith(void Function(UpdateInvoiceStatusRequest) updates) => super.copyWith((message) => updates(message as UpdateInvoiceStatusRequest)) as UpdateInvoiceStatusRequest; // ignore: deprecated_member_use
+  UpdateInvoiceStatusRequest copyWith(void Function(UpdateInvoiceStatusRequest) updates) => super.copyWith((message) => updates(message as UpdateInvoiceStatusRequest)) as UpdateInvoiceStatusRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateInvoiceStatusRequest create() => UpdateInvoiceStatusRequest._();
   UpdateInvoiceStatusRequest createEmptyInstance() => create();
@@ -2110,28 +2329,29 @@ class UpdateInvoiceStatusRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateInvoiceStatusResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateInvoiceStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateInvoiceStatusResponse._() : super();
   factory UpdateInvoiceStatusResponse({
     Invoice? invoice,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoice != null) {
-      _result.invoice = invoice;
+      $result.invoice = invoice;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  UpdateInvoiceStatusResponse._() : super();
   factory UpdateInvoiceStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateInvoiceStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInvoiceStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2141,8 +2361,10 @@ class UpdateInvoiceStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateInvoiceStatusResponse copyWith(void Function(UpdateInvoiceStatusResponse) updates) => super.copyWith((message) => updates(message as UpdateInvoiceStatusResponse)) as UpdateInvoiceStatusResponse; // ignore: deprecated_member_use
+  UpdateInvoiceStatusResponse copyWith(void Function(UpdateInvoiceStatusResponse) updates) => super.copyWith((message) => updates(message as UpdateInvoiceStatusResponse)) as UpdateInvoiceStatusResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateInvoiceStatusResponse create() => UpdateInvoiceStatusResponse._();
   UpdateInvoiceStatusResponse createEmptyInstance() => create();
@@ -2172,29 +2394,31 @@ class UpdateInvoiceStatusResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// ===== TAG USERS TO INVOICE =====
 class TagUsersToInvoiceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TagUsersToInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..pPS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userIds')
-    ..hasRequiredFields = false
-  ;
-
-  TagUsersToInvoiceRequest._() : super();
   factory TagUsersToInvoiceRequest({
     $core.String? invoiceId,
     $core.Iterable<$core.String>? userIds,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
     if (userIds != null) {
-      _result.userIds.addAll(userIds);
+      $result.userIds.addAll(userIds);
     }
-    return _result;
+    return $result;
   }
+  TagUsersToInvoiceRequest._() : super();
   factory TagUsersToInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TagUsersToInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TagUsersToInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..pPS(2, _omitFieldNames ? '' : 'userIds')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2204,8 +2428,10 @@ class TagUsersToInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TagUsersToInvoiceRequest copyWith(void Function(TagUsersToInvoiceRequest) updates) => super.copyWith((message) => updates(message as TagUsersToInvoiceRequest)) as TagUsersToInvoiceRequest; // ignore: deprecated_member_use
+  TagUsersToInvoiceRequest copyWith(void Function(TagUsersToInvoiceRequest) updates) => super.copyWith((message) => updates(message as TagUsersToInvoiceRequest)) as TagUsersToInvoiceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TagUsersToInvoiceRequest create() => TagUsersToInvoiceRequest._();
   TagUsersToInvoiceRequest createEmptyInstance() => create();
@@ -2228,33 +2454,34 @@ class TagUsersToInvoiceRequest extends $pb.GeneratedMessage {
 }
 
 class TagUsersToInvoiceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TagUsersToInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'usersTagged', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  TagUsersToInvoiceResponse._() : super();
   factory TagUsersToInvoiceResponse({
     Invoice? invoice,
     $core.String? message,
     $core.int? usersTagged,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoice != null) {
-      _result.invoice = invoice;
+      $result.invoice = invoice;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (usersTagged != null) {
-      _result.usersTagged = usersTagged;
+      $result.usersTagged = usersTagged;
     }
-    return _result;
+    return $result;
   }
+  TagUsersToInvoiceResponse._() : super();
   factory TagUsersToInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TagUsersToInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TagUsersToInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'usersTagged', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2264,8 +2491,10 @@ class TagUsersToInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TagUsersToInvoiceResponse copyWith(void Function(TagUsersToInvoiceResponse) updates) => super.copyWith((message) => updates(message as TagUsersToInvoiceResponse)) as TagUsersToInvoiceResponse; // ignore: deprecated_member_use
+  TagUsersToInvoiceResponse copyWith(void Function(TagUsersToInvoiceResponse) updates) => super.copyWith((message) => updates(message as TagUsersToInvoiceResponse)) as TagUsersToInvoiceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TagUsersToInvoiceResponse create() => TagUsersToInvoiceResponse._();
   TagUsersToInvoiceResponse createEmptyInstance() => create();
@@ -2304,18 +2533,8 @@ class TagUsersToInvoiceResponse extends $pb.GeneratedMessage {
   void clearUsersTagged() => clearField(3);
 }
 
+/// ===== GET INVOICES TAGGED TO USER =====
 class GetInvoicesTaggedToUserRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoicesTaggedToUserRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetInvoicesTaggedToUserRequest._() : super();
   factory GetInvoicesTaggedToUserRequest({
     $core.String? status,
     $core.int? limit,
@@ -2324,29 +2543,41 @@ class GetInvoicesTaggedToUserRequest extends $pb.GeneratedMessage {
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
     if (offset != null) {
-      _result.offset = offset;
+      $result.offset = offset;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetInvoicesTaggedToUserRequest._() : super();
   factory GetInvoicesTaggedToUserRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetInvoicesTaggedToUserRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoicesTaggedToUserRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2356,8 +2587,10 @@ class GetInvoicesTaggedToUserRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoicesTaggedToUserRequest copyWith(void Function(GetInvoicesTaggedToUserRequest) updates) => super.copyWith((message) => updates(message as GetInvoicesTaggedToUserRequest)) as GetInvoicesTaggedToUserRequest; // ignore: deprecated_member_use
+  GetInvoicesTaggedToUserRequest copyWith(void Function(GetInvoicesTaggedToUserRequest) updates) => super.copyWith((message) => updates(message as GetInvoicesTaggedToUserRequest)) as GetInvoicesTaggedToUserRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvoicesTaggedToUserRequest create() => GetInvoicesTaggedToUserRequest._();
   GetInvoicesTaggedToUserRequest createEmptyInstance() => create();
@@ -2422,16 +2655,6 @@ class GetInvoicesTaggedToUserRequest extends $pb.GeneratedMessage {
 }
 
 class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoicesTaggedToUserResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..pc<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoices', $pb.PbFieldType.PM, subBuilder: Invoice.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
-    ..aOM<PaginationInfo>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetInvoicesTaggedToUserResponse._() : super();
   factory GetInvoicesTaggedToUserResponse({
     $core.Iterable<Invoice>? invoices,
     $core.int? total,
@@ -2439,26 +2662,37 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
     $core.double? totalAmountPaid,
     PaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoices != null) {
-      _result.invoices.addAll(invoices);
+      $result.invoices.addAll(invoices);
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
     if (totalAmountPending != null) {
-      _result.totalAmountPending = totalAmountPending;
+      $result.totalAmountPending = totalAmountPending;
     }
     if (totalAmountPaid != null) {
-      _result.totalAmountPaid = totalAmountPaid;
+      $result.totalAmountPaid = totalAmountPaid;
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  GetInvoicesTaggedToUserResponse._() : super();
   factory GetInvoicesTaggedToUserResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetInvoicesTaggedToUserResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoicesTaggedToUserResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..pc<Invoice>(1, _omitFieldNames ? '' : 'invoices', $pb.PbFieldType.PM, subBuilder: Invoice.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
+    ..aOM<PaginationInfo>(5, _omitFieldNames ? '' : 'pagination', subBuilder: PaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2468,8 +2702,10 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoicesTaggedToUserResponse copyWith(void Function(GetInvoicesTaggedToUserResponse) updates) => super.copyWith((message) => updates(message as GetInvoicesTaggedToUserResponse)) as GetInvoicesTaggedToUserResponse; // ignore: deprecated_member_use
+  GetInvoicesTaggedToUserResponse copyWith(void Function(GetInvoicesTaggedToUserResponse) updates) => super.copyWith((message) => updates(message as GetInvoicesTaggedToUserResponse)) as GetInvoicesTaggedToUserResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvoicesTaggedToUserResponse create() => GetInvoicesTaggedToUserResponse._();
   GetInvoicesTaggedToUserResponse createEmptyInstance() => create();
@@ -2520,17 +2756,8 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
   PaginationInfo ensurePagination() => $_ensure(4);
 }
 
+/// ===== GET SENT INVOICES =====
 class GetSentInvoicesRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSentInvoicesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetSentInvoicesRequest._() : super();
   factory GetSentInvoicesRequest({
     $core.String? status,
     $core.int? limit,
@@ -2538,26 +2765,37 @@ class GetSentInvoicesRequest extends $pb.GeneratedMessage {
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
     if (offset != null) {
-      _result.offset = offset;
+      $result.offset = offset;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetSentInvoicesRequest._() : super();
   factory GetSentInvoicesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSentInvoicesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSentInvoicesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2567,8 +2805,10 @@ class GetSentInvoicesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSentInvoicesRequest copyWith(void Function(GetSentInvoicesRequest) updates) => super.copyWith((message) => updates(message as GetSentInvoicesRequest)) as GetSentInvoicesRequest; // ignore: deprecated_member_use
+  GetSentInvoicesRequest copyWith(void Function(GetSentInvoicesRequest) updates) => super.copyWith((message) => updates(message as GetSentInvoicesRequest)) as GetSentInvoicesRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSentInvoicesRequest create() => GetSentInvoicesRequest._();
   GetSentInvoicesRequest createEmptyInstance() => create();
@@ -2624,16 +2864,6 @@ class GetSentInvoicesRequest extends $pb.GeneratedMessage {
 }
 
 class GetSentInvoicesResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSentInvoicesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..pc<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoices', $pb.PbFieldType.PM, subBuilder: Invoice.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
-    ..aOM<PaginationInfo>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetSentInvoicesResponse._() : super();
   factory GetSentInvoicesResponse({
     $core.Iterable<Invoice>? invoices,
     $core.int? total,
@@ -2641,26 +2871,37 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
     $core.double? totalAmountPaid,
     PaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoices != null) {
-      _result.invoices.addAll(invoices);
+      $result.invoices.addAll(invoices);
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
     if (totalAmountPending != null) {
-      _result.totalAmountPending = totalAmountPending;
+      $result.totalAmountPending = totalAmountPending;
     }
     if (totalAmountPaid != null) {
-      _result.totalAmountPaid = totalAmountPaid;
+      $result.totalAmountPaid = totalAmountPaid;
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  GetSentInvoicesResponse._() : super();
   factory GetSentInvoicesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSentInvoicesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSentInvoicesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..pc<Invoice>(1, _omitFieldNames ? '' : 'invoices', $pb.PbFieldType.PM, subBuilder: Invoice.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
+    ..aOM<PaginationInfo>(5, _omitFieldNames ? '' : 'pagination', subBuilder: PaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2670,8 +2911,10 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSentInvoicesResponse copyWith(void Function(GetSentInvoicesResponse) updates) => super.copyWith((message) => updates(message as GetSentInvoicesResponse)) as GetSentInvoicesResponse; // ignore: deprecated_member_use
+  GetSentInvoicesResponse copyWith(void Function(GetSentInvoicesResponse) updates) => super.copyWith((message) => updates(message as GetSentInvoicesResponse)) as GetSentInvoicesResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSentInvoicesResponse create() => GetSentInvoicesResponse._();
   GetSentInvoicesResponse createEmptyInstance() => create();
@@ -2722,22 +2965,8 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
   PaginationInfo ensurePagination() => $_ensure(4);
 }
 
+/// ===== UPDATE INVOICE =====
 class UpdateInvoiceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientEmail')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dueDate')
-    ..pc<InvoiceItem>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
-    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tax', $pb.PbFieldType.OD)
-    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'discount', $pb.PbFieldType.OD)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateInvoiceRequest._() : super();
   factory UpdateInvoiceRequest({
     $core.String? invoiceId,
     $core.String? recipientEmail,
@@ -2750,41 +2979,57 @@ class UpdateInvoiceRequest extends $pb.GeneratedMessage {
     $core.double? discount,
     $core.String? notes,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
     if (recipientEmail != null) {
-      _result.recipientEmail = recipientEmail;
+      $result.recipientEmail = recipientEmail;
     }
     if (recipientName != null) {
-      _result.recipientName = recipientName;
+      $result.recipientName = recipientName;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (dueDate != null) {
-      _result.dueDate = dueDate;
+      $result.dueDate = dueDate;
     }
     if (items != null) {
-      _result.items.addAll(items);
+      $result.items.addAll(items);
     }
     if (tax != null) {
-      _result.tax = tax;
+      $result.tax = tax;
     }
     if (discount != null) {
-      _result.discount = discount;
+      $result.discount = discount;
     }
     if (notes != null) {
-      _result.notes = notes;
+      $result.notes = notes;
     }
-    return _result;
+    return $result;
   }
+  UpdateInvoiceRequest._() : super();
   factory UpdateInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..aOS(2, _omitFieldNames ? '' : 'recipientEmail')
+    ..aOS(3, _omitFieldNames ? '' : 'recipientName')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'description')
+    ..aOS(6, _omitFieldNames ? '' : 'dueDate')
+    ..pc<InvoiceItem>(7, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'tax', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'discount', $pb.PbFieldType.OD)
+    ..aOS(10, _omitFieldNames ? '' : 'notes')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2794,8 +3039,10 @@ class UpdateInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateInvoiceRequest copyWith(void Function(UpdateInvoiceRequest) updates) => super.copyWith((message) => updates(message as UpdateInvoiceRequest)) as UpdateInvoiceRequest; // ignore: deprecated_member_use
+  UpdateInvoiceRequest copyWith(void Function(UpdateInvoiceRequest) updates) => super.copyWith((message) => updates(message as UpdateInvoiceRequest)) as UpdateInvoiceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateInvoiceRequest create() => UpdateInvoiceRequest._();
   UpdateInvoiceRequest createEmptyInstance() => create();
@@ -2890,28 +3137,29 @@ class UpdateInvoiceRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateInvoiceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateInvoiceResponse._() : super();
   factory UpdateInvoiceResponse({
     Invoice? invoice,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoice != null) {
-      _result.invoice = invoice;
+      $result.invoice = invoice;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  UpdateInvoiceResponse._() : super();
   factory UpdateInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2921,8 +3169,10 @@ class UpdateInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateInvoiceResponse copyWith(void Function(UpdateInvoiceResponse) updates) => super.copyWith((message) => updates(message as UpdateInvoiceResponse)) as UpdateInvoiceResponse; // ignore: deprecated_member_use
+  UpdateInvoiceResponse copyWith(void Function(UpdateInvoiceResponse) updates) => super.copyWith((message) => updates(message as UpdateInvoiceResponse)) as UpdateInvoiceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateInvoiceResponse create() => UpdateInvoiceResponse._();
   UpdateInvoiceResponse createEmptyInstance() => create();
@@ -2952,24 +3202,26 @@ class UpdateInvoiceResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// ===== DELETE INVOICE =====
 class DeleteInvoiceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteInvoiceRequest._() : super();
   factory DeleteInvoiceRequest({
     $core.String? invoiceId,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
-    return _result;
+    return $result;
   }
+  DeleteInvoiceRequest._() : super();
   factory DeleteInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2979,8 +3231,10 @@ class DeleteInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteInvoiceRequest copyWith(void Function(DeleteInvoiceRequest) updates) => super.copyWith((message) => updates(message as DeleteInvoiceRequest)) as DeleteInvoiceRequest; // ignore: deprecated_member_use
+  DeleteInvoiceRequest copyWith(void Function(DeleteInvoiceRequest) updates) => super.copyWith((message) => updates(message as DeleteInvoiceRequest)) as DeleteInvoiceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteInvoiceRequest create() => DeleteInvoiceRequest._();
   DeleteInvoiceRequest createEmptyInstance() => create();
@@ -3000,28 +3254,29 @@ class DeleteInvoiceRequest extends $pb.GeneratedMessage {
 }
 
 class DeleteInvoiceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteInvoiceResponse._() : super();
   factory DeleteInvoiceResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  DeleteInvoiceResponse._() : super();
   factory DeleteInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3031,8 +3286,10 @@ class DeleteInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteInvoiceResponse copyWith(void Function(DeleteInvoiceResponse) updates) => super.copyWith((message) => updates(message as DeleteInvoiceResponse)) as DeleteInvoiceResponse; // ignore: deprecated_member_use
+  DeleteInvoiceResponse copyWith(void Function(DeleteInvoiceResponse) updates) => super.copyWith((message) => updates(message as DeleteInvoiceResponse)) as DeleteInvoiceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteInvoiceResponse create() => DeleteInvoiceResponse._();
   DeleteInvoiceResponse createEmptyInstance() => create();
@@ -3060,15 +3317,17 @@ class DeleteInvoiceResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// ===== GET INVOICE STATISTICS =====
 class GetInvoiceStatisticsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoiceStatisticsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
+  factory GetInvoiceStatisticsRequest() => create();
+  GetInvoiceStatisticsRequest._() : super();
+  factory GetInvoiceStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInvoiceStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoiceStatisticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetInvoiceStatisticsRequest._() : super();
-  factory GetInvoiceStatisticsRequest() => create();
-  factory GetInvoiceStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetInvoiceStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3078,8 +3337,10 @@ class GetInvoiceStatisticsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoiceStatisticsRequest copyWith(void Function(GetInvoiceStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetInvoiceStatisticsRequest)) as GetInvoiceStatisticsRequest; // ignore: deprecated_member_use
+  GetInvoiceStatisticsRequest copyWith(void Function(GetInvoiceStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetInvoiceStatisticsRequest)) as GetInvoiceStatisticsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvoiceStatisticsRequest create() => GetInvoiceStatisticsRequest._();
   GetInvoiceStatisticsRequest createEmptyInstance() => create();
@@ -3090,23 +3351,24 @@ class GetInvoiceStatisticsRequest extends $pb.GeneratedMessage {
 }
 
 class GetInvoiceStatisticsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoiceStatisticsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<InvoiceStatistics>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statistics', subBuilder: InvoiceStatistics.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetInvoiceStatisticsResponse._() : super();
   factory GetInvoiceStatisticsResponse({
     InvoiceStatistics? statistics,
   }) {
-    final _result = create();
+    final $result = create();
     if (statistics != null) {
-      _result.statistics = statistics;
+      $result.statistics = statistics;
     }
-    return _result;
+    return $result;
   }
+  GetInvoiceStatisticsResponse._() : super();
   factory GetInvoiceStatisticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetInvoiceStatisticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoiceStatisticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<InvoiceStatistics>(1, _omitFieldNames ? '' : 'statistics', subBuilder: InvoiceStatistics.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3116,8 +3378,10 @@ class GetInvoiceStatisticsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoiceStatisticsResponse copyWith(void Function(GetInvoiceStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetInvoiceStatisticsResponse)) as GetInvoiceStatisticsResponse; // ignore: deprecated_member_use
+  GetInvoiceStatisticsResponse copyWith(void Function(GetInvoiceStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetInvoiceStatisticsResponse)) as GetInvoiceStatisticsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvoiceStatisticsResponse create() => GetInvoiceStatisticsResponse._();
   GetInvoiceStatisticsResponse createEmptyInstance() => create();
@@ -3138,18 +3402,9 @@ class GetInvoiceStatisticsResponse extends $pb.GeneratedMessage {
   InvoiceStatistics ensureStatistics() => $_ensure(0);
 }
 
+/// ===== UNLOCK INVOICE =====
+/// NOTE: user_id extracted from JWT token, not from request
 class UnlockInvoiceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlockInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..hasRequiredFields = false
-  ;
-
-  UnlockInvoiceRequest._() : super();
   factory UnlockInvoiceRequest({
     $core.String? invoiceId,
     $core.String? accountId,
@@ -3158,29 +3413,41 @@ class UnlockInvoiceRequest extends $pb.GeneratedMessage {
     $core.String? verificationToken,
     $core.String? transactionId,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoiceId != null) {
-      _result.invoiceId = invoiceId;
+      $result.invoiceId = invoiceId;
     }
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (pin != null) {
-      _result.pin = pin;
+      $result.pin = pin;
     }
     if (idempotencyKey != null) {
-      _result.idempotencyKey = idempotencyKey;
+      $result.idempotencyKey = idempotencyKey;
     }
     if (verificationToken != null) {
-      _result.verificationToken = verificationToken;
+      $result.verificationToken = verificationToken;
     }
     if (transactionId != null) {
-      _result.transactionId = transactionId;
+      $result.transactionId = transactionId;
     }
-    return _result;
+    return $result;
   }
+  UnlockInvoiceRequest._() : super();
   factory UnlockInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UnlockInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlockInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..aOS(2, _omitFieldNames ? '' : 'accountId')
+    ..aOS(3, _omitFieldNames ? '' : 'pin')
+    ..aOS(4, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(5, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(6, _omitFieldNames ? '' : 'transactionId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3190,8 +3457,10 @@ class UnlockInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnlockInvoiceRequest copyWith(void Function(UnlockInvoiceRequest) updates) => super.copyWith((message) => updates(message as UnlockInvoiceRequest)) as UnlockInvoiceRequest; // ignore: deprecated_member_use
+  UnlockInvoiceRequest copyWith(void Function(UnlockInvoiceRequest) updates) => super.copyWith((message) => updates(message as UnlockInvoiceRequest)) as UnlockInvoiceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UnlockInvoiceRequest create() => UnlockInvoiceRequest._();
   UnlockInvoiceRequest createEmptyInstance() => create();
@@ -3256,38 +3525,39 @@ class UnlockInvoiceRequest extends $pb.GeneratedMessage {
 }
 
 class UnlockInvoiceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlockInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newBalance', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unlockPaymentRef')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  UnlockInvoiceResponse._() : super();
   factory UnlockInvoiceResponse({
     Invoice? invoice,
     $core.double? newBalance,
     $core.String? unlockPaymentRef,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (invoice != null) {
-      _result.invoice = invoice;
+      $result.invoice = invoice;
     }
     if (newBalance != null) {
-      _result.newBalance = newBalance;
+      $result.newBalance = newBalance;
     }
     if (unlockPaymentRef != null) {
-      _result.unlockPaymentRef = unlockPaymentRef;
+      $result.unlockPaymentRef = unlockPaymentRef;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  UnlockInvoiceResponse._() : super();
   factory UnlockInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UnlockInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlockInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'unlockPaymentRef')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3297,8 +3567,10 @@ class UnlockInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnlockInvoiceResponse copyWith(void Function(UnlockInvoiceResponse) updates) => super.copyWith((message) => updates(message as UnlockInvoiceResponse)) as UnlockInvoiceResponse; // ignore: deprecated_member_use
+  UnlockInvoiceResponse copyWith(void Function(UnlockInvoiceResponse) updates) => super.copyWith((message) => updates(message as UnlockInvoiceResponse)) as UnlockInvoiceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UnlockInvoiceResponse create() => UnlockInvoiceResponse._();
   UnlockInvoiceResponse createEmptyInstance() => create();
@@ -3346,34 +3618,36 @@ class UnlockInvoiceResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(4);
 }
 
+/// ===== UPLOAD INVOICE IMAGE =====
 class UploadInvoiceImageRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UploadInvoiceImageRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..a<$core.List<$core.int>>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageData', $pb.PbFieldType.OY)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileName')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contentType')
-    ..hasRequiredFields = false
-  ;
-
-  UploadInvoiceImageRequest._() : super();
   factory UploadInvoiceImageRequest({
     $core.List<$core.int>? imageData,
     $core.String? fileName,
     $core.String? contentType,
   }) {
-    final _result = create();
+    final $result = create();
     if (imageData != null) {
-      _result.imageData = imageData;
+      $result.imageData = imageData;
     }
     if (fileName != null) {
-      _result.fileName = fileName;
+      $result.fileName = fileName;
     }
     if (contentType != null) {
-      _result.contentType = contentType;
+      $result.contentType = contentType;
     }
-    return _result;
+    return $result;
   }
+  UploadInvoiceImageRequest._() : super();
   factory UploadInvoiceImageRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UploadInvoiceImageRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UploadInvoiceImageRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'imageData', $pb.PbFieldType.OY)
+    ..aOS(2, _omitFieldNames ? '' : 'fileName')
+    ..aOS(3, _omitFieldNames ? '' : 'contentType')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3383,8 +3657,10 @@ class UploadInvoiceImageRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UploadInvoiceImageRequest copyWith(void Function(UploadInvoiceImageRequest) updates) => super.copyWith((message) => updates(message as UploadInvoiceImageRequest)) as UploadInvoiceImageRequest; // ignore: deprecated_member_use
+  UploadInvoiceImageRequest copyWith(void Function(UploadInvoiceImageRequest) updates) => super.copyWith((message) => updates(message as UploadInvoiceImageRequest)) as UploadInvoiceImageRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UploadInvoiceImageRequest create() => UploadInvoiceImageRequest._();
   UploadInvoiceImageRequest createEmptyInstance() => create();
@@ -3422,23 +3698,24 @@ class UploadInvoiceImageRequest extends $pb.GeneratedMessage {
 }
 
 class UploadInvoiceImageResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UploadInvoiceImageResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
-    ..hasRequiredFields = false
-  ;
-
-  UploadInvoiceImageResponse._() : super();
   factory UploadInvoiceImageResponse({
     $core.String? imageUrl,
   }) {
-    final _result = create();
+    final $result = create();
     if (imageUrl != null) {
-      _result.imageUrl = imageUrl;
+      $result.imageUrl = imageUrl;
     }
-    return _result;
+    return $result;
   }
+  UploadInvoiceImageResponse._() : super();
   factory UploadInvoiceImageResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UploadInvoiceImageResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UploadInvoiceImageResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'imageUrl')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3448,8 +3725,10 @@ class UploadInvoiceImageResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UploadInvoiceImageResponse copyWith(void Function(UploadInvoiceImageResponse) updates) => super.copyWith((message) => updates(message as UploadInvoiceImageResponse)) as UploadInvoiceImageResponse; // ignore: deprecated_member_use
+  UploadInvoiceImageResponse copyWith(void Function(UploadInvoiceImageResponse) updates) => super.copyWith((message) => updates(message as UploadInvoiceImageResponse)) as UploadInvoiceImageResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UploadInvoiceImageResponse create() => UploadInvoiceImageResponse._();
   UploadInvoiceImageResponse createEmptyInstance() => create();
@@ -3468,3 +3747,6 @@ class UploadInvoiceImageResponse extends $pb.GeneratedMessage {
   void clearImageUrl() => clearField(1);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

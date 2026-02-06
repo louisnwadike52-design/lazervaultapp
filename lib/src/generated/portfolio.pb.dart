@@ -1,35 +1,21 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: portfolio.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'google/protobuf/timestamp.pb.dart' as $42;
 
 class PortfolioAsset extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PortfolioAsset', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetType')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'symbol')
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentValue', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quantity', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPrice', $pb.PbFieldType.OD)
-    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'initialValue', $pb.PbFieldType.OD)
-    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gainLoss', $pb.PbFieldType.OD)
-    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gainLossPercent', $pb.PbFieldType.OD)
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $36.Timestamp.create)
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iconUrl')
-    ..hasRequiredFields = false
-  ;
-
-  PortfolioAsset._() : super();
   factory PortfolioAsset({
     $core.String? id,
     $core.String? assetType,
@@ -42,53 +28,72 @@ class PortfolioAsset extends $pb.GeneratedMessage {
     $core.double? gainLoss,
     $core.double? gainLossPercent,
     $core.String? currency,
-    $36.Timestamp? lastUpdated,
+    $42.Timestamp? lastUpdated,
     $core.String? iconUrl,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (assetType != null) {
-      _result.assetType = assetType;
+      $result.assetType = assetType;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (symbol != null) {
-      _result.symbol = symbol;
+      $result.symbol = symbol;
     }
     if (currentValue != null) {
-      _result.currentValue = currentValue;
+      $result.currentValue = currentValue;
     }
     if (quantity != null) {
-      _result.quantity = quantity;
+      $result.quantity = quantity;
     }
     if (currentPrice != null) {
-      _result.currentPrice = currentPrice;
+      $result.currentPrice = currentPrice;
     }
     if (initialValue != null) {
-      _result.initialValue = initialValue;
+      $result.initialValue = initialValue;
     }
     if (gainLoss != null) {
-      _result.gainLoss = gainLoss;
+      $result.gainLoss = gainLoss;
     }
     if (gainLossPercent != null) {
-      _result.gainLossPercent = gainLossPercent;
+      $result.gainLossPercent = gainLossPercent;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (lastUpdated != null) {
-      _result.lastUpdated = lastUpdated;
+      $result.lastUpdated = lastUpdated;
     }
     if (iconUrl != null) {
-      _result.iconUrl = iconUrl;
+      $result.iconUrl = iconUrl;
     }
-    return _result;
+    return $result;
   }
+  PortfolioAsset._() : super();
   factory PortfolioAsset.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PortfolioAsset.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PortfolioAsset', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'assetType')
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..aOS(4, _omitFieldNames ? '' : 'symbol')
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'currentValue', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'quantity', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'currentPrice', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'initialValue', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'gainLoss', $pb.PbFieldType.OD)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'gainLossPercent', $pb.PbFieldType.OD)
+    ..aOS(11, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOS(13, _omitFieldNames ? '' : 'iconUrl')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -98,8 +103,10 @@ class PortfolioAsset extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PortfolioAsset copyWith(void Function(PortfolioAsset) updates) => super.copyWith((message) => updates(message as PortfolioAsset)) as PortfolioAsset; // ignore: deprecated_member_use
+  PortfolioAsset copyWith(void Function(PortfolioAsset) updates) => super.copyWith((message) => updates(message as PortfolioAsset)) as PortfolioAsset;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PortfolioAsset create() => PortfolioAsset._();
   PortfolioAsset createEmptyInstance() => create();
@@ -208,15 +215,15 @@ class PortfolioAsset extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(11);
 
   @$pb.TagNumber(12)
-  $36.Timestamp get lastUpdated => $_getN(11);
+  $42.Timestamp get lastUpdated => $_getN(11);
   @$pb.TagNumber(12)
-  set lastUpdated($36.Timestamp v) { setField(12, v); }
+  set lastUpdated($42.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasLastUpdated() => $_has(11);
   @$pb.TagNumber(12)
   void clearLastUpdated() => clearField(12);
   @$pb.TagNumber(12)
-  $36.Timestamp ensureLastUpdated() => $_ensure(11);
+  $42.Timestamp ensureLastUpdated() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get iconUrl => $_getSZ(12);
@@ -229,19 +236,6 @@ class PortfolioAsset extends $pb.GeneratedMessage {
 }
 
 class PortfolioSummary extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PortfolioSummary', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalValue', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalGainLoss', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalGainLossPercent', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalInvested', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..m<$core.String, $core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetsByType', entryClassName: 'PortfolioSummary.AssetsByTypeEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
-    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetCount', $pb.PbFieldType.O3)
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  PortfolioSummary._() : super();
   factory PortfolioSummary({
     $core.double? totalValue,
     $core.double? totalGainLoss,
@@ -250,37 +244,51 @@ class PortfolioSummary extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.Map<$core.String, $core.double>? assetsByType,
     $core.int? assetCount,
-    $36.Timestamp? lastUpdated,
+    $42.Timestamp? lastUpdated,
   }) {
-    final _result = create();
+    final $result = create();
     if (totalValue != null) {
-      _result.totalValue = totalValue;
+      $result.totalValue = totalValue;
     }
     if (totalGainLoss != null) {
-      _result.totalGainLoss = totalGainLoss;
+      $result.totalGainLoss = totalGainLoss;
     }
     if (totalGainLossPercent != null) {
-      _result.totalGainLossPercent = totalGainLossPercent;
+      $result.totalGainLossPercent = totalGainLossPercent;
     }
     if (totalInvested != null) {
-      _result.totalInvested = totalInvested;
+      $result.totalInvested = totalInvested;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (assetsByType != null) {
-      _result.assetsByType.addAll(assetsByType);
+      $result.assetsByType.addAll(assetsByType);
     }
     if (assetCount != null) {
-      _result.assetCount = assetCount;
+      $result.assetCount = assetCount;
     }
     if (lastUpdated != null) {
-      _result.lastUpdated = lastUpdated;
+      $result.lastUpdated = lastUpdated;
     }
-    return _result;
+    return $result;
   }
+  PortfolioSummary._() : super();
   factory PortfolioSummary.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PortfolioSummary.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PortfolioSummary', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'totalValue', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalGainLoss', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalGainLossPercent', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalInvested', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..m<$core.String, $core.double>(6, _omitFieldNames ? '' : 'assetsByType', entryClassName: 'PortfolioSummary.AssetsByTypeEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'assetCount', $pb.PbFieldType.O3)
+    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -290,8 +298,10 @@ class PortfolioSummary extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PortfolioSummary copyWith(void Function(PortfolioSummary) updates) => super.copyWith((message) => updates(message as PortfolioSummary)) as PortfolioSummary; // ignore: deprecated_member_use
+  PortfolioSummary copyWith(void Function(PortfolioSummary) updates) => super.copyWith((message) => updates(message as PortfolioSummary)) as PortfolioSummary;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PortfolioSummary create() => PortfolioSummary._();
   PortfolioSummary createEmptyInstance() => create();
@@ -358,26 +368,28 @@ class PortfolioSummary extends $pb.GeneratedMessage {
   void clearAssetCount() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get lastUpdated => $_getN(7);
+  $42.Timestamp get lastUpdated => $_getN(7);
   @$pb.TagNumber(8)
-  set lastUpdated($36.Timestamp v) { setField(8, v); }
+  set lastUpdated($42.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLastUpdated() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastUpdated() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureLastUpdated() => $_ensure(7);
+  $42.Timestamp ensureLastUpdated() => $_ensure(7);
 }
 
+/// Get Complete Portfolio Request/Response
 class GetCompletePortfolioRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCompletePortfolioRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+  factory GetCompletePortfolioRequest() => create();
+  GetCompletePortfolioRequest._() : super();
+  factory GetCompletePortfolioRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCompletePortfolioRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCompletePortfolioRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetCompletePortfolioRequest._() : super();
-  factory GetCompletePortfolioRequest() => create();
-  factory GetCompletePortfolioRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCompletePortfolioRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -387,8 +399,10 @@ class GetCompletePortfolioRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCompletePortfolioRequest copyWith(void Function(GetCompletePortfolioRequest) updates) => super.copyWith((message) => updates(message as GetCompletePortfolioRequest)) as GetCompletePortfolioRequest; // ignore: deprecated_member_use
+  GetCompletePortfolioRequest copyWith(void Function(GetCompletePortfolioRequest) updates) => super.copyWith((message) => updates(message as GetCompletePortfolioRequest)) as GetCompletePortfolioRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCompletePortfolioRequest create() => GetCompletePortfolioRequest._();
   GetCompletePortfolioRequest createEmptyInstance() => create();
@@ -399,38 +413,39 @@ class GetCompletePortfolioRequest extends $pb.GeneratedMessage {
 }
 
 class GetCompletePortfolioResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCompletePortfolioResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<PortfolioSummary>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'summary', subBuilder: PortfolioSummary.create)
-    ..pc<PortfolioAsset>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assets', $pb.PbFieldType.PM, subBuilder: PortfolioAsset.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetCompletePortfolioResponse._() : super();
   factory GetCompletePortfolioResponse({
     $core.bool? success,
     $core.String? message,
     PortfolioSummary? summary,
     $core.Iterable<PortfolioAsset>? assets,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (summary != null) {
-      _result.summary = summary;
+      $result.summary = summary;
     }
     if (assets != null) {
-      _result.assets.addAll(assets);
+      $result.assets.addAll(assets);
     }
-    return _result;
+    return $result;
   }
+  GetCompletePortfolioResponse._() : super();
   factory GetCompletePortfolioResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCompletePortfolioResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCompletePortfolioResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<PortfolioSummary>(3, _omitFieldNames ? '' : 'summary', subBuilder: PortfolioSummary.create)
+    ..pc<PortfolioAsset>(4, _omitFieldNames ? '' : 'assets', $pb.PbFieldType.PM, subBuilder: PortfolioAsset.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -440,8 +455,10 @@ class GetCompletePortfolioResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCompletePortfolioResponse copyWith(void Function(GetCompletePortfolioResponse) updates) => super.copyWith((message) => updates(message as GetCompletePortfolioResponse)) as GetCompletePortfolioResponse; // ignore: deprecated_member_use
+  GetCompletePortfolioResponse copyWith(void Function(GetCompletePortfolioResponse) updates) => super.copyWith((message) => updates(message as GetCompletePortfolioResponse)) as GetCompletePortfolioResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCompletePortfolioResponse create() => GetCompletePortfolioResponse._();
   GetCompletePortfolioResponse createEmptyInstance() => create();
@@ -483,24 +500,26 @@ class GetCompletePortfolioResponse extends $pb.GeneratedMessage {
   $core.List<PortfolioAsset> get assets => $_getList(3);
 }
 
+/// Get Portfolio By Asset Type Request/Response
 class GetPortfolioByAssetTypeRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPortfolioByAssetTypeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetType')
-    ..hasRequiredFields = false
-  ;
-
-  GetPortfolioByAssetTypeRequest._() : super();
   factory GetPortfolioByAssetTypeRequest({
     $core.String? assetType,
   }) {
-    final _result = create();
+    final $result = create();
     if (assetType != null) {
-      _result.assetType = assetType;
+      $result.assetType = assetType;
     }
-    return _result;
+    return $result;
   }
+  GetPortfolioByAssetTypeRequest._() : super();
   factory GetPortfolioByAssetTypeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPortfolioByAssetTypeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPortfolioByAssetTypeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'assetType')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -510,8 +529,10 @@ class GetPortfolioByAssetTypeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPortfolioByAssetTypeRequest copyWith(void Function(GetPortfolioByAssetTypeRequest) updates) => super.copyWith((message) => updates(message as GetPortfolioByAssetTypeRequest)) as GetPortfolioByAssetTypeRequest; // ignore: deprecated_member_use
+  GetPortfolioByAssetTypeRequest copyWith(void Function(GetPortfolioByAssetTypeRequest) updates) => super.copyWith((message) => updates(message as GetPortfolioByAssetTypeRequest)) as GetPortfolioByAssetTypeRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetPortfolioByAssetTypeRequest create() => GetPortfolioByAssetTypeRequest._();
   GetPortfolioByAssetTypeRequest createEmptyInstance() => create();
@@ -531,38 +552,39 @@ class GetPortfolioByAssetTypeRequest extends $pb.GeneratedMessage {
 }
 
 class GetPortfolioByAssetTypeResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPortfolioByAssetTypeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..pc<PortfolioAsset>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assets', $pb.PbFieldType.PM, subBuilder: PortfolioAsset.create)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalValue', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  GetPortfolioByAssetTypeResponse._() : super();
   factory GetPortfolioByAssetTypeResponse({
     $core.bool? success,
     $core.String? message,
     $core.Iterable<PortfolioAsset>? assets,
     $core.double? totalValue,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (assets != null) {
-      _result.assets.addAll(assets);
+      $result.assets.addAll(assets);
     }
     if (totalValue != null) {
-      _result.totalValue = totalValue;
+      $result.totalValue = totalValue;
     }
-    return _result;
+    return $result;
   }
+  GetPortfolioByAssetTypeResponse._() : super();
   factory GetPortfolioByAssetTypeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPortfolioByAssetTypeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPortfolioByAssetTypeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..pc<PortfolioAsset>(3, _omitFieldNames ? '' : 'assets', $pb.PbFieldType.PM, subBuilder: PortfolioAsset.create)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalValue', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -572,8 +594,10 @@ class GetPortfolioByAssetTypeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPortfolioByAssetTypeResponse copyWith(void Function(GetPortfolioByAssetTypeResponse) updates) => super.copyWith((message) => updates(message as GetPortfolioByAssetTypeResponse)) as GetPortfolioByAssetTypeResponse; // ignore: deprecated_member_use
+  GetPortfolioByAssetTypeResponse copyWith(void Function(GetPortfolioByAssetTypeResponse) updates) => super.copyWith((message) => updates(message as GetPortfolioByAssetTypeResponse)) as GetPortfolioByAssetTypeResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetPortfolioByAssetTypeResponse create() => GetPortfolioByAssetTypeResponse._();
   GetPortfolioByAssetTypeResponse createEmptyInstance() => create();
@@ -613,24 +637,26 @@ class GetPortfolioByAssetTypeResponse extends $pb.GeneratedMessage {
   void clearTotalValue() => clearField(4);
 }
 
+/// Get Portfolio History Request/Response
 class GetPortfolioHistoryRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPortfolioHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period')
-    ..hasRequiredFields = false
-  ;
-
-  GetPortfolioHistoryRequest._() : super();
   factory GetPortfolioHistoryRequest({
     $core.String? period,
   }) {
-    final _result = create();
+    final $result = create();
     if (period != null) {
-      _result.period = period;
+      $result.period = period;
     }
-    return _result;
+    return $result;
   }
+  GetPortfolioHistoryRequest._() : super();
   factory GetPortfolioHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPortfolioHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPortfolioHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'period')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -640,8 +666,10 @@ class GetPortfolioHistoryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPortfolioHistoryRequest copyWith(void Function(GetPortfolioHistoryRequest) updates) => super.copyWith((message) => updates(message as GetPortfolioHistoryRequest)) as GetPortfolioHistoryRequest; // ignore: deprecated_member_use
+  GetPortfolioHistoryRequest copyWith(void Function(GetPortfolioHistoryRequest) updates) => super.copyWith((message) => updates(message as GetPortfolioHistoryRequest)) as GetPortfolioHistoryRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetPortfolioHistoryRequest create() => GetPortfolioHistoryRequest._();
   GetPortfolioHistoryRequest createEmptyInstance() => create();
@@ -661,28 +689,29 @@ class GetPortfolioHistoryRequest extends $pb.GeneratedMessage {
 }
 
 class PortfolioHistoryPoint extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PortfolioHistoryPoint', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'date', subBuilder: $36.Timestamp.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'value', $pb.PbFieldType.OD)
+  factory PortfolioHistoryPoint({
+    $42.Timestamp? date,
+    $core.double? value,
+  }) {
+    final $result = create();
+    if (date != null) {
+      $result.date = date;
+    }
+    if (value != null) {
+      $result.value = value;
+    }
+    return $result;
+  }
+  PortfolioHistoryPoint._() : super();
+  factory PortfolioHistoryPoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PortfolioHistoryPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PortfolioHistoryPoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'date', subBuilder: $42.Timestamp.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'value', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
-  PortfolioHistoryPoint._() : super();
-  factory PortfolioHistoryPoint({
-    $36.Timestamp? date,
-    $core.double? value,
-  }) {
-    final _result = create();
-    if (date != null) {
-      _result.date = date;
-    }
-    if (value != null) {
-      _result.value = value;
-    }
-    return _result;
-  }
-  factory PortfolioHistoryPoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PortfolioHistoryPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -692,8 +721,10 @@ class PortfolioHistoryPoint extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PortfolioHistoryPoint copyWith(void Function(PortfolioHistoryPoint) updates) => super.copyWith((message) => updates(message as PortfolioHistoryPoint)) as PortfolioHistoryPoint; // ignore: deprecated_member_use
+  PortfolioHistoryPoint copyWith(void Function(PortfolioHistoryPoint) updates) => super.copyWith((message) => updates(message as PortfolioHistoryPoint)) as PortfolioHistoryPoint;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PortfolioHistoryPoint create() => PortfolioHistoryPoint._();
   PortfolioHistoryPoint createEmptyInstance() => create();
@@ -703,15 +734,15 @@ class PortfolioHistoryPoint extends $pb.GeneratedMessage {
   static PortfolioHistoryPoint? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get date => $_getN(0);
+  $42.Timestamp get date => $_getN(0);
   @$pb.TagNumber(1)
-  set date($36.Timestamp v) { setField(1, v); }
+  set date($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureDate() => $_ensure(0);
+  $42.Timestamp ensureDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get value => $_getN(1);
@@ -724,33 +755,34 @@ class PortfolioHistoryPoint extends $pb.GeneratedMessage {
 }
 
 class GetPortfolioHistoryResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPortfolioHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..pc<PortfolioHistoryPoint>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'history', $pb.PbFieldType.PM, subBuilder: PortfolioHistoryPoint.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetPortfolioHistoryResponse._() : super();
   factory GetPortfolioHistoryResponse({
     $core.bool? success,
     $core.String? message,
     $core.Iterable<PortfolioHistoryPoint>? history,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (history != null) {
-      _result.history.addAll(history);
+      $result.history.addAll(history);
     }
-    return _result;
+    return $result;
   }
+  GetPortfolioHistoryResponse._() : super();
   factory GetPortfolioHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPortfolioHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPortfolioHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..pc<PortfolioHistoryPoint>(3, _omitFieldNames ? '' : 'history', $pb.PbFieldType.PM, subBuilder: PortfolioHistoryPoint.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -760,8 +792,10 @@ class GetPortfolioHistoryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPortfolioHistoryResponse copyWith(void Function(GetPortfolioHistoryResponse) updates) => super.copyWith((message) => updates(message as GetPortfolioHistoryResponse)) as GetPortfolioHistoryResponse; // ignore: deprecated_member_use
+  GetPortfolioHistoryResponse copyWith(void Function(GetPortfolioHistoryResponse) updates) => super.copyWith((message) => updates(message as GetPortfolioHistoryResponse)) as GetPortfolioHistoryResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetPortfolioHistoryResponse create() => GetPortfolioHistoryResponse._();
   GetPortfolioHistoryResponse createEmptyInstance() => create();
@@ -792,15 +826,17 @@ class GetPortfolioHistoryResponse extends $pb.GeneratedMessage {
   $core.List<PortfolioHistoryPoint> get history => $_getList(2);
 }
 
+/// Get Portfolio Summary Request/Response
 class GetPortfolioSummaryRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPortfolioSummaryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+  factory GetPortfolioSummaryRequest() => create();
+  GetPortfolioSummaryRequest._() : super();
+  factory GetPortfolioSummaryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPortfolioSummaryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPortfolioSummaryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetPortfolioSummaryRequest._() : super();
-  factory GetPortfolioSummaryRequest() => create();
-  factory GetPortfolioSummaryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetPortfolioSummaryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -810,8 +846,10 @@ class GetPortfolioSummaryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPortfolioSummaryRequest copyWith(void Function(GetPortfolioSummaryRequest) updates) => super.copyWith((message) => updates(message as GetPortfolioSummaryRequest)) as GetPortfolioSummaryRequest; // ignore: deprecated_member_use
+  GetPortfolioSummaryRequest copyWith(void Function(GetPortfolioSummaryRequest) updates) => super.copyWith((message) => updates(message as GetPortfolioSummaryRequest)) as GetPortfolioSummaryRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetPortfolioSummaryRequest create() => GetPortfolioSummaryRequest._();
   GetPortfolioSummaryRequest createEmptyInstance() => create();
@@ -822,33 +860,34 @@ class GetPortfolioSummaryRequest extends $pb.GeneratedMessage {
 }
 
 class GetPortfolioSummaryResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPortfolioSummaryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<PortfolioSummary>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'summary', subBuilder: PortfolioSummary.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetPortfolioSummaryResponse._() : super();
   factory GetPortfolioSummaryResponse({
     $core.bool? success,
     $core.String? message,
     PortfolioSummary? summary,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (summary != null) {
-      _result.summary = summary;
+      $result.summary = summary;
     }
-    return _result;
+    return $result;
   }
+  GetPortfolioSummaryResponse._() : super();
   factory GetPortfolioSummaryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPortfolioSummaryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPortfolioSummaryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<PortfolioSummary>(3, _omitFieldNames ? '' : 'summary', subBuilder: PortfolioSummary.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -858,8 +897,10 @@ class GetPortfolioSummaryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPortfolioSummaryResponse copyWith(void Function(GetPortfolioSummaryResponse) updates) => super.copyWith((message) => updates(message as GetPortfolioSummaryResponse)) as GetPortfolioSummaryResponse; // ignore: deprecated_member_use
+  GetPortfolioSummaryResponse copyWith(void Function(GetPortfolioSummaryResponse) updates) => super.copyWith((message) => updates(message as GetPortfolioSummaryResponse)) as GetPortfolioSummaryResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetPortfolioSummaryResponse create() => GetPortfolioSummaryResponse._();
   GetPortfolioSummaryResponse createEmptyInstance() => create();
@@ -898,3 +939,6 @@ class GetPortfolioSummaryResponse extends $pb.GeneratedMessage {
   PortfolioSummary ensureSummary() => $_ensure(2);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

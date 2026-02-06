@@ -9,6 +9,7 @@ import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import 'lock_withdrawal_screen.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class LockFundDetailsScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -593,7 +594,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Early withdrawal penalty: ${lock.earlyUnlockPenaltyPercent}% (${lock.currency} ${lock.earlyWithdrawalPenalty.toStringAsFixed(2)})',
+                      'Early withdrawal penalty: ${lock.earlyUnlockPenaltyPercent}% (${CurrencySymbols.getSymbol(lock.currency)}${lock.earlyWithdrawalPenalty.toStringAsFixed(2)})',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: const Color(0xFFFB923C),
@@ -724,12 +725,30 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
 
   void _showWithdrawDialog() {
     HapticFeedback.mediumImpact();
-    Get.to(() => LockWithdrawalScreen(lockFund: widget.lockFund, isEarlyWithdrawal: false));
+    final lockFundsCubit = context.read<LockFundsCubit>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: lockFundsCubit,
+          child: LockWithdrawalScreen(lockFund: widget.lockFund, isEarlyWithdrawal: false),
+        ),
+      ),
+    );
   }
 
   void _showBreakLockDialog() {
     HapticFeedback.mediumImpact();
-    Get.to(() => LockWithdrawalScreen(lockFund: widget.lockFund, isEarlyWithdrawal: true));
+    final lockFundsCubit = context.read<LockFundsCubit>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: lockFundsCubit,
+          child: LockWithdrawalScreen(lockFund: widget.lockFund, isEarlyWithdrawal: true),
+        ),
+      ),
+    );
   }
 
   void _showRenewDialog() {

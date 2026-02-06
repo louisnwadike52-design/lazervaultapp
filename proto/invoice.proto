@@ -64,6 +64,68 @@ service InvoiceService {
       body: "*"
     };
   }
+
+  // === NEW RPCs ===
+
+  // Tag users to an invoice (by user IDs)
+  rpc TagUsersToInvoice(TagUsersToInvoiceRequest) returns (TagUsersToInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/tagusers"
+      body: "*"
+    };
+  }
+
+  // Get invoices tagged to the authenticated user (received invoices)
+  rpc GetInvoicesTaggedToUser(GetInvoicesTaggedToUserRequest) returns (GetInvoicesTaggedToUserResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/invoices/tagged"
+    };
+  }
+
+  // Get invoices sent by the authenticated user
+  rpc GetSentInvoices(GetSentInvoicesRequest) returns (GetSentInvoicesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/invoices/sent"
+    };
+  }
+
+  // Update an invoice (draft/pending only)
+  rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/invoices/update"
+      body: "*"
+    };
+  }
+
+  // Delete an invoice (soft delete, draft only)
+  rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/invoices/delete"
+    };
+  }
+
+  // Get invoice statistics for the authenticated user
+  rpc GetInvoiceStatistics(GetInvoiceStatisticsRequest) returns (GetInvoiceStatisticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/invoices/statistics"
+    };
+  }
+
+  // Unlock an invoice by paying the service fee
+  rpc UnlockInvoice(UnlockInvoiceRequest) returns (UnlockInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/unlockinvoice"
+      body: "*"
+    };
+  }
+
+  // Upload an image for invoice logos
+  rpc UploadInvoiceImage(UploadInvoiceImageRequest) returns (UploadInvoiceImageResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/uploadimage"
+      body: "*"
+    };
+  }
 }
 
 // ===== MODELS =====
@@ -90,6 +152,12 @@ message Invoice {
   string metadata = 19;                 // JSON metadata
   string created_at = 20;
   string updated_at = 21;
+  repeated TaggedUser tagged_users = 22; // Users tagged to pay this invoice
+  bool is_unlocked = 23;                // Whether invoice has been unlocked (service fee paid)
+  string unlock_payment_ref = 24;       // Payment reference for unlock fee
+  string payer_email = 25;              // Optional payer email for auto-send on unlock
+  string payer_logo_url = 26;           // Cloud storage URL for payer logo
+  string recipient_logo_url = 27;       // Cloud storage URL for recipient logo
 }
 
 message InvoiceItem {
@@ -97,6 +165,44 @@ message InvoiceItem {
   int32 quantity = 2;
   double unit_price = 3;
   double total = 4;
+}
+
+// Tagged user on an invoice
+message TaggedUser {
+  string user_id = 1;
+  string username = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string profile_picture = 5;
+  string status = 6;                    // "pending", "viewed", "paid"
+  string tagged_at = 7;
+  string viewed_at = 8;
+  string paid_at = 9;
+}
+
+// Invoice statistics
+message InvoiceStatistics {
+  int32 total_sent = 1;
+  int32 total_received = 2;
+  int32 total_paid = 3;
+  int32 total_pending = 4;
+  int32 total_overdue = 5;
+  double total_amount_sent = 6;
+  double total_amount_received = 7;
+  double total_amount_paid = 8;
+  double total_amount_pending = 9;
+  double total_amount_overdue = 10;
+  double collection_rate = 11;          // Percentage of paid vs total sent
+}
+
+// Inline pagination info for invoice responses
+message InvoicePaginationInfo {
+  int32 current_page = 1;
+  int32 total_pages = 2;
+  int32 total_items = 3;
+  int32 items_per_page = 4;
+  bool has_next = 5;
+  bool has_prev = 6;
 }
 
 // ===== CREATE INVOICE =====
@@ -112,6 +218,12 @@ message CreateInvoiceRequest {
   double tax = 8;
   double discount = 9;
   string notes = 10;
+  repeated string tagged_user_ids = 11; // Optional: tag users at creation
+  string idempotency_key = 12;          // Idempotency key for deduplication
+  string payer_email = 13;              // Optional payer email for auto-send on unlock
+  string currency = 14;                 // Target currency for the invoice (e.g., NGN, USD, GBP)
+  string payer_logo_url = 15;           // Cloud storage URL for payer logo
+  string recipient_logo_url = 16;       // Cloud storage URL for recipient logo
 }
 
 message CreateInvoiceResponse {
@@ -128,6 +240,8 @@ message GetInvoicesRequest {
   string end_date = 4;
   int32 limit = 5;
   int32 offset = 6;
+  int32 page = 7;                       // Page number (1-based), overrides offset if set
+  int32 page_size = 8;                  // Items per page, overrides limit if set
 }
 
 message GetInvoicesResponse {
@@ -135,6 +249,7 @@ message GetInvoicesResponse {
   int32 total = 2;
   double total_amount_pending = 3;
   double total_amount_paid = 4;
+  InvoicePaginationInfo pagination = 5;
 }
 
 // ===== GET INVOICE =====
@@ -151,8 +266,11 @@ message GetInvoiceResponse {
 // NOTE: user_id extracted from JWT token, not from request
 message PayInvoiceRequest {
   string invoice_id = 1;
-  string account_id = 2;                // Account to debit from
+  string account_id = 2;                // Account to debit from (payer's account)
   string pin = 3;                       // Security PIN
+  string idempotency_key = 4;           // Idempotency key for deduplication
+  string verification_token = 5;        // PIN verification token
+  string transaction_id = 6;            // Transaction ID from PIN verification
 }
 
 message PayInvoiceResponse {
@@ -195,4 +313,118 @@ message UpdateInvoiceStatusRequest {
 message UpdateInvoiceStatusResponse {
   Invoice invoice = 1;
   string message = 2;
+}
+
+// ===== TAG USERS TO INVOICE =====
+message TagUsersToInvoiceRequest {
+  string invoice_id = 1;
+  repeated string user_ids = 2;         // User IDs to tag
+}
+
+message TagUsersToInvoiceResponse {
+  Invoice invoice = 1;
+  string message = 2;
+  int32 users_tagged = 3;
+}
+
+// ===== GET INVOICES TAGGED TO USER =====
+message GetInvoicesTaggedToUserRequest {
+  string status = 1;                    // Optional: filter by tagged user status (pending/viewed/paid)
+  int32 limit = 2;
+  int32 offset = 3;
+  string currency = 4;                  // Optional: filter by invoice currency
+  int32 page = 5;                       // Page number (1-based)
+  int32 page_size = 6;                  // Items per page
+}
+
+message GetInvoicesTaggedToUserResponse {
+  repeated Invoice invoices = 1;
+  int32 total = 2;
+  double total_amount_pending = 3;
+  double total_amount_paid = 4;
+  InvoicePaginationInfo pagination = 5;
+}
+
+// ===== GET SENT INVOICES =====
+message GetSentInvoicesRequest {
+  string status = 1;                    // Optional: filter by invoice status
+  int32 limit = 2;
+  int32 offset = 3;
+  int32 page = 4;                       // Page number (1-based)
+  int32 page_size = 5;                  // Items per page
+}
+
+message GetSentInvoicesResponse {
+  repeated Invoice invoices = 1;
+  int32 total = 2;
+  double total_amount_pending = 3;
+  double total_amount_paid = 4;
+  InvoicePaginationInfo pagination = 5;
+}
+
+// ===== UPDATE INVOICE =====
+message UpdateInvoiceRequest {
+  string invoice_id = 1;
+  string recipient_email = 2;
+  string recipient_name = 3;
+  double amount = 4;
+  string description = 5;
+  string due_date = 6;
+  repeated InvoiceItem items = 7;
+  double tax = 8;
+  double discount = 9;
+  string notes = 10;
+}
+
+message UpdateInvoiceResponse {
+  Invoice invoice = 1;
+  string message = 2;
+}
+
+// ===== DELETE INVOICE =====
+message DeleteInvoiceRequest {
+  string invoice_id = 1;
+}
+
+message DeleteInvoiceResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// ===== GET INVOICE STATISTICS =====
+message GetInvoiceStatisticsRequest {
+  // user_id extracted from JWT token
+}
+
+message GetInvoiceStatisticsResponse {
+  InvoiceStatistics statistics = 1;
+}
+
+// ===== UNLOCK INVOICE =====
+// NOTE: user_id extracted from JWT token, not from request
+message UnlockInvoiceRequest {
+  string invoice_id = 1;
+  string account_id = 2;                // Account to debit service fee from
+  string pin = 3;                       // Security PIN
+  string idempotency_key = 4;           // Idempotency key for deduplication
+  string verification_token = 5;        // PIN verification token
+  string transaction_id = 6;            // Transaction ID from PIN verification
+}
+
+message UnlockInvoiceResponse {
+  Invoice invoice = 1;
+  double new_balance = 2;
+  string unlock_payment_ref = 3;
+  string message = 4;
+}
+
+// ===== UPLOAD INVOICE IMAGE =====
+message UploadInvoiceImageRequest {
+  bytes image_data = 1;
+  string file_name = 2;
+  string content_type = 3;              // "image/png", "image/jpeg"
+}
+
+message UploadInvoiceImageResponse {
+  string image_url = 1;
 }

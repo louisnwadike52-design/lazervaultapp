@@ -1,31 +1,36 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: user.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
-// ignore_for_file: UNDEFINED_SHOWN_NAME
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+
 import 'dart:core' as $core;
+
 import 'package:protobuf/protobuf.dart' as $pb;
 
+/// Identity Verification Messages
 class DocumentType extends $pb.ProtobufEnum {
-  static const DocumentType DOCUMENT_TYPE_PASSPORT = DocumentType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_PASSPORT');
-  static const DocumentType DOCUMENT_TYPE_DRIVERS_LICENSE = DocumentType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_DRIVERS_LICENSE');
-  static const DocumentType DOCUMENT_TYPE_NATIONAL_ID = DocumentType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_NATIONAL_ID');
-  static const DocumentType DOCUMENT_TYPE_RESIDENCE_PERMIT = DocumentType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_RESIDENCE_PERMIT');
-  static const DocumentType DOCUMENT_TYPE_BVN = DocumentType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_BVN');
-  static const DocumentType DOCUMENT_TYPE_NIN = DocumentType._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_NIN');
-  static const DocumentType DOCUMENT_TYPE_NIN_NUMBER = DocumentType._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_NIN_NUMBER');
-  static const DocumentType DOCUMENT_TYPE_SSN = DocumentType._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_SSN');
-  static const DocumentType DOCUMENT_TYPE_SSN_LAST4 = DocumentType._(8, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_SSN_LAST4');
-  static const DocumentType DOCUMENT_TYPE_STATE_ID = DocumentType._(9, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_STATE_ID');
-  static const DocumentType DOCUMENT_TYPE_ITIN = DocumentType._(10, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_ITIN');
-  static const DocumentType DOCUMENT_TYPE_GHANA_CARD = DocumentType._(11, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_GHANA_CARD');
-  static const DocumentType DOCUMENT_TYPE_VOTER_CARD = DocumentType._(12, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_VOTER_CARD');
-  static const DocumentType DOCUMENT_TYPE_SSNIT = DocumentType._(13, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_SSNIT');
-  static const DocumentType DOCUMENT_TYPE_KRA_PIN = DocumentType._(14, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_KRA_PIN');
-  static const DocumentType DOCUMENT_TYPE_ALIEN_ID = DocumentType._(15, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_ALIEN_ID');
+  static const DocumentType DOCUMENT_TYPE_PASSPORT = DocumentType._(0, _omitEnumNames ? '' : 'DOCUMENT_TYPE_PASSPORT');
+  static const DocumentType DOCUMENT_TYPE_DRIVERS_LICENSE = DocumentType._(1, _omitEnumNames ? '' : 'DOCUMENT_TYPE_DRIVERS_LICENSE');
+  static const DocumentType DOCUMENT_TYPE_NATIONAL_ID = DocumentType._(2, _omitEnumNames ? '' : 'DOCUMENT_TYPE_NATIONAL_ID');
+  static const DocumentType DOCUMENT_TYPE_RESIDENCE_PERMIT = DocumentType._(3, _omitEnumNames ? '' : 'DOCUMENT_TYPE_RESIDENCE_PERMIT');
+  static const DocumentType DOCUMENT_TYPE_BVN = DocumentType._(4, _omitEnumNames ? '' : 'DOCUMENT_TYPE_BVN');
+  static const DocumentType DOCUMENT_TYPE_NIN = DocumentType._(5, _omitEnumNames ? '' : 'DOCUMENT_TYPE_NIN');
+  static const DocumentType DOCUMENT_TYPE_NIN_NUMBER = DocumentType._(6, _omitEnumNames ? '' : 'DOCUMENT_TYPE_NIN_NUMBER');
+  static const DocumentType DOCUMENT_TYPE_SSN = DocumentType._(7, _omitEnumNames ? '' : 'DOCUMENT_TYPE_SSN');
+  static const DocumentType DOCUMENT_TYPE_SSN_LAST4 = DocumentType._(8, _omitEnumNames ? '' : 'DOCUMENT_TYPE_SSN_LAST4');
+  static const DocumentType DOCUMENT_TYPE_STATE_ID = DocumentType._(9, _omitEnumNames ? '' : 'DOCUMENT_TYPE_STATE_ID');
+  static const DocumentType DOCUMENT_TYPE_ITIN = DocumentType._(10, _omitEnumNames ? '' : 'DOCUMENT_TYPE_ITIN');
+  static const DocumentType DOCUMENT_TYPE_GHANA_CARD = DocumentType._(11, _omitEnumNames ? '' : 'DOCUMENT_TYPE_GHANA_CARD');
+  static const DocumentType DOCUMENT_TYPE_VOTER_CARD = DocumentType._(12, _omitEnumNames ? '' : 'DOCUMENT_TYPE_VOTER_CARD');
+  static const DocumentType DOCUMENT_TYPE_SSNIT = DocumentType._(13, _omitEnumNames ? '' : 'DOCUMENT_TYPE_SSNIT');
+  static const DocumentType DOCUMENT_TYPE_KRA_PIN = DocumentType._(14, _omitEnumNames ? '' : 'DOCUMENT_TYPE_KRA_PIN');
+  static const DocumentType DOCUMENT_TYPE_ALIEN_ID = DocumentType._(15, _omitEnumNames ? '' : 'DOCUMENT_TYPE_ALIEN_ID');
 
   static const $core.List<DocumentType> values = <DocumentType> [
     DOCUMENT_TYPE_PASSPORT,
@@ -53,11 +58,11 @@ class DocumentType extends $pb.ProtobufEnum {
 }
 
 class VerificationStatus extends $pb.ProtobufEnum {
-  static const VerificationStatus VERIFICATION_STATUS_PENDING = VerificationStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'VERIFICATION_STATUS_PENDING');
-  static const VerificationStatus VERIFICATION_STATUS_PROCESSING = VerificationStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'VERIFICATION_STATUS_PROCESSING');
-  static const VerificationStatus VERIFICATION_STATUS_VERIFIED = VerificationStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'VERIFICATION_STATUS_VERIFIED');
-  static const VerificationStatus VERIFICATION_STATUS_REJECTED = VerificationStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'VERIFICATION_STATUS_REJECTED');
-  static const VerificationStatus VERIFICATION_STATUS_EXPIRED = VerificationStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'VERIFICATION_STATUS_EXPIRED');
+  static const VerificationStatus VERIFICATION_STATUS_PENDING = VerificationStatus._(0, _omitEnumNames ? '' : 'VERIFICATION_STATUS_PENDING');
+  static const VerificationStatus VERIFICATION_STATUS_PROCESSING = VerificationStatus._(1, _omitEnumNames ? '' : 'VERIFICATION_STATUS_PROCESSING');
+  static const VerificationStatus VERIFICATION_STATUS_VERIFIED = VerificationStatus._(2, _omitEnumNames ? '' : 'VERIFICATION_STATUS_VERIFIED');
+  static const VerificationStatus VERIFICATION_STATUS_REJECTED = VerificationStatus._(3, _omitEnumNames ? '' : 'VERIFICATION_STATUS_REJECTED');
+  static const VerificationStatus VERIFICATION_STATUS_EXPIRED = VerificationStatus._(4, _omitEnumNames ? '' : 'VERIFICATION_STATUS_EXPIRED');
 
   static const $core.List<VerificationStatus> values = <VerificationStatus> [
     VERIFICATION_STATUS_PENDING,
@@ -73,13 +78,14 @@ class VerificationStatus extends $pb.ProtobufEnum {
   const VerificationStatus._($core.int v, $core.String n) : super(v, n);
 }
 
+/// Device Permissions Messages
 class PermissionType extends $pb.ProtobufEnum {
-  static const PermissionType PERMISSION_TYPE_CAMERA = PermissionType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PERMISSION_TYPE_CAMERA');
-  static const PermissionType PERMISSION_TYPE_LOCATION = PermissionType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PERMISSION_TYPE_LOCATION');
-  static const PermissionType PERMISSION_TYPE_MICROPHONE = PermissionType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PERMISSION_TYPE_MICROPHONE');
-  static const PermissionType PERMISSION_TYPE_STORAGE = PermissionType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PERMISSION_TYPE_STORAGE');
-  static const PermissionType PERMISSION_TYPE_CONTACTS = PermissionType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PERMISSION_TYPE_CONTACTS');
-  static const PermissionType PERMISSION_TYPE_BIOMETRIC = PermissionType._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PERMISSION_TYPE_BIOMETRIC');
+  static const PermissionType PERMISSION_TYPE_CAMERA = PermissionType._(0, _omitEnumNames ? '' : 'PERMISSION_TYPE_CAMERA');
+  static const PermissionType PERMISSION_TYPE_LOCATION = PermissionType._(1, _omitEnumNames ? '' : 'PERMISSION_TYPE_LOCATION');
+  static const PermissionType PERMISSION_TYPE_MICROPHONE = PermissionType._(2, _omitEnumNames ? '' : 'PERMISSION_TYPE_MICROPHONE');
+  static const PermissionType PERMISSION_TYPE_STORAGE = PermissionType._(3, _omitEnumNames ? '' : 'PERMISSION_TYPE_STORAGE');
+  static const PermissionType PERMISSION_TYPE_CONTACTS = PermissionType._(4, _omitEnumNames ? '' : 'PERMISSION_TYPE_CONTACTS');
+  static const PermissionType PERMISSION_TYPE_BIOMETRIC = PermissionType._(5, _omitEnumNames ? '' : 'PERMISSION_TYPE_BIOMETRIC');
 
   static const $core.List<PermissionType> values = <PermissionType> [
     PERMISSION_TYPE_CAMERA,
@@ -96,3 +102,5 @@ class PermissionType extends $pb.ProtobufEnum {
   const PermissionType._($core.int v, $core.String n) : super(v, n);
 }
 
+
+const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

@@ -1,24 +1,29 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: ai_scan.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
-// ignore_for_file: UNDEFINED_SHOWN_NAME
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+
 import 'dart:core' as $core;
+
 import 'package:protobuf/protobuf.dart' as $pb;
 
+/// Scan types enum
 class ScanType extends $pb.ProtobufEnum {
-  static const ScanType SCAN_TYPE_UNSPECIFIED = ScanType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SCAN_TYPE_UNSPECIFIED');
-  static const ScanType INVOICE = ScanType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'INVOICE');
-  static const ScanType UTILITY_BILL = ScanType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'UTILITY_BILL');
-  static const ScanType QR_CODE = ScanType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'QR_CODE');
-  static const ScanType BARCODE = ScanType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'BARCODE');
-  static const ScanType ACCOUNT_DETAILS = ScanType._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ACCOUNT_DETAILS');
-  static const ScanType GIFT_CARD = ScanType._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'GIFT_CARD');
-  static const ScanType RECEIPT = ScanType._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'RECEIPT');
-  static const ScanType BANK_DETAILS = ScanType._(8, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'BANK_DETAILS');
+  static const ScanType SCAN_TYPE_UNSPECIFIED = ScanType._(0, _omitEnumNames ? '' : 'SCAN_TYPE_UNSPECIFIED');
+  static const ScanType INVOICE = ScanType._(1, _omitEnumNames ? '' : 'INVOICE');
+  static const ScanType UTILITY_BILL = ScanType._(2, _omitEnumNames ? '' : 'UTILITY_BILL');
+  static const ScanType QR_CODE = ScanType._(3, _omitEnumNames ? '' : 'QR_CODE');
+  static const ScanType BARCODE = ScanType._(4, _omitEnumNames ? '' : 'BARCODE');
+  static const ScanType ACCOUNT_DETAILS = ScanType._(5, _omitEnumNames ? '' : 'ACCOUNT_DETAILS');
+  static const ScanType GIFT_CARD = ScanType._(6, _omitEnumNames ? '' : 'GIFT_CARD');
+  static const ScanType RECEIPT = ScanType._(7, _omitEnumNames ? '' : 'RECEIPT');
+  static const ScanType BANK_DETAILS = ScanType._(8, _omitEnumNames ? '' : 'BANK_DETAILS');
 
   static const $core.List<ScanType> values = <ScanType> [
     SCAN_TYPE_UNSPECIFIED,
@@ -38,12 +43,13 @@ class ScanType extends $pb.ProtobufEnum {
   const ScanType._($core.int v, $core.String n) : super(v, n);
 }
 
+/// Scan status enum
 class ScanStatus extends $pb.ProtobufEnum {
-  static const ScanStatus SCAN_STATUS_UNSPECIFIED = ScanStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SCAN_STATUS_UNSPECIFIED');
-  static const ScanStatus PENDING = ScanStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PENDING');
-  static const ScanStatus PROCESSING = ScanStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PROCESSING');
-  static const ScanStatus COMPLETED = ScanStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'COMPLETED');
-  static const ScanStatus FAILED = ScanStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'FAILED');
+  static const ScanStatus SCAN_STATUS_UNSPECIFIED = ScanStatus._(0, _omitEnumNames ? '' : 'SCAN_STATUS_UNSPECIFIED');
+  static const ScanStatus PENDING = ScanStatus._(1, _omitEnumNames ? '' : 'PENDING');
+  static const ScanStatus PROCESSING = ScanStatus._(2, _omitEnumNames ? '' : 'PROCESSING');
+  static const ScanStatus COMPLETED = ScanStatus._(3, _omitEnumNames ? '' : 'COMPLETED');
+  static const ScanStatus FAILED = ScanStatus._(4, _omitEnumNames ? '' : 'FAILED');
 
   static const $core.List<ScanStatus> values = <ScanStatus> [
     SCAN_STATUS_UNSPECIFIED,
@@ -59,3 +65,5 @@ class ScanStatus extends $pb.ProtobufEnum {
   const ScanStatus._($core.int v, $core.String n) : super(v, n);
 }
 
+
+const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

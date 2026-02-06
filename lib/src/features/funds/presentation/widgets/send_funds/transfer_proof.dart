@@ -30,16 +30,31 @@ class TransferProof extends StatelessWidget {
 
     // Transfer-specific fields
     if (fee > 0) metadata['Fee'] = '${_currencySymbol(currency)}${fee.toStringAsFixed(2)}';
-    if (transferDetails['recipientName'] != null) {
-      metadata['Recipient'] = recipientName;
+
+    // Beneficiary details - separate rows
+    if (recipientName.isNotEmpty) {
+      metadata['Beneficiary Name'] = recipientName;
     }
-    if (transferDetails['recipientAccountMasked'] != null) {
-      metadata['Recipient Account'] = transferDetails['recipientAccountMasked'];
+    final recipientAccount = transferDetails['recipientAccountMasked']?.toString();
+    if (recipientAccount != null && recipientAccount.isNotEmpty) {
+      metadata['Beneficiary Account'] = recipientAccount;
     }
-    if (transferDetails['sourceAccountInfo'] != null &&
-        (transferDetails['sourceAccountInfo'] as String).isNotEmpty) {
-      metadata['Source Account'] = transferDetails['sourceAccountInfo'];
+    final recipientBank = transferDetails['recipientBankName']?.toString();
+    if (recipientBank != null && recipientBank.isNotEmpty) {
+      metadata['Beneficiary Bank'] = recipientBank;
     }
+
+    // Source account (from account) - combine info and name if available
+    final sourceAccountInfo = transferDetails['sourceAccountInfo']?.toString() ?? '';
+    if (sourceAccountInfo.isNotEmpty) {
+      final sourceAccountName = transferDetails['sourceAccountName']?.toString();
+      if (sourceAccountName != null && sourceAccountName.isNotEmpty) {
+        metadata['From'] = '$sourceAccountName ($sourceAccountInfo)';
+      } else {
+        metadata['From'] = sourceAccountInfo;
+      }
+    }
+
     if (transferDetails['network'] != null) {
       metadata['Network'] = transferDetails['network'];
     }
@@ -48,6 +63,10 @@ class TransferProof extends StatelessWidget {
     }
     if (transferDetails['processingTime'] != null) {
       metadata['Processing'] = transferDetails['processingTime'];
+    }
+    if (transferDetails['reference'] != null &&
+        (transferDetails['reference'] as String).isNotEmpty) {
+      metadata['Reference'] = transferDetails['reference'];
     }
     if (transferDetails['narration'] != null &&
         (transferDetails['narration'] as String).isNotEmpty) {

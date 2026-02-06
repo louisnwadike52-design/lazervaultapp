@@ -112,6 +112,23 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
+  Future<void> sendInvoiceToEmail(String invoiceId, String email) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.SendInvoiceToEmailRequest()
+          ..invoiceId = invoiceId
+          ..email = email
+          ..locale = 'en-US';
+        final options = await grpcClient.callOptions;
+        await grpcClient.invoiceClient.sendInvoiceToEmail(
+          request,
+          options: options,
+        );
+      },
+    );
+  }
+
+  @override
   Future<List<Invoice>> getInvoicesByUserId(String userId) async {
     return retryWithBackoff(
       operation: () async {

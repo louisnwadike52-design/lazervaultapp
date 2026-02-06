@@ -1,3 +1,6 @@
+/// Lock funds entity with locale-aware currency formatting
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+
 /// Lock types following PiggyVest-style naming
 enum LockType {
   /// SafeLock - Lock funds for a fixed period with competitive interest
@@ -308,14 +311,14 @@ class LockFund {
   bool get canRenew => status == LockStatus.matured || isMatured;
   bool get isTerminal => status.isTerminal;
 
-  /// Formatted amount with currency
-  String get formattedAmount => '$currency ${amount.toStringAsFixed(2)}';
+  /// Formatted amount with currency symbol (e.g., "₦1,000.00")
+  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount, currency);
 
-  /// Formatted total value (principal + interest)
-  String get formattedTotalValue => '$currency ${totalValue.toStringAsFixed(2)}';
+  /// Formatted total value (principal + interest) with currency symbol
+  String get formattedTotalValue => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalValue, currency);
 
-  /// Formatted interest earned
-  String get formattedInterest => '+$currency ${accruedInterest.toStringAsFixed(2)}';
+  /// Formatted interest earned with currency symbol
+  String get formattedInterest => '+${currency_formatter.CurrencySymbols.formatAmountWithCurrency(accruedInterest, currency)}';
 
   /// Formatted interest rate
   String get formattedInterestRate => '${interestRate.toStringAsFixed(1)}% p.a.';

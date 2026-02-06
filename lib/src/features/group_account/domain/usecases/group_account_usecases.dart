@@ -42,6 +42,7 @@ class CreateGroup extends UseCase<GroupAccount, CreateGroupParams> {
       name: params.name,
       description: params.description,
       adminId: params.adminId,
+      metadata: params.metadata,
     );
   }
 }
@@ -188,6 +189,7 @@ class CreateContribution extends UseCase<Contribution, CreateContributionParams>
       gracePeriodDays: params.gracePeriodDays,
       allowPartialPayments: params.allowPartialPayments,
       minimumBalance: params.minimumBalance,
+      metadata: params.metadata,
     );
   }
 }
@@ -366,11 +368,13 @@ class CreateGroupParams {
   final String name;
   final String description;
   final String adminId;
+  final Map<String, dynamic>? metadata;
 
   CreateGroupParams({
     required this.name,
     required this.description,
     required this.adminId,
+    this.metadata,
   });
 }
 
@@ -435,6 +439,7 @@ class CreateContributionParams {
   final int? gracePeriodDays;
   final bool allowPartialPayments;
   final double? minimumBalance;
+  final Map<String, dynamic>? metadata;
 
   CreateContributionParams({
     required this.groupId,
@@ -455,6 +460,7 @@ class CreateContributionParams {
     this.gracePeriodDays,
     this.allowPartialPayments = true,
     this.minimumBalance,
+    this.metadata,
   });
 }
 

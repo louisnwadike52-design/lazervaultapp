@@ -9,6 +9,7 @@ abstract class GroupAccountRemoteDataSource {
     required String name,
     required String description,
     required String adminId,
+    Map<String, dynamic>? metadata,
   });
   Future<GroupAccountModel> updateGroup(GroupAccountModel group);
   Future<void> deleteGroup(String groupId);
@@ -55,6 +56,7 @@ abstract class GroupAccountRemoteDataSource {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    Map<String, dynamic>? metadata,
   });
   Future<ContributionModel> updateContribution(ContributionModel contribution);
   Future<void> deleteContribution(String contributionId);
@@ -174,12 +176,13 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
     required String name,
     required String description,
     required String adminId,
+    Map<String, dynamic>? metadata,
   }) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    
+
     final groupId = _generateId();
     final now = DateTime.now();
-    
+
     // Create admin member
     final adminMember = GroupMemberModel(
       id: _generateId(),
@@ -190,7 +193,7 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
       joinedAt: now,
       status: GroupMemberStatus.active,
     );
-    
+
     final group = GroupAccountModel(
       id: groupId,
       name: name,
@@ -201,8 +204,9 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
       createdAt: now,
       updatedAt: now,
       status: GroupAccountStatus.active,
+      metadata: metadata,
     );
-    
+
     _groups[groupId] = group;
     _groupMembers[groupId] = [adminMember];
     _groupContributions[groupId] = [];
@@ -371,9 +375,10 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    Map<String, dynamic>? metadata,
   }) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    
+
     final contributionId = _generateId();
     final now = DateTime.now();
     final effectiveStartDate = startDate ?? now;
@@ -422,6 +427,7 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
       gracePeriodDays: gracePeriodDays,
       allowPartialPayments: allowPartialPayments,
       minimumBalance: minimumBalance,
+      metadata: metadata,
     );
     
     _groupContributions.putIfAbsent(groupId, () => []).add(contribution);

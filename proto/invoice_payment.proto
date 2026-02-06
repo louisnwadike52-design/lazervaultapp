@@ -6,6 +6,7 @@ option go_package = "lazervaultGo/pb";
 
 import "google/protobuf/timestamp.proto";
 import "common.proto";
+import "account.proto";
 
 // Invoice Payment Details Message
 message InvoicePaymentDetails {
@@ -62,7 +63,7 @@ message UserAccountBalance {
   double available_balance = 3;
   double pending_balance = 4;
   double total_balance = 5;
-  AccountType account_type = 6;
+  VirtualAccountType account_type = 6;
   string account_number = 7;
   google.protobuf.Timestamp last_updated = 8;
   string account_name = 9;
@@ -86,7 +87,7 @@ message PaymentMethod {
 }
 
 // Crypto Wallet Message
-message CryptoWallet {
+message InvoiceCryptoWallet {
   string wallet_id = 1;
   string user_id = 2;
   string wallet_address = 3;
@@ -266,7 +267,7 @@ message UpdateInvoicePaymentMethodResponse {
 // Account Balance Operations
 message GetUserAccountBalanceRequest {
   string currency = 1;
-  AccountType account_type = 2;
+  VirtualAccountType account_type = 2;
 }
 
 message GetUserAccountBalanceResponse {
@@ -332,26 +333,26 @@ message ProcessCryptoInvoicePaymentResponse {
   string message = 6;
 }
 
-message GetCryptoWalletBalanceRequest {
+message GetInvoiceCryptoWalletBalanceRequest {
   string wallet_address = 1;
   string currency = 2;
   string network = 3;
 }
 
-message GetCryptoWalletBalanceResponse {
+message GetInvoiceCryptoWalletBalanceResponse {
   double balance = 1;
   string currency = 2;
   google.protobuf.Timestamp last_updated = 3;
   string network = 4;
 }
 
-message ValidateCryptoWalletRequest {
+message ValidateInvoiceCryptoWalletRequest {
   string wallet_address = 1;
   string currency = 2;
   string network = 3;
 }
 
-message ValidateCryptoWalletResponse {
+message ValidateInvoiceCryptoWalletResponse {
   bool is_valid = 1;
   string validation_message = 2;
   bool is_contract = 3;
@@ -527,8 +528,8 @@ service InvoicePaymentService {
 
   // Cryptocurrency Invoice Payments
   rpc ProcessCryptoInvoicePayment(ProcessCryptoInvoicePaymentRequest) returns (ProcessCryptoInvoicePaymentResponse);
-  rpc GetCryptoWalletBalance(GetCryptoWalletBalanceRequest) returns (GetCryptoWalletBalanceResponse);
-  rpc ValidateCryptoWallet(ValidateCryptoWalletRequest) returns (ValidateCryptoWalletResponse);
+  rpc GetInvoiceCryptoWalletBalance(GetInvoiceCryptoWalletBalanceRequest) returns (GetInvoiceCryptoWalletBalanceResponse);
+  rpc ValidateInvoiceCryptoWallet(ValidateInvoiceCryptoWalletRequest) returns (ValidateInvoiceCryptoWalletResponse);
   rpc GetCryptoInvoicePaymentStatus(GetCryptoInvoicePaymentStatusRequest) returns (GetCryptoInvoicePaymentStatusResponse);
 
   // Invoice Payment Extensions and Disputes

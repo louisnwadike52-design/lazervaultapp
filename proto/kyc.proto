@@ -3,8 +3,8 @@ syntax = "proto3";
 package kyc;
 
 option go_package = "github.com/lazervault/protos/kyc";
-option dart_package = "lazervaultapp/proto";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "common.proto";
 
@@ -172,7 +172,7 @@ message VerificationDocument {
   string id = 1;
   IDType document_type = 2;
   string document_url = 3;
-  common.DocumentStatus status = 4;
+  DocumentStatus status = 4;
   google.protobuf.Timestamp uploaded_at = 5;
   google.protobuf.Timestamp verified_at = 6;
   string rejection_reason = 7;
@@ -181,11 +181,11 @@ message VerificationDocument {
 // Document status enum
 enum DocumentStatus {
   DOC_STATUS_UNKNOWN = 0;
-  PENDING_UPLOAD = 1;
-  UPLOADED = 2;
-  UNDER_REVIEW = 3;
-  APPROVED = 4;
-  REJECTED = 5;
+  DOC_PENDING_UPLOAD = 1;
+  DOC_UPLOADED = 2;
+  DOC_UNDER_REVIEW = 3;
+  DOC_APPROVED = 4;
+  DOC_REJECTED = 5;
 }
 
 // Get user documents request

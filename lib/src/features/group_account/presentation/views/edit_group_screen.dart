@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
@@ -23,6 +25,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
+  late TextEditingController _whatsappLinkController;
+  late TextEditingController _telegramLinkController;
   late GroupAccountStatus _selectedStatus;
   bool _isLoading = false;
   bool _hasChanges = false;
@@ -32,22 +36,30 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.group.name);
     _descriptionController = TextEditingController(text: widget.group.description);
+    _whatsappLinkController = TextEditingController(text: widget.group.whatsappGroupLink ?? '');
+    _telegramLinkController = TextEditingController(text: widget.group.telegramGroupLink ?? '');
     _selectedStatus = widget.group.status;
 
     _nameController.addListener(_onFieldChanged);
     _descriptionController.addListener(_onFieldChanged);
+    _whatsappLinkController.addListener(_onFieldChanged);
+    _telegramLinkController.addListener(_onFieldChanged);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _whatsappLinkController.dispose();
+    _telegramLinkController.dispose();
     super.dispose();
   }
 
   void _onFieldChanged() {
     final hasChanges = _nameController.text != widget.group.name ||
         _descriptionController.text != widget.group.description ||
+        _whatsappLinkController.text != (widget.group.whatsappGroupLink ?? '') ||
+        _telegramLinkController.text != (widget.group.telegramGroupLink ?? '') ||
         _selectedStatus != widget.group.status;
 
     if (hasChanges != _hasChanges) {
@@ -140,6 +152,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                   _buildDescriptionField(),
                   SizedBox(height: 24.h),
                   _buildStatusSelector(),
+                  SizedBox(height: 32.h),
+                  _buildExternalLinksSection(),
                   SizedBox(height: 32.h),
                   _buildSaveButton(),
                   SizedBox(height: 16.h),
@@ -423,6 +437,118 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
     );
   }
 
+  Widget _buildExternalLinksSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.link,
+              color: const Color.fromARGB(255, 78, 3, 208),
+              size: 20.sp,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              'External Social Media Links',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          'Link your group to external WhatsApp or Telegram groups for easy member access',
+          style: GoogleFonts.inter(
+            color: Colors.grey[400],
+            fontSize: 12.sp,
+          ),
+        ),
+        SizedBox(height: 16.h),
+        _buildLinkField(
+          controller: _whatsappLinkController,
+          label: 'WhatsApp Group Link',
+          hint: 'https://chat.whatsapp.com/...',
+          icon: Icons.message,
+          color: const Color(0xFF25D366),
+        ),
+        SizedBox(height: 16.h),
+        _buildLinkField(
+          controller: _telegramLinkController,
+          label: 'Telegram Group Link',
+          hint: 'https://t.me/...',
+          icon: Icons.send,
+          color: const Color(0xFF0088CC),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLinkField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        TextFormField(
+          controller: controller,
+          style: GoogleFonts.inter(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(color: Colors.grey[600]),
+            filled: true,
+            fillColor: const Color(0xFF1F1F1F),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(
+                color: color,
+                width: 2,
+              ),
+            ),
+            prefixIcon: Icon(
+              icon,
+              color: color,
+              size: 20.sp,
+            ),
+            suffixIcon: controller.text.isNotEmpty
+                ? IconButton(
+                    icon: Icon(
+                      Icons.clear,
+                      color: Colors.grey[400],
+                      size: 20.sp,
+                    ),
+                    onPressed: () {
+                      controller.clear();
+                    },
+                  )
+                : null,
+            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          ),
+        ),
+      ],
+    );
+  }
+
   Color _getStatusColor(GroupAccountStatus status) {
     switch (status) {
       case GroupAccountStatus.active:
@@ -498,12 +624,32 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
 
   void _saveChanges() {
     if (_formKey.currentState!.validate()) {
-      context.read<GroupAccountCubit>().updateGroupDetails(
-        groupId: widget.group.id,
+      // Build metadata with external links
+      final metadata = Map<String, dynamic>.from(widget.group.metadata ?? {});
+
+      // Update WhatsApp link
+      if (_whatsappLinkController.text.trim().isNotEmpty) {
+        metadata['whatsapp_group_link'] = _whatsappLinkController.text.trim();
+      } else {
+        metadata.remove('whatsapp_group_link');
+      }
+
+      // Update Telegram link
+      if (_telegramLinkController.text.trim().isNotEmpty) {
+        metadata['telegram_group_link'] = _telegramLinkController.text.trim();
+      } else {
+        metadata.remove('telegram_group_link');
+      }
+
+      // Create updated group object
+      final updatedGroup = widget.group.copyWith(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         status: _selectedStatus,
+        metadata: metadata,
       );
+
+      context.read<GroupAccountCubit>().updateGroupDetails(updatedGroup);
     }
   }
 

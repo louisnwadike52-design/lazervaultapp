@@ -1045,19 +1045,6 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                 ),
               ],
             ),
-            if (user.email != null || user.phoneNumber != null)
-              Text(
-                [
-                  if (user.email != null) user.email!,
-                  if (user.phoneNumber != null) user.phoneNumber!,
-                ].join(' • '),
-                style: GoogleFonts.inter(
-                  color: Colors.grey[500],
-                  fontSize: 12.sp,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
           ],
         ),
         trailing: Icon(

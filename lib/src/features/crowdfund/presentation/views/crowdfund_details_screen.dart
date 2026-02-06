@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
@@ -69,7 +70,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                       ),
                     );
                   },
-                  backgroundColor: const Color(0xFF4E03D0),
+                  backgroundColor: const Color(0xFF6366F1),
                   icon: const Icon(Icons.volunteer_activism,
                       color: Colors.white),
                   label: Text(
@@ -92,7 +93,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
     if (state is CrowdfundLoading) {
       return const Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF4E03D0),
+          color: Color(0xFF6366F1),
         ),
       );
     }
@@ -119,7 +120,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
         SliverAppBar(
           expandedHeight: crowdfund.imageUrl != null ? 250.h : 100.h,
           pinned: true,
-          backgroundColor: const Color(0xFF1F1F1F),
+          backgroundColor: const Color(0xFF0A0A0A),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
@@ -145,7 +146,13 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                     crowdfund.imageUrl!,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
-                      color: const Color(0xFF0A0A0A),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
                       child: Center(
                         child: Icon(
                           Icons.image_not_supported,
@@ -156,7 +163,13 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                     ),
                   )
                 : Container(
-                    color: const Color(0xFF0A0A0A),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
                   ),
           ),
         ),
@@ -172,10 +185,10 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                     Expanded(
                       child: Text(
                         crowdfund.title,
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -190,13 +203,13 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                         vertical: 6.h,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
                         crowdfund.category,
-                        style: TextStyle(
-                          color: const Color(0xFF4E03D0),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF6366F1),
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -209,16 +222,13 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                         vertical: 6.h,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0A0A0A),
+                        color: Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(8.r),
-                        border: Border.all(
-                          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
-                        ),
                       ),
                       child: Text(
                         crowdfund.crowdfundCode,
                         style: TextStyle(
-                          color: const Color(0xFF4E03D0),
+                          color: const Color(0xFF6366F1),
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
                           fontFamily: 'monospace',
@@ -237,17 +247,17 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                 // Description
                 Text(
                   'About',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 8.h),
                 Text(
                   crowdfund.description,
-                  style: TextStyle(
-                    color: Colors.grey[400],
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
                     height: 1.5,
                   ),
@@ -257,17 +267,17 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                 if (crowdfund.story.isNotEmpty) ...[
                   Text(
                     'Story',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   SizedBox(height: 8.h),
                   Text(
                     crowdfund.story,
-                    style: TextStyle(
-                      color: Colors.grey[400],
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 14.sp,
                       height: 1.5,
                     ),
@@ -280,16 +290,14 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF4E03D0).withValues(alpha: 0.1),
-                        const Color(0xFF6B21E0).withValues(alpha: 0.05),
+                        const Color(0xFF1A1A3E),
+                        const Color(0xFF0A0E27),
+                        const Color(0xFF0F0F23),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
-                    ),
                   ),
                   child: Column(
                     children: [
@@ -301,18 +309,18 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                             children: [
                               Text(
                                 'Raised',
-                                style: TextStyle(
-                                  color: Colors.grey[400],
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF9CA3AF),
                                   fontSize: 12.sp,
                                 ),
                               ),
                               SizedBox(height: 4.h),
                               Text(
                                 '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  color: const Color(0xFF4E03D0),
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF6366F1),
                                   fontSize: 28.sp,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -322,15 +330,15 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                             children: [
                               Text(
                                 'Goal',
-                                style: TextStyle(
-                                  color: Colors.grey[400],
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF9CA3AF),
                                   fontSize: 12.sp,
                                 ),
                               ),
                               SizedBox(height: 4.h),
                               Text(
                                 '${crowdfund.currency} ${crowdfund.targetAmount.toStringAsFixed(2)}',
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w600,
@@ -380,10 +388,10 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                   children: [
                     Text(
                       'Donors (${donations.length})',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (donations.length > 5)
@@ -395,8 +403,8 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                         },
                         child: Text(
                           _showAllDonors ? 'Show less' : 'View all',
-                          style: TextStyle(
-                            color: const Color(0xFF4E03D0),
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF6366F1),
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -413,22 +421,22 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                         children: [
                           Icon(
                             Icons.volunteer_activism,
-                            color: Colors.grey[600],
+                            color: const Color(0xFF6B7280),
                             size: 48.sp,
                           ),
                           SizedBox(height: 12.h),
                           Text(
                             'No donations yet',
-                            style: TextStyle(
-                              color: Colors.grey[400],
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF),
                               fontSize: 14.sp,
                             ),
                           ),
                           SizedBox(height: 4.h),
                           Text(
                             'Be the first to donate!',
-                            style: TextStyle(
-                              color: Colors.grey[600],
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF6B7280),
                               fontSize: 12.sp,
                             ),
                           ),
@@ -459,22 +467,22 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
       children: [
         Icon(
           icon,
-          color: isWarning ? const Color(0xFFF59E0B) : const Color(0xFF4E03D0),
+          color: isWarning ? const Color(0xFFF59E0B) : const Color(0xFF6366F1),
           size: 20.sp,
         ),
         SizedBox(height: 4.h),
         Text(
           value,
-          style: TextStyle(
+          style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 16.sp,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.grey[500],
+          style: GoogleFonts.inter(
+            color: const Color(0xFF6B7280),
             fontSize: 11.sp,
           ),
         ),

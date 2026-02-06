@@ -1,0 +1,298 @@
+syntax = "proto3";
+
+package whatsapp;
+option go_package = "whatsapp-service/proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// WhatsApp Service - Banking Integration
+service WhatsAppService {
+  // Account linking (called from Flutter app)
+  rpc InitiateLinking(InitiateLinkingRequest) returns (InitiateLinkingResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/whatsapp/link/initiate"
+      body: "*"
+    };
+  }
+
+  rpc VerifyLinking(VerifyLinkingRequest) returns (VerifyLinkingResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/whatsapp/link/verify"
+      body: "*"
+    };
+  }
+
+  rpc UnlinkAccount(UnlinkAccountRequest) returns (UnlinkAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/whatsapp/link/unlink"
+      body: "*"
+    };
+  }
+
+  rpc GetLinkStatus(GetLinkStatusRequest) returns (GetLinkStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/whatsapp/link/status"
+    };
+  }
+
+  // Webhooks (called by Meta Cloud API)
+  rpc HandleWebhook(WebhookRequest) returns (WebhookResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/whatsapp/webhook"
+      body: "*"
+    };
+  }
+
+  rpc VerifyWebhook(VerifyWebhookRequest) returns (VerifyWebhookResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/whatsapp/webhook"
+    };
+  }
+
+  // Session management
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/whatsapp/sessions/{session_id}"
+    };
+  }
+
+  rpc InvalidateSession(InvalidateSessionRequest) returns (InvalidateSessionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/whatsapp/sessions/{session_id}/invalidate"
+      body: "*"
+    };
+  }
+
+  // Security settings
+  rpc UpdateSecuritySettings(UpdateSecuritySettingsRequest) returns (UpdateSecuritySettingsResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/whatsapp/security"
+      body: "*"
+    };
+  }
+
+  rpc GetSecuritySettings(GetSecuritySettingsRequest) returns (GetSecuritySettingsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/whatsapp/security"
+    };
+  }
+
+  // Admin/monitoring
+  rpc GetAuditLogs(GetAuditLogsRequest) returns (GetAuditLogsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/whatsapp/audit"
+    };
+  }
+}
+
+// ==================== Account Linking Messages ====================
+
+message InitiateLinkingRequest {
+  string phone_number = 1; // User's phone number (E.164 format)
+}
+
+message InitiateLinkingResponse {
+  string otp_reference = 1;
+  string message = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+message VerifyLinkingRequest {
+  string phone_number = 1;
+  string otp_code = 2;
+}
+
+message VerifyLinkingResponse {
+  bool success = 1;
+  string message = 2;
+  WhatsAppUser whatsapp_user = 3;
+}
+
+message UnlinkAccountRequest {
+  string user_id = 1;
+}
+
+message UnlinkAccountResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetLinkStatusRequest {}
+
+message GetLinkStatusResponse {
+  WhatsAppUser whatsapp_user = 1;
+}
+
+// ==================== Webhook Messages ====================
+
+message WebhookRequest {
+  string object = 1;
+  repeated WebhookEntry entry = 2;
+}
+
+message WebhookEntry {
+  string id = 1;
+  repeated WebhookChange changes = 2;
+}
+
+message WebhookChange {
+  string field = 1;
+  WebhookValue value = 2;
+}
+
+message WebhookValue {
+  string messaging_product = 1;
+  WebhookMetadata metadata = 2;
+  repeated WebhookContact contacts = 3;
+  repeated WebhookMessage messages = 4;
+  repeated WebhookStatus statuses = 5;
+}
+
+message WebhookMetadata {
+  string display_phone_number = 1;
+  string phone_number_id = 2;
+}
+
+message WebhookContact {
+  string profile_name = 1;
+  string wa_id = 2;
+}
+
+message WebhookMessage {
+  string from = 1;
+  string id = 2;
+  string timestamp = 3;
+  string type = 4;
+  WebhookTextMessage text = 5;
+  WebhookInteractiveMessage interactive = 6;
+}
+
+message WebhookTextMessage {
+  string body = 1;
+}
+
+message WebhookInteractiveMessage {
+  string type = 1;
+  WebhookButtonReply button_reply = 2;
+  WebhookListReply list_reply = 3;
+}
+
+message WebhookButtonReply {
+  string id = 1;
+  string title = 2;
+}
+
+message WebhookListReply {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+}
+
+message WebhookStatus {
+  string id = 1;
+  string status = 2;
+  string timestamp = 3;
+  string recipient_id = 4;
+}
+
+message WebhookResponse {
+  string status = 1;
+}
+
+message VerifyWebhookRequest {
+  string hub_mode = 1;
+  string hub_verify_token = 2;
+  string hub_challenge = 3;
+}
+
+message VerifyWebhookResponse {
+  string challenge = 1;
+}
+
+// ==================== Session Messages ====================
+
+message GetSessionRequest {
+  string session_id = 1;
+}
+
+message GetSessionResponse {
+  WhatsAppSession session = 1;
+}
+
+message WhatsAppSession {
+  string id = 1;
+  string whatsapp_user_id = 2;
+  bool is_authenticated = 3;
+  google.protobuf.Timestamp expires_at = 4;
+  google.protobuf.Timestamp last_activity_at = 5;
+}
+
+message InvalidateSessionRequest {
+  string session_id = 1;
+}
+
+message InvalidateSessionResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// ==================== Security Settings Messages ====================
+
+message UpdateSecuritySettingsRequest {
+  double daily_transaction_limit = 1;
+  double per_transaction_limit = 2;
+  bool require_pin_for_all = 3;
+  double biometric_threshold = 4;
+}
+
+message UpdateSecuritySettingsResponse {
+  SecuritySettings settings = 1;
+}
+
+message GetSecuritySettingsRequest {}
+
+message GetSecuritySettingsResponse {
+  SecuritySettings settings = 1;
+}
+
+message SecuritySettings {
+  double daily_transaction_limit = 1;
+  double per_transaction_limit = 2;
+  bool require_pin_for_all = 3;
+  double biometric_threshold = 4;
+}
+
+// ==================== Audit Messages ====================
+
+message GetAuditLogsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string start_date = 3;
+  string end_date = 4;
+}
+
+message GetAuditLogsResponse {
+  repeated AuditLog logs = 1;
+  int32 total = 2;
+}
+
+message AuditLog {
+  string id = 1;
+  string action = 2;
+  string service_type = 3;
+  string status = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+// ==================== Shared Models ====================
+
+message WhatsAppUser {
+  string id = 1;
+  string user_id = 2;
+  string phone_number = 3;
+  string whatsapp_id = 4;
+  string link_status = 5;
+  google.protobuf.Timestamp linked_at = 6;
+  google.protobuf.Timestamp last_active_at = 7;
+}

@@ -7,6 +7,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import '../../services/contactless_pdf_service.dart';
+import '../../domain/entities/contactless_payment_entity.dart';
 
 class PaymentSuccessScreen extends StatefulWidget {
   final double amount;
@@ -17,6 +20,11 @@ class PaymentSuccessScreen extends StatefulWidget {
   final String? category;
   final String? description;
   final DateTime? transactionDate;
+  final ContactlessTransactionEntity? transaction;
+  final String? receiverName;
+  final String? receiverUsername;
+  final String? payerUsername;
+  final String? accountNumber;
 
   const PaymentSuccessScreen({
     super.key,
@@ -28,6 +36,11 @@ class PaymentSuccessScreen extends StatefulWidget {
     this.category,
     this.description,
     this.transactionDate,
+    this.transaction,
+    this.receiverName,
+    this.receiverUsername,
+    this.payerUsername,
+    this.accountNumber,
   });
 
   @override
@@ -46,6 +59,9 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
   late Animation<Offset> _contentSlide;
 
   final List<_ConfettiParticle> _particles = [];
+
+  bool _isGeneratingPdf = false;
+  bool _isDownloading = false;
 
   @override
   void initState() {
@@ -140,8 +156,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
   }
 
   String get _formattedAmount {
-    final formatter = NumberFormat('#,##0.00');
-    return '${widget.currency} ${formatter.format(widget.amount)}';
+    return currency_formatter.CurrencySymbols.formatAmountWithCurrency(widget.amount, widget.currency);
   }
 
   String get _formattedDate {
@@ -166,28 +181,101 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     }
   }
 
-  void _shareReceipt() {
-    final buffer = StringBuffer();
-    buffer.writeln('LazerVault Payment Receipt');
-    buffer.writeln('─────────────────────────');
-    buffer.writeln('Amount: $_formattedAmount');
-    buffer.writeln(
-        '${widget.isReceiver ? "From" : "To"}: ${widget.payerName}');
-    if (widget.description != null && widget.description!.isNotEmpty) {
-      buffer.writeln('Description: ${widget.description}');
-    }
-    if (widget.category != null) {
-      buffer.writeln('Category: ${widget.category}');
-    }
-    if (widget.referenceNumber != null) {
-      buffer.writeln('Reference: ${widget.referenceNumber}');
-    }
-    buffer.writeln('Date: $_formattedDate');
-    buffer.writeln('Status: Completed ✓');
-    buffer.writeln('─────────────────────────');
-    buffer.writeln('Powered by LazerVault');
+  Future<void> _shareReceipt() async {
+    if (_isGeneratingPdf) return;
 
-    SharePlus.instance.share(ShareParams(text: buffer.toString(), subject: 'Payment Receipt'));
+    // If transaction entity is available, generate PDF
+    if (widget.transaction != null) {
+      setState(() => _isGeneratingPdf = true);
+      try {
+        if (widget.isReceiver) {
+          // Receiver sharing receipt
+          await ContactlessPdfService.shareReceiverReceipt(
+            transaction: widget.transaction!,
+            accountNumber: widget.accountNumber,
+          );
+        } else {
+          // Payer sharing receipt
+          await ContactlessPdfService.sharePayerReceipt(
+            transaction: widget.transaction!,
+            accountNumber: widget.accountNumber,
+          );
+        }
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Failed to share receipt: $e',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } finally {
+        if (mounted) setState(() => _isGeneratingPdf = false);
+      }
+    } else {
+      // Fallback to text-based receipt
+      final buffer = StringBuffer();
+      buffer.writeln('LazerVault Payment Receipt');
+      buffer.writeln('─────────────────────────');
+      buffer.writeln('Amount: $_formattedAmount');
+      buffer.writeln(
+          '${widget.isReceiver ? "From" : "To"}: ${widget.payerName}');
+      if (widget.description != null && widget.description!.isNotEmpty) {
+        buffer.writeln('Description: ${widget.description}');
+      }
+      if (widget.category != null) {
+        buffer.writeln('Category: ${widget.category}');
+      }
+      if (widget.referenceNumber != null) {
+        buffer.writeln('Reference: ${widget.referenceNumber}');
+      }
+      buffer.writeln('Date: $_formattedDate');
+      buffer.writeln('Status: Completed ✓');
+      buffer.writeln('─────────────────────────');
+      buffer.writeln('Powered by LazerVault');
+
+      await SharePlus.instance.share(
+          ShareParams(text: buffer.toString(), subject: 'Payment Receipt'));
+    }
+  }
+
+  Future<void> _downloadReceipt() async {
+    if (_isDownloading || widget.transaction == null) return;
+
+    setState(() => _isDownloading = true);
+    try {
+      // File path is returned but not displayed directly
+      await (widget.isReceiver
+          ? ContactlessPdfService.downloadReceiverReceipt(
+              transaction: widget.transaction!,
+              accountNumber: widget.accountNumber,
+            )
+          : ContactlessPdfService.downloadPayerReceipt(
+              transaction: widget.transaction!,
+              accountNumber: widget.accountNumber,
+            ));
+
+      HapticFeedback.mediumImpact();
+      Get.snackbar(
+        'Downloaded',
+        'Receipt saved to Downloads',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to download receipt: $e',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
   }
 
   void _copyReference() {
@@ -371,15 +459,62 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                         opacity: _contentFade,
                         child: Column(
                           children: [
+                            // Download receipt button
+                            if (widget.transaction != null) ...[
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52.h,
+                                child: OutlinedButton.icon(
+                                  onPressed: _isDownloading ? null : _downloadReceipt,
+                                  icon: _isDownloading
+                                      ? SizedBox(
+                                          width: 18.sp,
+                                          height: 18.sp,
+                                          child: const CircularProgressIndicator(
+                                            color: Color(0xFF8B5CF6),
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Icon(Icons.download_rounded, size: 18.sp),
+                                  label: Text(
+                                    _isDownloading ? 'Downloading...' : 'Download Receipt',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF8B5CF6),
+                                    side: const BorderSide(
+                                      color: Color(0xFF8B5CF6),
+                                      width: 1.5,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14.r),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 12.h),
+                            ],
                             // Share receipt
                             SizedBox(
                               width: double.infinity,
                               height: 52.h,
                               child: OutlinedButton.icon(
-                                onPressed: _shareReceipt,
-                                icon: Icon(Icons.share_rounded, size: 18.sp),
+                                onPressed: _isGeneratingPdf ? null : _shareReceipt,
+                                icon: _isGeneratingPdf
+                                    ? SizedBox(
+                                        width: 18.sp,
+                                        height: 18.sp,
+                                        child: const CircularProgressIndicator(
+                                          color: Color(0xFF8B5CF6),
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Icon(Icons.share_rounded, size: 18.sp),
                                 label: Text(
-                                  'Share Receipt',
+                                  _isGeneratingPdf ? 'Generating PDF...' : 'Share Receipt',
                                   style: GoogleFonts.inter(
                                     fontSize: 15.sp,
                                     fontWeight: FontWeight.w600,

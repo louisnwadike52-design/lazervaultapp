@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -17,7 +18,7 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_chips_builder.dart';
-import 'package:lazervault/src/features/recipients/presentation/widgets/recipients.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_filter_chip_card.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -25,6 +26,10 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/scan_ban
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:get_it/get_it.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_transaction_history_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_transaction_history_modal.dart';
 import 'dart:io';
 
 class SelectRecipients extends StatefulWidget {
@@ -46,6 +51,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   // Current country for bank selection (from locale)
   String _currentCountry = 'NG';
 
+  // Filter state for recipients list
+  RecipientFilterType _currentFilter = RecipientFilterType.all;
+
+  // Scroll controller for recipients list
+  final ScrollController _recipientsScrollController = ScrollController();
+
   String? _getAccessTokenFromState(AuthenticationState authState) {
     if (authState is AuthenticationSuccess) {
       return authState.profile.session.accessToken;
@@ -64,6 +75,70 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       context.read<RecipientCubit>().getRecipients(accessToken: accessToken);
     }
     // The listener below will handle cases where auth happens later.
+
+    // Add scroll listener for pagination
+    _recipientsScrollController.addListener(_onRecipientsScroll);
+  }
+
+  @override
+  void dispose() {
+    _recipientsScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onRecipientsScroll() {
+    if (_recipientsScrollController.position.pixels >=
+        _recipientsScrollController.position.maxScrollExtent * 0.8) {
+      // Load more when scrolled to 80% of the list
+      final recipientState = context.read<RecipientCubit>().state;
+      if (recipientState is RecipientLoaded && recipientState.hasMore) {
+        final authState = context.read<AuthenticationCubit>().state;
+        final accessToken = _getAccessTokenFromState(authState);
+        if (accessToken != null) {
+          context.read<RecipientCubit>().loadMoreRecipients(accessToken: accessToken);
+        }
+      }
+    }
+  }
+
+  /// Handle filter changes from the filter chips
+  void _onFilterChanged(RecipientFilterType filterType) {
+    setState(() {
+      _currentFilter = filterType;
+    });
+
+    final authState = context.read<AuthenticationCubit>().state;
+    final accessToken = _getAccessTokenFromState(authState);
+    if (accessToken == null) return;
+
+    // Apply filter based on selected type
+    switch (filterType) {
+      case RecipientFilterType.all:
+        context.read<RecipientCubit>().getRecipients(
+          accessToken: accessToken,
+        );
+        break;
+      case RecipientFilterType.favorites:
+        context.read<RecipientCubit>().getRecipients(
+          accessToken: accessToken,
+          favoritesOnly: true,
+        );
+        break;
+      case RecipientFilterType.recent:
+        // For now, recent is handled the same as all (sorted by recent on backend)
+        // TODO: Add recent filter support to backend if needed
+        context.read<RecipientCubit>().getRecipients(
+          accessToken: accessToken,
+        );
+        break;
+      case RecipientFilterType.bank:
+        // Filter by external recipients (bank transfers)
+        // For now handled the same, could add type filter to backend
+        context.read<RecipientCubit>().getRecipients(
+          accessToken: accessToken,
+        );
+        break;
+    }
   }
 
   @override
@@ -251,6 +326,15 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                         ),
                       ),
 
+                      // Filter chips - always visible
+                      Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: RecipientChipsBuilder(
+                          onFilterChanged: _onFilterChanged,
+                          selectedFilter: _currentFilter,
+                        ),
+                      ),
+
                       // Recipients List Section
                       Expanded(
                         child: _buildRecipientsList(recipientState),
@@ -279,15 +363,76 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   }
 
   Widget _buildRecipientsList(RecipientState state) {
-    // Handle Initial State explicitly
+    // Handle Initial State explicitly - show centered loader while initializing
     if (state is RecipientInitial) {
-      // Show nothing or a specific initialization message before loading starts
-      return const Center(child: Text('Initializing recipient list...'));
+      return _buildLoadingWidget();
     }
 
     if (state is RecipientLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return _buildLoadingWidget();
+    }
+
+    if (state is RecipientLoadingMore) {
+      // Show loading indicator at bottom while keeping current list visible
+      final allRecipients = state.currentRecipients.toList();
+
+      if (allRecipients.isEmpty) {
+        return _buildLoadingWidget();
+      }
+
+      return RefreshIndicator(
+        color: const Color.fromARGB(255, 78, 3, 208),
+        onRefresh: () async {
+          final authState = context.read<AuthenticationCubit>().state;
+          if (authState is AuthenticationSuccess) {
+            await context.read<RecipientCubit>().getRecipients(
+              accessToken: authState.profile.session.accessToken,
+            );
+          }
+        },
+        child: CustomScrollView(
+          controller: _recipientsScrollController,
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            // All Recipients Section using SliverList
+            SliverPadding(
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index == allRecipients.length) {
+                      // Show loading more indicator at the end
+                      return Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: Center(
+                          child: SizedBox(
+                            width: 24.w,
+                            height: 24.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color.fromARGB(255, 78, 3, 208),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    final recipient = allRecipients[index];
+                    return _buildRecipientItem(recipient);
+                  },
+                  childCount: allRecipients.length + 1, // +1 for loading indicator
+                ),
+              ),
+            ),
+            // Bottom spacing
+            SliverToBoxAdapter(
+              child: SizedBox(height: 32.h),
+            ),
+          ],
+        ),
       );
     }
 
@@ -313,11 +458,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     }
 
     if (state is RecipientLoaded) {
-      // Show all recipients, with favorites at the top
+      // Show all recipients
       final allRecipients = state.recipients.toList();
-      final favoriteRecipients = allRecipients
-          .where((recipient) => recipient.isFavorite)
-          .toList();
       // Handle case where there are no recipients at all
       if (allRecipients.isEmpty) {
         return RefreshIndicator(
@@ -407,40 +549,881 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             );
           }
         },
-        child: SingleChildScrollView(
+        child: CustomScrollView(
+          controller: _recipientsScrollController,
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Favorites Section
-              if (favoriteRecipients.isNotEmpty) ...[
-                Padding(
-                  padding: EdgeInsets.all(16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      RecipientChipsBuilder(recipients: favoriteRecipients),
-                    ],
-                  ),
+          slivers: [
+            // All Recipients Section using SliverList
+            SliverPadding(
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index == allRecipients.length) {
+                      // Show "Load More" indicator at the end
+                      return _buildLoadMoreIndicator(state);
+                    }
+                    final recipient = allRecipients[index];
+                    return _buildRecipientItem(recipient);
+                  },
+                  childCount: allRecipients.length + (state.hasMore ? 1 : 0),
                 ),
-              ],
-              // All Recipients Section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Recipients(recipients: allRecipients),
-                ],
               ),
-            ],
-          ),
+            ),
+            // Bottom spacing
+            SliverToBoxAdapter(
+              child: SizedBox(height: 32.h),
+            ),
+          ],
         ),
       );
     }
 
     // Fallback for any other unhandled state (should ideally not be reached)
     return const Center(child: Text('An unexpected error occurred.'));
+  }
+
+  /// Build individual recipient item for the list
+  Widget _buildRecipientItem(RecipientModel recipient) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            offset: const Offset(0, 2),
+            blurRadius: 8,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16.r),
+          onTap: () => Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            child: Row(
+              children: [
+                // Profile Image
+                Container(
+                  width: 48.w,
+                  height: 48.w,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      recipient.name.substring(0, 2).toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 16.w),
+
+                // Name, Alias, and Account Number
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          if (recipient.isFavorite)
+                            Padding(
+                              padding: EdgeInsets.only(right: 6.w),
+                              child: Icon(
+                                Icons.star,
+                                size: 14,
+                                color: Colors.amber[700],
+                              ),
+                            ),
+                          Expanded(
+                            child: Text(
+                              recipient.name,
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                                letterSpacing: 0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (recipient.alias != null && recipient.alias!.isNotEmpty) ...[
+                        SizedBox(height: 2.h),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.label,
+                              size: 14,
+                              color: const Color(0xFF4E03D0),
+                            ),
+                            SizedBox(width: 4.w),
+                            Expanded(
+                              child: Text(
+                                recipient.alias!,
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: const Color(0xFF4E03D0),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      SizedBox(height: 4.h),
+                      Text(
+                        recipient.accountNumber,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Bank info (hide for LazerVault platform recipients)
+                if (recipient.bankName.toLowerCase() != 'lazervault') ...[
+                  Flexible(
+                    child: Text(
+                      recipient.bankName,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Colors.grey[500],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                ],
+
+                // Quick repeat transfer button
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20.r),
+                    onTap: () => _quickSendToRecipient(recipient),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.w),
+                      child: Icon(
+                        Icons.repeat,
+                        color: const Color(0xFF4E03D0),
+                        size: 20.w,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // More options button (three-dot menu)
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20.r),
+                    onTap: () => _showRecipientOptionsSheet(recipient),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.w),
+                      child: Icon(
+                        Icons.more_vert,
+                        color: Colors.grey[600],
+                        size: 22.w,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Quick send to recipient - show transaction history modal to select past amount
+  void _quickSendToRecipient(RecipientModel recipient) {
+    if (recipient.accountNumber.isEmpty) {
+      Get.snackbar(
+        'No Account Number',
+        'This recipient has no account number to search transactions for.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    Get.bottomSheet(
+      BlocProvider(
+        create: (_) => GetIt.I<RecipientTransactionHistoryCubit>(),
+        child: RecipientTransactionHistoryModal(recipient: recipient),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  /// Show options bottom sheet for recipient
+  void _showRecipientOptionsSheet(RecipientModel recipient) {
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Sheet Handle
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+
+            // Header
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48.w,
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        recipient.name.substring(0, 1).toUpperCase(),
+                        style: TextStyle(
+                          color: const Color(0xFF4E03D0),
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          recipient.name,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          recipient.accountNumber,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Divider(height: 24.h, color: Colors.grey[200]),
+
+            // Options List
+            _buildOptionTile(
+              icon: Icons.repeat,
+              title: 'Quick Send',
+              color: const Color(0xFF4E03D0),
+              onTap: () {
+                Get.back();
+                _quickSendToRecipient(recipient);
+              },
+            ),
+            _buildOptionTile(
+              icon: Icons.person_outline,
+              title: 'View Details',
+              color: Colors.grey[700]!,
+              onTap: () {
+                Get.back();
+                _showRecipientDetailsSheet(recipient);
+              },
+            ),
+            _buildOptionTile(
+              icon: Icons.edit_outlined,
+              title: 'Add Alias',
+              color: Colors.grey[700]!,
+              onTap: () {
+                Get.back();
+                _showUpdateAliasDialog(recipient);
+              },
+            ),
+            _buildOptionTile(
+              icon: Icons.share_outlined,
+              title: 'Share Account',
+              color: Colors.grey[700]!,
+              onTap: () {
+                Get.back();
+                _shareRecipient(recipient);
+              },
+            ),
+            _buildOptionTile(
+              icon: Icons.favorite_border,
+              title: recipient.isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
+              color: recipient.isFavorite ? Colors.amber[700]! : Colors.grey[700]!,
+              onTap: () {
+                Get.back();
+                _toggleFavorite(recipient);
+              },
+            ),
+            _buildOptionTile(
+              icon: Icons.delete_outline,
+              title: 'Remove Recipient',
+              color: Colors.red[400]!,
+              onTap: () {
+                Get.back();
+                _showRemoveConfirmation(recipient);
+              },
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build option tile for bottom sheet
+  Widget _buildOptionTile({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16.sp,
+          color: Colors.black87,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  /// Show recipient details bottom sheet
+  void _showRecipientDetailsSheet(RecipientModel recipient) {
+    Get.bottomSheet(
+      Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag Handle
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+
+            // Header
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48.w,
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.person,
+                      color: const Color(0xFF4E03D0),
+                      size: 28.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Recipient Details',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF111827),
+                          ),
+                        ),
+                        Text(
+                          'Saved recipient information',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.close,
+                      color: const Color(0xFF6B7280),
+                      size: 24.sp,
+                    ),
+                    onPressed: () => Get.back(),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 16.h),
+
+            // Scrollable content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 24.h),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Purple Gradient Card
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w),
+                      child: Container(
+                        padding: EdgeInsets.all(20.w),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFF4E03D0),
+                              const Color(0xFF5F14E1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(16.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Bank name with icon
+                            Row(
+                              children: [
+                                Container(
+                                  width: 40.w,
+                                  height: 40.h,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  child: Icon(
+                                    Icons.account_balance,
+                                    color: Colors.white,
+                                    size: 20.sp,
+                                  ),
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Text(
+                                    recipient.bankName,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20.h),
+                            Container(
+                              height: 1,
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
+                            SizedBox(height: 20.h),
+
+                            // Account holder name
+                            Text(
+                              'Account Holder',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              recipient.name.toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+
+                            SizedBox(height: 20.h),
+
+                            // Account number
+                            Text(
+                              'Account Number',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                            SizedBox(height: 4.h),
+                            Text(
+                              recipient.accountNumber,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1,
+                              ),
+                            ),
+
+                            // Alias
+                            if (recipient.alias != null && recipient.alias!.isNotEmpty) ...[
+                              SizedBox(height: 12.h),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.label_outline,
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    size: 16.sp,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Text(
+                                    'Alias: ${recipient.alias}',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 24.h),
+
+                    // Additional details below the card
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w),
+                      child: Container(
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: const Color(0xFFE5E7EB),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            if (recipient.sortCode.isNotEmpty)
+                              _detailRow('Sort Code', recipient.sortCode),
+                            if (recipient.countryCode != null && recipient.countryCode!.isNotEmpty)
+                              _detailRow('Country', recipient.countryCode!),
+                            if (recipient.currency != null && recipient.currency!.isNotEmpty)
+                              _detailRow('Currency', recipient.currency!),
+                            if (recipient.type != null && recipient.type!.isNotEmpty)
+                              _detailRow('Type', _formatRecipientType(recipient.type)),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 24.h),
+
+                    // Action Buttons
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Get.back();
+                                _shareRecipient(recipient);
+                              },
+                              icon: Icon(Icons.share, size: 18.sp),
+                              label: Text('Share'),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                side: BorderSide(color: const Color(0xFF4E03D0)),
+                                foregroundColor: const Color(0xFF4E03D0),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 16.w),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Get.back();
+                                Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+                              },
+                              icon: Icon(Icons.send, size: 18.sp),
+                              label: Text('Send Money'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4E03D0),
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Detail row widget
+  String _formatRecipientType(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'internal':
+        return 'Internal (LazerVault)';
+      case 'external':
+        return 'External (Bank)';
+      case 'domestic':
+        return 'Domestic Transfer';
+      case 'international':
+        return 'International Transfer';
+      default:
+        return type ?? 'Unknown';
+    }
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF6B7280),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF111827),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show update alias dialog
+  void _showUpdateAliasDialog(RecipientModel recipient) {
+    final controller = TextEditingController(text: recipient.alias ?? '');
+    final authState = context.read<AuthenticationCubit>().state;
+    final accessToken = (authState is AuthenticationSuccess)
+        ? authState.profile.session.accessToken
+        : null;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Add Alias'),
+          content: TextField(
+            controller: controller,
+            maxLength: 50,
+            decoration: const InputDecoration(
+              hintText: 'Enter alias (e.g., "Mum", "Work")',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                final trimmedValue = controller.text.trim();
+                if (accessToken != null) {
+                  context.read<RecipientCubit>().updateAlias(
+                    recipientId: recipient.id,
+                    alias: trimmedValue.isEmpty ? null : trimmedValue,
+                    accessToken: accessToken,
+                  );
+                  Get.snackbar(
+                    'Success',
+                    trimmedValue.isEmpty ? 'Alias removed' : 'Alias updated',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.green.withValues(alpha: 0.8),
+                    colorText: Colors.white,
+                  );
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Share recipient details
+  void _shareRecipient(RecipientModel recipient) {
+    var shareText =
+        'Account details for:\nName: ${recipient.name}\nAccount Number: ${recipient.accountNumber}';
+    shareText += '\nBank: ${recipient.bankName}';
+    if (recipient.alias != null && recipient.alias!.isNotEmpty) {
+      shareText += '\nAlias: ${recipient.alias}';
+    }
+    if (recipient.countryCode != null) {
+      shareText += '\nCountry: ${recipient.countryCode}';
+    }
+    if (recipient.currency != null) {
+      shareText += '\nCurrency: ${recipient.currency}';
+    }
+    shareText += '\n\n-Sent from LazerVault';
+    SharePlus.instance.share(ShareParams(text: shareText));
+  }
+
+  /// Toggle favorite status
+  void _toggleFavorite(RecipientModel recipient) {
+    final authState = context.read<AuthenticationCubit>().state;
+    final accessToken = (authState is AuthenticationSuccess)
+        ? authState.profile.session.accessToken
+        : null;
+
+    if (accessToken != null) {
+      context.read<RecipientCubit>().toggleFavorite(
+        recipientId: recipient.id,
+        isFavorite: !recipient.isFavorite,
+        accessToken: accessToken,
+      );
+      Get.snackbar(
+        'Success',
+        recipient.isFavorite ? 'Removed from favorites' : 'Added to favorites',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withValues(alpha: 0.8),
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Show remove confirmation dialog
+  void _showRemoveConfirmation(RecipientModel recipient) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Remove Recipient'),
+          content: Text('Are you sure you want to remove ${recipient.name}?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                final authState = context.read<AuthenticationCubit>().state;
+                final accessToken = (authState is AuthenticationSuccess)
+                    ? authState.profile.session.accessToken
+                    : null;
+                if (accessToken != null) {
+                  context.read<RecipientCubit>().deleteRecipient(
+                    recipientId: recipient.id,
+                    accessToken: accessToken,
+                  );
+                }
+              },
+              child: Text('Remove', style: TextStyle(color: Colors.red[400])),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadMoreIndicator(RecipientState state) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      alignment: Alignment.center,
+      child: CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(
+          Color.fromARGB(255, 78, 3, 208),
+        ),
+      ),
+    );
   }
 
   void _showEnhancedRecipientSelection() {
@@ -457,7 +1440,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           },
           onLazertagUserSelected: (user) {
             // Convert lazertag user to recipient and navigate
-            // Note: currency is not set here - the sender's account currency will be used for the receipt
+            final currency = CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
             final recipient = RecipientModel(
               id: user.id,
               name: user.name,
@@ -465,7 +1448,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
               bankName: 'LazerVault',
               sortCode: '',
               isFavorite: false,
-              // currency: null - sender's account currency will be used (dynamic based on locale)
+              countryCode: _currentCountry,
+              currency: currency,
             );
             Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
           },
@@ -1389,6 +2373,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
       if (result != null && result is Map<String, dynamic>) {
         // QR code scanned successfully - create recipient from scanned data
+        final qrCurrency = result['currency'] as String?;
+        final currency = qrCurrency ?? CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
         final recipient = RecipientModel(
           id: result['recipientId'] ?? '',
           name: result['name'] ?? result['username'] ?? 'Unknown',
@@ -1396,6 +2382,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           bankName: 'LazerVault',
           sortCode: '',
           isFavorite: false,
+          countryCode: _currentCountry,
+          currency: currency,
         );
 
         // Navigate to send funds with scanned recipient
@@ -1403,9 +2391,9 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         final arguments = <String, dynamic>{'recipient': recipient};
         if (result['amount'] != null) {
           arguments['prefillAmount'] = result['amount'];
-          arguments['prefillCurrency'] = result['currency'] ?? 'NGN';
+          arguments['prefillCurrency'] = currency;
         }
-        Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+        Get.toNamed(AppRoutes.initiateSendFunds, arguments: arguments);
       }
     } catch (e) {
       Get.snackbar(
@@ -1419,6 +2407,9 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   }
 
   Future<void> _launchBankDetailsScan() async {
+    // Get auth cubit before any async operations
+    final authCubit = context.read<AuthenticationCubit>();
+
     // Step 1: Capture image from camera
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(
@@ -1438,7 +2429,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
     try {
       // Step 3: Get user ID from auth state
-      final authState = context.read<AuthenticationCubit>().state;
+      final authState = authCubit.state;
       final userId = (authState is AuthenticationSuccess)
           ? authState.profile.user.id
           : '';
@@ -1669,5 +2660,28 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
   Future<void> _launchSplitBills() async {
     Get.toNamed(AppRoutes.splitBills);
+  }
+
+  Widget _buildLoadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Color.fromARGB(255, 78, 3, 208),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Loading recipients...',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14.sp,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

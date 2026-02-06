@@ -31,6 +31,7 @@ import 'package:lazervault/src/features/contacts/data/models/lazervault_user_mat
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/config/country_config.dart';
 
 enum AddRecipientMethod { bankDetails, username, contacts }
 
@@ -894,7 +895,7 @@ class _AddRecipientState extends State<AddRecipient> {
       sortCode: '',
       isFavorite: isFavorite,
       countryCode: countryCode,
-      currency: countryCode == 'NG' ? 'NGN' : 'GBP',
+      currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: selectedUser.email.isNotEmpty ? selectedUser.email : null,
     );
 
@@ -1150,6 +1151,7 @@ class _AddRecipientState extends State<AddRecipient> {
       sortCode: '',
       isFavorite: false,
       countryCode: countryCode,
+      currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: _selectedUser!.email.isNotEmpty ? _selectedUser!.email : null,
     );
 

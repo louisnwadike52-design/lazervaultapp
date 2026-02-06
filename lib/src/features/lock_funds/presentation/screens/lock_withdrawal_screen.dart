@@ -8,6 +8,7 @@ import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import 'lock_withdrawal_success_screen.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class LockWithdrawalScreen extends StatefulWidget {
   final LockFund lockFund;
@@ -289,7 +290,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
           ),
           SizedBox(height: 8.h),
           Text(
-            '${lock.currency} ${_withdrawalAmount.toStringAsFixed(2)}',
+            '${CurrencySymbols.getSymbol(lock.currency)}${_withdrawalAmount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               fontSize: 36.sp,
               fontWeight: FontWeight.w700,
@@ -305,7 +306,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Text(
-                'Penalty: -${lock.currency} ${_penaltyAmount.toStringAsFixed(2)}',
+                'Penalty: -${CurrencySymbols.getSymbol(lock.currency)}${_penaltyAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   fontSize: 13.sp,
                   color: const Color(0xFFEF4444),
@@ -343,13 +344,13 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
           _buildBreakdownRow('Principal Amount', lock.formattedAmount, Colors.white),
           _buildBreakdownRow(
             'Interest Earned',
-            '+${lock.currency} ${lock.accruedInterest.toStringAsFixed(2)}',
+            '+${CurrencySymbols.getSymbol(lock.currency)}${lock.accruedInterest.toStringAsFixed(2)}',
             const Color(0xFF10B981),
           ),
           if (widget.isEarlyWithdrawal && _penaltyAmount > 0)
             _buildBreakdownRow(
               'Early Withdrawal Penalty',
-              '-${lock.currency} ${_penaltyAmount.toStringAsFixed(2)}',
+              '-${CurrencySymbols.getSymbol(lock.currency)}${_penaltyAmount.toStringAsFixed(2)}',
               const Color(0xFFEF4444),
             ),
           Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
@@ -365,7 +366,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
                 ),
               ),
               Text(
-                '${lock.currency} ${_withdrawalAmount.toStringAsFixed(2)}',
+                '${CurrencySymbols.getSymbol(lock.currency)}${_withdrawalAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,

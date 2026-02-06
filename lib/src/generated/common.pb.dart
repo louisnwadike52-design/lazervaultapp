@@ -1,40 +1,25 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: common.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'google/protobuf/timestamp.pb.dart' as $42;
 
 export 'common.pbenum.dart';
 
+/// Base user type
 class User extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'User', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role')
-    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
-    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isEmailVerified')
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'language')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
-    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
-    ..hasRequiredFields = false
-  ;
-
-  User._() : super();
   factory User({
     $fixnum.Int64? id,
     $core.String? firstName,
@@ -45,63 +30,84 @@ class User extends $pb.GeneratedMessage {
     $core.String? role,
     $core.bool? verified,
     $core.bool? isEmailVerified,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
     $core.String? language,
     $core.String? currency,
     $core.String? country,
     $core.String? profilePicture,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (firstName != null) {
-      _result.firstName = firstName;
+      $result.firstName = firstName;
     }
     if (lastName != null) {
-      _result.lastName = lastName;
+      $result.lastName = lastName;
     }
     if (email != null) {
-      _result.email = email;
+      $result.email = email;
     }
     if (phoneNumber != null) {
-      _result.phoneNumber = phoneNumber;
+      $result.phoneNumber = phoneNumber;
     }
     if (username != null) {
-      _result.username = username;
+      $result.username = username;
     }
     if (role != null) {
-      _result.role = role;
+      $result.role = role;
     }
     if (verified != null) {
-      _result.verified = verified;
+      $result.verified = verified;
     }
     if (isEmailVerified != null) {
-      _result.isEmailVerified = isEmailVerified;
+      $result.isEmailVerified = isEmailVerified;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
     if (language != null) {
-      _result.language = language;
+      $result.language = language;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (country != null) {
-      _result.country = country;
+      $result.country = country;
     }
     if (profilePicture != null) {
-      _result.profilePicture = profilePicture;
+      $result.profilePicture = profilePicture;
     }
-    return _result;
+    return $result;
   }
+  User._() : super();
   factory User.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory User.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'User', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'firstName')
+    ..aOS(3, _omitFieldNames ? '' : 'lastName')
+    ..aOS(4, _omitFieldNames ? '' : 'email')
+    ..aOS(5, _omitFieldNames ? '' : 'phoneNumber')
+    ..aOS(6, _omitFieldNames ? '' : 'username')
+    ..aOS(7, _omitFieldNames ? '' : 'role')
+    ..aOB(8, _omitFieldNames ? '' : 'verified')
+    ..aOB(9, _omitFieldNames ? '' : 'isEmailVerified')
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOS(12, _omitFieldNames ? '' : 'language')
+    ..aOS(13, _omitFieldNames ? '' : 'currency')
+    ..aOS(14, _omitFieldNames ? '' : 'country')
+    ..aOS(15, _omitFieldNames ? '' : 'profilePicture')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -111,8 +117,10 @@ class User extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  User copyWith(void Function(User) updates) => super.copyWith((message) => updates(message as User)) as User; // ignore: deprecated_member_use
+  User copyWith(void Function(User) updates) => super.copyWith((message) => updates(message as User)) as User;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static User create() => User._();
   User createEmptyInstance() => create();
@@ -203,26 +211,26 @@ class User extends $pb.GeneratedMessage {
   void clearIsEmailVerified() => clearField(9);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get createdAt => $_getN(9);
+  $42.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($36.Timestamp v) { setField(10, v); }
+  set createdAt($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureCreatedAt() => $_ensure(9);
+  $42.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $36.Timestamp get updatedAt => $_getN(10);
+  $42.Timestamp get updatedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set updatedAt($36.Timestamp v) { setField(11, v); }
+  set updatedAt($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasUpdatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearUpdatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(10);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get language => $_getSZ(11);
@@ -262,28 +270,29 @@ class User extends $pb.GeneratedMessage {
 }
 
 class Data extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Data', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<User>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
-    ..aOM<Session>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'session', subBuilder: Session.create)
-    ..hasRequiredFields = false
-  ;
-
-  Data._() : super();
   factory Data({
     User? user,
     Session? session,
   }) {
-    final _result = create();
+    final $result = create();
     if (user != null) {
-      _result.user = user;
+      $result.user = user;
     }
     if (session != null) {
-      _result.session = session;
+      $result.session = session;
     }
-    return _result;
+    return $result;
   }
+  Data._() : super();
   factory Data.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Data.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Data', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<User>(1, _omitFieldNames ? '' : 'user', subBuilder: User.create)
+    ..aOM<Session>(2, _omitFieldNames ? '' : 'session', subBuilder: Session.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -293,8 +302,10 @@ class Data extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Data copyWith(void Function(Data) updates) => super.copyWith((message) => updates(message as Data)) as Data; // ignore: deprecated_member_use
+  Data copyWith(void Function(Data) updates) => super.copyWith((message) => updates(message as Data)) as Data;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static Data create() => Data._();
   Data createEmptyInstance() => create();
@@ -327,48 +338,49 @@ class Data extends $pb.GeneratedMessage {
 }
 
 class Session extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Session', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
-    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessTokenExpiresAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshTokenExpiresAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  Session._() : super();
   factory Session({
     $core.String? id,
     $fixnum.Int64? userId,
     $core.String? accessToken,
     $core.String? refreshToken,
-    $36.Timestamp? accessTokenExpiresAt,
-    $36.Timestamp? refreshTokenExpiresAt,
+    $42.Timestamp? accessTokenExpiresAt,
+    $42.Timestamp? refreshTokenExpiresAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (accessToken != null) {
-      _result.accessToken = accessToken;
+      $result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      _result.refreshToken = refreshToken;
+      $result.refreshToken = refreshToken;
     }
     if (accessTokenExpiresAt != null) {
-      _result.accessTokenExpiresAt = accessTokenExpiresAt;
+      $result.accessTokenExpiresAt = accessTokenExpiresAt;
     }
     if (refreshTokenExpiresAt != null) {
-      _result.refreshTokenExpiresAt = refreshTokenExpiresAt;
+      $result.refreshTokenExpiresAt = refreshTokenExpiresAt;
     }
-    return _result;
+    return $result;
   }
+  Session._() : super();
   factory Session.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Session.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Session', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'accessToken')
+    ..aOS(4, _omitFieldNames ? '' : 'refreshToken')
+    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'accessTokenExpiresAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'refreshTokenExpiresAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -378,8 +390,10 @@ class Session extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Session copyWith(void Function(Session) updates) => super.copyWith((message) => updates(message as Session)) as Session; // ignore: deprecated_member_use
+  Session copyWith(void Function(Session) updates) => super.copyWith((message) => updates(message as Session)) as Session;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static Session create() => Session._();
   Session createEmptyInstance() => create();
@@ -425,40 +439,30 @@ class Session extends $pb.GeneratedMessage {
   void clearRefreshToken() => clearField(4);
 
   @$pb.TagNumber(5)
-  $36.Timestamp get accessTokenExpiresAt => $_getN(4);
+  $42.Timestamp get accessTokenExpiresAt => $_getN(4);
   @$pb.TagNumber(5)
-  set accessTokenExpiresAt($36.Timestamp v) { setField(5, v); }
+  set accessTokenExpiresAt($42.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasAccessTokenExpiresAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearAccessTokenExpiresAt() => clearField(5);
   @$pb.TagNumber(5)
-  $36.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
+  $42.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get refreshTokenExpiresAt => $_getN(5);
+  $42.Timestamp get refreshTokenExpiresAt => $_getN(5);
   @$pb.TagNumber(6)
-  set refreshTokenExpiresAt($36.Timestamp v) { setField(6, v); }
+  set refreshTokenExpiresAt($42.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasRefreshTokenExpiresAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearRefreshTokenExpiresAt() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
+  $42.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
 }
 
+/// Pagination Info - Common pagination structure
 class PaginationInfo extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrev')
-    ..hasRequiredFields = false
-  ;
-
-  PaginationInfo._() : super();
   factory PaginationInfo({
     $core.int? currentPage,
     $core.int? totalPages,
@@ -467,29 +471,41 @@ class PaginationInfo extends $pb.GeneratedMessage {
     $core.bool? hasNext,
     $core.bool? hasPrev,
   }) {
-    final _result = create();
+    final $result = create();
     if (currentPage != null) {
-      _result.currentPage = currentPage;
+      $result.currentPage = currentPage;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
     if (totalItems != null) {
-      _result.totalItems = totalItems;
+      $result.totalItems = totalItems;
     }
     if (itemsPerPage != null) {
-      _result.itemsPerPage = itemsPerPage;
+      $result.itemsPerPage = itemsPerPage;
     }
     if (hasNext != null) {
-      _result.hasNext = hasNext;
+      $result.hasNext = hasNext;
     }
     if (hasPrev != null) {
-      _result.hasPrev = hasPrev;
+      $result.hasPrev = hasPrev;
     }
-    return _result;
+    return $result;
   }
+  PaginationInfo._() : super();
   factory PaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaginationInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalItems', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPrev')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -499,8 +515,10 @@ class PaginationInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PaginationInfo copyWith(void Function(PaginationInfo) updates) => super.copyWith((message) => updates(message as PaginationInfo)) as PaginationInfo; // ignore: deprecated_member_use
+  PaginationInfo copyWith(void Function(PaginationInfo) updates) => super.copyWith((message) => updates(message as PaginationInfo)) as PaginationInfo;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PaginationInfo create() => PaginationInfo._();
   PaginationInfo createEmptyInstance() => create();
@@ -564,3 +582,6 @@ class PaginationInfo extends $pb.GeneratedMessage {
   void clearHasPrev() => clearField(6);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

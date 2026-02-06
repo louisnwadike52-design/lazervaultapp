@@ -1,64 +1,69 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: referral.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
-
+import 'google/protobuf/timestamp.pb.dart' as $42;
 import 'referral.pbenum.dart';
 
 export 'referral.pbenum.dart';
 
+/// ReferralCode message represents a user's referral code
 class ReferralCode extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ReferralCode', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
-    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  ReferralCode._() : super();
   factory ReferralCode({
     $fixnum.Int64? id,
     $fixnum.Int64? userId,
     $core.String? code,
     $core.bool? isActive,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (code != null) {
-      _result.code = code;
+      $result.code = code;
     }
     if (isActive != null) {
-      _result.isActive = isActive;
+      $result.isActive = isActive;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  ReferralCode._() : super();
   factory ReferralCode.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ReferralCode.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReferralCode', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'code')
+    ..aOB(4, _omitFieldNames ? '' : 'isActive')
+    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -68,8 +73,10 @@ class ReferralCode extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ReferralCode copyWith(void Function(ReferralCode) updates) => super.copyWith((message) => updates(message as ReferralCode)) as ReferralCode; // ignore: deprecated_member_use
+  ReferralCode copyWith(void Function(ReferralCode) updates) => super.copyWith((message) => updates(message as ReferralCode)) as ReferralCode;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ReferralCode create() => ReferralCode._();
   ReferralCode createEmptyInstance() => create();
@@ -115,45 +122,30 @@ class ReferralCode extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(4);
 
   @$pb.TagNumber(5)
-  $36.Timestamp get createdAt => $_getN(4);
+  $42.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($36.Timestamp v) { setField(5, v); }
+  set createdAt($42.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearCreatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $36.Timestamp ensureCreatedAt() => $_ensure(4);
+  $42.Timestamp ensureCreatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get updatedAt => $_getN(5);
+  $42.Timestamp get updatedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set updatedAt($36.Timestamp v) { setField(6, v); }
+  set updatedAt($42.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasUpdatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearUpdatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(5);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(5);
 }
 
+/// ReferralTransaction message represents a referral event
 class ReferralTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ReferralTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referrerUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refereeUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referralCodeUsed')
-    ..e<ReferralStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ReferralStatus.REFERRAL_STATUS_PENDING, valueOf: ReferralStatus.valueOf, enumValues: ReferralStatus.values)
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referrerRewardAmount', $pb.PbFieldType.O3)
-    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refereeRewardAmount', $pb.PbFieldType.O3)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $36.Timestamp.create)
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
-    ..hasRequiredFields = false
-  ;
-
-  ReferralTransaction._() : super();
   factory ReferralTransaction({
     $fixnum.Int64? id,
     $fixnum.Int64? referrerUserId,
@@ -163,48 +155,65 @@ class ReferralTransaction extends $pb.GeneratedMessage {
     $core.int? referrerRewardAmount,
     $core.int? refereeRewardAmount,
     $core.String? currency,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? completedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? completedAt,
     $core.String? failureReason,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (referrerUserId != null) {
-      _result.referrerUserId = referrerUserId;
+      $result.referrerUserId = referrerUserId;
     }
     if (refereeUserId != null) {
-      _result.refereeUserId = refereeUserId;
+      $result.refereeUserId = refereeUserId;
     }
     if (referralCodeUsed != null) {
-      _result.referralCodeUsed = referralCodeUsed;
+      $result.referralCodeUsed = referralCodeUsed;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (referrerRewardAmount != null) {
-      _result.referrerRewardAmount = referrerRewardAmount;
+      $result.referrerRewardAmount = referrerRewardAmount;
     }
     if (refereeRewardAmount != null) {
-      _result.refereeRewardAmount = refereeRewardAmount;
+      $result.refereeRewardAmount = refereeRewardAmount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (completedAt != null) {
-      _result.completedAt = completedAt;
+      $result.completedAt = completedAt;
     }
     if (failureReason != null) {
-      _result.failureReason = failureReason;
+      $result.failureReason = failureReason;
     }
-    return _result;
+    return $result;
   }
+  ReferralTransaction._() : super();
   factory ReferralTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ReferralTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReferralTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'referrerUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'refereeUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, _omitFieldNames ? '' : 'referralCodeUsed')
+    ..e<ReferralStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ReferralStatus.REFERRAL_STATUS_PENDING, valueOf: ReferralStatus.valueOf, enumValues: ReferralStatus.values)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'referrerRewardAmount', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'refereeRewardAmount', $pb.PbFieldType.O3)
+    ..aOS(8, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..aOS(11, _omitFieldNames ? '' : 'failureReason')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -214,8 +223,10 @@ class ReferralTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ReferralTransaction copyWith(void Function(ReferralTransaction) updates) => super.copyWith((message) => updates(message as ReferralTransaction)) as ReferralTransaction; // ignore: deprecated_member_use
+  ReferralTransaction copyWith(void Function(ReferralTransaction) updates) => super.copyWith((message) => updates(message as ReferralTransaction)) as ReferralTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ReferralTransaction create() => ReferralTransaction._();
   ReferralTransaction createEmptyInstance() => create();
@@ -297,26 +308,26 @@ class ReferralTransaction extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get createdAt => $_getN(8);
+  $42.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($36.Timestamp v) { setField(9, v); }
+  set createdAt($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureCreatedAt() => $_ensure(8);
+  $42.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get completedAt => $_getN(9);
+  $42.Timestamp get completedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set completedAt($36.Timestamp v) { setField(10, v); }
+  set completedAt($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCompletedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCompletedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureCompletedAt() => $_ensure(9);
+  $42.Timestamp ensureCompletedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get failureReason => $_getSZ(10);
@@ -328,20 +339,8 @@ class ReferralTransaction extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(11);
 }
 
+/// CountryRewardConfig message represents country-specific reward configuration
 class CountryRewardConfig extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CountryRewardConfig', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referrerReward', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refereeReward', $pb.PbFieldType.O3)
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  CountryRewardConfig._() : super();
   factory CountryRewardConfig({
     $fixnum.Int64? id,
     $core.String? countryCode,
@@ -349,38 +348,52 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
     $core.int? referrerReward,
     $core.int? refereeReward,
     $core.bool? isActive,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (countryCode != null) {
-      _result.countryCode = countryCode;
+      $result.countryCode = countryCode;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (referrerReward != null) {
-      _result.referrerReward = referrerReward;
+      $result.referrerReward = referrerReward;
     }
     if (refereeReward != null) {
-      _result.refereeReward = refereeReward;
+      $result.refereeReward = refereeReward;
     }
     if (isActive != null) {
-      _result.isActive = isActive;
+      $result.isActive = isActive;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  CountryRewardConfig._() : super();
   factory CountryRewardConfig.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CountryRewardConfig.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CountryRewardConfig', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'countryCode')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'referrerReward', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'refereeReward', $pb.PbFieldType.O3)
+    ..aOB(6, _omitFieldNames ? '' : 'isActive')
+    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -390,8 +403,10 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CountryRewardConfig copyWith(void Function(CountryRewardConfig) updates) => super.copyWith((message) => updates(message as CountryRewardConfig)) as CountryRewardConfig; // ignore: deprecated_member_use
+  CountryRewardConfig copyWith(void Function(CountryRewardConfig) updates) => super.copyWith((message) => updates(message as CountryRewardConfig)) as CountryRewardConfig;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CountryRewardConfig create() => CountryRewardConfig._();
   CountryRewardConfig createEmptyInstance() => create();
@@ -455,61 +470,63 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(6);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get createdAt => $_getN(6);
+  $42.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($36.Timestamp v) { setField(7, v); }
+  set createdAt($42.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureCreatedAt() => $_ensure(6);
+  $42.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get updatedAt => $_getN(7);
+  $42.Timestamp get updatedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set updatedAt($36.Timestamp v) { setField(8, v); }
+  set updatedAt($42.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasUpdatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearUpdatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(7);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(7);
 }
 
+/// ReferralStats message represents aggregated referral statistics
 class ReferralStats extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ReferralStats', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aInt64(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalReferrals')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalRewardsEarned', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pendingRewards', $pb.PbFieldType.O3)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..hasRequiredFields = false
-  ;
-
-  ReferralStats._() : super();
   factory ReferralStats({
     $fixnum.Int64? totalReferrals,
     $core.int? totalRewardsEarned,
     $core.int? pendingRewards,
     $core.String? currency,
   }) {
-    final _result = create();
+    final $result = create();
     if (totalReferrals != null) {
-      _result.totalReferrals = totalReferrals;
+      $result.totalReferrals = totalReferrals;
     }
     if (totalRewardsEarned != null) {
-      _result.totalRewardsEarned = totalRewardsEarned;
+      $result.totalRewardsEarned = totalRewardsEarned;
     }
     if (pendingRewards != null) {
-      _result.pendingRewards = pendingRewards;
+      $result.pendingRewards = pendingRewards;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
-    return _result;
+    return $result;
   }
+  ReferralStats._() : super();
   factory ReferralStats.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ReferralStats.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReferralStats', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'totalReferrals')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalRewardsEarned', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'pendingRewards', $pb.PbFieldType.O3)
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -519,8 +536,10 @@ class ReferralStats extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ReferralStats copyWith(void Function(ReferralStats) updates) => super.copyWith((message) => updates(message as ReferralStats)) as ReferralStats; // ignore: deprecated_member_use
+  ReferralStats copyWith(void Function(ReferralStats) updates) => super.copyWith((message) => updates(message as ReferralStats)) as ReferralStats;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ReferralStats create() => ReferralStats._();
   ReferralStats createEmptyInstance() => create();
@@ -566,18 +585,8 @@ class ReferralStats extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(4);
 }
 
+/// LeaderboardEntry message represents a top referrer
 class LeaderboardEntry extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LeaderboardEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
-    ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalReferrals')
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rank', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  LeaderboardEntry._() : super();
   factory LeaderboardEntry({
     $fixnum.Int64? userId,
     $core.String? firstName,
@@ -586,29 +595,41 @@ class LeaderboardEntry extends $pb.GeneratedMessage {
     $fixnum.Int64? totalReferrals,
     $core.int? rank,
   }) {
-    final _result = create();
+    final $result = create();
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (firstName != null) {
-      _result.firstName = firstName;
+      $result.firstName = firstName;
     }
     if (lastName != null) {
-      _result.lastName = lastName;
+      $result.lastName = lastName;
     }
     if (username != null) {
-      _result.username = username;
+      $result.username = username;
     }
     if (totalReferrals != null) {
-      _result.totalReferrals = totalReferrals;
+      $result.totalReferrals = totalReferrals;
     }
     if (rank != null) {
-      _result.rank = rank;
+      $result.rank = rank;
     }
-    return _result;
+    return $result;
   }
+  LeaderboardEntry._() : super();
   factory LeaderboardEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LeaderboardEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LeaderboardEntry', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'firstName')
+    ..aOS(3, _omitFieldNames ? '' : 'lastName')
+    ..aOS(4, _omitFieldNames ? '' : 'username')
+    ..aInt64(5, _omitFieldNames ? '' : 'totalReferrals')
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'rank', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -618,8 +639,10 @@ class LeaderboardEntry extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LeaderboardEntry copyWith(void Function(LeaderboardEntry) updates) => super.copyWith((message) => updates(message as LeaderboardEntry)) as LeaderboardEntry; // ignore: deprecated_member_use
+  LeaderboardEntry copyWith(void Function(LeaderboardEntry) updates) => super.copyWith((message) => updates(message as LeaderboardEntry)) as LeaderboardEntry;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static LeaderboardEntry create() => LeaderboardEntry._();
   LeaderboardEntry createEmptyInstance() => create();
@@ -683,24 +706,26 @@ class LeaderboardEntry extends $pb.GeneratedMessage {
   void clearRank() => clearField(6);
 }
 
+/// Request/Response messages for ValidateReferralCode
 class ValidateReferralCodeRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ValidateReferralCodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
-    ..hasRequiredFields = false
-  ;
-
-  ValidateReferralCodeRequest._() : super();
   factory ValidateReferralCodeRequest({
     $core.String? code,
   }) {
-    final _result = create();
+    final $result = create();
     if (code != null) {
-      _result.code = code;
+      $result.code = code;
     }
-    return _result;
+    return $result;
   }
+  ValidateReferralCodeRequest._() : super();
   factory ValidateReferralCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ValidateReferralCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateReferralCodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'code')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -710,8 +735,10 @@ class ValidateReferralCodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ValidateReferralCodeRequest copyWith(void Function(ValidateReferralCodeRequest) updates) => super.copyWith((message) => updates(message as ValidateReferralCodeRequest)) as ValidateReferralCodeRequest; // ignore: deprecated_member_use
+  ValidateReferralCodeRequest copyWith(void Function(ValidateReferralCodeRequest) updates) => super.copyWith((message) => updates(message as ValidateReferralCodeRequest)) as ValidateReferralCodeRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ValidateReferralCodeRequest create() => ValidateReferralCodeRequest._();
   ValidateReferralCodeRequest createEmptyInstance() => create();
@@ -731,28 +758,29 @@ class ValidateReferralCodeRequest extends $pb.GeneratedMessage {
 }
 
 class ValidateReferralCodeResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ValidateReferralCodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isValid')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  ValidateReferralCodeResponse._() : super();
   factory ValidateReferralCodeResponse({
     $core.bool? isValid,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (isValid != null) {
-      _result.isValid = isValid;
+      $result.isValid = isValid;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  ValidateReferralCodeResponse._() : super();
   factory ValidateReferralCodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ValidateReferralCodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateReferralCodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'isValid')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -762,8 +790,10 @@ class ValidateReferralCodeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ValidateReferralCodeResponse copyWith(void Function(ValidateReferralCodeResponse) updates) => super.copyWith((message) => updates(message as ValidateReferralCodeResponse)) as ValidateReferralCodeResponse; // ignore: deprecated_member_use
+  ValidateReferralCodeResponse copyWith(void Function(ValidateReferralCodeResponse) updates) => super.copyWith((message) => updates(message as ValidateReferralCodeResponse)) as ValidateReferralCodeResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ValidateReferralCodeResponse create() => ValidateReferralCodeResponse._();
   ValidateReferralCodeResponse createEmptyInstance() => create();
@@ -791,15 +821,17 @@ class ValidateReferralCodeResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// Request/Response messages for GetMyReferralCode
 class GetMyReferralCodeRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyReferralCodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+  factory GetMyReferralCodeRequest() => create();
+  GetMyReferralCodeRequest._() : super();
+  factory GetMyReferralCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyReferralCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyReferralCodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetMyReferralCodeRequest._() : super();
-  factory GetMyReferralCodeRequest() => create();
-  factory GetMyReferralCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetMyReferralCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -809,8 +841,10 @@ class GetMyReferralCodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyReferralCodeRequest copyWith(void Function(GetMyReferralCodeRequest) updates) => super.copyWith((message) => updates(message as GetMyReferralCodeRequest)) as GetMyReferralCodeRequest; // ignore: deprecated_member_use
+  GetMyReferralCodeRequest copyWith(void Function(GetMyReferralCodeRequest) updates) => super.copyWith((message) => updates(message as GetMyReferralCodeRequest)) as GetMyReferralCodeRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyReferralCodeRequest create() => GetMyReferralCodeRequest._();
   GetMyReferralCodeRequest createEmptyInstance() => create();
@@ -821,23 +855,24 @@ class GetMyReferralCodeRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyReferralCodeResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyReferralCodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<ReferralCode>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referralCode', subBuilder: ReferralCode.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyReferralCodeResponse._() : super();
   factory GetMyReferralCodeResponse({
     ReferralCode? referralCode,
   }) {
-    final _result = create();
+    final $result = create();
     if (referralCode != null) {
-      _result.referralCode = referralCode;
+      $result.referralCode = referralCode;
     }
-    return _result;
+    return $result;
   }
+  GetMyReferralCodeResponse._() : super();
   factory GetMyReferralCodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyReferralCodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyReferralCodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ReferralCode>(1, _omitFieldNames ? '' : 'referralCode', subBuilder: ReferralCode.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -847,8 +882,10 @@ class GetMyReferralCodeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyReferralCodeResponse copyWith(void Function(GetMyReferralCodeResponse) updates) => super.copyWith((message) => updates(message as GetMyReferralCodeResponse)) as GetMyReferralCodeResponse; // ignore: deprecated_member_use
+  GetMyReferralCodeResponse copyWith(void Function(GetMyReferralCodeResponse) updates) => super.copyWith((message) => updates(message as GetMyReferralCodeResponse)) as GetMyReferralCodeResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyReferralCodeResponse create() => GetMyReferralCodeResponse._();
   GetMyReferralCodeResponse createEmptyInstance() => create();
@@ -869,15 +906,17 @@ class GetMyReferralCodeResponse extends $pb.GeneratedMessage {
   ReferralCode ensureReferralCode() => $_ensure(0);
 }
 
+/// Request/Response messages for GetMyReferralStats
 class GetMyReferralStatsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyReferralStatsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+  factory GetMyReferralStatsRequest() => create();
+  GetMyReferralStatsRequest._() : super();
+  factory GetMyReferralStatsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyReferralStatsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyReferralStatsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetMyReferralStatsRequest._() : super();
-  factory GetMyReferralStatsRequest() => create();
-  factory GetMyReferralStatsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetMyReferralStatsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -887,8 +926,10 @@ class GetMyReferralStatsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyReferralStatsRequest copyWith(void Function(GetMyReferralStatsRequest) updates) => super.copyWith((message) => updates(message as GetMyReferralStatsRequest)) as GetMyReferralStatsRequest; // ignore: deprecated_member_use
+  GetMyReferralStatsRequest copyWith(void Function(GetMyReferralStatsRequest) updates) => super.copyWith((message) => updates(message as GetMyReferralStatsRequest)) as GetMyReferralStatsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyReferralStatsRequest create() => GetMyReferralStatsRequest._();
   GetMyReferralStatsRequest createEmptyInstance() => create();
@@ -899,23 +940,24 @@ class GetMyReferralStatsRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyReferralStatsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyReferralStatsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<ReferralStats>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stats', subBuilder: ReferralStats.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyReferralStatsResponse._() : super();
   factory GetMyReferralStatsResponse({
     ReferralStats? stats,
   }) {
-    final _result = create();
+    final $result = create();
     if (stats != null) {
-      _result.stats = stats;
+      $result.stats = stats;
     }
-    return _result;
+    return $result;
   }
+  GetMyReferralStatsResponse._() : super();
   factory GetMyReferralStatsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyReferralStatsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyReferralStatsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ReferralStats>(1, _omitFieldNames ? '' : 'stats', subBuilder: ReferralStats.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -925,8 +967,10 @@ class GetMyReferralStatsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyReferralStatsResponse copyWith(void Function(GetMyReferralStatsResponse) updates) => super.copyWith((message) => updates(message as GetMyReferralStatsResponse)) as GetMyReferralStatsResponse; // ignore: deprecated_member_use
+  GetMyReferralStatsResponse copyWith(void Function(GetMyReferralStatsResponse) updates) => super.copyWith((message) => updates(message as GetMyReferralStatsResponse)) as GetMyReferralStatsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyReferralStatsResponse create() => GetMyReferralStatsResponse._();
   GetMyReferralStatsResponse createEmptyInstance() => create();
@@ -947,29 +991,31 @@ class GetMyReferralStatsResponse extends $pb.GeneratedMessage {
   ReferralStats ensureStats() => $_ensure(0);
 }
 
+/// Request/Response messages for GetMyReferrals
 class GetMyReferralsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyReferralsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyReferralsRequest._() : super();
   factory GetMyReferralsRequest({
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetMyReferralsRequest._() : super();
   factory GetMyReferralsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyReferralsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyReferralsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -979,8 +1025,10 @@ class GetMyReferralsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyReferralsRequest copyWith(void Function(GetMyReferralsRequest) updates) => super.copyWith((message) => updates(message as GetMyReferralsRequest)) as GetMyReferralsRequest; // ignore: deprecated_member_use
+  GetMyReferralsRequest copyWith(void Function(GetMyReferralsRequest) updates) => super.copyWith((message) => updates(message as GetMyReferralsRequest)) as GetMyReferralsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyReferralsRequest create() => GetMyReferralsRequest._();
   GetMyReferralsRequest createEmptyInstance() => create();
@@ -1009,33 +1057,34 @@ class GetMyReferralsRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyReferralsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyReferralsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<ReferralTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referrals', $pb.PbFieldType.PM, subBuilder: ReferralTransaction.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyReferralsResponse._() : super();
   factory GetMyReferralsResponse({
     $core.Iterable<ReferralTransaction>? referrals,
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (referrals != null) {
-      _result.referrals.addAll(referrals);
+      $result.referrals.addAll(referrals);
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetMyReferralsResponse._() : super();
   factory GetMyReferralsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyReferralsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyReferralsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<ReferralTransaction>(1, _omitFieldNames ? '' : 'referrals', $pb.PbFieldType.PM, subBuilder: ReferralTransaction.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1045,8 +1094,10 @@ class GetMyReferralsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyReferralsResponse copyWith(void Function(GetMyReferralsResponse) updates) => super.copyWith((message) => updates(message as GetMyReferralsResponse)) as GetMyReferralsResponse; // ignore: deprecated_member_use
+  GetMyReferralsResponse copyWith(void Function(GetMyReferralsResponse) updates) => super.copyWith((message) => updates(message as GetMyReferralsResponse)) as GetMyReferralsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyReferralsResponse create() => GetMyReferralsResponse._();
   GetMyReferralsResponse createEmptyInstance() => create();
@@ -1077,24 +1128,26 @@ class GetMyReferralsResponse extends $pb.GeneratedMessage {
   void clearPageSize() => clearField(3);
 }
 
+/// Request/Response messages for GetReferralLeaderboard
 class GetReferralLeaderboardRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetReferralLeaderboardRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetReferralLeaderboardRequest._() : super();
   factory GetReferralLeaderboardRequest({
     $core.int? limit,
   }) {
-    final _result = create();
+    final $result = create();
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
-    return _result;
+    return $result;
   }
+  GetReferralLeaderboardRequest._() : super();
   factory GetReferralLeaderboardRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetReferralLeaderboardRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetReferralLeaderboardRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1104,8 +1157,10 @@ class GetReferralLeaderboardRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetReferralLeaderboardRequest copyWith(void Function(GetReferralLeaderboardRequest) updates) => super.copyWith((message) => updates(message as GetReferralLeaderboardRequest)) as GetReferralLeaderboardRequest; // ignore: deprecated_member_use
+  GetReferralLeaderboardRequest copyWith(void Function(GetReferralLeaderboardRequest) updates) => super.copyWith((message) => updates(message as GetReferralLeaderboardRequest)) as GetReferralLeaderboardRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetReferralLeaderboardRequest create() => GetReferralLeaderboardRequest._();
   GetReferralLeaderboardRequest createEmptyInstance() => create();
@@ -1125,23 +1180,24 @@ class GetReferralLeaderboardRequest extends $pb.GeneratedMessage {
 }
 
 class GetReferralLeaderboardResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetReferralLeaderboardResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<LeaderboardEntry>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entries', $pb.PbFieldType.PM, subBuilder: LeaderboardEntry.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetReferralLeaderboardResponse._() : super();
   factory GetReferralLeaderboardResponse({
     $core.Iterable<LeaderboardEntry>? entries,
   }) {
-    final _result = create();
+    final $result = create();
     if (entries != null) {
-      _result.entries.addAll(entries);
+      $result.entries.addAll(entries);
     }
-    return _result;
+    return $result;
   }
+  GetReferralLeaderboardResponse._() : super();
   factory GetReferralLeaderboardResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetReferralLeaderboardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetReferralLeaderboardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<LeaderboardEntry>(1, _omitFieldNames ? '' : 'entries', $pb.PbFieldType.PM, subBuilder: LeaderboardEntry.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1151,8 +1207,10 @@ class GetReferralLeaderboardResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetReferralLeaderboardResponse copyWith(void Function(GetReferralLeaderboardResponse) updates) => super.copyWith((message) => updates(message as GetReferralLeaderboardResponse)) as GetReferralLeaderboardResponse; // ignore: deprecated_member_use
+  GetReferralLeaderboardResponse copyWith(void Function(GetReferralLeaderboardResponse) updates) => super.copyWith((message) => updates(message as GetReferralLeaderboardResponse)) as GetReferralLeaderboardResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetReferralLeaderboardResponse create() => GetReferralLeaderboardResponse._();
   GetReferralLeaderboardResponse createEmptyInstance() => create();
@@ -1165,24 +1223,26 @@ class GetReferralLeaderboardResponse extends $pb.GeneratedMessage {
   $core.List<LeaderboardEntry> get entries => $_getList(0);
 }
 
+/// Request/Response messages for GetCountryRewardConfig
 class GetCountryRewardConfigRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCountryRewardConfigRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
-    ..hasRequiredFields = false
-  ;
-
-  GetCountryRewardConfigRequest._() : super();
   factory GetCountryRewardConfigRequest({
     $core.String? countryCode,
   }) {
-    final _result = create();
+    final $result = create();
     if (countryCode != null) {
-      _result.countryCode = countryCode;
+      $result.countryCode = countryCode;
     }
-    return _result;
+    return $result;
   }
+  GetCountryRewardConfigRequest._() : super();
   factory GetCountryRewardConfigRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCountryRewardConfigRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCountryRewardConfigRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'countryCode')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1192,8 +1252,10 @@ class GetCountryRewardConfigRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCountryRewardConfigRequest copyWith(void Function(GetCountryRewardConfigRequest) updates) => super.copyWith((message) => updates(message as GetCountryRewardConfigRequest)) as GetCountryRewardConfigRequest; // ignore: deprecated_member_use
+  GetCountryRewardConfigRequest copyWith(void Function(GetCountryRewardConfigRequest) updates) => super.copyWith((message) => updates(message as GetCountryRewardConfigRequest)) as GetCountryRewardConfigRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCountryRewardConfigRequest create() => GetCountryRewardConfigRequest._();
   GetCountryRewardConfigRequest createEmptyInstance() => create();
@@ -1213,23 +1275,24 @@ class GetCountryRewardConfigRequest extends $pb.GeneratedMessage {
 }
 
 class GetCountryRewardConfigResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCountryRewardConfigResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CountryRewardConfig>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'config', subBuilder: CountryRewardConfig.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetCountryRewardConfigResponse._() : super();
   factory GetCountryRewardConfigResponse({
     CountryRewardConfig? config,
   }) {
-    final _result = create();
+    final $result = create();
     if (config != null) {
-      _result.config = config;
+      $result.config = config;
     }
-    return _result;
+    return $result;
   }
+  GetCountryRewardConfigResponse._() : super();
   factory GetCountryRewardConfigResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCountryRewardConfigResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCountryRewardConfigResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<CountryRewardConfig>(1, _omitFieldNames ? '' : 'config', subBuilder: CountryRewardConfig.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1239,8 +1302,10 @@ class GetCountryRewardConfigResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCountryRewardConfigResponse copyWith(void Function(GetCountryRewardConfigResponse) updates) => super.copyWith((message) => updates(message as GetCountryRewardConfigResponse)) as GetCountryRewardConfigResponse; // ignore: deprecated_member_use
+  GetCountryRewardConfigResponse copyWith(void Function(GetCountryRewardConfigResponse) updates) => super.copyWith((message) => updates(message as GetCountryRewardConfigResponse)) as GetCountryRewardConfigResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCountryRewardConfigResponse create() => GetCountryRewardConfigResponse._();
   GetCountryRewardConfigResponse createEmptyInstance() => create();
@@ -1261,29 +1326,31 @@ class GetCountryRewardConfigResponse extends $pb.GeneratedMessage {
   CountryRewardConfig ensureConfig() => $_ensure(0);
 }
 
+/// Request/Response messages for RecordReferral
 class RecordReferralRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RecordReferralRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refereeUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referralCode')
-    ..hasRequiredFields = false
-  ;
-
-  RecordReferralRequest._() : super();
   factory RecordReferralRequest({
     $fixnum.Int64? refereeUserId,
     $core.String? referralCode,
   }) {
-    final _result = create();
+    final $result = create();
     if (refereeUserId != null) {
-      _result.refereeUserId = refereeUserId;
+      $result.refereeUserId = refereeUserId;
     }
     if (referralCode != null) {
-      _result.referralCode = referralCode;
+      $result.referralCode = referralCode;
     }
-    return _result;
+    return $result;
   }
+  RecordReferralRequest._() : super();
   factory RecordReferralRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RecordReferralRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RecordReferralRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'refereeUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'referralCode')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1293,8 +1360,10 @@ class RecordReferralRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RecordReferralRequest copyWith(void Function(RecordReferralRequest) updates) => super.copyWith((message) => updates(message as RecordReferralRequest)) as RecordReferralRequest; // ignore: deprecated_member_use
+  RecordReferralRequest copyWith(void Function(RecordReferralRequest) updates) => super.copyWith((message) => updates(message as RecordReferralRequest)) as RecordReferralRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static RecordReferralRequest create() => RecordReferralRequest._();
   RecordReferralRequest createEmptyInstance() => create();
@@ -1323,33 +1392,34 @@ class RecordReferralRequest extends $pb.GeneratedMessage {
 }
 
 class RecordReferralResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RecordReferralResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<ReferralTransaction>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: ReferralTransaction.create)
-    ..hasRequiredFields = false
-  ;
-
-  RecordReferralResponse._() : super();
   factory RecordReferralResponse({
     $core.bool? success,
     $core.String? message,
     ReferralTransaction? transaction,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (transaction != null) {
-      _result.transaction = transaction;
+      $result.transaction = transaction;
     }
-    return _result;
+    return $result;
   }
+  RecordReferralResponse._() : super();
   factory RecordReferralResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RecordReferralResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RecordReferralResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<ReferralTransaction>(3, _omitFieldNames ? '' : 'transaction', subBuilder: ReferralTransaction.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1359,8 +1429,10 @@ class RecordReferralResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RecordReferralResponse copyWith(void Function(RecordReferralResponse) updates) => super.copyWith((message) => updates(message as RecordReferralResponse)) as RecordReferralResponse; // ignore: deprecated_member_use
+  RecordReferralResponse copyWith(void Function(RecordReferralResponse) updates) => super.copyWith((message) => updates(message as RecordReferralResponse)) as RecordReferralResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static RecordReferralResponse create() => RecordReferralResponse._();
   RecordReferralResponse createEmptyInstance() => create();
@@ -1399,24 +1471,26 @@ class RecordReferralResponse extends $pb.GeneratedMessage {
   ReferralTransaction ensureTransaction() => $_ensure(2);
 }
 
+/// Request/Response messages for CreditReferralRewards
 class CreditReferralRewardsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreditReferralRewardsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..hasRequiredFields = false
-  ;
-
-  CreditReferralRewardsRequest._() : super();
   factory CreditReferralRewardsRequest({
     $fixnum.Int64? transactionId,
   }) {
-    final _result = create();
+    final $result = create();
     if (transactionId != null) {
-      _result.transactionId = transactionId;
+      $result.transactionId = transactionId;
     }
-    return _result;
+    return $result;
   }
+  CreditReferralRewardsRequest._() : super();
   factory CreditReferralRewardsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreditReferralRewardsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditReferralRewardsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'transactionId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1426,8 +1500,10 @@ class CreditReferralRewardsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreditReferralRewardsRequest copyWith(void Function(CreditReferralRewardsRequest) updates) => super.copyWith((message) => updates(message as CreditReferralRewardsRequest)) as CreditReferralRewardsRequest; // ignore: deprecated_member_use
+  CreditReferralRewardsRequest copyWith(void Function(CreditReferralRewardsRequest) updates) => super.copyWith((message) => updates(message as CreditReferralRewardsRequest)) as CreditReferralRewardsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreditReferralRewardsRequest create() => CreditReferralRewardsRequest._();
   CreditReferralRewardsRequest createEmptyInstance() => create();
@@ -1447,28 +1523,29 @@ class CreditReferralRewardsRequest extends $pb.GeneratedMessage {
 }
 
 class CreditReferralRewardsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreditReferralRewardsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreditReferralRewardsResponse._() : super();
   factory CreditReferralRewardsResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreditReferralRewardsResponse._() : super();
   factory CreditReferralRewardsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreditReferralRewardsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditReferralRewardsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1478,8 +1555,10 @@ class CreditReferralRewardsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreditReferralRewardsResponse copyWith(void Function(CreditReferralRewardsResponse) updates) => super.copyWith((message) => updates(message as CreditReferralRewardsResponse)) as CreditReferralRewardsResponse; // ignore: deprecated_member_use
+  CreditReferralRewardsResponse copyWith(void Function(CreditReferralRewardsResponse) updates) => super.copyWith((message) => updates(message as CreditReferralRewardsResponse)) as CreditReferralRewardsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreditReferralRewardsResponse create() => CreditReferralRewardsResponse._();
   CreditReferralRewardsResponse createEmptyInstance() => create();
@@ -1507,3 +1586,6 @@ class CreditReferralRewardsResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

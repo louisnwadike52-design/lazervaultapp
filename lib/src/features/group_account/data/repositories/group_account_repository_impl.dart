@@ -35,12 +35,14 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     required String name,
     required String description,
     required String adminId,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       final groupModel = await remoteDataSource.createGroup(
         name: name,
         description: description,
         adminId: adminId,
+        metadata: metadata,
       );
       return groupModel;
     } catch (e) {
@@ -187,6 +189,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       final contributionModel = await remoteDataSource.createContribution(
@@ -208,6 +211,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         gracePeriodDays: gracePeriodDays,
         allowPartialPayments: allowPartialPayments,
         minimumBalance: minimumBalance,
+        metadata: metadata,
       );
       return contributionModel;
     } catch (e) {

@@ -360,4 +360,107 @@ class CrowdfundGrpcDataSource {
           'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get statistics'}');
     }
   }
+
+  // ============================================================================
+  // CAMPAIGN WALLET OPERATIONS
+  // ============================================================================
+
+  /// Get all crowdfunds owned by the current user
+  Future<List<CrowdfundModel>> getMyCrowdfunds({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+  }) async {
+    try {
+      final request = pb.GetMyCrowdfundsRequest()
+        ..page = page
+        ..pageSize = pageSize;
+
+      if (statusFilter != null) {
+        request.status = statusFilter;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.getMyCrowdfunds(request, options: callOptions);
+
+      return response.crowdfunds
+          .map((cf) => CrowdfundModel.fromProto(cf))
+          .toList();
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get my crowdfunds'}');
+    }
+  }
+
+  /// Withdraw funds from a campaign wallet to a destination account
+  ///
+  /// [crowdfundId] - The ID of the crowdfund campaign
+  /// [amount] - Amount to withdraw in major units (e.g., Naira)
+  /// [transactionPin] - User's transaction PIN for authentication
+  /// [destinationAccountId] - Optional specific account ID to withdraw to
+  /// [destinationAccountType] - Optional account type (savings, personal, investment)
+  ///                            Used if destinationAccountId is not provided
+  Future<CrowdfundWithdrawalResultModel> withdrawFromCrowdfund({
+    required String crowdfundId,
+    required double amount,
+    required String transactionPin,
+    String? destinationAccountId,
+    String? destinationAccountType,
+  }) async {
+    try {
+      final request = pb.WithdrawFromCrowdfundRequest()
+        ..crowdfundId = crowdfundId
+        ..amount = _amountToInt64(amount)
+        ..transactionPin = transactionPin;
+
+      if (destinationAccountId != null) {
+        request.destinationAccountId = destinationAccountId;
+      }
+
+      if (destinationAccountType != null) {
+        request.destinationAccountType = destinationAccountType;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.withdrawFromCrowdfund(request, options: callOptions);
+
+      return CrowdfundWithdrawalResultModel(
+        crowdfundId: response.crowdfundId,
+        amountWithdrawn: response.amountWithdrawn.toDouble() / 100,
+        remainingBalance: response.remainingBalance.toDouble() / 100,
+        destinationAccountId: response.destinationAccountId,
+        destinationNewBalance: response.destinationNewBalance.toDouble() / 100,
+        message: response.message,
+      );
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to withdraw from crowdfund'}');
+    }
+  }
+
+  /// Get the campaign wallet balance for a crowdfund
+  Future<CampaignWalletBalanceModel> getCampaignWalletBalance(
+      String crowdfundId) async {
+    try {
+      final request = pb.GetCampaignWalletBalanceRequest()
+        ..crowdfundId = crowdfundId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.getCampaignWalletBalance(request, options: callOptions);
+
+      return CampaignWalletBalanceModel(
+        crowdfundId: response.crowdfundId,
+        campaignWalletId: response.campaignWalletId,
+        balance: response.balance.toDouble() / 100,
+        availableBalance: response.availableBalance.toDouble() / 100,
+        currency: response.currency,
+      );
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get campaign wallet balance'}');
+    }
+  }
 }

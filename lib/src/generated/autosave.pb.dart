@@ -1,48 +1,25 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: autosave.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
-
 import 'autosave.pbenum.dart';
+import 'google/protobuf/timestamp.pb.dart' as $42;
 
 export 'autosave.pbenum.dart';
 
+/// Auto-save rule definition
 class AutoSaveRule extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AutoSaveRule', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..e<TriggerType>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerType', $pb.PbFieldType.OE, defaultOrMaker: TriggerType.TRIGGER_UNKNOWN, valueOf: TriggerType.valueOf, enumValues: TriggerType.values)
-    ..e<AmountType>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountType', $pb.PbFieldType.OE, defaultOrMaker: AmountType.AMOUNT_UNKNOWN, valueOf: AmountType.valueOf, enumValues: AmountType.values)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountValue', $pb.PbFieldType.OD)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
-    ..e<AutoSaveStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: AutoSaveStatus.STATUS_UNKNOWN, valueOf: AutoSaveStatus.valueOf, enumValues: AutoSaveStatus.values)
-    ..e<ScheduleFrequency>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ScheduleFrequency.FREQUENCY_UNKNOWN, valueOf: ScheduleFrequency.valueOf, enumValues: ScheduleFrequency.values)
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduleTime')
-    ..a<$core.int>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduleDay', $pb.PbFieldType.O3)
-    ..a<$core.int>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roundUpTo', $pb.PbFieldType.O3)
-    ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minimumBalance', $pb.PbFieldType.OD)
-    ..a<$core.double>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
-    ..aOM<$36.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastTriggeredAt', subBuilder: $36.Timestamp.create)
-    ..a<$core.int>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSaved', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  AutoSaveRule._() : super();
   factory AutoSaveRule({
     $core.String? id,
     $core.String? userId,
@@ -61,83 +38,111 @@ class AutoSaveRule extends $pb.GeneratedMessage {
     $core.double? targetAmount,
     $core.double? minimumBalance,
     $core.double? maximumPerSave,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
-    $36.Timestamp? lastTriggeredAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
+    $42.Timestamp? lastTriggeredAt,
     $core.int? triggerCount,
     $core.double? totalSaved,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (triggerType != null) {
-      _result.triggerType = triggerType;
+      $result.triggerType = triggerType;
     }
     if (amountType != null) {
-      _result.amountType = amountType;
+      $result.amountType = amountType;
     }
     if (amountValue != null) {
-      _result.amountValue = amountValue;
+      $result.amountValue = amountValue;
     }
     if (sourceAccountId != null) {
-      _result.sourceAccountId = sourceAccountId;
+      $result.sourceAccountId = sourceAccountId;
     }
     if (destinationAccountId != null) {
-      _result.destinationAccountId = destinationAccountId;
+      $result.destinationAccountId = destinationAccountId;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (frequency != null) {
-      _result.frequency = frequency;
+      $result.frequency = frequency;
     }
     if (scheduleTime != null) {
-      _result.scheduleTime = scheduleTime;
+      $result.scheduleTime = scheduleTime;
     }
     if (scheduleDay != null) {
-      _result.scheduleDay = scheduleDay;
+      $result.scheduleDay = scheduleDay;
     }
     if (roundUpTo != null) {
-      _result.roundUpTo = roundUpTo;
+      $result.roundUpTo = roundUpTo;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (minimumBalance != null) {
-      _result.minimumBalance = minimumBalance;
+      $result.minimumBalance = minimumBalance;
     }
     if (maximumPerSave != null) {
-      _result.maximumPerSave = maximumPerSave;
+      $result.maximumPerSave = maximumPerSave;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
     if (lastTriggeredAt != null) {
-      _result.lastTriggeredAt = lastTriggeredAt;
+      $result.lastTriggeredAt = lastTriggeredAt;
     }
     if (triggerCount != null) {
-      _result.triggerCount = triggerCount;
+      $result.triggerCount = triggerCount;
     }
     if (totalSaved != null) {
-      _result.totalSaved = totalSaved;
+      $result.totalSaved = totalSaved;
     }
-    return _result;
+    return $result;
   }
+  AutoSaveRule._() : super();
   factory AutoSaveRule.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AutoSaveRule.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AutoSaveRule', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..aOS(4, _omitFieldNames ? '' : 'description')
+    ..e<TriggerType>(5, _omitFieldNames ? '' : 'triggerType', $pb.PbFieldType.OE, defaultOrMaker: TriggerType.TRIGGER_UNKNOWN, valueOf: TriggerType.valueOf, enumValues: TriggerType.values)
+    ..e<AmountType>(6, _omitFieldNames ? '' : 'amountType', $pb.PbFieldType.OE, defaultOrMaker: AmountType.AMOUNT_UNKNOWN, valueOf: AmountType.valueOf, enumValues: AmountType.values)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'amountValue', $pb.PbFieldType.OD)
+    ..aOS(8, _omitFieldNames ? '' : 'sourceAccountId')
+    ..aOS(9, _omitFieldNames ? '' : 'destinationAccountId')
+    ..e<AutoSaveStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: AutoSaveStatus.STATUS_UNKNOWN, valueOf: AutoSaveStatus.valueOf, enumValues: AutoSaveStatus.values)
+    ..e<ScheduleFrequency>(11, _omitFieldNames ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ScheduleFrequency.FREQUENCY_UNKNOWN, valueOf: ScheduleFrequency.valueOf, enumValues: ScheduleFrequency.values)
+    ..aOS(12, _omitFieldNames ? '' : 'scheduleTime')
+    ..a<$core.int>(13, _omitFieldNames ? '' : 'scheduleDay', $pb.PbFieldType.O3)
+    ..a<$core.int>(14, _omitFieldNames ? '' : 'roundUpTo', $pb.PbFieldType.O3)
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(16, _omitFieldNames ? '' : 'minimumBalance', $pb.PbFieldType.OD)
+    ..a<$core.double>(17, _omitFieldNames ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
+    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(19, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(20, _omitFieldNames ? '' : 'lastTriggeredAt', subBuilder: $42.Timestamp.create)
+    ..a<$core.int>(21, _omitFieldNames ? '' : 'triggerCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(22, _omitFieldNames ? '' : 'totalSaved', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -147,8 +152,10 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AutoSaveRule copyWith(void Function(AutoSaveRule) updates) => super.copyWith((message) => updates(message as AutoSaveRule)) as AutoSaveRule; // ignore: deprecated_member_use
+  AutoSaveRule copyWith(void Function(AutoSaveRule) updates) => super.copyWith((message) => updates(message as AutoSaveRule)) as AutoSaveRule;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AutoSaveRule create() => AutoSaveRule._();
   AutoSaveRule createEmptyInstance() => create();
@@ -247,6 +254,7 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   void clearStatus() => clearField(10);
 
+  /// For scheduled triggers
   @$pb.TagNumber(11)
   ScheduleFrequency get frequency => $_getN(10);
   @$pb.TagNumber(11)
@@ -274,6 +282,7 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   void clearScheduleDay() => clearField(13);
 
+  /// For round-up triggers
   @$pb.TagNumber(14)
   $core.int get roundUpTo => $_getIZ(13);
   @$pb.TagNumber(14)
@@ -283,6 +292,7 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(14)
   void clearRoundUpTo() => clearField(14);
 
+  /// Goals and limits
   @$pb.TagNumber(15)
   $core.double get targetAmount => $_getN(14);
   @$pb.TagNumber(15)
@@ -310,38 +320,39 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(17)
   void clearMaximumPerSave() => clearField(17);
 
+  /// Metadata
   @$pb.TagNumber(18)
-  $36.Timestamp get createdAt => $_getN(17);
+  $42.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
-  set createdAt($36.Timestamp v) { setField(18, v); }
+  set createdAt($42.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $36.Timestamp ensureCreatedAt() => $_ensure(17);
+  $42.Timestamp ensureCreatedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
-  $36.Timestamp get updatedAt => $_getN(18);
+  $42.Timestamp get updatedAt => $_getN(18);
   @$pb.TagNumber(19)
-  set updatedAt($36.Timestamp v) { setField(19, v); }
+  set updatedAt($42.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(18);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
-  $36.Timestamp get lastTriggeredAt => $_getN(19);
+  $42.Timestamp get lastTriggeredAt => $_getN(19);
   @$pb.TagNumber(20)
-  set lastTriggeredAt($36.Timestamp v) { setField(20, v); }
+  set lastTriggeredAt($42.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasLastTriggeredAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearLastTriggeredAt() => clearField(20);
   @$pb.TagNumber(20)
-  $36.Timestamp ensureLastTriggeredAt() => $_ensure(19);
+  $42.Timestamp ensureLastTriggeredAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
   $core.int get triggerCount => $_getIZ(20);
@@ -362,26 +373,8 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   void clearTotalSaved() => clearField(22);
 }
 
+/// Create auto-save rule request
 class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateAutoSaveRuleRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..e<TriggerType>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerType', $pb.PbFieldType.OE, defaultOrMaker: TriggerType.TRIGGER_UNKNOWN, valueOf: TriggerType.valueOf, enumValues: TriggerType.values)
-    ..e<AmountType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountType', $pb.PbFieldType.OE, defaultOrMaker: AmountType.AMOUNT_UNKNOWN, valueOf: AmountType.valueOf, enumValues: AmountType.values)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountValue', $pb.PbFieldType.OD)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
-    ..e<ScheduleFrequency>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ScheduleFrequency.FREQUENCY_UNKNOWN, valueOf: ScheduleFrequency.valueOf, enumValues: ScheduleFrequency.values)
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduleTime')
-    ..a<$core.int>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduleDay', $pb.PbFieldType.O3)
-    ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roundUpTo', $pb.PbFieldType.O3)
-    ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minimumBalance', $pb.PbFieldType.OD)
-    ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  CreateAutoSaveRuleRequest._() : super();
   factory CreateAutoSaveRuleRequest({
     $core.String? name,
     $core.String? description,
@@ -398,53 +391,73 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
     $core.double? minimumBalance,
     $core.double? maximumPerSave,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (triggerType != null) {
-      _result.triggerType = triggerType;
+      $result.triggerType = triggerType;
     }
     if (amountType != null) {
-      _result.amountType = amountType;
+      $result.amountType = amountType;
     }
     if (amountValue != null) {
-      _result.amountValue = amountValue;
+      $result.amountValue = amountValue;
     }
     if (sourceAccountId != null) {
-      _result.sourceAccountId = sourceAccountId;
+      $result.sourceAccountId = sourceAccountId;
     }
     if (destinationAccountId != null) {
-      _result.destinationAccountId = destinationAccountId;
+      $result.destinationAccountId = destinationAccountId;
     }
     if (frequency != null) {
-      _result.frequency = frequency;
+      $result.frequency = frequency;
     }
     if (scheduleTime != null) {
-      _result.scheduleTime = scheduleTime;
+      $result.scheduleTime = scheduleTime;
     }
     if (scheduleDay != null) {
-      _result.scheduleDay = scheduleDay;
+      $result.scheduleDay = scheduleDay;
     }
     if (roundUpTo != null) {
-      _result.roundUpTo = roundUpTo;
+      $result.roundUpTo = roundUpTo;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (minimumBalance != null) {
-      _result.minimumBalance = minimumBalance;
+      $result.minimumBalance = minimumBalance;
     }
     if (maximumPerSave != null) {
-      _result.maximumPerSave = maximumPerSave;
+      $result.maximumPerSave = maximumPerSave;
     }
-    return _result;
+    return $result;
   }
+  CreateAutoSaveRuleRequest._() : super();
   factory CreateAutoSaveRuleRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateAutoSaveRuleRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateAutoSaveRuleRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..aOS(2, _omitFieldNames ? '' : 'description')
+    ..e<TriggerType>(3, _omitFieldNames ? '' : 'triggerType', $pb.PbFieldType.OE, defaultOrMaker: TriggerType.TRIGGER_UNKNOWN, valueOf: TriggerType.valueOf, enumValues: TriggerType.values)
+    ..e<AmountType>(4, _omitFieldNames ? '' : 'amountType', $pb.PbFieldType.OE, defaultOrMaker: AmountType.AMOUNT_UNKNOWN, valueOf: AmountType.valueOf, enumValues: AmountType.values)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'amountValue', $pb.PbFieldType.OD)
+    ..aOS(6, _omitFieldNames ? '' : 'sourceAccountId')
+    ..aOS(7, _omitFieldNames ? '' : 'destinationAccountId')
+    ..e<ScheduleFrequency>(8, _omitFieldNames ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ScheduleFrequency.FREQUENCY_UNKNOWN, valueOf: ScheduleFrequency.valueOf, enumValues: ScheduleFrequency.values)
+    ..aOS(9, _omitFieldNames ? '' : 'scheduleTime')
+    ..a<$core.int>(10, _omitFieldNames ? '' : 'scheduleDay', $pb.PbFieldType.O3)
+    ..a<$core.int>(11, _omitFieldNames ? '' : 'roundUpTo', $pb.PbFieldType.O3)
+    ..a<$core.double>(12, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(13, _omitFieldNames ? '' : 'minimumBalance', $pb.PbFieldType.OD)
+    ..a<$core.double>(14, _omitFieldNames ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -454,8 +467,10 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateAutoSaveRuleRequest copyWith(void Function(CreateAutoSaveRuleRequest) updates) => super.copyWith((message) => updates(message as CreateAutoSaveRuleRequest)) as CreateAutoSaveRuleRequest; // ignore: deprecated_member_use
+  CreateAutoSaveRuleRequest copyWith(void Function(CreateAutoSaveRuleRequest) updates) => super.copyWith((message) => updates(message as CreateAutoSaveRuleRequest)) as CreateAutoSaveRuleRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateAutoSaveRuleRequest create() => CreateAutoSaveRuleRequest._();
   CreateAutoSaveRuleRequest createEmptyInstance() => create();
@@ -527,6 +542,7 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   void clearDestinationAccountId() => clearField(7);
 
+  /// Optional fields based on trigger type
   @$pb.TagNumber(8)
   ScheduleFrequency get frequency => $_getN(7);
   @$pb.TagNumber(8)
@@ -563,6 +579,7 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   void clearRoundUpTo() => clearField(11);
 
+  /// Optional goals and limits
   @$pb.TagNumber(12)
   $core.double get targetAmount => $_getN(11);
   @$pb.TagNumber(12)
@@ -591,34 +608,36 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   void clearMaximumPerSave() => clearField(14);
 }
 
+/// Create auto-save rule response
 class CreateAutoSaveRuleResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateAutoSaveRuleResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..aOM<AutoSaveRule>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rule', subBuilder: AutoSaveRule.create)
-    ..hasRequiredFields = false
-  ;
-
-  CreateAutoSaveRuleResponse._() : super();
   factory CreateAutoSaveRuleResponse({
     $core.bool? success,
     $core.String? msg,
     AutoSaveRule? rule,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
     if (rule != null) {
-      _result.rule = rule;
+      $result.rule = rule;
     }
-    return _result;
+    return $result;
   }
+  CreateAutoSaveRuleResponse._() : super();
   factory CreateAutoSaveRuleResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateAutoSaveRuleResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateAutoSaveRuleResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..aOM<AutoSaveRule>(3, _omitFieldNames ? '' : 'rule', subBuilder: AutoSaveRule.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -628,8 +647,10 @@ class CreateAutoSaveRuleResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateAutoSaveRuleResponse copyWith(void Function(CreateAutoSaveRuleResponse) updates) => super.copyWith((message) => updates(message as CreateAutoSaveRuleResponse)) as CreateAutoSaveRuleResponse; // ignore: deprecated_member_use
+  CreateAutoSaveRuleResponse copyWith(void Function(CreateAutoSaveRuleResponse) updates) => super.copyWith((message) => updates(message as CreateAutoSaveRuleResponse)) as CreateAutoSaveRuleResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateAutoSaveRuleResponse create() => CreateAutoSaveRuleResponse._();
   CreateAutoSaveRuleResponse createEmptyInstance() => create();
@@ -668,29 +689,31 @@ class CreateAutoSaveRuleResponse extends $pb.GeneratedMessage {
   AutoSaveRule ensureRule() => $_ensure(2);
 }
 
+/// Get auto-save rules request
 class GetAutoSaveRulesRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAutoSaveRulesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..e<AutoSaveStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: AutoSaveStatus.STATUS_UNKNOWN, valueOf: AutoSaveStatus.valueOf, enumValues: AutoSaveStatus.values)
-    ..hasRequiredFields = false
-  ;
-
-  GetAutoSaveRulesRequest._() : super();
   factory GetAutoSaveRulesRequest({
     $core.String? accountId,
     AutoSaveStatus? status,
   }) {
-    final _result = create();
+    final $result = create();
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
-    return _result;
+    return $result;
   }
+  GetAutoSaveRulesRequest._() : super();
   factory GetAutoSaveRulesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAutoSaveRulesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAutoSaveRulesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..e<AutoSaveStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: AutoSaveStatus.STATUS_UNKNOWN, valueOf: AutoSaveStatus.valueOf, enumValues: AutoSaveStatus.values)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -700,8 +723,10 @@ class GetAutoSaveRulesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAutoSaveRulesRequest copyWith(void Function(GetAutoSaveRulesRequest) updates) => super.copyWith((message) => updates(message as GetAutoSaveRulesRequest)) as GetAutoSaveRulesRequest; // ignore: deprecated_member_use
+  GetAutoSaveRulesRequest copyWith(void Function(GetAutoSaveRulesRequest) updates) => super.copyWith((message) => updates(message as GetAutoSaveRulesRequest)) as GetAutoSaveRulesRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAutoSaveRulesRequest create() => GetAutoSaveRulesRequest._();
   GetAutoSaveRulesRequest createEmptyInstance() => create();
@@ -729,34 +754,36 @@ class GetAutoSaveRulesRequest extends $pb.GeneratedMessage {
   void clearStatus() => clearField(2);
 }
 
+/// Get auto-save rules response
 class GetAutoSaveRulesResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAutoSaveRulesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..pc<AutoSaveRule>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rules', $pb.PbFieldType.PM, subBuilder: AutoSaveRule.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetAutoSaveRulesResponse._() : super();
   factory GetAutoSaveRulesResponse({
     $core.bool? success,
     $core.String? msg,
     $core.Iterable<AutoSaveRule>? rules,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
     if (rules != null) {
-      _result.rules.addAll(rules);
+      $result.rules.addAll(rules);
     }
-    return _result;
+    return $result;
   }
+  GetAutoSaveRulesResponse._() : super();
   factory GetAutoSaveRulesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAutoSaveRulesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAutoSaveRulesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..pc<AutoSaveRule>(3, _omitFieldNames ? '' : 'rules', $pb.PbFieldType.PM, subBuilder: AutoSaveRule.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -766,8 +793,10 @@ class GetAutoSaveRulesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAutoSaveRulesResponse copyWith(void Function(GetAutoSaveRulesResponse) updates) => super.copyWith((message) => updates(message as GetAutoSaveRulesResponse)) as GetAutoSaveRulesResponse; // ignore: deprecated_member_use
+  GetAutoSaveRulesResponse copyWith(void Function(GetAutoSaveRulesResponse) updates) => super.copyWith((message) => updates(message as GetAutoSaveRulesResponse)) as GetAutoSaveRulesResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAutoSaveRulesResponse create() => GetAutoSaveRulesResponse._();
   GetAutoSaveRulesResponse createEmptyInstance() => create();
@@ -798,24 +827,8 @@ class GetAutoSaveRulesResponse extends $pb.GeneratedMessage {
   $core.List<AutoSaveRule> get rules => $_getList(2);
 }
 
+/// Update auto-save rule request
 class UpdateAutoSaveRuleRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateAutoSaveRuleRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ruleId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..e<AmountType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountType', $pb.PbFieldType.OE, defaultOrMaker: AmountType.AMOUNT_UNKNOWN, valueOf: AmountType.valueOf, enumValues: AmountType.values)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountValue', $pb.PbFieldType.OD)
-    ..e<ScheduleFrequency>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ScheduleFrequency.FREQUENCY_UNKNOWN, valueOf: ScheduleFrequency.valueOf, enumValues: ScheduleFrequency.values)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduleTime')
-    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduleDay', $pb.PbFieldType.O3)
-    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roundUpTo', $pb.PbFieldType.O3)
-    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minimumBalance', $pb.PbFieldType.OD)
-    ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateAutoSaveRuleRequest._() : super();
   factory UpdateAutoSaveRuleRequest({
     $core.String? ruleId,
     $core.String? name,
@@ -830,47 +843,65 @@ class UpdateAutoSaveRuleRequest extends $pb.GeneratedMessage {
     $core.double? minimumBalance,
     $core.double? maximumPerSave,
   }) {
-    final _result = create();
+    final $result = create();
     if (ruleId != null) {
-      _result.ruleId = ruleId;
+      $result.ruleId = ruleId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (amountType != null) {
-      _result.amountType = amountType;
+      $result.amountType = amountType;
     }
     if (amountValue != null) {
-      _result.amountValue = amountValue;
+      $result.amountValue = amountValue;
     }
     if (frequency != null) {
-      _result.frequency = frequency;
+      $result.frequency = frequency;
     }
     if (scheduleTime != null) {
-      _result.scheduleTime = scheduleTime;
+      $result.scheduleTime = scheduleTime;
     }
     if (scheduleDay != null) {
-      _result.scheduleDay = scheduleDay;
+      $result.scheduleDay = scheduleDay;
     }
     if (roundUpTo != null) {
-      _result.roundUpTo = roundUpTo;
+      $result.roundUpTo = roundUpTo;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (minimumBalance != null) {
-      _result.minimumBalance = minimumBalance;
+      $result.minimumBalance = minimumBalance;
     }
     if (maximumPerSave != null) {
-      _result.maximumPerSave = maximumPerSave;
+      $result.maximumPerSave = maximumPerSave;
     }
-    return _result;
+    return $result;
   }
+  UpdateAutoSaveRuleRequest._() : super();
   factory UpdateAutoSaveRuleRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateAutoSaveRuleRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateAutoSaveRuleRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'ruleId')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..aOS(3, _omitFieldNames ? '' : 'description')
+    ..e<AmountType>(4, _omitFieldNames ? '' : 'amountType', $pb.PbFieldType.OE, defaultOrMaker: AmountType.AMOUNT_UNKNOWN, valueOf: AmountType.valueOf, enumValues: AmountType.values)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'amountValue', $pb.PbFieldType.OD)
+    ..e<ScheduleFrequency>(6, _omitFieldNames ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ScheduleFrequency.FREQUENCY_UNKNOWN, valueOf: ScheduleFrequency.valueOf, enumValues: ScheduleFrequency.values)
+    ..aOS(7, _omitFieldNames ? '' : 'scheduleTime')
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'scheduleDay', $pb.PbFieldType.O3)
+    ..a<$core.int>(9, _omitFieldNames ? '' : 'roundUpTo', $pb.PbFieldType.O3)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'minimumBalance', $pb.PbFieldType.OD)
+    ..a<$core.double>(12, _omitFieldNames ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -880,8 +911,10 @@ class UpdateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateAutoSaveRuleRequest copyWith(void Function(UpdateAutoSaveRuleRequest) updates) => super.copyWith((message) => updates(message as UpdateAutoSaveRuleRequest)) as UpdateAutoSaveRuleRequest; // ignore: deprecated_member_use
+  UpdateAutoSaveRuleRequest copyWith(void Function(UpdateAutoSaveRuleRequest) updates) => super.copyWith((message) => updates(message as UpdateAutoSaveRuleRequest)) as UpdateAutoSaveRuleRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateAutoSaveRuleRequest create() => UpdateAutoSaveRuleRequest._();
   UpdateAutoSaveRuleRequest createEmptyInstance() => create();
@@ -935,6 +968,7 @@ class UpdateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearAmountValue() => clearField(5);
 
+  /// Optional fields
   @$pb.TagNumber(6)
   ScheduleFrequency get frequency => $_getN(5);
   @$pb.TagNumber(6)
@@ -999,34 +1033,36 @@ class UpdateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   void clearMaximumPerSave() => clearField(12);
 }
 
+/// Update auto-save rule response
 class UpdateAutoSaveRuleResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateAutoSaveRuleResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..aOM<AutoSaveRule>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rule', subBuilder: AutoSaveRule.create)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateAutoSaveRuleResponse._() : super();
   factory UpdateAutoSaveRuleResponse({
     $core.bool? success,
     $core.String? msg,
     AutoSaveRule? rule,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
     if (rule != null) {
-      _result.rule = rule;
+      $result.rule = rule;
     }
-    return _result;
+    return $result;
   }
+  UpdateAutoSaveRuleResponse._() : super();
   factory UpdateAutoSaveRuleResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateAutoSaveRuleResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateAutoSaveRuleResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..aOM<AutoSaveRule>(3, _omitFieldNames ? '' : 'rule', subBuilder: AutoSaveRule.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1036,8 +1072,10 @@ class UpdateAutoSaveRuleResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateAutoSaveRuleResponse copyWith(void Function(UpdateAutoSaveRuleResponse) updates) => super.copyWith((message) => updates(message as UpdateAutoSaveRuleResponse)) as UpdateAutoSaveRuleResponse; // ignore: deprecated_member_use
+  UpdateAutoSaveRuleResponse copyWith(void Function(UpdateAutoSaveRuleResponse) updates) => super.copyWith((message) => updates(message as UpdateAutoSaveRuleResponse)) as UpdateAutoSaveRuleResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateAutoSaveRuleResponse create() => UpdateAutoSaveRuleResponse._();
   UpdateAutoSaveRuleResponse createEmptyInstance() => create();
@@ -1076,29 +1114,31 @@ class UpdateAutoSaveRuleResponse extends $pb.GeneratedMessage {
   AutoSaveRule ensureRule() => $_ensure(2);
 }
 
+/// Pause/resume auto-save rule request
 class ToggleAutoSaveRuleRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ToggleAutoSaveRuleRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ruleId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'action')
-    ..hasRequiredFields = false
-  ;
-
-  ToggleAutoSaveRuleRequest._() : super();
   factory ToggleAutoSaveRuleRequest({
     $core.String? ruleId,
     $core.String? action,
   }) {
-    final _result = create();
+    final $result = create();
     if (ruleId != null) {
-      _result.ruleId = ruleId;
+      $result.ruleId = ruleId;
     }
     if (action != null) {
-      _result.action = action;
+      $result.action = action;
     }
-    return _result;
+    return $result;
   }
+  ToggleAutoSaveRuleRequest._() : super();
   factory ToggleAutoSaveRuleRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ToggleAutoSaveRuleRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ToggleAutoSaveRuleRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'ruleId')
+    ..aOS(2, _omitFieldNames ? '' : 'action')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1108,8 +1148,10 @@ class ToggleAutoSaveRuleRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ToggleAutoSaveRuleRequest copyWith(void Function(ToggleAutoSaveRuleRequest) updates) => super.copyWith((message) => updates(message as ToggleAutoSaveRuleRequest)) as ToggleAutoSaveRuleRequest; // ignore: deprecated_member_use
+  ToggleAutoSaveRuleRequest copyWith(void Function(ToggleAutoSaveRuleRequest) updates) => super.copyWith((message) => updates(message as ToggleAutoSaveRuleRequest)) as ToggleAutoSaveRuleRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ToggleAutoSaveRuleRequest create() => ToggleAutoSaveRuleRequest._();
   ToggleAutoSaveRuleRequest createEmptyInstance() => create();
@@ -1137,34 +1179,36 @@ class ToggleAutoSaveRuleRequest extends $pb.GeneratedMessage {
   void clearAction() => clearField(2);
 }
 
+/// Pause/resume auto-save rule response
 class ToggleAutoSaveRuleResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ToggleAutoSaveRuleResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..aOM<AutoSaveRule>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rule', subBuilder: AutoSaveRule.create)
-    ..hasRequiredFields = false
-  ;
-
-  ToggleAutoSaveRuleResponse._() : super();
   factory ToggleAutoSaveRuleResponse({
     $core.bool? success,
     $core.String? msg,
     AutoSaveRule? rule,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
     if (rule != null) {
-      _result.rule = rule;
+      $result.rule = rule;
     }
-    return _result;
+    return $result;
   }
+  ToggleAutoSaveRuleResponse._() : super();
   factory ToggleAutoSaveRuleResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ToggleAutoSaveRuleResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ToggleAutoSaveRuleResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..aOM<AutoSaveRule>(3, _omitFieldNames ? '' : 'rule', subBuilder: AutoSaveRule.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1174,8 +1218,10 @@ class ToggleAutoSaveRuleResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ToggleAutoSaveRuleResponse copyWith(void Function(ToggleAutoSaveRuleResponse) updates) => super.copyWith((message) => updates(message as ToggleAutoSaveRuleResponse)) as ToggleAutoSaveRuleResponse; // ignore: deprecated_member_use
+  ToggleAutoSaveRuleResponse copyWith(void Function(ToggleAutoSaveRuleResponse) updates) => super.copyWith((message) => updates(message as ToggleAutoSaveRuleResponse)) as ToggleAutoSaveRuleResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ToggleAutoSaveRuleResponse create() => ToggleAutoSaveRuleResponse._();
   ToggleAutoSaveRuleResponse createEmptyInstance() => create();
@@ -1214,24 +1260,26 @@ class ToggleAutoSaveRuleResponse extends $pb.GeneratedMessage {
   AutoSaveRule ensureRule() => $_ensure(2);
 }
 
+/// Delete auto-save rule request
 class DeleteAutoSaveRuleRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteAutoSaveRuleRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ruleId')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteAutoSaveRuleRequest._() : super();
   factory DeleteAutoSaveRuleRequest({
     $core.String? ruleId,
   }) {
-    final _result = create();
+    final $result = create();
     if (ruleId != null) {
-      _result.ruleId = ruleId;
+      $result.ruleId = ruleId;
     }
-    return _result;
+    return $result;
   }
+  DeleteAutoSaveRuleRequest._() : super();
   factory DeleteAutoSaveRuleRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteAutoSaveRuleRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteAutoSaveRuleRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'ruleId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1241,8 +1289,10 @@ class DeleteAutoSaveRuleRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteAutoSaveRuleRequest copyWith(void Function(DeleteAutoSaveRuleRequest) updates) => super.copyWith((message) => updates(message as DeleteAutoSaveRuleRequest)) as DeleteAutoSaveRuleRequest; // ignore: deprecated_member_use
+  DeleteAutoSaveRuleRequest copyWith(void Function(DeleteAutoSaveRuleRequest) updates) => super.copyWith((message) => updates(message as DeleteAutoSaveRuleRequest)) as DeleteAutoSaveRuleRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteAutoSaveRuleRequest create() => DeleteAutoSaveRuleRequest._();
   DeleteAutoSaveRuleRequest createEmptyInstance() => create();
@@ -1261,29 +1311,31 @@ class DeleteAutoSaveRuleRequest extends $pb.GeneratedMessage {
   void clearRuleId() => clearField(1);
 }
 
+/// Delete auto-save rule response
 class DeleteAutoSaveRuleResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteAutoSaveRuleResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteAutoSaveRuleResponse._() : super();
   factory DeleteAutoSaveRuleResponse({
     $core.bool? success,
     $core.String? msg,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
-    return _result;
+    return $result;
   }
+  DeleteAutoSaveRuleResponse._() : super();
   factory DeleteAutoSaveRuleResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteAutoSaveRuleResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteAutoSaveRuleResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1293,8 +1345,10 @@ class DeleteAutoSaveRuleResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteAutoSaveRuleResponse copyWith(void Function(DeleteAutoSaveRuleResponse) updates) => super.copyWith((message) => updates(message as DeleteAutoSaveRuleResponse)) as DeleteAutoSaveRuleResponse; // ignore: deprecated_member_use
+  DeleteAutoSaveRuleResponse copyWith(void Function(DeleteAutoSaveRuleResponse) updates) => super.copyWith((message) => updates(message as DeleteAutoSaveRuleResponse)) as DeleteAutoSaveRuleResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteAutoSaveRuleResponse create() => DeleteAutoSaveRuleResponse._();
   DeleteAutoSaveRuleResponse createEmptyInstance() => create();
@@ -1322,23 +1376,8 @@ class DeleteAutoSaveRuleResponse extends $pb.GeneratedMessage {
   void clearMsg() => clearField(2);
 }
 
+/// Auto-save transaction record
 class AutoSaveTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AutoSaveTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ruleId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..e<TriggerType>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerType', $pb.PbFieldType.OE, defaultOrMaker: TriggerType.TRIGGER_UNKNOWN, valueOf: TriggerType.valueOf, enumValues: TriggerType.values)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerReason')
-    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
-    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  AutoSaveTransaction._() : super();
   factory AutoSaveTransaction({
     $core.String? id,
     $core.String? ruleId,
@@ -1350,46 +1389,63 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
     $core.String? triggerReason,
     $core.bool? success,
     $core.String? errorMessage,
-    $36.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (ruleId != null) {
-      _result.ruleId = ruleId;
+      $result.ruleId = ruleId;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (sourceAccountId != null) {
-      _result.sourceAccountId = sourceAccountId;
+      $result.sourceAccountId = sourceAccountId;
     }
     if (destinationAccountId != null) {
-      _result.destinationAccountId = destinationAccountId;
+      $result.destinationAccountId = destinationAccountId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (triggerType != null) {
-      _result.triggerType = triggerType;
+      $result.triggerType = triggerType;
     }
     if (triggerReason != null) {
-      _result.triggerReason = triggerReason;
+      $result.triggerReason = triggerReason;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (errorMessage != null) {
-      _result.errorMessage = errorMessage;
+      $result.errorMessage = errorMessage;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  AutoSaveTransaction._() : super();
   factory AutoSaveTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AutoSaveTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AutoSaveTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'ruleId')
+    ..aOS(3, _omitFieldNames ? '' : 'userId')
+    ..aOS(4, _omitFieldNames ? '' : 'sourceAccountId')
+    ..aOS(5, _omitFieldNames ? '' : 'destinationAccountId')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..e<TriggerType>(7, _omitFieldNames ? '' : 'triggerType', $pb.PbFieldType.OE, defaultOrMaker: TriggerType.TRIGGER_UNKNOWN, valueOf: TriggerType.valueOf, enumValues: TriggerType.values)
+    ..aOS(8, _omitFieldNames ? '' : 'triggerReason')
+    ..aOB(9, _omitFieldNames ? '' : 'success')
+    ..aOS(10, _omitFieldNames ? '' : 'errorMessage')
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1399,8 +1455,10 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AutoSaveTransaction copyWith(void Function(AutoSaveTransaction) updates) => super.copyWith((message) => updates(message as AutoSaveTransaction)) as AutoSaveTransaction; // ignore: deprecated_member_use
+  AutoSaveTransaction copyWith(void Function(AutoSaveTransaction) updates) => super.copyWith((message) => updates(message as AutoSaveTransaction)) as AutoSaveTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AutoSaveTransaction create() => AutoSaveTransaction._();
   AutoSaveTransaction createEmptyInstance() => create();
@@ -1500,50 +1558,52 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(10);
 
   @$pb.TagNumber(11)
-  $36.Timestamp get createdAt => $_getN(10);
+  $42.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($36.Timestamp v) { setField(11, v); }
+  set createdAt($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $36.Timestamp ensureCreatedAt() => $_ensure(10);
+  $42.Timestamp ensureCreatedAt() => $_ensure(10);
 }
 
+/// Get auto-save transactions request
 class GetAutoSaveTransactionsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAutoSaveTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ruleId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetAutoSaveTransactionsRequest._() : super();
   factory GetAutoSaveTransactionsRequest({
     $core.String? ruleId,
     $core.String? accountId,
     $core.int? limit,
     $core.int? offset,
   }) {
-    final _result = create();
+    final $result = create();
     if (ruleId != null) {
-      _result.ruleId = ruleId;
+      $result.ruleId = ruleId;
     }
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
     if (offset != null) {
-      _result.offset = offset;
+      $result.offset = offset;
     }
-    return _result;
+    return $result;
   }
+  GetAutoSaveTransactionsRequest._() : super();
   factory GetAutoSaveTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAutoSaveTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAutoSaveTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'ruleId')
+    ..aOS(2, _omitFieldNames ? '' : 'accountId')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1553,8 +1613,10 @@ class GetAutoSaveTransactionsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAutoSaveTransactionsRequest copyWith(void Function(GetAutoSaveTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetAutoSaveTransactionsRequest)) as GetAutoSaveTransactionsRequest; // ignore: deprecated_member_use
+  GetAutoSaveTransactionsRequest copyWith(void Function(GetAutoSaveTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetAutoSaveTransactionsRequest)) as GetAutoSaveTransactionsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAutoSaveTransactionsRequest create() => GetAutoSaveTransactionsRequest._();
   GetAutoSaveTransactionsRequest createEmptyInstance() => create();
@@ -1600,39 +1662,41 @@ class GetAutoSaveTransactionsRequest extends $pb.GeneratedMessage {
   void clearOffset() => clearField(4);
 }
 
+/// Get auto-save transactions response
 class GetAutoSaveTransactionsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAutoSaveTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..pc<AutoSaveTransaction>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: AutoSaveTransaction.create)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetAutoSaveTransactionsResponse._() : super();
   factory GetAutoSaveTransactionsResponse({
     $core.bool? success,
     $core.String? msg,
     $core.Iterable<AutoSaveTransaction>? transactions,
     $core.int? totalCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
     if (transactions != null) {
-      _result.transactions.addAll(transactions);
+      $result.transactions.addAll(transactions);
     }
     if (totalCount != null) {
-      _result.totalCount = totalCount;
+      $result.totalCount = totalCount;
     }
-    return _result;
+    return $result;
   }
+  GetAutoSaveTransactionsResponse._() : super();
   factory GetAutoSaveTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAutoSaveTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAutoSaveTransactionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..pc<AutoSaveTransaction>(3, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: AutoSaveTransaction.create)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1642,8 +1706,10 @@ class GetAutoSaveTransactionsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAutoSaveTransactionsResponse copyWith(void Function(GetAutoSaveTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetAutoSaveTransactionsResponse)) as GetAutoSaveTransactionsResponse; // ignore: deprecated_member_use
+  GetAutoSaveTransactionsResponse copyWith(void Function(GetAutoSaveTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetAutoSaveTransactionsResponse)) as GetAutoSaveTransactionsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAutoSaveTransactionsResponse create() => GetAutoSaveTransactionsResponse._();
   GetAutoSaveTransactionsResponse createEmptyInstance() => create();
@@ -1683,20 +1749,8 @@ class GetAutoSaveTransactionsResponse extends $pb.GeneratedMessage {
   void clearTotalCount() => clearField(4);
 }
 
+/// Auto-save statistics
 class AutoSaveStatistics extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AutoSaveStatistics', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'activeRulesCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSavedAllTime', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSavedThisMonth', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSavedThisWeek', $pb.PbFieldType.OD)
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalTransactions', $pb.PbFieldType.O3)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'averageSaveAmount', $pb.PbFieldType.OD)
-    ..aOM<AutoSaveRule>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mostActiveRule', subBuilder: AutoSaveRule.create)
-    ..hasRequiredFields = false
-  ;
-
-  AutoSaveStatistics._() : super();
   factory AutoSaveStatistics({
     $core.String? userId,
     $core.int? activeRulesCount,
@@ -1707,35 +1761,49 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
     $core.double? averageSaveAmount,
     AutoSaveRule? mostActiveRule,
   }) {
-    final _result = create();
+    final $result = create();
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (activeRulesCount != null) {
-      _result.activeRulesCount = activeRulesCount;
+      $result.activeRulesCount = activeRulesCount;
     }
     if (totalSavedAllTime != null) {
-      _result.totalSavedAllTime = totalSavedAllTime;
+      $result.totalSavedAllTime = totalSavedAllTime;
     }
     if (totalSavedThisMonth != null) {
-      _result.totalSavedThisMonth = totalSavedThisMonth;
+      $result.totalSavedThisMonth = totalSavedThisMonth;
     }
     if (totalSavedThisWeek != null) {
-      _result.totalSavedThisWeek = totalSavedThisWeek;
+      $result.totalSavedThisWeek = totalSavedThisWeek;
     }
     if (totalTransactions != null) {
-      _result.totalTransactions = totalTransactions;
+      $result.totalTransactions = totalTransactions;
     }
     if (averageSaveAmount != null) {
-      _result.averageSaveAmount = averageSaveAmount;
+      $result.averageSaveAmount = averageSaveAmount;
     }
     if (mostActiveRule != null) {
-      _result.mostActiveRule = mostActiveRule;
+      $result.mostActiveRule = mostActiveRule;
     }
-    return _result;
+    return $result;
   }
+  AutoSaveStatistics._() : super();
   factory AutoSaveStatistics.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AutoSaveStatistics.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AutoSaveStatistics', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'activeRulesCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalSavedAllTime', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalSavedThisMonth', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'totalSavedThisWeek', $pb.PbFieldType.OD)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'totalTransactions', $pb.PbFieldType.O3)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'averageSaveAmount', $pb.PbFieldType.OD)
+    ..aOM<AutoSaveRule>(8, _omitFieldNames ? '' : 'mostActiveRule', subBuilder: AutoSaveRule.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1745,8 +1813,10 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AutoSaveStatistics copyWith(void Function(AutoSaveStatistics) updates) => super.copyWith((message) => updates(message as AutoSaveStatistics)) as AutoSaveStatistics; // ignore: deprecated_member_use
+  AutoSaveStatistics copyWith(void Function(AutoSaveStatistics) updates) => super.copyWith((message) => updates(message as AutoSaveStatistics)) as AutoSaveStatistics;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AutoSaveStatistics create() => AutoSaveStatistics._();
   AutoSaveStatistics createEmptyInstance() => create();
@@ -1830,15 +1900,17 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
   AutoSaveRule ensureMostActiveRule() => $_ensure(7);
 }
 
+/// Get auto-save statistics request
 class GetAutoSaveStatisticsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAutoSaveStatisticsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+  factory GetAutoSaveStatisticsRequest() => create();
+  GetAutoSaveStatisticsRequest._() : super();
+  factory GetAutoSaveStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAutoSaveStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAutoSaveStatisticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetAutoSaveStatisticsRequest._() : super();
-  factory GetAutoSaveStatisticsRequest() => create();
-  factory GetAutoSaveStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetAutoSaveStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1848,8 +1920,10 @@ class GetAutoSaveStatisticsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAutoSaveStatisticsRequest copyWith(void Function(GetAutoSaveStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetAutoSaveStatisticsRequest)) as GetAutoSaveStatisticsRequest; // ignore: deprecated_member_use
+  GetAutoSaveStatisticsRequest copyWith(void Function(GetAutoSaveStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetAutoSaveStatisticsRequest)) as GetAutoSaveStatisticsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAutoSaveStatisticsRequest create() => GetAutoSaveStatisticsRequest._();
   GetAutoSaveStatisticsRequest createEmptyInstance() => create();
@@ -1859,34 +1933,36 @@ class GetAutoSaveStatisticsRequest extends $pb.GeneratedMessage {
   static GetAutoSaveStatisticsRequest? _defaultInstance;
 }
 
+/// Get auto-save statistics response
 class GetAutoSaveStatisticsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAutoSaveStatisticsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..aOM<AutoSaveStatistics>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statistics', subBuilder: AutoSaveStatistics.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetAutoSaveStatisticsResponse._() : super();
   factory GetAutoSaveStatisticsResponse({
     $core.bool? success,
     $core.String? msg,
     AutoSaveStatistics? statistics,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
     if (statistics != null) {
-      _result.statistics = statistics;
+      $result.statistics = statistics;
     }
-    return _result;
+    return $result;
   }
+  GetAutoSaveStatisticsResponse._() : super();
   factory GetAutoSaveStatisticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAutoSaveStatisticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAutoSaveStatisticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..aOM<AutoSaveStatistics>(3, _omitFieldNames ? '' : 'statistics', subBuilder: AutoSaveStatistics.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1896,8 +1972,10 @@ class GetAutoSaveStatisticsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAutoSaveStatisticsResponse copyWith(void Function(GetAutoSaveStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetAutoSaveStatisticsResponse)) as GetAutoSaveStatisticsResponse; // ignore: deprecated_member_use
+  GetAutoSaveStatisticsResponse copyWith(void Function(GetAutoSaveStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetAutoSaveStatisticsResponse)) as GetAutoSaveStatisticsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAutoSaveStatisticsResponse create() => GetAutoSaveStatisticsResponse._();
   GetAutoSaveStatisticsResponse createEmptyInstance() => create();
@@ -1936,29 +2014,31 @@ class GetAutoSaveStatisticsResponse extends $pb.GeneratedMessage {
   AutoSaveStatistics ensureStatistics() => $_ensure(2);
 }
 
+/// Manual trigger auto-save request (for testing or manual execution)
 class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TriggerAutoSaveRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ruleId')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'customAmount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  TriggerAutoSaveRequest._() : super();
   factory TriggerAutoSaveRequest({
     $core.String? ruleId,
     $core.double? customAmount,
   }) {
-    final _result = create();
+    final $result = create();
     if (ruleId != null) {
-      _result.ruleId = ruleId;
+      $result.ruleId = ruleId;
     }
     if (customAmount != null) {
-      _result.customAmount = customAmount;
+      $result.customAmount = customAmount;
     }
-    return _result;
+    return $result;
   }
+  TriggerAutoSaveRequest._() : super();
   factory TriggerAutoSaveRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TriggerAutoSaveRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TriggerAutoSaveRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'ruleId')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'customAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1968,8 +2048,10 @@ class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TriggerAutoSaveRequest copyWith(void Function(TriggerAutoSaveRequest) updates) => super.copyWith((message) => updates(message as TriggerAutoSaveRequest)) as TriggerAutoSaveRequest; // ignore: deprecated_member_use
+  TriggerAutoSaveRequest copyWith(void Function(TriggerAutoSaveRequest) updates) => super.copyWith((message) => updates(message as TriggerAutoSaveRequest)) as TriggerAutoSaveRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TriggerAutoSaveRequest create() => TriggerAutoSaveRequest._();
   TriggerAutoSaveRequest createEmptyInstance() => create();
@@ -1997,34 +2079,36 @@ class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
   void clearCustomAmount() => clearField(2);
 }
 
+/// Manual trigger auto-save response
 class TriggerAutoSaveResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TriggerAutoSaveResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
-    ..aOM<AutoSaveTransaction>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: AutoSaveTransaction.create)
-    ..hasRequiredFields = false
-  ;
-
-  TriggerAutoSaveResponse._() : super();
   factory TriggerAutoSaveResponse({
     $core.bool? success,
     $core.String? msg,
     AutoSaveTransaction? transaction,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (msg != null) {
-      _result.msg = msg;
+      $result.msg = msg;
     }
     if (transaction != null) {
-      _result.transaction = transaction;
+      $result.transaction = transaction;
     }
-    return _result;
+    return $result;
   }
+  TriggerAutoSaveResponse._() : super();
   factory TriggerAutoSaveResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TriggerAutoSaveResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TriggerAutoSaveResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'msg')
+    ..aOM<AutoSaveTransaction>(3, _omitFieldNames ? '' : 'transaction', subBuilder: AutoSaveTransaction.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2034,8 +2118,10 @@ class TriggerAutoSaveResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TriggerAutoSaveResponse copyWith(void Function(TriggerAutoSaveResponse) updates) => super.copyWith((message) => updates(message as TriggerAutoSaveResponse)) as TriggerAutoSaveResponse; // ignore: deprecated_member_use
+  TriggerAutoSaveResponse copyWith(void Function(TriggerAutoSaveResponse) updates) => super.copyWith((message) => updates(message as TriggerAutoSaveResponse)) as TriggerAutoSaveResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TriggerAutoSaveResponse create() => TriggerAutoSaveResponse._();
   TriggerAutoSaveResponse createEmptyInstance() => create();
@@ -2074,3 +2160,6 @@ class TriggerAutoSaveResponse extends $pb.GeneratedMessage {
   AutoSaveTransaction ensureTransaction() => $_ensure(2);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

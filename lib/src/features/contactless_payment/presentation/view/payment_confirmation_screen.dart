@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../domain/entities/contactless_payment_entity.dart';
@@ -204,9 +205,17 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                   builder: (context) => PaymentSuccessScreen(
                     amount: widget.session.amount,
                     currency: widget.session.currency,
-                    payerName: widget.session.receiverName,
+                    payerName: state.transaction.payerName,
                     referenceNumber: state.transaction.referenceNumber,
                     isReceiver: false,
+                    category: widget.session.category,
+                    description: widget.session.description,
+                    transactionDate: state.transaction.createdAt,
+                    transaction: state.transaction,
+                    receiverName: state.transaction.receiverName,
+                    receiverUsername: state.transaction.receiverUsername,
+                    payerUsername: state.transaction.payerUsername,
+                    accountNumber: _selectedAccountId,
                   ),
                 ),
               );
@@ -393,7 +402,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  '${widget.session.currency} ${widget.session.amount.toStringAsFixed(2)}',
+                  widget.session.formattedAmount,
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 36.sp,
@@ -636,7 +645,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                               Row(
                                 children: [
                                   Text(
-                                    '${account.currency} ${account.balance.toStringAsFixed(2)}',
+                                    currency_formatter.CurrencySymbols.formatAmountWithCurrency(account.balance, account.currency),
                                     style: GoogleFonts.inter(
                                       color: hasInsufficientBalance
                                           ? const Color(0xFFEF4444)
@@ -786,7 +795,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                   ),
                 )
               : Text(
-                  'Pay ${widget.session.currency} ${widget.session.amount.toStringAsFixed(2)}',
+                  'Pay ${widget.session.formattedAmount}',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 16.sp,

@@ -293,6 +293,53 @@ message DailyProgressEntry {
   double cumulative_amount = 4;
 }
 
+// Withdraw from Crowdfund (Campaign Creator Only)
+message WithdrawFromCrowdfundRequest {
+  string crowdfund_id = 1;
+  uint64 amount = 2; // Amount in minor units (kobo)
+  string transaction_pin = 3;
+  // Destination account for withdrawal - one of the following:
+  // If destination_account_id is set, funds go to that specific account
+  // If destination_account_type is set, funds go to user's account of that type
+  // If neither is set, funds go to user's primary account
+  string destination_account_id = 4;    // Optional: specific account UUID
+  string destination_account_type = 5;  // Optional: "personal", "savings", or "investment"
+}
+
+message WithdrawFromCrowdfundResponse {
+  string crowdfund_id = 1;
+  uint64 amount_withdrawn = 2; // Amount withdrawn in minor units (kobo)
+  uint64 remaining_balance = 3; // Remaining campaign balance in minor units
+  string destination_account_id = 4; // Account where funds were credited
+  uint64 destination_new_balance = 5; // New balance of destination account
+  string message = 6;
+}
+
+// Get My Crowdfunds (Creator's campaigns)
+message GetMyCrowdfundsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3; // Optional filter: "active", "completed", "cancelled"
+}
+
+message GetMyCrowdfundsResponse {
+  repeated CrowdfundMessage crowdfunds = 1;
+  CrowdfundPaginationInfo pagination = 2;
+}
+
+// Get Campaign Wallet Balance
+message GetCampaignWalletBalanceRequest {
+  string crowdfund_id = 1;
+}
+
+message GetCampaignWalletBalanceResponse {
+  string crowdfund_id = 1;
+  string campaign_wallet_id = 2;
+  uint64 balance = 3; // In minor units (kobo)
+  uint64 available_balance = 4; // Available for withdrawal
+  string currency = 5;
+}
+
 // ============================================================================
 // PAGINATION INFO
 // ============================================================================
@@ -406,6 +453,28 @@ service CrowdfundService {
   rpc GetCrowdfundStatistics(GetCrowdfundStatisticsRequest) returns (GetCrowdfundStatisticsResponse) {
     option (google.api.http) = {
       get: "/v1/crowdfunds/{crowdfund_id}/statistics"
+    };
+  }
+
+  // Withdraw Funds (Campaign Creator Only)
+  rpc WithdrawFromCrowdfund(WithdrawFromCrowdfundRequest) returns (WithdrawFromCrowdfundResponse) {
+    option (google.api.http) = {
+      post: "/v1/crowdfunds/{crowdfund_id}/withdraw"
+      body: "*"
+    };
+  }
+
+  // Get My Crowdfunds (Creator's campaigns)
+  rpc GetMyCrowdfunds(GetMyCrowdfundsRequest) returns (GetMyCrowdfundsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/my"
+    };
+  }
+
+  // Get Campaign Wallet Balance
+  rpc GetCampaignWalletBalance(GetCampaignWalletBalanceRequest) returns (GetCampaignWalletBalanceResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/{crowdfund_id}/wallet-balance"
     };
   }
 

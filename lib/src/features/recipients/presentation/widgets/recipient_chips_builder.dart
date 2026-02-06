@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_filter_chip_card.dart';
 
+/// Callback type for filter changes
+typedef OnFilterChanged = void Function(RecipientFilterType filterType);
+
 class RecipientChipsBuilder extends StatefulWidget {
-  final List<RecipientModel> recipients;
+  /// Callback when filter selection changes
+  final OnFilterChanged? onFilterChanged;
+
+  /// Currently selected filter type (for controlled mode)
+  final RecipientFilterType? selectedFilter;
 
   const RecipientChipsBuilder({
     super.key,
-    required this.recipients,
+    this.onFilterChanged,
+    this.selectedFilter,
   });
 
   @override
@@ -16,23 +23,47 @@ class RecipientChipsBuilder extends StatefulWidget {
 }
 
 class _RecipientChipsBuilderState extends State<RecipientChipsBuilder> {
-  int selectedFilterIndex = 0;
+  late RecipientFilterType _selectedFilterType;
 
   final List<RecipientFilterChip> recipientFilterChips = [
-    RecipientFilterChip(text: 'All', isSelected: true),
-    RecipientFilterChip(text: 'Recent', isSelected: false),
-    RecipientFilterChip(text: 'Favorite', isSelected: false),
-    RecipientFilterChip(text: 'Bank', isSelected: false),
+    RecipientFilterChip(text: 'All', filterType: RecipientFilterType.all, isSelected: true),
+    RecipientFilterChip(text: 'Recent', filterType: RecipientFilterType.recent, isSelected: false),
+    RecipientFilterChip(text: 'Favorites', filterType: RecipientFilterType.favorites, isSelected: false),
+    RecipientFilterChip(text: 'Bank', filterType: RecipientFilterType.bank, isSelected: false),
   ];
 
-  void _handleToggleSelection(int index) {
-    setState(() {
-      selectedFilterIndex = index;
+  @override
+  void initState() {
+    super.initState();
+    _selectedFilterType = widget.selectedFilter ?? RecipientFilterType.all;
+    _updateChipsSelection();
+  }
 
-      for (var chip in recipientFilterChips) {
-        chip.isSelected = index == recipientFilterChips.indexOf(chip);
-      }
+  @override
+  void didUpdateWidget(covariant RecipientChipsBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedFilter != null && widget.selectedFilter != _selectedFilterType) {
+      _selectedFilterType = widget.selectedFilter!;
+      _updateChipsSelection();
+    }
+  }
+
+  void _updateChipsSelection() {
+    for (var chip in recipientFilterChips) {
+      chip.isSelected = chip.filterType == _selectedFilterType;
+    }
+  }
+
+  void _handleToggleSelection(int index) {
+    final selectedChip = recipientFilterChips[index];
+
+    setState(() {
+      _selectedFilterType = selectedChip.filterType;
+      _updateChipsSelection();
     });
+
+    // Notify parent of filter change
+    widget.onFilterChanged?.call(selectedChip.filterType);
   }
 
   @override

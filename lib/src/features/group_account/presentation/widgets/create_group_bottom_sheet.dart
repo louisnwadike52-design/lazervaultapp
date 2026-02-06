@@ -17,12 +17,16 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _whatsappLinkController = TextEditingController();
+  final _telegramLinkController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _whatsappLinkController.dispose();
+    _telegramLinkController.dispose();
     super.dispose();
   }
 
@@ -261,6 +265,107 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                         return null;
                       },
                     ),
+                    SizedBox(height: 24.h),
+
+                    // External Links Section
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.link,
+                          color: const Color.fromARGB(255, 78, 3, 208),
+                          size: 18.sp,
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'Social Media Links (Optional)',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'Add WhatsApp or Telegram group links for members',
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[400],
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // WhatsApp Link Field
+                    TextFormField(
+                      controller: _whatsappLinkController,
+                      style: GoogleFonts.inter(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'https://chat.whatsapp.com/...',
+                        hintStyle: GoogleFonts.inter(
+                          color: Colors.grey[500],
+                          fontSize: 14.sp,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.message,
+                          color: const Color(0xFF25D366),
+                          size: 20.sp,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF25D366),
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF0A0A0A),
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+
+                    // Telegram Link Field
+                    TextFormField(
+                      controller: _telegramLinkController,
+                      style: GoogleFonts.inter(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'https://t.me/...',
+                        hintStyle: GoogleFonts.inter(
+                          color: Colors.grey[500],
+                          fontSize: 14.sp,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.send,
+                          color: const Color(0xFF0088CC),
+                          size: 20.sp,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF0088CC),
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF0A0A0A),
+                      ),
+                    ),
                     SizedBox(height: 32.h),
 
                     // Info Card
@@ -339,9 +444,21 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
 
   void _createGroup() {
     if (_formKey.currentState!.validate()) {
+      // Build metadata with external links
+      final metadata = <String, dynamic>{};
+
+      if (_whatsappLinkController.text.trim().isNotEmpty) {
+        metadata['whatsapp_group_link'] = _whatsappLinkController.text.trim();
+      }
+
+      if (_telegramLinkController.text.trim().isNotEmpty) {
+        metadata['telegram_group_link'] = _telegramLinkController.text.trim();
+      }
+
       context.read<GroupAccountCubit>().createNewGroup(
             name: _nameController.text.trim(),
             description: _descriptionController.text.trim(),
+            metadata: metadata.isEmpty ? null : metadata,
           );
     }
   }

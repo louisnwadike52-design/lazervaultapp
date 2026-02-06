@@ -37,6 +37,12 @@ class RecipientModel {
   });
 
   factory RecipientModel.fromProto(proto.Recipient recipient) {
+    // Determine type: LazerVault bank recipients are internal, not external
+    String? resolvedType = recipient.type.isNotEmpty ? recipient.type : null;
+    if (recipient.bankName.toLowerCase() == 'lazervault') {
+      resolvedType = 'internal';
+    }
+
     return RecipientModel(
       id: recipient.id.toString(),
       name: recipient.name,
@@ -51,7 +57,7 @@ class RecipientModel {
       swiftCode: recipient.swiftCode.isNotEmpty ? recipient.swiftCode : null,
       iban: recipient.iban.isNotEmpty ? recipient.iban : null,
       alias: recipient.alias.isNotEmpty ? recipient.alias : null,
-      type: recipient.type.isNotEmpty ? recipient.type : null,
+      type: resolvedType,
     );
   }
 

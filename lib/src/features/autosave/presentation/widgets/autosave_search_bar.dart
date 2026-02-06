@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/utils/debouncer.dart';
+import 'package:lazervault/core/utils/debouncer.dart';
 
 class AutoSaveSearchBar extends StatefulWidget {
   final Function(String) onSearchChanged;

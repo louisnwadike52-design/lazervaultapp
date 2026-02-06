@@ -1,37 +1,26 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: transfer.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
-
+import 'google/protobuf/timestamp.pb.dart' as $42;
 import 'transfer.pbenum.dart';
 
 export 'transfer.pbenum.dart';
 
+/// Main Transfer Transaction message
 class TransferTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TransferTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toRecipientId')
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<TransferType>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferType', $pb.PbFieldType.OE, defaultOrMaker: TransferType.TRANSFER_TYPE_UNSPECIFIED, valueOf: TransferType.valueOf, enumValues: TransferType.values)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  TransferTransaction._() : super();
   factory TransferTransaction({
     $core.String? transactionId,
     $fixnum.Int64? fromAccountId,
@@ -42,43 +31,59 @@ class TransferTransaction extends $pb.GeneratedMessage {
     TransferType? transferType,
     $core.String? category,
     $core.String? description,
-    $1.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (transactionId != null) {
-      _result.transactionId = transactionId;
+      $result.transactionId = transactionId;
     }
     if (fromAccountId != null) {
-      _result.fromAccountId = fromAccountId;
+      $result.fromAccountId = fromAccountId;
     }
     if (toAccountId != null) {
-      _result.toAccountId = toAccountId;
+      $result.toAccountId = toAccountId;
     }
     if (toRecipientId != null) {
-      _result.toRecipientId = toRecipientId;
+      $result.toRecipientId = toRecipientId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (transferType != null) {
-      _result.transferType = transferType;
+      $result.transferType = transferType;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  TransferTransaction._() : super();
   factory TransferTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TransferTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TransferTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'transactionId')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'fromAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'toAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, _omitFieldNames ? '' : 'toRecipientId')
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(6, _omitFieldNames ? '' : 'currency')
+    ..e<TransferType>(7, _omitFieldNames ? '' : 'transferType', $pb.PbFieldType.OE, defaultOrMaker: TransferType.TRANSFER_TYPE_UNSPECIFIED, valueOf: TransferType.valueOf, enumValues: TransferType.values)
+    ..aOS(8, _omitFieldNames ? '' : 'category')
+    ..aOS(9, _omitFieldNames ? '' : 'description')
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -88,8 +93,10 @@ class TransferTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TransferTransaction copyWith(void Function(TransferTransaction) updates) => super.copyWith((message) => updates(message as TransferTransaction)) as TransferTransaction; // ignore: deprecated_member_use
+  TransferTransaction copyWith(void Function(TransferTransaction) updates) => super.copyWith((message) => updates(message as TransferTransaction)) as TransferTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TransferTransaction create() => TransferTransaction._();
   TransferTransaction createEmptyInstance() => create();
@@ -180,34 +187,21 @@ class TransferTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(9);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get createdAt => $_getN(9);
+  $42.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($1.Timestamp v) { setField(10, v); }
+  set createdAt($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+  $42.Timestamp ensureCreatedAt() => $_ensure(9);
 }
 
+/// Request message for initiating a transfer
 class InitiateTransferRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'from_account_id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction_id')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verification_token')
-    ..a<$fixnum.Int64>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'to_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipient_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..hasRequiredFields = false
-  ;
-
-  InitiateTransferRequest._() : super();
   factory InitiateTransferRequest({
-    $core.String? fromAccountId,
+    $fixnum.Int64? fromAccountId,
     $fixnum.Int64? amount,
     $core.String? category,
     $core.String? reference,
@@ -217,38 +211,53 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
     $fixnum.Int64? toAccountId,
     $fixnum.Int64? recipientId,
   }) {
-    final _result = create();
+    final $result = create();
     if (fromAccountId != null) {
-      _result.fromAccountId = fromAccountId;
+      $result.fromAccountId = fromAccountId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (reference != null) {
-      _result.reference = reference;
+      $result.reference = reference;
     }
     if (scheduledAt != null) {
-      _result.scheduledAt = scheduledAt;
+      $result.scheduledAt = scheduledAt;
     }
     if (transactionId != null) {
-      _result.transactionId = transactionId;
+      $result.transactionId = transactionId;
     }
     if (verificationToken != null) {
-      _result.verificationToken = verificationToken;
+      $result.verificationToken = verificationToken;
     }
     if (toAccountId != null) {
-      _result.toAccountId = toAccountId;
+      $result.toAccountId = toAccountId;
     }
     if (recipientId != null) {
-      _result.recipientId = recipientId;
+      $result.recipientId = recipientId;
     }
-    return _result;
+    return $result;
   }
+  InitiateTransferRequest._() : super();
   factory InitiateTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateTransferRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'from_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'category')
+    ..aOS(4, _omitFieldNames ? '' : 'reference')
+    ..aOS(5, _omitFieldNames ? '' : 'scheduledAt')
+    ..aOS(6, _omitFieldNames ? '' : 'transaction_id')
+    ..aOS(7, _omitFieldNames ? '' : 'verification_token')
+    ..a<$fixnum.Int64>(10, _omitFieldNames ? '' : 'to_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(11, _omitFieldNames ? '' : 'recipient_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -258,8 +267,10 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateTransferRequest copyWith(void Function(InitiateTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateTransferRequest)) as InitiateTransferRequest; // ignore: deprecated_member_use
+  InitiateTransferRequest copyWith(void Function(InitiateTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateTransferRequest)) as InitiateTransferRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static InitiateTransferRequest create() => InitiateTransferRequest._();
   InitiateTransferRequest createEmptyInstance() => create();
@@ -269,9 +280,9 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
   static InitiateTransferRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get fromAccountId => $_getSZ(0);
+  $fixnum.Int64 get fromAccountId => $_getI64(0);
   @$pb.TagNumber(1)
-  set fromAccountId($core.String v) { $_setString(0, v); }
+  set fromAccountId($fixnum.Int64 v) { $_setInt64(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasFromAccountId() => $_has(0);
   @$pb.TagNumber(1)
@@ -313,6 +324,7 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearScheduledAt() => clearField(5);
 
+  /// --- PIN Verification (Required for security) ---
   @$pb.TagNumber(6)
   $core.String get transactionId => $_getSZ(5);
   @$pb.TagNumber(6)
@@ -331,6 +343,7 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   void clearVerificationToken() => clearField(7);
 
+  /// --- Destination (Use ONE of the following) ---
   @$pb.TagNumber(10)
   $fixnum.Int64 get toAccountId => $_getI64(7);
   @$pb.TagNumber(10)
@@ -350,49 +363,51 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
   void clearRecipientId() => clearField(11);
 }
 
+/// Response message for initiating a transfer
 class InitiateTransferResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateTransferResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  InitiateTransferResponse._() : super();
   factory InitiateTransferResponse({
     $fixnum.Int64? transferId,
     $core.String? status,
     $fixnum.Int64? amount,
     $fixnum.Int64? fee,
     $fixnum.Int64? totalAmount,
-    $1.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (transferId != null) {
-      _result.transferId = transferId;
+      $result.transferId = transferId;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (fee != null) {
-      _result.fee = fee;
+      $result.fee = fee;
     }
     if (totalAmount != null) {
-      _result.totalAmount = totalAmount;
+      $result.totalAmount = totalAmount;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  InitiateTransferResponse._() : super();
   factory InitiateTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateTransferResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'transferId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -402,8 +417,10 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateTransferResponse copyWith(void Function(InitiateTransferResponse) updates) => super.copyWith((message) => updates(message as InitiateTransferResponse)) as InitiateTransferResponse; // ignore: deprecated_member_use
+  InitiateTransferResponse copyWith(void Function(InitiateTransferResponse) updates) => super.copyWith((message) => updates(message as InitiateTransferResponse)) as InitiateTransferResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static InitiateTransferResponse create() => InitiateTransferResponse._();
   InitiateTransferResponse createEmptyInstance() => create();
@@ -458,40 +475,42 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
   void clearTotalAmount() => clearField(5);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get createdAt => $_getN(5);
+  $42.Timestamp get createdAt => $_getN(5);
   @$pb.TagNumber(6)
-  set createdAt($1.Timestamp v) { setField(6, v); }
+  set createdAt($42.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasCreatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearCreatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureCreatedAt() => $_ensure(5);
+  $42.Timestamp ensureCreatedAt() => $_ensure(5);
 }
 
+/// Represents a single point in a time series chart
 class TimeSeriesPoint extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TimeSeriesPoint', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$1.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+  factory TimeSeriesPoint({
+    $42.Timestamp? timestamp,
+    $core.double? amount,
+  }) {
+    final $result = create();
+    if (timestamp != null) {
+      $result.timestamp = timestamp;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    return $result;
+  }
+  TimeSeriesPoint._() : super();
+  factory TimeSeriesPoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TimeSeriesPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TimeSeriesPoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'timestamp', subBuilder: $42.Timestamp.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
-  TimeSeriesPoint._() : super();
-  factory TimeSeriesPoint({
-    $1.Timestamp? timestamp,
-    $core.double? amount,
-  }) {
-    final _result = create();
-    if (timestamp != null) {
-      _result.timestamp = timestamp;
-    }
-    if (amount != null) {
-      _result.amount = amount;
-    }
-    return _result;
-  }
-  factory TimeSeriesPoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory TimeSeriesPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -501,8 +520,10 @@ class TimeSeriesPoint extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TimeSeriesPoint copyWith(void Function(TimeSeriesPoint) updates) => super.copyWith((message) => updates(message as TimeSeriesPoint)) as TimeSeriesPoint; // ignore: deprecated_member_use
+  TimeSeriesPoint copyWith(void Function(TimeSeriesPoint) updates) => super.copyWith((message) => updates(message as TimeSeriesPoint)) as TimeSeriesPoint;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TimeSeriesPoint create() => TimeSeriesPoint._();
   TimeSeriesPoint createEmptyInstance() => create();
@@ -512,15 +533,15 @@ class TimeSeriesPoint extends $pb.GeneratedMessage {
   static TimeSeriesPoint? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Timestamp get timestamp => $_getN(0);
+  $42.Timestamp get timestamp => $_getN(0);
   @$pb.TagNumber(1)
-  set timestamp($1.Timestamp v) { setField(1, v); }
+  set timestamp($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTimestamp() => $_has(0);
   @$pb.TagNumber(1)
   void clearTimestamp() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Timestamp ensureTimestamp() => $_ensure(0);
+  $42.Timestamp ensureTimestamp() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get amount => $_getN(1);
@@ -532,34 +553,36 @@ class TimeSeriesPoint extends $pb.GeneratedMessage {
   void clearAmount() => clearField(2);
 }
 
+/// Represents summary data for a specific category
 class CategorySummary extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CategorySummary', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentage', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  CategorySummary._() : super();
   factory CategorySummary({
     $core.String? category,
     $core.double? amount,
     $core.double? percentage,
   }) {
-    final _result = create();
+    final $result = create();
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (percentage != null) {
-      _result.percentage = percentage;
+      $result.percentage = percentage;
     }
-    return _result;
+    return $result;
   }
+  CategorySummary._() : super();
   factory CategorySummary.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CategorySummary.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CategorySummary', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'category')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'percentage', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -569,8 +592,10 @@ class CategorySummary extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CategorySummary copyWith(void Function(CategorySummary) updates) => super.copyWith((message) => updates(message as CategorySummary)) as CategorySummary; // ignore: deprecated_member_use
+  CategorySummary copyWith(void Function(CategorySummary) updates) => super.copyWith((message) => updates(message as CategorySummary)) as CategorySummary;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CategorySummary create() => CategorySummary._();
   CategorySummary createEmptyInstance() => create();
@@ -588,6 +613,7 @@ class CategorySummary extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearCategory() => clearField(1);
 
+  /// string subcategory = 2; // Optional: Add if subcategory breakdown is needed
   @$pb.TagNumber(3)
   $core.double get amount => $_getN(1);
   @$pb.TagNumber(3)
@@ -607,34 +633,36 @@ class CategorySummary extends $pb.GeneratedMessage {
   void clearPercentage() => clearField(4);
 }
 
+/// Represents aggregated data for a single month
 class MonthlyData extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MonthlyData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'month')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'income', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenses', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  MonthlyData._() : super();
   factory MonthlyData({
     $core.String? month,
     $core.double? income,
     $core.double? expenses,
   }) {
-    final _result = create();
+    final $result = create();
     if (month != null) {
-      _result.month = month;
+      $result.month = month;
     }
     if (income != null) {
-      _result.income = income;
+      $result.income = income;
     }
     if (expenses != null) {
-      _result.expenses = expenses;
+      $result.expenses = expenses;
     }
-    return _result;
+    return $result;
   }
+  MonthlyData._() : super();
   factory MonthlyData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory MonthlyData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MonthlyData', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'month')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'income', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'expenses', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -644,8 +672,10 @@ class MonthlyData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  MonthlyData copyWith(void Function(MonthlyData) updates) => super.copyWith((message) => updates(message as MonthlyData)) as MonthlyData; // ignore: deprecated_member_use
+  MonthlyData copyWith(void Function(MonthlyData) updates) => super.copyWith((message) => updates(message as MonthlyData)) as MonthlyData;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static MonthlyData create() => MonthlyData._();
   MonthlyData createEmptyInstance() => create();
@@ -682,18 +712,8 @@ class MonthlyData extends $pb.GeneratedMessage {
   void clearExpenses() => clearField(3);
 }
 
+/// Represents data for month-over-month comparison
 class ComparisonData extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ComparisonData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentIncome', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'previousIncome', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentExpenses', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'previousExpenses', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentSavings', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'previousSavings', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  ComparisonData._() : super();
   factory ComparisonData({
     $core.double? currentIncome,
     $core.double? previousIncome,
@@ -702,29 +722,41 @@ class ComparisonData extends $pb.GeneratedMessage {
     $core.double? currentSavings,
     $core.double? previousSavings,
   }) {
-    final _result = create();
+    final $result = create();
     if (currentIncome != null) {
-      _result.currentIncome = currentIncome;
+      $result.currentIncome = currentIncome;
     }
     if (previousIncome != null) {
-      _result.previousIncome = previousIncome;
+      $result.previousIncome = previousIncome;
     }
     if (currentExpenses != null) {
-      _result.currentExpenses = currentExpenses;
+      $result.currentExpenses = currentExpenses;
     }
     if (previousExpenses != null) {
-      _result.previousExpenses = previousExpenses;
+      $result.previousExpenses = previousExpenses;
     }
     if (currentSavings != null) {
-      _result.currentSavings = currentSavings;
+      $result.currentSavings = currentSavings;
     }
     if (previousSavings != null) {
-      _result.previousSavings = previousSavings;
+      $result.previousSavings = previousSavings;
     }
-    return _result;
+    return $result;
   }
+  ComparisonData._() : super();
   factory ComparisonData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ComparisonData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ComparisonData', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'currentIncome', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'previousIncome', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'currentExpenses', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'previousExpenses', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'currentSavings', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'previousSavings', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -734,8 +766,10 @@ class ComparisonData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ComparisonData copyWith(void Function(ComparisonData) updates) => super.copyWith((message) => updates(message as ComparisonData)) as ComparisonData; // ignore: deprecated_member_use
+  ComparisonData copyWith(void Function(ComparisonData) updates) => super.copyWith((message) => updates(message as ComparisonData)) as ComparisonData;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ComparisonData create() => ComparisonData._();
   ComparisonData createEmptyInstance() => create();
@@ -799,29 +833,31 @@ class ComparisonData extends $pb.GeneratedMessage {
   void clearPreviousSavings() => clearField(6);
 }
 
+/// Request message for fetching statistics
 class GetStatisticsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetStatisticsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<TimePeriod>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timePeriod', $pb.PbFieldType.OE, defaultOrMaker: TimePeriod.TIME_PERIOD_UNSPECIFIED, valueOf: TimePeriod.valueOf, enumValues: TimePeriod.values)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..hasRequiredFields = false
-  ;
-
-  GetStatisticsRequest._() : super();
   factory GetStatisticsRequest({
     TimePeriod? timePeriod,
     $core.String? currency,
   }) {
-    final _result = create();
+    final $result = create();
     if (timePeriod != null) {
-      _result.timePeriod = timePeriod;
+      $result.timePeriod = timePeriod;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
-    return _result;
+    return $result;
   }
+  GetStatisticsRequest._() : super();
   factory GetStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetStatisticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<TimePeriod>(1, _omitFieldNames ? '' : 'timePeriod', $pb.PbFieldType.OE, defaultOrMaker: TimePeriod.TIME_PERIOD_UNSPECIFIED, valueOf: TimePeriod.valueOf, enumValues: TimePeriod.values)
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -831,8 +867,10 @@ class GetStatisticsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetStatisticsRequest copyWith(void Function(GetStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetStatisticsRequest)) as GetStatisticsRequest; // ignore: deprecated_member_use
+  GetStatisticsRequest copyWith(void Function(GetStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetStatisticsRequest)) as GetStatisticsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetStatisticsRequest create() => GetStatisticsRequest._();
   GetStatisticsRequest createEmptyInstance() => create();
@@ -850,6 +888,8 @@ class GetStatisticsRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearTimePeriod() => clearField(1);
 
+  /// google.protobuf.Timestamp start_date = 2; // Alternative to TimePeriod
+  /// google.protobuf.Timestamp end_date = 3;   // Alternative to TimePeriod
   @$pb.TagNumber(4)
   $core.String get currency => $_getSZ(1);
   @$pb.TagNumber(4)
@@ -860,19 +900,8 @@ class GetStatisticsRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(4);
 }
 
+/// Response message containing calculated statistics
 class GetStatisticsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetStatisticsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalIncome', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalExpenses', $pb.PbFieldType.OD)
-    ..pc<TimeSeriesPoint>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenseTimeseries', $pb.PbFieldType.PM, subBuilder: TimeSeriesPoint.create)
-    ..pc<CategorySummary>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenseBreakdown', $pb.PbFieldType.PM, subBuilder: CategorySummary.create)
-    ..pc<CategorySummary>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'incomeBreakdown', $pb.PbFieldType.PM, subBuilder: CategorySummary.create)
-    ..pc<MonthlyData>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthlyOverview', $pb.PbFieldType.PM, subBuilder: MonthlyData.create)
-    ..aOM<ComparisonData>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'comparisonMetrics', subBuilder: ComparisonData.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetStatisticsResponse._() : super();
   factory GetStatisticsResponse({
     $core.double? totalIncome,
     $core.double? totalExpenses,
@@ -882,32 +911,45 @@ class GetStatisticsResponse extends $pb.GeneratedMessage {
     $core.Iterable<MonthlyData>? monthlyOverview,
     ComparisonData? comparisonMetrics,
   }) {
-    final _result = create();
+    final $result = create();
     if (totalIncome != null) {
-      _result.totalIncome = totalIncome;
+      $result.totalIncome = totalIncome;
     }
     if (totalExpenses != null) {
-      _result.totalExpenses = totalExpenses;
+      $result.totalExpenses = totalExpenses;
     }
     if (expenseTimeseries != null) {
-      _result.expenseTimeseries.addAll(expenseTimeseries);
+      $result.expenseTimeseries.addAll(expenseTimeseries);
     }
     if (expenseBreakdown != null) {
-      _result.expenseBreakdown.addAll(expenseBreakdown);
+      $result.expenseBreakdown.addAll(expenseBreakdown);
     }
     if (incomeBreakdown != null) {
-      _result.incomeBreakdown.addAll(incomeBreakdown);
+      $result.incomeBreakdown.addAll(incomeBreakdown);
     }
     if (monthlyOverview != null) {
-      _result.monthlyOverview.addAll(monthlyOverview);
+      $result.monthlyOverview.addAll(monthlyOverview);
     }
     if (comparisonMetrics != null) {
-      _result.comparisonMetrics = comparisonMetrics;
+      $result.comparisonMetrics = comparisonMetrics;
     }
-    return _result;
+    return $result;
   }
+  GetStatisticsResponse._() : super();
   factory GetStatisticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetStatisticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetStatisticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'totalIncome', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalExpenses', $pb.PbFieldType.OD)
+    ..pc<TimeSeriesPoint>(3, _omitFieldNames ? '' : 'expenseTimeseries', $pb.PbFieldType.PM, subBuilder: TimeSeriesPoint.create)
+    ..pc<CategorySummary>(4, _omitFieldNames ? '' : 'expenseBreakdown', $pb.PbFieldType.PM, subBuilder: CategorySummary.create)
+    ..pc<CategorySummary>(5, _omitFieldNames ? '' : 'incomeBreakdown', $pb.PbFieldType.PM, subBuilder: CategorySummary.create)
+    ..pc<MonthlyData>(6, _omitFieldNames ? '' : 'monthlyOverview', $pb.PbFieldType.PM, subBuilder: MonthlyData.create)
+    ..aOM<ComparisonData>(7, _omitFieldNames ? '' : 'comparisonMetrics', subBuilder: ComparisonData.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -917,8 +959,10 @@ class GetStatisticsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetStatisticsResponse copyWith(void Function(GetStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetStatisticsResponse)) as GetStatisticsResponse; // ignore: deprecated_member_use
+  GetStatisticsResponse copyWith(void Function(GetStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetStatisticsResponse)) as GetStatisticsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetStatisticsResponse create() => GetStatisticsResponse._();
   GetStatisticsResponse createEmptyInstance() => create();
@@ -969,24 +1013,26 @@ class GetStatisticsResponse extends $pb.GeneratedMessage {
   ComparisonData ensureComparisonMetrics() => $_ensure(6);
 }
 
+/// Request message for getting transfer details
 class GetTransferDetailsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransferDetailsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transfer_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..hasRequiredFields = false
-  ;
-
-  GetTransferDetailsRequest._() : super();
   factory GetTransferDetailsRequest({
     $fixnum.Int64? transferId,
   }) {
-    final _result = create();
+    final $result = create();
     if (transferId != null) {
-      _result.transferId = transferId;
+      $result.transferId = transferId;
     }
-    return _result;
+    return $result;
   }
+  GetTransferDetailsRequest._() : super();
   factory GetTransferDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTransferDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTransferDetailsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'transfer_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -996,8 +1042,10 @@ class GetTransferDetailsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTransferDetailsRequest copyWith(void Function(GetTransferDetailsRequest) updates) => super.copyWith((message) => updates(message as GetTransferDetailsRequest)) as GetTransferDetailsRequest; // ignore: deprecated_member_use
+  GetTransferDetailsRequest copyWith(void Function(GetTransferDetailsRequest) updates) => super.copyWith((message) => updates(message as GetTransferDetailsRequest)) as GetTransferDetailsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTransferDetailsRequest create() => GetTransferDetailsRequest._();
   GetTransferDetailsRequest createEmptyInstance() => create();
@@ -1016,29 +1064,8 @@ class GetTransferDetailsRequest extends $pb.GeneratedMessage {
   void clearTransferId() => clearField(1);
 }
 
+/// Response message containing transfer details
 class GetTransferDetailsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransferDetailsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transfer_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'from_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'to_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'from_user_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'to_user_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOM<$1.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $1.Timestamp.create)
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduled_at')
-    ..aOM<$1.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $1.Timestamp.create)
-    ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failure_reason')
-    ..hasRequiredFields = false
-  ;
-
-  GetTransferDetailsResponse._() : super();
   factory GetTransferDetailsResponse({
     $fixnum.Int64? transferId,
     $fixnum.Int64? fromAccountId,
@@ -1052,68 +1079,91 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? reference,
     $core.String? category,
-    $1.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
     $core.String? scheduledAt,
-    $1.Timestamp? completedAt,
-    $1.Timestamp? failedAt,
+    $42.Timestamp? completedAt,
+    $42.Timestamp? failedAt,
     $core.String? failureReason,
   }) {
-    final _result = create();
+    final $result = create();
     if (transferId != null) {
-      _result.transferId = transferId;
+      $result.transferId = transferId;
     }
     if (fromAccountId != null) {
-      _result.fromAccountId = fromAccountId;
+      $result.fromAccountId = fromAccountId;
     }
     if (toAccountId != null) {
-      _result.toAccountId = toAccountId;
+      $result.toAccountId = toAccountId;
     }
     if (fromUserId != null) {
-      _result.fromUserId = fromUserId;
+      $result.fromUserId = fromUserId;
     }
     if (toUserId != null) {
-      _result.toUserId = toUserId;
+      $result.toUserId = toUserId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (fee != null) {
-      _result.fee = fee;
+      $result.fee = fee;
     }
     if (totalAmount != null) {
-      _result.totalAmount = totalAmount;
+      $result.totalAmount = totalAmount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (reference != null) {
-      _result.reference = reference;
+      $result.reference = reference;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (scheduledAt != null) {
-      _result.scheduledAt = scheduledAt;
+      $result.scheduledAt = scheduledAt;
     }
     if (completedAt != null) {
-      _result.completedAt = completedAt;
+      $result.completedAt = completedAt;
     }
     if (failedAt != null) {
-      _result.failedAt = failedAt;
+      $result.failedAt = failedAt;
     }
     if (failureReason != null) {
-      _result.failureReason = failureReason;
+      $result.failureReason = failureReason;
     }
-    return _result;
+    return $result;
   }
+  GetTransferDetailsResponse._() : super();
   factory GetTransferDetailsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTransferDetailsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTransferDetailsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'transfer_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'from_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'to_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'from_user_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'to_user_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(9, _omitFieldNames ? '' : 'currency')
+    ..aOS(10, _omitFieldNames ? '' : 'status')
+    ..aOS(11, _omitFieldNames ? '' : 'reference')
+    ..aOS(12, _omitFieldNames ? '' : 'category')
+    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'created_at', subBuilder: $42.Timestamp.create)
+    ..aOS(14, _omitFieldNames ? '' : 'scheduled_at')
+    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'completed_at', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'failed_at', subBuilder: $42.Timestamp.create)
+    ..aOS(17, _omitFieldNames ? '' : 'failure_reason')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1123,8 +1173,10 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTransferDetailsResponse copyWith(void Function(GetTransferDetailsResponse) updates) => super.copyWith((message) => updates(message as GetTransferDetailsResponse)) as GetTransferDetailsResponse; // ignore: deprecated_member_use
+  GetTransferDetailsResponse copyWith(void Function(GetTransferDetailsResponse) updates) => super.copyWith((message) => updates(message as GetTransferDetailsResponse)) as GetTransferDetailsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTransferDetailsResponse create() => GetTransferDetailsResponse._();
   GetTransferDetailsResponse createEmptyInstance() => create();
@@ -1242,15 +1294,15 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   void clearCategory() => clearField(12);
 
   @$pb.TagNumber(13)
-  $1.Timestamp get createdAt => $_getN(12);
+  $42.Timestamp get createdAt => $_getN(12);
   @$pb.TagNumber(13)
-  set createdAt($1.Timestamp v) { setField(13, v); }
+  set createdAt($42.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasCreatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearCreatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $1.Timestamp ensureCreatedAt() => $_ensure(12);
+  $42.Timestamp ensureCreatedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
   $core.String get scheduledAt => $_getSZ(13);
@@ -1262,26 +1314,26 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   void clearScheduledAt() => clearField(14);
 
   @$pb.TagNumber(15)
-  $1.Timestamp get completedAt => $_getN(14);
+  $42.Timestamp get completedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set completedAt($1.Timestamp v) { setField(15, v); }
+  set completedAt($42.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCompletedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCompletedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $1.Timestamp ensureCompletedAt() => $_ensure(14);
+  $42.Timestamp ensureCompletedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $1.Timestamp get failedAt => $_getN(15);
+  $42.Timestamp get failedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set failedAt($1.Timestamp v) { setField(16, v); }
+  set failedAt($42.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasFailedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearFailedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $1.Timestamp ensureFailedAt() => $_ensure(15);
+  $42.Timestamp ensureFailedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
   $core.String get failureReason => $_getSZ(16);
@@ -1293,18 +1345,8 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(17);
 }
 
+/// Pagination metadata for transfer lists
 class TransferPaginationInfo extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TransferPaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrev')
-    ..hasRequiredFields = false
-  ;
-
-  TransferPaginationInfo._() : super();
   factory TransferPaginationInfo({
     $core.int? currentPage,
     $core.int? totalPages,
@@ -1313,29 +1355,41 @@ class TransferPaginationInfo extends $pb.GeneratedMessage {
     $core.bool? hasNext,
     $core.bool? hasPrev,
   }) {
-    final _result = create();
+    final $result = create();
     if (currentPage != null) {
-      _result.currentPage = currentPage;
+      $result.currentPage = currentPage;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
     if (totalItems != null) {
-      _result.totalItems = totalItems;
+      $result.totalItems = totalItems;
     }
     if (itemsPerPage != null) {
-      _result.itemsPerPage = itemsPerPage;
+      $result.itemsPerPage = itemsPerPage;
     }
     if (hasNext != null) {
-      _result.hasNext = hasNext;
+      $result.hasNext = hasNext;
     }
     if (hasPrev != null) {
-      _result.hasPrev = hasPrev;
+      $result.hasPrev = hasPrev;
     }
-    return _result;
+    return $result;
   }
+  TransferPaginationInfo._() : super();
   factory TransferPaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TransferPaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TransferPaginationInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalItems', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPrev')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1345,8 +1399,10 @@ class TransferPaginationInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TransferPaginationInfo copyWith(void Function(TransferPaginationInfo) updates) => super.copyWith((message) => updates(message as TransferPaginationInfo)) as TransferPaginationInfo; // ignore: deprecated_member_use
+  TransferPaginationInfo copyWith(void Function(TransferPaginationInfo) updates) => super.copyWith((message) => updates(message as TransferPaginationInfo)) as TransferPaginationInfo;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TransferPaginationInfo create() => TransferPaginationInfo._();
   TransferPaginationInfo createEmptyInstance() => create();
@@ -1410,18 +1466,8 @@ class TransferPaginationInfo extends $pb.GeneratedMessage {
   void clearHasPrev() => clearField(6);
 }
 
+/// Request message for listing transfers with pagination
 class ListTransfersRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListTransfersRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortBy')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortOrder')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'search')
-    ..hasRequiredFields = false
-  ;
-
-  ListTransfersRequest._() : super();
   factory ListTransfersRequest({
     $core.int? page,
     $core.int? pageSize,
@@ -1430,29 +1476,41 @@ class ListTransfersRequest extends $pb.GeneratedMessage {
     $core.String? sortOrder,
     $core.String? search,
   }) {
-    final _result = create();
+    final $result = create();
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (sortBy != null) {
-      _result.sortBy = sortBy;
+      $result.sortBy = sortBy;
     }
     if (sortOrder != null) {
-      _result.sortOrder = sortOrder;
+      $result.sortOrder = sortOrder;
     }
     if (search != null) {
-      _result.search = search;
+      $result.search = search;
     }
-    return _result;
+    return $result;
   }
+  ListTransfersRequest._() : super();
   factory ListTransfersRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ListTransfersRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListTransfersRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'status')
+    ..aOS(4, _omitFieldNames ? '' : 'sortBy')
+    ..aOS(5, _omitFieldNames ? '' : 'sortOrder')
+    ..aOS(6, _omitFieldNames ? '' : 'search')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1462,8 +1520,10 @@ class ListTransfersRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ListTransfersRequest copyWith(void Function(ListTransfersRequest) updates) => super.copyWith((message) => updates(message as ListTransfersRequest)) as ListTransfersRequest; // ignore: deprecated_member_use
+  ListTransfersRequest copyWith(void Function(ListTransfersRequest) updates) => super.copyWith((message) => updates(message as ListTransfersRequest)) as ListTransfersRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ListTransfersRequest create() => ListTransfersRequest._();
   ListTransfersRequest createEmptyInstance() => create();
@@ -1527,29 +1587,31 @@ class ListTransfersRequest extends $pb.GeneratedMessage {
   void clearSearch() => clearField(6);
 }
 
+/// Response message for listing transfers
 class ListTransfersResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListTransfersResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<GetTransferDetailsResponse>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transfers', $pb.PbFieldType.PM, subBuilder: GetTransferDetailsResponse.create)
-    ..aOM<TransferPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: TransferPaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  ListTransfersResponse._() : super();
   factory ListTransfersResponse({
     $core.Iterable<GetTransferDetailsResponse>? transfers,
     TransferPaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (transfers != null) {
-      _result.transfers.addAll(transfers);
+      $result.transfers.addAll(transfers);
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  ListTransfersResponse._() : super();
   factory ListTransfersResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ListTransfersResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListTransfersResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<GetTransferDetailsResponse>(1, _omitFieldNames ? '' : 'transfers', $pb.PbFieldType.PM, subBuilder: GetTransferDetailsResponse.create)
+    ..aOM<TransferPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: TransferPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1559,8 +1621,10 @@ class ListTransfersResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ListTransfersResponse copyWith(void Function(ListTransfersResponse) updates) => super.copyWith((message) => updates(message as ListTransfersResponse)) as ListTransfersResponse; // ignore: deprecated_member_use
+  ListTransfersResponse copyWith(void Function(ListTransfersResponse) updates) => super.copyWith((message) => updates(message as ListTransfersResponse)) as ListTransfersResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ListTransfersResponse create() => ListTransfersResponse._();
   ListTransfersResponse createEmptyInstance() => create();
@@ -1584,17 +1648,8 @@ class ListTransfersResponse extends $pb.GeneratedMessage {
   TransferPaginationInfo ensurePagination() => $_ensure(1);
 }
 
+/// Represents a single recipient in a batch transfer
 class BatchRecipient extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchRecipient', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..hasRequiredFields = false
-  ;
-
-  BatchRecipient._() : super();
   factory BatchRecipient({
     $fixnum.Int64? recipientId,
     $fixnum.Int64? toAccountId,
@@ -1602,26 +1657,37 @@ class BatchRecipient extends $pb.GeneratedMessage {
     $core.String? reference,
     $core.String? category,
   }) {
-    final _result = create();
+    final $result = create();
     if (recipientId != null) {
-      _result.recipientId = recipientId;
+      $result.recipientId = recipientId;
     }
     if (toAccountId != null) {
-      _result.toAccountId = toAccountId;
+      $result.toAccountId = toAccountId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (reference != null) {
-      _result.reference = reference;
+      $result.reference = reference;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
-    return _result;
+    return $result;
   }
+  BatchRecipient._() : super();
   factory BatchRecipient.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BatchRecipient.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchRecipient', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'toAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, _omitFieldNames ? '' : 'reference')
+    ..aOS(5, _omitFieldNames ? '' : 'category')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1631,8 +1697,10 @@ class BatchRecipient extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BatchRecipient copyWith(void Function(BatchRecipient) updates) => super.copyWith((message) => updates(message as BatchRecipient)) as BatchRecipient; // ignore: deprecated_member_use
+  BatchRecipient copyWith(void Function(BatchRecipient) updates) => super.copyWith((message) => updates(message as BatchRecipient)) as BatchRecipient;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static BatchRecipient create() => BatchRecipient._();
   BatchRecipient createEmptyInstance() => create();
@@ -1687,34 +1755,36 @@ class BatchRecipient extends $pb.GeneratedMessage {
   void clearCategory() => clearField(5);
 }
 
+/// Request message for initiating a batch transfer
 class InitiateBatchTransferRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateBatchTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'from_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..pc<BatchRecipient>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: BatchRecipient.create)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt')
-    ..hasRequiredFields = false
-  ;
-
-  InitiateBatchTransferRequest._() : super();
   factory InitiateBatchTransferRequest({
     $fixnum.Int64? fromAccountId,
     $core.Iterable<BatchRecipient>? recipients,
     $core.String? scheduledAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (fromAccountId != null) {
-      _result.fromAccountId = fromAccountId;
+      $result.fromAccountId = fromAccountId;
     }
     if (recipients != null) {
-      _result.recipients.addAll(recipients);
+      $result.recipients.addAll(recipients);
     }
     if (scheduledAt != null) {
-      _result.scheduledAt = scheduledAt;
+      $result.scheduledAt = scheduledAt;
     }
-    return _result;
+    return $result;
   }
+  InitiateBatchTransferRequest._() : super();
   factory InitiateBatchTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateBatchTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateBatchTransferRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'from_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pc<BatchRecipient>(2, _omitFieldNames ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: BatchRecipient.create)
+    ..aOS(3, _omitFieldNames ? '' : 'scheduledAt')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1724,8 +1794,10 @@ class InitiateBatchTransferRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateBatchTransferRequest copyWith(void Function(InitiateBatchTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateBatchTransferRequest)) as InitiateBatchTransferRequest; // ignore: deprecated_member_use
+  InitiateBatchTransferRequest copyWith(void Function(InitiateBatchTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateBatchTransferRequest)) as InitiateBatchTransferRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static InitiateBatchTransferRequest create() => InitiateBatchTransferRequest._();
   InitiateBatchTransferRequest createEmptyInstance() => create();
@@ -1756,19 +1828,8 @@ class InitiateBatchTransferRequest extends $pb.GeneratedMessage {
   void clearScheduledAt() => clearField(3);
 }
 
+/// Represents the result of a single transfer within a batch
 class BatchTransferResult extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchTransferResult', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientAccount')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
-    ..hasRequiredFields = false
-  ;
-
-  BatchTransferResult._() : super();
   factory BatchTransferResult({
     $fixnum.Int64? transferId,
     $core.String? status,
@@ -1778,32 +1839,45 @@ class BatchTransferResult extends $pb.GeneratedMessage {
     $core.String? recipientAccount,
     $core.String? failureReason,
   }) {
-    final _result = create();
+    final $result = create();
     if (transferId != null) {
-      _result.transferId = transferId;
+      $result.transferId = transferId;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (fee != null) {
-      _result.fee = fee;
+      $result.fee = fee;
     }
     if (recipientName != null) {
-      _result.recipientName = recipientName;
+      $result.recipientName = recipientName;
     }
     if (recipientAccount != null) {
-      _result.recipientAccount = recipientAccount;
+      $result.recipientAccount = recipientAccount;
     }
     if (failureReason != null) {
-      _result.failureReason = failureReason;
+      $result.failureReason = failureReason;
     }
-    return _result;
+    return $result;
   }
+  BatchTransferResult._() : super();
   factory BatchTransferResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BatchTransferResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchTransferResult', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'transferId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, _omitFieldNames ? '' : 'recipientName')
+    ..aOS(6, _omitFieldNames ? '' : 'recipientAccount')
+    ..aOS(7, _omitFieldNames ? '' : 'failureReason')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1813,8 +1887,10 @@ class BatchTransferResult extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BatchTransferResult copyWith(void Function(BatchTransferResult) updates) => super.copyWith((message) => updates(message as BatchTransferResult)) as BatchTransferResult; // ignore: deprecated_member_use
+  BatchTransferResult copyWith(void Function(BatchTransferResult) updates) => super.copyWith((message) => updates(message as BatchTransferResult)) as BatchTransferResult;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static BatchTransferResult create() => BatchTransferResult._();
   BatchTransferResult createEmptyInstance() => create();
@@ -1887,23 +1963,8 @@ class BatchTransferResult extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(7);
 }
 
+/// Response message for initiating a batch transfer
 class InitiateBatchTransferResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateBatchTransferResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batchId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountWithFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalTransfers', $pb.PbFieldType.O3)
-    ..pc<BatchTransferResult>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResult.create)
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  InitiateBatchTransferResponse._() : super();
   factory InitiateBatchTransferResponse({
     $fixnum.Int64? batchId,
     $core.String? status,
@@ -1914,47 +1975,64 @@ class InitiateBatchTransferResponse extends $pb.GeneratedMessage {
     $core.int? failedTransfers,
     $core.int? totalTransfers,
     $core.Iterable<BatchTransferResult>? results,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? completedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? completedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (batchId != null) {
-      _result.batchId = batchId;
+      $result.batchId = batchId;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (totalAmount != null) {
-      _result.totalAmount = totalAmount;
+      $result.totalAmount = totalAmount;
     }
     if (totalFee != null) {
-      _result.totalFee = totalFee;
+      $result.totalFee = totalFee;
     }
     if (totalAmountWithFee != null) {
-      _result.totalAmountWithFee = totalAmountWithFee;
+      $result.totalAmountWithFee = totalAmountWithFee;
     }
     if (successfulTransfers != null) {
-      _result.successfulTransfers = successfulTransfers;
+      $result.successfulTransfers = successfulTransfers;
     }
     if (failedTransfers != null) {
-      _result.failedTransfers = failedTransfers;
+      $result.failedTransfers = failedTransfers;
     }
     if (totalTransfers != null) {
-      _result.totalTransfers = totalTransfers;
+      $result.totalTransfers = totalTransfers;
     }
     if (results != null) {
-      _result.results.addAll(results);
+      $result.results.addAll(results);
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (completedAt != null) {
-      _result.completedAt = completedAt;
+      $result.completedAt = completedAt;
     }
-    return _result;
+    return $result;
   }
+  InitiateBatchTransferResponse._() : super();
   factory InitiateBatchTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateBatchTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateBatchTransferResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'batchId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'totalFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'totalAmountWithFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'failedTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'totalTransfers', $pb.PbFieldType.O3)
+    ..pc<BatchTransferResult>(9, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResult.create)
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1964,8 +2042,10 @@ class InitiateBatchTransferResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateBatchTransferResponse copyWith(void Function(InitiateBatchTransferResponse) updates) => super.copyWith((message) => updates(message as InitiateBatchTransferResponse)) as InitiateBatchTransferResponse; // ignore: deprecated_member_use
+  InitiateBatchTransferResponse copyWith(void Function(InitiateBatchTransferResponse) updates) => super.copyWith((message) => updates(message as InitiateBatchTransferResponse)) as InitiateBatchTransferResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static InitiateBatchTransferResponse create() => InitiateBatchTransferResponse._();
   InitiateBatchTransferResponse createEmptyInstance() => create();
@@ -2050,46 +2130,48 @@ class InitiateBatchTransferResponse extends $pb.GeneratedMessage {
   $core.List<BatchTransferResult> get results => $_getList(8);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get createdAt => $_getN(9);
+  $42.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($1.Timestamp v) { setField(10, v); }
+  set createdAt($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+  $42.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $1.Timestamp get completedAt => $_getN(10);
+  $42.Timestamp get completedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set completedAt($1.Timestamp v) { setField(11, v); }
+  set completedAt($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCompletedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCompletedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Timestamp ensureCompletedAt() => $_ensure(10);
+  $42.Timestamp ensureCompletedAt() => $_ensure(10);
 }
 
+/// Request message for getting batch transfer status
 class GetBatchTransferStatusRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchTransferStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batch_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..hasRequiredFields = false
-  ;
-
-  GetBatchTransferStatusRequest._() : super();
   factory GetBatchTransferStatusRequest({
     $fixnum.Int64? batchId,
   }) {
-    final _result = create();
+    final $result = create();
     if (batchId != null) {
-      _result.batchId = batchId;
+      $result.batchId = batchId;
     }
-    return _result;
+    return $result;
   }
+  GetBatchTransferStatusRequest._() : super();
   factory GetBatchTransferStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBatchTransferStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBatchTransferStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'batch_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2099,8 +2181,10 @@ class GetBatchTransferStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBatchTransferStatusRequest copyWith(void Function(GetBatchTransferStatusRequest) updates) => super.copyWith((message) => updates(message as GetBatchTransferStatusRequest)) as GetBatchTransferStatusRequest; // ignore: deprecated_member_use
+  GetBatchTransferStatusRequest copyWith(void Function(GetBatchTransferStatusRequest) updates) => super.copyWith((message) => updates(message as GetBatchTransferStatusRequest)) as GetBatchTransferStatusRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBatchTransferStatusRequest create() => GetBatchTransferStatusRequest._();
   GetBatchTransferStatusRequest createEmptyInstance() => create();
@@ -2119,23 +2203,8 @@ class GetBatchTransferStatusRequest extends $pb.GeneratedMessage {
   void clearBatchId() => clearField(1);
 }
 
+/// Response message for getting batch transfer status (same as initiate response)
 class GetBatchTransferStatusResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchTransferStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batchId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountWithFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalTransfers', $pb.PbFieldType.O3)
-    ..pc<BatchTransferResult>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResult.create)
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetBatchTransferStatusResponse._() : super();
   factory GetBatchTransferStatusResponse({
     $fixnum.Int64? batchId,
     $core.String? status,
@@ -2146,47 +2215,64 @@ class GetBatchTransferStatusResponse extends $pb.GeneratedMessage {
     $core.int? failedTransfers,
     $core.int? totalTransfers,
     $core.Iterable<BatchTransferResult>? results,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? completedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? completedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (batchId != null) {
-      _result.batchId = batchId;
+      $result.batchId = batchId;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (totalAmount != null) {
-      _result.totalAmount = totalAmount;
+      $result.totalAmount = totalAmount;
     }
     if (totalFee != null) {
-      _result.totalFee = totalFee;
+      $result.totalFee = totalFee;
     }
     if (totalAmountWithFee != null) {
-      _result.totalAmountWithFee = totalAmountWithFee;
+      $result.totalAmountWithFee = totalAmountWithFee;
     }
     if (successfulTransfers != null) {
-      _result.successfulTransfers = successfulTransfers;
+      $result.successfulTransfers = successfulTransfers;
     }
     if (failedTransfers != null) {
-      _result.failedTransfers = failedTransfers;
+      $result.failedTransfers = failedTransfers;
     }
     if (totalTransfers != null) {
-      _result.totalTransfers = totalTransfers;
+      $result.totalTransfers = totalTransfers;
     }
     if (results != null) {
-      _result.results.addAll(results);
+      $result.results.addAll(results);
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (completedAt != null) {
-      _result.completedAt = completedAt;
+      $result.completedAt = completedAt;
     }
-    return _result;
+    return $result;
   }
+  GetBatchTransferStatusResponse._() : super();
   factory GetBatchTransferStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBatchTransferStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBatchTransferStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'batchId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'totalFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'totalAmountWithFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'failedTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'totalTransfers', $pb.PbFieldType.O3)
+    ..pc<BatchTransferResult>(9, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResult.create)
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2196,8 +2282,10 @@ class GetBatchTransferStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBatchTransferStatusResponse copyWith(void Function(GetBatchTransferStatusResponse) updates) => super.copyWith((message) => updates(message as GetBatchTransferStatusResponse)) as GetBatchTransferStatusResponse; // ignore: deprecated_member_use
+  GetBatchTransferStatusResponse copyWith(void Function(GetBatchTransferStatusResponse) updates) => super.copyWith((message) => updates(message as GetBatchTransferStatusResponse)) as GetBatchTransferStatusResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBatchTransferStatusResponse create() => GetBatchTransferStatusResponse._();
   GetBatchTransferStatusResponse createEmptyInstance() => create();
@@ -2282,56 +2370,58 @@ class GetBatchTransferStatusResponse extends $pb.GeneratedMessage {
   $core.List<BatchTransferResult> get results => $_getList(8);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get createdAt => $_getN(9);
+  $42.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($1.Timestamp v) { setField(10, v); }
+  set createdAt($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+  $42.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $1.Timestamp get completedAt => $_getN(10);
+  $42.Timestamp get completedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set completedAt($1.Timestamp v) { setField(11, v); }
+  set completedAt($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCompletedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCompletedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Timestamp ensureCompletedAt() => $_ensure(10);
+  $42.Timestamp ensureCompletedAt() => $_ensure(10);
 }
 
+/// Request message for getting batch transfer history
 class GetBatchTransferHistoryRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchTransferHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..hasRequiredFields = false
-  ;
-
-  GetBatchTransferHistoryRequest._() : super();
   factory GetBatchTransferHistoryRequest({
     $core.int? page,
     $core.int? pageSize,
     $core.String? status,
   }) {
-    final _result = create();
+    final $result = create();
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
-    return _result;
+    return $result;
   }
+  GetBatchTransferHistoryRequest._() : super();
   factory GetBatchTransferHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBatchTransferHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBatchTransferHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'status')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2341,8 +2431,10 @@ class GetBatchTransferHistoryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBatchTransferHistoryRequest copyWith(void Function(GetBatchTransferHistoryRequest) updates) => super.copyWith((message) => updates(message as GetBatchTransferHistoryRequest)) as GetBatchTransferHistoryRequest; // ignore: deprecated_member_use
+  GetBatchTransferHistoryRequest copyWith(void Function(GetBatchTransferHistoryRequest) updates) => super.copyWith((message) => updates(message as GetBatchTransferHistoryRequest)) as GetBatchTransferHistoryRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBatchTransferHistoryRequest create() => GetBatchTransferHistoryRequest._();
   GetBatchTransferHistoryRequest createEmptyInstance() => create();
@@ -2379,29 +2471,31 @@ class GetBatchTransferHistoryRequest extends $pb.GeneratedMessage {
   void clearStatus() => clearField(3);
 }
 
+/// Response message for getting batch transfer history
 class GetBatchTransferHistoryResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchTransferHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<GetBatchTransferStatusResponse>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batches', $pb.PbFieldType.PM, subBuilder: GetBatchTransferStatusResponse.create)
-    ..aOM<TransferPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: TransferPaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetBatchTransferHistoryResponse._() : super();
   factory GetBatchTransferHistoryResponse({
     $core.Iterable<GetBatchTransferStatusResponse>? batches,
     TransferPaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (batches != null) {
-      _result.batches.addAll(batches);
+      $result.batches.addAll(batches);
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  GetBatchTransferHistoryResponse._() : super();
   factory GetBatchTransferHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBatchTransferHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBatchTransferHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<GetBatchTransferStatusResponse>(1, _omitFieldNames ? '' : 'batches', $pb.PbFieldType.PM, subBuilder: GetBatchTransferStatusResponse.create)
+    ..aOM<TransferPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: TransferPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2411,8 +2505,10 @@ class GetBatchTransferHistoryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBatchTransferHistoryResponse copyWith(void Function(GetBatchTransferHistoryResponse) updates) => super.copyWith((message) => updates(message as GetBatchTransferHistoryResponse)) as GetBatchTransferHistoryResponse; // ignore: deprecated_member_use
+  GetBatchTransferHistoryResponse copyWith(void Function(GetBatchTransferHistoryResponse) updates) => super.copyWith((message) => updates(message as GetBatchTransferHistoryResponse)) as GetBatchTransferHistoryResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBatchTransferHistoryResponse create() => GetBatchTransferHistoryResponse._();
   GetBatchTransferHistoryResponse createEmptyInstance() => create();
@@ -2436,3 +2532,6 @@ class GetBatchTransferHistoryResponse extends $pb.GeneratedMessage {
   TransferPaginationInfo ensurePagination() => $_ensure(1);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
