@@ -212,7 +212,7 @@ class ReviewStep extends StatelessWidget {
                           Text(
                             targetAmount.isEmpty
                                 ? '$currency 0.00'
-                                : '$currency ${targetAmount}',
+                                : '$currency $targetAmount',
                             style: GoogleFonts.inter(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.w700,
@@ -318,7 +318,7 @@ class ReviewStep extends StatelessWidget {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

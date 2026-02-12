@@ -13,6 +13,76 @@ import 'dart:convert' as $convert;
 import 'dart:core' as $core;
 import 'dart:typed_data' as $typed_data;
 
+@$core.Deprecated('Use autoSaveTriggerTypeDescriptor instead')
+const AutoSaveTriggerType$json = {
+  '1': 'AutoSaveTriggerType',
+  '2': [
+    {'1': 'AUTO_SAVE_TRIGGER_UNKNOWN', '2': 0},
+    {'1': 'AUTO_SAVE_TRIGGER_ON_DEPOSIT', '2': 1},
+    {'1': 'AUTO_SAVE_TRIGGER_SCHEDULED', '2': 2},
+    {'1': 'AUTO_SAVE_TRIGGER_ROUND_UP', '2': 3},
+  ],
+};
+
+/// Descriptor for `AutoSaveTriggerType`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List autoSaveTriggerTypeDescriptor = $convert.base64Decode(
+    'ChNBdXRvU2F2ZVRyaWdnZXJUeXBlEh0KGUFVVE9fU0FWRV9UUklHR0VSX1VOS05PV04QABIgCh'
+    'xBVVRPX1NBVkVfVFJJR0dFUl9PTl9ERVBPU0lUEAESHwobQVVUT19TQVZFX1RSSUdHRVJfU0NI'
+    'RURVTEVEEAISHgoaQVVUT19TQVZFX1RSSUdHRVJfUk9VTkRfVVAQAw==');
+
+@$core.Deprecated('Use autoSaveScheduleFrequencyDescriptor instead')
+const AutoSaveScheduleFrequency$json = {
+  '1': 'AutoSaveScheduleFrequency',
+  '2': [
+    {'1': 'AUTO_SAVE_FREQUENCY_UNKNOWN', '2': 0},
+    {'1': 'AUTO_SAVE_FREQUENCY_DAILY', '2': 1},
+    {'1': 'AUTO_SAVE_FREQUENCY_WEEKLY', '2': 2},
+    {'1': 'AUTO_SAVE_FREQUENCY_BIWEEKLY', '2': 3},
+    {'1': 'AUTO_SAVE_FREQUENCY_MONTHLY', '2': 4},
+  ],
+};
+
+/// Descriptor for `AutoSaveScheduleFrequency`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List autoSaveScheduleFrequencyDescriptor = $convert.base64Decode(
+    'ChlBdXRvU2F2ZVNjaGVkdWxlRnJlcXVlbmN5Eh8KG0FVVE9fU0FWRV9GUkVRVUVOQ1lfVU5LTk'
+    '9XThAAEh0KGUFVVE9fU0FWRV9GUkVRVUVOQ1lfREFJTFkQARIeChpBVVRPX1NBVkVfRlJFUVVF'
+    'TkNZX1dFRUtMWRACEiAKHEFVVE9fU0FWRV9GUkVRVUVOQ1lfQklXRUVLTFkQAxIfChtBVVRPX1'
+    'NBVkVfRlJFUVVFTkNZX01PTlRITFkQBA==');
+
+@$core.Deprecated('Use autoSaveRuleStatusDescriptor instead')
+const AutoSaveRuleStatus$json = {
+  '1': 'AutoSaveRuleStatus',
+  '2': [
+    {'1': 'AUTO_SAVE_STATUS_UNKNOWN', '2': 0},
+    {'1': 'AUTO_SAVE_STATUS_ACTIVE', '2': 1},
+    {'1': 'AUTO_SAVE_STATUS_PAUSED', '2': 2},
+    {'1': 'AUTO_SAVE_STATUS_COMPLETED', '2': 3},
+    {'1': 'AUTO_SAVE_STATUS_CANCELLED', '2': 4},
+  ],
+};
+
+/// Descriptor for `AutoSaveRuleStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List autoSaveRuleStatusDescriptor = $convert.base64Decode(
+    'ChJBdXRvU2F2ZVJ1bGVTdGF0dXMSHAoYQVVUT19TQVZFX1NUQVRVU19VTktOT1dOEAASGwoXQV'
+    'VUT19TQVZFX1NUQVRVU19BQ1RJVkUQARIbChdBVVRPX1NBVkVfU1RBVFVTX1BBVVNFRBACEh4K'
+    'GkFVVE9fU0FWRV9TVEFUVVNfQ09NUExFVEVEEAMSHgoaQVVUT19TQVZFX1NUQVRVU19DQU5DRU'
+    'xMRUQQBA==');
+
+@$core.Deprecated('Use autoSaveAmountTypeDescriptor instead')
+const AutoSaveAmountType$json = {
+  '1': 'AutoSaveAmountType',
+  '2': [
+    {'1': 'AUTO_SAVE_AMOUNT_UNKNOWN', '2': 0},
+    {'1': 'AUTO_SAVE_AMOUNT_FIXED', '2': 1},
+    {'1': 'AUTO_SAVE_AMOUNT_PERCENTAGE', '2': 2},
+  ],
+};
+
+/// Descriptor for `AutoSaveAmountType`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List autoSaveAmountTypeDescriptor = $convert.base64Decode(
+    'ChJBdXRvU2F2ZUFtb3VudFR5cGUSHAoYQVVUT19TQVZFX0FNT1VOVF9VTktOT1dOEAASGgoWQV'
+    'VUT19TQVZFX0FNT1VOVF9GSVhFRBABEh8KG0FVVE9fU0FWRV9BTU9VTlRfUEVSQ0VOVEFHRRAC');
+
 @$core.Deprecated('Use notificationChannelTypeDescriptor instead')
 const NotificationChannelType$json = {
   '1': 'NotificationChannelType',
@@ -83,6 +153,26 @@ final $typed_data.Uint8List notificationEventTypeDescriptor = $convert.base64Dec
     'VElGSUNBVElPTl9FVkVOVF9UWVBFX0NBTVBBSUdOX0VORElORxAHEioKJk5PVElGSUNBVElPTl'
     '9FVkVOVF9UWVBFX0NBTVBBSUdOX0VOREVEEAgSJgoiTk9USUZJQ0FUSU9OX0VWRU5UX1RZUEVf'
     'V0lUSERSQVdBTBAJ');
+
+@$core.Deprecated('Use leaderboardSortByDescriptor instead')
+const LeaderboardSortBy$json = {
+  '1': 'LeaderboardSortBy',
+  '2': [
+    {'1': 'LEADERBOARD_SORT_UNSPECIFIED', '2': 0},
+    {'1': 'LEADERBOARD_SORT_MOST_FUNDED', '2': 1},
+    {'1': 'LEADERBOARD_SORT_MOST_DONORS', '2': 2},
+    {'1': 'LEADERBOARD_SORT_TRENDING', '2': 3},
+    {'1': 'LEADERBOARD_SORT_NEARLY_COMPLETE', '2': 4},
+    {'1': 'LEADERBOARD_SORT_NEWEST', '2': 5},
+  ],
+};
+
+/// Descriptor for `LeaderboardSortBy`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List leaderboardSortByDescriptor = $convert.base64Decode(
+    'ChFMZWFkZXJib2FyZFNvcnRCeRIgChxMRUFERVJCT0FSRF9TT1JUX1VOU1BFQ0lGSUVEEAASIA'
+    'ocTEVBREVSQk9BUkRfU09SVF9NT1NUX0ZVTkRFRBABEiAKHExFQURFUkJPQVJEX1NPUlRfTU9T'
+    'VF9ET05PUlMQAhIdChlMRUFERVJCT0FSRF9TT1JUX1RSRU5ESU5HEAMSJAogTEVBREVSQk9BUk'
+    'RfU09SVF9ORUFSTFlfQ09NUExFVEUQBBIbChdMRUFERVJCT0FSRF9TT1JUX05FV0VTVBAF');
 
 @$core.Deprecated('Use groupAccountDescriptor instead')
 const GroupAccount$json = {
@@ -238,6 +328,11 @@ const Crowdfund$json = {
     {'1': 'deadline', '3': 13, '4': 1, '5': 9, '10': 'deadline'},
     {'1': 'created_at', '3': 14, '4': 1, '5': 9, '10': 'createdAt'},
     {'1': 'updated_at', '3': 15, '4': 1, '5': 9, '10': 'updatedAt'},
+    {'1': 'crowdfund_code', '3': 16, '4': 1, '5': 9, '10': 'crowdfundCode'},
+    {'1': 'creator_first_name', '3': 17, '4': 1, '5': 9, '10': 'creatorFirstName'},
+    {'1': 'creator_last_name', '3': 18, '4': 1, '5': 9, '10': 'creatorLastName'},
+    {'1': 'creator_username', '3': 19, '4': 1, '5': 9, '10': 'creatorUsername'},
+    {'1': 'creator_email', '3': 20, '4': 1, '5': 9, '10': 'creatorEmail'},
   ],
 };
 
@@ -251,7 +346,11 @@ final $typed_data.Uint8List crowdfundDescriptor = $convert.base64Decode(
     '50YWdlRnVuZGVkEi0KEnRvdGFsX2NvbnRyaWJ1dG9ycxgKIAEoBVIRdG90YWxDb250cmlidXRv'
     'cnMSFgoGc3RhdHVzGAsgASgJUgZzdGF0dXMSGwoJaW1hZ2VfdXJsGAwgASgJUghpbWFnZVVybB'
     'IaCghkZWFkbGluZRgNIAEoCVIIZGVhZGxpbmUSHQoKY3JlYXRlZF9hdBgOIAEoCVIJY3JlYXRl'
-    'ZEF0Eh0KCnVwZGF0ZWRfYXQYDyABKAlSCXVwZGF0ZWRBdA==');
+    'ZEF0Eh0KCnVwZGF0ZWRfYXQYDyABKAlSCXVwZGF0ZWRBdBIlCg5jcm93ZGZ1bmRfY29kZRgQIA'
+    'EoCVINY3Jvd2RmdW5kQ29kZRIsChJjcmVhdG9yX2ZpcnN0X25hbWUYESABKAlSEGNyZWF0b3JG'
+    'aXJzdE5hbWUSKgoRY3JlYXRvcl9sYXN0X25hbWUYEiABKAlSD2NyZWF0b3JMYXN0TmFtZRIpCh'
+    'BjcmVhdG9yX3VzZXJuYW1lGBMgASgJUg9jcmVhdG9yVXNlcm5hbWUSIwoNY3JlYXRvcl9lbWFp'
+    'bBgUIAEoCVIMY3JlYXRvckVtYWls');
 
 @$core.Deprecated('Use crowdfundContributionDescriptor instead')
 const CrowdfundContribution$json = {
@@ -700,6 +799,333 @@ const GetInsurancePlansResponse$json = {
 final $typed_data.Uint8List getInsurancePlansResponseDescriptor = $convert.base64Decode(
     'ChlHZXRJbnN1cmFuY2VQbGFuc1Jlc3BvbnNlEjYKBXBsYW5zGAEgAygLMiAuZmluYW5jaWFscH'
     'JvZHVjdHMuSW5zdXJhbmNlUGxhblIFcGxhbnMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
+
+@$core.Deprecated('Use marketplaceProductFormFieldDescriptor instead')
+const MarketplaceProductFormField$json = {
+  '1': 'MarketplaceProductFormField',
+  '2': [
+    {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'label', '3': 2, '4': 1, '5': 9, '10': 'label'},
+    {'1': 'type', '3': 3, '4': 1, '5': 9, '10': 'type'},
+    {'1': 'required', '3': 4, '4': 1, '5': 8, '10': 'required'},
+    {'1': 'options', '3': 5, '4': 3, '5': 9, '10': 'options'},
+    {'1': 'default_value', '3': 6, '4': 1, '5': 9, '10': 'defaultValue'},
+    {'1': 'validation_regex', '3': 7, '4': 1, '5': 9, '10': 'validationRegex'},
+    {'1': 'placeholder', '3': 8, '4': 1, '5': 9, '10': 'placeholder'},
+    {'1': 'description', '3': 9, '4': 1, '5': 9, '10': 'description'},
+  ],
+};
+
+/// Descriptor for `MarketplaceProductFormField`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List marketplaceProductFormFieldDescriptor = $convert.base64Decode(
+    'ChtNYXJrZXRwbGFjZVByb2R1Y3RGb3JtRmllbGQSEgoEbmFtZRgBIAEoCVIEbmFtZRIUCgVsYW'
+    'JlbBgCIAEoCVIFbGFiZWwSEgoEdHlwZRgDIAEoCVIEdHlwZRIaCghyZXF1aXJlZBgEIAEoCFII'
+    'cmVxdWlyZWQSGAoHb3B0aW9ucxgFIAMoCVIHb3B0aW9ucxIjCg1kZWZhdWx0X3ZhbHVlGAYgAS'
+    'gJUgxkZWZhdWx0VmFsdWUSKQoQdmFsaWRhdGlvbl9yZWdleBgHIAEoCVIPdmFsaWRhdGlvblJl'
+    'Z2V4EiAKC3BsYWNlaG9sZGVyGAggASgJUgtwbGFjZWhvbGRlchIgCgtkZXNjcmlwdGlvbhgJIA'
+    'EoCVILZGVzY3JpcHRpb24=');
+
+@$core.Deprecated('Use marketplaceInsuranceProductDescriptor instead')
+const MarketplaceInsuranceProduct$json = {
+  '1': 'MarketplaceInsuranceProduct',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'category', '3': 4, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'provider_name', '3': 5, '4': 1, '5': 9, '10': 'providerName'},
+    {'1': 'provider_logo', '3': 6, '4': 1, '5': 9, '10': 'providerLogo'},
+    {'1': 'min_premium', '3': 7, '4': 1, '5': 1, '10': 'minPremium'},
+    {'1': 'max_premium', '3': 8, '4': 1, '5': 1, '10': 'maxPremium'},
+    {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'benefits', '3': 10, '4': 3, '5': 9, '10': 'benefits'},
+    {'1': 'terms_url', '3': 11, '4': 1, '5': 9, '10': 'termsUrl'},
+    {'1': 'metadata', '3': 12, '4': 3, '5': 11, '6': '.financialproducts.MarketplaceInsuranceProduct.MetadataEntry', '10': 'metadata'},
+    {'1': 'form_fields', '3': 13, '4': 3, '5': 11, '6': '.financialproducts.MarketplaceProductFormField', '10': 'formFields'},
+    {'1': 'is_active', '3': 14, '4': 1, '5': 8, '10': 'isActive'},
+  ],
+  '3': [MarketplaceInsuranceProduct_MetadataEntry$json],
+};
+
+@$core.Deprecated('Use marketplaceInsuranceProductDescriptor instead')
+const MarketplaceInsuranceProduct_MetadataEntry$json = {
+  '1': 'MetadataEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `MarketplaceInsuranceProduct`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List marketplaceInsuranceProductDescriptor = $convert.base64Decode(
+    'ChtNYXJrZXRwbGFjZUluc3VyYW5jZVByb2R1Y3QSDgoCaWQYASABKAlSAmlkEhIKBG5hbWUYAi'
+    'ABKAlSBG5hbWUSIAoLZGVzY3JpcHRpb24YAyABKAlSC2Rlc2NyaXB0aW9uEhoKCGNhdGVnb3J5'
+    'GAQgASgJUghjYXRlZ29yeRIjCg1wcm92aWRlcl9uYW1lGAUgASgJUgxwcm92aWRlck5hbWUSIw'
+    'oNcHJvdmlkZXJfbG9nbxgGIAEoCVIMcHJvdmlkZXJMb2dvEh8KC21pbl9wcmVtaXVtGAcgASgB'
+    'UgptaW5QcmVtaXVtEh8KC21heF9wcmVtaXVtGAggASgBUgptYXhQcmVtaXVtEhoKCGN1cnJlbm'
+    'N5GAkgASgJUghjdXJyZW5jeRIaCghiZW5lZml0cxgKIAMoCVIIYmVuZWZpdHMSGwoJdGVybXNf'
+    'dXJsGAsgASgJUgh0ZXJtc1VybBJYCghtZXRhZGF0YRgMIAMoCzI8LmZpbmFuY2lhbHByb2R1Y3'
+    'RzLk1hcmtldHBsYWNlSW5zdXJhbmNlUHJvZHVjdC5NZXRhZGF0YUVudHJ5UghtZXRhZGF0YRJP'
+    'Cgtmb3JtX2ZpZWxkcxgNIAMoCzIuLmZpbmFuY2lhbHByb2R1Y3RzLk1hcmtldHBsYWNlUHJvZH'
+    'VjdEZvcm1GaWVsZFIKZm9ybUZpZWxkcxIbCglpc19hY3RpdmUYDiABKAhSCGlzQWN0aXZlGjsK'
+    'DU1ldGFkYXRhRW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVlOg'
+    'I4AQ==');
+
+@$core.Deprecated('Use marketplaceInsuranceCategoryDescriptor instead')
+const MarketplaceInsuranceCategory$json = {
+  '1': 'MarketplaceInsuranceCategory',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'icon', '3': 3, '4': 1, '5': 9, '10': 'icon'},
+    {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'product_count', '3': 5, '4': 1, '5': 5, '10': 'productCount'},
+  ],
+};
+
+/// Descriptor for `MarketplaceInsuranceCategory`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List marketplaceInsuranceCategoryDescriptor = $convert.base64Decode(
+    'ChxNYXJrZXRwbGFjZUluc3VyYW5jZUNhdGVnb3J5Eg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGA'
+    'IgASgJUgRuYW1lEhIKBGljb24YAyABKAlSBGljb24SIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rl'
+    'c2NyaXB0aW9uEiMKDXByb2R1Y3RfY291bnQYBSABKAVSDHByb2R1Y3RDb3VudA==');
+
+@$core.Deprecated('Use marketplaceInsuranceQuoteDescriptor instead')
+const MarketplaceInsuranceQuote$json = {
+  '1': 'MarketplaceInsuranceQuote',
+  '2': [
+    {'1': 'quote_id', '3': 1, '4': 1, '5': 9, '10': 'quoteId'},
+    {'1': 'product_id', '3': 2, '4': 1, '5': 9, '10': 'productId'},
+    {'1': 'premium', '3': 3, '4': 1, '5': 1, '10': 'premium'},
+    {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'coverage_summary', '3': 5, '4': 1, '5': 9, '10': 'coverageSummary'},
+    {'1': 'coverage_items', '3': 6, '4': 3, '5': 9, '10': 'coverageItems'},
+    {'1': 'valid_until', '3': 7, '4': 1, '5': 9, '10': 'validUntil'},
+    {'1': 'quote_details', '3': 8, '4': 3, '5': 11, '6': '.financialproducts.MarketplaceInsuranceQuote.QuoteDetailsEntry', '10': 'quoteDetails'},
+  ],
+  '3': [MarketplaceInsuranceQuote_QuoteDetailsEntry$json],
+};
+
+@$core.Deprecated('Use marketplaceInsuranceQuoteDescriptor instead')
+const MarketplaceInsuranceQuote_QuoteDetailsEntry$json = {
+  '1': 'QuoteDetailsEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `MarketplaceInsuranceQuote`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List marketplaceInsuranceQuoteDescriptor = $convert.base64Decode(
+    'ChlNYXJrZXRwbGFjZUluc3VyYW5jZVF1b3RlEhkKCHF1b3RlX2lkGAEgASgJUgdxdW90ZUlkEh'
+    '0KCnByb2R1Y3RfaWQYAiABKAlSCXByb2R1Y3RJZBIYCgdwcmVtaXVtGAMgASgBUgdwcmVtaXVt'
+    'EhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeRIpChBjb3ZlcmFnZV9zdW1tYXJ5GAUgASgJUg'
+    '9jb3ZlcmFnZVN1bW1hcnkSJQoOY292ZXJhZ2VfaXRlbXMYBiADKAlSDWNvdmVyYWdlSXRlbXMS'
+    'HwoLdmFsaWRfdW50aWwYByABKAlSCnZhbGlkVW50aWwSYwoNcXVvdGVfZGV0YWlscxgIIAMoCz'
+    'I+LmZpbmFuY2lhbHByb2R1Y3RzLk1hcmtldHBsYWNlSW5zdXJhbmNlUXVvdGUuUXVvdGVEZXRh'
+    'aWxzRW50cnlSDHF1b3RlRGV0YWlscxo/ChFRdW90ZURldGFpbHNFbnRyeRIQCgNrZXkYASABKA'
+    'lSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
+
+@$core.Deprecated('Use marketplaceInsurancePurchaseResultDescriptor instead')
+const MarketplaceInsurancePurchaseResult$json = {
+  '1': 'MarketplaceInsurancePurchaseResult',
+  '2': [
+    {'1': 'policy_id', '3': 1, '4': 1, '5': 9, '10': 'policyId'},
+    {'1': 'policy_number', '3': 2, '4': 1, '5': 9, '10': 'policyNumber'},
+    {'1': 'reference', '3': 3, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'provider_reference', '3': 5, '4': 1, '5': 9, '10': 'providerReference'},
+    {'1': 'insurance', '3': 6, '4': 1, '5': 11, '6': '.financialproducts.Insurance', '10': 'insurance'},
+  ],
+};
+
+/// Descriptor for `MarketplaceInsurancePurchaseResult`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List marketplaceInsurancePurchaseResultDescriptor = $convert.base64Decode(
+    'CiJNYXJrZXRwbGFjZUluc3VyYW5jZVB1cmNoYXNlUmVzdWx0EhsKCXBvbGljeV9pZBgBIAEoCV'
+    'IIcG9saWN5SWQSIwoNcG9saWN5X251bWJlchgCIAEoCVIMcG9saWN5TnVtYmVyEhwKCXJlZmVy'
+    'ZW5jZRgDIAEoCVIJcmVmZXJlbmNlEhYKBnN0YXR1cxgEIAEoCVIGc3RhdHVzEi0KEnByb3ZpZG'
+    'VyX3JlZmVyZW5jZRgFIAEoCVIRcHJvdmlkZXJSZWZlcmVuY2USOgoJaW5zdXJhbmNlGAYgASgL'
+    'MhwuZmluYW5jaWFscHJvZHVjdHMuSW5zdXJhbmNlUglpbnN1cmFuY2U=');
+
+@$core.Deprecated('Use getInsuranceMarketplaceProductsRequestDescriptor instead')
+const GetInsuranceMarketplaceProductsRequest$json = {
+  '1': 'GetInsuranceMarketplaceProductsRequest',
+  '2': [
+    {'1': 'category', '3': 1, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'locale', '3': 2, '4': 1, '5': 9, '10': 'locale'},
+    {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'limit', '3': 4, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceMarketplaceProductsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceMarketplaceProductsRequestDescriptor = $convert.base64Decode(
+    'CiZHZXRJbnN1cmFuY2VNYXJrZXRwbGFjZVByb2R1Y3RzUmVxdWVzdBIaCghjYXRlZ29yeRgBIA'
+    'EoCVIIY2F0ZWdvcnkSFgoGbG9jYWxlGAIgASgJUgZsb2NhbGUSEgoEcGFnZRgDIAEoBVIEcGFn'
+    'ZRIUCgVsaW1pdBgEIAEoBVIFbGltaXQ=');
+
+@$core.Deprecated('Use getInsuranceMarketplaceProductsResponseDescriptor instead')
+const GetInsuranceMarketplaceProductsResponse$json = {
+  '1': 'GetInsuranceMarketplaceProductsResponse',
+  '2': [
+    {'1': 'products', '3': 1, '4': 3, '5': 11, '6': '.financialproducts.MarketplaceInsuranceProduct', '10': 'products'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceMarketplaceProductsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceMarketplaceProductsResponseDescriptor = $convert.base64Decode(
+    'CidHZXRJbnN1cmFuY2VNYXJrZXRwbGFjZVByb2R1Y3RzUmVzcG9uc2USSgoIcHJvZHVjdHMYAS'
+    'ADKAsyLi5maW5hbmNpYWxwcm9kdWN0cy5NYXJrZXRwbGFjZUluc3VyYW5jZVByb2R1Y3RSCHBy'
+    'b2R1Y3RzEhQKBXRvdGFsGAIgASgFUgV0b3RhbA==');
+
+@$core.Deprecated('Use getInsuranceMarketplaceCategoriesRequestDescriptor instead')
+const GetInsuranceMarketplaceCategoriesRequest$json = {
+  '1': 'GetInsuranceMarketplaceCategoriesRequest',
+  '2': [
+    {'1': 'locale', '3': 1, '4': 1, '5': 9, '10': 'locale'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceMarketplaceCategoriesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceMarketplaceCategoriesRequestDescriptor = $convert.base64Decode(
+    'CihHZXRJbnN1cmFuY2VNYXJrZXRwbGFjZUNhdGVnb3JpZXNSZXF1ZXN0EhYKBmxvY2FsZRgBIA'
+    'EoCVIGbG9jYWxl');
+
+@$core.Deprecated('Use getInsuranceMarketplaceCategoriesResponseDescriptor instead')
+const GetInsuranceMarketplaceCategoriesResponse$json = {
+  '1': 'GetInsuranceMarketplaceCategoriesResponse',
+  '2': [
+    {'1': 'categories', '3': 1, '4': 3, '5': 11, '6': '.financialproducts.MarketplaceInsuranceCategory', '10': 'categories'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceMarketplaceCategoriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceMarketplaceCategoriesResponseDescriptor = $convert.base64Decode(
+    'CilHZXRJbnN1cmFuY2VNYXJrZXRwbGFjZUNhdGVnb3JpZXNSZXNwb25zZRJPCgpjYXRlZ29yaW'
+    'VzGAEgAygLMi8uZmluYW5jaWFscHJvZHVjdHMuTWFya2V0cGxhY2VJbnN1cmFuY2VDYXRlZ29y'
+    'eVIKY2F0ZWdvcmllcw==');
+
+@$core.Deprecated('Use getInsuranceQuoteRequestDescriptor instead')
+const GetInsuranceQuoteRequest$json = {
+  '1': 'GetInsuranceQuoteRequest',
+  '2': [
+    {'1': 'product_id', '3': 1, '4': 1, '5': 9, '10': 'productId'},
+    {'1': 'form_data', '3': 2, '4': 3, '5': 11, '6': '.financialproducts.GetInsuranceQuoteRequest.FormDataEntry', '10': 'formData'},
+    {'1': 'locale', '3': 3, '4': 1, '5': 9, '10': 'locale'},
+  ],
+  '3': [GetInsuranceQuoteRequest_FormDataEntry$json],
+};
+
+@$core.Deprecated('Use getInsuranceQuoteRequestDescriptor instead')
+const GetInsuranceQuoteRequest_FormDataEntry$json = {
+  '1': 'FormDataEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `GetInsuranceQuoteRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceQuoteRequestDescriptor = $convert.base64Decode(
+    'ChhHZXRJbnN1cmFuY2VRdW90ZVJlcXVlc3QSHQoKcHJvZHVjdF9pZBgBIAEoCVIJcHJvZHVjdE'
+    'lkElYKCWZvcm1fZGF0YRgCIAMoCzI5LmZpbmFuY2lhbHByb2R1Y3RzLkdldEluc3VyYW5jZVF1'
+    'b3RlUmVxdWVzdC5Gb3JtRGF0YUVudHJ5Ughmb3JtRGF0YRIWCgZsb2NhbGUYAyABKAlSBmxvY2'
+    'FsZRo7Cg1Gb3JtRGF0YUVudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgJUgV2'
+    'YWx1ZToCOAE=');
+
+@$core.Deprecated('Use getInsuranceQuoteResponseDescriptor instead')
+const GetInsuranceQuoteResponse$json = {
+  '1': 'GetInsuranceQuoteResponse',
+  '2': [
+    {'1': 'quote', '3': 1, '4': 1, '5': 11, '6': '.financialproducts.MarketplaceInsuranceQuote', '10': 'quote'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceQuoteResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceQuoteResponseDescriptor = $convert.base64Decode(
+    'ChlHZXRJbnN1cmFuY2VRdW90ZVJlc3BvbnNlEkIKBXF1b3RlGAEgASgLMiwuZmluYW5jaWFscH'
+    'JvZHVjdHMuTWFya2V0cGxhY2VJbnN1cmFuY2VRdW90ZVIFcXVvdGU=');
+
+@$core.Deprecated('Use purchaseMarketplaceInsuranceRequestDescriptor instead')
+const PurchaseMarketplaceInsuranceRequest$json = {
+  '1': 'PurchaseMarketplaceInsuranceRequest',
+  '2': [
+    {'1': 'quote_id', '3': 1, '4': 1, '5': 9, '10': 'quoteId'},
+    {'1': 'product_id', '3': 2, '4': 1, '5': 9, '10': 'productId'},
+    {'1': 'account_id', '3': 3, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'transaction_pin_token', '3': 4, '4': 1, '5': 9, '10': 'transactionPinToken'},
+    {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'form_data', '3': 6, '4': 3, '5': 11, '6': '.financialproducts.PurchaseMarketplaceInsuranceRequest.FormDataEntry', '10': 'formData'},
+    {'1': 'locale', '3': 7, '4': 1, '5': 9, '10': 'locale'},
+  ],
+  '3': [PurchaseMarketplaceInsuranceRequest_FormDataEntry$json],
+};
+
+@$core.Deprecated('Use purchaseMarketplaceInsuranceRequestDescriptor instead')
+const PurchaseMarketplaceInsuranceRequest_FormDataEntry$json = {
+  '1': 'FormDataEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `PurchaseMarketplaceInsuranceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List purchaseMarketplaceInsuranceRequestDescriptor = $convert.base64Decode(
+    'CiNQdXJjaGFzZU1hcmtldHBsYWNlSW5zdXJhbmNlUmVxdWVzdBIZCghxdW90ZV9pZBgBIAEoCV'
+    'IHcXVvdGVJZBIdCgpwcm9kdWN0X2lkGAIgASgJUglwcm9kdWN0SWQSHQoKYWNjb3VudF9pZBgD'
+    'IAEoCVIJYWNjb3VudElkEjIKFXRyYW5zYWN0aW9uX3Bpbl90b2tlbhgEIAEoCVITdHJhbnNhY3'
+    'Rpb25QaW5Ub2tlbhInCg9pZGVtcG90ZW5jeV9rZXkYBSABKAlSDmlkZW1wb3RlbmN5S2V5EmEK'
+    'CWZvcm1fZGF0YRgGIAMoCzJELmZpbmFuY2lhbHByb2R1Y3RzLlB1cmNoYXNlTWFya2V0cGxhY2'
+    'VJbnN1cmFuY2VSZXF1ZXN0LkZvcm1EYXRhRW50cnlSCGZvcm1EYXRhEhYKBmxvY2FsZRgHIAEo'
+    'CVIGbG9jYWxlGjsKDUZvcm1EYXRhRW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAi'
+    'ABKAlSBXZhbHVlOgI4AQ==');
+
+@$core.Deprecated('Use purchaseMarketplaceInsuranceResponseDescriptor instead')
+const PurchaseMarketplaceInsuranceResponse$json = {
+  '1': 'PurchaseMarketplaceInsuranceResponse',
+  '2': [
+    {'1': 'result', '3': 1, '4': 1, '5': 11, '6': '.financialproducts.MarketplaceInsurancePurchaseResult', '10': 'result'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `PurchaseMarketplaceInsuranceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List purchaseMarketplaceInsuranceResponseDescriptor = $convert.base64Decode(
+    'CiRQdXJjaGFzZU1hcmtldHBsYWNlSW5zdXJhbmNlUmVzcG9uc2USTQoGcmVzdWx0GAEgASgLMj'
+    'UuZmluYW5jaWFscHJvZHVjdHMuTWFya2V0cGxhY2VJbnN1cmFuY2VQdXJjaGFzZVJlc3VsdFIG'
+    'cmVzdWx0EhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use getInsurancePurchaseStatusRequestDescriptor instead')
+const GetInsurancePurchaseStatusRequest$json = {
+  '1': 'GetInsurancePurchaseStatusRequest',
+  '2': [
+    {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `GetInsurancePurchaseStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsurancePurchaseStatusRequestDescriptor = $convert.base64Decode(
+    'CiFHZXRJbnN1cmFuY2VQdXJjaGFzZVN0YXR1c1JlcXVlc3QSHAoJcmVmZXJlbmNlGAEgASgJUg'
+    'lyZWZlcmVuY2U=');
+
+@$core.Deprecated('Use getInsurancePurchaseStatusResponseDescriptor instead')
+const GetInsurancePurchaseStatusResponse$json = {
+  '1': 'GetInsurancePurchaseStatusResponse',
+  '2': [
+    {'1': 'result', '3': 1, '4': 1, '5': 11, '6': '.financialproducts.MarketplaceInsurancePurchaseResult', '10': 'result'},
+  ],
+};
+
+/// Descriptor for `GetInsurancePurchaseStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsurancePurchaseStatusResponseDescriptor = $convert.base64Decode(
+    'CiJHZXRJbnN1cmFuY2VQdXJjaGFzZVN0YXR1c1Jlc3BvbnNlEk0KBnJlc3VsdBgBIAEoCzI1Lm'
+    'ZpbmFuY2lhbHByb2R1Y3RzLk1hcmtldHBsYWNlSW5zdXJhbmNlUHVyY2hhc2VSZXN1bHRSBnJl'
+    'c3VsdA==');
 
 @$core.Deprecated('Use createCrowdfundRequestDescriptor instead')
 const CreateCrowdfundRequest$json = {
@@ -1277,6 +1703,365 @@ final $typed_data.Uint8List crowdfundReceiptDescriptor = $convert.base64Decode(
     'dBIlCg5yZWNlaXB0X251bWJlchgLIAEoCVINcmVjZWlwdE51bWJlchIhCgxyZWNlaXB0X2RhdG'
     'EYDCABKAlSC3JlY2VpcHREYXRh');
 
+@$core.Deprecated('Use autoSaveRuleDescriptor instead')
+const AutoSaveRule$json = {
+  '1': 'AutoSaveRule',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'trigger_type', '3': 5, '4': 1, '5': 9, '10': 'triggerType'},
+    {'1': 'amount_type', '3': 6, '4': 1, '5': 9, '10': 'amountType'},
+    {'1': 'amount_value', '3': 7, '4': 1, '5': 1, '10': 'amountValue'},
+    {'1': 'source_account_id', '3': 8, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    {'1': 'destination_account_id', '3': 9, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    {'1': 'status', '3': 10, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'frequency', '3': 11, '4': 1, '5': 9, '10': 'frequency'},
+    {'1': 'schedule_time', '3': 12, '4': 1, '5': 9, '10': 'scheduleTime'},
+    {'1': 'schedule_day', '3': 13, '4': 1, '5': 5, '10': 'scheduleDay'},
+    {'1': 'round_up_to', '3': 14, '4': 1, '5': 5, '10': 'roundUpTo'},
+    {'1': 'target_amount', '3': 15, '4': 1, '5': 1, '10': 'targetAmount'},
+    {'1': 'minimum_balance', '3': 16, '4': 1, '5': 1, '10': 'minimumBalance'},
+    {'1': 'maximum_per_save', '3': 17, '4': 1, '5': 1, '10': 'maximumPerSave'},
+    {'1': 'created_at', '3': 18, '4': 1, '5': 9, '10': 'createdAt'},
+    {'1': 'updated_at', '3': 19, '4': 1, '5': 9, '10': 'updatedAt'},
+    {'1': 'last_triggered_at', '3': 20, '4': 1, '5': 9, '10': 'lastTriggeredAt'},
+    {'1': 'trigger_count', '3': 21, '4': 1, '5': 5, '10': 'triggerCount'},
+    {'1': 'total_saved', '3': 22, '4': 1, '5': 1, '10': 'totalSaved'},
+  ],
+};
+
+/// Descriptor for `AutoSaveRule`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List autoSaveRuleDescriptor = $convert.base64Decode(
+    'CgxBdXRvU2F2ZVJ1bGUSDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZB'
+    'ISCgRuYW1lGAMgASgJUgRuYW1lEiAKC2Rlc2NyaXB0aW9uGAQgASgJUgtkZXNjcmlwdGlvbhIh'
+    'Cgx0cmlnZ2VyX3R5cGUYBSABKAlSC3RyaWdnZXJUeXBlEh8KC2Ftb3VudF90eXBlGAYgASgJUg'
+    'phbW91bnRUeXBlEiEKDGFtb3VudF92YWx1ZRgHIAEoAVILYW1vdW50VmFsdWUSKgoRc291cmNl'
+    'X2FjY291bnRfaWQYCCABKAlSD3NvdXJjZUFjY291bnRJZBI0ChZkZXN0aW5hdGlvbl9hY2NvdW'
+    '50X2lkGAkgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBIWCgZzdGF0dXMYCiABKAlSBnN0YXR1'
+    'cxIcCglmcmVxdWVuY3kYCyABKAlSCWZyZXF1ZW5jeRIjCg1zY2hlZHVsZV90aW1lGAwgASgJUg'
+    'xzY2hlZHVsZVRpbWUSIQoMc2NoZWR1bGVfZGF5GA0gASgFUgtzY2hlZHVsZURheRIeCgtyb3Vu'
+    'ZF91cF90bxgOIAEoBVIJcm91bmRVcFRvEiMKDXRhcmdldF9hbW91bnQYDyABKAFSDHRhcmdldE'
+    'Ftb3VudBInCg9taW5pbXVtX2JhbGFuY2UYECABKAFSDm1pbmltdW1CYWxhbmNlEigKEG1heGlt'
+    'dW1fcGVyX3NhdmUYESABKAFSDm1heGltdW1QZXJTYXZlEh0KCmNyZWF0ZWRfYXQYEiABKAlSCW'
+    'NyZWF0ZWRBdBIdCgp1cGRhdGVkX2F0GBMgASgJUgl1cGRhdGVkQXQSKgoRbGFzdF90cmlnZ2Vy'
+    'ZWRfYXQYFCABKAlSD2xhc3RUcmlnZ2VyZWRBdBIjCg10cmlnZ2VyX2NvdW50GBUgASgFUgx0cm'
+    'lnZ2VyQ291bnQSHwoLdG90YWxfc2F2ZWQYFiABKAFSCnRvdGFsU2F2ZWQ=');
+
+@$core.Deprecated('Use autoSaveTransactionDescriptor instead')
+const AutoSaveTransaction$json = {
+  '1': 'AutoSaveTransaction',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'rule_id', '3': 2, '4': 1, '5': 9, '10': 'ruleId'},
+    {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'source_account_id', '3': 4, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    {'1': 'destination_account_id', '3': 5, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    {'1': 'amount', '3': 6, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'trigger_type', '3': 7, '4': 1, '5': 9, '10': 'triggerType'},
+    {'1': 'trigger_reason', '3': 8, '4': 1, '5': 9, '10': 'triggerReason'},
+    {'1': 'success', '3': 9, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_message', '3': 10, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'created_at', '3': 11, '4': 1, '5': 9, '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `AutoSaveTransaction`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List autoSaveTransactionDescriptor = $convert.base64Decode(
+    'ChNBdXRvU2F2ZVRyYW5zYWN0aW9uEg4KAmlkGAEgASgJUgJpZBIXCgdydWxlX2lkGAIgASgJUg'
+    'ZydWxlSWQSFwoHdXNlcl9pZBgDIAEoCVIGdXNlcklkEioKEXNvdXJjZV9hY2NvdW50X2lkGAQg'
+    'ASgJUg9zb3VyY2VBY2NvdW50SWQSNAoWZGVzdGluYXRpb25fYWNjb3VudF9pZBgFIAEoCVIUZG'
+    'VzdGluYXRpb25BY2NvdW50SWQSFgoGYW1vdW50GAYgASgBUgZhbW91bnQSIQoMdHJpZ2dlcl90'
+    'eXBlGAcgASgJUgt0cmlnZ2VyVHlwZRIlCg50cmlnZ2VyX3JlYXNvbhgIIAEoCVINdHJpZ2dlcl'
+    'JlYXNvbhIYCgdzdWNjZXNzGAkgASgIUgdzdWNjZXNzEiMKDWVycm9yX21lc3NhZ2UYCiABKAlS'
+    'DGVycm9yTWVzc2FnZRIdCgpjcmVhdGVkX2F0GAsgASgJUgljcmVhdGVkQXQ=');
+
+@$core.Deprecated('Use autoSaveStatisticsDescriptor instead')
+const AutoSaveStatistics$json = {
+  '1': 'AutoSaveStatistics',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'active_rules_count', '3': 2, '4': 1, '5': 5, '10': 'activeRulesCount'},
+    {'1': 'total_saved_all_time', '3': 3, '4': 1, '5': 1, '10': 'totalSavedAllTime'},
+    {'1': 'total_saved_this_month', '3': 4, '4': 1, '5': 1, '10': 'totalSavedThisMonth'},
+    {'1': 'total_saved_this_week', '3': 5, '4': 1, '5': 1, '10': 'totalSavedThisWeek'},
+    {'1': 'total_transactions', '3': 6, '4': 1, '5': 5, '10': 'totalTransactions'},
+    {'1': 'average_save_amount', '3': 7, '4': 1, '5': 1, '10': 'averageSaveAmount'},
+    {'1': 'most_active_rule', '3': 8, '4': 1, '5': 11, '6': '.financialproducts.AutoSaveRule', '10': 'mostActiveRule'},
+  ],
+};
+
+/// Descriptor for `AutoSaveStatistics`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List autoSaveStatisticsDescriptor = $convert.base64Decode(
+    'ChJBdXRvU2F2ZVN0YXRpc3RpY3MSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEiwKEmFjdGl2ZV'
+    '9ydWxlc19jb3VudBgCIAEoBVIQYWN0aXZlUnVsZXNDb3VudBIvChR0b3RhbF9zYXZlZF9hbGxf'
+    'dGltZRgDIAEoAVIRdG90YWxTYXZlZEFsbFRpbWUSMwoWdG90YWxfc2F2ZWRfdGhpc19tb250aB'
+    'gEIAEoAVITdG90YWxTYXZlZFRoaXNNb250aBIxChV0b3RhbF9zYXZlZF90aGlzX3dlZWsYBSAB'
+    'KAFSEnRvdGFsU2F2ZWRUaGlzV2VlaxItChJ0b3RhbF90cmFuc2FjdGlvbnMYBiABKAVSEXRvdG'
+    'FsVHJhbnNhY3Rpb25zEi4KE2F2ZXJhZ2Vfc2F2ZV9hbW91bnQYByABKAFSEWF2ZXJhZ2VTYXZl'
+    'QW1vdW50EkkKEG1vc3RfYWN0aXZlX3J1bGUYCCABKAsyHy5maW5hbmNpYWxwcm9kdWN0cy5BdX'
+    'RvU2F2ZVJ1bGVSDm1vc3RBY3RpdmVSdWxl');
+
+@$core.Deprecated('Use createAutoSaveRuleRequest2Descriptor instead')
+const CreateAutoSaveRuleRequest2$json = {
+  '1': 'CreateAutoSaveRuleRequest2',
+  '2': [
+    {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'trigger_type', '3': 3, '4': 1, '5': 9, '10': 'triggerType'},
+    {'1': 'amount_type', '3': 4, '4': 1, '5': 9, '10': 'amountType'},
+    {'1': 'amount_value', '3': 5, '4': 1, '5': 1, '10': 'amountValue'},
+    {'1': 'source_account_id', '3': 6, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    {'1': 'destination_account_id', '3': 7, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    {'1': 'frequency', '3': 8, '4': 1, '5': 9, '10': 'frequency'},
+    {'1': 'schedule_time', '3': 9, '4': 1, '5': 9, '10': 'scheduleTime'},
+    {'1': 'schedule_day', '3': 10, '4': 1, '5': 5, '10': 'scheduleDay'},
+    {'1': 'round_up_to', '3': 11, '4': 1, '5': 5, '10': 'roundUpTo'},
+    {'1': 'target_amount', '3': 12, '4': 1, '5': 1, '10': 'targetAmount'},
+    {'1': 'minimum_balance', '3': 13, '4': 1, '5': 1, '10': 'minimumBalance'},
+    {'1': 'maximum_per_save', '3': 14, '4': 1, '5': 1, '10': 'maximumPerSave'},
+  ],
+};
+
+/// Descriptor for `CreateAutoSaveRuleRequest2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createAutoSaveRuleRequest2Descriptor = $convert.base64Decode(
+    'ChpDcmVhdGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0MhISCgRuYW1lGAEgASgJUgRuYW1lEiAKC2Rlc2'
+    'NyaXB0aW9uGAIgASgJUgtkZXNjcmlwdGlvbhIhCgx0cmlnZ2VyX3R5cGUYAyABKAlSC3RyaWdn'
+    'ZXJUeXBlEh8KC2Ftb3VudF90eXBlGAQgASgJUgphbW91bnRUeXBlEiEKDGFtb3VudF92YWx1ZR'
+    'gFIAEoAVILYW1vdW50VmFsdWUSKgoRc291cmNlX2FjY291bnRfaWQYBiABKAlSD3NvdXJjZUFj'
+    'Y291bnRJZBI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAcgASgJUhRkZXN0aW5hdGlvbkFjY2'
+    '91bnRJZBIcCglmcmVxdWVuY3kYCCABKAlSCWZyZXF1ZW5jeRIjCg1zY2hlZHVsZV90aW1lGAkg'
+    'ASgJUgxzY2hlZHVsZVRpbWUSIQoMc2NoZWR1bGVfZGF5GAogASgFUgtzY2hlZHVsZURheRIeCg'
+    'tyb3VuZF91cF90bxgLIAEoBVIJcm91bmRVcFRvEiMKDXRhcmdldF9hbW91bnQYDCABKAFSDHRh'
+    'cmdldEFtb3VudBInCg9taW5pbXVtX2JhbGFuY2UYDSABKAFSDm1pbmltdW1CYWxhbmNlEigKEG'
+    '1heGltdW1fcGVyX3NhdmUYDiABKAFSDm1heGltdW1QZXJTYXZl');
+
+@$core.Deprecated('Use createAutoSaveRuleResponse2Descriptor instead')
+const CreateAutoSaveRuleResponse2$json = {
+  '1': 'CreateAutoSaveRuleResponse2',
+  '2': [
+    {'1': 'rule', '3': 1, '4': 1, '5': 11, '6': '.financialproducts.AutoSaveRule', '10': 'rule'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `CreateAutoSaveRuleResponse2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createAutoSaveRuleResponse2Descriptor = $convert.base64Decode(
+    'ChtDcmVhdGVBdXRvU2F2ZVJ1bGVSZXNwb25zZTISMwoEcnVsZRgBIAEoCzIfLmZpbmFuY2lhbH'
+    'Byb2R1Y3RzLkF1dG9TYXZlUnVsZVIEcnVsZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use getAutoSaveRulesRequest2Descriptor instead')
+const GetAutoSaveRulesRequest2$json = {
+  '1': 'GetAutoSaveRulesRequest2',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+  ],
+};
+
+/// Descriptor for `GetAutoSaveRulesRequest2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoSaveRulesRequest2Descriptor = $convert.base64Decode(
+    'ChhHZXRBdXRvU2F2ZVJ1bGVzUmVxdWVzdDISHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudE'
+    'lkEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVz');
+
+@$core.Deprecated('Use getAutoSaveRulesResponse2Descriptor instead')
+const GetAutoSaveRulesResponse2$json = {
+  '1': 'GetAutoSaveRulesResponse2',
+  '2': [
+    {'1': 'rules', '3': 1, '4': 3, '5': 11, '6': '.financialproducts.AutoSaveRule', '10': 'rules'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetAutoSaveRulesResponse2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoSaveRulesResponse2Descriptor = $convert.base64Decode(
+    'ChlHZXRBdXRvU2F2ZVJ1bGVzUmVzcG9uc2UyEjUKBXJ1bGVzGAEgAygLMh8uZmluYW5jaWFscH'
+    'JvZHVjdHMuQXV0b1NhdmVSdWxlUgVydWxlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');
+
+@$core.Deprecated('Use updateAutoSaveRuleRequest2Descriptor instead')
+const UpdateAutoSaveRuleRequest2$json = {
+  '1': 'UpdateAutoSaveRuleRequest2',
+  '2': [
+    {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'amount_type', '3': 4, '4': 1, '5': 9, '10': 'amountType'},
+    {'1': 'amount_value', '3': 5, '4': 1, '5': 1, '10': 'amountValue'},
+    {'1': 'frequency', '3': 6, '4': 1, '5': 9, '10': 'frequency'},
+    {'1': 'schedule_time', '3': 7, '4': 1, '5': 9, '10': 'scheduleTime'},
+    {'1': 'schedule_day', '3': 8, '4': 1, '5': 5, '10': 'scheduleDay'},
+    {'1': 'round_up_to', '3': 9, '4': 1, '5': 5, '10': 'roundUpTo'},
+    {'1': 'target_amount', '3': 10, '4': 1, '5': 1, '10': 'targetAmount'},
+    {'1': 'minimum_balance', '3': 11, '4': 1, '5': 1, '10': 'minimumBalance'},
+    {'1': 'maximum_per_save', '3': 12, '4': 1, '5': 1, '10': 'maximumPerSave'},
+  ],
+};
+
+/// Descriptor for `UpdateAutoSaveRuleRequest2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateAutoSaveRuleRequest2Descriptor = $convert.base64Decode(
+    'ChpVcGRhdGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0MhIXCgdydWxlX2lkGAEgASgJUgZydWxlSWQSEg'
+    'oEbmFtZRgCIAEoCVIEbmFtZRIgCgtkZXNjcmlwdGlvbhgDIAEoCVILZGVzY3JpcHRpb24SHwoL'
+    'YW1vdW50X3R5cGUYBCABKAlSCmFtb3VudFR5cGUSIQoMYW1vdW50X3ZhbHVlGAUgASgBUgthbW'
+    '91bnRWYWx1ZRIcCglmcmVxdWVuY3kYBiABKAlSCWZyZXF1ZW5jeRIjCg1zY2hlZHVsZV90aW1l'
+    'GAcgASgJUgxzY2hlZHVsZVRpbWUSIQoMc2NoZWR1bGVfZGF5GAggASgFUgtzY2hlZHVsZURheR'
+    'IeCgtyb3VuZF91cF90bxgJIAEoBVIJcm91bmRVcFRvEiMKDXRhcmdldF9hbW91bnQYCiABKAFS'
+    'DHRhcmdldEFtb3VudBInCg9taW5pbXVtX2JhbGFuY2UYCyABKAFSDm1pbmltdW1CYWxhbmNlEi'
+    'gKEG1heGltdW1fcGVyX3NhdmUYDCABKAFSDm1heGltdW1QZXJTYXZl');
+
+@$core.Deprecated('Use updateAutoSaveRuleResponse2Descriptor instead')
+const UpdateAutoSaveRuleResponse2$json = {
+  '1': 'UpdateAutoSaveRuleResponse2',
+  '2': [
+    {'1': 'rule', '3': 1, '4': 1, '5': 11, '6': '.financialproducts.AutoSaveRule', '10': 'rule'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `UpdateAutoSaveRuleResponse2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateAutoSaveRuleResponse2Descriptor = $convert.base64Decode(
+    'ChtVcGRhdGVBdXRvU2F2ZVJ1bGVSZXNwb25zZTISMwoEcnVsZRgBIAEoCzIfLmZpbmFuY2lhbH'
+    'Byb2R1Y3RzLkF1dG9TYXZlUnVsZVIEcnVsZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use toggleAutoSaveRuleRequest2Descriptor instead')
+const ToggleAutoSaveRuleRequest2$json = {
+  '1': 'ToggleAutoSaveRuleRequest2',
+  '2': [
+    {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
+    {'1': 'action', '3': 2, '4': 1, '5': 9, '10': 'action'},
+  ],
+};
+
+/// Descriptor for `ToggleAutoSaveRuleRequest2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List toggleAutoSaveRuleRequest2Descriptor = $convert.base64Decode(
+    'ChpUb2dnbGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0MhIXCgdydWxlX2lkGAEgASgJUgZydWxlSWQSFg'
+    'oGYWN0aW9uGAIgASgJUgZhY3Rpb24=');
+
+@$core.Deprecated('Use toggleAutoSaveRuleResponse2Descriptor instead')
+const ToggleAutoSaveRuleResponse2$json = {
+  '1': 'ToggleAutoSaveRuleResponse2',
+  '2': [
+    {'1': 'rule', '3': 1, '4': 1, '5': 11, '6': '.financialproducts.AutoSaveRule', '10': 'rule'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ToggleAutoSaveRuleResponse2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List toggleAutoSaveRuleResponse2Descriptor = $convert.base64Decode(
+    'ChtUb2dnbGVBdXRvU2F2ZVJ1bGVSZXNwb25zZTISMwoEcnVsZRgBIAEoCzIfLmZpbmFuY2lhbH'
+    'Byb2R1Y3RzLkF1dG9TYXZlUnVsZVIEcnVsZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use deleteAutoSaveRuleRequest2Descriptor instead')
+const DeleteAutoSaveRuleRequest2$json = {
+  '1': 'DeleteAutoSaveRuleRequest2',
+  '2': [
+    {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
+  ],
+};
+
+/// Descriptor for `DeleteAutoSaveRuleRequest2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteAutoSaveRuleRequest2Descriptor = $convert.base64Decode(
+    'ChpEZWxldGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0MhIXCgdydWxlX2lkGAEgASgJUgZydWxlSWQ=');
+
+@$core.Deprecated('Use deleteAutoSaveRuleResponse2Descriptor instead')
+const DeleteAutoSaveRuleResponse2$json = {
+  '1': 'DeleteAutoSaveRuleResponse2',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DeleteAutoSaveRuleResponse2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteAutoSaveRuleResponse2Descriptor = $convert.base64Decode(
+    'ChtEZWxldGVBdXRvU2F2ZVJ1bGVSZXNwb25zZTISGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use getAutoSaveTransactionsRequest2Descriptor instead')
+const GetAutoSaveTransactionsRequest2$json = {
+  '1': 'GetAutoSaveTransactionsRequest2',
+  '2': [
+    {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
+    {'1': 'account_id', '3': 2, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 4, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetAutoSaveTransactionsRequest2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoSaveTransactionsRequest2Descriptor = $convert.base64Decode(
+    'Ch9HZXRBdXRvU2F2ZVRyYW5zYWN0aW9uc1JlcXVlc3QyEhcKB3J1bGVfaWQYASABKAlSBnJ1bG'
+    'VJZBIdCgphY2NvdW50X2lkGAIgASgJUglhY2NvdW50SWQSFAoFbGltaXQYAyABKAVSBWxpbWl0'
+    'EhYKBm9mZnNldBgEIAEoBVIGb2Zmc2V0');
+
+@$core.Deprecated('Use getAutoSaveTransactionsResponse2Descriptor instead')
+const GetAutoSaveTransactionsResponse2$json = {
+  '1': 'GetAutoSaveTransactionsResponse2',
+  '2': [
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.financialproducts.AutoSaveTransaction', '10': 'transactions'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetAutoSaveTransactionsResponse2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoSaveTransactionsResponse2Descriptor = $convert.base64Decode(
+    'CiBHZXRBdXRvU2F2ZVRyYW5zYWN0aW9uc1Jlc3BvbnNlMhJKCgx0cmFuc2FjdGlvbnMYASADKA'
+    'syJi5maW5hbmNpYWxwcm9kdWN0cy5BdXRvU2F2ZVRyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMS'
+    'FAoFdG90YWwYAiABKAVSBXRvdGFs');
+
+@$core.Deprecated('Use getAutoSaveStatisticsRequest2Descriptor instead')
+const GetAutoSaveStatisticsRequest2$json = {
+  '1': 'GetAutoSaveStatisticsRequest2',
+};
+
+/// Descriptor for `GetAutoSaveStatisticsRequest2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoSaveStatisticsRequest2Descriptor = $convert.base64Decode(
+    'Ch1HZXRBdXRvU2F2ZVN0YXRpc3RpY3NSZXF1ZXN0Mg==');
+
+@$core.Deprecated('Use getAutoSaveStatisticsResponse2Descriptor instead')
+const GetAutoSaveStatisticsResponse2$json = {
+  '1': 'GetAutoSaveStatisticsResponse2',
+  '2': [
+    {'1': 'statistics', '3': 1, '4': 1, '5': 11, '6': '.financialproducts.AutoSaveStatistics', '10': 'statistics'},
+  ],
+};
+
+/// Descriptor for `GetAutoSaveStatisticsResponse2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoSaveStatisticsResponse2Descriptor = $convert.base64Decode(
+    'Ch5HZXRBdXRvU2F2ZVN0YXRpc3RpY3NSZXNwb25zZTISRQoKc3RhdGlzdGljcxgBIAEoCzIlLm'
+    'ZpbmFuY2lhbHByb2R1Y3RzLkF1dG9TYXZlU3RhdGlzdGljc1IKc3RhdGlzdGljcw==');
+
+@$core.Deprecated('Use triggerAutoSaveRequest2Descriptor instead')
+const TriggerAutoSaveRequest2$json = {
+  '1': 'TriggerAutoSaveRequest2',
+  '2': [
+    {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
+    {'1': 'custom_amount', '3': 2, '4': 1, '5': 1, '10': 'customAmount'},
+    {'1': 'transaction_pin_token', '3': 4, '4': 1, '5': 9, '10': 'transactionPinToken'},
+  ],
+};
+
+/// Descriptor for `TriggerAutoSaveRequest2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List triggerAutoSaveRequest2Descriptor = $convert.base64Decode(
+    'ChdUcmlnZ2VyQXV0b1NhdmVSZXF1ZXN0MhIXCgdydWxlX2lkGAEgASgJUgZydWxlSWQSIwoNY3'
+    'VzdG9tX2Ftb3VudBgCIAEoAVIMY3VzdG9tQW1vdW50EjIKFXRyYW5zYWN0aW9uX3Bpbl90b2tl'
+    'bhgEIAEoCVITdHJhbnNhY3Rpb25QaW5Ub2tlbg==');
+
+@$core.Deprecated('Use triggerAutoSaveResponse2Descriptor instead')
+const TriggerAutoSaveResponse2$json = {
+  '1': 'TriggerAutoSaveResponse2',
+  '2': [
+    {'1': 'transaction', '3': 1, '4': 1, '5': 11, '6': '.financialproducts.AutoSaveTransaction', '10': 'transaction'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `TriggerAutoSaveResponse2`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List triggerAutoSaveResponse2Descriptor = $convert.base64Decode(
+    'ChhUcmlnZ2VyQXV0b1NhdmVSZXNwb25zZTISSAoLdHJhbnNhY3Rpb24YASABKAsyJi5maW5hbm'
+    'NpYWxwcm9kdWN0cy5BdXRvU2F2ZVRyYW5zYWN0aW9uUgt0cmFuc2FjdGlvbhIYCgdtZXNzYWdl'
+    'GAIgASgJUgdtZXNzYWdl');
+
 @$core.Deprecated('Use notificationChannelDescriptor instead')
 const NotificationChannel$json = {
   '1': 'NotificationChannel',
@@ -1707,4 +2492,51 @@ final $typed_data.Uint8List getNotificationHistoryResponseDescriptor = $convert.
     'ZpbmFuY2lhbHByb2R1Y3RzLk5vdGlmaWNhdGlvbkRlbGl2ZXJ5UgpkZWxpdmVyaWVzEhQKBXRv'
     'dGFsGAIgASgFUgV0b3RhbBISCgRwYWdlGAMgASgFUgRwYWdlEhsKCXBhZ2Vfc2l6ZRgEIAEoBV'
     'IIcGFnZVNpemUSGQoIaGFzX21vcmUYBSABKAhSB2hhc01vcmU=');
+
+@$core.Deprecated('Use getCrowdfundLeaderboardRequestDescriptor instead')
+const GetCrowdfundLeaderboardRequest$json = {
+  '1': 'GetCrowdfundLeaderboardRequest',
+  '2': [
+    {'1': 'sort_by', '3': 1, '4': 1, '5': 14, '6': '.financialproducts.LeaderboardSortBy', '10': 'sortBy'},
+    {'1': 'category', '3': 2, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 4, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetCrowdfundLeaderboardRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCrowdfundLeaderboardRequestDescriptor = $convert.base64Decode(
+    'Ch5HZXRDcm93ZGZ1bmRMZWFkZXJib2FyZFJlcXVlc3QSPQoHc29ydF9ieRgBIAEoDjIkLmZpbm'
+    'FuY2lhbHByb2R1Y3RzLkxlYWRlcmJvYXJkU29ydEJ5UgZzb3J0QnkSGgoIY2F0ZWdvcnkYAiAB'
+    'KAlSCGNhdGVnb3J5EhQKBWxpbWl0GAMgASgFUgVsaW1pdBIWCgZvZmZzZXQYBCABKAVSBm9mZn'
+    'NldA==');
+
+@$core.Deprecated('Use getCrowdfundLeaderboardResponseDescriptor instead')
+const GetCrowdfundLeaderboardResponse$json = {
+  '1': 'GetCrowdfundLeaderboardResponse',
+  '2': [
+    {'1': 'entries', '3': 1, '4': 3, '5': 11, '6': '.financialproducts.LeaderboardCrowdfundEntry', '10': 'entries'},
+    {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+  ],
+};
+
+/// Descriptor for `GetCrowdfundLeaderboardResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCrowdfundLeaderboardResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRDcm93ZGZ1bmRMZWFkZXJib2FyZFJlc3BvbnNlEkYKB2VudHJpZXMYASADKAsyLC5maW'
+    '5hbmNpYWxwcm9kdWN0cy5MZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5UgdlbnRyaWVzEh8KC3Rv'
+    'dGFsX2NvdW50GAIgASgFUgp0b3RhbENvdW50');
+
+@$core.Deprecated('Use leaderboardCrowdfundEntryDescriptor instead')
+const LeaderboardCrowdfundEntry$json = {
+  '1': 'LeaderboardCrowdfundEntry',
+  '2': [
+    {'1': 'rank', '3': 1, '4': 1, '5': 5, '10': 'rank'},
+    {'1': 'crowdfund', '3': 2, '4': 1, '5': 11, '6': '.financialproducts.Crowdfund', '10': 'crowdfund'},
+  ],
+};
+
+/// Descriptor for `LeaderboardCrowdfundEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List leaderboardCrowdfundEntryDescriptor = $convert.base64Decode(
+    'ChlMZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5EhIKBHJhbmsYASABKAVSBHJhbmsSOgoJY3Jvd2'
+    'RmdW5kGAIgASgLMhwuZmluYW5jaWFscHJvZHVjdHMuQ3Jvd2RmdW5kUgljcm93ZGZ1bmQ=');
 

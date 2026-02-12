@@ -1,11 +1,8 @@
 import 'package:bloc/bloc.dart';
-import 'dart:io';
 import '../domain/usecases/process_ai_chat_usecase.dart';
 import '../domain/usecases/get_ai_chat_history_usecase.dart';
 import './ai_chat_state.dart';
-// Import domain entity
 import '../domain/entities/ai_chat_message_entity.dart';
-// Import gRPC generated types (adjust path if needed)
 
 class AIChatCubit extends Cubit<AIChatState> {
   final ProcessChatUseCase _processChatUseCase;
@@ -13,6 +10,9 @@ class AIChatCubit extends Cubit<AIChatState> {
 
   // Internal state to hold the current messages
   List<ChatMessageEntity> _currentMessages = [];
+
+  // Track session ID for conversation continuity
+  String? _sessionId;
 
   AIChatCubit({
     required ProcessChatUseCase processChatUseCase,
@@ -36,7 +36,10 @@ class AIChatCubit extends Cubit<AIChatState> {
     // Emit loading state with current messages (if any) and isTyping=true
     if (isClosed) return;
     emit(AIChatHistoryLoading(messages: _currentMessages));
-    final result = await _getAIChatHistoryUseCase(accessToken: accessToken);
+    final result = await _getAIChatHistoryUseCase(
+      accessToken: accessToken,
+      sessionId: _sessionId,
+    );
 
     if (isClosed) return;
     result.fold(
@@ -53,15 +56,14 @@ class AIChatCubit extends Cubit<AIChatState> {
   }
 
   // Send message to the backend
-  Future<void> sendMessage(String text, {required String accessToken, File? image}) async {
-    if (text.trim().isEmpty && image == null) return;
+  Future<void> sendMessage(String text, {required String accessToken}) async {
+    if (text.trim().isEmpty) return;
 
     // Add user message to the internal list immediately for responsiveness
     final userMessageEntity = ChatMessageEntity(
       text: text,
       isUser: true,
       timestamp: DateTime.now(),
-      // image: image // TODO: Handle image bytes in entity/usecase/grpc
     );
     _currentMessages.add(userMessageEntity);
 
@@ -69,8 +71,13 @@ class AIChatCubit extends Cubit<AIChatState> {
     if (isClosed) return;
     emit(AIChatMessageLoading(messages: List.from(_currentMessages)));
 
-    // TODO: Pass image bytes to use case if needed
-    final result = await _processChatUseCase(query: text, accessToken: accessToken);
+    final result = await _processChatUseCase(
+      query: text,
+      accessToken: accessToken,
+      sessionId: _sessionId,
+      sourceContext: 'chat',
+      language: 'en',
+    );
 
     if (isClosed) return;
     result.fold(
@@ -80,18 +87,61 @@ class AIChatCubit extends Cubit<AIChatState> {
       },
       (response) {
         if (response.success) {
+          // Parse action buttons from proto response
+          List<ActionButtonEntity>? actionButtons;
+          if (response.actionButtons.isNotEmpty) {
+            actionButtons = response.actionButtons.map((btn) => ActionButtonEntity(
+              label: btn.label,
+              actionType: btn.actionType,
+              payload: btn.payload,
+              icon: btn.icon.isNotEmpty ? btn.icon : null,
+            )).toList();
+          }
+
+          // Parse confirmation data from proto response
+          ConfirmationDataEntity? confirmationData;
+          if (response.hasConfirmationData()) {
+            final cd = response.confirmationData;
+            confirmationData = ConfirmationDataEntity(
+              actionType: cd.actionType,
+              amount: cd.amount,
+              currency: cd.currency,
+              recipientName: cd.recipientName,
+              recipientId: cd.recipientId.isNotEmpty ? cd.recipientId : null,
+              description: cd.description.isNotEmpty ? cd.description : null,
+              extra: cd.extra.isNotEmpty ? Map<String, String>.from(cd.extra) : null,
+            );
+          }
+
+          // Determine message type
+          ChatMessageType messageType = ChatMessageType.text;
+          if (response.requiresConfirmation) {
+            messageType = ChatMessageType.confirmation;
+          } else if (actionButtons != null && actionButtons.isNotEmpty) {
+            messageType = ChatMessageType.actionCard;
+          }
+
+          // Track session ID for conversation continuity
+          if (response.sessionId.isNotEmpty) {
+            _sessionId = response.sessionId;
+          }
+
           final aiMessageEntity = ChatMessageEntity(
             text: response.response,
             isUser: false,
             timestamp: DateTime.now(),
-            // image: null // Assuming no image in response
+            type: messageType,
+            intent: response.intent.isNotEmpty ? response.intent : null,
+            entities: response.entities.isNotEmpty ? Map<String, String>.from(response.entities) : null,
+            requiresConfirmation: response.requiresConfirmation,
+            actionButtons: actionButtons,
+            confirmationData: confirmationData,
+            conversationState: response.conversationState.isNotEmpty ? response.conversationState : null,
+            sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
           );
-          // Add AI response to internal list
           _currentMessages.add(aiMessageEntity);
-          // Emit success state with the full updated list, isTyping=false
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
         } else {
-          // Emit error state, keeping existing messages, set isTyping=false
           emit(AIChatMessageError(
               errorMessage: response.msg.isNotEmpty ? response.msg : "AI service returned an error.",
               messages: List.from(_currentMessages)));
@@ -102,8 +152,9 @@ class AIChatCubit extends Cubit<AIChatState> {
 
   // Clear chat history (Only resets Cubit state)
   void clearChat() {
-    _currentMessages = []; // Clear internal list
+    _currentMessages = [];
+    _sessionId = null;
     if (isClosed) return;
-    emit(AIChatInitial(messages: _currentMessages, isTyping: false)); // Emit initial state with empty messages
+    emit(AIChatInitial(messages: _currentMessages, isTyping: false));
   }
 } 

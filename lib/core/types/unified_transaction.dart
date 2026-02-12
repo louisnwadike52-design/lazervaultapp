@@ -13,7 +13,7 @@ enum TransactionServiceType {
   stocks('Stocks', Icons.trending_up, Color(0xFF10B981)),
   insurance('Insurance', Icons.security, Color(0xFF3B82F6)),
   invoice('Invoice', Icons.receipt_long, Color(0xFF6366F1)),
-  barcodePayment('Barcode Payment', Icons.qr_code_2, Color(0xFFEC4899)),
+  qrPayment('QR Payment', Icons.qr_code_2, Color(0xFFEC4899)),
   tagPay('Tag Pay', Icons.local_offer, Color(0xFF14B8A6)),
   crowdfund('Crowdfund', Icons.volunteer_activism, Color(0xFFF472B6)),
   autosave('AutoSave', Icons.savings, Color(0xFF22C55E)),

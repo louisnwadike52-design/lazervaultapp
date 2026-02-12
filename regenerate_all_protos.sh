@@ -89,11 +89,32 @@ protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/shared/proto \
   ../microservices/financial-products-service/financial-products-microservice/proto/financial-products.proto
 
-# Generate local proto files
-echo "Generating Dart code from local proto files..."
+# Generate qr_pay.proto
+echo "Generating Dart code from qr_pay.proto..."
 protoc --dart_out=grpc:lib/src/generated \
   -Iproto \
   -I../microservices/shared/proto \
-  proto/*.proto 2>/dev/null || true
+  proto/qr_pay.proto
+
+# Generate ai_chat.proto (explicit - must run AFTER batch to avoid being overwritten)
+echo "Generating Dart code from ai_chat.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -Iproto \
+  -I../microservices/shared/proto \
+  proto/ai_chat.proto
+
+# Generate remaining local proto files (batch - some may fail due to unsupported annotations)
+echo "Generating Dart code from other local proto files..."
+for f in proto/*.proto; do
+  basename=$(basename "$f")
+  # Skip ai_chat.proto (already generated above) and any proto-only annotation files
+  if [ "$basename" = "ai_chat.proto" ]; then
+    continue
+  fi
+  protoc --dart_out=grpc:lib/src/generated \
+    -Iproto \
+    -I../microservices/shared/proto \
+    "$f" 2>/dev/null || echo "  Warning: Failed to generate $basename (may use unsupported annotations)"
+done
 
 echo "Dart code generation complete!"

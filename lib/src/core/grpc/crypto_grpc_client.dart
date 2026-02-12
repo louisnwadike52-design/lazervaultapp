@@ -18,11 +18,11 @@ class CryptoGrpcClient {
   ///
   /// [page] - Page number (default: 1)
   /// [perPage] - Items per page (default: 100)
-  /// [vsCurrency] - Currency for prices (default: 'gbp')
+  /// [vsCurrency] - Currency for prices (default: 'usd')
   Future<GetCryptosResponse> getCryptos({
     int page = 1,
     int perPage = 100,
-    String vsCurrency = 'gbp',
+    String vsCurrency = 'usd',
   }) async {
     try {
       final request = GetCryptosRequest()
@@ -40,12 +40,13 @@ class CryptoGrpcClient {
   /// Get cryptocurrency by ID
   ///
   /// [id] - Cryptocurrency ID (e.g., 'bitcoin', 'ethereum')
-  Future<GetCryptoByIdResponse> getCryptoById(String id) async {
+  /// [vsCurrency] - Currency for prices (default: 'usd')
+  Future<GetCryptoByIdResponse> getCryptoById(String id, {String vsCurrency = 'usd'}) async {
     try {
       final request = GetCryptoByIdRequest()
         ..id = id
         ..includeMarketData = true
-        ..vsCurrency = 'gbp';
+        ..vsCurrency = vsCurrency;
 
       final response = await _client.getCryptoById(request);
       return response;
@@ -87,11 +88,12 @@ class CryptoGrpcClient {
   /// Get top cryptocurrencies by market cap
   ///
   /// [limit] - Number of results (default: 100)
-  Future<GetTopCryptosResponse> getTopCryptos({int limit = 100}) async {
+  /// [vsCurrency] - Currency for prices (default: 'usd')
+  Future<GetTopCryptosResponse> getTopCryptos({int limit = 100, String vsCurrency = 'usd'}) async {
     try {
       final request = GetTopCryptosRequest()
         ..limit = limit
-        ..vsCurrency = 'gbp';
+        ..vsCurrency = vsCurrency;
 
       final response = await _client.getTopCryptos(request);
       return response;
@@ -104,12 +106,13 @@ class CryptoGrpcClient {
   ///
   /// [id] - Cryptocurrency ID
   /// [range] - Time range ('1d', '7d', '30d', '90d', '1y', 'all')
-  Future<GetCryptoPriceHistoryResponse> getCryptoPriceHistory(String id, {String range = '7d'}) async {
+  /// [vsCurrency] - Currency for prices (default: 'usd')
+  Future<GetCryptoPriceHistoryResponse> getCryptoPriceHistory(String id, {String range = '7d', String vsCurrency = 'usd'}) async {
     try {
       final request = GetCryptoPriceHistoryRequest()
         ..id = id
         ..range = range
-        ..vsCurrency = 'gbp';
+        ..vsCurrency = vsCurrency;
 
       final response = await _client.getCryptoPriceHistory(request);
       return response;
@@ -164,12 +167,16 @@ class CryptoGrpcClient {
     required String cryptoId,
     required double fiatAmount,
     required String fiatCurrency,
+    String transactionPin = '',
+    String idempotencyKey = '',
   }) async {
     try {
       final request = BuyCryptoRequest()
         ..cryptoId = cryptoId
         ..fiatAmount = fiatAmount
-        ..fiatCurrency = fiatCurrency;
+        ..fiatCurrency = fiatCurrency
+        ..transactionPin = transactionPin
+        ..idempotencyKey = idempotencyKey;
       final response = await _client.buyCrypto(request);
       return response;
     } catch (e) {
@@ -186,12 +193,16 @@ class CryptoGrpcClient {
     required String cryptoId,
     required double quantity,
     required String fiatCurrency,
+    String transactionPin = '',
+    String idempotencyKey = '',
   }) async {
     try {
       final request = SellCryptoRequest()
         ..cryptoId = cryptoId
         ..cryptoAmount = quantity
-        ..fiatCurrency = fiatCurrency;
+        ..fiatCurrency = fiatCurrency
+        ..transactionPin = transactionPin
+        ..idempotencyKey = idempotencyKey;
       final response = await _client.sellCrypto(request);
       return response;
     } catch (e) {
@@ -208,12 +219,16 @@ class CryptoGrpcClient {
     required String fromCryptoId,
     required String toCryptoId,
     required double amount,
+    String transactionPin = '',
+    String idempotencyKey = '',
   }) async {
     try {
       final request = ConvertCryptoRequest()
         ..fromCryptoId = fromCryptoId
         ..toCryptoId = toCryptoId
-        ..fromAmount = amount;
+        ..fromAmount = amount
+        ..transactionPin = transactionPin
+        ..idempotencyKey = idempotencyKey;
       final response = await _client.convertCrypto(request);
       return response;
     } catch (e) {
@@ -261,6 +276,99 @@ class CryptoGrpcClient {
       final request = GetWalletBalanceRequest()
         ..walletId = walletId;
       final response = await _client.getWalletBalance(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // WATCHLIST OPERATIONS
+  // ============================================================
+
+  /// Create a new watchlist
+  Future<CreateWatchlistResponse> createWatchlist({
+    required String name,
+    String description = '',
+  }) async {
+    try {
+      final request = CreateWatchlistRequest()
+        ..name = name
+        ..description = description;
+      final response = await _client.createWatchlist(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get user's watchlists
+  Future<GetWatchlistsResponse> getWatchlists() async {
+    try {
+      final request = GetWatchlistsRequest();
+      final response = await _client.getWatchlists(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Add crypto to a watchlist
+  Future<AddToWatchlistResponse> addToWatchlist({
+    required String watchlistId,
+    required String cryptoId,
+  }) async {
+    try {
+      final request = AddToWatchlistRequest()
+        ..watchlistId = watchlistId
+        ..cryptoId = cryptoId;
+      final response = await _client.addToWatchlist(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Remove crypto from a watchlist
+  Future<RemoveFromWatchlistResponse> removeFromWatchlist({
+    required String watchlistId,
+    required String cryptoId,
+  }) async {
+    try {
+      final request = RemoveFromWatchlistRequest()
+        ..watchlistId = watchlistId
+        ..cryptoId = cryptoId;
+      final response = await _client.removeFromWatchlist(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Delete a watchlist
+  Future<DeleteWatchlistResponse> deleteWatchlist({
+    required String watchlistId,
+  }) async {
+    try {
+      final request = DeleteWatchlistRequest()
+        ..watchlistId = watchlistId;
+      final response = await _client.deleteWatchlist(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get exchange rate for a crypto/fiat pair
+  Future<GetExchangeRateResponse> getExchangeRate({
+    required String cryptoId,
+    required String fiatCurrency,
+  }) async {
+    try {
+      final request = GetExchangeRateRequest()
+        ..cryptoId = cryptoId
+        ..fiatCurrency = fiatCurrency;
+      final response = await _client.getExchangeRate(request);
       return response;
     } catch (e) {
       rethrow;

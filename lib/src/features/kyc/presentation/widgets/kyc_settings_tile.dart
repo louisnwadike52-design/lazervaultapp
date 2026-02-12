@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hybrid_hex_color_converter/hybrid_hex_color_converter.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/rounded_centered_image.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
@@ -24,7 +25,8 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
     super.initState();
     // Load KYC status when widget initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<KYCCubit>().getKYCStatus('current_user_id');
+      final userId = context.read<AuthenticationCubit>().userId ?? '';
+      context.read<KYCCubit>().getKYCStatus(userId);
     });
   }
 

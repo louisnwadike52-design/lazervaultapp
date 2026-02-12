@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/core/shared_widgets/app_loading_button.dart';
@@ -649,8 +650,9 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
 
     final cubit = context.read<KYCCubit>();
     final controller = _getIdController(_selectedIdType);
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
     final request = IDVerificationRequest(
-      userId: 'current_user_id', // Get from auth state in real app
+      userId: userId,
       idType: _selectedIdType,
       idNumber: controller.text.trim(),
       firstName: _firstNameController.text.trim(),

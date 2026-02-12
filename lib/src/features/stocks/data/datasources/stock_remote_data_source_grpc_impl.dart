@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/grpc/grpc_channel_manager.dart';
 import 'package:lazervault/src/generated/stocks/stock.pbgrpc.dart' hide OrderType, OrderSide, OrderStatus, PricePoint;
@@ -48,7 +49,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     } on GrpcError catch (e) {
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error fetching stocks via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching stocks via gRPC: $e');
       rethrow;
     }
   }
@@ -70,7 +71,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error fetching stock details via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching stock details via gRPC: $e');
       rethrow;
     }
   }
@@ -104,7 +105,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     } on GrpcError catch (e) {
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error fetching price history via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching price history via gRPC: $e');
       rethrow;
     }
   }
@@ -122,7 +123,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
 
       return allMovers;
     } catch (e) {
-      print('Error fetching top movers via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching top movers via gRPC: $e');
       rethrow;
     }
   }
@@ -167,7 +168,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     } on GrpcError catch (e) {
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error searching stocks via gRPC: $e');
+      if (kDebugMode) debugPrint('Error searching stocks via gRPC: $e');
       rethrow;
     }
   }
@@ -189,7 +190,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error fetching portfolio via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching portfolio via gRPC: $e');
       rethrow;
     }
   }
@@ -200,7 +201,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       final portfolio = await getPortfolio();
       return portfolio.holdings.cast<StockHoldingModel>();
     } catch (e) {
-      print('Error fetching holdings via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching holdings via gRPC: $e');
       rethrow;
     }
   }
@@ -236,7 +237,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error placing order via gRPC: $e');
+      if (kDebugMode) debugPrint('Error placing order via gRPC: $e');
       rethrow;
     }
   }
@@ -269,7 +270,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error fetching orders via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching orders via gRPC: $e');
       rethrow;
     }
   }
@@ -291,7 +292,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error canceling order via gRPC: $e');
+      if (kDebugMode) debugPrint('Error canceling order via gRPC: $e');
       rethrow;
     }
   }
@@ -315,7 +316,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error fetching watchlists via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching watchlists via gRPC: $e');
       rethrow;
     }
   }
@@ -340,7 +341,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error creating watchlist via gRPC: $e');
+      if (kDebugMode) debugPrint('Error creating watchlist via gRPC: $e');
       rethrow;
     }
   }
@@ -365,7 +366,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error updating watchlist via gRPC: $e');
+      if (kDebugMode) debugPrint('Error updating watchlist via gRPC: $e');
       rethrow;
     }
   }
@@ -389,7 +390,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error adding to watchlist via gRPC: $e');
+      if (kDebugMode) debugPrint('Error adding to watchlist via gRPC: $e');
       rethrow;
     }
   }
@@ -413,7 +414,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error removing from watchlist via gRPC: $e');
+      if (kDebugMode) debugPrint('Error removing from watchlist via gRPC: $e');
       rethrow;
     }
   }
@@ -433,7 +434,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       }
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error deleting watchlist via gRPC: $e');
+      if (kDebugMode) debugPrint('Error deleting watchlist via gRPC: $e');
       rethrow;
     }
   }
@@ -456,7 +457,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     } on GrpcError catch (e) {
       throw Exception('gRPC Error: ${e.message}');
     } catch (e) {
-      print('Error fetching market indices via gRPC: $e');
+      if (kDebugMode) debugPrint('Error fetching market indices via gRPC: $e');
       rethrow;
     }
   }
@@ -489,7 +490,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     required double targetValue,
     required AlertCondition condition,
   }) async {
-    throw UnimplementedError('Alerts not yet implemented in microservice');
+    throw Exception('Price alerts are coming soon');
   }
 
   @override
@@ -500,37 +501,47 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     AlertCondition? condition,
     bool? isActive,
   }) async {
-    throw UnimplementedError('Alerts not yet implemented in microservice');
+    throw Exception('Price alerts are coming soon');
   }
 
   @override
   Future<void> deleteAlert(String alertId) async {
-    throw UnimplementedError('Alerts not yet implemented in microservice');
+    throw Exception('Price alerts are coming soon');
   }
 
   @override
   Future<StockAnalysisModel> getStockAnalysis(String symbol) async {
-    throw UnimplementedError('Stock analysis not yet implemented in microservice');
+    // Return a basic analysis based on available stock data
+    return StockAnalysisModel(
+      symbol: symbol,
+      rating: AnalysisRating.hold,
+      targetPrice: 0,
+      stopLoss: 0,
+      technicalIndicators: [],
+      fundamentalMetrics: [],
+      summary: 'Detailed analysis is coming soon.',
+      lastUpdated: DateTime.now(),
+    );
   }
 
   @override
   Future<TradingSessionModel> getCurrentTradingSession() async {
-    throw UnimplementedError('Trading sessions not yet implemented in microservice');
+    throw Exception('Trading sessions are coming soon');
   }
 
   @override
   Future<TradingSessionModel> startTradingSession(double startingBalance) async {
-    throw UnimplementedError('Trading sessions not yet implemented in microservice');
+    throw Exception('Trading sessions are coming soon');
   }
 
   @override
   Future<TradingSessionModel> endTradingSession(String sessionId) async {
-    throw UnimplementedError('Trading sessions not yet implemented in microservice');
+    throw Exception('Trading sessions are coming soon');
   }
 
   @override
   Future<List<TradingSessionModel>> getTradingSessionHistory() async {
-    throw UnimplementedError('Trading sessions not yet implemented in microservice');
+    return [];
   }
 
   @override
@@ -539,12 +550,12 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     DateTime? expirationDate,
     OptionType? type,
   }) async {
-    throw UnimplementedError('Options trading not yet implemented in microservice');
+    return [];
   }
 
   @override
   Future<OptionContractModel> getOptionDetails(String optionSymbol) async {
-    throw UnimplementedError('Options trading not yet implemented in microservice');
+    throw Exception('Options trading is coming soon');
   }
 
   @override

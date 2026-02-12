@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +7,10 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 import '../../domain/entities/insurance_entity.dart';
+import '../../domain/entities/insurance_payment_entity.dart';
+import '../../domain/entities/insurance_claim_entity.dart';
+import '../cubit/insurance_cubit.dart';
+import '../cubit/insurance_state.dart';
 
 class InsurancePolicyDetailView extends StatefulWidget {
   final Insurance insurance;
@@ -27,6 +32,9 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<InsuranceCubit>().loadInsuranceDetailsWithData(widget.insurance);
+    });
   }
 
   @override
@@ -94,23 +102,43 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
           _buildClaimsTab(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Get.toNamed(
-            AppRoutes.insuranceEdit,
-            arguments: widget.insurance,
+      floatingActionButton: AnimatedBuilder(
+        animation: _tabController,
+        builder: (context, _) {
+          if (_tabController.index == 2) {
+            return FloatingActionButton.extended(
+              onPressed: () => Get.toNamed(AppRoutes.createClaim, arguments: widget.insurance.id),
+              backgroundColor: const Color(0xFF6366F1),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: Text(
+                'File Claim',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            );
+          }
+          return FloatingActionButton.extended(
+            onPressed: () {
+              Get.toNamed(
+                AppRoutes.insuranceEdit,
+                arguments: widget.insurance,
+              );
+            },
+            backgroundColor: const Color(0xFF6366F1),
+            icon: const Icon(Icons.edit, color: Colors.white),
+            label: Text(
+              'Edit Policy',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
           );
         },
-        backgroundColor: const Color(0xFF6366F1),
-        icon: const Icon(Icons.edit, color: Colors.white),
-        label: Text(
-          'Edit Policy',
-          style: GoogleFonts.inter(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
       ),
     );
   }
@@ -153,30 +181,141 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   }
 
   Widget _buildPaymentsTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return BlocBuilder<InsuranceCubit, InsuranceState>(
+      builder: (context, state) {
+        if (state is InsuranceLoading) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+          );
+        }
+
+        if (state is InsuranceDetailsLoaded) {
+          final payments = state.payments;
+          if (payments.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.payment,
+                    size: 80.sp,
+                    color: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'No payments recorded',
+                    style: GoogleFonts.inter(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Payment history will appear here',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final dateFormat = DateFormat('MMM dd, yyyy');
+          return ListView.builder(
+            padding: EdgeInsets.all(20.w),
+            itemCount: payments.length,
+            itemBuilder: (context, index) {
+              final payment = payments[index];
+              return _buildPaymentCard(payment, dateFormat);
+            },
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildPaymentCard(InsurancePayment payment, DateFormat dateFormat) {
+    Color statusColor;
+    switch (payment.status) {
+      case PaymentStatus.completed:
+        statusColor = const Color(0xFF10B981);
+        break;
+      case PaymentStatus.pending:
+      case PaymentStatus.processing:
+        statusColor = const Color(0xFFFBBF24);
+        break;
+      case PaymentStatus.failed:
+        statusColor = const Color(0xFFEF4444);
+        break;
+      case PaymentStatus.cancelled:
+      case PaymentStatus.refunded:
+        statusColor = const Color(0xFF6B7280);
+        break;
+    }
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
         children: [
-          Icon(
-            Icons.payment,
-            size: 80.sp,
-            color: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'No payments yet',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF9CA3AF),
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Text(
+              payment.paymentMethod.icon,
+              style: TextStyle(fontSize: 20.sp),
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
-            'Payment history will appear here',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: const Color(0xFF9CA3AF).withValues(alpha: 0.7),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '\$${payment.amount.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  dateFormat.format(payment.paymentDate),
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Text(
+              payment.status.displayName,
+              style: GoogleFonts.inter(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                color: statusColor,
+              ),
             ),
           ),
         ],
@@ -185,33 +324,185 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
   }
 
   Widget _buildClaimsTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.description_outlined,
-            size: 80.sp,
-            color: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'No claims filed',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF9CA3AF),
+    return BlocBuilder<InsuranceCubit, InsuranceState>(
+      builder: (context, state) {
+        if (state is InsuranceLoading) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+          );
+        }
+
+        if (state is InsuranceDetailsLoaded) {
+          final claims = state.claims;
+          if (claims.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.description_outlined,
+                    size: 80.sp,
+                    color: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'No claims filed',
+                    style: GoogleFonts.inter(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'File a claim if you need to',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.7),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  GestureDetector(
+                    onTap: () => Get.toNamed(AppRoutes.createClaim, arguments: widget.insurance.id),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6366F1),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        'File a Claim',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final dateFormat = DateFormat('MMM dd, yyyy');
+          return ListView.builder(
+            padding: EdgeInsets.all(20.w),
+            itemCount: claims.length,
+            itemBuilder: (context, index) {
+              final claim = claims[index];
+              return _buildClaimCard(claim, dateFormat);
+            },
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildClaimCard(InsuranceClaim claim, DateFormat dateFormat) {
+    Color statusColor;
+    switch (claim.status) {
+      case ClaimStatus.submitted:
+        statusColor = const Color(0xFF6366F1);
+        break;
+      case ClaimStatus.underReview:
+        statusColor = const Color(0xFFFB923C);
+        break;
+      case ClaimStatus.approved:
+        statusColor = const Color(0xFF10B981);
+        break;
+      case ClaimStatus.rejected:
+        statusColor = const Color(0xFFEF4444);
+        break;
+      case ClaimStatus.settled:
+        statusColor = const Color(0xFF8B5CF6);
+        break;
+      case ClaimStatus.cancelled:
+        statusColor = const Color(0xFF6B7280);
+        break;
+    }
+
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.insuranceClaimTracking, arguments: claim),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(
+                Icons.description,
+                color: statusColor,
+                size: 20.sp,
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Claims will appear here',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: const Color(0xFF9CA3AF).withValues(alpha: 0.7),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    claim.title,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    '${claim.claimNumber} • ${dateFormat.format(claim.createdAt)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${claim.currency} ${claim.claimAmount.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    claim.status.displayName,
+                    style: GoogleFonts.inter(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

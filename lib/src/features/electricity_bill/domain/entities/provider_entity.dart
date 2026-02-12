@@ -9,6 +9,7 @@ class ElectricityProviderEntity extends Equatable {
   final String? description;
   final double? minAmount;
   final double? maxAmount;
+  final double serviceFee;
   final bool supportsPrepaid;
   final bool supportsPostpaid;
   final bool isActive;
@@ -24,6 +25,7 @@ class ElectricityProviderEntity extends Equatable {
     this.description,
     this.minAmount,
     this.maxAmount,
+    this.serviceFee = 0.0,
     required this.supportsPrepaid,
     required this.supportsPostpaid,
     required this.isActive,
@@ -33,6 +35,41 @@ class ElectricityProviderEntity extends Equatable {
 
   bool get hasAmountLimits => minAmount != null && maxAmount != null;
   bool get supportsBothMeterTypes => supportsPrepaid && supportsPostpaid;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'providerCode': providerCode,
+        'providerName': providerName,
+        'country': country,
+        'logoUrl': logoUrl,
+        'description': description,
+        'minAmount': minAmount,
+        'maxAmount': maxAmount,
+        'serviceFee': serviceFee,
+        'supportsPrepaid': supportsPrepaid,
+        'supportsPostpaid': supportsPostpaid,
+        'isActive': isActive,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+      };
+
+  factory ElectricityProviderEntity.fromJson(Map<String, dynamic> json) =>
+      ElectricityProviderEntity(
+        id: json['id'] as String,
+        providerCode: json['providerCode'] as String,
+        providerName: json['providerName'] as String,
+        country: json['country'] as String,
+        logoUrl: json['logoUrl'] as String?,
+        description: json['description'] as String?,
+        minAmount: (json['minAmount'] as num?)?.toDouble(),
+        maxAmount: (json['maxAmount'] as num?)?.toDouble(),
+        serviceFee: (json['serviceFee'] as num?)?.toDouble() ?? 0.0,
+        supportsPrepaid: json['supportsPrepaid'] as bool,
+        supportsPostpaid: json['supportsPostpaid'] as bool,
+        isActive: json['isActive'] as bool,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
+      );
 
   @override
   List<Object?> get props => [
@@ -44,6 +81,7 @@ class ElectricityProviderEntity extends Equatable {
         description,
         minAmount,
         maxAmount,
+        serviceFee,
         supportsPrepaid,
         supportsPostpaid,
         isActive,

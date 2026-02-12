@@ -10,7 +10,11 @@ class GetAIChatHistoryUseCase {
 
   Future<Either<Failure, List<ChatMessageEntity>>> call({
     required String accessToken,
+    String? sessionId,
   }) async {
-    return await _repository.getChatHistory(accessToken: accessToken);
+    return await _repository.getChatHistory(
+      accessToken: accessToken,
+      sessionId: sessionId,
+    );
   }
 } 

@@ -20,6 +20,20 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
   final TextEditingController _meterNumberController = TextEditingController();
   MeterType _selectedMeterType = MeterType.prepaid;
   bool _isValidating = false;
+  ElectricityProviderEntity? _provider;
+
+  @override
+  void initState() {
+    super.initState();
+    final args = Get.arguments;
+    if (args is Map<String, dynamic> && args['provider'] is ElectricityProviderEntity) {
+      _provider = args['provider'] as ElectricityProviderEntity;
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.back();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -28,7 +42,8 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
   }
 
   void _validateMeter() {
-    final provider = Get.arguments['provider'] as ElectricityProviderEntity;
+    final provider = _provider;
+    if (provider == null) return;
     final meterNumber = _meterNumberController.text.trim();
 
     if (meterNumber.isEmpty) {
@@ -50,7 +65,13 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Get.arguments['provider'] as ElectricityProviderEntity;
+    final provider = _provider;
+    if (provider == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: SizedBox.shrink(),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),

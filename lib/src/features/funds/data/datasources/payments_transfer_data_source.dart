@@ -82,14 +82,6 @@ abstract class IPaymentsTransferDataSource {
     DateTime? scheduledAt,              // Optional: schedule for future execution
   });
 
-  /// Initiate a batch transfer to multiple recipients
-  Future<PaymentsTransferResult> batchTransfer({
-    required String fromAccountId,
-    required List<BatchTransferItem> recipients,
-    required String transactionId,
-    required String verificationToken,
-  });
-
   /// Get payment/transfer history
   Future<List<PaymentsTransferResult>> getPaymentHistory({
     required String accountId,
@@ -196,58 +188,6 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
       },
       onRetry: (attempt, error) {
         print('RETRY: Send funds attempt $attempt due to: $error');
-      },
-      shouldRetry: _shouldRetryTransfer,
-    );
-  }
-
-  @override
-  Future<PaymentsTransferResult> batchTransfer({
-    required String fromAccountId,
-    required List<BatchTransferItem> recipients,
-    required String transactionId,
-    required String verificationToken,
-  }) async {
-    return await RetryPolicy.critical.execute(
-      () async {
-        final batchItems = recipients.map((r) => r.toProto()).toList();
-
-        final request = payments.BatchTransferRequest(
-          fromAccountId: fromAccountId,
-          transfers: batchItems,
-          transactionId: transactionId,
-          verificationToken: verificationToken,
-        );
-
-        try {
-          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-            final callOptions = await _callOptionsHelper.withAuth();
-            return await _client.batchTransfer(
-              request,
-              options: callOptions.mergedWith(
-                CallOptions(timeout: const Duration(seconds: 45)),
-              ),
-            );
-          });
-
-          return PaymentsTransferResult(
-            success: response.totalTransfers > 0 && response.successfulTransfers > 0,
-            transferId: null, // Batch transfers don't have a single ID
-            reference: null,
-            status: response.successfulTransfers == response.totalTransfers ? 'completed' : 'partial',
-            amount: response.hasNewBalance() ? (response.newBalance * 100).toInt() : null,
-            fee: null,
-            errorMessage: response.message.isNotEmpty ? response.message : null,
-          );
-        } on GrpcError catch (e) {
-          print('gRPC Error during batch transfer: ${e.code} - ${e.message}');
-          throw ServerException(
-            message: 'Failed to execute batch transfer: ${e.message ?? "Unknown error"}',
-          );
-        }
-      },
-      onRetry: (attempt, error) {
-        print('RETRY: Batch transfer attempt $attempt due to: $error');
       },
       shouldRetry: _shouldRetryTransfer,
     );

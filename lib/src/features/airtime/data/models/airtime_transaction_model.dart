@@ -1,3 +1,4 @@
+import '../../../../generated/utility-payments.pb.dart' as pb;
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/network_provider.dart';
 
@@ -20,6 +21,74 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     super.fee,
     required super.totalAmount,
   });
+
+  factory AirtimeTransactionModel.fromBuyAirtimeResponse(
+    pb.BuyAirtimeResponse response, {
+    required String currency,
+  }) {
+    final payment = response.payment;
+    return AirtimeTransactionModel(
+      id: payment.id,
+      transactionReference: payment.reference,
+      networkProvider: _networkTypeFromBillType(payment.providerId),
+      recipientPhoneNumber: response.phoneNumber,
+      amount: payment.amount,
+      currency: currency,
+      status: _statusFromString(payment.status),
+      createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
+      userId: payment.userId,
+      totalAmount: payment.amount,
+      metadata: {
+        'providerReference': response.providerReference,
+        'commissionEarned': response.commissionEarned,
+        'dataInfo': response.dataInfo,
+      },
+    );
+  }
+
+  factory AirtimeTransactionModel.fromBillPaymentProto(
+    pb.BillPayment payment, {
+    String currency = 'NGN',
+  }) {
+    return AirtimeTransactionModel(
+      id: payment.id,
+      transactionReference: payment.reference,
+      networkProvider: _networkTypeFromBillType(payment.providerId),
+      recipientPhoneNumber: payment.customerNumber,
+      amount: payment.amount,
+      currency: currency,
+      status: _statusFromString(payment.status),
+      createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
+      userId: payment.userId,
+      totalAmount: payment.amount,
+    );
+  }
+
+  static AirtimeTransactionStatus _statusFromString(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return AirtimeTransactionStatus.completed;
+      case 'failed':
+        return AirtimeTransactionStatus.failed;
+      case 'processing':
+        return AirtimeTransactionStatus.processing;
+      case 'refunded':
+        return AirtimeTransactionStatus.refunded;
+      default:
+        return AirtimeTransactionStatus.pending;
+    }
+  }
+
+  static NetworkProviderType _networkTypeFromBillType(String providerId) {
+    final lower = providerId.toLowerCase();
+    if (lower.contains('mtn')) return NetworkProviderType.mtn;
+    if (lower.contains('airtel')) return NetworkProviderType.airtel;
+    if (lower.contains('glo')) return NetworkProviderType.glo;
+    if (lower.contains('9mobile') || lower.contains('etisalat')) {
+      return NetworkProviderType.ninemobile;
+    }
+    return NetworkProviderType.mtn;
+  }
 
   factory AirtimeTransactionModel.fromJson(Map<String, dynamic> json) {
     return AirtimeTransactionModel(

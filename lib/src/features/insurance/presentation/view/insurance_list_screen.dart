@@ -4,9 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/cache/swr_cache_manager.dart';
+import 'package:lazervault/core/offline/mutation_queue.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../domain/entities/insurance_entity.dart';
+import '../../domain/repositories/insurance_repository.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
 import '../cubit/create_policy_cubit.dart';
@@ -48,6 +52,15 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
 
     _fadeController.forward();
     _slideController.forward();
+
+    // Initialize userId once on mount
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = context.read<AuthenticationCubit>().state;
+      final userId = authState is AuthenticationSuccess
+          ? authState.profile.user.id
+          : 'guest_user';
+      context.read<InsuranceCubit>().setUserId(userId);
+    });
   }
 
   @override
@@ -61,21 +74,13 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
   Widget build(BuildContext context) {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, authState) {
-        final userId = authState is AuthenticationSuccess 
-            ? authState.profile.user.id 
+        // Handle auth state changes (e.g., re-login)
+        final userId = authState is AuthenticationSuccess
+            ? authState.profile.user.id
             : 'guest_user';
-        
         context.read<InsuranceCubit>().setUserId(userId);
       },
       builder: (context, authState) {
-        final userId = authState is AuthenticationSuccess 
-            ? authState.profile.user.id 
-            : 'guest_user';
-        
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          context.read<InsuranceCubit>().setUserId(userId);
-        });
-        
         return _buildInsuranceScreen();
       },
     );
@@ -224,6 +229,39 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                   ),
                 ),
               ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.insuranceFaq),
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Icon(
+                Icons.help_outline,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.insuranceGuide),
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Icon(
+                Icons.menu_book,
+                color: Colors.white,
+                size: 20.sp,
+              ),
             ),
           ),
         ],
@@ -680,6 +718,20 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           ),
           SizedBox(height: 32.h),
           _buildGetStartedButton(),
+          SizedBox(height: 16.h),
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.insuranceHowItWorks),
+            child: Text(
+              'How does insurance work?',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: const Color(0xFF6366F1),
+                fontWeight: FontWeight.w500,
+                decoration: TextDecoration.underline,
+                decorationColor: const Color(0xFF6366F1),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -843,7 +895,11 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           providers: [
             BlocProvider.value(value: insuranceCubit),
             BlocProvider.value(value: authCubit),
-            BlocProvider(create: (context) => CreatePolicyCubit()),
+            BlocProvider(create: (context) => CreatePolicyCubit(
+              repository: serviceLocator<InsuranceRepository>(),
+              cacheManager: serviceLocator<SWRCacheManager>(),
+              mutationQueue: serviceLocator<MutationQueue>(),
+            )),
           ],
           child: const CreateInsurancePolicyCarousel(),
         ),

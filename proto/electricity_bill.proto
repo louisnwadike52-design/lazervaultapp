@@ -60,6 +60,13 @@ service ElectricityBillService {
     };
   }
 
+  rpc SmartValidateMeter(SmartValidateMeterRequest) returns (SmartValidateMeterResponse) {
+    option (google.api.http) = {
+      post: "/v1/electricity/smart-validate"
+      body: "*"
+    };
+  }
+
   rpc GetBillDetails(GetBillDetailsRequest) returns (GetBillDetailsResponse) {
     option (google.api.http) = {
       post: "/v1/electricity/bill-details"
@@ -353,6 +360,26 @@ message ValidateMeterResponse {
   string meter_number = 7;
 }
 
+// Smart Validation Messages
+message SmartValidateMeterRequest {
+  string meter_number = 1;
+}
+
+message SmartValidateMeterResponse {
+  bool is_valid = 1;
+  string customer_name = 2;
+  string customer_address = 3;
+  string meter_type = 4;
+  string meter_number = 5;
+  string provider_code = 6;
+  string provider_name = 7;
+  string message = 8;
+  double min_amount = 9;
+  double max_amount = 10;
+  double service_fee = 11;
+  bool from_cache = 12;
+}
+
 message GetBillDetailsRequest {
   string provider_code = 1;
   string meter_number = 2;
@@ -376,6 +403,9 @@ message InitiatePaymentRequest {
   string payment_gateway = 6;
   string source_account_id = 7;
   string beneficiary_id = 8;
+  string transaction_id = 9;
+  string verification_token = 10;
+  string phone_number = 11;
 }
 
 message InitiatePaymentResponse {

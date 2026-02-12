@@ -1,264 +1,96 @@
 import '../../domain/entities/gift_card_entity.dart';
-import '../../../../generated/giftcard.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as timestamp;
+import '../../../../generated/giftcards.pb.dart' as pb;
 
 class GiftCardModel extends GiftCard {
   const GiftCardModel({
     required super.id,
+    super.userId,
+    super.accountId,
     required super.brandId,
     required super.brandName,
-    required super.logoUrl,
-    required super.amount,
-    required super.discountPercentage,
-    required super.finalPrice,
+    super.logoUrl,
+    super.cardNumber,
+    super.pin,
+    required super.originalAmount,
+    required super.currentBalance,
     required super.currency,
     required super.status,
-    required super.type,
-    required super.category,
-    required super.description,
-    required super.termsAndConditions,
-    required super.expiryDate,
     required super.purchaseDate,
+    required super.expiryDate,
     super.recipientEmail,
     super.recipientName,
     super.message,
-    super.code,
-    super.pin,
-    required super.isRedeemed,
-    super.transactionId,
-    required super.availableDenominations,
-    super.qrCodeUrl,
-    super.barcodeUrl,
-    super.additionalInfo,
+    super.qrCode,
+    super.providerTransactionId,
+    super.redemptionCode,
+    super.redemptionPin,
+    super.countryCode,
+    super.providerProductId,
+    super.discountPercentage,
+    super.createdAt,
+    super.updatedAt,
   });
-
-  factory GiftCardModel.fromJson(Map<String, dynamic> json) {
-    return GiftCardModel(
-      id: json['id'] as String,
-      brandId: json['brandId'] as String,
-      brandName: json['brandName'] as String,
-      logoUrl: json['logoUrl'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      discountPercentage: (json['discountPercentage'] as num).toDouble(),
-      finalPrice: (json['finalPrice'] as num).toDouble(),
-      currency: json['currency'] as String,
-      status: GiftCardStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == json['status'],
-        orElse: () => GiftCardStatus.active,
-      ),
-      type: GiftCardType.values.firstWhere(
-        (e) => e.toString().split('.').last == json['type'],
-        orElse: () => GiftCardType.digital,
-      ),
-      category: GiftCardCategory.values.firstWhere(
-        (e) => e.toString().split('.').last == json['category'],
-        orElse: () => GiftCardCategory.shopping,
-      ),
-      description: json['description'] as String,
-      termsAndConditions: json['termsAndConditions'] as String,
-      expiryDate: DateTime.parse(json['expiryDate'] as String),
-      purchaseDate: DateTime.parse(json['purchaseDate'] as String),
-      recipientEmail: json['recipientEmail'] as String?,
-      recipientName: json['recipientName'] as String?,
-      message: json['message'] as String?,
-      code: json['code'] as String?,
-      pin: json['pin'] as String?,
-      isRedeemed: json['isRedeemed'] as bool,
-      transactionId: json['transactionId'] as String?,
-      availableDenominations: (json['availableDenominations'] as List<dynamic>)
-          .map((e) => e.toString())
-          .toList(),
-      qrCodeUrl: json['qrCodeUrl'] as String?,
-      barcodeUrl: json['barcodeUrl'] as String?,
-      additionalInfo: json['additionalInfo'] as Map<String, dynamic>?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'brandId': brandId,
-      'brandName': brandName,
-      'logoUrl': logoUrl,
-      'amount': amount,
-      'discountPercentage': discountPercentage,
-      'finalPrice': finalPrice,
-      'currency': currency,
-      'status': status.toString().split('.').last,
-      'type': type.toString().split('.').last,
-      'category': category.toString().split('.').last,
-      'description': description,
-      'termsAndConditions': termsAndConditions,
-      'expiryDate': expiryDate.toIso8601String(),
-      'purchaseDate': purchaseDate.toIso8601String(),
-      'recipientEmail': recipientEmail,
-      'recipientName': recipientName,
-      'message': message,
-      'code': code,
-      'pin': pin,
-      'isRedeemed': isRedeemed,
-      'transactionId': transactionId,
-      'availableDenominations': availableDenominations,
-      'qrCodeUrl': qrCodeUrl,
-      'barcodeUrl': barcodeUrl,
-      'additionalInfo': additionalInfo,
-    };
-  }
 
   factory GiftCardModel.fromProto(pb.GiftCard proto) {
     return GiftCardModel(
       id: proto.id,
+      userId: proto.userId,
+      accountId: proto.accountId,
       brandId: proto.brandId,
       brandName: proto.brandName,
       logoUrl: proto.logoUrl,
-      amount: proto.amount,
-      discountPercentage: proto.discountPercentage,
-      finalPrice: proto.finalPrice,
+      cardNumber: proto.cardNumber,
+      pin: proto.pin.isEmpty ? null : proto.pin,
+      originalAmount: proto.originalAmount,
+      currentBalance: proto.currentBalance,
       currency: proto.currency,
-      status: _statusFromProto(proto.status),
-      type: _typeFromProto(proto.type),
-      category: _categoryFromProto(proto.category),
-      description: proto.description,
-      termsAndConditions: proto.termsAndConditions,
-      expiryDate: proto.expiryDate.toDateTime(),
-      purchaseDate: proto.purchaseDate.toDateTime(),
+      status: proto.status,
+      purchaseDate: proto.purchaseDate,
+      expiryDate: proto.expiryDate,
       recipientEmail: proto.recipientEmail.isEmpty ? null : proto.recipientEmail,
       recipientName: proto.recipientName.isEmpty ? null : proto.recipientName,
       message: proto.message.isEmpty ? null : proto.message,
-      code: proto.code.isEmpty ? null : proto.code,
-      pin: proto.pin.isEmpty ? null : proto.pin,
-      isRedeemed: proto.isRedeemed,
-      transactionId: proto.transactionId.isEmpty ? null : proto.transactionId,
-      availableDenominations: proto.availableDenominations.toList(),
-      qrCodeUrl: proto.qrCodeUrl.isEmpty ? null : proto.qrCodeUrl,
-      barcodeUrl: proto.barcodeUrl.isEmpty ? null : proto.barcodeUrl,
-      additionalInfo: null,
+      qrCode: proto.qrCode.isEmpty ? null : proto.qrCode,
+      providerTransactionId: proto.providerTransactionId.isEmpty ? null : proto.providerTransactionId,
+      redemptionCode: proto.redemptionCode.isEmpty ? null : proto.redemptionCode,
+      redemptionPin: proto.redemptionPin.isEmpty ? null : proto.redemptionPin,
+      countryCode: proto.countryCode.isEmpty ? null : proto.countryCode,
+      providerProductId: proto.providerProductId.toInt(),
+      discountPercentage: proto.discountPercentage,
+      createdAt: proto.createdAt,
+      updatedAt: proto.updatedAt,
     );
   }
 
-  pb.GiftCard toProto() {
-    return pb.GiftCard()
-      ..id = id
-      ..userId = ''
-      ..brandId = brandId
-      ..brandName = brandName
-      ..logoUrl = logoUrl
-      ..amount = amount
-      ..discountPercentage = discountPercentage
-      ..finalPrice = finalPrice
-      ..currency = currency
-      ..status = _statusToProto(status)
-      ..type = _typeToProto(type)
-      ..category = _categoryToProto(category)
-      ..description = description
-      ..termsAndConditions = termsAndConditions
-      ..expiryDate = timestamp.Timestamp.fromDateTime(expiryDate)
-      ..purchaseDate = timestamp.Timestamp.fromDateTime(purchaseDate)
-      ..recipientEmail = recipientEmail ?? ''
-      ..recipientName = recipientName ?? ''
-      ..message = message ?? ''
-      ..code = code ?? ''
-      ..pin = pin ?? ''
-      ..isRedeemed = isRedeemed
-      ..transactionId = transactionId ?? ''
-      ..availableDenominations.addAll(availableDenominations)
-      ..qrCodeUrl = qrCodeUrl ?? ''
-      ..barcodeUrl = barcodeUrl ?? ''
-      ..remainingBalance = amount
-      ..originalAmount = amount;
-  }
-
-  // Helper methods for enum conversion
-  static GiftCardStatus _statusFromProto(pb.GiftCardStatus protoStatus) {
-    switch (protoStatus) {
-      case pb.GiftCardStatus.GIFTCARD_STATUS_ACTIVE:
-        return GiftCardStatus.active;
-      case pb.GiftCardStatus.GIFTCARD_STATUS_USED:
-        return GiftCardStatus.used;
-      case pb.GiftCardStatus.GIFTCARD_STATUS_EXPIRED:
-        return GiftCardStatus.expired;
-      case pb.GiftCardStatus.GIFTCARD_STATUS_PENDING:
-        return GiftCardStatus.pending;
-      case pb.GiftCardStatus.GIFTCARD_STATUS_CANCELLED:
-        return GiftCardStatus.cancelled;
-      case pb.GiftCardStatus.GIFTCARD_STATUS_PARTIALLY_REDEEMED:
-        return GiftCardStatus.partiallyRedeemed;
-      default:
-        return GiftCardStatus.active;
-    }
-  }
-
-  static pb.GiftCardStatus _statusToProto(GiftCardStatus status) {
-    switch (status) {
-      case GiftCardStatus.active:
-        return pb.GiftCardStatus.GIFTCARD_STATUS_ACTIVE;
-      case GiftCardStatus.used:
-        return pb.GiftCardStatus.GIFTCARD_STATUS_USED;
-      case GiftCardStatus.expired:
-        return pb.GiftCardStatus.GIFTCARD_STATUS_EXPIRED;
-      case GiftCardStatus.pending:
-        return pb.GiftCardStatus.GIFTCARD_STATUS_PENDING;
-      case GiftCardStatus.cancelled:
-        return pb.GiftCardStatus.GIFTCARD_STATUS_CANCELLED;
-      case GiftCardStatus.partiallyRedeemed:
-        return pb.GiftCardStatus.GIFTCARD_STATUS_PARTIALLY_REDEEMED;
-    }
-  }
-
-  static GiftCardType _typeFromProto(pb.GiftCardType protoType) {
-    switch (protoType) {
-      case pb.GiftCardType.GIFTCARD_TYPE_DIGITAL:
-        return GiftCardType.digital;
-      case pb.GiftCardType.GIFTCARD_TYPE_PHYSICAL:
-        return GiftCardType.physical;
-      default:
-        return GiftCardType.digital;
-    }
-  }
-
-  static pb.GiftCardType _typeToProto(GiftCardType type) {
-    switch (type) {
-      case GiftCardType.digital:
-        return pb.GiftCardType.GIFTCARD_TYPE_DIGITAL;
-      case GiftCardType.physical:
-        return pb.GiftCardType.GIFTCARD_TYPE_PHYSICAL;
-    }
-  }
-
-  static GiftCardCategory _categoryFromProto(pb.GiftCardCategory protoCategory) {
-    switch (protoCategory) {
-      case pb.GiftCardCategory.GIFTCARD_CATEGORY_ENTERTAINMENT:
-        return GiftCardCategory.entertainment;
-      case pb.GiftCardCategory.GIFTCARD_CATEGORY_SHOPPING:
-        return GiftCardCategory.shopping;
-      case pb.GiftCardCategory.GIFTCARD_CATEGORY_DINING:
-        return GiftCardCategory.dining;
-      case pb.GiftCardCategory.GIFTCARD_CATEGORY_TRAVEL:
-        return GiftCardCategory.travel;
-      case pb.GiftCardCategory.GIFTCARD_CATEGORY_GAMING:
-        return GiftCardCategory.gaming;
-      case pb.GiftCardCategory.GIFTCARD_CATEGORY_OTHER:
-        return GiftCardCategory.other;
-      default:
-        return GiftCardCategory.shopping;
-    }
-  }
-
-  static pb.GiftCardCategory _categoryToProto(GiftCardCategory category) {
-    switch (category) {
-      case GiftCardCategory.entertainment:
-        return pb.GiftCardCategory.GIFTCARD_CATEGORY_ENTERTAINMENT;
-      case GiftCardCategory.shopping:
-        return pb.GiftCardCategory.GIFTCARD_CATEGORY_SHOPPING;
-      case GiftCardCategory.dining:
-        return pb.GiftCardCategory.GIFTCARD_CATEGORY_DINING;
-      case GiftCardCategory.travel:
-        return pb.GiftCardCategory.GIFTCARD_CATEGORY_TRAVEL;
-      case GiftCardCategory.gaming:
-        return pb.GiftCardCategory.GIFTCARD_CATEGORY_GAMING;
-      case GiftCardCategory.other:
-        return pb.GiftCardCategory.GIFTCARD_CATEGORY_OTHER;
-    }
+  factory GiftCardModel.fromJson(Map<String, dynamic> json) {
+    return GiftCardModel(
+      id: json['id'] as String? ?? '',
+      userId: json['userId'] as String? ?? '',
+      accountId: json['accountId'] as String? ?? '',
+      brandId: json['brandId'] as String? ?? '',
+      brandName: json['brandName'] as String? ?? '',
+      logoUrl: json['logoUrl'] as String? ?? '',
+      cardNumber: json['cardNumber'] as String? ?? '',
+      pin: json['pin'] as String?,
+      originalAmount: (json['originalAmount'] as num?)?.toDouble() ?? 0.0,
+      currentBalance: (json['currentBalance'] as num?)?.toDouble() ?? 0.0,
+      currency: json['currency'] as String? ?? '',
+      status: json['status'] as String? ?? 'active',
+      purchaseDate: json['purchaseDate'] as String? ?? '',
+      expiryDate: json['expiryDate'] as String? ?? '',
+      recipientEmail: json['recipientEmail'] as String?,
+      recipientName: json['recipientName'] as String?,
+      message: json['message'] as String?,
+      qrCode: json['qrCode'] as String?,
+      providerTransactionId: json['providerTransactionId'] as String?,
+      redemptionCode: json['redemptionCode'] as String?,
+      redemptionPin: json['redemptionPin'] as String?,
+      countryCode: json['countryCode'] as String?,
+      providerProductId: json['providerProductId'] as int? ?? 0,
+      discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
+      createdAt: json['createdAt'] as String? ?? '',
+      updatedAt: json['updatedAt'] as String? ?? '',
+    );
   }
 }
 
@@ -266,63 +98,185 @@ class GiftCardBrandModel extends GiftCardBrand {
   const GiftCardBrandModel({
     required super.id,
     required super.name,
-    required super.logoUrl,
-    required super.description,
-    required super.category,
+    super.logoUrl,
+    super.category,
+    super.description,
+    super.denominations,
+    super.minAmount,
+    super.maxAmount,
+    super.isActive,
+    super.termsAndConditions,
+    super.productId,
+    super.countryCode,
+    super.fixedDenominations,
     super.discountPercentage,
-    super.isPopular = false,
+    super.currencyCode,
+    super.redemptionInstructions,
   });
-
-  factory GiftCardBrandModel.fromJson(Map<String, dynamic> json) {
-    return GiftCardBrandModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      logoUrl: json['logoUrl'] as String,
-      description: json['description'] as String,
-      category: GiftCardCategory.values.firstWhere(
-        (e) => e.toString().split('.').last == json['category'],
-        orElse: () => GiftCardCategory.shopping,
-      ),
-      discountPercentage: json['discountPercentage'] != null 
-          ? (json['discountPercentage'] as num).toDouble() 
-          : null,
-      isPopular: json['isPopular'] as bool? ?? false,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'logoUrl': logoUrl,
-      'description': description,
-      'category': category.toString().split('.').last,
-      'discountPercentage': discountPercentage,
-      'isPopular': isPopular,
-    };
-  }
 
   factory GiftCardBrandModel.fromProto(pb.GiftCardBrand proto) {
     return GiftCardBrandModel(
       id: proto.id,
       name: proto.name,
       logoUrl: proto.logoUrl,
+      category: proto.category,
       description: proto.description,
-      category: GiftCardModel._categoryFromProto(proto.category),
-      discountPercentage: proto.discountPercentage != 0 ? proto.discountPercentage : null,
-      isPopular: proto.isPopular,
+      denominations: proto.denominations.toList(),
+      minAmount: proto.minAmount,
+      maxAmount: proto.maxAmount,
+      isActive: proto.isActive,
+      termsAndConditions: proto.termsAndConditions,
+      productId: proto.productId.toInt(),
+      countryCode: proto.countryCode,
+      fixedDenominations: proto.fixedDenominations
+          .map((d) => GiftCardDenomination(
+                price: d.price,
+                currencyCode: d.currencyCode,
+              ))
+          .toList(),
+      discountPercentage: proto.discountPercentage,
+      currencyCode: proto.currencyCode,
+      redemptionInstructions: proto.redemptionInstructions,
     );
   }
 
-  pb.GiftCardBrand toProto() {
-    return pb.GiftCardBrand()
-      ..id = id
-      ..name = name
-      ..logoUrl = logoUrl
-      ..description = description
-      ..category = GiftCardModel._categoryToProto(category)
-      ..discountPercentage = discountPercentage ?? 0.0
-      ..isPopular = isPopular;
+  factory GiftCardBrandModel.fromJson(Map<String, dynamic> json) {
+    return GiftCardBrandModel(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      logoUrl: json['logoUrl'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      denominations: (json['denominations'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList() ?? [],
+      minAmount: (json['minAmount'] as num?)?.toDouble() ?? 0.0,
+      maxAmount: (json['maxAmount'] as num?)?.toDouble() ?? 0.0,
+      isActive: json['isActive'] as bool? ?? true,
+      termsAndConditions: json['termsAndConditions'] as String? ?? '',
+      productId: json['productId'] as int? ?? 0,
+      countryCode: json['countryCode'] as String? ?? '',
+      fixedDenominations: (json['fixedDenominations'] as List<dynamic>?)
+          ?.map((e) => GiftCardDenomination.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
+      currencyCode: json['currencyCode'] as String? ?? '',
+      redemptionInstructions: json['redemptionInstructions'] as String? ?? '',
+    );
+  }
+}
+
+class GiftCardBalanceModel extends GiftCardBalance {
+  const GiftCardBalanceModel({
+    required super.balance,
+    required super.brandName,
+    required super.expiryDate,
+    required super.status,
+  });
+
+  factory GiftCardBalanceModel.fromProto(pb.GetGiftCardBalanceResponse response) {
+    return GiftCardBalanceModel(
+      balance: response.balance,
+      brandName: response.brandName,
+      expiryDate: response.expiryDate,
+      status: response.status,
+    );
+  }
+}
+
+class SellableCardModel extends SellableCard {
+  const SellableCardModel({
+    required super.cardType,
+    required super.displayName,
+    super.logoUrl,
+    super.category,
+    super.denominations,
+    super.currencies,
+    super.minDenomination,
+    super.maxDenomination,
+  });
+
+  factory SellableCardModel.fromProto(pb.SellableCard proto) {
+    return SellableCardModel(
+      cardType: proto.cardType,
+      displayName: proto.displayName,
+      logoUrl: proto.logoUrl,
+      category: proto.category,
+      denominations: proto.denominations.toList(),
+      currencies: proto.currencies.toList(),
+      minDenomination: proto.minDenomination,
+      maxDenomination: proto.maxDenomination,
+    );
+  }
+}
+
+class SellRateModel extends SellRate {
+  const SellRateModel({
+    required super.cardType,
+    required super.denomination,
+    required super.ratePercentage,
+    required super.payoutAmount,
+    super.currency,
+    super.expiresAt,
+  });
+
+  factory SellRateModel.fromProto(pb.SellRate proto) {
+    return SellRateModel(
+      cardType: proto.cardType,
+      denomination: proto.denomination,
+      ratePercentage: proto.ratePercentage,
+      payoutAmount: proto.payoutAmount,
+      currency: proto.currency,
+      expiresAt: proto.expiresAt,
+    );
+  }
+}
+
+class GiftCardSaleModel extends GiftCardSale {
+  const GiftCardSaleModel({
+    required super.id,
+    super.userId,
+    super.accountId,
+    required super.cardType,
+    super.cardNumber,
+    required super.denomination,
+    super.currency,
+    super.ratePercentage,
+    super.expectedPayout,
+    super.actualPayout,
+    required super.status,
+    super.providerSaleId,
+    super.providerName,
+    super.reference,
+    super.submittedAt,
+    super.reviewedAt,
+    super.paidAt,
+    super.createdAt,
+    super.updatedAt,
+  });
+
+  factory GiftCardSaleModel.fromProto(pb.GiftCardSale proto) {
+    return GiftCardSaleModel(
+      id: proto.id,
+      userId: proto.userId,
+      accountId: proto.accountId,
+      cardType: proto.cardType,
+      cardNumber: proto.cardNumber,
+      denomination: proto.denomination,
+      currency: proto.currency,
+      ratePercentage: proto.ratePercentage,
+      expectedPayout: proto.expectedPayout,
+      actualPayout: proto.actualPayout,
+      status: proto.status,
+      providerSaleId: proto.providerSaleId,
+      providerName: proto.providerName,
+      reference: proto.reference,
+      submittedAt: proto.submittedAt,
+      reviewedAt: proto.reviewedAt,
+      paidAt: proto.paidAt,
+      createdAt: proto.createdAt,
+      updatedAt: proto.updatedAt,
+    );
   }
 }
 
@@ -330,109 +284,46 @@ class GiftCardTransactionModel extends GiftCardTransaction {
   const GiftCardTransactionModel({
     required super.id,
     required super.giftCardId,
-    required super.userId,
-    required super.amount,
-    required super.currency,
-    required super.transactionDate,
+    super.userId,
     required super.transactionType,
-    required super.status,
-    super.failureReason,
-    super.additionalDetails,
+    required super.amount,
+    super.balanceBefore,
+    super.balanceAfter,
+    super.description,
+    super.createdAt,
+    super.providerTransactionId,
+    super.reference,
   });
-
-  factory GiftCardTransactionModel.fromJson(Map<String, dynamic> json) {
-    return GiftCardTransactionModel(
-      id: json['id'] as String,
-      giftCardId: json['giftCardId'] as String,
-      userId: json['userId'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      currency: json['currency'] as String,
-      transactionDate: DateTime.parse(json['transactionDate'] as String),
-      transactionType: json['transactionType'] as String,
-      status: GiftCardStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == json['status'],
-        orElse: () => GiftCardStatus.pending,
-      ),
-      failureReason: json['failureReason'] as String?,
-      additionalDetails: json['additionalDetails'] as Map<String, dynamic>?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'giftCardId': giftCardId,
-      'userId': userId,
-      'amount': amount,
-      'currency': currency,
-      'transactionDate': transactionDate.toIso8601String(),
-      'transactionType': transactionType,
-      'status': status.toString().split('.').last,
-      'failureReason': failureReason,
-      'additionalDetails': additionalDetails,
-    };
-  }
 
   factory GiftCardTransactionModel.fromProto(pb.GiftCardTransaction proto) {
     return GiftCardTransactionModel(
       id: proto.id,
       giftCardId: proto.giftCardId,
       userId: proto.userId,
+      transactionType: proto.transactionType,
       amount: proto.amount,
-      currency: proto.currency,
-      transactionDate: proto.transactionDate.toDateTime(),
-      transactionType: _transactionTypeFromProto(proto.transactionType),
-      status: GiftCardModel._statusFromProto(proto.status),
-      failureReason: proto.failureReason.isEmpty ? null : proto.failureReason,
-      additionalDetails: null,
+      balanceBefore: proto.balanceBefore,
+      balanceAfter: proto.balanceAfter,
+      description: proto.description,
+      createdAt: proto.createdAt,
+      providerTransactionId: proto.providerTransactionId,
+      reference: proto.reference,
     );
   }
 
-  pb.GiftCardTransaction toProto() {
-    return pb.GiftCardTransaction()
-      ..id = id
-      ..giftCardId = giftCardId
-      ..userId = userId
-      ..amount = amount
-      ..currency = currency
-      ..transactionDate = timestamp.Timestamp.fromDateTime(transactionDate)
-      ..transactionType = _transactionTypeToProto(transactionType)
-      ..status = GiftCardModel._statusToProto(status)
-      ..failureReason = failureReason ?? '';
+  factory GiftCardTransactionModel.fromJson(Map<String, dynamic> json) {
+    return GiftCardTransactionModel(
+      id: json['id'] as String? ?? '',
+      giftCardId: json['giftCardId'] as String? ?? '',
+      userId: json['userId'] as String? ?? '',
+      transactionType: json['transactionType'] as String? ?? '',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      balanceBefore: (json['balanceBefore'] as num?)?.toDouble() ?? 0.0,
+      balanceAfter: (json['balanceAfter'] as num?)?.toDouble() ?? 0.0,
+      description: json['description'] as String? ?? '',
+      createdAt: json['createdAt'] as String? ?? '',
+      providerTransactionId: json['providerTransactionId'] as String? ?? '',
+      reference: json['reference'] as String? ?? '',
+    );
   }
-
-  // Helper methods for transaction type conversion
-  static String _transactionTypeFromProto(pb.TransactionType protoType) {
-    switch (protoType) {
-      case pb.TransactionType.TRANSACTION_TYPE_PURCHASE:
-        return 'purchase';
-      case pb.TransactionType.TRANSACTION_TYPE_REDEEM:
-        return 'redeem';
-      case pb.TransactionType.TRANSACTION_TYPE_TRANSFER:
-        return 'transfer';
-      case pb.TransactionType.TRANSACTION_TYPE_REFUND:
-        return 'refund';
-      case pb.TransactionType.TRANSACTION_TYPE_SELL:
-        return 'sell';
-      default:
-        return 'purchase';
-    }
-  }
-
-  static pb.TransactionType _transactionTypeToProto(String transactionType) {
-    switch (transactionType.toLowerCase()) {
-      case 'purchase':
-        return pb.TransactionType.TRANSACTION_TYPE_PURCHASE;
-      case 'redeem':
-        return pb.TransactionType.TRANSACTION_TYPE_REDEEM;
-      case 'transfer':
-        return pb.TransactionType.TRANSACTION_TYPE_TRANSFER;
-      case 'refund':
-        return pb.TransactionType.TRANSACTION_TYPE_REFUND;
-      case 'sell':
-        return pb.TransactionType.TRANSACTION_TYPE_SELL;
-      default:
-        return pb.TransactionType.TRANSACTION_TYPE_PURCHASE;
-    }
-  }
-} 
+}

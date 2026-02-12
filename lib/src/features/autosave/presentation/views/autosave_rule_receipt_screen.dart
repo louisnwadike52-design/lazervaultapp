@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 
 class AutoSaveRuleReceiptScreen extends StatefulWidget {
@@ -105,7 +106,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
     final amountValue = ruleData['amountValue'] as double;
 
     if (amountType == AmountType.fixed) {
-      return '\$${amountValue.toStringAsFixed(2)}';
+      return currency_formatter.CurrencySymbols.formatAmountWithCurrency(amountValue, 'NGN');
     } else {
       return '${amountValue.toStringAsFixed(0)}%';
     }
@@ -311,7 +312,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
 
                 if (ruleData['targetAmount'] != null) ...[
                   SizedBox(height: 16.h),
-                  _buildDetailRow('Target Amount', '\$${(ruleData['targetAmount'] as double).toStringAsFixed(2)}'),
+                  _buildDetailRow('Target Amount', currency_formatter.CurrencySymbols.formatAmountWithCurrency(ruleData['targetAmount'] as double, 'NGN')),
                 ],
               ],
             ),

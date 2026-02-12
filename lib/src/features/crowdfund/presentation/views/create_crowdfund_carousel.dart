@@ -18,8 +18,10 @@ import '../widgets/create_crowdfund_steps/category_deadline_step.dart';
 import '../widgets/create_crowdfund_steps/social_links_step.dart';
 import '../widgets/create_crowdfund_steps/review_step.dart';
 import '../../../../../core/services/injection_container.dart';
+import 'package:get/get.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/locale_manager.dart';
-import 'crowdfund_details_screen.dart';
+
 
 /// Main carousel controller for crowdfund creation
 ///
@@ -262,7 +264,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
     );
 
     developer.log('CreateCrowdfund: Starting creation process', name: 'Crowdfund');
-    developer.log('User authenticated: ${(authState as AuthenticationSuccess).profile.user.username ?? 'unknown'}', name: 'Crowdfund');
+    developer.log('User authenticated: ${authState.profile.user.username ?? 'unknown'}', name: 'Crowdfund');
 
     // Prepare metadata with social links
     Map<String, dynamic> metadata = {};
@@ -321,13 +323,10 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
             Navigator.of(context).pop();
           }
 
-          // Navigate to details screen
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => CrowdfundDetailsScreen(
-                crowdfundId: state.crowdfund.id,
-              ),
-            ),
+          // Navigate to details screen via named route (provides CrowdfundCubit)
+          Get.offNamed(
+            AppRoutes.crowdfundDetails,
+            arguments: state.crowdfund.id,
           );
         } else if (state is CrowdfundError) {
           setState(() {
@@ -463,6 +462,16 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           ),
         ],
       ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.close,
+            color: Colors.white,
+            size: 24.sp,
+          ),
+          onPressed: () => Get.offAllNamed(AppRoutes.home),
+        ),
+      ],
     );
   }
 

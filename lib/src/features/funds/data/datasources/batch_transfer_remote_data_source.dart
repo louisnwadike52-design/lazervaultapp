@@ -1,37 +1,25 @@
-import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:lazervault/core/exceptions/server_exception.dart';
 import 'package:lazervault/core/network/retry_policy.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/features/funds/data/models/batch_transfer_model.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
-import 'package:lazervault/src/generated/transfer.pbgrpc.dart';
+import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments;
 
 abstract class IBatchTransferRemoteDataSource {
-  Future<InitiateBatchTransferResponse> initiateBatchTransfer({
-    required Int64 fromAccountId,
+  Future<BatchTransferEntity> initiateBatchTransfer({
+    required String fromAccountId,
     required List<BatchTransferRecipient> recipients,
-    required String accessToken,
-    String? category,
-    String? reference,
+    required String transactionId,
+    required String verificationToken,
     DateTime? scheduledAt,
-  });
-
-  Future<GetBatchTransferStatusResponse> getBatchTransferStatus({
-    required Int64 batchId,
-    required String accessToken,
-  });
-
-  Future<GetBatchTransferHistoryResponse> getBatchTransferHistory({
-    required String accessToken,
-    int page = 1,
-    int pageSize = 20,
-    String? statusFilter,
   });
 }
 
-class BatchTransferRemoteDataSourceImpl implements IBatchTransferRemoteDataSource {
-  final TransferServiceClient _client;
+class BatchTransferRemoteDataSourceImpl
+    implements IBatchTransferRemoteDataSource {
+  final payments.PaymentsServiceClient _client;
   final GrpcCallOptionsHelper _callOptionsHelper;
 
   BatchTransferRemoteDataSourceImpl(
@@ -40,166 +28,81 @@ class BatchTransferRemoteDataSourceImpl implements IBatchTransferRemoteDataSourc
   );
 
   @override
-  Future<InitiateBatchTransferResponse> initiateBatchTransfer({
-    required Int64 fromAccountId,
+  Future<BatchTransferEntity> initiateBatchTransfer({
+    required String fromAccountId,
     required List<BatchTransferRecipient> recipients,
-    required String accessToken,
-    String? category,
-    String? reference,
+    required String transactionId,
+    required String verificationToken,
     DateTime? scheduledAt,
   }) async {
-    // Execute with retry policy for network resilience
     return await RetryPolicy.critical.execute(
       () async {
-        // Convert DateTime? to string? for proto
-        String? scheduledAtStr;
-        if (scheduledAt != null) {
-          scheduledAtStr = scheduledAt.toUtc().toIso8601String();
-        }
-
-        // Convert recipients to proto format
-        final protoRecipients = recipients.map((recipient) {
-          return BatchRecipient(
-            recipientId: recipient.recipientId ?? Int64.ZERO,
-            toAccountId: recipient.toAccountId ?? Int64.ZERO,
-            amount: recipient.amount,
+        // Convert recipients from domain entities (minor units) to proto format (major units / doubles)
+        final protoTransfers = recipients.map((recipient) {
+          return payments.BatchTransferItem(
+            toAccountNumber: recipient.toAccountNumber,
+            amount: recipient.amount.toDouble() / 100,
+            description: recipient.description ?? '',
             reference: recipient.reference ?? '',
             category: recipient.category ?? '',
           );
         }).toList();
 
-        final request = InitiateBatchTransferRequest(
+        final request = payments.BatchTransferRequest(
           fromAccountId: fromAccountId,
-          recipients: protoRecipients,
-          scheduledAt: scheduledAtStr,
+          transfers: protoTransfers,
+          transactionId: transactionId,
+          verificationToken: verificationToken,
         );
 
+        // Build metadata with idempotency key and optional scheduled time
+        final metadata = <String, String>{
+          'x-idempotency-key': transactionId,
+        };
+        if (scheduledAt != null) {
+          metadata['x-scheduled-at'] = scheduledAt.toUtc().toIso8601String();
+        }
+
         try {
-          // Use executeWithTokenRotation for automatic token refresh on auth errors
-          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+          final response =
+              await _callOptionsHelper.executeWithTokenRotation(() async {
             final callOptions = await _callOptionsHelper.withAuth();
-            return await _client.initiateBatchTransfer(
+            return await _client.batchTransfer(
               request,
               options: callOptions.mergedWith(
-                CallOptions(timeout: const Duration(seconds: 60)),
+                CallOptions(
+                  timeout: const Duration(seconds: 90),
+                  metadata: metadata,
+                ),
               ),
             );
           });
-          return response;
+          return InitiateBatchTransferResponseModel.fromPaymentsProto(response);
         } on GrpcError catch (e) {
-          print('gRPC Error during batch transfer initiation: ${e.code} - ${e.message}');
           throw ServerException(
-            message: 'Failed to initiate batch transfer: ${e.message ?? "Unknown gRPC error"}',
+            message:
+                'Failed to initiate batch transfer: ${e.message ?? "Unknown gRPC error"}',
           );
         } catch (e) {
-          print('Unexpected Error during batch transfer initiation: $e');
           throw ServerException(
-            message: 'An unexpected error occurred during batch transfer initiation.',
+            message:
+                'An unexpected error occurred during batch transfer initiation.',
           );
         }
       },
-      onRetry: (attempt, error) {
-        print('RETRY: Batch transfer initiation attempt $attempt due to: $error');
-      },
       shouldRetry: (error) {
-        // Don't retry business logic failures
         if (error is ServerException) {
           final message = error.message?.toLowerCase() ?? '';
           if (message.contains('insufficient') ||
               message.contains('invalid') ||
               message.contains('not found') ||
               message.contains('denied') ||
-              message.contains('duplicate')) {
-            return false; // Don't retry these errors
+              message.contains('duplicate') ||
+              message.contains('daily batch transfer limit')) {
+            return false;
           }
         }
-        return true; // Retry network errors
-      },
-    );
-  }
-
-  @override
-  Future<GetBatchTransferStatusResponse> getBatchTransferStatus({
-    required Int64 batchId,
-    required String accessToken,
-  }) async {
-    return await RetryPolicy.standard.execute(
-      () async {
-        final request = GetBatchTransferStatusRequest(
-          batchId: batchId,
-        );
-
-        try {
-          // Use executeWithTokenRotation for automatic token refresh on auth errors
-          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-            final callOptions = await _callOptionsHelper.withAuth();
-            return await _client.getBatchTransferStatus(
-              request,
-              options: callOptions.mergedWith(
-                CallOptions(timeout: const Duration(seconds: 30)),
-              ),
-            );
-          });
-          return response;
-        } on GrpcError catch (e) {
-          print('gRPC Error during batch transfer status check: ${e.code} - ${e.message}');
-          throw ServerException(
-            message: 'Failed to get batch transfer status: ${e.message ?? "Unknown gRPC error"}',
-          );
-        } catch (e) {
-          print('Unexpected Error during batch transfer status check: $e');
-          throw ServerException(
-            message: 'An unexpected error occurred during batch transfer status check.',
-          );
-        }
-      },
-      onRetry: (attempt, error) {
-        print('RETRY: Batch transfer status check attempt $attempt due to: $error');
-      },
-    );
-  }
-
-  @override
-  Future<GetBatchTransferHistoryResponse> getBatchTransferHistory({
-    required String accessToken,
-    int page = 1,
-    int pageSize = 20,
-    String? statusFilter,
-  }) async {
-    return await RetryPolicy.standard.execute(
-      () async {
-        final request = GetBatchTransferHistoryRequest(
-          page: page,
-          pageSize: pageSize,
-          status: statusFilter ?? '',
-        );
-
-        try {
-          // Use executeWithTokenRotation for automatic token refresh on auth errors
-          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-            final callOptions = await _callOptionsHelper.withAuth();
-            return await _client.getBatchTransferHistory(
-              request,
-              options: callOptions.mergedWith(
-                CallOptions(timeout: const Duration(seconds: 30)),
-              ),
-            );
-          });
-          return response;
-        } on GrpcError catch (e) {
-          print('gRPC Error during batch transfer history retrieval: ${e.code} - ${e.message}');
-          throw ServerException(
-            message: 'Failed to get batch transfer history: ${e.message ?? "Unknown gRPC error"}',
-          );
-        } catch (e) {
-          print('Unexpected Error during batch transfer history retrieval: $e');
-          throw ServerException(
-            message: 'An unexpected error occurred during batch transfer history retrieval.',
-          );
-        }
-      },
-      onRetry: (attempt, error) {
-        print('RETRY: Batch transfer history retrieval attempt $attempt due to: $error');
+        return true;
       },
     );
   }

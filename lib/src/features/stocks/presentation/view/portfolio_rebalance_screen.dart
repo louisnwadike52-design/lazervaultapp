@@ -3,9 +3,19 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../domain/entities/stock_entity.dart';
 
 class PortfolioRebalanceScreen extends StatefulWidget {
-  const PortfolioRebalanceScreen({super.key});
+  final List<StockHolding> holdings;
+  final double totalValue;
+  final DateTime? lastRebalancedDate;
+
+  const PortfolioRebalanceScreen({
+    super.key,
+    required this.holdings,
+    required this.totalValue,
+    this.lastRebalancedDate,
+  });
 
   @override
   State<PortfolioRebalanceScreen> createState() => _PortfolioRebalanceScreenState();
@@ -18,18 +28,45 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
   
   String _selectedStrategy = 'Conservative';
   final List<String> _strategies = ['Conservative', 'Moderate', 'Aggressive'];
-  
-  final List<Map<String, dynamic>> _currentAllocations = [
-    {'symbol': 'AAPL', 'name': 'Apple Inc.', 'current': 35.2, 'target': 25.0, 'value': 8640.0},
-    {'symbol': 'MSFT', 'name': 'Microsoft Corp.', 'current': 28.5, 'target': 25.0, 'value': 7000.0},
-    {'symbol': 'GOOGL', 'name': 'Alphabet Inc.', 'current': 22.3, 'target': 25.0, 'value': 5480.0},
-    {'symbol': 'TSLA', 'name': 'Tesla Inc.', 'current': 14.0, 'target': 25.0, 'value': 3440.0},
-  ];
+
+  late List<Map<String, dynamic>> _currentAllocations;
 
   @override
   void initState() {
     super.initState();
+    _buildAllocationsFromHoldings();
     _setupAnimations();
+  }
+
+  void _buildAllocationsFromHoldings() {
+    final holdings = widget.holdings;
+    final totalValue = widget.totalValue;
+    final targetPercent = holdings.isNotEmpty ? 100.0 / holdings.length : 0.0;
+
+    _currentAllocations = holdings.map((holding) {
+      final currentPercent = totalValue > 0
+          ? (holding.totalValue / totalValue) * 100.0
+          : 0.0;
+      return {
+        'symbol': holding.symbol,
+        'name': holding.name,
+        'current': currentPercent,
+        'target': targetPercent,
+        'value': holding.totalValue,
+      };
+    }).toList();
+  }
+
+  String _lastRebalancedLabel() {
+    final date = widget.lastRebalancedDate;
+    if (date == null) return 'Never rebalanced';
+    final diff = DateTime.now().difference(date);
+    if (diff.inDays < 1) return 'Last rebalanced: today';
+    if (diff.inDays == 1) return 'Last rebalanced: yesterday';
+    if (diff.inDays < 30) return 'Last rebalanced: ${diff.inDays} days ago';
+    final months = (diff.inDays / 30).floor();
+    if (months == 1) return 'Last rebalanced: 1 month ago';
+    return 'Last rebalanced: $months months ago';
   }
 
   void _setupAnimations() {
@@ -226,26 +263,34 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
                   ),
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  'UNBALANCED',
-                  style: GoogleFonts.inter(
-                    color: Colors.orange,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w700,
+              Builder(builder: (context) {
+                final isBalanced = _currentAllocations.every((a) {
+                  final diff = (a['target'] as double) - (a['current'] as double);
+                  return diff.abs() < 1.0;
+                });
+                final statusColor = isBalanced ? Colors.green : Colors.orange;
+                final statusText = isBalanced ? 'BALANCED' : 'UNBALANCED';
+                return Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
-                ),
-              ),
+                  child: Text(
+                    statusText,
+                    style: GoogleFonts.inter(
+                      color: statusColor,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                );
+              }),
             ],
           ),
           SizedBox(height: 20.h),
           Text(
-            'Total Value: \$24,560.00',
+            'Total Value: \$${widget.totalValue.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 28.sp,
@@ -254,7 +299,7 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
           ),
           SizedBox(height: 8.h),
           Text(
-            'Last rebalanced: 3 months ago',
+            _lastRebalancedLabel(),
             style: GoogleFonts.inter(
               color: Colors.grey[400],
               fontSize: 14.sp,
@@ -619,13 +664,37 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
             ),
           ),
           SizedBox(height: 16.h),
-          _buildActionItem('Sell AAPL', '-\$2,500', 'Reduce overweight position', Colors.red),
-          _buildActionItem('Sell MSFT', '-\$860', 'Reduce overweight position', Colors.red),
-          _buildActionItem('Buy GOOGL', '+\$660', 'Increase underweight position', Colors.green),
-          _buildActionItem('Buy TSLA', '+\$2,700', 'Increase underweight position', Colors.green),
+          ..._buildRebalanceActionItems(),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildRebalanceActionItems() {
+    final items = <Widget>[];
+    for (final allocation in _currentAllocations) {
+      final current = allocation['current'] as double;
+      final target = allocation['target'] as double;
+      final value = allocation['value'] as double;
+      final symbol = allocation['symbol'] as String;
+      final diff = target - current;
+      final diffValue = (diff / 100.0) * widget.totalValue;
+
+      if (diff.abs() < 0.5) continue; // Skip negligible differences
+
+      final isBuy = diff > 0;
+      final action = isBuy ? 'Buy $symbol' : 'Sell $symbol';
+      final amountStr = isBuy
+          ? '+\$${diffValue.abs().toStringAsFixed(0)}'
+          : '-\$${diffValue.abs().toStringAsFixed(0)}';
+      final description = isBuy
+          ? 'Increase underweight position'
+          : 'Reduce overweight position';
+      final color = isBuy ? Colors.green : Colors.red;
+
+      items.add(_buildActionItem(action, amountStr, description, color));
+    }
+    return items;
   }
 
   Widget _buildActionItem(String action, String amount, String description, Color color) {
@@ -770,11 +839,18 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
   }
 
   void _proceedToRebalance() {
+    // Calculate estimated fee based on the number of trades required
+    final tradeCount = _currentAllocations.where((a) {
+      final diff = (a['target'] as double) - (a['current'] as double);
+      return diff.abs() >= 0.5;
+    }).length;
+    final estimatedFee = tradeCount * 0.50; // $0.50 per rebalance trade
+
     Get.toNamed(AppRoutes.stockTradePayment, arguments: {
       'type': 'rebalance_portfolio',
       'amount': 0.0,
-      'fee': 2.50,
-      'total': 2.50,
+      'fee': estimatedFee,
+      'total': estimatedFee,
       'paymentMethod': 'Portfolio Cash',
       'description': 'Portfolio rebalancing transaction fees',
       'strategy': _selectedStrategy,

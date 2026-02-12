@@ -8,6 +8,7 @@ import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking;
 import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
 import '../../domain/entities/linked_bank_account.dart';
 import '../../domain/entities/deposit.dart';
+import '../../domain/entities/credit_score.dart';
 import '../errors/banking_errors.dart';
 
 /// gRPC data source for open banking operations (deposits via Mono)
@@ -525,6 +526,138 @@ class OpenBankingGrpcDataSource {
           message: '$operation failed: ${error.message}',
         );
     }
+  }
+
+  // =====================================================
+  // CREDIT SCORE
+  // =====================================================
+
+  /// Get credit score for a user
+  Future<CreditScoreEntity> getCreditScore({required String userId}) async {
+    try {
+      final request = banking_pb.GetCreditScoreRequest(userId: userId);
+      final callOptions = await _callOptionsHelper.withAuth();
+
+      final response = await _client.getCreditScore(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 30)),
+        ),
+      );
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+
+      return _mapCreditScore(response.creditScore);
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getCreditScore');
+    }
+  }
+
+  /// Get credit score history
+  Future<CreditScoreHistoryEntity> getCreditScoreHistory({
+    required String userId,
+    int months = 12,
+  }) async {
+    try {
+      final request = banking_pb.GetCreditScoreHistoryRequest(
+        userId: userId,
+        months: months,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+
+      final response = await _client.getCreditScoreHistory(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        ),
+      );
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+
+      return CreditScoreHistoryEntity(
+        history: response.history
+            .map((p) => CreditScoreHistoryPointEntity(
+                  score: p.score,
+                  rating: p.rating,
+                  date: p.date.toDateTime(),
+                ))
+            .toList(),
+        scoreChange: response.scoreChange,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getCreditScoreHistory');
+    }
+  }
+
+  /// Refresh credit score
+  Future<CreditScoreEntity> refreshCreditScore({
+    required String userId,
+    required String linkedAccountId,
+  }) async {
+    try {
+      final request = banking_pb.RefreshCreditScoreRequest(
+        userId: userId,
+        linkedAccountId: linkedAccountId,
+      );
+
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.refreshCreditScore(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 60)),
+          ),
+        );
+      });
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+
+      return _mapCreditScore(response.creditScore);
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'refreshCreditScore');
+    }
+  }
+
+  CreditScoreEntity _mapCreditScore(banking_pb.CreditScore cs) {
+    return CreditScoreEntity(
+      id: cs.id,
+      score: cs.score,
+      rating: cs.rating,
+      bankName: cs.bankName,
+      linkedAccountId: cs.linkedAccountId,
+      paymentHistoryScore: cs.paymentHistoryScore,
+      incomeStabilityScore: cs.incomeStabilityScore,
+      spendingDisciplineScore: cs.spendingDisciplineScore,
+      accountAgeScore: cs.accountAgeScore,
+      balanceConsistencyScore: cs.balanceConsistencyScore,
+      transactionsAnalyzed: cs.transactionsAnalyzed,
+      monthsOfData: cs.monthsOfData,
+      calculatedAt: cs.calculatedAt.toDateTime(),
+      nextRefreshAt: cs.hasNextRefreshAt() ? cs.nextRefreshAt.toDateTime() : null,
+      tips: cs.tips
+          .map((t) => CreditScoreTipEntity(
+                title: t.title,
+                description: t.description,
+                category: t.category,
+                potentialImpact: t.potentialImpact,
+              ))
+          .toList(),
+    );
   }
 
   /// Determine if a deposit operation should be retried

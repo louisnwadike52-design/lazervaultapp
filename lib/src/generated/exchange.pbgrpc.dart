@@ -15,24 +15,24 @@ import 'dart:core' as $core;
 import 'package:grpc/service_api.dart' as $grpc;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'exchange.pb.dart' as $16;
+import 'exchange.pb.dart' as $0;
 
 export 'exchange.pb.dart';
 
 @$pb.GrpcServiceName('pb.ExchangeService')
 class ExchangeServiceClient extends $grpc.Client {
-  static final _$getExchangeRate = $grpc.ClientMethod<$16.GetExchangeRateRequest, $16.GetExchangeRateResponse>(
+  static final _$getExchangeRate = $grpc.ClientMethod<$0.GetExchangeRateRequest, $0.GetExchangeRateResponse>(
       '/pb.ExchangeService/GetExchangeRate',
-      ($16.GetExchangeRateRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $16.GetExchangeRateResponse.fromBuffer(value));
-  static final _$initiateInternationalTransfer = $grpc.ClientMethod<$16.InitiateInternationalTransferRequest, $16.InitiateInternationalTransferResponse>(
+      ($0.GetExchangeRateRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetExchangeRateResponse.fromBuffer(value));
+  static final _$initiateInternationalTransfer = $grpc.ClientMethod<$0.InitiateInternationalTransferRequest, $0.InitiateInternationalTransferResponse>(
       '/pb.ExchangeService/InitiateInternationalTransfer',
-      ($16.InitiateInternationalTransferRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $16.InitiateInternationalTransferResponse.fromBuffer(value));
-  static final _$getRecentExchanges = $grpc.ClientMethod<$16.GetRecentExchangesRequest, $16.GetRecentExchangesResponse>(
+      ($0.InitiateInternationalTransferRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.InitiateInternationalTransferResponse.fromBuffer(value));
+  static final _$getRecentExchanges = $grpc.ClientMethod<$0.GetRecentExchangesRequest, $0.GetRecentExchangesResponse>(
       '/pb.ExchangeService/GetRecentExchanges',
-      ($16.GetRecentExchangesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $16.GetRecentExchangesResponse.fromBuffer(value));
+      ($0.GetRecentExchangesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetRecentExchangesResponse.fromBuffer(value));
 
   ExchangeServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -40,15 +40,15 @@ class ExchangeServiceClient extends $grpc.Client {
       : super(channel, options: options,
         interceptors: interceptors);
 
-  $grpc.ResponseFuture<$16.GetExchangeRateResponse> getExchangeRate($16.GetExchangeRateRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetExchangeRateResponse> getExchangeRate($0.GetExchangeRateRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getExchangeRate, request, options: options);
   }
 
-  $grpc.ResponseFuture<$16.InitiateInternationalTransferResponse> initiateInternationalTransfer($16.InitiateInternationalTransferRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.InitiateInternationalTransferResponse> initiateInternationalTransfer($0.InitiateInternationalTransferRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$initiateInternationalTransfer, request, options: options);
   }
 
-  $grpc.ResponseFuture<$16.GetRecentExchangesResponse> getRecentExchanges($16.GetRecentExchangesRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetRecentExchangesResponse> getRecentExchanges($0.GetRecentExchangesRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getRecentExchanges, request, options: options);
   }
 }
@@ -58,42 +58,42 @@ abstract class ExchangeServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.ExchangeService';
 
   ExchangeServiceBase() {
-    $addMethod($grpc.ServiceMethod<$16.GetExchangeRateRequest, $16.GetExchangeRateResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetExchangeRateRequest, $0.GetExchangeRateResponse>(
         'GetExchangeRate',
         getExchangeRate_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $16.GetExchangeRateRequest.fromBuffer(value),
-        ($16.GetExchangeRateResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$16.InitiateInternationalTransferRequest, $16.InitiateInternationalTransferResponse>(
+        ($core.List<$core.int> value) => $0.GetExchangeRateRequest.fromBuffer(value),
+        ($0.GetExchangeRateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InitiateInternationalTransferRequest, $0.InitiateInternationalTransferResponse>(
         'InitiateInternationalTransfer',
         initiateInternationalTransfer_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $16.InitiateInternationalTransferRequest.fromBuffer(value),
-        ($16.InitiateInternationalTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$16.GetRecentExchangesRequest, $16.GetRecentExchangesResponse>(
+        ($core.List<$core.int> value) => $0.InitiateInternationalTransferRequest.fromBuffer(value),
+        ($0.InitiateInternationalTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRecentExchangesRequest, $0.GetRecentExchangesResponse>(
         'GetRecentExchanges',
         getRecentExchanges_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $16.GetRecentExchangesRequest.fromBuffer(value),
-        ($16.GetRecentExchangesResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $0.GetRecentExchangesRequest.fromBuffer(value),
+        ($0.GetRecentExchangesResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$16.GetExchangeRateResponse> getExchangeRate_Pre($grpc.ServiceCall call, $async.Future<$16.GetExchangeRateRequest> request) async {
+  $async.Future<$0.GetExchangeRateResponse> getExchangeRate_Pre($grpc.ServiceCall call, $async.Future<$0.GetExchangeRateRequest> request) async {
     return getExchangeRate(call, await request);
   }
 
-  $async.Future<$16.InitiateInternationalTransferResponse> initiateInternationalTransfer_Pre($grpc.ServiceCall call, $async.Future<$16.InitiateInternationalTransferRequest> request) async {
+  $async.Future<$0.InitiateInternationalTransferResponse> initiateInternationalTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.InitiateInternationalTransferRequest> request) async {
     return initiateInternationalTransfer(call, await request);
   }
 
-  $async.Future<$16.GetRecentExchangesResponse> getRecentExchanges_Pre($grpc.ServiceCall call, $async.Future<$16.GetRecentExchangesRequest> request) async {
+  $async.Future<$0.GetRecentExchangesResponse> getRecentExchanges_Pre($grpc.ServiceCall call, $async.Future<$0.GetRecentExchangesRequest> request) async {
     return getRecentExchanges(call, await request);
   }
 
-  $async.Future<$16.GetExchangeRateResponse> getExchangeRate($grpc.ServiceCall call, $16.GetExchangeRateRequest request);
-  $async.Future<$16.InitiateInternationalTransferResponse> initiateInternationalTransfer($grpc.ServiceCall call, $16.InitiateInternationalTransferRequest request);
-  $async.Future<$16.GetRecentExchangesResponse> getRecentExchanges($grpc.ServiceCall call, $16.GetRecentExchangesRequest request);
+  $async.Future<$0.GetExchangeRateResponse> getExchangeRate($grpc.ServiceCall call, $0.GetExchangeRateRequest request);
+  $async.Future<$0.InitiateInternationalTransferResponse> initiateInternationalTransfer($grpc.ServiceCall call, $0.InitiateInternationalTransferRequest request);
+  $async.Future<$0.GetRecentExchangesResponse> getRecentExchanges($grpc.ServiceCall call, $0.GetRecentExchangesRequest request);
 }

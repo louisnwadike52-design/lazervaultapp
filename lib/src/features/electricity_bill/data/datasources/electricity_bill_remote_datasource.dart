@@ -23,6 +23,10 @@ abstract class ElectricityBillRemoteDataSource {
     required MeterType meterType,
   });
 
+  Future<SmartMeterValidationResult> smartValidateMeter({
+    required String meterNumber,
+  });
+
   // Payment Operations
   Future<BillPaymentModel> initiatePayment({
     required String providerCode,
@@ -169,6 +173,35 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
   }
 
   @override
+  Future<SmartMeterValidationResult> smartValidateMeter({
+    required String meterNumber,
+  }) async {
+    final request = pb.SmartValidateMeterRequest()
+      ..meterNumber = meterNumber;
+
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.electricityBillClient.smartValidateMeter(
+      request,
+      options: options,
+    );
+
+    return SmartMeterValidationResult(
+      isValid: response.isValid,
+      customerName: response.customerName,
+      customerAddress: response.hasCustomerAddress() ? response.customerAddress : null,
+      meterType: response.meterType,
+      meterNumber: response.meterNumber,
+      providerCode: response.providerCode,
+      providerName: response.providerName,
+      message: response.hasMessage() ? response.message : null,
+      minAmount: response.minAmount,
+      maxAmount: response.maxAmount,
+      serviceFee: response.serviceFee,
+      fromCache: response.fromCache,
+    );
+  }
+
+  @override
   Future<BillPaymentModel> initiatePayment({
     required String providerCode,
     required String meterNumber,
@@ -195,14 +228,12 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     if (beneficiaryId != null) {
       request.beneficiaryId = beneficiaryId;
     }
-    // Note: transactionId and verificationToken are not part of InitiatePaymentRequest protobuf
-    // These may be added to metadata or handled differently in the future
-    // if (transactionId != null) {
-    //   request.transactionId = transactionId;
-    // }
-    // if (verificationToken != null) {
-    //   request.verificationToken = verificationToken;
-    // }
+    if (transactionId != null) {
+      request.transactionId = transactionId;
+    }
+    if (verificationToken != null) {
+      request.verificationToken = verificationToken;
+    }
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.electricityBillClient.initiatePayment(

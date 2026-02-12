@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'crypto_confirmation_screen.dart';
 import 'crypto_receipt_screen.dart';
 
@@ -147,16 +148,16 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -187,7 +188,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -213,7 +214,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -249,7 +250,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                 size: 20.sp,
               ),
               filled: true,
-              fillColor: const Color(0xFF1E2746),
+              fillColor: const Color(0xFF1F1F1F),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide.none,
@@ -269,7 +270,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                     margin: EdgeInsets.symmetric(horizontal: 4.w),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF6C5CE7) : const Color(0xFF1E2746),
+                      color: isSelected ? const Color(0xFF6C5CE7) : const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Center(
@@ -301,7 +302,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -316,8 +317,8 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildStatItem('Transactions', '${filteredTxns.length}'),
-          _buildStatItem('Total Value', '£${totalValue.toStringAsFixed(2)}'),
-          _buildStatItem('Total Fees', '£${totalFees.toStringAsFixed(2)}'),
+          _buildStatItem('Total Value', '${CurrencySymbols.currentSymbol}${totalValue.toStringAsFixed(2)}'),
+          _buildStatItem('Total Fees', '${CurrencySymbols.currentSymbol}${totalFees.toStringAsFixed(2)}'),
         ],
       ),
     );
@@ -400,7 +401,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -510,7 +511,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                       ),
                     ),
                     Text(
-                      '£${transaction.gbpAmount.toStringAsFixed(2)}',
+                      '${CurrencySymbols.currentSymbol}${transaction.gbpAmount.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -530,7 +531,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                       ),
                     ),
                     Text(
-                      '£${transaction.fee.toStringAsFixed(2)}',
+                      '${CurrencySymbols.currentSymbol}${transaction.fee.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -570,7 +571,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       Container(
         height: Get.height * 0.85,
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A3E),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.r),
             topRight: Radius.circular(24.r),
@@ -632,8 +633,8 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         _buildDetailSection('Transaction Details', [
           _buildDetailRow('Cryptocurrency', transaction.cryptoName),
           _buildDetailRow('Amount', '${transaction.amount} ${transaction.cryptoSymbol}'),
-          _buildDetailRow('GBP Value', '£${transaction.gbpAmount.toStringAsFixed(2)}'),
-          _buildDetailRow('Fee', '£${transaction.fee.toStringAsFixed(2)}'),
+          _buildDetailRow('${CurrencySymbols.currentCurrency} Value', '${CurrencySymbols.currentSymbol}${transaction.gbpAmount.toStringAsFixed(2)}'),
+          _buildDetailRow('Fee', '${CurrencySymbols.currentSymbol}${transaction.fee.toStringAsFixed(2)}'),
           if (transaction.type == CryptoTransactionType.swap) ...[
             _buildDetailRow('From', transaction.fromCrypto ?? 'Unknown'),
             _buildDetailRow('To', transaction.toCrypto ?? 'Unknown'),
@@ -677,7 +678,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -742,7 +743,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       cryptoSymbol: transaction.cryptoSymbol,
       cryptoAmount: transaction.amount,
       pricePerUnit: transaction.gbpAmount / double.parse(transaction.amount),
-      gbpAmount: transaction.gbpAmount,
+      fiatAmount: transaction.gbpAmount,
       networkFee: transaction.fee * 0.3,
       tradingFee: transaction.fee * 0.7,
       totalAmount: transaction.gbpAmount + transaction.fee,

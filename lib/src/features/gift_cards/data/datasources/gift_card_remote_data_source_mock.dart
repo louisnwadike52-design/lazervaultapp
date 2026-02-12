@@ -3,27 +3,22 @@ import '../models/gift_card_model.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import 'gift_card_remote_data_source.dart';
 
-/// Enhanced mock implementation with realistic network delays and edge cases
+/// Mock implementation of the gift card remote data source for development/testing
 class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
   final Random _random = Random();
   final List<GiftCardModel> _userGiftCards = [];
   final List<GiftCardTransactionModel> _transactions = [];
 
-  // Configurable failure rate (default 10%)
   final double failureRate;
-
-  // Simulated wallet balance
-  double _walletBalance = 5000.0;
+  double _walletBalance = 500000.0; // 500k kobo / NGN
 
   GiftCardRemoteDataSourceMock({this.failureRate = 0.1});
 
-  /// Simulate network delay
   Future<void> _simulateNetworkDelay() async {
-    final delay = 500 + _random.nextInt(1500); // 500-2000ms
+    final delay = 500 + _random.nextInt(1500);
     await Future.delayed(Duration(milliseconds: delay));
   }
 
-  /// Simulate random network failure
   void _simulateRandomFailure() {
     if (_random.nextDouble() < failureRate) {
       throw Exception('Network error: Connection timeout');
@@ -31,135 +26,118 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
   }
 
   @override
-  Future<List<GiftCardBrandModel>> getGiftCardBrands() async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    return _mockBrands;
-  }
-
-  @override
-  Future<List<GiftCardBrandModel>> getGiftCardBrandsByCategory(
-    GiftCardCategory category,
-  ) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    return _mockBrands.where((brand) => brand.category == category).toList();
-  }
-
-  @override
-  Future<List<GiftCardBrandModel>> searchGiftCardBrands(String query) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    final lowerQuery = query.toLowerCase();
-    return _mockBrands
-        .where((brand) =>
-            brand.name.toLowerCase().contains(lowerQuery) ||
-            brand.description.toLowerCase().contains(lowerQuery))
-        .toList();
-  }
-
-  @override
-  Future<GiftCardBrandModel> getGiftCardBrandById(String brandId) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    try {
-      return _mockBrands.firstWhere((brand) => brand.id == brandId);
-    } catch (e) {
-      throw Exception('Gift card brand not found');
-    }
-  }
-
-  @override
-  Future<GiftCardModel> purchaseGiftCard({
-    required String brandId,
-    required double amount,
-    required String currency,
-    String? recipientEmail,
-    String? recipientName,
-    String? message,
+  Future<List<GiftCardBrandModel>> getGiftCardBrands({
+    String? category,
+    String? countryCode,
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
 
-    // Find brand
+    var brands = List<GiftCardBrandModel>.from(_mockBrands);
+    if (category != null && category.isNotEmpty) {
+      brands = brands.where((b) => b.category == category).toList();
+    }
+    if (countryCode != null && countryCode.isNotEmpty) {
+      brands = brands.where((b) => b.countryCode == countryCode || b.countryCode.isEmpty).toList();
+    }
+    return brands;
+  }
+
+  @override
+  Future<GiftCardModel> buyGiftCard({
+    required String brandId,
+    required double amount,
+    required String transactionId,
+    required String verificationToken,
+    int? productId,
+    String? recipientEmail,
+    String? recipientName,
+    String? giftMessage,
+    String? senderName,
+    String? recipientPhone,
+    String? countryCode,
+    String? idempotencyKey,
+    int quantity = 1,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
     final brand = _mockBrands.firstWhere(
       (b) => b.id == brandId,
       orElse: () => throw Exception('Gift card brand not found'),
     );
 
-    // Calculate final price with discount
-    final discount = brand.discountPercentage ?? 0.0;
+    final discount = brand.discountPercentage;
     final finalPrice = amount - (amount * discount / 100);
 
-    // Check wallet balance
     if (_walletBalance < finalPrice) {
       throw Exception('Insufficient funds for purchase');
     }
 
-    // Deduct from wallet
     _walletBalance -= finalPrice;
 
-    // Create gift card
     final giftCard = GiftCardModel(
       id: 'gc_${DateTime.now().millisecondsSinceEpoch}',
       brandId: brandId,
       brandName: brand.name,
       logoUrl: brand.logoUrl,
-      amount: amount,
-      discountPercentage: discount,
-      finalPrice: finalPrice,
-      currency: currency,
-      status: GiftCardStatus.active,
-      type: GiftCardType.digital,
-      category: brand.category,
-      description: brand.description,
-      termsAndConditions: 'Valid for 12 months from purchase date',
-      expiryDate: DateTime.now().add(const Duration(days: 365)),
-      purchaseDate: DateTime.now(),
+      originalAmount: amount,
+      currentBalance: amount,
+      currency: brand.currencyCode.isNotEmpty ? brand.currencyCode : 'NGN',
+      status: 'active',
+      purchaseDate: DateTime.now().toIso8601String(),
+      expiryDate: DateTime.now().add(const Duration(days: 365)).toIso8601String(),
       recipientEmail: recipientEmail,
       recipientName: recipientName,
-      message: message,
-      code: _generateCode(),
-      pin: _generatePin(),
-      isRedeemed: false,
-      transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-      availableDenominations: ['50', '100', '200', '500'],
-      qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${_generateCode()}',
-      barcodeUrl: null,
-      additionalInfo: null,
+      message: giftMessage,
+      redemptionCode: _generateCode(),
+      redemptionPin: _generatePin(),
+      providerTransactionId: 'mock_txn_${DateTime.now().millisecondsSinceEpoch}',
+      countryCode: countryCode ?? brand.countryCode,
+      providerProductId: productId ?? brand.productId,
+      discountPercentage: discount,
+      createdAt: DateTime.now().toIso8601String(),
+      updatedAt: DateTime.now().toIso8601String(),
     );
 
     _userGiftCards.add(giftCard);
 
-    // Create transaction
     final transaction = GiftCardTransactionModel(
-      id: giftCard.transactionId!,
+      id: transactionId,
       giftCardId: giftCard.id,
-      userId: 'user123',
-      amount: finalPrice,
-      currency: currency,
-      transactionDate: DateTime.now(),
+      userId: 'mock_user',
       transactionType: 'purchase',
-      status: GiftCardStatus.active,
-      failureReason: null,
-      additionalDetails: null,
+      amount: finalPrice,
+      balanceBefore: _walletBalance + finalPrice,
+      balanceAfter: _walletBalance,
+      description: 'Purchased ${brand.name} gift card',
+      createdAt: DateTime.now().toIso8601String(),
+      providerTransactionId: giftCard.providerTransactionId ?? '',
+      reference: 'GC-$transactionId',
     );
-
     _transactions.add(transaction);
 
     return giftCard;
   }
 
   @override
-  Future<List<GiftCardModel>> getUserGiftCards() async {
+  Future<List<GiftCardModel>> getUserGiftCards({
+    String? status,
+    String? brandId,
+    int limit = 50,
+    int offset = 0,
+  }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
 
-    return List.from(_userGiftCards);
+    var cards = List<GiftCardModel>.from(_userGiftCards);
+    if (status != null && status.isNotEmpty) {
+      cards = cards.where((c) => c.status == status).toList();
+    }
+    if (brandId != null && brandId.isNotEmpty) {
+      cards = cards.where((c) => c.brandId == brandId).toList();
+    }
+    return cards.skip(offset).take(limit).toList();
   }
 
   @override
@@ -175,490 +153,378 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
   }
 
   @override
-  Future<GiftCardModel> redeemGiftCard(String giftCardId, String code) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    final card = _userGiftCards.firstWhere(
-      (c) => c.id == giftCardId,
-      orElse: () => throw Exception('Gift card not found'),
-    );
-
-    // Validate code
-    if (card.code != code) {
-      throw Exception('Invalid gift card code');
-    }
-
-    // Check if already redeemed
-    if (card.isRedeemed) {
-      throw Exception('Gift card already redeemed or expired');
-    }
-
-    // Check if expired
-    if (card.expiryDate.isBefore(DateTime.now())) {
-      throw Exception('Gift card already redeemed or expired');
-    }
-
-    // Update card status
-    final index = _userGiftCards.indexOf(card);
-    final updatedCard = GiftCardModel(
-      id: card.id,
-      brandId: card.brandId,
-      brandName: card.brandName,
-      logoUrl: card.logoUrl,
-      amount: card.amount,
-      discountPercentage: card.discountPercentage,
-      finalPrice: card.finalPrice,
-      currency: card.currency,
-      status: GiftCardStatus.used,
-      type: card.type,
-      category: card.category,
-      description: card.description,
-      termsAndConditions: card.termsAndConditions,
-      expiryDate: card.expiryDate,
-      purchaseDate: card.purchaseDate,
-      recipientEmail: card.recipientEmail,
-      recipientName: card.recipientName,
-      message: card.message,
-      code: card.code,
-      pin: card.pin,
-      isRedeemed: true,
-      transactionId: card.transactionId,
-      availableDenominations: card.availableDenominations,
-      qrCodeUrl: card.qrCodeUrl,
-      barcodeUrl: card.barcodeUrl,
-      additionalInfo: card.additionalInfo,
-    );
-
-    _userGiftCards[index] = updatedCard;
-
-    // Create redemption transaction
-    final transaction = GiftCardTransactionModel(
-      id: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-      giftCardId: giftCardId,
-      userId: 'user123',
-      amount: card.amount,
-      currency: card.currency,
-      transactionDate: DateTime.now(),
-      transactionType: 'redeem',
-      status: GiftCardStatus.used,
-      failureReason: null,
-      additionalDetails: null,
-    );
-
-    _transactions.add(transaction);
-
-    return updatedCard;
-  }
-
-  @override
-  Future<List<GiftCardTransactionModel>> getGiftCardTransactions() async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    return List.from(_transactions.reversed);
-  }
-
-  @override
-  Future<GiftCardTransactionModel> getTransactionById(
-    String transactionId,
-  ) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    try {
-      return _transactions.firstWhere((t) => t.id == transactionId);
-    } catch (e) {
-      throw Exception('Transaction not found');
-    }
-  }
-
-  @override
-  Future<GiftCardModel> sendGiftCard({
-    required String giftCardId,
-    required String recipientEmail,
-    String? message,
+  Future<List<GiftCardTransactionModel>> getGiftCardHistory({
+    String? giftCardId,
+    String? transactionType,
+    int limit = 50,
+    int offset = 0,
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
 
-    final card = _userGiftCards.firstWhere(
-      (c) => c.id == giftCardId,
-      orElse: () => throw Exception('Gift card or recipient not found'),
-    );
-
-    final index = _userGiftCards.indexOf(card);
-    final updatedCard = GiftCardModel(
-      id: card.id,
-      brandId: card.brandId,
-      brandName: card.brandName,
-      logoUrl: card.logoUrl,
-      amount: card.amount,
-      discountPercentage: card.discountPercentage,
-      finalPrice: card.finalPrice,
-      currency: card.currency,
-      status: card.status,
-      type: card.type,
-      category: card.category,
-      description: card.description,
-      termsAndConditions: card.termsAndConditions,
-      expiryDate: card.expiryDate,
-      purchaseDate: card.purchaseDate,
-      recipientEmail: recipientEmail,
-      recipientName: card.recipientName,
-      message: message,
-      code: card.code,
-      pin: card.pin,
-      isRedeemed: card.isRedeemed,
-      transactionId: card.transactionId,
-      availableDenominations: card.availableDenominations,
-      qrCodeUrl: card.qrCodeUrl,
-      barcodeUrl: card.barcodeUrl,
-      additionalInfo: card.additionalInfo,
-    );
-
-    _userGiftCards[index] = updatedCard;
-
-    // Create transfer transaction
-    final transaction = GiftCardTransactionModel(
-      id: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-      giftCardId: giftCardId,
-      userId: 'user123',
-      amount: card.amount,
-      currency: card.currency,
-      transactionDate: DateTime.now(),
-      transactionType: 'transfer',
-      status: card.status,
-      failureReason: null,
-      additionalDetails: null,
-    );
-
-    _transactions.add(transaction);
-
-    return updatedCard;
-  }
-
-  @override
-  Future<bool> validateGiftCardCode(String code) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    final card = _userGiftCards.where((c) => c.code == code).firstOrNull;
-    if (card == null) return false;
-
-    return !card.isRedeemed && card.expiryDate.isAfter(DateTime.now());
-  }
-
-  @override
-  Future<double> getGiftCardBalance(String giftCardId) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    final card = _userGiftCards.firstWhere(
-      (c) => c.id == giftCardId,
-      orElse: () => throw Exception('Gift card not found'),
-    );
-
-    return card.isRedeemed ? 0.0 : card.amount;
-  }
-
-  @override
-  Future<GiftCardModel> sellGiftCard({
-    required String giftCardId,
-    required double sellingPrice,
-  }) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    final card = _userGiftCards.firstWhere(
-      (c) => c.id == giftCardId,
-      orElse: () => throw Exception('Gift card not found'),
-    );
-
-    if (card.isRedeemed || card.expiryDate.isBefore(DateTime.now())) {
-      throw Exception('Gift card cannot be sold (already used or expired)');
+    var txns = List<GiftCardTransactionModel>.from(_transactions.reversed);
+    if (giftCardId != null && giftCardId.isNotEmpty) {
+      txns = txns.where((t) => t.giftCardId == giftCardId).toList();
     }
-
-    // Create sell transaction
-    final transaction = GiftCardTransactionModel(
-      id: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-      giftCardId: giftCardId,
-      userId: 'user123',
-      amount: sellingPrice,
-      currency: card.currency,
-      transactionDate: DateTime.now(),
-      transactionType: 'sell',
-      status: GiftCardStatus.pending,
-      failureReason: null,
-      additionalDetails: null,
-    );
-
-    _transactions.add(transaction);
-
-    return card;
-  }
-
-  @override
-  Future<List<GiftCardModel>> getResellableGiftCards() async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    // Return mock resellable cards (other users' cards)
-    return _mockResellableCards;
+    if (transactionType != null && transactionType.isNotEmpty) {
+      txns = txns.where((t) => t.transactionType == transactionType).toList();
+    }
+    return txns.skip(offset).take(limit).toList();
   }
 
   // Helper methods
   String _generateCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return List.generate(16, (index) => chars[_random.nextInt(chars.length)])
-        .join();
+    return List.generate(16, (index) => chars[_random.nextInt(chars.length)]).join();
   }
 
   String _generatePin() {
     return List.generate(4, (index) => _random.nextInt(10).toString()).join();
   }
 
-  // Mock data
+  // Sell flow mock methods
+
+  final List<GiftCardSaleModel> _userSales = [];
+
+  @override
+  Future<List<SellableCardModel>> getSellableCards() async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+    return _mockSellableCards;
+  }
+
+  @override
+  Future<SellRateModel> getSellRate({
+    required String cardType,
+    required double denomination,
+    String? currency,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
+    final rates = <String, double>{
+      'amazon': 88.0,
+      'itunes': 85.0,
+      'google_play': 82.0,
+      'steam': 80.0,
+      'walmart': 87.0,
+    };
+
+    final rate = rates[cardType] ?? 75.0;
+    final payoutAmount = denomination * rate / 100 * 1600; // approx NGN conversion
+
+    return SellRateModel(
+      cardType: cardType,
+      denomination: denomination,
+      ratePercentage: rate,
+      payoutAmount: payoutAmount,
+      currency: 'NGN',
+      expiresAt: DateTime.now().add(const Duration(minutes: 5)).toIso8601String(),
+    );
+  }
+
+  @override
+  Future<GiftCardSaleModel> sellGiftCard({
+    required String cardType,
+    required String cardNumber,
+    required String cardPin,
+    required double denomination,
+    required String transactionId,
+    required String verificationToken,
+    String? currency,
+    List<String>? images,
+    String? idempotencyKey,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
+    final rates = <String, double>{
+      'amazon': 88.0,
+      'itunes': 85.0,
+      'google_play': 82.0,
+      'steam': 80.0,
+      'walmart': 87.0,
+    };
+
+    final rate = rates[cardType] ?? 75.0;
+    final expectedPayout = denomination * rate / 100 * 1600;
+
+    final sale = GiftCardSaleModel(
+      id: 'sale_${DateTime.now().millisecondsSinceEpoch}',
+      userId: 'mock_user',
+      cardType: cardType,
+      cardNumber: cardNumber,
+      denomination: denomination,
+      currency: currency ?? 'USD',
+      ratePercentage: rate,
+      expectedPayout: expectedPayout,
+      status: 'pending',
+      reference: 'SELL-$transactionId',
+      submittedAt: DateTime.now().toIso8601String(),
+      createdAt: DateTime.now().toIso8601String(),
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+
+    _userSales.add(sale);
+    return sale;
+  }
+
+  @override
+  Future<GiftCardSaleModel> getSellStatus(String saleId) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
+    try {
+      return _userSales.firstWhere((s) => s.id == saleId);
+    } catch (e) {
+      throw Exception('Sale not found');
+    }
+  }
+
+  @override
+  Future<GiftCardModel> redeemGiftCard({
+    required String accountId,
+    required String cardNumber,
+    required String cardPin,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
+    // Find a card matching the code, or create a mock redeemed card
+    final card = GiftCardModel(
+      id: 'gc_redeem_${DateTime.now().millisecondsSinceEpoch}',
+      brandId: 'amazon',
+      brandName: 'Amazon',
+      logoUrl: 'https://logo.clearbit.com/amazon.com',
+      originalAmount: 10000,
+      currentBalance: 10000,
+      currency: 'NGN',
+      status: 'active',
+      purchaseDate: DateTime.now().toIso8601String(),
+      expiryDate: DateTime.now().add(const Duration(days: 365)).toIso8601String(),
+      redemptionCode: cardNumber,
+      redemptionPin: cardPin,
+      createdAt: DateTime.now().toIso8601String(),
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+
+    _userGiftCards.add(card);
+    return card;
+  }
+
+  @override
+  Future<GiftCardModel> transferGiftCard({
+    required String giftCardId,
+    required String recipientEmail,
+    required String recipientName,
+    required String message,
+    required String transactionId,
+    required String verificationToken,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
+    try {
+      final card = _userGiftCards.firstWhere((c) => c.id == giftCardId);
+      final transferred = GiftCardModel(
+        id: card.id,
+        brandId: card.brandId,
+        brandName: card.brandName,
+        logoUrl: card.logoUrl,
+        originalAmount: card.originalAmount,
+        currentBalance: card.currentBalance,
+        currency: card.currency,
+        status: 'transferred',
+        purchaseDate: card.purchaseDate,
+        expiryDate: card.expiryDate,
+        recipientEmail: recipientEmail,
+        recipientName: recipientName,
+        message: message,
+        redemptionCode: card.redemptionCode,
+        redemptionPin: card.redemptionPin,
+        createdAt: card.createdAt,
+        updatedAt: DateTime.now().toIso8601String(),
+      );
+      return transferred;
+    } catch (e) {
+      throw Exception('Gift card not found');
+    }
+  }
+
+  @override
+  Future<GiftCardBalanceModel> getGiftCardBalance({
+    required String cardNumber,
+    required String cardPin,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
+    return GiftCardBalanceModel(
+      balance: 10000 + _random.nextInt(40000).toDouble(),
+      brandName: 'Amazon',
+      expiryDate: DateTime.now().add(const Duration(days: 180)).toIso8601String(),
+      status: 'active',
+    );
+  }
+
+  @override
+  Future<List<GiftCardSaleModel>> getMySales({
+    String? status,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
+    var sales = List<GiftCardSaleModel>.from(_userSales.reversed);
+    if (status != null && status.isNotEmpty) {
+      sales = sales.where((s) => s.status == status).toList();
+    }
+    return sales.skip(offset).take(limit).toList();
+  }
+
+  static final List<SellableCardModel> _mockSellableCards = const [
+    SellableCardModel(
+      cardType: 'amazon',
+      displayName: 'Amazon',
+      logoUrl: 'https://logo.clearbit.com/amazon.com',
+      category: 'shopping',
+      denominations: [25, 50, 100, 200],
+      currencies: ['USD', 'GBP', 'EUR'],
+      minDenomination: 25,
+      maxDenomination: 200,
+    ),
+    SellableCardModel(
+      cardType: 'itunes',
+      displayName: 'iTunes / Apple',
+      logoUrl: 'https://logo.clearbit.com/apple.com',
+      category: 'entertainment',
+      denominations: [25, 50, 100],
+      currencies: ['USD', 'GBP'],
+      minDenomination: 25,
+      maxDenomination: 100,
+    ),
+    SellableCardModel(
+      cardType: 'google_play',
+      displayName: 'Google Play',
+      logoUrl: 'https://logo.clearbit.com/play.google.com',
+      category: 'entertainment',
+      denominations: [25, 50, 100],
+      currencies: ['USD'],
+      minDenomination: 25,
+      maxDenomination: 100,
+    ),
+    SellableCardModel(
+      cardType: 'steam',
+      displayName: 'Steam',
+      logoUrl: 'https://logo.clearbit.com/steampowered.com',
+      category: 'gaming',
+      denominations: [20, 50, 100],
+      currencies: ['USD'],
+      minDenomination: 20,
+      maxDenomination: 100,
+    ),
+    SellableCardModel(
+      cardType: 'walmart',
+      displayName: 'Walmart',
+      logoUrl: 'https://logo.clearbit.com/walmart.com',
+      category: 'shopping',
+      denominations: [25, 50, 100, 200],
+      currencies: ['USD'],
+      minDenomination: 25,
+      maxDenomination: 200,
+    ),
+  ];
+
+  // Mock brand data
   static final List<GiftCardBrandModel> _mockBrands = [
-    // Shopping
-    GiftCardBrandModel(
+    const GiftCardBrandModel(
       id: 'amazon',
       name: 'Amazon',
       logoUrl: 'https://logo.clearbit.com/amazon.com',
       description: 'Shop millions of products online',
-      category: GiftCardCategory.shopping,
+      category: 'shopping',
       discountPercentage: 5.0,
-      isPopular: true,
+      currencyCode: 'NGN',
+      productId: 1001,
+      fixedDenominations: [
+        GiftCardDenomination(price: 5000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 10000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 25000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 50000, currencyCode: 'NGN'),
+      ],
     ),
-    GiftCardBrandModel(
-      id: 'walmart',
-      name: 'Walmart',
-      logoUrl: 'https://logo.clearbit.com/walmart.com',
-      description: 'Save money. Live better.',
-      category: GiftCardCategory.shopping,
-      discountPercentage: 3.0,
-      isPopular: true,
-    ),
-    GiftCardBrandModel(
-      id: 'target',
-      name: 'Target',
-      logoUrl: 'https://logo.clearbit.com/target.com',
-      description: 'Expect more. Pay less.',
-      category: GiftCardCategory.shopping,
-      discountPercentage: 4.0,
-      isPopular: true,
-    ),
-    GiftCardBrandModel(
-      id: 'bestbuy',
-      name: 'Best Buy',
-      logoUrl: 'https://logo.clearbit.com/bestbuy.com',
-      description: 'Electronics, computers, appliances & more',
-      category: GiftCardCategory.shopping,
-      discountPercentage: 2.5,
-      isPopular: false,
-    ),
-    GiftCardBrandModel(
-      id: 'ebay',
-      name: 'eBay',
-      logoUrl: 'https://logo.clearbit.com/ebay.com',
-      description: 'Buy & sell electronics, fashion & more',
-      category: GiftCardCategory.shopping,
-      discountPercentage: 3.5,
-      isPopular: false,
-    ),
-
-    // Entertainment
-    GiftCardBrandModel(
+    const GiftCardBrandModel(
       id: 'netflix',
       name: 'Netflix',
       logoUrl: 'https://logo.clearbit.com/netflix.com',
       description: 'Unlimited movies and TV shows',
-      category: GiftCardCategory.entertainment,
+      category: 'entertainment',
       discountPercentage: 0.0,
-      isPopular: true,
+      currencyCode: 'NGN',
+      productId: 1002,
+      fixedDenominations: [
+        GiftCardDenomination(price: 5000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 10000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 15000, currencyCode: 'NGN'),
+      ],
     ),
-    GiftCardBrandModel(
-      id: 'spotify',
-      name: 'Spotify',
-      logoUrl: 'https://logo.clearbit.com/spotify.com',
-      description: 'Millions of songs and podcasts',
-      category: GiftCardCategory.entertainment,
-      discountPercentage: 0.0,
-      isPopular: true,
-    ),
-    GiftCardBrandModel(
-      id: 'hulu',
-      name: 'Hulu',
-      logoUrl: 'https://logo.clearbit.com/hulu.com',
-      description: 'Stream TV shows and movies',
-      category: GiftCardCategory.entertainment,
-      discountPercentage: 0.0,
-      isPopular: false,
-    ),
-    GiftCardBrandModel(
-      id: 'disney',
-      name: 'Disney+',
-      logoUrl: 'https://logo.clearbit.com/disneyplus.com',
-      description: 'Stream Disney, Pixar, Marvel & more',
-      category: GiftCardCategory.entertainment,
-      discountPercentage: 0.0,
-      isPopular: true,
-    ),
-
-    // Dining
-    GiftCardBrandModel(
-      id: 'starbucks',
-      name: 'Starbucks',
-      logoUrl: 'https://logo.clearbit.com/starbucks.com',
-      description: 'Coffee, tea, and delicious treats',
-      category: GiftCardCategory.dining,
-      discountPercentage: 2.0,
-      isPopular: true,
-    ),
-    GiftCardBrandModel(
-      id: 'mcdonalds',
-      name: "McDonald's",
-      logoUrl: 'https://logo.clearbit.com/mcdonalds.com',
-      description: "I'm lovin' it",
-      category: GiftCardCategory.dining,
-      discountPercentage: 1.5,
-      isPopular: true,
-    ),
-    GiftCardBrandModel(
-      id: 'dominos',
-      name: "Domino's Pizza",
-      logoUrl: 'https://logo.clearbit.com/dominos.com',
-      description: 'Pizza delivery & carryout',
-      category: GiftCardCategory.dining,
-      discountPercentage: 3.0,
-      isPopular: false,
-    ),
-    GiftCardBrandModel(
-      id: 'subway',
-      name: 'Subway',
-      logoUrl: 'https://logo.clearbit.com/subway.com',
-      description: 'Eat fresh',
-      category: GiftCardCategory.dining,
-      discountPercentage: 2.5,
-      isPopular: false,
-    ),
-
-    // Travel
-    GiftCardBrandModel(
-      id: 'airbnb',
-      name: 'Airbnb',
-      logoUrl: 'https://logo.clearbit.com/airbnb.com',
-      description: 'Book unique places to stay and things to do',
-      category: GiftCardCategory.travel,
-      discountPercentage: 0.0,
-      isPopular: true,
-    ),
-    GiftCardBrandModel(
-      id: 'uber',
-      name: 'Uber',
-      logoUrl: 'https://logo.clearbit.com/uber.com',
-      description: 'Request a ride, 24/7',
-      category: GiftCardCategory.travel,
-      discountPercentage: 0.0,
-      isPopular: true,
-    ),
-    GiftCardBrandModel(
-      id: 'southwest',
-      name: 'Southwest Airlines',
-      logoUrl: 'https://logo.clearbit.com/southwest.com',
-      description: 'Low fares, no hidden fees',
-      category: GiftCardCategory.travel,
-      discountPercentage: 0.0,
-      isPopular: false,
-    ),
-
-    // Gaming
-    GiftCardBrandModel(
+    const GiftCardBrandModel(
       id: 'steam',
       name: 'Steam',
       logoUrl: 'https://logo.clearbit.com/steampowered.com',
       description: 'The ultimate gaming platform',
-      category: GiftCardCategory.gaming,
+      category: 'gaming',
       discountPercentage: 0.0,
-      isPopular: true,
+      currencyCode: 'NGN',
+      productId: 1003,
+      fixedDenominations: [
+        GiftCardDenomination(price: 5000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 10000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 20000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 50000, currencyCode: 'NGN'),
+      ],
     ),
-    GiftCardBrandModel(
-      id: 'playstation',
-      name: 'PlayStation Store',
-      logoUrl: 'https://logo.clearbit.com/playstation.com',
-      description: 'Download the latest games',
-      category: GiftCardCategory.gaming,
+    const GiftCardBrandModel(
+      id: 'spotify',
+      name: 'Spotify',
+      logoUrl: 'https://logo.clearbit.com/spotify.com',
+      description: 'Millions of songs and podcasts',
+      category: 'entertainment',
       discountPercentage: 0.0,
-      isPopular: true,
+      currencyCode: 'NGN',
+      productId: 1004,
+      fixedDenominations: [
+        GiftCardDenomination(price: 3000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 5000, currencyCode: 'NGN'),
+      ],
     ),
-    GiftCardBrandModel(
-      id: 'xbox',
-      name: 'Xbox',
-      logoUrl: 'https://logo.clearbit.com/xbox.com',
-      description: 'Power your dreams',
-      category: GiftCardCategory.gaming,
-      discountPercentage: 0.0,
-      isPopular: true,
+    const GiftCardBrandModel(
+      id: 'uber',
+      name: 'Uber',
+      logoUrl: 'https://logo.clearbit.com/uber.com',
+      description: 'Request a ride, 24/7',
+      category: 'travel',
+      discountPercentage: 2.0,
+      currencyCode: 'NGN',
+      productId: 1005,
+      minAmount: 1000,
+      maxAmount: 100000,
     ),
-    GiftCardBrandModel(
-      id: 'nintendo',
-      name: 'Nintendo eShop',
-      logoUrl: 'https://logo.clearbit.com/nintendo.com',
-      description: 'Download games for Nintendo Switch',
-      category: GiftCardCategory.gaming,
-      discountPercentage: 0.0,
-      isPopular: false,
-    ),
-
-    // Other
-    GiftCardBrandModel(
-      id: 'appstore',
-      name: 'Apple App Store & iTunes',
-      logoUrl: 'https://logo.clearbit.com/apple.com',
-      description: 'Apps, games, music, movies & more',
-      category: GiftCardCategory.other,
-      discountPercentage: 0.0,
-      isPopular: true,
-    ),
-    GiftCardBrandModel(
+    const GiftCardBrandModel(
       id: 'googleplay',
       name: 'Google Play',
       logoUrl: 'https://logo.clearbit.com/play.google.com',
       description: 'Apps, games, movies, music & books',
-      category: GiftCardCategory.other,
+      category: 'other',
       discountPercentage: 0.0,
-      isPopular: true,
-    ),
-  ];
-
-  static final List<GiftCardModel> _mockResellableCards = [
-    GiftCardModel(
-      id: 'resell_1',
-      brandId: 'amazon',
-      brandName: 'Amazon',
-      logoUrl: 'https://logo.clearbit.com/amazon.com',
-      amount: 50.0,
-      discountPercentage: 10.0,
-      finalPrice: 45.0,
-      currency: 'USD',
-      status: GiftCardStatus.active,
-      type: GiftCardType.digital,
-      category: GiftCardCategory.shopping,
-      description: 'Shop millions of products online',
-      termsAndConditions: 'Valid for 12 months',
-      expiryDate: DateTime.now().add(const Duration(days: 180)),
-      purchaseDate: DateTime.now().subtract(const Duration(days: 30)),
-      recipientEmail: null,
-      recipientName: null,
-      message: null,
-      code: null,
-      pin: null,
-      isRedeemed: false,
-      transactionId: null,
-      availableDenominations: ['50', '100', '200'],
-      qrCodeUrl: null,
-      barcodeUrl: null,
-      additionalInfo: null,
+      currencyCode: 'NGN',
+      productId: 1006,
+      fixedDenominations: [
+        GiftCardDenomination(price: 2000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 5000, currencyCode: 'NGN'),
+        GiftCardDenomination(price: 10000, currencyCode: 'NGN'),
+      ],
     ),
   ];
 }

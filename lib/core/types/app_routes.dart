@@ -25,12 +25,14 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String invoicePaymentReceipt = '/invoice/payment-receipt';
   static const String sendFunds = '/send-funds';
   static const String initiateSendFunds = '/initiate-send-funds';
+  static const String chatbotTransfer = '/chatbot-transfer';
   static const String transferProcessing = '/transfer-processing';
   static const String transferProof = '/transfer-proof';
   static const String inputPin = '/input-pin';
   static const String sendFundReceipt = '/send-funds-receipts';
   static const String reviewFundsTransfer = '/review-funds-transfer';
-  static const String payElectricityBill = '/pay-electricity-bill';
+  // Bills Hub Route
+  static const String billsHub = '/bills';
 
   // Electricity Bill Payment Routes
   static const String electricityBillHome = '/electricity-bill';
@@ -47,9 +49,22 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String electricityBillReminders = '/electricity-bill/reminders';
   static const String electricityBillCreateReminder = '/electricity-bill/reminders/create';
 
+  // Cable TV Routes
+  static const String cableTVHome = '/cable-tv';
+  static const String cableTVSmartCardInput = '/cable-tv/smart-card-input';
+  static const String cableTVPackageSelection = '/cable-tv/package-selection';
+  static const String cableTVPaymentConfirmation = '/cable-tv/payment-confirmation';
+  static const String cableTVPaymentProcessing = '/cable-tv/payment-processing';
+  static const String cableTVPaymentReceipt = '/cable-tv/payment-receipt';
+
+  // Education PIN Routes
+  static const String educationHome = '/education';
+  static const String educationPurchase = '/education/purchase';
+  static const String educationPaymentConfirmation = '/education/payment-confirmation';
+  static const String educationPaymentProcessing = '/education/payment-processing';
+  static const String educationPinResult = '/education/pin-result';
+
   static const String flights = '/flights';
-  static const String reviewElectricityBillDetails =
-      '/validate-electricity-bill-details';
   static const String payInvoice = '/pay-invoice';
   static const String crypto = '/crypto';
   static const String stocks = '/stocks';
@@ -124,17 +139,13 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // Gift Card Routes
   static const String giftCards = '/gift-cards';
   static const String purchaseGiftCard = '/gift-cards/purchase';
-  static const String giftCardPaymentMethod = '/gift-cards/payment-method';
   static const String giftCardPurchaseProcessing = '/gift-cards/purchase-processing';
-  static const String giftCardPurchaseConfirmation = '/gift-cards/purchase-confirmation';
   static const String giftCardDetails = '/gift-card-details';
-  static const String redeemGiftCard = '/gift-cards/redeem';
   static const String myGiftCards = '/gift-cards/my-cards';
   static const String giftCardTransactions = '/gift-cards/transactions';
-  static const String sellToContact = '/gift-cards/sell/contact';
-  static const String savedRecipients = '/gift-cards/sell/recipients';
-  static const String quickSell = '/gift-cards/sell/quick';
-  
+  static const String sellGiftCard = '/gift-cards/sell';
+  static const String mySales = '/gift-cards/my-sales';
+
   // Stock Exchange Routes
   static const String stockDetails = '/stocks/details';
   static const String stockTrade = '/stocks/trade';
@@ -194,7 +205,14 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String insurancePaymentConfirmation = '/insurance/payment-confirmation';
   static const String insuranceClaims = '/insurance/claims';
   static const String createClaim = '/insurance/create-claim';
-  
+  static const String insuranceTerms = '/insurance/terms';
+  static const String insuranceGuide = '/insurance/guide';
+  static const String insuranceContact = '/insurance/contact';
+  static const String insuranceFaq = '/insurance/faq';
+  static const String insuranceDocuments = '/insurance/documents';
+  static const String insuranceClaimTracking = '/insurance/claim-tracking';
+  static const String insuranceHowItWorks = '/insurance/how-it-works';
+
   // Airtime Routes
   static const String airtime = '/airtime';
   static const String airtimeCountrySelection = '/airtime/country-selection';
@@ -228,21 +246,46 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String donationPayment = '/crowdfund/donation-payment';
   static const String donationProcessing = '/crowdfund/donation-processing';
   static const String donationReceipt = '/crowdfund/donation-receipt';
+  static const String crowdfundLeaderboard = '/crowdfund/leaderboard';
+
+  // Public Group Discovery Routes
+  static const String publicGroups = '/groups/public';
+  static const String groupLeaderboard = '/groups/leaderboard';
 
   // Batch Transfer Routes
   static const String batchTransfer = '/batch-transfer';
   static const String batchTransferReview = '/batch-transfer-review';
-  static const String batchTransferConfirmation = '/batch-transfer-confirmation';
-  static const String batchTransferProcessing = '/batch-transfer-processing';
+static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String batchTransferReceipt = '/batch-transfer-receipt';
 
   static const String investments = '/investments';
 
   // Statistics Routes
-  static const String statistics = '/statistics';
-  static const String statisticsRedesigned = '/statistics/redesigned';
-  static const String addExpense = '/statistics/add-expense';
-  static const String addBudget = '/statistics/add-budget';
+  static const String statisticsSpendingDetail = '/statistics/spending-detail';
+  static const String statisticsMonthlyTrends = '/statistics/monthly-trends';
+  static const String statisticsCategoryAnalysis = '/statistics/category-analysis';
+  static const String statisticsComparison = '/statistics/comparison';
+
+  // Budget Routes
+  static const String budgetList = '/statistics/budgets';
+  static const String createBudget = '/statistics/budgets/create';
+  static const String budgetDetail = '/statistics/budgets/detail';
+  static const String budgetAIInsights = '/statistics/budgets/ai-insights';
+  static const String budgetReminders = '/statistics/budgets/reminders';
+  static const String createBudgetReminder = '/statistics/budgets/reminders/create';
+
+  // Recurring Bills Routes
+  static const String recurringBills = '/statistics/recurring-bills';
+  static const String createRecurringBill = '/statistics/recurring-bills/create';
+  static const String recurringBillDetail = '/statistics/recurring-bills/detail';
+  static const String upcomingBills = '/statistics/upcoming-bills';
+
+  // Financial Goals Routes
+  static const String financialGoals = '/statistics/financial-goals';
+  static const String createFinancialGoal = '/statistics/financial-goals/create';
+
+  // Credit Score Routes
+  static const String creditScore = '/credit-score';
 
   // Open Banking Routes
   static const String openBankingConnect = '/open-banking/connect';
@@ -262,16 +305,16 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String tagCreationProcessing = '/tag-creation-processing';
   static const String tagCreationReceipt = '/tag-creation-receipt';
 
-  // Barcode QuickPay Routes
-  static const String barcodeQuickPayHome = '/barcode-quick-pay';
-  static const String generateBarcode = '/barcode/generate';
-  static const String barcodeDisplay = '/barcode/display';
-  static const String scanBarcode = '/barcode/scan';
-  static const String barcodePaymentConfirmation = '/barcode/payment-confirmation';
-  static const String barcodePaymentProcessing = '/barcode/payment-processing';
-  static const String barcodePaymentReceipt = '/barcode/payment-receipt';
-  static const String generatedBarcodesHistory = '/barcode/generated-history';
-  static const String scannedBarcodesHistory = '/barcode/scanned-history';
+  // QR Pay Routes
+  static const String qrPayHome = '/qr-pay';
+  static const String generateQR = '/qr-pay/generate';
+  static const String qrDisplay = '/qr-pay/display';
+  static const String scanQR = '/qr-pay/scan';
+  static const String qrPaymentConfirmation = '/qr-pay/payment-confirmation';
+  static const String qrPaymentProcessing = '/qr-pay/payment-processing';
+  static const String qrPaymentReceipt = '/qr-pay/payment-receipt';
+  static const String generatedQRHistory = '/qr-pay/generated-history';
+  static const String qrPaymentsHistory = '/qr-pay/payments-history';
 
   // Contactless Payment Routes
   static const String contactlessPay = '/contactless-pay';
@@ -321,6 +364,20 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String kycStatus = '/kyc/status';
   static const String kycDocuments = '/kyc/documents';
   static const String kycSkip = '/kyc/skip';
+
+  // Business Dashboard Routes
+  static const String businessDashboard = '/business/dashboard';
+  static const String businessAnalytics = '/business/analytics';
+
+  // Payroll Routes (Business)
+  static const String payroll = '/payroll';
+  static const String payrollEmployees = '/payroll/employees';
+  static const String addEmployee = '/payroll/employees/add';
+  static const String employeeDetails = '/payroll/employees/details';
+  static const String payRuns = '/payroll/pay-runs';
+  static const String createPayRun = '/payroll/pay-runs/create';
+  static const String payRunDetails = '/payroll/pay-runs/details';
+  static const String paySlipDetails = '/payroll/payslip';
 
   // Debug Routes (Remove before production)
   static const String debugSettings = '/debug/settings';

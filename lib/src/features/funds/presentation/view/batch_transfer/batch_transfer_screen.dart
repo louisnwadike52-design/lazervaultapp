@@ -11,11 +11,10 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_form.dart';
-import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_history_widget.dart';
-import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 
 class BatchTransferScreen extends StatefulWidget {
   const BatchTransferScreen({super.key});
@@ -30,6 +29,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
     super.initState();
     // If coming from split bills, skip form and go directly to review
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final arguments = Get.arguments as Map<String, dynamic>?;
       if (arguments != null && arguments['split_type'] != null) {
         _navigateToReviewForSplitBill(arguments);
@@ -52,15 +52,15 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
       final recipientModel = participant as RecipientModel;
       final amountMinorUnits = amounts[recipientModel.id] ?? 0;
       recipients.add(BatchTransferRecipient(
-        recipientId: Int64(int.tryParse(recipientModel.id) ?? 0),
+        toAccountNumber: recipientModel.accountNumber,
         amount: Int64(amountMinorUnits),
         reference: description,
       ));
-      recipientNames[recipientModel.id] = recipientModel.name;
+      recipientNames[recipientModel.accountNumber] = recipientModel.name;
     }
 
     final accountManager = GetIt.I<AccountManager>();
-    final fromAccountId = Int64(int.tryParse(accountManager.activeAccountDetails?.id ?? '0') ?? 0);
+    final fromAccountId = accountManager.activeAccountDetails?.id ?? '0';
 
     Get.offNamed(
       AppRoutes.batchTransferReview,
@@ -86,24 +86,12 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Color(0xFF0F0F23),
+        systemNavigationBarColor: btBackground,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
-      backgroundColor: const Color(0xFF0F0F23),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0F0F23),
-              const Color(0xFF0A0A1A),
-            ],
-          ),
-        ),
-        child: SafeArea(
+        backgroundColor: btBackground,
+        body: SafeArea(
           child: Column(
             children: [
               _buildHeader(),
@@ -111,6 +99,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
+                      _buildQuickInfoBar(),
                       BlocProvider(
                         create: (_) => serviceLocator<RecipientCubit>(),
                         child: BatchTransferForm(
@@ -118,11 +107,6 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
                           isRepeatTransaction: arguments?['isRepeatTransaction'] ?? false,
                           batchReference: arguments?['batchReference'],
                         ),
-                      ),
-                      SizedBox(height: 8.h),
-                      BlocProvider(
-                        create: (_) => serviceLocator<BatchTransferCubit>(),
-                        child: BatchTransferHistoryWidget(),
                       ),
                     ],
                   ),
@@ -132,28 +116,27 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
           ),
         ),
       ),
-    ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Get.back(),
             child: Container(
-              padding: EdgeInsets.all(8.w),
+              width: 44.w,
+              height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                color: btCardElevated,
+                borderRadius: BorderRadius.circular(22.r),
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
                 color: Colors.white,
-                size: 20.sp,
+                size: 18.sp,
               ),
             ),
           ),
@@ -166,50 +149,22 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
                   'Batch Transfer',
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 20.sp,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+                SizedBox(height: 2.h),
                 Text(
-                  'Send money to multiple recipients',
+                  'Send to multiple recipients at once',
                   style: GoogleFonts.inter(
-                    color: Colors.grey[400],
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
+                    color: btTextSecondary,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue[600]!, Colors.blue[400]!],
-              ),
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.batch_prediction,
-                  color: Colors.white,
-                  size: 16.sp,
-                ),
-                SizedBox(width: 4.w),
-                Text(
-                  'Batch',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 12.w),
           ServiceVoiceButton(
             serviceName: 'transfers',
             iconColor: Colors.white,
@@ -218,4 +173,82 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
       ),
     );
   }
-} 
+
+  Widget _buildQuickInfoBar() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: btCard,
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Row(
+          children: [
+            _buildInfoItem(
+              icon: Icons.people_outline,
+              label: 'Max Recipients',
+              value: '20',
+              color: btBlue,
+            ),
+            Container(
+              width: 1,
+              height: 36.h,
+              color: btBorder,
+            ),
+            _buildInfoItem(
+              icon: Icons.bolt_outlined,
+              label: 'Fee',
+              value: 'Free',
+              color: btGreen,
+            ),
+            Container(
+              width: 1,
+              height: 36.h,
+              color: btBorder,
+            ),
+            _buildInfoItem(
+              icon: Icons.schedule_outlined,
+              label: 'Schedule',
+              value: 'Yes',
+              color: btOrange,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20.sp),
+          SizedBox(height: 6.h),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: btTextSecondary,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

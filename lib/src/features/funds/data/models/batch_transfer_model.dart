@@ -1,34 +1,6 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
-
-class BatchTransferRecipientModel extends BatchTransferRecipient {
-  const BatchTransferRecipientModel({
-    super.recipientId,
-    super.toAccountId,
-    required super.amount,
-    super.reference,
-    super.category,
-  });
-
-  factory BatchTransferRecipientModel.fromProto(dynamic protoRecipient) {
-    return BatchTransferRecipientModel(
-      recipientId: protoRecipient.recipientId,
-      toAccountId: protoRecipient.toAccountId,
-      amount: protoRecipient.amount,
-      reference: protoRecipient.reference,
-      category: protoRecipient.category,
-    );
-  }
-
-  Map<String, dynamic> toProto() {
-    return {
-      'recipientId': recipientId,
-      'toAccountId': toAccountId,
-      'amount': amount,
-      'reference': reference ?? '',
-      'category': category ?? '',
-    };
-  }
-}
+import 'package:lazervault/src/generated/payments.pb.dart' as payments;
 
 class BatchTransferResultModel extends BatchTransferResult {
   const BatchTransferResultModel({
@@ -39,17 +11,23 @@ class BatchTransferResultModel extends BatchTransferResult {
     super.recipientName,
     super.recipientAccount,
     super.failureReason,
+    super.reference,
   });
 
-  factory BatchTransferResultModel.fromProto(dynamic protoResult) {
+  factory BatchTransferResultModel.fromPaymentsProto(
+      payments.BatchTransferResultItem proto) {
     return BatchTransferResultModel(
-      transferId: protoResult.transferId,
-      status: protoResult.status,
-      amount: protoResult.amount,
-      fee: protoResult.fee,
-      recipientName: protoResult.recipientName,
-      recipientAccount: protoResult.recipientAccount,
-      failureReason: protoResult.failureReason,
+      transferId: proto.transferId,
+      status: proto.status,
+      amount: Int64((proto.amount * 100).round()),
+      fee: Int64((proto.fee * 100).round()),
+      recipientName:
+          proto.recipientName.isNotEmpty ? proto.recipientName : null,
+      recipientAccount:
+          proto.recipientAccount.isNotEmpty ? proto.recipientAccount : null,
+      failureReason:
+          proto.failureReason.isNotEmpty ? proto.failureReason : null,
+      reference: proto.reference.isNotEmpty ? proto.reference : null,
     );
   }
 }
@@ -65,37 +43,39 @@ class InitiateBatchTransferResponseModel extends BatchTransferEntity {
     required super.failedTransfers,
     required super.totalTransfers,
     required super.results,
+    required super.newBalance,
+    required super.message,
     required super.createdAt,
     super.completedAt,
   });
 
-  factory InitiateBatchTransferResponseModel.fromProto(dynamic protoResponse) {
-    final results = (protoResponse.results as List)
-        .map((result) => BatchTransferResultModel.fromProto(result))
+  factory InitiateBatchTransferResponseModel.fromPaymentsProto(
+      payments.BatchTransferResponse proto) {
+    final results = proto.results
+        .map((r) => BatchTransferResultModel.fromPaymentsProto(r))
         .toList();
 
+    final totalAmountMinor = Int64((proto.totalAmount * 100).round());
+    final totalFeeMinor = Int64((proto.totalFee * 100).round());
+
     return InitiateBatchTransferResponseModel(
-      batchId: protoResponse.batchId,
-      status: protoResponse.status,
-      totalAmount: protoResponse.totalAmount,
-      totalFee: protoResponse.totalFee,
-      totalAmountWithFee: protoResponse.totalAmountWithFee,
-      successfulTransfers: protoResponse.successfulTransfers,
-      failedTransfers: protoResponse.failedTransfers,
-      totalTransfers: protoResponse.totalTransfers,
+      batchId: proto.batchId,
+      status: proto.status,
+      totalAmount: totalAmountMinor,
+      totalFee: totalFeeMinor,
+      totalAmountWithFee: totalAmountMinor + totalFeeMinor,
+      successfulTransfers: proto.successfulTransfers,
+      failedTransfers: proto.failedTransfers,
+      totalTransfers: proto.totalTransfers,
       results: results,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(
-        protoResponse.createdAt.seconds.toInt() * 1000 +
-            (protoResponse.createdAt.nanos / 1000000).round(),
-        isUtc: true,
-      ),
-      completedAt: protoResponse.completedAt != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              protoResponse.completedAt.seconds.toInt() * 1000 +
-                  (protoResponse.completedAt.nanos / 1000000).round(),
-              isUtc: true,
-            )
+      newBalance: proto.newBalance,
+      message: proto.message,
+      createdAt: proto.createdAt.isNotEmpty
+          ? DateTime.tryParse(proto.createdAt)?.toLocal() ?? DateTime.now()
+          : DateTime.now(),
+      completedAt: proto.completedAt.isNotEmpty
+          ? DateTime.tryParse(proto.completedAt)?.toLocal()
           : null,
     );
   }
-} 
+}

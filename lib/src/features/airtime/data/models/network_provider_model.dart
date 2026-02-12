@@ -1,3 +1,4 @@
+import '../../../../generated/utility-payments.pb.dart' as pb;
 import '../../domain/entities/network_provider.dart';
 
 class NetworkProviderModel extends NetworkProvider {
@@ -16,6 +17,63 @@ class NetworkProviderModel extends NetworkProvider {
     super.minAmount,
     super.maxAmount,
   });
+
+  factory NetworkProviderModel.fromProto(pb.AirtimeProvider provider) {
+    final network = provider.network.toLowerCase();
+    return NetworkProviderModel(
+      id: provider.id,
+      type: _networkTypeFromString(network),
+      name: provider.name,
+      shortName: provider.network,
+      logo: provider.logoUrl,
+      primaryColor: _colorForNetwork(network),
+      prefixes: const [], // Prefixes come from local data / phone number detection
+      countryCode: provider.countryCode,
+      isActive: provider.isActive,
+      discount: provider.commissionRate,
+      minAmount: provider.minAmount,
+      maxAmount: provider.maxAmount,
+    );
+  }
+
+  static NetworkProviderType _networkTypeFromString(String network) {
+    switch (network) {
+      case 'mtn':
+        return NetworkProviderType.mtn;
+      case 'airtel':
+        return NetworkProviderType.airtel;
+      case 'glo':
+        return NetworkProviderType.glo;
+      case '9mobile':
+      case 'ninemobile':
+      case 'etisalat':
+        return NetworkProviderType.ninemobile;
+      case 'safaricom':
+        return NetworkProviderType.safaricom;
+      case 'vodafone':
+        return NetworkProviderType.vodafone;
+      case 'vodacom':
+        return NetworkProviderType.vodacomSa;
+      default:
+        return NetworkProviderType.mtn;
+    }
+  }
+
+  static String _colorForNetwork(String network) {
+    switch (network) {
+      case 'mtn':
+        return '#FFCC00';
+      case 'airtel':
+        return '#FF0000';
+      case 'glo':
+        return '#00B04F';
+      case '9mobile':
+      case 'ninemobile':
+        return '#00AA4F';
+      default:
+        return '#3B82F6';
+    }
+  }
 
   factory NetworkProviderModel.fromJson(Map<String, dynamic> json) {
     return NetworkProviderModel(
@@ -38,6 +96,7 @@ class NetworkProviderModel extends NetworkProvider {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,

@@ -1,3 +1,5 @@
+import 'package:lazervault/core/services/locale_manager.dart';
+
 import '../models/crypto_model.dart';
 import '../../domain/entities/price_point.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
@@ -14,8 +16,14 @@ abstract class CryptoRemoteDataSource {
 
 class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   final CryptoGrpcClient grpcClient;
+  final LocaleManager localeManager;
 
-  CryptoRemoteDataSourceImpl({required this.grpcClient});
+  CryptoRemoteDataSourceImpl({
+    required this.grpcClient,
+    required this.localeManager,
+  });
+
+  String get _userCurrency => localeManager.currentCurrency.toLowerCase();
 
   @override
   Future<List<CryptoModel>> getCryptos({int page = 1, int perPage = 100}) async {
@@ -23,7 +31,7 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
       final response = await grpcClient.getCryptos(
         page: page,
         perPage: perPage,
-        vsCurrency: 'gbp',
+        vsCurrency: _userCurrency,
       );
 
       return response.cryptos
@@ -37,7 +45,7 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   @override
   Future<CryptoModel> getCryptoById(String id) async {
     try {
-      final response = await grpcClient.getCryptoById(id);
+      final response = await grpcClient.getCryptoById(id, vsCurrency: _userCurrency);
       return _convertProtoToCryptoModel(response.crypto);
     } catch (e) {
       throw Exception('Failed to fetch cryptocurrency details: $e');
@@ -59,7 +67,7 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   @override
   Future<List<PricePoint>> getCryptoPriceHistory(String id, {String range = '7d'}) async {
     try {
-      final response = await grpcClient.getCryptoPriceHistory(id, range: range);
+      final response = await grpcClient.getCryptoPriceHistory(id, range: range, vsCurrency: _userCurrency);
       return response.priceHistory
           .map((point) => PricePoint(
                 timestamp: point.timestamp.toDateTime(),
@@ -91,7 +99,7 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   @override
   Future<List<CryptoModel>> getTopCryptos() async {
     try {
-      final response = await grpcClient.getTopCryptos(limit: 100);
+      final response = await grpcClient.getTopCryptos(limit: 100, vsCurrency: _userCurrency);
       return response.cryptos
           .map((crypto) => _convertProtoToCryptoModel(crypto))
           .toList();

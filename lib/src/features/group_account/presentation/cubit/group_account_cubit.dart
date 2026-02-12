@@ -38,6 +38,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final GetGroupActivityLogs? getGroupActivityLogs;
   final GetContributionActivityLogs? getContributionActivityLogs;
   final RemoveMemberFromContribution? removeMemberFromContribution;
+  final ListPublicGroups? listPublicGroups;
+  final GetPublicGroup? getPublicGroup;
+  final JoinPublicGroup? joinPublicGroup;
   final SWRCacheManager? cacheManager;
   final MutationQueue? mutationQueue;
   final GroupAccountReportService? reportService;
@@ -93,6 +96,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.getGroupActivityLogs,
     this.getContributionActivityLogs,
     this.removeMemberFromContribution,
+    this.listPublicGroups,
+    this.getPublicGroup,
+    this.joinPublicGroup,
     this.cacheManager,
     this.mutationQueue,
     this.reportService,
@@ -200,6 +206,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     required String name,
     required String description,
     Map<String, dynamic>? metadata,
+    GroupVisibility? visibility,
+    String? imageUrl,
   }) async {
     print('🔵 GroupAccountCubit: createNewGroup called - name: $name, description: $description');
     print('🔵 GroupAccountCubit: currentUserId = $currentUserId');
@@ -221,6 +229,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         description: description,
         adminId: currentUserId!,
         metadata: metadata,
+        visibility: visibility,
+        imageUrl: imageUrl,
       ));
       if (isClosed) return;
       print('🟢 GroupAccountCubit: Group created successfully - id: ${group.id}');
@@ -1251,5 +1261,116 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   String? getShareableText(GroupAccountReport report, String? groupUrl) {
     if (reportService == null) return null;
     return reportService!.getShareableText(report, groupUrl: groupUrl);
+  }
+
+  // ============================================================================
+  // PUBLIC GROUP DISCOVERY
+  // ============================================================================
+
+  // SWR cache for public groups
+  List<GroupAccount>? _cachedPublicGroups;
+
+  /// Load public groups for discovery/browse (with SWR caching)
+  Future<void> loadPublicGroups({
+    String? sortBy,
+    String? search,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    if (isClosed) return;
+    if (listPublicGroups == null) {
+      emit(const GroupAccountError('Public groups not available'));
+      return;
+    }
+
+    // SWR: emit cached data immediately if available (fresh load, no search, page 1)
+    final isFreshLoad = search == null && page == 1;
+    if (isFreshLoad && _cachedPublicGroups != null && _cachedPublicGroups!.isNotEmpty) {
+      emit(PublicGroupsLoaded(
+        groups: _cachedPublicGroups!,
+        totalCount: _cachedPublicGroups!.length,
+        isStale: true,
+      ));
+    } else {
+      emit(const GroupAccountLoading(message: 'Loading public groups...'));
+    }
+
+    try {
+      final groups = await listPublicGroups!(
+        page: page,
+        pageSize: pageSize,
+        sortBy: sortBy,
+        searchQuery: search,
+      );
+      if (isClosed) return;
+      // Cache only fresh page-1 loads without search
+      if (isFreshLoad) {
+        _cachedPublicGroups = groups;
+      }
+      emit(PublicGroupsLoaded(groups: groups, totalCount: groups.length, isStale: false));
+    } catch (e) {
+      if (isClosed) return;
+      // On error with cached data, keep showing cached
+      if (isFreshLoad && _cachedPublicGroups != null && _cachedPublicGroups!.isNotEmpty) {
+        return;
+      }
+      emit(GroupAccountError('Failed to load public groups: ${e.toString()}'));
+    }
+  }
+
+  /// Get details of a public group (for non-members)
+  Future<void> loadPublicGroupDetail(String groupId) async {
+    if (isClosed) return;
+    if (getPublicGroup == null) {
+      emit(const GroupAccountError('Public group details not available'));
+      return;
+    }
+    if (groupId.trim().isEmpty) {
+      emit(const GroupAccountError('Invalid group ID'));
+      return;
+    }
+
+    emit(const GroupAccountLoading(message: 'Loading group details...'));
+    try {
+      final detail = await getPublicGroup!(groupId);
+      if (isClosed) return;
+      emit(PublicGroupDetailLoaded(detail));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountError('Failed to load group details: ${e.toString()}'));
+    }
+  }
+
+  /// Join a public group
+  Future<void> joinPublicGroupById(String groupId) async {
+    if (isClosed) return;
+    if (joinPublicGroup == null) {
+      emit(const GroupAccountError('Join group not available'));
+      return;
+    }
+    if (groupId.trim().isEmpty) {
+      emit(const GroupAccountError('Invalid group ID'));
+      return;
+    }
+
+    emit(const GroupAccountLoading(message: 'Joining group...'));
+    try {
+      final group = await joinPublicGroup!(groupId);
+      if (isClosed) return;
+      // Invalidate public groups cache so next load fetches fresh data
+      _cachedPublicGroups = null;
+      emit(JoinPublicGroupSuccess(group: group));
+      // Reload user groups to include the new one
+      await loadUserGroups();
+    } catch (e) {
+      if (isClosed) return;
+      final errorMsg = e.toString();
+      // Distinguish "already a member" errors
+      if (errorMsg.contains('AlreadyExists') || errorMsg.contains('already a member')) {
+        emit(const GroupAccountError('You are already a member of this group'));
+      } else {
+        emit(GroupAccountError('Failed to join group: $errorMsg'));
+      }
+    }
   }
 } 

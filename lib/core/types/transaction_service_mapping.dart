@@ -13,7 +13,7 @@ extension TransactionServiceTypeMapping on TransactionServiceType {
       case TransactionServiceType.giftCard:
         return AppServiceName.giftCards;
       case TransactionServiceType.electricity:
-        return AppServiceName.payElectricityBill;
+        return AppServiceName.payBills;
       case TransactionServiceType.water:
         return null; // No dedicated service yet
       case TransactionServiceType.tvSubscription:
@@ -28,8 +28,8 @@ extension TransactionServiceTypeMapping on TransactionServiceType {
         return AppServiceName.insurance;
       case TransactionServiceType.invoice:
         return AppServiceName.invoice;
-      case TransactionServiceType.barcodePayment:
-        return AppServiceName.barcodeQuickPay;
+      case TransactionServiceType.qrPayment:
+        return AppServiceName.qrPay;
       case TransactionServiceType.tagPay:
         return AppServiceName.tagPay;
       case TransactionServiceType.crowdfund:
@@ -69,7 +69,7 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.invoice;
       case AppServiceName.payInvoice:
         return TransactionServiceType.invoice;
-      case AppServiceName.payElectricityBill:
+      case AppServiceName.payBills:
         return TransactionServiceType.electricity;
       case AppServiceName.invest:
         return TransactionServiceType.stocks;
@@ -82,9 +82,9 @@ extension AppServiceNameTransactionMapping on AppServiceName {
       case AppServiceName.giftCards:
         return TransactionServiceType.giftCard;
       case AppServiceName.aiScanToPay:
-        return TransactionServiceType.barcodePayment;
-      case AppServiceName.barcodeQuickPay:
-        return TransactionServiceType.barcodePayment;
+        return TransactionServiceType.qrPayment;
+      case AppServiceName.qrPay:
+        return TransactionServiceType.qrPayment;
       case AppServiceName.groupAccount:
         return TransactionServiceType.unknown; // Not a transaction type
       case AppServiceName.insurance:
@@ -101,6 +101,16 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.unknown; // Not a transaction type
       case AppServiceName.contactlessPay:
         return TransactionServiceType.unknown; // Not a transaction type
+      case AppServiceName.payroll:
+        return TransactionServiceType.unknown; // Business service
+      case AppServiceName.businessDashboard:
+        return TransactionServiceType.unknown; // Business service
+      case AppServiceName.businessAnalytics:
+        return TransactionServiceType.unknown; // Business service
+      case AppServiceName.customers:
+        return TransactionServiceType.unknown; // Business service
+      case AppServiceName.expenses:
+        return TransactionServiceType.unknown; // Business service
     }
   }
 }

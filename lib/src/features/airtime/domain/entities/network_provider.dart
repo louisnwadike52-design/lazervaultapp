@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:equatable/equatable.dart';
 
 enum NetworkProviderType {
@@ -112,6 +113,57 @@ extension NetworkProviderTypeExtension on NetworkProviderType {
         return 'Vodafone Ghana';
       case NetworkProviderType.airtelTigo:
         return 'AirtelTigo';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case NetworkProviderType.mtn:
+      case NetworkProviderType.mtnSa:
+      case NetworkProviderType.mtnGhana:
+        return const Color(0xFFFFCC00);
+      case NetworkProviderType.airtel:
+      case NetworkProviderType.airtelIndia:
+      case NetworkProviderType.airtelKenya:
+        return const Color(0xFFFF0000);
+      case NetworkProviderType.glo:
+        return const Color(0xFF00B04F);
+      case NetworkProviderType.etisalat:
+      case NetworkProviderType.ninemobile:
+        return const Color(0xFF00AA4F);
+      case NetworkProviderType.verizon:
+        return const Color(0xFFCD040B);
+      case NetworkProviderType.att:
+        return const Color(0xFF00A8E0);
+      case NetworkProviderType.tmobile:
+        return const Color(0xFFE20074);
+      case NetworkProviderType.sprint:
+        return const Color(0xFFFFD100);
+      case NetworkProviderType.ee:
+        return const Color(0xFFF6A01A);
+      case NetworkProviderType.vodafone:
+      case NetworkProviderType.vodacomSa:
+      case NetworkProviderType.vodafoneGhana:
+        return const Color(0xFFE60000);
+      case NetworkProviderType.o2:
+        return const Color(0xFF0066CC);
+      case NetworkProviderType.three:
+        return const Color(0xFF006B5B);
+      case NetworkProviderType.jio:
+        return const Color(0xFF0073E6);
+      case NetworkProviderType.vi:
+        return const Color(0xFF8B2635);
+      case NetworkProviderType.bsnl:
+        return const Color(0xFFFF6B35);
+      case NetworkProviderType.cellC:
+        return const Color(0xFF4A90E2);
+      case NetworkProviderType.telkomMobile:
+      case NetworkProviderType.telkomKenya:
+        return const Color(0xFF008744);
+      case NetworkProviderType.safaricom:
+        return const Color(0xFF00B140);
+      case NetworkProviderType.airtelTigo:
+        return const Color(0xFFFF6B35);
     }
   }
 
@@ -421,6 +473,45 @@ class NetworkProvider extends Equatable {
       }
     }
     return false;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.name,
+      'name': name,
+      'shortName': shortName,
+      'logo': logo,
+      'primaryColor': primaryColor,
+      'prefixes': prefixes,
+      'countryCode': countryCode,
+      'isActive': isActive,
+      'discount': discount,
+      'promoMessage': promoMessage,
+      'minAmount': minAmount,
+      'maxAmount': maxAmount,
+    };
+  }
+
+  factory NetworkProvider.fromJson(Map<String, dynamic> json) {
+    return NetworkProvider(
+      id: json['id'] as String,
+      type: NetworkProviderType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => NetworkProviderType.mtn,
+      ),
+      name: json['name'] as String,
+      shortName: json['shortName'] as String,
+      logo: json['logo'] as String,
+      primaryColor: json['primaryColor'] as String,
+      prefixes: (json['prefixes'] as List).cast<String>(),
+      countryCode: json['countryCode'] as String,
+      isActive: json['isActive'] as bool? ?? true,
+      discount: json['discount'] as double?,
+      promoMessage: json['promoMessage'] as String?,
+      minAmount: (json['minAmount'] as num?)?.toDouble() ?? 1.0,
+      maxAmount: (json['maxAmount'] as num?)?.toDouble() ?? 1000.0,
+    );
   }
 
   NetworkProvider copyWith({

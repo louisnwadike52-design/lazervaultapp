@@ -26,6 +26,18 @@ service TransactionPinService {
 
   // ValidateTransactionPinToken validates a token issued after PIN verification
   rpc ValidateTransactionPinToken(ValidateTransactionPinTokenRequest) returns (ValidateTransactionPinTokenResponse);
+
+  // InitiatePinOTP sends OTP for PIN operations
+  rpc InitiatePinOTP(InitiatePinOTPRequest) returns (InitiatePinOTPResponse);
+
+  // VerifyPinOTP verifies OTP and completes PIN operation
+  rpc VerifyPinOTP(VerifyPinOTPRequest) returns (VerifyPinOTPResponse);
+
+  // GetPinOTPChannels returns available OTP channels for user
+  rpc GetPinOTPChannels(GetPinOTPChannelsRequest) returns (GetPinOTPChannelsResponse);
+
+  // CompleteForgotPin resets PIN after OTP verification
+  rpc CompleteForgotPin(CompleteForgotPinRequest) returns (CompleteForgotPinResponse);
 }
 
 // CreateTransactionPinRequest creates a new PIN
@@ -136,4 +148,69 @@ message PinConfig {
   int32 max_attempts = 3;
   int32 lockout_duration_minutes = 4;
   int32 token_expiry_minutes = 5;
+}
+
+// ===== PIN OTP OPERATIONS =====
+
+message InitiatePinOTPRequest {
+  string user_id = 1;
+  string operation_type = 2;
+  string channel = 3;
+  string device_id = 4;
+}
+
+message InitiatePinOTPResponse {
+  bool success = 1;
+  string message = 2;
+  string channel = 3;
+  string masked_destination = 4;
+  int32 expires_in_seconds = 5;
+  int32 cooldown_seconds = 6;
+}
+
+message VerifyPinOTPRequest {
+  string user_id = 1;
+  string otp_code = 2;
+  string operation_type = 3;
+  string current_pin = 4;
+  string new_pin = 5;
+  string confirm_new_pin = 6;
+  string device_id = 7;
+  string device_name = 8;
+}
+
+message VerifyPinOTPResponse {
+  bool success = 1;
+  string message = 2;
+  int32 remaining_attempts = 3;
+}
+
+message GetPinOTPChannelsRequest {
+  string user_id = 1;
+}
+
+message GetPinOTPChannelsResponse {
+  repeated OTPChannel channels = 1;
+  string recommended_channel = 2;
+}
+
+message OTPChannel {
+  string type = 1;
+  string masked_destination = 2;
+  bool is_verified = 3;
+  bool is_available = 4;
+}
+
+message CompleteForgotPinRequest {
+  string user_id = 1;
+  string otp_code = 2;
+  string new_pin = 3;
+  string confirm_new_pin = 4;
+  string device_id = 5;
+}
+
+message CompleteForgotPinResponse {
+  bool success = 1;
+  string message = 2;
+  int32 remaining_attempts = 3;
 }

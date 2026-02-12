@@ -14,14 +14,14 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'account.pbenum.dart' as $1;
-import 'common.pbenum.dart' as $43;
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'account.pbenum.dart' as $0;
+import 'common.pbenum.dart' as $3;
+import 'google/protobuf/timestamp.pb.dart' as $2;
 
 /// Invoice Payment Details Message
 class InvoicePaymentDetails extends $pb.GeneratedMessage {
   factory InvoicePaymentDetails({
-    $43.PaymentMethodType? method,
+    $3.PaymentMethodType? method,
     $core.double? amount,
     $core.String? currency,
     $core.String? cardLast4,
@@ -74,7 +74,7 @@ class InvoicePaymentDetails extends $pb.GeneratedMessage {
   factory InvoicePaymentDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvoicePaymentDetails', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..e<$43.PaymentMethodType>(1, _omitFieldNames ? '' : 'method', $pb.PbFieldType.OE, defaultOrMaker: $43.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $43.PaymentMethodType.valueOf, enumValues: $43.PaymentMethodType.values)
+    ..e<$3.PaymentMethodType>(1, _omitFieldNames ? '' : 'method', $pb.PbFieldType.OE, defaultOrMaker: $3.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $3.PaymentMethodType.valueOf, enumValues: $3.PaymentMethodType.values)
     ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(3, _omitFieldNames ? '' : 'currency')
     ..aOS(4, _omitFieldNames ? '' : 'cardLast4')
@@ -110,9 +110,9 @@ class InvoicePaymentDetails extends $pb.GeneratedMessage {
   static InvoicePaymentDetails? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $43.PaymentMethodType get method => $_getN(0);
+  $3.PaymentMethodType get method => $_getN(0);
   @$pb.TagNumber(1)
-  set method($43.PaymentMethodType v) { setField(1, v); }
+  set method($3.PaymentMethodType v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasMethod() => $_has(0);
   @$pb.TagNumber(1)
@@ -210,8 +210,8 @@ class InvoicePaymentResult extends $pb.GeneratedMessage {
     $core.String? transactionId,
     $core.String? paymentReference,
     $core.String? errorMessage,
-    $43.InvoicePaymentStatus? status,
-    $42.Timestamp? processedAt,
+    $3.InvoicePaymentStatus? status,
+    $2.Timestamp? processedAt,
     $core.double? amountProcessed,
     $core.double? feeAmount,
     $core.String? receiptUrl,
@@ -259,8 +259,8 @@ class InvoicePaymentResult extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'transactionId')
     ..aOS(3, _omitFieldNames ? '' : 'paymentReference')
     ..aOS(4, _omitFieldNames ? '' : 'errorMessage')
-    ..e<$43.InvoicePaymentStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $43.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $43.InvoicePaymentStatus.valueOf, enumValues: $43.InvoicePaymentStatus.values)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'processedAt', subBuilder: $42.Timestamp.create)
+    ..e<$3.InvoicePaymentStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $3.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $3.InvoicePaymentStatus.valueOf, enumValues: $3.InvoicePaymentStatus.values)
+    ..aOM<$2.Timestamp>(6, _omitFieldNames ? '' : 'processedAt', subBuilder: $2.Timestamp.create)
     ..a<$core.double>(7, _omitFieldNames ? '' : 'amountProcessed', $pb.PbFieldType.OD)
     ..a<$core.double>(8, _omitFieldNames ? '' : 'feeAmount', $pb.PbFieldType.OD)
     ..aOS(9, _omitFieldNames ? '' : 'receiptUrl')
@@ -326,24 +326,24 @@ class InvoicePaymentResult extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(4);
 
   @$pb.TagNumber(5)
-  $43.InvoicePaymentStatus get status => $_getN(4);
+  $3.InvoicePaymentStatus get status => $_getN(4);
   @$pb.TagNumber(5)
-  set status($43.InvoicePaymentStatus v) { setField(5, v); }
+  set status($3.InvoicePaymentStatus v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasStatus() => $_has(4);
   @$pb.TagNumber(5)
   void clearStatus() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get processedAt => $_getN(5);
+  $2.Timestamp get processedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set processedAt($42.Timestamp v) { setField(6, v); }
+  set processedAt($2.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasProcessedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearProcessedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureProcessedAt() => $_ensure(5);
+  $2.Timestamp ensureProcessedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.double get amountProcessed => $_getN(6);
@@ -390,10 +390,10 @@ class InvoicePaymentTransaction extends $pb.GeneratedMessage {
     $core.String? userId,
     $core.double? amount,
     $core.String? currency,
-    $43.PaymentMethodType? paymentMethod,
-    $43.InvoicePaymentStatus? status,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? processedAt,
+    $3.PaymentMethodType? paymentMethod,
+    $3.InvoicePaymentStatus? status,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? processedAt,
     $core.String? reference,
     $core.String? description,
     $core.double? feeAmount,
@@ -459,10 +459,10 @@ class InvoicePaymentTransaction extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'userId')
     ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'currency')
-    ..e<$43.PaymentMethodType>(6, _omitFieldNames ? '' : 'paymentMethod', $pb.PbFieldType.OE, defaultOrMaker: $43.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $43.PaymentMethodType.valueOf, enumValues: $43.PaymentMethodType.values)
-    ..e<$43.InvoicePaymentStatus>(7, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $43.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $43.InvoicePaymentStatus.valueOf, enumValues: $43.InvoicePaymentStatus.values)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'processedAt', subBuilder: $42.Timestamp.create)
+    ..e<$3.PaymentMethodType>(6, _omitFieldNames ? '' : 'paymentMethod', $pb.PbFieldType.OE, defaultOrMaker: $3.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $3.PaymentMethodType.valueOf, enumValues: $3.PaymentMethodType.values)
+    ..e<$3.InvoicePaymentStatus>(7, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $3.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $3.InvoicePaymentStatus.valueOf, enumValues: $3.InvoicePaymentStatus.values)
+    ..aOM<$2.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(9, _omitFieldNames ? '' : 'processedAt', subBuilder: $2.Timestamp.create)
     ..aOS(10, _omitFieldNames ? '' : 'reference')
     ..aOS(11, _omitFieldNames ? '' : 'description')
     ..a<$core.double>(12, _omitFieldNames ? '' : 'feeAmount', $pb.PbFieldType.OD)
@@ -539,44 +539,44 @@ class InvoicePaymentTransaction extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(5);
 
   @$pb.TagNumber(6)
-  $43.PaymentMethodType get paymentMethod => $_getN(5);
+  $3.PaymentMethodType get paymentMethod => $_getN(5);
   @$pb.TagNumber(6)
-  set paymentMethod($43.PaymentMethodType v) { setField(6, v); }
+  set paymentMethod($3.PaymentMethodType v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasPaymentMethod() => $_has(5);
   @$pb.TagNumber(6)
   void clearPaymentMethod() => clearField(6);
 
   @$pb.TagNumber(7)
-  $43.InvoicePaymentStatus get status => $_getN(6);
+  $3.InvoicePaymentStatus get status => $_getN(6);
   @$pb.TagNumber(7)
-  set status($43.InvoicePaymentStatus v) { setField(7, v); }
+  set status($3.InvoicePaymentStatus v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasStatus() => $_has(6);
   @$pb.TagNumber(7)
   void clearStatus() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get createdAt => $_getN(7);
+  $2.Timestamp get createdAt => $_getN(7);
   @$pb.TagNumber(8)
-  set createdAt($42.Timestamp v) { setField(8, v); }
+  set createdAt($2.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasCreatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearCreatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureCreatedAt() => $_ensure(7);
+  $2.Timestamp ensureCreatedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get processedAt => $_getN(8);
+  $2.Timestamp get processedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set processedAt($42.Timestamp v) { setField(9, v); }
+  set processedAt($2.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasProcessedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearProcessedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureProcessedAt() => $_ensure(8);
+  $2.Timestamp ensureProcessedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.String get reference => $_getSZ(9);
@@ -635,9 +635,9 @@ class UserAccountBalance extends $pb.GeneratedMessage {
     $core.double? availableBalance,
     $core.double? pendingBalance,
     $core.double? totalBalance,
-    $1.VirtualAccountType? accountType,
+    $0.VirtualAccountType? accountType,
     $core.String? accountNumber,
-    $42.Timestamp? lastUpdated,
+    $2.Timestamp? lastUpdated,
     $core.String? accountName,
     $core.bool? isPrimary,
   }) {
@@ -684,9 +684,9 @@ class UserAccountBalance extends $pb.GeneratedMessage {
     ..a<$core.double>(3, _omitFieldNames ? '' : 'availableBalance', $pb.PbFieldType.OD)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'pendingBalance', $pb.PbFieldType.OD)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'totalBalance', $pb.PbFieldType.OD)
-    ..e<$1.VirtualAccountType>(6, _omitFieldNames ? '' : 'accountType', $pb.PbFieldType.OE, defaultOrMaker: $1.VirtualAccountType.ACCOUNT_TYPE_UNSPECIFIED, valueOf: $1.VirtualAccountType.valueOf, enumValues: $1.VirtualAccountType.values)
+    ..e<$0.VirtualAccountType>(6, _omitFieldNames ? '' : 'accountType', $pb.PbFieldType.OE, defaultOrMaker: $0.VirtualAccountType.ACCOUNT_TYPE_UNSPECIFIED, valueOf: $0.VirtualAccountType.valueOf, enumValues: $0.VirtualAccountType.values)
     ..aOS(7, _omitFieldNames ? '' : 'accountNumber')
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(8, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $2.Timestamp.create)
     ..aOS(9, _omitFieldNames ? '' : 'accountName')
     ..aOB(10, _omitFieldNames ? '' : 'isPrimary')
     ..hasRequiredFields = false
@@ -759,9 +759,9 @@ class UserAccountBalance extends $pb.GeneratedMessage {
   void clearTotalBalance() => clearField(5);
 
   @$pb.TagNumber(6)
-  $1.VirtualAccountType get accountType => $_getN(5);
+  $0.VirtualAccountType get accountType => $_getN(5);
   @$pb.TagNumber(6)
-  set accountType($1.VirtualAccountType v) { setField(6, v); }
+  set accountType($0.VirtualAccountType v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasAccountType() => $_has(5);
   @$pb.TagNumber(6)
@@ -777,15 +777,15 @@ class UserAccountBalance extends $pb.GeneratedMessage {
   void clearAccountNumber() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get lastUpdated => $_getN(7);
+  $2.Timestamp get lastUpdated => $_getN(7);
   @$pb.TagNumber(8)
-  set lastUpdated($42.Timestamp v) { setField(8, v); }
+  set lastUpdated($2.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLastUpdated() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastUpdated() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureLastUpdated() => $_ensure(7);
+  $2.Timestamp ensureLastUpdated() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get accountName => $_getSZ(8);
@@ -811,14 +811,14 @@ class PaymentMethod extends $pb.GeneratedMessage {
   factory PaymentMethod({
     $core.String? methodId,
     $core.String? userId,
-    $43.PaymentMethodType? type,
+    $3.PaymentMethodType? type,
     $core.String? displayName,
     $core.String? last4,
     $core.String? brand,
     $core.bool? isDefault,
     $core.bool? isVerified,
-    $42.Timestamp? expiresAt,
-    $42.Timestamp? createdAt,
+    $2.Timestamp? expiresAt,
+    $2.Timestamp? createdAt,
     $core.Map<$core.String, $core.String>? metadata,
     $core.String? billingAddress,
   }) {
@@ -868,14 +868,14 @@ class PaymentMethod extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaymentMethod', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'methodId')
     ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..e<$43.PaymentMethodType>(3, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: $43.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $43.PaymentMethodType.valueOf, enumValues: $43.PaymentMethodType.values)
+    ..e<$3.PaymentMethodType>(3, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: $3.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $3.PaymentMethodType.valueOf, enumValues: $3.PaymentMethodType.values)
     ..aOS(4, _omitFieldNames ? '' : 'displayName')
     ..aOS(5, _omitFieldNames ? '' : 'last4')
     ..aOS(6, _omitFieldNames ? '' : 'brand')
     ..aOB(7, _omitFieldNames ? '' : 'isDefault')
     ..aOB(8, _omitFieldNames ? '' : 'isVerified')
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'expiresAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(9, _omitFieldNames ? '' : 'expiresAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
     ..m<$core.String, $core.String>(11, _omitFieldNames ? '' : 'metadata', entryClassName: 'PaymentMethod.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
     ..aOS(12, _omitFieldNames ? '' : 'billingAddress')
     ..hasRequiredFields = false
@@ -921,9 +921,9 @@ class PaymentMethod extends $pb.GeneratedMessage {
   void clearUserId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $43.PaymentMethodType get type => $_getN(2);
+  $3.PaymentMethodType get type => $_getN(2);
   @$pb.TagNumber(3)
-  set type($43.PaymentMethodType v) { setField(3, v); }
+  set type($3.PaymentMethodType v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasType() => $_has(2);
   @$pb.TagNumber(3)
@@ -975,26 +975,26 @@ class PaymentMethod extends $pb.GeneratedMessage {
   void clearIsVerified() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get expiresAt => $_getN(8);
+  $2.Timestamp get expiresAt => $_getN(8);
   @$pb.TagNumber(9)
-  set expiresAt($42.Timestamp v) { setField(9, v); }
+  set expiresAt($2.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasExpiresAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearExpiresAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureExpiresAt() => $_ensure(8);
+  $2.Timestamp ensureExpiresAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get createdAt => $_getN(9);
+  $2.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($42.Timestamp v) { setField(10, v); }
+  set createdAt($2.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureCreatedAt() => $_ensure(9);
+  $2.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.Map<$core.String, $core.String> get metadata => $_getMap(10);
@@ -1018,8 +1018,8 @@ class InvoiceCryptoWallet extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.double? balance,
     $core.bool? isVerified,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? lastSync,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? lastSync,
     $core.String? network,
     $core.String? walletType,
   }) {
@@ -1067,8 +1067,8 @@ class InvoiceCryptoWallet extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'currency')
     ..a<$core.double>(5, _omitFieldNames ? '' : 'balance', $pb.PbFieldType.OD)
     ..aOB(6, _omitFieldNames ? '' : 'isVerified')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'lastSync', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(8, _omitFieldNames ? '' : 'lastSync', subBuilder: $2.Timestamp.create)
     ..aOS(9, _omitFieldNames ? '' : 'network')
     ..aOS(10, _omitFieldNames ? '' : 'walletType')
     ..hasRequiredFields = false
@@ -1150,26 +1150,26 @@ class InvoiceCryptoWallet extends $pb.GeneratedMessage {
   void clearIsVerified() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get createdAt => $_getN(6);
+  $2.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($42.Timestamp v) { setField(7, v); }
+  set createdAt($2.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureCreatedAt() => $_ensure(6);
+  $2.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get lastSync => $_getN(7);
+  $2.Timestamp get lastSync => $_getN(7);
   @$pb.TagNumber(8)
-  set lastSync($42.Timestamp v) { setField(8, v); }
+  set lastSync($2.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLastSync() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastSync() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureLastSync() => $_ensure(7);
+  $2.Timestamp ensureLastSync() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get network => $_getSZ(8);
@@ -1196,11 +1196,11 @@ class PaymentExtensionRequest extends $pb.GeneratedMessage {
     $core.String? extensionId,
     $core.String? invoiceId,
     $core.String? userId,
-    $42.Timestamp? newDueDate,
+    $2.Timestamp? newDueDate,
     $core.String? reason,
     $core.String? status,
-    $42.Timestamp? requestedAt,
-    $42.Timestamp? approvedAt,
+    $2.Timestamp? requestedAt,
+    $2.Timestamp? approvedAt,
     $core.String? approvedBy,
     $core.String? rejectionReason,
   }) {
@@ -1245,11 +1245,11 @@ class PaymentExtensionRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'extensionId')
     ..aOS(2, _omitFieldNames ? '' : 'invoiceId')
     ..aOS(3, _omitFieldNames ? '' : 'userId')
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'newDueDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'newDueDate', subBuilder: $2.Timestamp.create)
     ..aOS(5, _omitFieldNames ? '' : 'reason')
     ..aOS(6, _omitFieldNames ? '' : 'status')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'requestedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'approvedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(7, _omitFieldNames ? '' : 'requestedAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(8, _omitFieldNames ? '' : 'approvedAt', subBuilder: $2.Timestamp.create)
     ..aOS(9, _omitFieldNames ? '' : 'approvedBy')
     ..aOS(10, _omitFieldNames ? '' : 'rejectionReason')
     ..hasRequiredFields = false
@@ -1304,15 +1304,15 @@ class PaymentExtensionRequest extends $pb.GeneratedMessage {
   void clearUserId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get newDueDate => $_getN(3);
+  $2.Timestamp get newDueDate => $_getN(3);
   @$pb.TagNumber(4)
-  set newDueDate($42.Timestamp v) { setField(4, v); }
+  set newDueDate($2.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasNewDueDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearNewDueDate() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureNewDueDate() => $_ensure(3);
+  $2.Timestamp ensureNewDueDate() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.String get reason => $_getSZ(4);
@@ -1333,26 +1333,26 @@ class PaymentExtensionRequest extends $pb.GeneratedMessage {
   void clearStatus() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get requestedAt => $_getN(6);
+  $2.Timestamp get requestedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set requestedAt($42.Timestamp v) { setField(7, v); }
+  set requestedAt($2.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasRequestedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearRequestedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureRequestedAt() => $_ensure(6);
+  $2.Timestamp ensureRequestedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get approvedAt => $_getN(7);
+  $2.Timestamp get approvedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set approvedAt($42.Timestamp v) { setField(8, v); }
+  set approvedAt($2.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasApprovedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearApprovedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureApprovedAt() => $_ensure(7);
+  $2.Timestamp ensureApprovedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get approvedBy => $_getSZ(8);
@@ -1382,11 +1382,11 @@ class PaymentDispute extends $pb.GeneratedMessage {
     $core.String? userId,
     $core.String? reason,
     $core.String? description,
-    $43.DisputeStatus? status,
+    $3.DisputeStatus? status,
     $core.double? amount,
     $core.String? currency,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? resolvedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? resolvedAt,
     $core.String? resolution,
     $core.Iterable<$core.String>? evidenceFiles,
   }) {
@@ -1443,11 +1443,11 @@ class PaymentDispute extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'userId')
     ..aOS(5, _omitFieldNames ? '' : 'reason')
     ..aOS(6, _omitFieldNames ? '' : 'description')
-    ..e<$43.DisputeStatus>(7, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $43.DisputeStatus.DISPUTE_STATUS_PENDING, valueOf: $43.DisputeStatus.valueOf, enumValues: $43.DisputeStatus.values)
+    ..e<$3.DisputeStatus>(7, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $3.DisputeStatus.DISPUTE_STATUS_PENDING, valueOf: $3.DisputeStatus.valueOf, enumValues: $3.DisputeStatus.values)
     ..a<$core.double>(8, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(9, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'resolvedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(11, _omitFieldNames ? '' : 'resolvedAt', subBuilder: $2.Timestamp.create)
     ..aOS(12, _omitFieldNames ? '' : 'resolution')
     ..pPS(13, _omitFieldNames ? '' : 'evidenceFiles')
     ..hasRequiredFields = false
@@ -1529,9 +1529,9 @@ class PaymentDispute extends $pb.GeneratedMessage {
   void clearDescription() => clearField(6);
 
   @$pb.TagNumber(7)
-  $43.DisputeStatus get status => $_getN(6);
+  $3.DisputeStatus get status => $_getN(6);
   @$pb.TagNumber(7)
-  set status($43.DisputeStatus v) { setField(7, v); }
+  set status($3.DisputeStatus v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasStatus() => $_has(6);
   @$pb.TagNumber(7)
@@ -1556,26 +1556,26 @@ class PaymentDispute extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get createdAt => $_getN(9);
+  $2.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($42.Timestamp v) { setField(10, v); }
+  set createdAt($2.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureCreatedAt() => $_ensure(9);
+  $2.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get resolvedAt => $_getN(10);
+  $2.Timestamp get resolvedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set resolvedAt($42.Timestamp v) { setField(11, v); }
+  set resolvedAt($2.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasResolvedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearResolvedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureResolvedAt() => $_ensure(10);
+  $2.Timestamp ensureResolvedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get resolution => $_getSZ(11);
@@ -2288,9 +2288,9 @@ class GetInvoicePaymentStatusRequest extends $pb.GeneratedMessage {
 class GetInvoicePaymentStatusResponse extends $pb.GeneratedMessage {
   factory GetInvoicePaymentStatusResponse({
     InvoicePaymentTransaction? transaction,
-    $43.InvoicePaymentStatus? currentStatus,
+    $3.InvoicePaymentStatus? currentStatus,
     $core.String? statusMessage,
-    $42.Timestamp? lastUpdated,
+    $2.Timestamp? lastUpdated,
   }) {
     final $result = create();
     if (transaction != null) {
@@ -2313,9 +2313,9 @@ class GetInvoicePaymentStatusResponse extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoicePaymentStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOM<InvoicePaymentTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: InvoicePaymentTransaction.create)
-    ..e<$43.InvoicePaymentStatus>(2, _omitFieldNames ? '' : 'currentStatus', $pb.PbFieldType.OE, defaultOrMaker: $43.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $43.InvoicePaymentStatus.valueOf, enumValues: $43.InvoicePaymentStatus.values)
+    ..e<$3.InvoicePaymentStatus>(2, _omitFieldNames ? '' : 'currentStatus', $pb.PbFieldType.OE, defaultOrMaker: $3.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $3.InvoicePaymentStatus.valueOf, enumValues: $3.InvoicePaymentStatus.values)
     ..aOS(3, _omitFieldNames ? '' : 'statusMessage')
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -2352,9 +2352,9 @@ class GetInvoicePaymentStatusResponse extends $pb.GeneratedMessage {
   InvoicePaymentTransaction ensureTransaction() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $43.InvoicePaymentStatus get currentStatus => $_getN(1);
+  $3.InvoicePaymentStatus get currentStatus => $_getN(1);
   @$pb.TagNumber(2)
-  set currentStatus($43.InvoicePaymentStatus v) { setField(2, v); }
+  set currentStatus($3.InvoicePaymentStatus v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasCurrentStatus() => $_has(1);
   @$pb.TagNumber(2)
@@ -2370,15 +2370,15 @@ class GetInvoicePaymentStatusResponse extends $pb.GeneratedMessage {
   void clearStatusMessage() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get lastUpdated => $_getN(3);
+  $2.Timestamp get lastUpdated => $_getN(3);
   @$pb.TagNumber(4)
-  set lastUpdated($42.Timestamp v) { setField(4, v); }
+  set lastUpdated($2.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasLastUpdated() => $_has(3);
   @$pb.TagNumber(4)
   void clearLastUpdated() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureLastUpdated() => $_ensure(3);
+  $2.Timestamp ensureLastUpdated() => $_ensure(3);
 }
 
 class CancelInvoicePaymentRequest extends $pb.GeneratedMessage {
@@ -2449,7 +2449,7 @@ class CancelInvoicePaymentResponse extends $pb.GeneratedMessage {
   factory CancelInvoicePaymentResponse({
     $core.bool? success,
     $core.String? message,
-    $43.InvoicePaymentStatus? newStatus,
+    $3.InvoicePaymentStatus? newStatus,
     $core.double? refundAmount,
   }) {
     final $result = create();
@@ -2474,7 +2474,7 @@ class CancelInvoicePaymentResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelInvoicePaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..e<$43.InvoicePaymentStatus>(3, _omitFieldNames ? '' : 'newStatus', $pb.PbFieldType.OE, defaultOrMaker: $43.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $43.InvoicePaymentStatus.valueOf, enumValues: $43.InvoicePaymentStatus.values)
+    ..e<$3.InvoicePaymentStatus>(3, _omitFieldNames ? '' : 'newStatus', $pb.PbFieldType.OE, defaultOrMaker: $3.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $3.InvoicePaymentStatus.valueOf, enumValues: $3.InvoicePaymentStatus.values)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'refundAmount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
@@ -2519,9 +2519,9 @@ class CancelInvoicePaymentResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $43.InvoicePaymentStatus get newStatus => $_getN(2);
+  $3.InvoicePaymentStatus get newStatus => $_getN(2);
   @$pb.TagNumber(3)
-  set newStatus($43.InvoicePaymentStatus v) { setField(3, v); }
+  set newStatus($3.InvoicePaymentStatus v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasNewStatus() => $_has(2);
   @$pb.TagNumber(3)
@@ -2540,7 +2540,7 @@ class CancelInvoicePaymentResponse extends $pb.GeneratedMessage {
 /// Payment Methods Management
 class GetUserInvoicePaymentMethodsRequest extends $pb.GeneratedMessage {
   factory GetUserInvoicePaymentMethodsRequest({
-    $43.PaymentMethodType? typeFilter,
+    $3.PaymentMethodType? typeFilter,
   }) {
     final $result = create();
     if (typeFilter != null) {
@@ -2553,7 +2553,7 @@ class GetUserInvoicePaymentMethodsRequest extends $pb.GeneratedMessage {
   factory GetUserInvoicePaymentMethodsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserInvoicePaymentMethodsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..e<$43.PaymentMethodType>(1, _omitFieldNames ? '' : 'typeFilter', $pb.PbFieldType.OE, defaultOrMaker: $43.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $43.PaymentMethodType.valueOf, enumValues: $43.PaymentMethodType.values)
+    ..e<$3.PaymentMethodType>(1, _omitFieldNames ? '' : 'typeFilter', $pb.PbFieldType.OE, defaultOrMaker: $3.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $3.PaymentMethodType.valueOf, enumValues: $3.PaymentMethodType.values)
     ..hasRequiredFields = false
   ;
 
@@ -2579,9 +2579,9 @@ class GetUserInvoicePaymentMethodsRequest extends $pb.GeneratedMessage {
   static GetUserInvoicePaymentMethodsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $43.PaymentMethodType get typeFilter => $_getN(0);
+  $3.PaymentMethodType get typeFilter => $_getN(0);
   @$pb.TagNumber(1)
-  set typeFilter($43.PaymentMethodType v) { setField(1, v); }
+  set typeFilter($3.PaymentMethodType v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTypeFilter() => $_has(0);
   @$pb.TagNumber(1)
@@ -2650,7 +2650,7 @@ class GetUserInvoicePaymentMethodsResponse extends $pb.GeneratedMessage {
 
 class AddInvoicePaymentMethodRequest extends $pb.GeneratedMessage {
   factory AddInvoicePaymentMethodRequest({
-    $43.PaymentMethodType? type,
+    $3.PaymentMethodType? type,
     $core.String? displayName,
     $core.Map<$core.String, $core.String>? paymentDetails,
     $core.bool? setAsDefault,
@@ -2679,7 +2679,7 @@ class AddInvoicePaymentMethodRequest extends $pb.GeneratedMessage {
   factory AddInvoicePaymentMethodRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddInvoicePaymentMethodRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..e<$43.PaymentMethodType>(1, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: $43.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $43.PaymentMethodType.valueOf, enumValues: $43.PaymentMethodType.values)
+    ..e<$3.PaymentMethodType>(1, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: $3.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE, valueOf: $3.PaymentMethodType.valueOf, enumValues: $3.PaymentMethodType.values)
     ..aOS(2, _omitFieldNames ? '' : 'displayName')
     ..m<$core.String, $core.String>(3, _omitFieldNames ? '' : 'paymentDetails', entryClassName: 'AddInvoicePaymentMethodRequest.PaymentDetailsEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
     ..aOB(4, _omitFieldNames ? '' : 'setAsDefault')
@@ -2709,9 +2709,9 @@ class AddInvoicePaymentMethodRequest extends $pb.GeneratedMessage {
   static AddInvoicePaymentMethodRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $43.PaymentMethodType get type => $_getN(0);
+  $3.PaymentMethodType get type => $_getN(0);
   @$pb.TagNumber(1)
-  set type($43.PaymentMethodType v) { setField(1, v); }
+  set type($3.PaymentMethodType v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasType() => $_has(0);
   @$pb.TagNumber(1)
@@ -3024,7 +3024,7 @@ class ValidateInvoicePaymentMethodResponse extends $pb.GeneratedMessage {
   factory ValidateInvoicePaymentMethodResponse({
     $core.bool? isValid,
     $core.String? validationMessage,
-    $42.Timestamp? validatedAt,
+    $2.Timestamp? validatedAt,
   }) {
     final $result = create();
     if (isValid != null) {
@@ -3045,7 +3045,7 @@ class ValidateInvoicePaymentMethodResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateInvoicePaymentMethodResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'isValid')
     ..aOS(2, _omitFieldNames ? '' : 'validationMessage')
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'validatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'validatedAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -3089,15 +3089,15 @@ class ValidateInvoicePaymentMethodResponse extends $pb.GeneratedMessage {
   void clearValidationMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get validatedAt => $_getN(2);
+  $2.Timestamp get validatedAt => $_getN(2);
   @$pb.TagNumber(3)
-  set validatedAt($42.Timestamp v) { setField(3, v); }
+  set validatedAt($2.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasValidatedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearValidatedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureValidatedAt() => $_ensure(2);
+  $2.Timestamp ensureValidatedAt() => $_ensure(2);
 }
 
 class UpdateInvoicePaymentMethodRequest extends $pb.GeneratedMessage {
@@ -3284,7 +3284,7 @@ class UpdateInvoicePaymentMethodResponse extends $pb.GeneratedMessage {
 class GetUserAccountBalanceRequest extends $pb.GeneratedMessage {
   factory GetUserAccountBalanceRequest({
     $core.String? currency,
-    $1.VirtualAccountType? accountType,
+    $0.VirtualAccountType? accountType,
   }) {
     final $result = create();
     if (currency != null) {
@@ -3301,7 +3301,7 @@ class GetUserAccountBalanceRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserAccountBalanceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'currency')
-    ..e<$1.VirtualAccountType>(2, _omitFieldNames ? '' : 'accountType', $pb.PbFieldType.OE, defaultOrMaker: $1.VirtualAccountType.ACCOUNT_TYPE_UNSPECIFIED, valueOf: $1.VirtualAccountType.valueOf, enumValues: $1.VirtualAccountType.values)
+    ..e<$0.VirtualAccountType>(2, _omitFieldNames ? '' : 'accountType', $pb.PbFieldType.OE, defaultOrMaker: $0.VirtualAccountType.ACCOUNT_TYPE_UNSPECIFIED, valueOf: $0.VirtualAccountType.valueOf, enumValues: $0.VirtualAccountType.values)
     ..hasRequiredFields = false
   ;
 
@@ -3336,9 +3336,9 @@ class GetUserAccountBalanceRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.VirtualAccountType get accountType => $_getN(1);
+  $0.VirtualAccountType get accountType => $_getN(1);
   @$pb.TagNumber(2)
-  set accountType($1.VirtualAccountType v) { setField(2, v); }
+  set accountType($0.VirtualAccountType v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasAccountType() => $_has(1);
   @$pb.TagNumber(2)
@@ -3420,8 +3420,8 @@ class GetUserAccountBalanceResponse extends $pb.GeneratedMessage {
 class GetAccountBalanceHistoryRequest extends $pb.GeneratedMessage {
   factory GetAccountBalanceHistoryRequest({
     $core.String? accountId,
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $2.Timestamp? startDate,
+    $2.Timestamp? endDate,
     $core.int? pageSize,
     $core.String? pageToken,
   }) {
@@ -3449,8 +3449,8 @@ class GetAccountBalanceHistoryRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAccountBalanceHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'accountId')
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(2, _omitFieldNames ? '' : 'startDate', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'endDate', subBuilder: $2.Timestamp.create)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(5, _omitFieldNames ? '' : 'pageToken')
     ..hasRequiredFields = false
@@ -3487,26 +3487,26 @@ class GetAccountBalanceHistoryRequest extends $pb.GeneratedMessage {
   void clearAccountId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get startDate => $_getN(1);
+  $2.Timestamp get startDate => $_getN(1);
   @$pb.TagNumber(2)
-  set startDate($42.Timestamp v) { setField(2, v); }
+  set startDate($2.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasStartDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearStartDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureStartDate() => $_ensure(1);
+  $2.Timestamp ensureStartDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get endDate => $_getN(2);
+  $2.Timestamp get endDate => $_getN(2);
   @$pb.TagNumber(3)
-  set endDate($42.Timestamp v) { setField(3, v); }
+  set endDate($2.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasEndDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndDate() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureEndDate() => $_ensure(2);
+  $2.Timestamp ensureEndDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.int get pageSize => $_getIZ(3);
@@ -3587,7 +3587,7 @@ class GetAccountBalanceHistoryResponse extends $pb.GeneratedMessage {
 
 class BalanceHistoryEntry extends $pb.GeneratedMessage {
   factory BalanceHistoryEntry({
-    $42.Timestamp? timestamp,
+    $2.Timestamp? timestamp,
     $core.double? balance,
     $core.double? changeAmount,
     $core.String? transactionType,
@@ -3620,7 +3620,7 @@ class BalanceHistoryEntry extends $pb.GeneratedMessage {
   factory BalanceHistoryEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BalanceHistoryEntry', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'timestamp', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(1, _omitFieldNames ? '' : 'timestamp', subBuilder: $2.Timestamp.create)
     ..a<$core.double>(2, _omitFieldNames ? '' : 'balance', $pb.PbFieldType.OD)
     ..a<$core.double>(3, _omitFieldNames ? '' : 'changeAmount', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'transactionType')
@@ -3651,15 +3651,15 @@ class BalanceHistoryEntry extends $pb.GeneratedMessage {
   static BalanceHistoryEntry? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get timestamp => $_getN(0);
+  $2.Timestamp get timestamp => $_getN(0);
   @$pb.TagNumber(1)
-  set timestamp($42.Timestamp v) { setField(1, v); }
+  set timestamp($2.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTimestamp() => $_has(0);
   @$pb.TagNumber(1)
   void clearTimestamp() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureTimestamp() => $_ensure(0);
+  $2.Timestamp ensureTimestamp() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get balance => $_getN(1);
@@ -4242,7 +4242,7 @@ class GetInvoiceCryptoWalletBalanceResponse extends $pb.GeneratedMessage {
   factory GetInvoiceCryptoWalletBalanceResponse({
     $core.double? balance,
     $core.String? currency,
-    $42.Timestamp? lastUpdated,
+    $2.Timestamp? lastUpdated,
     $core.String? network,
   }) {
     final $result = create();
@@ -4267,7 +4267,7 @@ class GetInvoiceCryptoWalletBalanceResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoiceCryptoWalletBalanceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..a<$core.double>(1, _omitFieldNames ? '' : 'balance', $pb.PbFieldType.OD)
     ..aOS(2, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $2.Timestamp.create)
     ..aOS(4, _omitFieldNames ? '' : 'network')
     ..hasRequiredFields = false
   ;
@@ -4312,15 +4312,15 @@ class GetInvoiceCryptoWalletBalanceResponse extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get lastUpdated => $_getN(2);
+  $2.Timestamp get lastUpdated => $_getN(2);
   @$pb.TagNumber(3)
-  set lastUpdated($42.Timestamp v) { setField(3, v); }
+  set lastUpdated($2.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasLastUpdated() => $_has(2);
   @$pb.TagNumber(3)
   void clearLastUpdated() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureLastUpdated() => $_ensure(2);
+  $2.Timestamp ensureLastUpdated() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.String get network => $_getSZ(3);
@@ -4573,7 +4573,7 @@ class GetCryptoInvoicePaymentStatusResponse extends $pb.GeneratedMessage {
     $core.int? requiredConfirmations,
     $core.double? amount,
     $core.String? currency,
-    $42.Timestamp? timestamp,
+    $2.Timestamp? timestamp,
   }) {
     final $result = create();
     if (status != null) {
@@ -4606,7 +4606,7 @@ class GetCryptoInvoicePaymentStatusResponse extends $pb.GeneratedMessage {
     ..a<$core.int>(3, _omitFieldNames ? '' : 'requiredConfirmations', $pb.PbFieldType.O3)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'timestamp', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(6, _omitFieldNames ? '' : 'timestamp', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -4677,22 +4677,22 @@ class GetCryptoInvoicePaymentStatusResponse extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get timestamp => $_getN(5);
+  $2.Timestamp get timestamp => $_getN(5);
   @$pb.TagNumber(6)
-  set timestamp($42.Timestamp v) { setField(6, v); }
+  set timestamp($2.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasTimestamp() => $_has(5);
   @$pb.TagNumber(6)
   void clearTimestamp() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureTimestamp() => $_ensure(5);
+  $2.Timestamp ensureTimestamp() => $_ensure(5);
 }
 
 /// Payment Extensions and Disputes
 class RequestInvoicePaymentExtensionRequest extends $pb.GeneratedMessage {
   factory RequestInvoicePaymentExtensionRequest({
     $core.String? invoiceId,
-    $42.Timestamp? newDueDate,
+    $2.Timestamp? newDueDate,
     $core.String? reason,
     $core.String? justification,
   }) {
@@ -4717,7 +4717,7 @@ class RequestInvoicePaymentExtensionRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestInvoicePaymentExtensionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'newDueDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(2, _omitFieldNames ? '' : 'newDueDate', subBuilder: $2.Timestamp.create)
     ..aOS(3, _omitFieldNames ? '' : 'reason')
     ..aOS(4, _omitFieldNames ? '' : 'justification')
     ..hasRequiredFields = false
@@ -4754,15 +4754,15 @@ class RequestInvoicePaymentExtensionRequest extends $pb.GeneratedMessage {
   void clearInvoiceId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get newDueDate => $_getN(1);
+  $2.Timestamp get newDueDate => $_getN(1);
   @$pb.TagNumber(2)
-  set newDueDate($42.Timestamp v) { setField(2, v); }
+  set newDueDate($2.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasNewDueDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearNewDueDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureNewDueDate() => $_ensure(1);
+  $2.Timestamp ensureNewDueDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.String get reason => $_getSZ(2);
@@ -4882,7 +4882,7 @@ class ApproveInvoicePaymentExtensionRequest extends $pb.GeneratedMessage {
     $core.String? requestId,
     $core.bool? approved,
     $core.String? approvalReason,
-    $42.Timestamp? approvedDate,
+    $2.Timestamp? approvedDate,
   }) {
     final $result = create();
     if (requestId != null) {
@@ -4907,7 +4907,7 @@ class ApproveInvoicePaymentExtensionRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'requestId')
     ..aOB(2, _omitFieldNames ? '' : 'approved')
     ..aOS(3, _omitFieldNames ? '' : 'approvalReason')
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'approvedDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'approvedDate', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -4960,15 +4960,15 @@ class ApproveInvoicePaymentExtensionRequest extends $pb.GeneratedMessage {
   void clearApprovalReason() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get approvedDate => $_getN(3);
+  $2.Timestamp get approvedDate => $_getN(3);
   @$pb.TagNumber(4)
-  set approvedDate($42.Timestamp v) { setField(4, v); }
+  set approvedDate($2.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasApprovedDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearApprovedDate() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureApprovedDate() => $_ensure(3);
+  $2.Timestamp ensureApprovedDate() => $_ensure(3);
 }
 
 class ApproveInvoicePaymentExtensionResponse extends $pb.GeneratedMessage {
@@ -5434,11 +5434,11 @@ class ResolveInvoicePaymentDisputeResponse extends $pb.GeneratedMessage {
 /// Payment History and Analytics
 class GetInvoicePaymentHistoryRequest extends $pb.GeneratedMessage {
   factory GetInvoicePaymentHistoryRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $2.Timestamp? startDate,
+    $2.Timestamp? endDate,
     $core.int? pageSize,
     $core.String? pageToken,
-    $43.InvoicePaymentStatus? statusFilter,
+    $3.InvoicePaymentStatus? statusFilter,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -5463,11 +5463,11 @@ class GetInvoicePaymentHistoryRequest extends $pb.GeneratedMessage {
   factory GetInvoicePaymentHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoicePaymentHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $2.Timestamp.create)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(4, _omitFieldNames ? '' : 'pageToken')
-    ..e<$43.InvoicePaymentStatus>(5, _omitFieldNames ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: $43.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $43.InvoicePaymentStatus.valueOf, enumValues: $43.InvoicePaymentStatus.values)
+    ..e<$3.InvoicePaymentStatus>(5, _omitFieldNames ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: $3.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $3.InvoicePaymentStatus.valueOf, enumValues: $3.InvoicePaymentStatus.values)
     ..hasRequiredFields = false
   ;
 
@@ -5493,26 +5493,26 @@ class GetInvoicePaymentHistoryRequest extends $pb.GeneratedMessage {
   static GetInvoicePaymentHistoryRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $2.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($2.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $2.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $2.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($2.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $2.Timestamp ensureEndDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.int get pageSize => $_getIZ(2);
@@ -5533,9 +5533,9 @@ class GetInvoicePaymentHistoryRequest extends $pb.GeneratedMessage {
   void clearPageToken() => clearField(4);
 
   @$pb.TagNumber(5)
-  $43.InvoicePaymentStatus get statusFilter => $_getN(4);
+  $3.InvoicePaymentStatus get statusFilter => $_getN(4);
   @$pb.TagNumber(5)
-  set statusFilter($43.InvoicePaymentStatus v) { setField(5, v); }
+  set statusFilter($3.InvoicePaymentStatus v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasStatusFilter() => $_has(4);
   @$pb.TagNumber(5)
@@ -5616,8 +5616,8 @@ class GetInvoicePaymentHistoryResponse extends $pb.GeneratedMessage {
 
 class GetInvoicePaymentStatisticsRequest extends $pb.GeneratedMessage {
   factory GetInvoicePaymentStatisticsRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $2.Timestamp? startDate,
+    $2.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -5633,8 +5633,8 @@ class GetInvoicePaymentStatisticsRequest extends $pb.GeneratedMessage {
   factory GetInvoicePaymentStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoicePaymentStatisticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -5660,26 +5660,26 @@ class GetInvoicePaymentStatisticsRequest extends $pb.GeneratedMessage {
   static GetInvoicePaymentStatisticsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $2.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($2.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $2.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $2.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($2.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $2.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetInvoicePaymentStatisticsResponse extends $pb.GeneratedMessage {
@@ -6299,7 +6299,7 @@ class GetInvoicePaymentReceiptResponse extends $pb.GeneratedMessage {
   factory GetInvoicePaymentReceiptResponse({
     $core.String? receiptUrl,
     $core.List<$core.int>? receiptData,
-    $42.Timestamp? generatedAt,
+    $2.Timestamp? generatedAt,
   }) {
     final $result = create();
     if (receiptUrl != null) {
@@ -6320,7 +6320,7 @@ class GetInvoicePaymentReceiptResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoicePaymentReceiptResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'receiptUrl')
     ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'receiptData', $pb.PbFieldType.OY)
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'generatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'generatedAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -6364,15 +6364,15 @@ class GetInvoicePaymentReceiptResponse extends $pb.GeneratedMessage {
   void clearReceiptData() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get generatedAt => $_getN(2);
+  $2.Timestamp get generatedAt => $_getN(2);
   @$pb.TagNumber(3)
-  set generatedAt($42.Timestamp v) { setField(3, v); }
+  set generatedAt($2.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasGeneratedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearGeneratedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureGeneratedAt() => $_ensure(2);
+  $2.Timestamp ensureGeneratedAt() => $_ensure(2);
 }
 
 

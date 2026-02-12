@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../cubit/tag_pay_cubit.dart';
@@ -42,8 +43,9 @@ class _TagPaymentConfirmationScreenState
     // Ensure accounts are loaded (may not be if navigated directly)
     final accountState = context.read<AccountCardsSummaryCubit>().state;
     if (accountState is! AccountCardsSummaryLoaded) {
+      final userId = context.read<AuthenticationCubit>().userId ?? '';
       context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-        userId: 'current_user',
+        userId: userId,
       );
     }
   }

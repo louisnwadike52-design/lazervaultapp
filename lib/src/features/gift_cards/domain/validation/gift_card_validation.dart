@@ -38,7 +38,6 @@ class GeneralValidationError extends ValidationError {
 
 /// Comprehensive validation layer for gift card operations
 class GiftCardValidation {
-  // Private constructor to prevent instantiation
   GiftCardValidation._();
 
   /// Validates purchase amount against brand constraints
@@ -46,7 +45,6 @@ class GiftCardValidation {
     required double amount,
     required GiftCardBrand brand,
   }) {
-    // Check if amount is positive
     if (amount <= 0) {
       return left(const AmountValidationError(
         'Amount must be greater than zero',
@@ -54,33 +52,27 @@ class GiftCardValidation {
       ));
     }
 
-    // Check minimum amount
-    if (brand.minAmount != null && amount < brand.minAmount!) {
+    if (brand.minAmount > 0 && amount < brand.minAmount) {
       return left(AmountValidationError(
-        'Minimum amount is \$${brand.minAmount!.toStringAsFixed(2)}',
+        'Minimum amount is ${brand.minAmount.toStringAsFixed(2)}',
         'amount',
       ));
     }
 
-    // Check maximum amount
-    if (brand.maxAmount != null && amount > brand.maxAmount!) {
+    if (brand.maxAmount > 0 && amount > brand.maxAmount) {
       return left(AmountValidationError(
-        'Maximum amount is \$${brand.maxAmount!.toStringAsFixed(2)}',
+        'Maximum amount is ${brand.maxAmount.toStringAsFixed(2)}',
         'amount',
       ));
     }
 
-    // Check if amount matches available denominations (if specified)
-    if (brand.availableDenominations != null &&
-        brand.availableDenominations!.isNotEmpty) {
-      final denominationValues = brand.availableDenominations!
-          .map((d) => double.tryParse(d) ?? 0)
-          .toList();
-
+    // Check if amount matches fixed denominations (if specified)
+    if (brand.fixedDenominations.isNotEmpty) {
+      final denominationValues = brand.fixedDenominations.map((d) => d.price).toList();
       if (!denominationValues.contains(amount)) {
-        final validAmounts = brand.availableDenominations!.join(', ');
+        final validAmounts = denominationValues.map((d) => d.toStringAsFixed(0)).join(', ');
         return left(AmountValidationError(
-          'Amount must be one of: \$$validAmounts',
+          'Amount must be one of: $validAmounts',
           'amount',
         ));
       }
@@ -91,10 +83,8 @@ class GiftCardValidation {
 
   /// Validates gift card code format
   static Either<ValidationError, String> validateGiftCardCode(String code) {
-    // Remove whitespace
     final trimmedCode = code.trim();
 
-    // Check if code is empty
     if (trimmedCode.isEmpty) {
       return left(const CodeValidationError(
         'Gift card code cannot be empty',
@@ -102,7 +92,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check minimum length (typically 8-20 characters)
     if (trimmedCode.length < 8) {
       return left(const CodeValidationError(
         'Gift card code must be at least 8 characters',
@@ -110,7 +99,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check maximum length
     if (trimmedCode.length > 50) {
       return left(const CodeValidationError(
         'Gift card code is too long (max 50 characters)',
@@ -118,7 +106,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check for valid characters (alphanumeric and common separators)
     final validCodePattern = RegExp(r'^[A-Za-z0-9\-_]+$');
     if (!validCodePattern.hasMatch(trimmedCode)) {
       return left(const CodeValidationError(
@@ -141,7 +128,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check if PIN is numeric
     final numericPattern = RegExp(r'^\d+$');
     if (!numericPattern.hasMatch(trimmedPin)) {
       return left(const CodeValidationError(
@@ -150,7 +136,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check PIN length (typically 4-6 digits)
     if (trimmedPin.length < 4 || trimmedPin.length > 6) {
       return left(const CodeValidationError(
         'PIN must be 4-6 digits',
@@ -172,7 +157,6 @@ class GiftCardValidation {
       ));
     }
 
-    // RFC 5322 compliant email regex (simplified)
     final emailPattern = RegExp(
       r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
     );
@@ -184,7 +168,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check email length
     if (trimmedEmail.length > 254) {
       return left(const EmailValidationError(
         'Email address is too long',
@@ -220,7 +203,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check for valid name characters (letters, spaces, hyphens, apostrophes)
     final namePattern = RegExp(r"^[a-zA-Z\s\-']+$");
     if (!namePattern.hasMatch(trimmedName)) {
       return left(const GeneralValidationError(
@@ -240,7 +222,7 @@ class GiftCardValidation {
     if (purchaseAmount > availableBalance) {
       final shortfall = purchaseAmount - availableBalance;
       return left(BalanceValidationError(
-        'Insufficient balance. You need \$${shortfall.toStringAsFixed(2)} more',
+        'Insufficient balance. You need ${shortfall.toStringAsFixed(2)} more',
         'balance',
       ));
     }
@@ -248,50 +230,26 @@ class GiftCardValidation {
     return right(null);
   }
 
-  /// Validates gift card is not expired
-  static Either<ValidationError, void> validateNotExpired(
-    DateTime expiryDate,
-  ) {
-    final now = DateTime.now();
-
-    if (expiryDate.isBefore(now)) {
-      return left(DateValidationError(
-        'Gift card expired on ${expiryDate.toString().split(' ')[0]}',
-        'expiryDate',
-      ));
-    }
-
-    // Warn if expiring soon (within 7 days)
-    final daysUntilExpiry = expiryDate.difference(now).inDays;
-    if (daysUntilExpiry <= 7 && daysUntilExpiry > 0) {
-      // This is a warning, not an error - still return right
-      // The caller can decide what to do with this info
-      return right(null);
-    }
-
-    return right(null);
-  }
-
-  /// Validates gift card status allows the operation
+  /// Validates gift card status allows the operation (string-based)
   static Either<ValidationError, void> validateStatus({
-    required GiftCardStatus status,
+    required String status,
     required String operation,
   }) {
     switch (operation.toLowerCase()) {
       case 'redeem':
-        if (status == GiftCardStatus.used) {
+        if (status == 'redeemed' || status == 'used') {
           return left(const GeneralValidationError(
             'This gift card has already been used',
             'status',
           ));
         }
-        if (status == GiftCardStatus.expired) {
+        if (status == 'expired') {
           return left(const GeneralValidationError(
             'This gift card has expired',
             'status',
           ));
         }
-        if (status == GiftCardStatus.pending) {
+        if (status == 'pending') {
           return left(const GeneralValidationError(
             'This gift card is pending activation',
             'status',
@@ -300,16 +258,15 @@ class GiftCardValidation {
         break;
 
       case 'transfer':
-      case 'sell':
-        if (status == GiftCardStatus.used) {
+        if (status == 'redeemed' || status == 'used') {
           return left(const GeneralValidationError(
-            'Cannot transfer or sell a used gift card',
+            'Cannot transfer a used gift card',
             'status',
           ));
         }
-        if (status == GiftCardStatus.expired) {
+        if (status == 'expired') {
           return left(const GeneralValidationError(
-            'Cannot transfer or sell an expired gift card',
+            'Cannot transfer an expired gift card',
             'status',
           ));
         }
@@ -317,59 +274,6 @@ class GiftCardValidation {
     }
 
     return right(null);
-  }
-
-  /// Validates transfer amount (for partial redemptions)
-  static Either<ValidationError, double> validateTransferAmount({
-    required double amount,
-    required double cardBalance,
-  }) {
-    if (amount <= 0) {
-      return left(const AmountValidationError(
-        'Transfer amount must be greater than zero',
-        'amount',
-      ));
-    }
-
-    if (amount > cardBalance) {
-      return left(AmountValidationError(
-        'Transfer amount exceeds card balance of \$${cardBalance.toStringAsFixed(2)}',
-        'amount',
-      ));
-    }
-
-    return right(amount);
-  }
-
-  /// Validates selling price
-  static Either<ValidationError, double> validateSellingPrice({
-    required double askingPrice,
-    required double cardValue,
-  }) {
-    if (askingPrice <= 0) {
-      return left(const AmountValidationError(
-        'Selling price must be greater than zero',
-        'askingPrice',
-      ));
-    }
-
-    // Typically, selling price shouldn't exceed card value
-    if (askingPrice > cardValue) {
-      return left(AmountValidationError(
-        'Selling price cannot exceed card value of \$${cardValue.toStringAsFixed(2)}',
-        'askingPrice',
-      ));
-    }
-
-    // Warn if selling at too steep a discount (more than 50% off)
-    final discountPercentage = ((cardValue - askingPrice) / cardValue) * 100;
-    if (discountPercentage > 50) {
-      // This is a warning - caller should confirm with user
-      // Still return right, but include info
-      return right(askingPrice);
-    }
-
-    return right(askingPrice);
   }
 
   /// Validates message/note length
@@ -397,7 +301,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check length (ISO 4217 currency codes are 3 letters)
     if (trimmedCurrency.length != 3) {
       return left(const GeneralValidationError(
         'Currency code must be 3 characters (ISO 4217)',
@@ -405,7 +308,6 @@ class GiftCardValidation {
       ));
     }
 
-    // Check if alphabetic
     final alphaPattern = RegExp(r'^[A-Z]{3}$');
     if (!alphaPattern.hasMatch(trimmedCurrency)) {
       return left(const GeneralValidationError(
@@ -414,19 +316,9 @@ class GiftCardValidation {
       ));
     }
 
-    // Common currencies list (can be expanded)
     final supportedCurrencies = [
-      'USD',
-      'EUR',
-      'GBP',
-      'JPY',
-      'CAD',
-      'AUD',
-      'CHF',
-      'CNY',
-      'NGN',
-      'ZAR',
-      'INR',
+      'USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD',
+      'CHF', 'CNY', 'NGN', 'ZAR', 'INR',
     ];
 
     if (!supportedCurrencies.contains(trimmedCurrency)) {
@@ -492,98 +384,6 @@ class GiftCardValidation {
         return left(nameValidation.getLeft().getOrElse(() =>
             const GeneralValidationError('Invalid name', 'recipientName')));
       }
-    }
-
-    // Validate message if provided
-    if (message != null && message.isNotEmpty) {
-      final messageValidation = validateMessage(message);
-      if (messageValidation.isLeft()) {
-        return left(messageValidation.getLeft().getOrElse(() =>
-            const GeneralValidationError('Invalid message', 'message')));
-      }
-    }
-
-    return right(null);
-  }
-
-  /// Validates complete redemption request
-  static Either<ValidationError, void> validateRedemptionRequest({
-    required GiftCard giftCard,
-    required String code,
-    String? pin,
-  }) {
-    // Validate code
-    final codeValidation = validateGiftCardCode(code);
-    if (codeValidation.isLeft()) {
-      return left(codeValidation.getLeft().getOrElse(() =>
-          const CodeValidationError('Invalid code', 'code')));
-    }
-
-    // Validate PIN if provided
-    if (pin != null && pin.isNotEmpty) {
-      final pinValidation = validatePin(pin);
-      if (pinValidation.isLeft()) {
-        return left(pinValidation.getLeft().getOrElse(() =>
-            const CodeValidationError('Invalid PIN', 'pin')));
-      }
-    }
-
-    // Validate status
-    final statusValidation = validateStatus(
-      status: giftCard.status,
-      operation: 'redeem',
-    );
-    if (statusValidation.isLeft()) {
-      return left(statusValidation.getLeft().getOrElse(() =>
-          const GeneralValidationError('Invalid status', 'status')));
-    }
-
-    // Validate not expired
-    final expiryValidation = validateNotExpired(giftCard.expiryDate);
-    if (expiryValidation.isLeft()) {
-      return left(expiryValidation.getLeft().getOrElse(() =>
-          const DateValidationError('Card expired', 'expiryDate')));
-    }
-
-    return right(null);
-  }
-
-  /// Validates complete transfer request
-  static Either<ValidationError, void> validateTransferRequest({
-    required GiftCard giftCard,
-    required String recipientEmail,
-    required String recipientName,
-    String? message,
-  }) {
-    // Validate recipient email
-    final emailValidation = validateEmail(recipientEmail);
-    if (emailValidation.isLeft()) {
-      return left(emailValidation.getLeft().getOrElse(() =>
-          const EmailValidationError('Invalid email', 'recipientEmail')));
-    }
-
-    // Validate recipient name
-    final nameValidation = validateRecipientName(recipientName);
-    if (nameValidation.isLeft()) {
-      return left(nameValidation.getLeft().getOrElse(() =>
-          const GeneralValidationError('Invalid name', 'recipientName')));
-    }
-
-    // Validate status
-    final statusValidation = validateStatus(
-      status: giftCard.status,
-      operation: 'transfer',
-    );
-    if (statusValidation.isLeft()) {
-      return left(statusValidation.getLeft().getOrElse(() =>
-          const GeneralValidationError('Invalid status', 'status')));
-    }
-
-    // Validate not expired
-    final expiryValidation = validateNotExpired(giftCard.expiryDate);
-    if (expiryValidation.isLeft()) {
-      return left(expiryValidation.getLeft().getOrElse(() =>
-          const DateValidationError('Card expired', 'expiryDate')));
     }
 
     // Validate message if provided

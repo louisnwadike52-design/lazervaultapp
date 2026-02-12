@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/swr_cache_manager.dart';
+import 'package:lazervault/core/cache/cache_config.dart';
 import '../domain/entities/stock_entity.dart';
-import '../domain/entities/analyst_ratings.dart';
-import '../domain/entities/stock_event.dart';
 import '../domain/usecases/get_stocks_usecase.dart';
 import '../domain/usecases/get_portfolio_usecase.dart';
 import '../domain/usecases/place_order_usecase.dart';
@@ -15,6 +16,7 @@ class StockCubit extends Cubit<StockState> {
   final PlaceOrderUseCase placeOrderUseCase;
   final GetWatchlistsUseCase getWatchlistsUseCase;
   final IStockRepository repository;
+  final SWRCacheManager? cacheManager;
 
   StockCubit({
     required this.getStocksUseCase,
@@ -22,6 +24,7 @@ class StockCubit extends Cubit<StockState> {
     required this.placeOrderUseCase,
     required this.getWatchlistsUseCase,
     required this.repository,
+    this.cacheManager,
   }) : super(StockInitial());
 
   // Stock Data Methods
@@ -34,7 +37,40 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(StockLoading());
-      
+
+      if (cacheManager != null && searchQuery == null) {
+        final cacheKey = 'stocks:${sector ?? 'all'}:$page:$limit';
+        await for (final result in cacheManager!.get<List<Stock>>(
+          key: cacheKey,
+          fetcher: () async {
+            final either = await getStocksUseCase(
+              sector: sector,
+              searchQuery: searchQuery,
+              page: page,
+              limit: limit,
+            );
+            return either.fold(
+              (failure) => throw Exception(failure.message),
+              (stocks) => stocks,
+            );
+          },
+          config: CacheConfig.stocks,
+          serializer: (stocks) =>
+              jsonEncode(stocks.map((s) => s.toJson()).toList()),
+          deserializer: (json) => (jsonDecode(json) as List)
+              .map((j) => Stock.fromJson(j as Map<String, dynamic>))
+              .toList(),
+        )) {
+          if (isClosed) return;
+          if (result.hasData) {
+            emit(StockLoaded(result.data!, sector: sector, isStale: result.isStale));
+          } else if (result.hasError) {
+            emit(StockError(result.error.toString()));
+          }
+        }
+        return;
+      }
+
       final result = await getStocksUseCase(
         sector: sector,
         searchQuery: searchQuery,
@@ -163,7 +199,32 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(PortfolioLoading());
-      
+
+      if (cacheManager != null) {
+        await for (final result in cacheManager!.get<Portfolio>(
+          key: 'portfolio',
+          fetcher: () async {
+            final either = await getPortfolioUseCase();
+            return either.fold(
+              (failure) => throw Exception(failure.message),
+              (portfolio) => portfolio,
+            );
+          },
+          config: CacheConfig.portfolio,
+          serializer: (portfolio) => jsonEncode(portfolio.toJson()),
+          deserializer: (json) =>
+              Portfolio.fromJson(jsonDecode(json) as Map<String, dynamic>),
+        )) {
+          if (isClosed) return;
+          if (result.hasData) {
+            emit(PortfolioLoaded(result.data!, isStale: result.isStale));
+          } else if (result.hasError) {
+            emit(PortfolioError(result.error.toString()));
+          }
+        }
+        return;
+      }
+
       final result = await getPortfolioUseCase();
 
       result.fold(
@@ -186,7 +247,34 @@ class StockCubit extends Cubit<StockState> {
     try {
       if (isClosed) return;
       emit(HoldingsLoading());
-      
+
+      if (cacheManager != null) {
+        await for (final result in cacheManager!.get<List<StockHolding>>(
+          key: 'holdings',
+          fetcher: () async {
+            final either = await repository.getHoldings();
+            return either.fold(
+              (failure) => throw Exception(failure.message),
+              (holdings) => holdings,
+            );
+          },
+          config: CacheConfig.holdings,
+          serializer: (holdings) =>
+              jsonEncode(holdings.map((h) => h.toJson()).toList()),
+          deserializer: (json) => (jsonDecode(json) as List)
+              .map((j) => StockHolding.fromJson(j as Map<String, dynamic>))
+              .toList(),
+        )) {
+          if (isClosed) return;
+          if (result.hasData) {
+            emit(HoldingsLoaded(result.data!, isStale: result.isStale));
+          } else if (result.hasError) {
+            emit(HoldingsError(result.error.toString()));
+          }
+        }
+        return;
+      }
+
       final result = await repository.getHoldings();
 
       result.fold(
@@ -215,9 +303,23 @@ class StockCubit extends Cubit<StockState> {
     String? notes,
   }) async {
     try {
+      // Input validation
+      if (symbol.isEmpty || !RegExp(r'^[A-Z0-9.]{1,10}$').hasMatch(symbol)) {
+        emit(const OrderFailed(message: 'Invalid stock symbol'));
+        return;
+      }
+      if (quantity <= 0 || quantity > 100000) {
+        emit(const OrderFailed(message: 'Quantity must be between 1 and 100,000'));
+        return;
+      }
+      if (price != null && (price <= 0 || price > 1000000)) {
+        emit(const OrderFailed(message: 'Invalid price'));
+        return;
+      }
+
       if (isClosed) return;
-      emit(OrderPlacing());
-      
+      emit(const OrderProcessing(step: 'Placing order...', progress: 0.5));
+
       final result = await placeOrderUseCase(
         symbol: symbol,
         type: type,
@@ -229,16 +331,20 @@ class StockCubit extends Cubit<StockState> {
       result.fold(
         (failure) {
           if (isClosed) return;
-          emit(OrderError(failure.message));
+          emit(OrderFailed(message: failure.message));
         },
         (order) {
           if (isClosed) return;
-          emit(OrderPlaced(order));
+          final action = side == OrderSide.buy ? 'purchased' : 'sold';
+          emit(OrderSuccess(
+            order: order,
+            message: 'Successfully $action $quantity shares of $symbol',
+          ));
         },
       );
     } catch (e) {
       if (isClosed) return;
-      emit(OrderError('Failed to place order: ${e.toString()}'));
+      emit(OrderFailed(message: 'Failed to place order: ${e.toString()}'));
     }
   }
 
@@ -787,157 +893,35 @@ class StockCubit extends Cubit<StockState> {
   }
 
   void loadAnalystRatings(String symbol) async {
-    try {
-      // Simulate loading analyst ratings
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      if (isClosed) return;
-
-      // In a real implementation, you would fetch this data from your API
-      final analystRatings = AnalystRatings(
-        symbol: symbol,
-        consensus: 'Hold',
-        targetPrice: 299.38,
-        buyRating: 48,
-        holdRating: 31,
-        sellRating: 21,
-        analystCount: 48,
-      );
-
-      if (state is StockDetailsLoaded) {
-        if (isClosed) return;
-        final currentState = state as StockDetailsLoaded;
-        emit(currentState.copyWith(analystRatings: analystRatings));
-      }
-    } catch (error) {
-      if (isClosed) return;
-      emit(StockError('Failed to load analyst ratings: $error'));
-    }
+    // Analyst ratings not yet available from backend
+    // Will be populated when the analysis API endpoint is extended
   }
 
   void loadStockEvents(String symbol) async {
-    try {
-      // Simulate loading stock events
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      if (isClosed) return;
-
-      // In a real implementation, you would fetch this data from your API
-      final events = [
-        StockEvent(
-          id: '1',
-          title: 'Earnings Call',
-          date: DateTime.now().add(const Duration(days: 15)),
-          type: 'earnings',
-          description: 'Quarterly earnings announcement',
-        ),
-        StockEvent(
-          id: '2',
-          title: 'Dividend Payment',
-          date: DateTime.now().add(const Duration(days: 30)),
-          type: 'dividend',
-          description: 'Regular dividend payment',
-        ),
-      ];
-
-      if (state is StockDetailsLoaded) {
-        if (isClosed) return;
-        final currentState = state as StockDetailsLoaded;
-        emit(currentState.copyWith(events: events));
-      }
-    } catch (error) {
-      if (isClosed) return;
-      emit(StockError('Failed to load stock events: $error'));
-    }
+    // Stock events not yet available from backend
+    // Will be populated when the events API endpoint is added
   }
 
   Future<void> loadStockChart(String symbol, String timeframe) async {
     try {
-      // Don't emit loading state to avoid disrupting current UI
-      // Just update the chart data
-      
-      // Mock implementation - replace with actual API call
-      await Future.delayed(Duration(milliseconds: 500));
-      
-      // Generate mock chart data based on timeframe
-      _generateChartData(symbol, timeframe);
+      final result = await repository.getStockPriceHistory(symbol, timeframe);
 
-      // For now, we'll just complete the future since we're using mock data
-      // In a real implementation, you would emit a new state with updated chart data
-
+      result.fold(
+        (failure) {
+          if (isClosed) return;
+          emit(StockError('Failed to load chart data: ${failure.message}'));
+        },
+        (priceHistory) {
+          if (state is StockDetailsLoaded) {
+            if (isClosed) return;
+            final currentState = state as StockDetailsLoaded;
+            emit(currentState.copyWith(priceHistory: priceHistory));
+          }
+        },
+      );
     } catch (e) {
       if (isClosed) return;
       emit(StockError('Failed to load chart data: $e'));
     }
-  }
-
-  List<StockPrice> _generateChartData(String symbol, String timeframe) {
-    final now = DateTime.now();
-    final prices = <StockPrice>[];
-    
-    // Determine number of data points and interval based on timeframe
-    int dataPoints;
-    Duration interval;
-    
-    switch (timeframe) {
-      case '1m':
-        dataPoints = 60;
-        interval = Duration(minutes: 1);
-        break;
-      case '5m':
-        dataPoints = 288; // 24 hours
-        interval = Duration(minutes: 5);
-        break;
-      case '15m':
-        dataPoints = 96; // 24 hours
-        interval = Duration(minutes: 15);
-        break;
-      case '30m':
-        dataPoints = 48; // 24 hours
-        interval = Duration(minutes: 30);
-        break;
-      case '1H':
-        dataPoints = 168; // 1 week
-        interval = Duration(hours: 1);
-        break;
-      case '4H':
-        dataPoints = 168; // 4 weeks
-        interval = Duration(hours: 4);
-        break;
-      case '1D':
-        dataPoints = 365; // 1 year
-        interval = Duration(days: 1);
-        break;
-      case '1W':
-        dataPoints = 104; // 2 years
-        interval = Duration(days: 7);
-        break;
-      case '1M':
-        dataPoints = 60; // 5 years
-        interval = Duration(days: 30);
-        break;
-      default:
-        dataPoints = 60;
-        interval = Duration(days: 1);
-    }
-    
-    double basePrice = 100.0; // Default base price
-    
-    for (int i = dataPoints; i >= 0; i--) {
-      final date = now.subtract(interval * i);
-      final variation = (i % 10 - 5) * 0.02; // Random variation
-      final price = basePrice * (1 + variation);
-      
-      prices.add(StockPrice(
-        timestamp: date,
-        open: price * 0.99,
-        high: price * 1.02,
-        low: price * 0.98,
-        close: price,
-        volume: 1000000 + (i * 50000),
-      ));
-    }
-    
-    return prices;
   }
 } 

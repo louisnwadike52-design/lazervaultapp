@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 class CreateVirtualAccountRequest extends $pb.GeneratedMessage {
   factory CreateVirtualAccountRequest({
@@ -443,7 +443,7 @@ class VirtualAccount extends $pb.GeneratedMessage {
     $core.String? status,
     $fixnum.Int64? balance,
     $fixnum.Int64? availableBalance,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
     $fixnum.Int64? pendingCredits,
     $fixnum.Int64? pendingDebits,
     $core.String? accountType,
@@ -520,7 +520,7 @@ class VirtualAccount extends $pb.GeneratedMessage {
     ..aOS(9, _omitFieldNames ? '' : 'status')
     ..aInt64(10, _omitFieldNames ? '' : 'balance')
     ..aInt64(11, _omitFieldNames ? '' : 'availableBalance')
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..aInt64(13, _omitFieldNames ? '' : 'pendingCredits')
     ..aInt64(14, _omitFieldNames ? '' : 'pendingDebits')
     ..aOS(15, _omitFieldNames ? '' : 'accountType')
@@ -650,15 +650,15 @@ class VirtualAccount extends $pb.GeneratedMessage {
   void clearAvailableBalance() => clearField(11);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get createdAt => $_getN(11);
+  $1.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($42.Timestamp v) { setField(12, v); }
+  set createdAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureCreatedAt() => $_ensure(11);
+  $1.Timestamp ensureCreatedAt() => $_ensure(11);
 
   /// Pooled architecture fields
   @$pb.TagNumber(13)
@@ -1754,8 +1754,8 @@ class Transfer extends $pb.GeneratedMessage {
     $core.String? provider,
     $core.String? narration,
     $core.String? failureReason,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? completedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? completedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -1843,8 +1843,8 @@ class Transfer extends $pb.GeneratedMessage {
     ..aOS(16, _omitFieldNames ? '' : 'provider')
     ..aOS(17, _omitFieldNames ? '' : 'narration')
     ..aOS(18, _omitFieldNames ? '' : 'failureReason')
-    ..aOM<$42.Timestamp>(19, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(20, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(19, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(20, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -2032,26 +2032,26 @@ class Transfer extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(18);
 
   @$pb.TagNumber(19)
-  $42.Timestamp get createdAt => $_getN(18);
+  $1.Timestamp get createdAt => $_getN(18);
   @$pb.TagNumber(19)
-  set createdAt($42.Timestamp v) { setField(19, v); }
+  set createdAt($1.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasCreatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearCreatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $42.Timestamp ensureCreatedAt() => $_ensure(18);
+  $1.Timestamp ensureCreatedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
-  $42.Timestamp get completedAt => $_getN(19);
+  $1.Timestamp get completedAt => $_getN(19);
   @$pb.TagNumber(20)
-  set completedAt($42.Timestamp v) { setField(20, v); }
+  set completedAt($1.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasCompletedAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearCompletedAt() => clearField(20);
   @$pb.TagNumber(20)
-  $42.Timestamp ensureCompletedAt() => $_ensure(19);
+  $1.Timestamp ensureCompletedAt() => $_ensure(19);
 }
 
 class GetExchangeRateRequest extends $pb.GeneratedMessage {
@@ -3100,7 +3100,7 @@ class IdentityVerification extends $pb.GeneratedMessage {
     $core.String? gender,
     $core.String? status,
     $core.String? provider,
-    $42.Timestamp? verifiedAt,
+    $1.Timestamp? verifiedAt,
   }) {
     final $result = create();
     if (userId != null) {
@@ -3153,7 +3153,7 @@ class IdentityVerification extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'gender')
     ..aOS(9, _omitFieldNames ? '' : 'status')
     ..aOS(10, _omitFieldNames ? '' : 'provider')
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -3269,15 +3269,15 @@ class IdentityVerification extends $pb.GeneratedMessage {
   void clearProvider() => clearField(10);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get verifiedAt => $_getN(10);
+  $1.Timestamp get verifiedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set verifiedAt($42.Timestamp v) { setField(11, v); }
+  set verifiedAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasVerifiedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearVerifiedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureVerifiedAt() => $_ensure(10);
+  $1.Timestamp ensureVerifiedAt() => $_ensure(10);
 }
 
 class GetProviderStatusRequest extends $pb.GeneratedMessage {
@@ -3377,7 +3377,7 @@ class ProviderHealth extends $pb.GeneratedMessage {
     $core.bool? isEnabled,
     $core.double? successRate,
     $core.int? avgLatencyMs,
-    $42.Timestamp? lastCheck,
+    $1.Timestamp? lastCheck,
   }) {
     final $result = create();
     if (provider != null) {
@@ -3410,7 +3410,7 @@ class ProviderHealth extends $pb.GeneratedMessage {
     ..aOB(3, _omitFieldNames ? '' : 'isEnabled')
     ..a<$core.double>(4, _omitFieldNames ? '' : 'successRate', $pb.PbFieldType.OD)
     ..a<$core.int>(5, _omitFieldNames ? '' : 'avgLatencyMs', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'lastCheck', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'lastCheck', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -3481,15 +3481,15 @@ class ProviderHealth extends $pb.GeneratedMessage {
   void clearAvgLatencyMs() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get lastCheck => $_getN(5);
+  $1.Timestamp get lastCheck => $_getN(5);
   @$pb.TagNumber(6)
-  set lastCheck($42.Timestamp v) { setField(6, v); }
+  set lastCheck($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLastCheck() => $_has(5);
   @$pb.TagNumber(6)
   void clearLastCheck() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureLastCheck() => $_ensure(5);
+  $1.Timestamp ensureLastCheck() => $_ensure(5);
 }
 
 class GetActiveProvidersRequest extends $pb.GeneratedMessage {
@@ -3650,7 +3650,7 @@ class WebhookEvent extends $pb.GeneratedMessage {
     $core.String? eventType,
     $core.String? eventId,
     $core.List<$core.int>? payload,
-    $42.Timestamp? timestamp,
+    $1.Timestamp? timestamp,
   }) {
     final $result = create();
     if (provider != null) {
@@ -3679,7 +3679,7 @@ class WebhookEvent extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'eventType')
     ..aOS(3, _omitFieldNames ? '' : 'eventId')
     ..a<$core.List<$core.int>>(4, _omitFieldNames ? '' : 'payload', $pb.PbFieldType.OY)
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'timestamp', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -3741,15 +3741,15 @@ class WebhookEvent extends $pb.GeneratedMessage {
   void clearPayload() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get timestamp => $_getN(4);
+  $1.Timestamp get timestamp => $_getN(4);
   @$pb.TagNumber(5)
-  set timestamp($42.Timestamp v) { setField(5, v); }
+  set timestamp($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasTimestamp() => $_has(4);
   @$pb.TagNumber(5)
   void clearTimestamp() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureTimestamp() => $_ensure(4);
+  $1.Timestamp ensureTimestamp() => $_ensure(4);
 }
 
 class ProcessWebhookRequest extends $pb.GeneratedMessage {
@@ -5032,7 +5032,7 @@ class TransferRecipient extends $pb.GeneratedMessage {
     $core.String? bankName,
     $core.String? accountNumber,
     $core.bool? isLazervaultUser,
-    $42.Timestamp? lastTransferAt,
+    $1.Timestamp? lastTransferAt,
     $core.int? transferCount,
   }) {
     final $result = create();
@@ -5089,7 +5089,7 @@ class TransferRecipient extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'bankName')
     ..aOS(9, _omitFieldNames ? '' : 'accountNumber')
     ..aOB(10, _omitFieldNames ? '' : 'isLazervaultUser')
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'lastTransferAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'lastTransferAt', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(12, _omitFieldNames ? '' : 'transferCount', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
@@ -5206,15 +5206,15 @@ class TransferRecipient extends $pb.GeneratedMessage {
   void clearIsLazervaultUser() => clearField(10);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get lastTransferAt => $_getN(10);
+  $1.Timestamp get lastTransferAt => $_getN(10);
   @$pb.TagNumber(11)
-  set lastTransferAt($42.Timestamp v) { setField(11, v); }
+  set lastTransferAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLastTransferAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearLastTransferAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureLastTransferAt() => $_ensure(10);
+  $1.Timestamp ensureLastTransferAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.int get transferCount => $_getIZ(11);
@@ -5626,8 +5626,8 @@ class Transaction extends $pb.GeneratedMessage {
     $core.String? counterpartyBank,
     $core.String? counterpartyAccount,
     $core.String? status,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? settledAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? settledAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -5723,8 +5723,8 @@ class Transaction extends $pb.GeneratedMessage {
     ..aOS(18, _omitFieldNames ? '' : 'counterpartyBank')
     ..aOS(19, _omitFieldNames ? '' : 'counterpartyAccount')
     ..aOS(20, _omitFieldNames ? '' : 'status')
-    ..aOM<$42.Timestamp>(21, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(22, _omitFieldNames ? '' : 'settledAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(21, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(22, _omitFieldNames ? '' : 'settledAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -5930,26 +5930,26 @@ class Transaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(20);
 
   @$pb.TagNumber(21)
-  $42.Timestamp get createdAt => $_getN(20);
+  $1.Timestamp get createdAt => $_getN(20);
   @$pb.TagNumber(21)
-  set createdAt($42.Timestamp v) { setField(21, v); }
+  set createdAt($1.Timestamp v) { setField(21, v); }
   @$pb.TagNumber(21)
   $core.bool hasCreatedAt() => $_has(20);
   @$pb.TagNumber(21)
   void clearCreatedAt() => clearField(21);
   @$pb.TagNumber(21)
-  $42.Timestamp ensureCreatedAt() => $_ensure(20);
+  $1.Timestamp ensureCreatedAt() => $_ensure(20);
 
   @$pb.TagNumber(22)
-  $42.Timestamp get settledAt => $_getN(21);
+  $1.Timestamp get settledAt => $_getN(21);
   @$pb.TagNumber(22)
-  set settledAt($42.Timestamp v) { setField(22, v); }
+  set settledAt($1.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasSettledAt() => $_has(21);
   @$pb.TagNumber(22)
   void clearSettledAt() => clearField(22);
   @$pb.TagNumber(22)
-  $42.Timestamp ensureSettledAt() => $_ensure(21);
+  $1.Timestamp ensureSettledAt() => $_ensure(21);
 }
 
 /// Primary Account
@@ -6863,14 +6863,14 @@ class ReconciliationHistoryResponse extends $pb.GeneratedMessage {
 class ReconciliationLog extends $pb.GeneratedMessage {
   factory ReconciliationLog({
     $core.String? id,
-    $42.Timestamp? reconciliationDate,
+    $1.Timestamp? reconciliationDate,
     $fixnum.Int64? totalLedgerBalance,
     $fixnum.Int64? pooledAccountBalance,
     $fixnum.Int64? discrepancy,
     $core.String? status,
     $core.String? notes,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? resolvedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? resolvedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -6908,14 +6908,14 @@ class ReconciliationLog extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReconciliationLog', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'reconciliationDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'reconciliationDate', subBuilder: $1.Timestamp.create)
     ..aInt64(3, _omitFieldNames ? '' : 'totalLedgerBalance')
     ..aInt64(4, _omitFieldNames ? '' : 'pooledAccountBalance')
     ..aInt64(5, _omitFieldNames ? '' : 'discrepancy')
     ..aOS(6, _omitFieldNames ? '' : 'status')
     ..aOS(7, _omitFieldNames ? '' : 'notes')
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'resolvedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'resolvedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -6950,15 +6950,15 @@ class ReconciliationLog extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get reconciliationDate => $_getN(1);
+  $1.Timestamp get reconciliationDate => $_getN(1);
   @$pb.TagNumber(2)
-  set reconciliationDate($42.Timestamp v) { setField(2, v); }
+  set reconciliationDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasReconciliationDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearReconciliationDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureReconciliationDate() => $_ensure(1);
+  $1.Timestamp ensureReconciliationDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $fixnum.Int64 get totalLedgerBalance => $_getI64(2);
@@ -7006,32 +7006,32 @@ class ReconciliationLog extends $pb.GeneratedMessage {
   void clearNotes() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get createdAt => $_getN(7);
+  $1.Timestamp get createdAt => $_getN(7);
   @$pb.TagNumber(8)
-  set createdAt($42.Timestamp v) { setField(8, v); }
+  set createdAt($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasCreatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearCreatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureCreatedAt() => $_ensure(7);
+  $1.Timestamp ensureCreatedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get resolvedAt => $_getN(8);
+  $1.Timestamp get resolvedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set resolvedAt($42.Timestamp v) { setField(9, v); }
+  set resolvedAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasResolvedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearResolvedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureResolvedAt() => $_ensure(8);
+  $1.Timestamp ensureResolvedAt() => $_ensure(8);
 }
 
 /// Daily Report
 class GetDailyReportRequest extends $pb.GeneratedMessage {
   factory GetDailyReportRequest({
-    $42.Timestamp? date,
+    $1.Timestamp? date,
   }) {
     final $result = create();
     if (date != null) {
@@ -7044,7 +7044,7 @@ class GetDailyReportRequest extends $pb.GeneratedMessage {
   factory GetDailyReportRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDailyReportRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'date', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'date', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -7070,15 +7070,15 @@ class GetDailyReportRequest extends $pb.GeneratedMessage {
   static GetDailyReportRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get date => $_getN(0);
+  $1.Timestamp get date => $_getN(0);
   @$pb.TagNumber(1)
-  set date($42.Timestamp v) { setField(1, v); }
+  set date($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureDate() => $_ensure(0);
+  $1.Timestamp ensureDate() => $_ensure(0);
 }
 
 class DailyReportResponse extends $pb.GeneratedMessage {
@@ -7086,7 +7086,7 @@ class DailyReportResponse extends $pb.GeneratedMessage {
     $core.bool? success,
     $core.String? errorCode,
     $core.String? errorMessage,
-    $42.Timestamp? date,
+    $1.Timestamp? date,
     $fixnum.Int64? totalCredits,
     $fixnum.Int64? totalDebits,
     $core.int? creditCount,
@@ -7159,7 +7159,7 @@ class DailyReportResponse extends $pb.GeneratedMessage {
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'errorCode')
     ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'date', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'date', subBuilder: $1.Timestamp.create)
     ..aInt64(5, _omitFieldNames ? '' : 'totalCredits')
     ..aInt64(6, _omitFieldNames ? '' : 'totalDebits')
     ..a<$core.int>(7, _omitFieldNames ? '' : 'creditCount', $pb.PbFieldType.O3)
@@ -7224,15 +7224,15 @@ class DailyReportResponse extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get date => $_getN(3);
+  $1.Timestamp get date => $_getN(3);
   @$pb.TagNumber(4)
-  set date($42.Timestamp v) { setField(4, v); }
+  set date($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearDate() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureDate() => $_ensure(3);
+  $1.Timestamp ensureDate() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $fixnum.Int64 get totalCredits => $_getI64(4);
@@ -8354,9 +8354,9 @@ class LinkedBankAccount extends $pb.GeneratedMessage {
     $core.String? status,
     $core.bool? isDefault,
     $core.bool? isVerified,
-    $42.Timestamp? linkedAt,
-    $42.Timestamp? balanceUpdatedAt,
-    $42.Timestamp? lastUsedAt,
+    $1.Timestamp? linkedAt,
+    $1.Timestamp? balanceUpdatedAt,
+    $1.Timestamp? lastUsedAt,
     $core.bool? needsReauthorize,
   }) {
     final $result = create();
@@ -8431,9 +8431,9 @@ class LinkedBankAccount extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'status')
     ..aOB(12, _omitFieldNames ? '' : 'isDefault')
     ..aOB(13, _omitFieldNames ? '' : 'isVerified')
-    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'linkedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'balanceUpdatedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'linkedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'balanceUpdatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $1.Timestamp.create)
     ..aOB(17, _omitFieldNames ? '' : 'needsReauthorize')
     ..hasRequiredFields = false
   ;
@@ -8577,37 +8577,37 @@ class LinkedBankAccount extends $pb.GeneratedMessage {
   void clearIsVerified() => clearField(13);
 
   @$pb.TagNumber(14)
-  $42.Timestamp get linkedAt => $_getN(13);
+  $1.Timestamp get linkedAt => $_getN(13);
   @$pb.TagNumber(14)
-  set linkedAt($42.Timestamp v) { setField(14, v); }
+  set linkedAt($1.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasLinkedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearLinkedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $42.Timestamp ensureLinkedAt() => $_ensure(13);
+  $1.Timestamp ensureLinkedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $42.Timestamp get balanceUpdatedAt => $_getN(14);
+  $1.Timestamp get balanceUpdatedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set balanceUpdatedAt($42.Timestamp v) { setField(15, v); }
+  set balanceUpdatedAt($1.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasBalanceUpdatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearBalanceUpdatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $42.Timestamp ensureBalanceUpdatedAt() => $_ensure(14);
+  $1.Timestamp ensureBalanceUpdatedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $42.Timestamp get lastUsedAt => $_getN(15);
+  $1.Timestamp get lastUsedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set lastUsedAt($42.Timestamp v) { setField(16, v); }
+  set lastUsedAt($1.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasLastUsedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearLastUsedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $42.Timestamp ensureLastUsedAt() => $_ensure(15);
+  $1.Timestamp ensureLastUsedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
   $core.bool get needsReauthorize => $_getBF(16);
@@ -9580,8 +9580,8 @@ class Deposit extends $pb.GeneratedMessage {
     $core.String? narration,
     $core.String? failureCode,
     $core.String? failureReason,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? completedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? completedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -9653,8 +9653,8 @@ class Deposit extends $pb.GeneratedMessage {
     ..aOS(12, _omitFieldNames ? '' : 'narration')
     ..aOS(13, _omitFieldNames ? '' : 'failureCode')
     ..aOS(14, _omitFieldNames ? '' : 'failureReason')
-    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -9806,26 +9806,26 @@ class Deposit extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(14);
 
   @$pb.TagNumber(15)
-  $42.Timestamp get createdAt => $_getN(14);
+  $1.Timestamp get createdAt => $_getN(14);
   @$pb.TagNumber(15)
-  set createdAt($42.Timestamp v) { setField(15, v); }
+  set createdAt($1.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCreatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCreatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $42.Timestamp ensureCreatedAt() => $_ensure(14);
+  $1.Timestamp ensureCreatedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $42.Timestamp get completedAt => $_getN(15);
+  $1.Timestamp get completedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set completedAt($42.Timestamp v) { setField(16, v); }
+  set completedAt($1.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasCompletedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearCompletedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $42.Timestamp ensureCompletedAt() => $_ensure(15);
+  $1.Timestamp ensureCompletedAt() => $_ensure(15);
 }
 
 /// Get Deposit Status
@@ -10675,8 +10675,8 @@ class Withdrawal extends $pb.GeneratedMessage {
     $core.String? narration,
     $core.String? failureCode,
     $core.String? failureReason,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? completedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? completedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -10756,8 +10756,8 @@ class Withdrawal extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'narration')
     ..aOS(15, _omitFieldNames ? '' : 'failureCode')
     ..aOS(16, _omitFieldNames ? '' : 'failureReason')
-    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -10927,26 +10927,26 @@ class Withdrawal extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(16);
 
   @$pb.TagNumber(17)
-  $42.Timestamp get createdAt => $_getN(16);
+  $1.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(17)
-  set createdAt($42.Timestamp v) { setField(17, v); }
+  set createdAt($1.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearCreatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $42.Timestamp ensureCreatedAt() => $_ensure(16);
+  $1.Timestamp ensureCreatedAt() => $_ensure(16);
 
   @$pb.TagNumber(18)
-  $42.Timestamp get completedAt => $_getN(17);
+  $1.Timestamp get completedAt => $_getN(17);
   @$pb.TagNumber(18)
-  set completedAt($42.Timestamp v) { setField(18, v); }
+  set completedAt($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCompletedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCompletedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $42.Timestamp ensureCompletedAt() => $_ensure(17);
+  $1.Timestamp ensureCompletedAt() => $_ensure(17);
 }
 
 /// Get Withdrawal Status
@@ -11997,13 +11997,13 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
     $core.int? debitLimit,
     $core.int? debitCount,
     $fixnum.Int64? totalDebited,
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? authorizedAt,
-    $42.Timestamp? readyAt,
-    $42.Timestamp? lastDebitAt,
-    $42.Timestamp? cancelledAt,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? authorizedAt,
+    $1.Timestamp? readyAt,
+    $1.Timestamp? lastDebitAt,
+    $1.Timestamp? cancelledAt,
     $core.String? reference,
     $core.String? description,
     $core.bool? canDebit,
@@ -12114,13 +12114,13 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
     ..a<$core.int>(13, _omitFieldNames ? '' : 'debitLimit', $pb.PbFieldType.O3)
     ..a<$core.int>(14, _omitFieldNames ? '' : 'debitCount', $pb.PbFieldType.O3)
     ..aInt64(15, _omitFieldNames ? '' : 'totalDebited')
-    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(19, _omitFieldNames ? '' : 'authorizedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(20, _omitFieldNames ? '' : 'readyAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(21, _omitFieldNames ? '' : 'lastDebitAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(22, _omitFieldNames ? '' : 'cancelledAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(19, _omitFieldNames ? '' : 'authorizedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(20, _omitFieldNames ? '' : 'readyAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(21, _omitFieldNames ? '' : 'lastDebitAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(22, _omitFieldNames ? '' : 'cancelledAt', subBuilder: $1.Timestamp.create)
     ..aOS(23, _omitFieldNames ? '' : 'reference')
     ..aOS(24, _omitFieldNames ? '' : 'description')
     ..aOB(25, _omitFieldNames ? '' : 'canDebit')
@@ -12290,82 +12290,82 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
 
   /// Validity period
   @$pb.TagNumber(16)
-  $42.Timestamp get startDate => $_getN(15);
+  $1.Timestamp get startDate => $_getN(15);
   @$pb.TagNumber(16)
-  set startDate($42.Timestamp v) { setField(16, v); }
+  set startDate($1.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasStartDate() => $_has(15);
   @$pb.TagNumber(16)
   void clearStartDate() => clearField(16);
   @$pb.TagNumber(16)
-  $42.Timestamp ensureStartDate() => $_ensure(15);
+  $1.Timestamp ensureStartDate() => $_ensure(15);
 
   @$pb.TagNumber(17)
-  $42.Timestamp get endDate => $_getN(16);
+  $1.Timestamp get endDate => $_getN(16);
   @$pb.TagNumber(17)
-  set endDate($42.Timestamp v) { setField(17, v); }
+  set endDate($1.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasEndDate() => $_has(16);
   @$pb.TagNumber(17)
   void clearEndDate() => clearField(17);
   @$pb.TagNumber(17)
-  $42.Timestamp ensureEndDate() => $_ensure(16);
+  $1.Timestamp ensureEndDate() => $_ensure(16);
 
   /// Timestamps
   @$pb.TagNumber(18)
-  $42.Timestamp get createdAt => $_getN(17);
+  $1.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
-  set createdAt($42.Timestamp v) { setField(18, v); }
+  set createdAt($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $42.Timestamp ensureCreatedAt() => $_ensure(17);
+  $1.Timestamp ensureCreatedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
-  $42.Timestamp get authorizedAt => $_getN(18);
+  $1.Timestamp get authorizedAt => $_getN(18);
   @$pb.TagNumber(19)
-  set authorizedAt($42.Timestamp v) { setField(19, v); }
+  set authorizedAt($1.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasAuthorizedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearAuthorizedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $42.Timestamp ensureAuthorizedAt() => $_ensure(18);
+  $1.Timestamp ensureAuthorizedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
-  $42.Timestamp get readyAt => $_getN(19);
+  $1.Timestamp get readyAt => $_getN(19);
   @$pb.TagNumber(20)
-  set readyAt($42.Timestamp v) { setField(20, v); }
+  set readyAt($1.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasReadyAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearReadyAt() => clearField(20);
   @$pb.TagNumber(20)
-  $42.Timestamp ensureReadyAt() => $_ensure(19);
+  $1.Timestamp ensureReadyAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
-  $42.Timestamp get lastDebitAt => $_getN(20);
+  $1.Timestamp get lastDebitAt => $_getN(20);
   @$pb.TagNumber(21)
-  set lastDebitAt($42.Timestamp v) { setField(21, v); }
+  set lastDebitAt($1.Timestamp v) { setField(21, v); }
   @$pb.TagNumber(21)
   $core.bool hasLastDebitAt() => $_has(20);
   @$pb.TagNumber(21)
   void clearLastDebitAt() => clearField(21);
   @$pb.TagNumber(21)
-  $42.Timestamp ensureLastDebitAt() => $_ensure(20);
+  $1.Timestamp ensureLastDebitAt() => $_ensure(20);
 
   @$pb.TagNumber(22)
-  $42.Timestamp get cancelledAt => $_getN(21);
+  $1.Timestamp get cancelledAt => $_getN(21);
   @$pb.TagNumber(22)
-  set cancelledAt($42.Timestamp v) { setField(22, v); }
+  set cancelledAt($1.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasCancelledAt() => $_has(21);
   @$pb.TagNumber(22)
   void clearCancelledAt() => clearField(22);
   @$pb.TagNumber(22)
-  $42.Timestamp ensureCancelledAt() => $_ensure(21);
+  $1.Timestamp ensureCancelledAt() => $_ensure(21);
 
   /// Reference
   @$pb.TagNumber(23)
@@ -13149,7 +13149,7 @@ class CheckMandateBalanceResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? availableBalance,
     $core.bool? sufficientFunds,
     $core.String? currency,
-    $42.Timestamp? checkedAt,
+    $1.Timestamp? checkedAt,
   }) {
     final $result = create();
     if (success != null) {
@@ -13186,7 +13186,7 @@ class CheckMandateBalanceResponse extends $pb.GeneratedMessage {
     ..aInt64(4, _omitFieldNames ? '' : 'availableBalance')
     ..aOB(5, _omitFieldNames ? '' : 'sufficientFunds')
     ..aOS(6, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'checkedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'checkedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -13266,15 +13266,15 @@ class CheckMandateBalanceResponse extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get checkedAt => $_getN(6);
+  $1.Timestamp get checkedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set checkedAt($42.Timestamp v) { setField(7, v); }
+  set checkedAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCheckedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCheckedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureCheckedAt() => $_ensure(6);
+  $1.Timestamp ensureCheckedAt() => $_ensure(6);
 }
 
 class GetTransferFeeRequest extends $pb.GeneratedMessage {
@@ -13573,6 +13573,811 @@ class FeeItem extends $pb.GeneratedMessage {
   $core.bool hasAmount() => $_has(1);
   @$pb.TagNumber(2)
   void clearAmount() => clearField(2);
+}
+
+class GetCreditScoreRequest extends $pb.GeneratedMessage {
+  factory GetCreditScoreRequest({
+    $core.String? userId,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    return $result;
+  }
+  GetCreditScoreRequest._() : super();
+  factory GetCreditScoreRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCreditScoreRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCreditScoreRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCreditScoreRequest clone() => GetCreditScoreRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCreditScoreRequest copyWith(void Function(GetCreditScoreRequest) updates) => super.copyWith((message) => updates(message as GetCreditScoreRequest)) as GetCreditScoreRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCreditScoreRequest create() => GetCreditScoreRequest._();
+  GetCreditScoreRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCreditScoreRequest> createRepeated() => $pb.PbList<GetCreditScoreRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCreditScoreRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCreditScoreRequest>(create);
+  static GetCreditScoreRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+}
+
+class CreditScoreResponse extends $pb.GeneratedMessage {
+  factory CreditScoreResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    CreditScore? creditScore,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (errorCode != null) {
+      $result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      $result.errorMessage = errorMessage;
+    }
+    if (creditScore != null) {
+      $result.creditScore = creditScore;
+    }
+    return $result;
+  }
+  CreditScoreResponse._() : super();
+  factory CreditScoreResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreditScoreResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditScoreResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOM<CreditScore>(4, _omitFieldNames ? '' : 'creditScore', subBuilder: CreditScore.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreditScoreResponse clone() => CreditScoreResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreditScoreResponse copyWith(void Function(CreditScoreResponse) updates) => super.copyWith((message) => updates(message as CreditScoreResponse)) as CreditScoreResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreditScoreResponse create() => CreditScoreResponse._();
+  CreditScoreResponse createEmptyInstance() => create();
+  static $pb.PbList<CreditScoreResponse> createRepeated() => $pb.PbList<CreditScoreResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreditScoreResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreditScoreResponse>(create);
+  static CreditScoreResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  CreditScore get creditScore => $_getN(3);
+  @$pb.TagNumber(4)
+  set creditScore(CreditScore v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCreditScore() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCreditScore() => clearField(4);
+  @$pb.TagNumber(4)
+  CreditScore ensureCreditScore() => $_ensure(3);
+}
+
+class CreditScore extends $pb.GeneratedMessage {
+  factory CreditScore({
+    $core.String? id,
+    $core.String? userId,
+    $core.int? score,
+    $core.String? rating,
+    $core.String? linkedAccountId,
+    $core.String? bankName,
+    $core.double? paymentHistoryScore,
+    $core.double? incomeStabilityScore,
+    $core.double? spendingDisciplineScore,
+    $core.double? accountAgeScore,
+    $core.double? balanceConsistencyScore,
+    $core.int? transactionsAnalyzed,
+    $core.int? monthsOfData,
+    $1.Timestamp? calculatedAt,
+    $1.Timestamp? nextRefreshAt,
+    $core.Iterable<CreditScoreTip>? tips,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (score != null) {
+      $result.score = score;
+    }
+    if (rating != null) {
+      $result.rating = rating;
+    }
+    if (linkedAccountId != null) {
+      $result.linkedAccountId = linkedAccountId;
+    }
+    if (bankName != null) {
+      $result.bankName = bankName;
+    }
+    if (paymentHistoryScore != null) {
+      $result.paymentHistoryScore = paymentHistoryScore;
+    }
+    if (incomeStabilityScore != null) {
+      $result.incomeStabilityScore = incomeStabilityScore;
+    }
+    if (spendingDisciplineScore != null) {
+      $result.spendingDisciplineScore = spendingDisciplineScore;
+    }
+    if (accountAgeScore != null) {
+      $result.accountAgeScore = accountAgeScore;
+    }
+    if (balanceConsistencyScore != null) {
+      $result.balanceConsistencyScore = balanceConsistencyScore;
+    }
+    if (transactionsAnalyzed != null) {
+      $result.transactionsAnalyzed = transactionsAnalyzed;
+    }
+    if (monthsOfData != null) {
+      $result.monthsOfData = monthsOfData;
+    }
+    if (calculatedAt != null) {
+      $result.calculatedAt = calculatedAt;
+    }
+    if (nextRefreshAt != null) {
+      $result.nextRefreshAt = nextRefreshAt;
+    }
+    if (tips != null) {
+      $result.tips.addAll(tips);
+    }
+    return $result;
+  }
+  CreditScore._() : super();
+  factory CreditScore.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreditScore.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditScore', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'score', $pb.PbFieldType.O3)
+    ..aOS(4, _omitFieldNames ? '' : 'rating')
+    ..aOS(5, _omitFieldNames ? '' : 'linkedAccountId')
+    ..aOS(6, _omitFieldNames ? '' : 'bankName')
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'paymentHistoryScore', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'incomeStabilityScore', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'spendingDisciplineScore', $pb.PbFieldType.OD)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'accountAgeScore', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'balanceConsistencyScore', $pb.PbFieldType.OD)
+    ..a<$core.int>(12, _omitFieldNames ? '' : 'transactionsAnalyzed', $pb.PbFieldType.O3)
+    ..a<$core.int>(13, _omitFieldNames ? '' : 'monthsOfData', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'calculatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'nextRefreshAt', subBuilder: $1.Timestamp.create)
+    ..pc<CreditScoreTip>(16, _omitFieldNames ? '' : 'tips', $pb.PbFieldType.PM, subBuilder: CreditScoreTip.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreditScore clone() => CreditScore()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreditScore copyWith(void Function(CreditScore) updates) => super.copyWith((message) => updates(message as CreditScore)) as CreditScore;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreditScore create() => CreditScore._();
+  CreditScore createEmptyInstance() => create();
+  static $pb.PbList<CreditScore> createRepeated() => $pb.PbList<CreditScore>();
+  @$core.pragma('dart2js:noInline')
+  static CreditScore getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreditScore>(create);
+  static CreditScore? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get score => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set score($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasScore() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearScore() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get rating => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set rating($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRating() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRating() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get linkedAccountId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set linkedAccountId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasLinkedAccountId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLinkedAccountId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get bankName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set bankName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasBankName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearBankName() => clearField(6);
+
+  /// Score breakdown factors
+  @$pb.TagNumber(7)
+  $core.double get paymentHistoryScore => $_getN(6);
+  @$pb.TagNumber(7)
+  set paymentHistoryScore($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPaymentHistoryScore() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPaymentHistoryScore() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get incomeStabilityScore => $_getN(7);
+  @$pb.TagNumber(8)
+  set incomeStabilityScore($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasIncomeStabilityScore() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIncomeStabilityScore() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.double get spendingDisciplineScore => $_getN(8);
+  @$pb.TagNumber(9)
+  set spendingDisciplineScore($core.double v) { $_setDouble(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasSpendingDisciplineScore() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearSpendingDisciplineScore() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get accountAgeScore => $_getN(9);
+  @$pb.TagNumber(10)
+  set accountAgeScore($core.double v) { $_setDouble(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasAccountAgeScore() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearAccountAgeScore() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.double get balanceConsistencyScore => $_getN(10);
+  @$pb.TagNumber(11)
+  set balanceConsistencyScore($core.double v) { $_setDouble(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasBalanceConsistencyScore() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearBalanceConsistencyScore() => clearField(11);
+
+  /// Context
+  @$pb.TagNumber(12)
+  $core.int get transactionsAnalyzed => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set transactionsAnalyzed($core.int v) { $_setSignedInt32(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasTransactionsAnalyzed() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearTransactionsAnalyzed() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.int get monthsOfData => $_getIZ(12);
+  @$pb.TagNumber(13)
+  set monthsOfData($core.int v) { $_setSignedInt32(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasMonthsOfData() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearMonthsOfData() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $1.Timestamp get calculatedAt => $_getN(13);
+  @$pb.TagNumber(14)
+  set calculatedAt($1.Timestamp v) { setField(14, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasCalculatedAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCalculatedAt() => clearField(14);
+  @$pb.TagNumber(14)
+  $1.Timestamp ensureCalculatedAt() => $_ensure(13);
+
+  @$pb.TagNumber(15)
+  $1.Timestamp get nextRefreshAt => $_getN(14);
+  @$pb.TagNumber(15)
+  set nextRefreshAt($1.Timestamp v) { setField(15, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasNextRefreshAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearNextRefreshAt() => clearField(15);
+  @$pb.TagNumber(15)
+  $1.Timestamp ensureNextRefreshAt() => $_ensure(14);
+
+  /// Tips for improvement
+  @$pb.TagNumber(16)
+  $core.List<CreditScoreTip> get tips => $_getList(15);
+}
+
+class CreditScoreTip extends $pb.GeneratedMessage {
+  factory CreditScoreTip({
+    $core.String? title,
+    $core.String? description,
+    $core.String? category,
+    $core.int? potentialImpact,
+  }) {
+    final $result = create();
+    if (title != null) {
+      $result.title = title;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (category != null) {
+      $result.category = category;
+    }
+    if (potentialImpact != null) {
+      $result.potentialImpact = potentialImpact;
+    }
+    return $result;
+  }
+  CreditScoreTip._() : super();
+  factory CreditScoreTip.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreditScoreTip.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditScoreTip', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'title')
+    ..aOS(2, _omitFieldNames ? '' : 'description')
+    ..aOS(3, _omitFieldNames ? '' : 'category')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'potentialImpact', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreditScoreTip clone() => CreditScoreTip()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreditScoreTip copyWith(void Function(CreditScoreTip) updates) => super.copyWith((message) => updates(message as CreditScoreTip)) as CreditScoreTip;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreditScoreTip create() => CreditScoreTip._();
+  CreditScoreTip createEmptyInstance() => create();
+  static $pb.PbList<CreditScoreTip> createRepeated() => $pb.PbList<CreditScoreTip>();
+  @$core.pragma('dart2js:noInline')
+  static CreditScoreTip getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreditScoreTip>(create);
+  static CreditScoreTip? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get title => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set title($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTitle() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTitle() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get description => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set description($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDescription() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDescription() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get category => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set category($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCategory() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCategory() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get potentialImpact => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set potentialImpact($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPotentialImpact() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPotentialImpact() => clearField(4);
+}
+
+class GetCreditScoreHistoryRequest extends $pb.GeneratedMessage {
+  factory GetCreditScoreHistoryRequest({
+    $core.String? userId,
+    $core.int? months,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (months != null) {
+      $result.months = months;
+    }
+    return $result;
+  }
+  GetCreditScoreHistoryRequest._() : super();
+  factory GetCreditScoreHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCreditScoreHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCreditScoreHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'months', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCreditScoreHistoryRequest clone() => GetCreditScoreHistoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCreditScoreHistoryRequest copyWith(void Function(GetCreditScoreHistoryRequest) updates) => super.copyWith((message) => updates(message as GetCreditScoreHistoryRequest)) as GetCreditScoreHistoryRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCreditScoreHistoryRequest create() => GetCreditScoreHistoryRequest._();
+  GetCreditScoreHistoryRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCreditScoreHistoryRequest> createRepeated() => $pb.PbList<GetCreditScoreHistoryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCreditScoreHistoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCreditScoreHistoryRequest>(create);
+  static GetCreditScoreHistoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get months => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set months($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMonths() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMonths() => clearField(2);
+}
+
+class CreditScoreHistoryResponse extends $pb.GeneratedMessage {
+  factory CreditScoreHistoryResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.Iterable<CreditScoreHistoryPoint>? history,
+    $core.int? scoreChange,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (errorCode != null) {
+      $result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      $result.errorMessage = errorMessage;
+    }
+    if (history != null) {
+      $result.history.addAll(history);
+    }
+    if (scoreChange != null) {
+      $result.scoreChange = scoreChange;
+    }
+    return $result;
+  }
+  CreditScoreHistoryResponse._() : super();
+  factory CreditScoreHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreditScoreHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditScoreHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..pc<CreditScoreHistoryPoint>(4, _omitFieldNames ? '' : 'history', $pb.PbFieldType.PM, subBuilder: CreditScoreHistoryPoint.create)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'scoreChange', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreditScoreHistoryResponse clone() => CreditScoreHistoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreditScoreHistoryResponse copyWith(void Function(CreditScoreHistoryResponse) updates) => super.copyWith((message) => updates(message as CreditScoreHistoryResponse)) as CreditScoreHistoryResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreditScoreHistoryResponse create() => CreditScoreHistoryResponse._();
+  CreditScoreHistoryResponse createEmptyInstance() => create();
+  static $pb.PbList<CreditScoreHistoryResponse> createRepeated() => $pb.PbList<CreditScoreHistoryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreditScoreHistoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreditScoreHistoryResponse>(create);
+  static CreditScoreHistoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<CreditScoreHistoryPoint> get history => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $core.int get scoreChange => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set scoreChange($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasScoreChange() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearScoreChange() => clearField(5);
+}
+
+class CreditScoreHistoryPoint extends $pb.GeneratedMessage {
+  factory CreditScoreHistoryPoint({
+    $core.int? score,
+    $core.String? rating,
+    $1.Timestamp? date,
+  }) {
+    final $result = create();
+    if (score != null) {
+      $result.score = score;
+    }
+    if (rating != null) {
+      $result.rating = rating;
+    }
+    if (date != null) {
+      $result.date = date;
+    }
+    return $result;
+  }
+  CreditScoreHistoryPoint._() : super();
+  factory CreditScoreHistoryPoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreditScoreHistoryPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditScoreHistoryPoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'score', $pb.PbFieldType.O3)
+    ..aOS(2, _omitFieldNames ? '' : 'rating')
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'date', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreditScoreHistoryPoint clone() => CreditScoreHistoryPoint()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreditScoreHistoryPoint copyWith(void Function(CreditScoreHistoryPoint) updates) => super.copyWith((message) => updates(message as CreditScoreHistoryPoint)) as CreditScoreHistoryPoint;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreditScoreHistoryPoint create() => CreditScoreHistoryPoint._();
+  CreditScoreHistoryPoint createEmptyInstance() => create();
+  static $pb.PbList<CreditScoreHistoryPoint> createRepeated() => $pb.PbList<CreditScoreHistoryPoint>();
+  @$core.pragma('dart2js:noInline')
+  static CreditScoreHistoryPoint getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreditScoreHistoryPoint>(create);
+  static CreditScoreHistoryPoint? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get score => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set score($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasScore() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearScore() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get rating => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set rating($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRating() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRating() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $1.Timestamp get date => $_getN(2);
+  @$pb.TagNumber(3)
+  set date($1.Timestamp v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDate() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDate() => clearField(3);
+  @$pb.TagNumber(3)
+  $1.Timestamp ensureDate() => $_ensure(2);
+}
+
+class RefreshCreditScoreRequest extends $pb.GeneratedMessage {
+  factory RefreshCreditScoreRequest({
+    $core.String? userId,
+    $core.String? linkedAccountId,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (linkedAccountId != null) {
+      $result.linkedAccountId = linkedAccountId;
+    }
+    return $result;
+  }
+  RefreshCreditScoreRequest._() : super();
+  factory RefreshCreditScoreRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RefreshCreditScoreRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RefreshCreditScoreRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'linkedAccountId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RefreshCreditScoreRequest clone() => RefreshCreditScoreRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RefreshCreditScoreRequest copyWith(void Function(RefreshCreditScoreRequest) updates) => super.copyWith((message) => updates(message as RefreshCreditScoreRequest)) as RefreshCreditScoreRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RefreshCreditScoreRequest create() => RefreshCreditScoreRequest._();
+  RefreshCreditScoreRequest createEmptyInstance() => create();
+  static $pb.PbList<RefreshCreditScoreRequest> createRepeated() => $pb.PbList<RefreshCreditScoreRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RefreshCreditScoreRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RefreshCreditScoreRequest>(create);
+  static RefreshCreditScoreRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get linkedAccountId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set linkedAccountId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLinkedAccountId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLinkedAccountId() => clearField(2);
 }
 
 

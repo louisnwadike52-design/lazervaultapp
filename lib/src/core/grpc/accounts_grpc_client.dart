@@ -254,6 +254,101 @@ class AccountsGrpcClient {
     }
   }
 
+  /// Get financial analytics (income/expense with period comparison)
+  Future<GetFinancialAnalyticsResponse> getFinancialAnalytics({
+    required String accountId,
+    String period = 'month',
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final request = GetFinancialAnalyticsRequest()
+      ..accountId = accountId
+      ..period = period;
+
+    if (startDate != null) {
+      request.startDate = _dateTimeToString(startDate);
+    }
+    if (endDate != null) {
+      request.endDate = _dateTimeToString(endDate);
+    }
+
+    final options = await _callOptionsHelper.withAuth();
+
+    try {
+      return await _client.getFinancialAnalytics(request, options: options);
+    } catch (e) {
+      throw Exception('Failed to fetch financial analytics: $e');
+    }
+  }
+
+  /// Get category analytics (income/expense breakdown by category)
+  Future<GetCategoryAnalyticsResponse> getCategoryAnalytics({
+    required String accountId,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final request = GetCategoryAnalyticsRequest()
+      ..accountId = accountId;
+
+    if (startDate != null) {
+      request.startDate = _dateTimeToString(startDate);
+    }
+    if (endDate != null) {
+      request.endDate = _dateTimeToString(endDate);
+    }
+
+    final options = await _callOptionsHelper.withAuth();
+
+    try {
+      return await _client.getCategoryAnalytics(request, options: options);
+    } catch (e) {
+      throw Exception('Failed to fetch category analytics: $e');
+    }
+  }
+
+  /// Get monthly trends (income/expense per month for last N months)
+  Future<GetMonthlyTrendsResponse> getMonthlyTrends({
+    required String accountId,
+    int months = 6,
+  }) async {
+    final request = GetMonthlyTrendsRequest()
+      ..accountId = accountId
+      ..months = months;
+
+    final options = await _callOptionsHelper.withAuth();
+
+    try {
+      return await _client.getMonthlyTrends(request, options: options);
+    } catch (e) {
+      throw Exception('Failed to fetch monthly trends: $e');
+    }
+  }
+
+  /// Get expense time series (daily expense totals)
+  Future<GetExpenseTimeSeriesResponse> getExpenseTimeSeries({
+    required String accountId,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final request = GetExpenseTimeSeriesRequest()
+      ..accountId = accountId;
+
+    if (startDate != null) {
+      request.startDate = _dateTimeToString(startDate);
+    }
+    if (endDate != null) {
+      request.endDate = _dateTimeToString(endDate);
+    }
+
+    final options = await _callOptionsHelper.withAuth();
+
+    try {
+      return await _client.getExpenseTimeSeries(request, options: options);
+    } catch (e) {
+      throw Exception('Failed to fetch expense time series: $e');
+    }
+  }
+
   /// Helper: Convert DateTime to ISO8601 string
   String _dateTimeToString(DateTime dateTime) {
     return dateTime.toIso8601String();

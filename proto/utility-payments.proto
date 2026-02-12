@@ -1,0 +1,585 @@
+syntax = "proto3";
+
+package utilitypayments;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "utility-payments-service/proto";
+
+// Utility Payments Service - Bill payments, airtime, and smart payment features
+service UtilityPaymentsService {
+  // === BILL PAYMENT OPERATIONS ===
+
+  // Pay electricity bill (payElectricityBill from AppServiceName)
+  rpc PayElectricityBill(PayElectricityBillRequest) returns (PayElectricityBillResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/payelectricitybill"
+      body: "*"
+    };
+  }
+
+  // Pay water bill
+  rpc PayWaterBill(PayWaterBillRequest) returns (PayWaterBillResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/paywaterbill"
+      body: "*"
+    };
+  }
+
+  // Pay internet/cable bill
+  rpc PayInternetBill(PayInternetBillRequest) returns (PayInternetBillResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/payinternetbill"
+      body: "*"
+    };
+  }
+
+  // === AIRTIME & DATA ===
+
+  // Buy airtime/data (airtime from AppServiceName)
+  rpc BuyAirtime(BuyAirtimeRequest) returns (BuyAirtimeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/buyairtime"
+      body: "*"
+    };
+  }
+
+  // Buy data bundle
+  rpc BuyData(BuyDataRequest) returns (BuyDataResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/buydata"
+      body: "*"
+    };
+  }
+
+  // Get available data plans for a network
+  rpc GetDataPlans(GetDataPlansRequest) returns (GetDataPlansResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/dataplans"
+    };
+  }
+
+  // === SMART PAYMENT FEATURES ===
+
+  // Pay by scanning barcode (barcodeQuickPay from AppServiceName)
+  rpc BarcodePay(BarcodePayRequest) returns (BarcodePayResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/barcodepay"
+      body: "*"
+    };
+  }
+
+  // AI-powered scan to pay (aiScanToPay from AppServiceName)
+  rpc ScanToPay(ScanToPayRequest) returns (ScanToPayResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/scantopay"
+      body: "*"
+    };
+  }
+
+  // === UTILITY OPERATIONS ===
+
+  // Get bill payment history
+  rpc GetBillPaymentHistory(GetBillPaymentHistoryRequest) returns (GetBillPaymentHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/billpaymenthistory"
+    };
+  }
+
+  // Get bill providers
+  rpc GetBillProviders(GetBillProvidersRequest) returns (GetBillProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/billproviders"
+    };
+  }
+
+  // Get airtime providers
+  rpc GetAirtimeProviders(GetAirtimeProvidersRequest) returns (GetAirtimeProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtimeproviders"
+    };
+  }
+
+  // Verify bill details before payment
+  rpc VerifyBill(VerifyBillRequest) returns (VerifyBillResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/verifybill"
+      body: "*"
+    };
+  }
+
+  // === CABLE TV OPERATIONS ===
+
+  // Validate smart card number
+  rpc ValidateSmartCard(ValidateSmartCardRequest) returns (ValidateSmartCardResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/validatesmartcard"
+      body: "*"
+    };
+  }
+
+  // Get TV packages for a provider
+  rpc GetTVPackages(GetTVPackagesRequest) returns (GetTVPackagesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/tvpackages"
+    };
+  }
+
+  // Pay cable TV bill
+  rpc PayCableTVBill(PayCableTVBillRequest) returns (PayCableTVBillResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/paycabletvbill"
+      body: "*"
+    };
+  }
+
+  // Get cable TV providers
+  rpc GetCableTVProviders(GetCableTVProvidersRequest) returns (GetCableTVProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/cabletvproviders"
+    };
+  }
+
+  // === EDUCATION PIN OPERATIONS ===
+
+  // Purchase education PIN (WAEC, JAMB)
+  rpc PurchaseEducationPin(PurchaseEducationPinRequest) returns (PurchaseEducationPinResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/purchaseeducationpin"
+      body: "*"
+    };
+  }
+
+  // Get education providers
+  rpc GetEducationProviders(GetEducationProvidersRequest) returns (GetEducationProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/educationproviders"
+    };
+  }
+}
+
+// ===== MODELS =====
+
+message BillPayment {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string bill_type = 4;                 // "electricity", "water", "internet", "cable"
+  string provider_id = 5;
+  string reference = 6;
+  string idempotency_key = 7;           // Unique key for idempotency
+  double amount = 8;
+  string status = 9;                    // "pending", "completed", "failed"
+  string customer_number = 10;          // Meter number, account number, etc.
+  string token = 11;                    // For prepaid electricity
+  string metadata = 12;                 // JSON metadata
+  string created_at = 13;
+}
+
+message BillProvider {
+  string id = 1;
+  string name = 2;
+  string type = 3;                      // "electricity", "water", "internet", "cable"
+  string logo_url = 4;
+  bool is_active = 5;
+  double min_amount = 6;
+  double max_amount = 7;
+  repeated string service_types = 8;    // ["prepaid", "postpaid"]
+}
+
+message AirtimeProvider {
+  string id = 1;
+  string name = 2;
+  string network = 3;                   // "MTN", "Airtel", "Glo", "9mobile"
+  string logo_url = 4;
+  bool is_active = 5;
+  repeated string denominations = 6;    // ["100", "200", "500", "1000"]
+  repeated string data_plans = 7;       // Available data plans
+  string country_code = 8;             // ISO country code (e.g., "NG")
+  double min_amount = 9;               // Minimum topup amount
+  double max_amount = 10;              // Maximum topup amount
+  double commission_rate = 11;         // % earned per transaction
+  string operator_id = 12;            // Reloadly operator ID
+}
+
+// ===== ELECTRICITY BILL =====
+// NOTE: user_id extracted from JWT token, not from request
+message PayElectricityBillRequest {
+  string provider_id = 1;
+  string meter_number = 2;
+  double amount = 3;
+  string meter_type = 4;                // "prepaid", "postpaid"
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 5;           // Unique transaction identifier
+  string verification_token = 6;        // Token from TransactionPinService validation
+
+  // Idempotency
+  string idempotency_key = 7;          // Unique key for idempotency (recommended: UUID)
+}
+
+message PayElectricityBillResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string token = 3;                     // Electricity token (for prepaid)
+  string units = 4;                     // Units purchased
+  string message = 5;
+}
+
+// ===== WATER BILL =====
+// NOTE: user_id extracted from JWT token, not from request
+message PayWaterBillRequest {
+  string provider_id = 1;
+  string customer_number = 2;
+  double amount = 3;
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 4;           // Unique transaction identifier
+  string verification_token = 5;        // Token from TransactionPinService validation
+
+  // Idempotency
+  string idempotency_key = 6;          // Unique key for idempotency (recommended: UUID)
+}
+
+message PayWaterBillResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string receipt_number = 3;
+  string message = 4;
+}
+
+// ===== INTERNET/CABLE BILL =====
+// NOTE: user_id extracted from JWT token, not from request
+message PayInternetBillRequest {
+  string provider_id = 1;
+  string customer_number = 2;
+  double amount = 3;
+  string service_type = 4;              // "internet", "cable", "both"
+  string package_id = 5;                // Optional: specific package
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 6;           // Unique transaction identifier
+  string verification_token = 7;        // Token from TransactionPinService validation
+
+  // Idempotency
+  string idempotency_key = 8;          // Unique key for idempotency (recommended: UUID)
+}
+
+message PayInternetBillResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string renewal_date = 3;
+  string message = 4;
+}
+
+// ===== AIRTIME =====
+// NOTE: user_id extracted from JWT token, not from request
+message BuyAirtimeRequest {
+  string provider_id = 1;
+  string phone_number = 2;
+  double amount = 3;
+  string airtime_type = 4;              // "airtime", "data"
+  string data_plan_id = 5;              // For data purchases
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 6;           // Unique transaction identifier
+  string verification_token = 7;        // Token from TransactionPinService validation
+
+  // Idempotency
+  string idempotency_key = 8;          // Unique key for idempotency (recommended: UUID)
+
+  string country_code = 9;             // ISO country code (e.g., "NG")
+  string operator_id = 10;             // Reloadly operator ID
+}
+
+message BuyAirtimeResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string phone_number = 3;
+  string data_info = 4;                 // Data plan details if applicable
+  string message = 5;
+  double commission_earned = 6;         // Commission earned on this transaction
+  string provider_reference = 7;        // Reloadly transaction ID
+}
+
+// ===== DATA PLANS =====
+
+message DataPlan {
+  string variation_id = 1;
+  string name = 2;
+  double price = 3;
+  string network = 4;
+  string availability = 5;
+}
+
+message GetDataPlansRequest {
+  string network = 1;
+}
+
+message GetDataPlansResponse {
+  repeated DataPlan plans = 1;
+  int32 total = 2;
+}
+
+// ===== BUY DATA =====
+// NOTE: user_id extracted from JWT token, not from request
+message BuyDataRequest {
+  string phone_number = 1;
+  string network = 2;
+  string variation_id = 3;
+  double amount = 4;
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 5;           // Unique transaction identifier
+  string verification_token = 6;        // Token from TransactionPinService validation
+
+  // Idempotency
+  string idempotency_key = 7;          // Unique key for idempotency (recommended: UUID)
+
+  string country_code = 8;             // ISO country code (e.g., "NG")
+}
+
+message BuyDataResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string phone_number = 3;
+  string data_plan = 4;
+  string message = 5;
+  double commission_earned = 6;         // Commission earned on this transaction
+  string provider_reference = 7;        // Provider transaction ID
+}
+
+// ===== BARCODE PAY =====
+// NOTE: user_id extracted from JWT token, not from request
+message BarcodePayRequest {
+  string barcode_data = 1;              // Scanned barcode data
+  double amount = 2;                    // Optional: can be in barcode
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 3;           // Unique transaction identifier
+  string verification_token = 4;        // Token from TransactionPinService validation
+
+  // Idempotency
+  string idempotency_key = 5;          // Unique key for idempotency (recommended: UUID)
+}
+
+message BarcodePayResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string merchant_name = 3;
+  string bill_type = 4;
+  string message = 5;
+}
+
+// ===== SCAN TO PAY (AI) =====
+// NOTE: user_id extracted from JWT token, not from request
+message ScanToPayRequest {
+  bytes image_data = 1;                 // Scanned receipt/bill image
+  double amount = 2;                    // Optional: can be extracted from image
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 3;           // Unique transaction identifier
+  string verification_token = 4;        // Token from TransactionPinService validation
+
+  // Idempotency
+  string idempotency_key = 5;          // Unique key for idempotency (recommended: UUID)
+}
+
+message ScanToPayResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string merchant_name = 3;
+  string bill_type = 4;
+  double extracted_amount = 5;          // Amount extracted by AI
+  string bill_details = 6;              // JSON of extracted details
+  string confidence_score = 7;          // AI confidence (0-100%)
+  string message = 8;
+}
+
+// ===== BILL PAYMENT HISTORY =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetBillPaymentHistoryRequest {
+  string account_id = 1;                // Optional filter
+  string bill_type = 2;                 // Optional filter
+  string status = 3;                    // Optional filter
+  string start_date = 4;
+  string end_date = 5;
+  int32 limit = 6;
+  int32 offset = 7;
+}
+
+message GetBillPaymentHistoryResponse {
+  repeated BillPayment payments = 1;
+  int32 total = 2;
+  double total_amount = 3;
+}
+
+// ===== BILL PROVIDERS =====
+
+message GetBillProvidersRequest {
+  string type = 1;                      // Optional filter: "electricity", "water", etc.
+  bool active_only = 2;
+}
+
+message GetBillProvidersResponse {
+  repeated BillProvider providers = 1;
+  int32 total = 2;
+}
+
+// ===== AIRTIME PROVIDERS =====
+
+message GetAirtimeProvidersRequest {
+  bool active_only = 1;
+  string country_code = 2;              // ISO country code filter (e.g., "NG")
+}
+
+message GetAirtimeProvidersResponse {
+  repeated AirtimeProvider providers = 1;
+  int32 total = 2;
+}
+
+// ===== VERIFY BILL =====
+
+message VerifyBillRequest {
+  string provider_id = 1;
+  string customer_number = 2;
+  string bill_type = 3;
+}
+
+message VerifyBillResponse {
+  bool is_valid = 1;
+  string customer_name = 2;
+  double outstanding_amount = 3;
+  string account_status = 4;
+  string message = 5;
+}
+
+// ===== CABLE TV =====
+
+message CableTVProvider {
+  string id = 1;
+  string name = 2;
+  string service_id = 3;               // VTpass serviceID (e.g., "dstv", "gotv", "startimes")
+  string logo_url = 4;
+  bool is_active = 5;
+  double commission_rate = 6;           // Provider commission rate (e.g., 0.005 for 0.5%)
+}
+
+message TVPackage {
+  string id = 1;
+  string name = 2;
+  string variation_code = 3;            // VTpass variation code
+  double amount = 4;
+  string provider_id = 5;
+  string validity = 6;                  // e.g., "1 Month", "1 Week"
+}
+
+message SmartCardValidation {
+  bool is_valid = 1;
+  string customer_name = 2;
+  string smart_card_number = 3;
+  string current_package = 4;
+  string renewal_date = 5;
+  string due_date = 6;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message ValidateSmartCardRequest {
+  string provider_id = 1;              // e.g., "dstv", "gotv", "startimes"
+  string smart_card_number = 2;
+}
+
+message ValidateSmartCardResponse {
+  SmartCardValidation validation = 1;
+  string message = 2;
+}
+
+message GetTVPackagesRequest {
+  string provider_id = 1;              // e.g., "dstv", "gotv", "startimes"
+}
+
+message GetTVPackagesResponse {
+  repeated TVPackage packages = 1;
+  int32 total = 2;
+}
+
+message PayCableTVBillRequest {
+  string provider_id = 1;
+  string smart_card_number = 2;
+  string variation_code = 3;            // Selected package variation code
+  double amount = 4;
+  string phone = 5;                     // Contact phone number
+
+  // Transaction PIN verification
+  string transaction_id = 6;
+  string verification_token = 7;
+
+  // Idempotency
+  string idempotency_key = 8;
+}
+
+message PayCableTVBillResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string renewal_date = 3;
+  string customer_name = 4;
+  string message = 5;
+}
+
+message GetCableTVProvidersRequest {
+  bool active_only = 1;
+}
+
+message GetCableTVProvidersResponse {
+  repeated CableTVProvider providers = 1;
+  int32 total = 2;
+}
+
+// ===== EDUCATION PINS =====
+
+message EducationProvider {
+  string id = 1;
+  string name = 2;
+  string service_id = 3;               // VTpass serviceID (e.g., "waec", "jamb")
+  string logo_url = 4;
+  bool is_active = 5;
+  double amount = 6;                    // Fixed price per PIN
+  string description = 7;
+}
+
+message EducationPinResult {
+  string pin = 1;
+  string serial = 2;
+  string expires_at = 3;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message PurchaseEducationPinRequest {
+  string service_id = 1;               // e.g., "waec", "jamb"
+  int32 quantity = 2;                   // Number of PINs (1-5)
+  string phone = 3;                     // Contact phone number
+
+  // Transaction PIN verification
+  string transaction_id = 4;
+  string verification_token = 5;
+
+  // Idempotency
+  string idempotency_key = 6;
+}
+
+message PurchaseEducationPinResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  repeated EducationPinResult pins = 3;
+  string message = 4;
+}
+
+message GetEducationProvidersRequest {
+  bool active_only = 1;
+}
+
+message GetEducationProvidersResponse {
+  repeated EducationProvider providers = 1;
+  int32 total = 2;
+}

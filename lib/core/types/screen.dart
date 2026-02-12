@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
@@ -11,11 +10,9 @@ import 'package:lazervault/src/features/presentation/views/lifestyle/lifestyle_s
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
-import 'package:lazervault/src/features/presentation/views/review_electricity_bills_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
-import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_transfer_funds_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
@@ -36,6 +33,7 @@ import 'package:lazervault/src/features/widgets/statistics.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 
 class Screen {
   final ScreenName name;
@@ -52,20 +50,34 @@ class Screen {
             BlocProvider(
               create: (context) => serviceLocator<ProfileCubit>()..getUserProfile(),
             ),
-            BlocProvider(
-              create: (context) => serviceLocator<StatisticsCubit>(),
+            BlocProvider.value(
+              value: serviceLocator<StatisticsCubit>(),
             ),
           ],
           child: const Dashboard(),
         );
       case ScreenName.statistics:
-        return BlocProvider(
-          create: (context) => serviceLocator<StatisticsCubit>(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(
+              value: serviceLocator<StatisticsCubit>(),
+            ),
+            BlocProvider.value(
+              value: serviceLocator<OpenBankingCubit>(),
+            ),
+          ],
           child: const Statistics(),
         );
       case ScreenName.statisticsLegacy:
-        return BlocProvider(
-          create: (context) => serviceLocator<StatisticsCubit>(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(
+              value: serviceLocator<StatisticsCubit>(),
+            ),
+            BlocProvider.value(
+              value: serviceLocator<OpenBankingCubit>(),
+            ),
+          ],
           child: const Statistics(),
         );
       case ScreenName.myCards:
@@ -80,8 +92,6 @@ class Screen {
         return const AddRecipientScreen();
       case ScreenName.inputPin:
         return InputPinScreen(recipient: param1 as User);
-      case ScreenName.payElectricityBill:
-        return const PayElectricityBillScreen();
       case ScreenName.profileSettings:
         return const ProfileSettingsScreen();
       case ScreenName.myAccount:  
@@ -113,10 +123,6 @@ class Screen {
       case ScreenName.sendFundReceipt:
         return SendFundReceiptScreen(
           transaction: param1 as Transaction,
-        );
-      case ScreenName.reviewElectricityBills:
-        return ReviewElectricityBillsScreen(
-          electricityBillDetails: param1 as ElectricityBillDetails,
         );
       case ScreenName.transferFunds:
         return TransferFundsScreen(
@@ -159,8 +165,6 @@ enum ScreenName {
   sendFundReceipt('Receipt'),
   reviewFundsTransfer('Review your transfer'),
   requestFunds('Request Payment'),
-  payElectricityBill('Electricity Bill'),
-  reviewElectricityBills('Information'),
   transferFunds('Transfer'),
   reviewTransferFunds('Confirmation'),
   profileSettings('Settings'),
@@ -191,8 +195,6 @@ List<Screen> screens = [
   Screen(name: ScreenName.sendFunds),
   Screen(name: ScreenName.inputPin),
   Screen(name: ScreenName.sendFundReceipt),
-  Screen(name: ScreenName.payElectricityBill),
-  Screen(name: ScreenName.reviewElectricityBills),
   Screen(name: ScreenName.otpVerification),
   Screen(name: ScreenName.transactionHistory),
   Screen(name: ScreenName.aiChat),

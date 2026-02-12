@@ -75,24 +75,22 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
         widget.crowdfund,
       );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Receipt saved to: ${filePath.split('/').last}'),
-            backgroundColor: const Color(0xFF10B981),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Receipt saved to: ${filePath.split('/').last}'),
+          backgroundColor: const Color(0xFF10B981),
+          duration: const Duration(seconds: 3),
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to download: ${e.toString().replaceAll('Exception: ', '')}'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to download: ${e.toString().replaceAll('Exception: ', '')}'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isProcessingPdf = false);
@@ -122,14 +120,13 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
         widget.crowdfund,
       );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to share: ${e.toString().replaceAll('Exception: ', '')}'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to share: ${e.toString().replaceAll('Exception: ', '')}'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isProcessingPdf = false);

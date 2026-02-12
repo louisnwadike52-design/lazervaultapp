@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
@@ -66,13 +67,13 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
   }
 
   void _navigateToEdit(AutoSaveRuleEntity rule) {
-    // TODO: Navigate to edit screen when created
-    Get.snackbar(
-      'Edit',
-      'Edit screen will be available soon',
-      backgroundColor: const Color(0xFF3B82F6),
-      colorText: Colors.white,
-    );
+    Get.toNamed(
+      AppRoutes.autoSaveDetails,
+      arguments: rule,
+    )?.then((_) {
+      if (!mounted) return;
+      context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+    });
   }
 
   void _toggleRule(AutoSaveRuleEntity rule) {
@@ -212,73 +213,110 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      appBar: _buildAppBar(),
-      body: BlocConsumer<AutoSaveCubit, AutoSaveState>(
-        listener: _handleStateChanges,
-        builder: (context, state) {
-          if (state is AutoSaveRulesLoadingState &&
-              state.cachedRules.isEmpty) {
-            return const AutoSaveListShimmer();
-          }
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: BlocConsumer<AutoSaveCubit, AutoSaveState>(
+                listener: _handleStateChanges,
+                builder: (context, state) {
+                  if (state is AutoSaveRulesLoadingState &&
+                      state.cachedRules.isEmpty) {
+                    return const AutoSaveListShimmer();
+                  }
 
-          if (state is AutoSaveRulesLoadedState) {
-            return _buildContent(state);
-          }
+                  if (state is AutoSaveRulesLoadedState) {
+                    return _buildContent(state);
+                  }
 
-          if (state is AutoSaveError) {
-            return _buildErrorState(state.message);
-          }
+                  if (state is AutoSaveError) {
+                    return _buildErrorState(state.message);
+                  }
 
-          return _buildEmptyState();
-        },
+                  return _buildEmptyState();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: !_selectionMode ? _buildFAB() : null,
       bottomNavigationBar: _selectionMode ? _buildBulkActionsBar() : null,
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: const Color(0xFF0A0A0A),
-      elevation: 0,
-      title: Text(
-        _selectionMode
-            ? '${_selectedRuleIds.length} Selected'
-            : 'Auto-Save Rules',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 20.sp,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      leading: IconButton(
-        icon: Icon(
-          _selectionMode ? Icons.close : Icons.arrow_back,
-          color: Colors.white,
-        ),
-        onPressed: _selectionMode
-            ? () => _toggleSelectionMode(null)
-            : () => Navigator.pop(context),
-      ),
-      actions: _selectionMode
-          ? [
-              TextButton(
-                onPressed: () {
-                  final state = context.read<AutoSaveCubit>().state;
-                  if (state is AutoSaveRulesLoadedState) {
-                    _selectAll(state.rules);
-                  }
-                },
-                child: Text(
-                  'Select All',
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 78, 3, 208),
-                    fontSize: 14.sp,
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: _selectionMode
+                ? () => _toggleSelectionMode(null)
+                : () => Get.back(),
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child: Icon(
+                _selectionMode ? Icons.close : Icons.arrow_back_ios_new,
+                color: Colors.white,
+                size: 18.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _selectionMode
+                      ? '${_selectedRuleIds.length} Selected'
+                      : 'All Rules',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
+                if (!_selectionMode) ...[
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Manage your auto-save rules',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (_selectionMode)
+            TextButton(
+              onPressed: () {
+                final state = context.read<AutoSaveCubit>().state;
+                if (state is AutoSaveRulesLoadedState) {
+                  _selectAll(state.rules);
+                }
+              },
+              child: Text(
+                'Select All',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF4E03D0),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ]
-          : null,
+            ),
+        ],
+      ),
     );
   }
 

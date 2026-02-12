@@ -12,6 +12,7 @@ class ElectricityProviderModel extends ElectricityProviderEntity {
     super.description,
     super.minAmount,
     super.maxAmount,
+    super.serviceFee,
     required super.supportsPrepaid,
     required super.supportsPostpaid,
     required super.isActive,
@@ -29,6 +30,7 @@ class ElectricityProviderModel extends ElectricityProviderEntity {
       description: null, // Not in proto
       minAmount: proto.hasMinAmount() ? proto.minAmount : null,
       maxAmount: proto.hasMaxAmount() ? proto.maxAmount : null,
+      serviceFee: proto.hasServiceFee() ? proto.serviceFee : 0.0,
       supportsPrepaid: true, // Default, could be enhanced in proto
       supportsPostpaid: true, // Default, could be enhanced in proto
       isActive: proto.isActive,

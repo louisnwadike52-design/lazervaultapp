@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/debouncer.dart';
 import '../../domain/entities/crypto_entity.dart';
 
 class CryptoSearchBar extends StatefulWidget {
@@ -25,6 +26,7 @@ class CryptoSearchBar extends StatefulWidget {
 
 class _CryptoSearchBarState extends State<CryptoSearchBar> {
   final FocusNode _focusNode = FocusNode();
+  final Debouncer _searchDebouncer = Debouncer.search();
   bool _showResults = false;
 
   @override
@@ -39,6 +41,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
 
   @override
   void dispose() {
+    _searchDebouncer.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -104,7 +107,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
             icon: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E2746),
+                color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
@@ -130,7 +133,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -187,7 +190,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           ),
         ),
         onChanged: (value) {
-          widget.onSearch(value);
+          _searchDebouncer.run(() => widget.onSearch(value));
           setState(() {
             _showResults = value.isNotEmpty;
           });
@@ -267,7 +270,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
@@ -353,7 +356,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           borderRadius: BorderRadius.circular(12.r),
         ),
         tileColor: Colors.transparent,
-        hoverColor: const Color(0xFF1E2746),
+        hoverColor: const Color(0xFF1F1F1F),
       ),
     );
   }
@@ -397,7 +400,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(

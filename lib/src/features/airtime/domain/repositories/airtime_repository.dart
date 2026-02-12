@@ -21,6 +21,7 @@ abstract class AirtimeRepository {
     required String currency,
     String? transactionId,
     String? verificationToken,
+    String? operatorId,
   });
   
   Future<List<AirtimeTransaction>> getTransactionHistory(String userId);

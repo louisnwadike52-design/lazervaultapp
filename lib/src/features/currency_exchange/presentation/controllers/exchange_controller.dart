@@ -302,67 +302,8 @@ class ExchangeController extends GetxController {
   }
 
   List<Recipient> _createDemoRecipients() {
-    final now = DateTime.now();
-    return [
-      Recipient(
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        accountNumber: '1234567890',
-        bankName: 'Bank of America',
-        swiftCode: 'BOFAUS3N',
-        countryCode: 'US',
-        currency: 'USD',
-        createdAt: now.subtract(const Duration(days: 30)),
-        lastUsed: now.subtract(const Duration(days: 5)),
-      ),
-      Recipient(
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane.smith@example.com',
-        accountNumber: '0987654321',
-        bankName: 'Chase Bank',
-        swiftCode: 'CHASUS33',
-        countryCode: 'US',
-        currency: 'USD',
-        createdAt: now.subtract(const Duration(days: 60)),
-        lastUsed: now.subtract(const Duration(days: 10)),
-      ),
-      Recipient(
-        id: '3',
-        name: 'Robert Johnson',
-        email: 'robert.j@example.com',
-        accountNumber: '5555555555',
-        bankName: 'Wells Fargo',
-        swiftCode: 'WFBIUS6S',
-        countryCode: 'US',
-        currency: 'USD',
-        createdAt: now.subtract(const Duration(days: 45)),
-        lastUsed: now.subtract(const Duration(days: 15)),
-      ),
-      Recipient(
-        id: '4',
-        name: 'Emily Davis',
-        email: 'emily.davis@example.com',
-        accountNumber: '1111222233',
-        bankName: 'Citibank',
-        swiftCode: 'CITIUS33',
-        countryCode: 'US',
-        currency: 'USD',
-        createdAt: now.subtract(const Duration(days: 20)),
-      ),
-      Recipient(
-        id: '5',
-        name: 'Michael Brown',
-        email: 'michael.b@example.com',
-        accountNumber: '9999888877',
-        bankName: 'HSBC',
-        swiftCode: 'HSBCUS33',
-        countryCode: 'GB',
-        currency: 'GBP',
-        createdAt: now.subtract(const Duration(days: 90)),
-      ),
-    ];
+    // TODO: Wire to saved recipients API
+    return [];
   }
 
   // Repeat transaction functionality

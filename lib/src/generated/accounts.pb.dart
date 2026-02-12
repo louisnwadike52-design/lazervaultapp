@@ -8957,6 +8957,972 @@ class GetPlatformWalletTransactionsResponse extends $pb.GeneratedMessage {
   void clearTotal() => clearField(2);
 }
 
+/// Period totals for income and expenses
+class PeriodTotals extends $pb.GeneratedMessage {
+  factory PeriodTotals({
+    $core.double? totalIncome,
+    $core.double? totalExpenses,
+    $core.double? net,
+    $core.int? transactionCount,
+  }) {
+    final $result = create();
+    if (totalIncome != null) {
+      $result.totalIncome = totalIncome;
+    }
+    if (totalExpenses != null) {
+      $result.totalExpenses = totalExpenses;
+    }
+    if (net != null) {
+      $result.net = net;
+    }
+    if (transactionCount != null) {
+      $result.transactionCount = transactionCount;
+    }
+    return $result;
+  }
+  PeriodTotals._() : super();
+  factory PeriodTotals.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PeriodTotals.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PeriodTotals', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'totalIncome', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalExpenses', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'net', $pb.PbFieldType.OD)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'transactionCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PeriodTotals clone() => PeriodTotals()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PeriodTotals copyWith(void Function(PeriodTotals) updates) => super.copyWith((message) => updates(message as PeriodTotals)) as PeriodTotals;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PeriodTotals create() => PeriodTotals._();
+  PeriodTotals createEmptyInstance() => create();
+  static $pb.PbList<PeriodTotals> createRepeated() => $pb.PbList<PeriodTotals>();
+  @$core.pragma('dart2js:noInline')
+  static PeriodTotals getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PeriodTotals>(create);
+  static PeriodTotals? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.double get totalIncome => $_getN(0);
+  @$pb.TagNumber(1)
+  set totalIncome($core.double v) { $_setDouble(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTotalIncome() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTotalIncome() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get totalExpenses => $_getN(1);
+  @$pb.TagNumber(2)
+  set totalExpenses($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalExpenses() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalExpenses() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get net => $_getN(2);
+  @$pb.TagNumber(3)
+  set net($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasNet() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNet() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get transactionCount => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set transactionCount($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTransactionCount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTransactionCount() => clearField(4);
+}
+
+/// GetFinancialAnalytics - Compare current vs previous period
+class GetFinancialAnalyticsRequest extends $pb.GeneratedMessage {
+  factory GetFinancialAnalyticsRequest({
+    $core.String? accountId,
+    $core.String? period,
+    $core.String? startDate,
+    $core.String? endDate,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (period != null) {
+      $result.period = period;
+    }
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetFinancialAnalyticsRequest._() : super();
+  factory GetFinancialAnalyticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetFinancialAnalyticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetFinancialAnalyticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'period')
+    ..aOS(3, _omitFieldNames ? '' : 'startDate')
+    ..aOS(4, _omitFieldNames ? '' : 'endDate')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetFinancialAnalyticsRequest clone() => GetFinancialAnalyticsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetFinancialAnalyticsRequest copyWith(void Function(GetFinancialAnalyticsRequest) updates) => super.copyWith((message) => updates(message as GetFinancialAnalyticsRequest)) as GetFinancialAnalyticsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetFinancialAnalyticsRequest create() => GetFinancialAnalyticsRequest._();
+  GetFinancialAnalyticsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetFinancialAnalyticsRequest> createRepeated() => $pb.PbList<GetFinancialAnalyticsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetFinancialAnalyticsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetFinancialAnalyticsRequest>(create);
+  static GetFinancialAnalyticsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get period => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set period($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPeriod() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPeriod() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get startDate => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set startDate($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStartDate() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStartDate() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get endDate => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set endDate($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasEndDate() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEndDate() => clearField(4);
+}
+
+class GetFinancialAnalyticsResponse extends $pb.GeneratedMessage {
+  factory GetFinancialAnalyticsResponse({
+    PeriodTotals? currentPeriod,
+    PeriodTotals? previousPeriod,
+    $core.double? incomeChangePercent,
+    $core.double? expenseChangePercent,
+    $core.String? periodLabel,
+  }) {
+    final $result = create();
+    if (currentPeriod != null) {
+      $result.currentPeriod = currentPeriod;
+    }
+    if (previousPeriod != null) {
+      $result.previousPeriod = previousPeriod;
+    }
+    if (incomeChangePercent != null) {
+      $result.incomeChangePercent = incomeChangePercent;
+    }
+    if (expenseChangePercent != null) {
+      $result.expenseChangePercent = expenseChangePercent;
+    }
+    if (periodLabel != null) {
+      $result.periodLabel = periodLabel;
+    }
+    return $result;
+  }
+  GetFinancialAnalyticsResponse._() : super();
+  factory GetFinancialAnalyticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetFinancialAnalyticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetFinancialAnalyticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOM<PeriodTotals>(1, _omitFieldNames ? '' : 'currentPeriod', subBuilder: PeriodTotals.create)
+    ..aOM<PeriodTotals>(2, _omitFieldNames ? '' : 'previousPeriod', subBuilder: PeriodTotals.create)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'incomeChangePercent', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'expenseChangePercent', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'periodLabel')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetFinancialAnalyticsResponse clone() => GetFinancialAnalyticsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetFinancialAnalyticsResponse copyWith(void Function(GetFinancialAnalyticsResponse) updates) => super.copyWith((message) => updates(message as GetFinancialAnalyticsResponse)) as GetFinancialAnalyticsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetFinancialAnalyticsResponse create() => GetFinancialAnalyticsResponse._();
+  GetFinancialAnalyticsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetFinancialAnalyticsResponse> createRepeated() => $pb.PbList<GetFinancialAnalyticsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetFinancialAnalyticsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetFinancialAnalyticsResponse>(create);
+  static GetFinancialAnalyticsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  PeriodTotals get currentPeriod => $_getN(0);
+  @$pb.TagNumber(1)
+  set currentPeriod(PeriodTotals v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCurrentPeriod() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCurrentPeriod() => clearField(1);
+  @$pb.TagNumber(1)
+  PeriodTotals ensureCurrentPeriod() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  PeriodTotals get previousPeriod => $_getN(1);
+  @$pb.TagNumber(2)
+  set previousPeriod(PeriodTotals v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPreviousPeriod() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPreviousPeriod() => clearField(2);
+  @$pb.TagNumber(2)
+  PeriodTotals ensurePreviousPeriod() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.double get incomeChangePercent => $_getN(2);
+  @$pb.TagNumber(3)
+  set incomeChangePercent($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIncomeChangePercent() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIncomeChangePercent() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get expenseChangePercent => $_getN(3);
+  @$pb.TagNumber(4)
+  set expenseChangePercent($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasExpenseChangePercent() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearExpenseChangePercent() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get periodLabel => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set periodLabel($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPeriodLabel() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPeriodLabel() => clearField(5);
+}
+
+/// Category breakdown item
+class CategoryBreakdownItem extends $pb.GeneratedMessage {
+  factory CategoryBreakdownItem({
+    $core.String? categoryName,
+    $core.double? amount,
+    $core.int? transactionCount,
+    $core.double? percentage,
+  }) {
+    final $result = create();
+    if (categoryName != null) {
+      $result.categoryName = categoryName;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (transactionCount != null) {
+      $result.transactionCount = transactionCount;
+    }
+    if (percentage != null) {
+      $result.percentage = percentage;
+    }
+    return $result;
+  }
+  CategoryBreakdownItem._() : super();
+  factory CategoryBreakdownItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CategoryBreakdownItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CategoryBreakdownItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'categoryName')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'transactionCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'percentage', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CategoryBreakdownItem clone() => CategoryBreakdownItem()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CategoryBreakdownItem copyWith(void Function(CategoryBreakdownItem) updates) => super.copyWith((message) => updates(message as CategoryBreakdownItem)) as CategoryBreakdownItem;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CategoryBreakdownItem create() => CategoryBreakdownItem._();
+  CategoryBreakdownItem createEmptyInstance() => create();
+  static $pb.PbList<CategoryBreakdownItem> createRepeated() => $pb.PbList<CategoryBreakdownItem>();
+  @$core.pragma('dart2js:noInline')
+  static CategoryBreakdownItem getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CategoryBreakdownItem>(create);
+  static CategoryBreakdownItem? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get categoryName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set categoryName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCategoryName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCategoryName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get transactionCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set transactionCount($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTransactionCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTransactionCount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get percentage => $_getN(3);
+  @$pb.TagNumber(4)
+  set percentage($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPercentage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPercentage() => clearField(4);
+}
+
+/// GetCategoryAnalytics - Breakdown by category for income and expenses
+class GetCategoryAnalyticsRequest extends $pb.GeneratedMessage {
+  factory GetCategoryAnalyticsRequest({
+    $core.String? accountId,
+    $core.String? startDate,
+    $core.String? endDate,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetCategoryAnalyticsRequest._() : super();
+  factory GetCategoryAnalyticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCategoryAnalyticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCategoryAnalyticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'startDate')
+    ..aOS(3, _omitFieldNames ? '' : 'endDate')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCategoryAnalyticsRequest clone() => GetCategoryAnalyticsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCategoryAnalyticsRequest copyWith(void Function(GetCategoryAnalyticsRequest) updates) => super.copyWith((message) => updates(message as GetCategoryAnalyticsRequest)) as GetCategoryAnalyticsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCategoryAnalyticsRequest create() => GetCategoryAnalyticsRequest._();
+  GetCategoryAnalyticsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCategoryAnalyticsRequest> createRepeated() => $pb.PbList<GetCategoryAnalyticsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCategoryAnalyticsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCategoryAnalyticsRequest>(create);
+  static GetCategoryAnalyticsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get startDate => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set startDate($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStartDate() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStartDate() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get endDate => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set endDate($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEndDate() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEndDate() => clearField(3);
+}
+
+class GetCategoryAnalyticsResponse extends $pb.GeneratedMessage {
+  factory GetCategoryAnalyticsResponse({
+    $core.Iterable<CategoryBreakdownItem>? expenseCategories,
+    $core.Iterable<CategoryBreakdownItem>? incomeCategories,
+    $core.double? totalExpenses,
+    $core.double? totalIncome,
+  }) {
+    final $result = create();
+    if (expenseCategories != null) {
+      $result.expenseCategories.addAll(expenseCategories);
+    }
+    if (incomeCategories != null) {
+      $result.incomeCategories.addAll(incomeCategories);
+    }
+    if (totalExpenses != null) {
+      $result.totalExpenses = totalExpenses;
+    }
+    if (totalIncome != null) {
+      $result.totalIncome = totalIncome;
+    }
+    return $result;
+  }
+  GetCategoryAnalyticsResponse._() : super();
+  factory GetCategoryAnalyticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCategoryAnalyticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCategoryAnalyticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..pc<CategoryBreakdownItem>(1, _omitFieldNames ? '' : 'expenseCategories', $pb.PbFieldType.PM, subBuilder: CategoryBreakdownItem.create)
+    ..pc<CategoryBreakdownItem>(2, _omitFieldNames ? '' : 'incomeCategories', $pb.PbFieldType.PM, subBuilder: CategoryBreakdownItem.create)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalExpenses', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalIncome', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCategoryAnalyticsResponse clone() => GetCategoryAnalyticsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCategoryAnalyticsResponse copyWith(void Function(GetCategoryAnalyticsResponse) updates) => super.copyWith((message) => updates(message as GetCategoryAnalyticsResponse)) as GetCategoryAnalyticsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCategoryAnalyticsResponse create() => GetCategoryAnalyticsResponse._();
+  GetCategoryAnalyticsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetCategoryAnalyticsResponse> createRepeated() => $pb.PbList<GetCategoryAnalyticsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetCategoryAnalyticsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCategoryAnalyticsResponse>(create);
+  static GetCategoryAnalyticsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CategoryBreakdownItem> get expenseCategories => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.List<CategoryBreakdownItem> get incomeCategories => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.double get totalExpenses => $_getN(2);
+  @$pb.TagNumber(3)
+  set totalExpenses($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalExpenses() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalExpenses() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get totalIncome => $_getN(3);
+  @$pb.TagNumber(4)
+  set totalIncome($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTotalIncome() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalIncome() => clearField(4);
+}
+
+/// Monthly data point for trends
+class MonthlyDataPoint extends $pb.GeneratedMessage {
+  factory MonthlyDataPoint({
+    $core.String? month,
+    $core.String? monthLabel,
+    $core.double? income,
+    $core.double? expenses,
+  }) {
+    final $result = create();
+    if (month != null) {
+      $result.month = month;
+    }
+    if (monthLabel != null) {
+      $result.monthLabel = monthLabel;
+    }
+    if (income != null) {
+      $result.income = income;
+    }
+    if (expenses != null) {
+      $result.expenses = expenses;
+    }
+    return $result;
+  }
+  MonthlyDataPoint._() : super();
+  factory MonthlyDataPoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MonthlyDataPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MonthlyDataPoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'month')
+    ..aOS(2, _omitFieldNames ? '' : 'monthLabel')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'income', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'expenses', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MonthlyDataPoint clone() => MonthlyDataPoint()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MonthlyDataPoint copyWith(void Function(MonthlyDataPoint) updates) => super.copyWith((message) => updates(message as MonthlyDataPoint)) as MonthlyDataPoint;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MonthlyDataPoint create() => MonthlyDataPoint._();
+  MonthlyDataPoint createEmptyInstance() => create();
+  static $pb.PbList<MonthlyDataPoint> createRepeated() => $pb.PbList<MonthlyDataPoint>();
+  @$core.pragma('dart2js:noInline')
+  static MonthlyDataPoint getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MonthlyDataPoint>(create);
+  static MonthlyDataPoint? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get month => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set month($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMonth() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMonth() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get monthLabel => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set monthLabel($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMonthLabel() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMonthLabel() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get income => $_getN(2);
+  @$pb.TagNumber(3)
+  set income($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIncome() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIncome() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get expenses => $_getN(3);
+  @$pb.TagNumber(4)
+  set expenses($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasExpenses() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearExpenses() => clearField(4);
+}
+
+/// GetMonthlyTrends - Monthly income/expense for last N months
+class GetMonthlyTrendsRequest extends $pb.GeneratedMessage {
+  factory GetMonthlyTrendsRequest({
+    $core.String? accountId,
+    $core.int? months,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (months != null) {
+      $result.months = months;
+    }
+    return $result;
+  }
+  GetMonthlyTrendsRequest._() : super();
+  factory GetMonthlyTrendsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMonthlyTrendsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMonthlyTrendsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'months', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMonthlyTrendsRequest clone() => GetMonthlyTrendsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMonthlyTrendsRequest copyWith(void Function(GetMonthlyTrendsRequest) updates) => super.copyWith((message) => updates(message as GetMonthlyTrendsRequest)) as GetMonthlyTrendsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMonthlyTrendsRequest create() => GetMonthlyTrendsRequest._();
+  GetMonthlyTrendsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMonthlyTrendsRequest> createRepeated() => $pb.PbList<GetMonthlyTrendsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMonthlyTrendsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMonthlyTrendsRequest>(create);
+  static GetMonthlyTrendsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get months => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set months($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMonths() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMonths() => clearField(2);
+}
+
+class GetMonthlyTrendsResponse extends $pb.GeneratedMessage {
+  factory GetMonthlyTrendsResponse({
+    $core.Iterable<MonthlyDataPoint>? months,
+  }) {
+    final $result = create();
+    if (months != null) {
+      $result.months.addAll(months);
+    }
+    return $result;
+  }
+  GetMonthlyTrendsResponse._() : super();
+  factory GetMonthlyTrendsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMonthlyTrendsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMonthlyTrendsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..pc<MonthlyDataPoint>(1, _omitFieldNames ? '' : 'months', $pb.PbFieldType.PM, subBuilder: MonthlyDataPoint.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMonthlyTrendsResponse clone() => GetMonthlyTrendsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMonthlyTrendsResponse copyWith(void Function(GetMonthlyTrendsResponse) updates) => super.copyWith((message) => updates(message as GetMonthlyTrendsResponse)) as GetMonthlyTrendsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMonthlyTrendsResponse create() => GetMonthlyTrendsResponse._();
+  GetMonthlyTrendsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetMonthlyTrendsResponse> createRepeated() => $pb.PbList<GetMonthlyTrendsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetMonthlyTrendsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMonthlyTrendsResponse>(create);
+  static GetMonthlyTrendsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<MonthlyDataPoint> get months => $_getList(0);
+}
+
+/// Daily expense point for time series
+class DailyExpensePoint extends $pb.GeneratedMessage {
+  factory DailyExpensePoint({
+    $core.String? date,
+    $core.double? amount,
+  }) {
+    final $result = create();
+    if (date != null) {
+      $result.date = date;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    return $result;
+  }
+  DailyExpensePoint._() : super();
+  factory DailyExpensePoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DailyExpensePoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DailyExpensePoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'date')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DailyExpensePoint clone() => DailyExpensePoint()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DailyExpensePoint copyWith(void Function(DailyExpensePoint) updates) => super.copyWith((message) => updates(message as DailyExpensePoint)) as DailyExpensePoint;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DailyExpensePoint create() => DailyExpensePoint._();
+  DailyExpensePoint createEmptyInstance() => create();
+  static $pb.PbList<DailyExpensePoint> createRepeated() => $pb.PbList<DailyExpensePoint>();
+  @$core.pragma('dart2js:noInline')
+  static DailyExpensePoint getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DailyExpensePoint>(create);
+  static DailyExpensePoint? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get date => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set date($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDate() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDate() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+}
+
+/// GetExpenseTimeSeries - Daily expense totals
+class GetExpenseTimeSeriesRequest extends $pb.GeneratedMessage {
+  factory GetExpenseTimeSeriesRequest({
+    $core.String? accountId,
+    $core.String? startDate,
+    $core.String? endDate,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetExpenseTimeSeriesRequest._() : super();
+  factory GetExpenseTimeSeriesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetExpenseTimeSeriesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExpenseTimeSeriesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'startDate')
+    ..aOS(3, _omitFieldNames ? '' : 'endDate')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetExpenseTimeSeriesRequest clone() => GetExpenseTimeSeriesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetExpenseTimeSeriesRequest copyWith(void Function(GetExpenseTimeSeriesRequest) updates) => super.copyWith((message) => updates(message as GetExpenseTimeSeriesRequest)) as GetExpenseTimeSeriesRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetExpenseTimeSeriesRequest create() => GetExpenseTimeSeriesRequest._();
+  GetExpenseTimeSeriesRequest createEmptyInstance() => create();
+  static $pb.PbList<GetExpenseTimeSeriesRequest> createRepeated() => $pb.PbList<GetExpenseTimeSeriesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetExpenseTimeSeriesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetExpenseTimeSeriesRequest>(create);
+  static GetExpenseTimeSeriesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get startDate => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set startDate($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStartDate() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStartDate() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get endDate => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set endDate($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEndDate() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEndDate() => clearField(3);
+}
+
+class GetExpenseTimeSeriesResponse extends $pb.GeneratedMessage {
+  factory GetExpenseTimeSeriesResponse({
+    $core.Iterable<DailyExpensePoint>? dataPoints,
+    $core.double? totalExpenses,
+    $core.double? dailyAverage,
+  }) {
+    final $result = create();
+    if (dataPoints != null) {
+      $result.dataPoints.addAll(dataPoints);
+    }
+    if (totalExpenses != null) {
+      $result.totalExpenses = totalExpenses;
+    }
+    if (dailyAverage != null) {
+      $result.dailyAverage = dailyAverage;
+    }
+    return $result;
+  }
+  GetExpenseTimeSeriesResponse._() : super();
+  factory GetExpenseTimeSeriesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetExpenseTimeSeriesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExpenseTimeSeriesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..pc<DailyExpensePoint>(1, _omitFieldNames ? '' : 'dataPoints', $pb.PbFieldType.PM, subBuilder: DailyExpensePoint.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalExpenses', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'dailyAverage', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetExpenseTimeSeriesResponse clone() => GetExpenseTimeSeriesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetExpenseTimeSeriesResponse copyWith(void Function(GetExpenseTimeSeriesResponse) updates) => super.copyWith((message) => updates(message as GetExpenseTimeSeriesResponse)) as GetExpenseTimeSeriesResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetExpenseTimeSeriesResponse create() => GetExpenseTimeSeriesResponse._();
+  GetExpenseTimeSeriesResponse createEmptyInstance() => create();
+  static $pb.PbList<GetExpenseTimeSeriesResponse> createRepeated() => $pb.PbList<GetExpenseTimeSeriesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetExpenseTimeSeriesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetExpenseTimeSeriesResponse>(create);
+  static GetExpenseTimeSeriesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<DailyExpensePoint> get dataPoints => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.double get totalExpenses => $_getN(1);
+  @$pb.TagNumber(2)
+  set totalExpenses($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalExpenses() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalExpenses() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get dailyAverage => $_getN(2);
+  @$pb.TagNumber(3)
+  set dailyAverage($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDailyAverage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDailyAverage() => clearField(3);
+}
+
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
 const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

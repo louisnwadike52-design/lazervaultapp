@@ -2,38 +2,39 @@ import 'package:equatable/equatable.dart';
 import 'package:fixnum/fixnum.dart';
 
 class BatchTransferRecipient extends Equatable {
-  final Int64? recipientId;
-  final Int64? toAccountId;
+  final String toAccountNumber;
   final Int64 amount; // Minor units
+  final String? description;
   final String? reference;
   final String? category;
 
   const BatchTransferRecipient({
-    this.recipientId,
-    this.toAccountId,
+    required this.toAccountNumber,
     required this.amount,
+    this.description,
     this.reference,
     this.category,
   });
 
   @override
   List<Object?> get props => [
-        recipientId,
-        toAccountId,
+        toAccountNumber,
         amount,
+        description,
         reference,
         category,
       ];
 }
 
 class BatchTransferResult extends Equatable {
-  final Int64 transferId;
+  final String transferId;
   final String status;
   final Int64 amount; // Minor units
   final Int64 fee; // Minor units
   final String? recipientName;
   final String? recipientAccount;
   final String? failureReason;
+  final String? reference;
 
   const BatchTransferResult({
     required this.transferId,
@@ -43,6 +44,7 @@ class BatchTransferResult extends Equatable {
     this.recipientName,
     this.recipientAccount,
     this.failureReason,
+    this.reference,
   });
 
   @override
@@ -54,11 +56,12 @@ class BatchTransferResult extends Equatable {
         recipientName,
         recipientAccount,
         failureReason,
+        reference,
       ];
 }
 
 class BatchTransferEntity extends Equatable {
-  final Int64 batchId;
+  final String batchId;
   final String status;
   final Int64 totalAmount; // Minor units
   final Int64 totalFee; // Minor units
@@ -67,6 +70,8 @@ class BatchTransferEntity extends Equatable {
   final int failedTransfers;
   final int totalTransfers;
   final List<BatchTransferResult> results;
+  final double newBalance;
+  final String message;
   final DateTime createdAt;
   final DateTime? completedAt;
 
@@ -80,6 +85,8 @@ class BatchTransferEntity extends Equatable {
     required this.failedTransfers,
     required this.totalTransfers,
     required this.results,
+    required this.newBalance,
+    required this.message,
     required this.createdAt,
     this.completedAt,
   });
@@ -95,7 +102,9 @@ class BatchTransferEntity extends Equatable {
         failedTransfers,
         totalTransfers,
         results,
+        newBalance,
+        message,
         createdAt,
         completedAt,
       ];
-} 
+}

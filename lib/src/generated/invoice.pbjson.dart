@@ -138,6 +138,26 @@ final $typed_data.Uint8List invoiceStatisticsDescriptor = $convert.base64Decode(
     'RvdGFsX2Ftb3VudF9vdmVyZHVlGAogASgBUhJ0b3RhbEFtb3VudE92ZXJkdWUSJwoPY29sbGVj'
     'dGlvbl9yYXRlGAsgASgBUg5jb2xsZWN0aW9uUmF0ZQ==');
 
+@$core.Deprecated('Use invoicePaginationInfoDescriptor instead')
+const InvoicePaginationInfo$json = {
+  '1': 'InvoicePaginationInfo',
+  '2': [
+    {'1': 'current_page', '3': 1, '4': 1, '5': 5, '10': 'currentPage'},
+    {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
+    {'1': 'total_count', '3': 3, '4': 1, '5': 5, '10': 'totalCount'},
+    {'1': 'total_pages', '3': 4, '4': 1, '5': 5, '10': 'totalPages'},
+    {'1': 'has_next', '3': 5, '4': 1, '5': 8, '10': 'hasNext'},
+    {'1': 'has_previous', '3': 6, '4': 1, '5': 8, '10': 'hasPrevious'},
+  ],
+};
+
+/// Descriptor for `InvoicePaginationInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List invoicePaginationInfoDescriptor = $convert.base64Decode(
+    'ChVJbnZvaWNlUGFnaW5hdGlvbkluZm8SIQoMY3VycmVudF9wYWdlGAEgASgFUgtjdXJyZW50UG'
+    'FnZRIbCglwYWdlX3NpemUYAiABKAVSCHBhZ2VTaXplEh8KC3RvdGFsX2NvdW50GAMgASgFUgp0'
+    'b3RhbENvdW50Eh8KC3RvdGFsX3BhZ2VzGAQgASgFUgp0b3RhbFBhZ2VzEhkKCGhhc19uZXh0GA'
+    'UgASgIUgdoYXNOZXh0EiEKDGhhc19wcmV2aW91cxgGIAEoCFILaGFzUHJldmlvdXM=');
+
 @$core.Deprecated('Use createInvoiceRequestDescriptor instead')
 const CreateInvoiceRequest$json = {
   '1': 'CreateInvoiceRequest',
@@ -189,26 +209,6 @@ final $typed_data.Uint8List createInvoiceResponseDescriptor = $convert.base64Dec
     'ChVDcmVhdGVJbnZvaWNlUmVzcG9uc2USKgoHaW52b2ljZRgBIAEoCzIQLmludm9pY2UuSW52b2'
     'ljZVIHaW52b2ljZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
-@$core.Deprecated('Use paginationInfoDescriptor instead')
-const PaginationInfo$json = {
-  '1': 'PaginationInfo',
-  '2': [
-    {'1': 'current_page', '3': 1, '4': 1, '5': 5, '10': 'currentPage'},
-    {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
-    {'1': 'total_count', '3': 3, '4': 1, '5': 5, '10': 'totalCount'},
-    {'1': 'total_pages', '3': 4, '4': 1, '5': 5, '10': 'totalPages'},
-    {'1': 'has_next', '3': 5, '4': 1, '5': 8, '10': 'hasNext'},
-    {'1': 'has_previous', '3': 6, '4': 1, '5': 8, '10': 'hasPrevious'},
-  ],
-};
-
-/// Descriptor for `PaginationInfo`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List paginationInfoDescriptor = $convert.base64Decode(
-    'Cg5QYWdpbmF0aW9uSW5mbxIhCgxjdXJyZW50X3BhZ2UYASABKAVSC2N1cnJlbnRQYWdlEhsKCX'
-    'BhZ2Vfc2l6ZRgCIAEoBVIIcGFnZVNpemUSHwoLdG90YWxfY291bnQYAyABKAVSCnRvdGFsQ291'
-    'bnQSHwoLdG90YWxfcGFnZXMYBCABKAVSCnRvdGFsUGFnZXMSGQoIaGFzX25leHQYBSABKAhSB2'
-    'hhc05leHQSIQoMaGFzX3ByZXZpb3VzGAYgASgIUgtoYXNQcmV2aW91cw==');
-
 @$core.Deprecated('Use getInvoicesRequestDescriptor instead')
 const GetInvoicesRequest$json = {
   '1': 'GetInvoicesRequest',
@@ -240,7 +240,7 @@ const GetInvoicesResponse$json = {
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_amount_pending', '3': 3, '4': 1, '5': 1, '10': 'totalAmountPending'},
     {'1': 'total_amount_paid', '3': 4, '4': 1, '5': 1, '10': 'totalAmountPaid'},
-    {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.PaginationInfo', '10': 'pagination'},
+    {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.InvoicePaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -249,8 +249,8 @@ final $typed_data.Uint8List getInvoicesResponseDescriptor = $convert.base64Decod
     'ChNHZXRJbnZvaWNlc1Jlc3BvbnNlEiwKCGludm9pY2VzGAEgAygLMhAuaW52b2ljZS5JbnZvaW'
     'NlUghpbnZvaWNlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSMAoUdG90YWxfYW1vdW50X3BlbmRp'
     'bmcYAyABKAFSEnRvdGFsQW1vdW50UGVuZGluZxIqChF0b3RhbF9hbW91bnRfcGFpZBgEIAEoAV'
-    'IPdG90YWxBbW91bnRQYWlkEjcKCnBhZ2luYXRpb24YBSABKAsyFy5pbnZvaWNlLlBhZ2luYXRp'
-    'b25JbmZvUgpwYWdpbmF0aW9u');
+    'IPdG90YWxBbW91bnRQYWlkEj4KCnBhZ2luYXRpb24YBSABKAsyHi5pbnZvaWNlLkludm9pY2VQ'
+    'YWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbg==');
 
 @$core.Deprecated('Use getInvoiceRequestDescriptor instead')
 const GetInvoiceRequest$json = {
@@ -371,35 +371,6 @@ final $typed_data.Uint8List sendInvoiceReminderResponseDescriptor = $convert.bas
     'ChtTZW5kSW52b2ljZVJlbWluZGVyUmVzcG9uc2USEgoEc2VudBgBIAEoCFIEc2VudBIYCgdtZX'
     'NzYWdlGAIgASgJUgdtZXNzYWdl');
 
-@$core.Deprecated('Use sendInvoiceToEmailRequestDescriptor instead')
-const SendInvoiceToEmailRequest$json = {
-  '1': 'SendInvoiceToEmailRequest',
-  '2': [
-    {'1': 'invoice_id', '3': 1, '4': 1, '5': 9, '10': 'invoiceId'},
-    {'1': 'email', '3': 2, '4': 1, '5': 9, '10': 'email'},
-    {'1': 'locale', '3': 3, '4': 1, '5': 9, '10': 'locale'},
-  ],
-};
-
-/// Descriptor for `SendInvoiceToEmailRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sendInvoiceToEmailRequestDescriptor = $convert.base64Decode(
-    'ChlTZW5kSW52b2ljZVRvRW1haWxSZXF1ZXN0Eh0KCmludm9pY2VfaWQYASABKAlSCWludm9pY2'
-    'VJZBIUCgVlbWFpbBgCIAEoCVIFZW1haWwSFgoGbG9jYWxlGAMgASgJUgZsb2NhbGU=');
-
-@$core.Deprecated('Use sendInvoiceToEmailResponseDescriptor instead')
-const SendInvoiceToEmailResponse$json = {
-  '1': 'SendInvoiceToEmailResponse',
-  '2': [
-    {'1': 'sent', '3': 1, '4': 1, '5': 8, '10': 'sent'},
-    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-  ],
-};
-
-/// Descriptor for `SendInvoiceToEmailResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sendInvoiceToEmailResponseDescriptor = $convert.base64Decode(
-    'ChpTZW5kSW52b2ljZVRvRW1haWxSZXNwb25zZRISCgRzZW50GAEgASgIUgRzZW50EhgKB21lc3'
-    'NhZ2UYAiABKAlSB21lc3NhZ2U=');
-
 @$core.Deprecated('Use updateInvoiceStatusRequestDescriptor instead')
 const UpdateInvoiceStatusRequest$json = {
   '1': 'UpdateInvoiceStatusRequest',
@@ -486,7 +457,7 @@ const GetInvoicesTaggedToUserResponse$json = {
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_amount_pending', '3': 3, '4': 1, '5': 1, '10': 'totalAmountPending'},
     {'1': 'total_amount_paid', '3': 4, '4': 1, '5': 1, '10': 'totalAmountPaid'},
-    {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.PaginationInfo', '10': 'pagination'},
+    {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.InvoicePaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -495,8 +466,8 @@ final $typed_data.Uint8List getInvoicesTaggedToUserResponseDescriptor = $convert
     'Ch9HZXRJbnZvaWNlc1RhZ2dlZFRvVXNlclJlc3BvbnNlEiwKCGludm9pY2VzGAEgAygLMhAuaW'
     '52b2ljZS5JbnZvaWNlUghpbnZvaWNlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSMAoUdG90YWxf'
     'YW1vdW50X3BlbmRpbmcYAyABKAFSEnRvdGFsQW1vdW50UGVuZGluZxIqChF0b3RhbF9hbW91bn'
-    'RfcGFpZBgEIAEoAVIPdG90YWxBbW91bnRQYWlkEjcKCnBhZ2luYXRpb24YBSABKAsyFy5pbnZv'
-    'aWNlLlBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
+    'RfcGFpZBgEIAEoAVIPdG90YWxBbW91bnRQYWlkEj4KCnBhZ2luYXRpb24YBSABKAsyHi5pbnZv'
+    'aWNlLkludm9pY2VQYWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbg==');
 
 @$core.Deprecated('Use getSentInvoicesRequestDescriptor instead')
 const GetSentInvoicesRequest$json = {
@@ -524,7 +495,7 @@ const GetSentInvoicesResponse$json = {
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_amount_pending', '3': 3, '4': 1, '5': 1, '10': 'totalAmountPending'},
     {'1': 'total_amount_paid', '3': 4, '4': 1, '5': 1, '10': 'totalAmountPaid'},
-    {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.PaginationInfo', '10': 'pagination'},
+    {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.InvoicePaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -533,8 +504,8 @@ final $typed_data.Uint8List getSentInvoicesResponseDescriptor = $convert.base64D
     'ChdHZXRTZW50SW52b2ljZXNSZXNwb25zZRIsCghpbnZvaWNlcxgBIAMoCzIQLmludm9pY2UuSW'
     '52b2ljZVIIaW52b2ljZXMSFAoFdG90YWwYAiABKAVSBXRvdGFsEjAKFHRvdGFsX2Ftb3VudF9w'
     'ZW5kaW5nGAMgASgBUhJ0b3RhbEFtb3VudFBlbmRpbmcSKgoRdG90YWxfYW1vdW50X3BhaWQYBC'
-    'ABKAFSD3RvdGFsQW1vdW50UGFpZBI3CgpwYWdpbmF0aW9uGAUgASgLMhcuaW52b2ljZS5QYWdp'
-    'bmF0aW9uSW5mb1IKcGFnaW5hdGlvbg==');
+    'ABKAFSD3RvdGFsQW1vdW50UGFpZBI+CgpwYWdpbmF0aW9uGAUgASgLMh4uaW52b2ljZS5JbnZv'
+    'aWNlUGFnaW5hdGlvbkluZm9SCnBhZ2luYXRpb24=');
 
 @$core.Deprecated('Use updateInvoiceRequestDescriptor instead')
 const UpdateInvoiceRequest$json = {
@@ -691,4 +662,33 @@ const UploadInvoiceImageResponse$json = {
 final $typed_data.Uint8List uploadInvoiceImageResponseDescriptor = $convert.base64Decode(
     'ChpVcGxvYWRJbnZvaWNlSW1hZ2VSZXNwb25zZRIbCglpbWFnZV91cmwYASABKAlSCGltYWdlVX'
     'Js');
+
+@$core.Deprecated('Use sendInvoiceToEmailRequestDescriptor instead')
+const SendInvoiceToEmailRequest$json = {
+  '1': 'SendInvoiceToEmailRequest',
+  '2': [
+    {'1': 'invoice_id', '3': 1, '4': 1, '5': 9, '10': 'invoiceId'},
+    {'1': 'email', '3': 2, '4': 1, '5': 9, '10': 'email'},
+    {'1': 'locale', '3': 3, '4': 1, '5': 9, '10': 'locale'},
+  ],
+};
+
+/// Descriptor for `SendInvoiceToEmailRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sendInvoiceToEmailRequestDescriptor = $convert.base64Decode(
+    'ChlTZW5kSW52b2ljZVRvRW1haWxSZXF1ZXN0Eh0KCmludm9pY2VfaWQYASABKAlSCWludm9pY2'
+    'VJZBIUCgVlbWFpbBgCIAEoCVIFZW1haWwSFgoGbG9jYWxlGAMgASgJUgZsb2NhbGU=');
+
+@$core.Deprecated('Use sendInvoiceToEmailResponseDescriptor instead')
+const SendInvoiceToEmailResponse$json = {
+  '1': 'SendInvoiceToEmailResponse',
+  '2': [
+    {'1': 'sent', '3': 1, '4': 1, '5': 8, '10': 'sent'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SendInvoiceToEmailResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sendInvoiceToEmailResponseDescriptor = $convert.base64Decode(
+    'ChpTZW5kSW52b2ljZVRvRW1haWxSZXNwb25zZRISCgRzZW50GAEgASgIUgRzZW50EhgKB21lc3'
+    'NhZ2UYAiABKAlSB21lc3NhZ2U=');
 

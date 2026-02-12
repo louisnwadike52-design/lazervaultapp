@@ -4,116 +4,114 @@ import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_ent
 void main() {
   group('Gift Card Entity Tests', () {
     test('GiftCard entity should create with all required fields', () {
-      final now = DateTime.now();
       final giftCard = GiftCard(
         id: 'test-id',
         brandId: 'brand-1',
         brandName: 'Test Brand',
         logoUrl: 'https://example.com/logo.png',
-        amount: 100.0,
-        discountPercentage: 5.0,
-        finalPrice: 95.0,
+        originalAmount: 100.0,
+        currentBalance: 100.0,
         currency: 'USD',
-        status: GiftCardStatus.active,
-        type: GiftCardType.digital,
-        category: GiftCardCategory.shopping,
-        description: 'Test gift card',
-        termsAndConditions: 'Terms apply',
-        expiryDate: now.add(Duration(days: 365)),
-        purchaseDate: now,
-        isRedeemed: false,
-        availableDenominations: ['25', '50', '100'],
+        status: 'active',
+        purchaseDate: '2025-01-01T00:00:00Z',
+        expiryDate: '2026-01-01T00:00:00Z',
+        discountPercentage: 5.0,
       );
 
       expect(giftCard.id, 'test-id');
       expect(giftCard.brandName, 'Test Brand');
-      expect(giftCard.amount, 100.0);
-      expect(giftCard.status, GiftCardStatus.active);
+      expect(giftCard.originalAmount, 100.0);
+      expect(giftCard.status, 'active');
     });
 
-    test('GiftCard entity should support all status types', () {
-      // Test all enum values exist
-      expect(GiftCardStatus.active, isNotNull);
-      expect(GiftCardStatus.used, isNotNull);
-      expect(GiftCardStatus.expired, isNotNull);
-      expect(GiftCardStatus.pending, isNotNull);
-      expect(GiftCardStatus.cancelled, isNotNull);
-      expect(GiftCardStatus.partiallyRedeemed, isNotNull);
+    test('GiftCard entity should support status getters', () {
+      final activeCard = GiftCard(
+        id: '1', brandId: 'b1', brandName: 'Brand',
+        originalAmount: 100, currentBalance: 100,
+        currency: 'USD', status: 'active',
+        purchaseDate: '', expiryDate: '',
+      );
+      expect(activeCard.isActive, true);
+      expect(activeCard.isRedeemed, false);
+      expect(activeCard.isExpired, false);
+
+      final redeemedCard = activeCard.copyWith(status: 'redeemed');
+      expect(redeemedCard.isRedeemed, true);
+      expect(redeemedCard.isActive, false);
+
+      final expiredCard = activeCard.copyWith(status: 'expired');
+      expect(expiredCard.isExpired, true);
+
+      final transferredCard = activeCard.copyWith(status: 'transferred');
+      expect(transferredCard.isTransferred, true);
     });
 
-    test('GiftCardBrand entity should create with required fields including minAmount', () {
+    test('GiftCardBrand entity should create with required fields', () {
       final brand = GiftCardBrand(
         id: 'brand-1',
         name: 'Test Brand',
         logoUrl: 'https://example.com/logo.png',
         description: 'Test description',
-        category: GiftCardCategory.shopping,
+        category: 'shopping',
         discountPercentage: 5.0,
-        isPopular: true,
         minAmount: 10.0,
         maxAmount: 500.0,
-        availableDenominations: ['25', '50', '100'],
+        fixedDenominations: [
+          GiftCardDenomination(price: 25.0, currencyCode: 'USD'),
+          GiftCardDenomination(price: 50.0, currencyCode: 'USD'),
+        ],
       );
 
       expect(brand.id, 'brand-1');
       expect(brand.name, 'Test Brand');
       expect(brand.minAmount, 10.0);
       expect(brand.maxAmount, 500.0);
-      expect(brand.availableDenominations, isNotNull);
+      expect(brand.fixedDenominations.length, 2);
     });
 
     test('GiftCardTransaction entity should create with all fields', () {
-      final now = DateTime.now();
       final transaction = GiftCardTransaction(
         id: 'txn-1',
         giftCardId: 'card-1',
         userId: 'user-1',
         amount: 100.0,
-        currency: 'USD',
-        transactionDate: now,
         transactionType: 'purchase',
-        status: GiftCardStatus.active,
         description: 'Purchase transaction',
-        brandName: 'Test Brand',
-        failureReason: null,
-        additionalDetails: {'key': 'value'},
+        createdAt: '2025-01-01T00:00:00Z',
+        balanceBefore: 200.0,
+        balanceAfter: 100.0,
+        reference: 'GC-txn-1',
       );
 
       expect(transaction.id, 'txn-1');
       expect(transaction.transactionType, 'purchase');
       expect(transaction.description, 'Purchase transaction');
-      expect(transaction.brandName, 'Test Brand');
+      expect(transaction.balanceBefore, 200.0);
+      expect(transaction.balanceAfter, 100.0);
     });
 
     test('GiftCard copyWith should work correctly', () {
-      final now = DateTime.now();
       final original = GiftCard(
         id: 'test-id',
         brandId: 'brand-1',
         brandName: 'Test Brand',
         logoUrl: 'https://example.com/logo.png',
-        amount: 100.0,
-        discountPercentage: 5.0,
-        finalPrice: 95.0,
+        originalAmount: 100.0,
+        currentBalance: 100.0,
         currency: 'USD',
-        status: GiftCardStatus.active,
-        type: GiftCardType.digital,
-        category: GiftCardCategory.shopping,
-        description: 'Test gift card',
-        termsAndConditions: 'Terms apply',
-        expiryDate: now.add(Duration(days: 365)),
-        purchaseDate: now,
-        isRedeemed: false,
-        availableDenominations: ['25', '50', '100'],
+        status: 'active',
+        purchaseDate: '2025-01-01T00:00:00Z',
+        expiryDate: '2026-01-01T00:00:00Z',
+        discountPercentage: 5.0,
       );
 
       final updated = original.copyWith(
-        status: GiftCardStatus.partiallyRedeemed,
-        amount: 75.0,
+        status: 'partially_redeemed',
+        currentBalance: 75.0,
       );
 
-      expect(updated.status, GiftCardStatus.partiallyRedeemed);
-      expect(updated.amount, 75.0);
+      expect(updated.status, 'partially_redeemed');
+      expect(updated.currentBalance, 75.0);
       expect(updated.brandName, 'Test Brand'); // Unchanged fields should remain
       expect(updated.id, 'test-id');
     });

@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/cache/cache_config.dart';
+import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../data/services/crowdfund_report_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/usecases/crowdfund_usecases.dart';
@@ -18,6 +21,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   final GetUserReceiptsUseCase getUserReceiptsUseCase;
   final GetCrowdfundStatisticsUseCase getCrowdfundStatisticsUseCase;
   final CrowdfundReportService? reportService;
+  final SWRCacheManager? _cacheManager;
 
   CrowdfundCubit({
     required this.createCrowdfundUseCase,
@@ -33,9 +37,11 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required this.getUserReceiptsUseCase,
     required this.getCrowdfundStatisticsUseCase,
     this.reportService,
-  }) : super(const CrowdfundInitial());
+    SWRCacheManager? cacheManager,
+  })  : _cacheManager = cacheManager,
+        super(const CrowdfundInitial());
 
-  /// Load all crowdfunds with optional filters
+  /// Load all crowdfunds with optional filters (SWR cached)
   Future<void> loadCrowdfunds({
     int page = 1,
     int pageSize = 20,
@@ -45,29 +51,66 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   }) async {
     try {
       if (isClosed) return;
-      emit(const CrowdfundLoading(message: 'Loading crowdfunds...'));
 
-      final crowdfunds = await listCrowdfundsUseCase(
-        page: page,
-        pageSize: pageSize,
-        statusFilter: statusFilter,
-        categoryFilter: categoryFilter,
-        myCrowdfundsOnly: myCrowdfundsOnly,
-      );
+      final cacheKey =
+          'crowdfunds:${statusFilter ?? ''}:${categoryFilter ?? ''}:$myCrowdfundsOnly:$page';
 
-      if (isClosed) return;
-      emit(CrowdfundLoaded(
-        crowdfunds: crowdfunds,
-        totalCount: crowdfunds.length,
-        currentPage: page,
-      ));
+      if (_cacheManager != null) {
+        emit(const CrowdfundLoading(message: 'Loading crowdfunds...'));
+
+        await for (final result in _cacheManager!.get<List<Crowdfund>>(
+          key: cacheKey,
+          fetcher: () => listCrowdfundsUseCase(
+            page: page,
+            pageSize: pageSize,
+            statusFilter: statusFilter,
+            categoryFilter: categoryFilter,
+            myCrowdfundsOnly: myCrowdfundsOnly,
+          ),
+          config: CacheConfig.crowdfunds,
+          serializer: (crowdfunds) =>
+              jsonEncode(crowdfunds.map((c) => c.toJson()).toList()),
+          deserializer: (json) => (jsonDecode(json) as List)
+              .map((j) => Crowdfund.fromJson(j as Map<String, dynamic>))
+              .toList(),
+        )) {
+          if (isClosed) return;
+          if (result.hasData) {
+            emit(CrowdfundLoaded(
+              crowdfunds: result.data!,
+              totalCount: result.data!.length,
+              currentPage: page,
+              isStale: result.isStale,
+            ));
+          } else if (result.hasError) {
+            emit(CrowdfundError(message: result.error.toString()));
+          }
+        }
+      } else {
+        emit(const CrowdfundLoading(message: 'Loading crowdfunds...'));
+
+        final crowdfunds = await listCrowdfundsUseCase(
+          page: page,
+          pageSize: pageSize,
+          statusFilter: statusFilter,
+          categoryFilter: categoryFilter,
+          myCrowdfundsOnly: myCrowdfundsOnly,
+        );
+
+        if (isClosed) return;
+        emit(CrowdfundLoaded(
+          crowdfunds: crowdfunds,
+          totalCount: crowdfunds.length,
+          currentPage: page,
+        ));
+      }
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundError(message: e.toString()));
     }
   }
 
-  /// Search crowdfunds by query (username or crowdfund code)
+  /// Search crowdfunds by query (SWR cached)
   Future<void> searchCrowdfunds({
     required String query,
     int limit = 10,
@@ -79,55 +122,140 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       }
 
       if (isClosed) return;
-      emit(const CrowdfundLoading(message: 'Searching...'));
 
-      final crowdfunds = await searchCrowdfundsUseCase(
-        query: query,
-        limit: limit,
-      );
+      final cacheKey = 'crowdfund_search:$query';
 
-      if (isClosed) return;
-      emit(CrowdfundLoaded(
-        crowdfunds: crowdfunds,
-        totalCount: crowdfunds.length,
-        currentPage: 1,
-      ));
+      if (_cacheManager != null) {
+        emit(const CrowdfundLoading(message: 'Searching...'));
+
+        await for (final result in _cacheManager!.get<List<Crowdfund>>(
+          key: cacheKey,
+          fetcher: () => searchCrowdfundsUseCase(
+            query: query,
+            limit: limit,
+          ),
+          config: CacheConfig.search,
+          serializer: (crowdfunds) =>
+              jsonEncode(crowdfunds.map((c) => c.toJson()).toList()),
+          deserializer: (json) => (jsonDecode(json) as List)
+              .map((j) => Crowdfund.fromJson(j as Map<String, dynamic>))
+              .toList(),
+        )) {
+          if (isClosed) return;
+          if (result.hasData) {
+            emit(CrowdfundLoaded(
+              crowdfunds: result.data!,
+              totalCount: result.data!.length,
+              currentPage: 1,
+              isStale: result.isStale,
+            ));
+          } else if (result.hasError) {
+            emit(CrowdfundError(
+                message: 'Search failed: ${result.error.toString()}'));
+          }
+        }
+      } else {
+        emit(const CrowdfundLoading(message: 'Searching...'));
+
+        final crowdfunds = await searchCrowdfundsUseCase(
+          query: query,
+          limit: limit,
+        );
+
+        if (isClosed) return;
+        emit(CrowdfundLoaded(
+          crowdfunds: crowdfunds,
+          totalCount: crowdfunds.length,
+          currentPage: 1,
+        ));
+      }
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundError(message: 'Search failed: ${e.toString()}'));
     }
   }
 
-  /// Load single crowdfund details with donations and statistics
+  /// Load single crowdfund details with donations and statistics (SWR cached)
   Future<void> loadCrowdfundDetails(String crowdfundId) async {
     try {
       if (isClosed) return;
-      emit(const CrowdfundLoading(message: 'Loading details...'));
 
-      // Load crowdfund details
-      final crowdfund = await getCrowdfundUseCase(crowdfundId);
+      final cacheKey = 'crowdfund_detail:$crowdfundId';
 
-      // Load donations
-      final donations = await getCrowdfundDonationsUseCase(
-        crowdfundId: crowdfundId,
-        page: 1,
-        pageSize: 50,
-      );
+      if (_cacheManager != null) {
+        emit(const CrowdfundLoading(message: 'Loading details...'));
 
-      // Load statistics
-      CrowdfundStatistics? statistics;
-      try {
-        statistics = await getCrowdfundStatisticsUseCase(crowdfundId);
-      } catch (e) {
-        // Statistics optional, continue without them
+        // SWR cache the crowdfund object; donations/stats fetched fresh each time
+        await for (final result in _cacheManager!.get<Crowdfund>(
+          key: cacheKey,
+          fetcher: () => getCrowdfundUseCase(crowdfundId),
+          config: CacheConfig.crowdfundDetails,
+          serializer: (crowdfund) => jsonEncode(crowdfund.toJson()),
+          deserializer: (json) =>
+              Crowdfund.fromJson(jsonDecode(json) as Map<String, dynamic>),
+        )) {
+          if (isClosed) return;
+          if (result.hasData) {
+            final crowdfund = result.data!;
+
+            if (result.isStale) {
+              // Emit cached crowdfund immediately with empty donations
+              emit(CrowdfundDetailsLoaded(
+                crowdfund: crowdfund,
+                donations: const [],
+                isStale: true,
+              ));
+            } else {
+              // Fresh data: also fetch donations and statistics
+              final donations = await getCrowdfundDonationsUseCase(
+                crowdfundId: crowdfundId,
+                page: 1,
+                pageSize: 50,
+              );
+
+              CrowdfundStatistics? statistics;
+              try {
+                statistics =
+                    await getCrowdfundStatisticsUseCase(crowdfundId);
+              } catch (_) {
+                // Statistics optional
+              }
+
+              if (isClosed) return;
+              emit(CrowdfundDetailsLoaded(
+                crowdfund: crowdfund,
+                donations: donations,
+                statistics: statistics,
+              ));
+            }
+          } else if (result.hasError) {
+            emit(CrowdfundError(message: result.error.toString()));
+          }
+        }
+      } else {
+        emit(const CrowdfundLoading(message: 'Loading details...'));
+
+        final crowdfund = await getCrowdfundUseCase(crowdfundId);
+        final donations = await getCrowdfundDonationsUseCase(
+          crowdfundId: crowdfundId,
+          page: 1,
+          pageSize: 50,
+        );
+
+        CrowdfundStatistics? statistics;
+        try {
+          statistics = await getCrowdfundStatisticsUseCase(crowdfundId);
+        } catch (_) {
+          // Statistics optional
+        }
+
+        if (isClosed) return;
+        emit(CrowdfundDetailsLoaded(
+          crowdfund: crowdfund,
+          donations: donations,
+          statistics: statistics,
+        ));
       }
-
-      if (isClosed) return;
-      emit(CrowdfundDetailsLoaded(
-        crowdfund: crowdfund,
-        donations: donations,
-        statistics: statistics,
-      ));
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundError(message: e.toString()));
@@ -163,6 +291,8 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         visibility: visibility,
         metadata: metadata,
       );
+
+      await _cacheManager?.invalidatePattern('crowdfunds:');
 
       if (isClosed) return;
       emit(CrowdfundCreated(crowdfund));
@@ -209,6 +339,8 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         metadata: metadata,
       );
 
+      await _cacheManager?.invalidatePattern('crowdfund');
+
       if (isClosed) return;
       emit(CrowdfundUpdated(crowdfund));
     } catch (e) {
@@ -224,6 +356,8 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(const CrowdfundLoading(message: 'Deleting crowdfund...'));
 
       await deleteCrowdfundUseCase(crowdfundId);
+
+      await _cacheManager?.invalidatePattern('crowdfund');
 
       // Reload crowdfunds after deletion
       await loadCrowdfunds();
@@ -290,6 +424,10 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       } catch (e) {
         // Receipt generation optional
       }
+
+      // Invalidate detail and search caches after donation
+      await _cacheManager?.invalidatePattern('crowdfund_detail:');
+      await _cacheManager?.invalidatePattern('crowdfund_search:');
 
       if (isClosed) return;
       emit(DonationCompleted(

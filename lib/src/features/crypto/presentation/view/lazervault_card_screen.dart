@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class LazerVaultCardScreen extends StatefulWidget {
   const LazerVaultCardScreen({super.key});
@@ -67,16 +68,16 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -111,7 +112,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -138,7 +139,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E2746),
+                color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -157,7 +158,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -359,7 +360,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -465,7 +466,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -502,7 +503,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
           _buildRequirement('UK resident'),
           _buildRequirement('Active LazerVault account'),
           _buildRequirement('Verified identity'),
-          _buildRequirement('Minimum £100 crypto balance'),
+          _buildRequirement('Minimum ${CurrencySymbols.currentSymbol}100 crypto balance'),
         ],
       ),
     );
@@ -634,7 +635,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -739,7 +740,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -891,7 +892,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
         child: Container(
           padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2746),
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Column(
@@ -956,7 +957,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
         child: Container(
           padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2746),
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Column(

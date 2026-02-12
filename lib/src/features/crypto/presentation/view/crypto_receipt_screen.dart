@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'crypto_confirmation_screen.dart';
 import 'crypto_transaction_history_screen.dart';
@@ -57,16 +58,16 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -120,7 +121,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -146,7 +147,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -226,7 +227,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -279,15 +280,15 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           SizedBox(height: 16.h),
           _buildReceiptRow('Amount', '${widget.receipt.transactionDetails.cryptoAmount} ${widget.receipt.transactionDetails.cryptoSymbol}'),
           SizedBox(height: 16.h),
-          _buildReceiptRow('Price per ${widget.receipt.transactionDetails.cryptoSymbol}', '£${widget.receipt.transactionDetails.pricePerUnit.toStringAsFixed(2)}'),
+          _buildReceiptRow('Price per ${widget.receipt.transactionDetails.cryptoSymbol}', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.pricePerUnit.toStringAsFixed(2)}'),
           SizedBox(height: 16.h),
-          _buildReceiptRow('Subtotal', '£${widget.receipt.transactionDetails.gbpAmount.toStringAsFixed(2)}'),
+          _buildReceiptRow('Subtotal', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.fiatAmount.toStringAsFixed(2)}'),
           SizedBox(height: 16.h),
-          _buildReceiptRow('Trading Fee', '£${widget.receipt.transactionDetails.tradingFee.toStringAsFixed(2)}'),
+          _buildReceiptRow('Trading Fee', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.tradingFee.toStringAsFixed(2)}'),
           SizedBox(height: 16.h),
-          _buildReceiptRow('Network Fee', '£${widget.receipt.transactionDetails.networkFee.toStringAsFixed(2)}'),
+          _buildReceiptRow('Network Fee', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.networkFee.toStringAsFixed(2)}'),
           Divider(color: Colors.white.withValues(alpha: 0.2), height: 32.h),
-          _buildReceiptRow('Total Amount', '£${widget.receipt.transactionDetails.totalAmount.toStringAsFixed(2)}', isTotal: true),
+          _buildReceiptRow('Total Amount', '${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.totalAmount.toStringAsFixed(2)}', isTotal: true),
           SizedBox(height: 16.h),
           _buildReceiptRow('Payment Method', widget.receipt.transactionDetails.paymentMethod),
         ],
@@ -364,7 +365,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -393,7 +394,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           SizedBox(height: 12.h),
           _buildDetailRow('Blockchain Network', _getBlockchainNetwork()),
           SizedBox(height: 12.h),
-          _buildDetailRow('Exchange Rate', '1 ${widget.receipt.transactionDetails.cryptoSymbol} = £${widget.receipt.transactionDetails.pricePerUnit.toStringAsFixed(2)}'),
+          _buildDetailRow('Exchange Rate', '1 ${widget.receipt.transactionDetails.cryptoSymbol} = ${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.pricePerUnit.toStringAsFixed(2)}'),
           if (widget.receipt.transactionDetails.type == CryptoTransactionType.buy) ...[
             SizedBox(height: 12.h),
             _buildDetailRow('Wallet Address', '1A2B3C...XYZ789', canCopy: true),
@@ -407,7 +408,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -674,7 +675,7 @@ Transaction ID: ${widget.receipt.transactionId}
 Date: ${_formatDateTime(widget.receipt.timestamp)}
 Type: ${_getTransactionTypeDisplay()}
 Amount: ${widget.receipt.transactionDetails.cryptoAmount} ${widget.receipt.transactionDetails.cryptoSymbol}
-Total: £${widget.receipt.transactionDetails.totalAmount.toStringAsFixed(2)}
+Total: ${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.totalAmount.toStringAsFixed(2)}
 Status: ${widget.receipt.status.name.toUpperCase()}
 
 Powered by LazerVault - Your trusted crypto platform

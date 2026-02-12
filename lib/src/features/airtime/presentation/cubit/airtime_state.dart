@@ -41,14 +41,16 @@ class AirtimeNetworkProvidersLoading extends AirtimeState {}
 class AirtimeNetworkProvidersLoaded extends AirtimeState {
   final List<NetworkProvider> providers;
   final String countryCode;
+  final bool isStale;
 
   const AirtimeNetworkProvidersLoaded({
     required this.providers,
     required this.countryCode,
+    this.isStale = false,
   });
 
   @override
-  List<Object?> get props => [providers, countryCode];
+  List<Object?> get props => [providers, countryCode, isStale];
 }
 
 class AirtimeNetworkProvidersError extends AirtimeState {

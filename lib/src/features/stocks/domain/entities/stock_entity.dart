@@ -58,6 +58,61 @@ class Stock extends Equatable {
 
   bool get isPositive => change >= 0;
 
+  Map<String, dynamic> toJson() => {
+    'symbol': symbol,
+    'name': name,
+    'currentPrice': currentPrice,
+    'previousClose': previousClose,
+    'change': change,
+    'changePercent': changePercent,
+    'dayHigh': dayHigh,
+    'dayLow': dayLow,
+    'volume': volume,
+    'marketCap': marketCap,
+    'peRatio': peRatio,
+    'dividendYield': dividendYield,
+    'sector': sector,
+    'industry': industry,
+    'logoUrl': logoUrl,
+    'lastUpdated': lastUpdated.toIso8601String(),
+    'weekHigh52': weekHigh52,
+    'weekLow52': weekLow52,
+    'avgVolume': avgVolume,
+    'beta': beta,
+    'eps': eps,
+    'description': description,
+    'exchange': exchange,
+    'currency': currency,
+  };
+
+  factory Stock.fromJson(Map<String, dynamic> json) => Stock(
+    symbol: json['symbol'] as String,
+    name: json['name'] as String,
+    currentPrice: (json['currentPrice'] as num).toDouble(),
+    previousClose: (json['previousClose'] as num).toDouble(),
+    change: (json['change'] as num).toDouble(),
+    changePercent: (json['changePercent'] as num).toDouble(),
+    dayHigh: (json['dayHigh'] as num).toDouble(),
+    dayLow: (json['dayLow'] as num).toDouble(),
+    volume: (json['volume'] as num).toDouble(),
+    marketCap: (json['marketCap'] as num).toDouble(),
+    peRatio: (json['peRatio'] as num).toDouble(),
+    dividendYield: (json['dividendYield'] as num).toDouble(),
+    sector: json['sector'] as String,
+    industry: json['industry'] as String,
+    logoUrl: json['logoUrl'] as String,
+    priceHistory: const [],
+    lastUpdated: DateTime.parse(json['lastUpdated'] as String),
+    weekHigh52: (json['weekHigh52'] as num).toDouble(),
+    weekLow52: (json['weekLow52'] as num).toDouble(),
+    avgVolume: (json['avgVolume'] as num).toDouble(),
+    beta: (json['beta'] as num).toDouble(),
+    eps: (json['eps'] as num).toDouble(),
+    description: json['description'] as String,
+    exchange: json['exchange'] as String,
+    currency: json['currency'] as String,
+  );
+
   @override
   List<Object?> get props => [
     symbol,
@@ -136,6 +191,36 @@ class Portfolio extends Equatable {
     required this.totalInvested,
   });
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'totalValue': totalValue,
+    'totalCost': totalCost,
+    'totalReturn': totalReturn,
+    'totalReturnPercent': totalReturnPercent,
+    'dayChange': dayChange,
+    'dayChangePercent': dayChangePercent,
+    'holdings': holdings.map((h) => h.toJson()).toList(),
+    'lastUpdated': lastUpdated.toIso8601String(),
+    'availableCash': availableCash,
+    'totalInvested': totalInvested,
+  };
+
+  factory Portfolio.fromJson(Map<String, dynamic> json) => Portfolio(
+    id: json['id'] as String,
+    totalValue: (json['totalValue'] as num).toDouble(),
+    totalCost: (json['totalCost'] as num).toDouble(),
+    totalReturn: (json['totalReturn'] as num).toDouble(),
+    totalReturnPercent: (json['totalReturnPercent'] as num).toDouble(),
+    dayChange: (json['dayChange'] as num).toDouble(),
+    dayChangePercent: (json['dayChangePercent'] as num).toDouble(),
+    holdings: (json['holdings'] as List)
+        .map((h) => StockHolding.fromJson(h as Map<String, dynamic>))
+        .toList(),
+    lastUpdated: DateTime.parse(json['lastUpdated'] as String),
+    availableCash: (json['availableCash'] as num).toDouble(),
+    totalInvested: (json['totalInvested'] as num).toDouble(),
+  );
+
   @override
   List<Object?> get props => [
         id,
@@ -180,6 +265,36 @@ class StockHolding extends Equatable {
     required this.purchaseDate,
     required this.logoUrl,
   });
+
+  Map<String, dynamic> toJson() => {
+    'symbol': symbol,
+    'name': name,
+    'shares': shares,
+    'averageCost': averageCost,
+    'currentPrice': currentPrice,
+    'totalValue': totalValue,
+    'totalReturn': totalReturn,
+    'totalReturnPercent': totalReturnPercent,
+    'dayChange': dayChange,
+    'dayChangePercent': dayChangePercent,
+    'purchaseDate': purchaseDate.toIso8601String(),
+    'logoUrl': logoUrl,
+  };
+
+  factory StockHolding.fromJson(Map<String, dynamic> json) => StockHolding(
+    symbol: json['symbol'] as String,
+    name: json['name'] as String,
+    shares: json['shares'] as int,
+    averageCost: (json['averageCost'] as num).toDouble(),
+    currentPrice: (json['currentPrice'] as num).toDouble(),
+    totalValue: (json['totalValue'] as num).toDouble(),
+    totalReturn: (json['totalReturn'] as num).toDouble(),
+    totalReturnPercent: (json['totalReturnPercent'] as num).toDouble(),
+    dayChange: (json['dayChange'] as num).toDouble(),
+    dayChangePercent: (json['dayChangePercent'] as num).toDouble(),
+    purchaseDate: DateTime.parse(json['purchaseDate'] as String),
+    logoUrl: json['logoUrl'] as String,
+  );
 
   @override
   List<Object?> get props => [

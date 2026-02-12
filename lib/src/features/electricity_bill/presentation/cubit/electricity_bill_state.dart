@@ -15,11 +15,12 @@ class ElectricityBillLoading extends ElectricityBillState {}
 // Provider States
 class ProvidersLoaded extends ElectricityBillState {
   final List<ElectricityProviderEntity> providers;
+  final bool isStale;
 
-  ProvidersLoaded({required this.providers});
+  ProvidersLoaded({required this.providers, this.isStale = false});
 
   @override
-  List<Object?> get props => [providers];
+  List<Object?> get props => [providers, isStale];
 }
 
 class ProvidersSyncing extends ElectricityBillState {}
@@ -57,6 +58,27 @@ class MeterValidationFailed extends ElectricityBillState {
   final String message;
 
   MeterValidationFailed({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// Smart Meter Validation States
+class SmartMeterValidating extends ElectricityBillState {}
+
+class SmartMeterValidated extends ElectricityBillState {
+  final SmartMeterValidationResult result;
+
+  SmartMeterValidated({required this.result});
+
+  @override
+  List<Object?> get props => [result];
+}
+
+class SmartMeterValidationFailed extends ElectricityBillState {
+  final String message;
+
+  SmartMeterValidationFailed({required this.message});
 
   @override
   List<Object?> get props => [message];

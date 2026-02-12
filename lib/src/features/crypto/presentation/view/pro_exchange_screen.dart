@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class ProExchangeScreen extends StatefulWidget {
   const ProExchangeScreen({super.key});
@@ -13,7 +14,7 @@ class ProExchangeScreen extends StatefulWidget {
 class _ProExchangeScreenState extends State<ProExchangeScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  String _selectedPair = 'BTC/GBP';
+  String _selectedPair = 'BTC/${CurrencySymbols.currentCurrency}';
   String _orderType = 'Market';
   String _selectedTimeframe = '1H';
   bool _isAdvancedView = false;
@@ -33,15 +34,15 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -78,7 +79,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -127,7 +128,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -135,10 +136,10 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Expanded(
             child: DropdownButton<String>(
               value: _selectedPair,
-              dropdownColor: const Color(0xFF1E2746),
+              dropdownColor: const Color(0xFF1F1F1F),
               style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
               underline: Container(),
-              items: ['BTC/GBP', 'ETH/GBP', 'SOL/GBP', 'ADA/GBP']
+              items: ['BTC/${CurrencySymbols.currentCurrency}', 'ETH/${CurrencySymbols.currentCurrency}', 'SOL/${CurrencySymbols.currentCurrency}', 'ADA/${CurrencySymbols.currentCurrency}']
                   .map((pair) => DropdownMenuItem(value: pair, child: Text(pair)))
                   .toList(),
               onChanged: (value) => setState(() => _selectedPair = value!),
@@ -167,7 +168,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1E2746)],
+          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1F1F1F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -183,7 +184,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '£66,175.43',
+                    '${CurrencySymbols.currentSymbol}66,175.43',
                     style: GoogleFonts.robotoMono(
                       fontSize: 28.sp,
                       fontWeight: FontWeight.bold,
@@ -216,7 +217,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                     ),
                   ),
                   Text(
-                    '£2.34B',
+                    '${CurrencySymbols.currentSymbol}2.34B',
                     style: GoogleFonts.inter(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
@@ -231,9 +232,9 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildPriceStat('High', '£67,234.12'),
-              _buildPriceStat('Low', '£64,892.56'),
-              _buildPriceStat('Open', '£65,928.20'),
+              _buildPriceStat('High', '${CurrencySymbols.currentSymbol}67,234.12'),
+              _buildPriceStat('Low', '${CurrencySymbols.currentSymbol}64,892.56'),
+              _buildPriceStat('Open', '${CurrencySymbols.currentSymbol}65,928.20'),
             ],
           ),
         ],
@@ -245,7 +246,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: TabBar(
@@ -339,7 +340,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -375,7 +376,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
@@ -394,7 +395,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           _buildInputField('Amount (BTC)', '0.00'),
           SizedBox(height: 12.h),
           if (_orderType != 'Market')
-            _buildInputField('Price (GBP)', '66,175'),
+            _buildInputField('Price (${CurrencySymbols.currentCurrency})', '66,175'),
           SizedBox(height: 16.h),
           _buildQuickAmounts(['25%', '50%', '75%', '100%']),
           SizedBox(height: 16.h),
@@ -418,7 +419,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
       ),
@@ -437,7 +438,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           _buildInputField('Amount (BTC)', '0.00'),
           SizedBox(height: 12.h),
           if (_orderType != 'Market')
-            _buildInputField('Price (GBP)', '66,175'),
+            _buildInputField('Price (${CurrencySymbols.currentCurrency})', '66,175'),
           SizedBox(height: 16.h),
           _buildQuickAmounts(['25%', '50%', '75%', '100%']),
           SizedBox(height: 16.h),
@@ -461,7 +462,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -489,8 +490,8 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          _buildOrderItem('BUY', '0.1 BTC', '£65,000', 'Pending'),
-          _buildOrderItem('SELL', '0.05 BTC', '£67,000', 'Partial'),
+          _buildOrderItem('BUY', '0.1 BTC', '${CurrencySymbols.currentSymbol}65,000', 'Pending'),
+          _buildOrderItem('SELL', '0.05 BTC', '${CurrencySymbols.currentSymbol}67,000', 'Partial'),
         ],
       ),
     );
@@ -500,7 +501,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -541,7 +542,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       children: [
         Expanded(
           child: Text(
-            'Price (GBP)',
+            'Price (${CurrencySymbols.currentCurrency})',
             style: GoogleFonts.inter(
               fontSize: 12.sp,
               color: Colors.white.withValues(alpha: 0.6),
@@ -560,7 +561,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
         ),
         Expanded(
           child: Text(
-            'Total (GBP)',
+            'Total (${CurrencySymbols.currentCurrency})',
             textAlign: TextAlign.right,
             style: GoogleFonts.inter(
               fontSize: 12.sp,
@@ -595,7 +596,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Container(
             padding: EdgeInsets.symmetric(vertical: 8.h),
             child: Text(
-              '£66,175.43 ↗',
+              '${CurrencySymbols.currentSymbol}66,175.43 ↗',
               style: GoogleFonts.robotoMono(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -627,7 +628,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       height: 200.h,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -709,7 +710,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -746,7 +747,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       height: 300.h,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -757,7 +758,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'BTC/GBP Chart',
+                'BTC/${CurrencySymbols.currentCurrency} Chart',
                 style: GoogleFonts.inter(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
@@ -820,7 +821,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -839,7 +840,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           _buildIndicatorItem('RSI (14)', '67.3', 'Neutral', Colors.orange),
           _buildIndicatorItem('MACD', '0.24', 'Bullish', Colors.green),
           _buildIndicatorItem('Bollinger Bands', 'Upper', 'Overbought', Colors.red),
-          _buildIndicatorItem('Moving Average', '£65,420', 'Above', Colors.green),
+          _buildIndicatorItem('Moving Average', '${CurrencySymbols.currentSymbol}65,420', 'Above', Colors.green),
         ],
       ),
     );
@@ -849,7 +850,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -868,9 +869,9 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildBalanceItem('Total Balance', '£8,432.50'),
-              _buildBalanceItem('Available', '£6,234.80'),
-              _buildBalanceItem('In Orders', '£2,197.70'),
+              _buildBalanceItem('Total Balance', '${CurrencySymbols.currentSymbol}8,432.50'),
+              _buildBalanceItem('Available', '${CurrencySymbols.currentSymbol}6,234.80'),
+              _buildBalanceItem('In Orders', '${CurrencySymbols.currentSymbol}2,197.70'),
             ],
           ),
         ],
@@ -882,7 +883,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -898,9 +899,9 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          _buildAllocationItem('BTC', '0.1234', '£8,168.44', '65%'),
-          _buildAllocationItem('ETH', '2.456', '£3,798.32', '30%'),
-          _buildAllocationItem('GBP', '-', '£632.74', '5%'),
+          _buildAllocationItem('BTC', '0.1234', '${CurrencySymbols.currentSymbol}8,168.44', '65%'),
+          _buildAllocationItem('ETH', '2.456', '${CurrencySymbols.currentSymbol}3,798.32', '30%'),
+          _buildAllocationItem(CurrencySymbols.currentCurrency, '-', '${CurrencySymbols.currentSymbol}632.74', '5%'),
         ],
       ),
     );
@@ -910,7 +911,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -929,7 +930,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildMetricItem('P&L Today', '+£234.56', Colors.green),
+              _buildMetricItem('P&L Today', '+${CurrencySymbols.currentSymbol}234.56', Colors.green),
               _buildMetricItem('Total Trades', '142', Colors.blue),
               _buildMetricItem('Win Rate', '73%', Colors.orange),
             ],

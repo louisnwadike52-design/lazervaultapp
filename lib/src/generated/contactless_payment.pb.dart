@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 class CreatePaymentSessionRequest extends $pb.GeneratedMessage {
   factory CreatePaymentSessionRequest({
@@ -902,7 +902,7 @@ class CheckSessionStatusResponse extends $pb.GeneratedMessage {
   factory CheckSessionStatusResponse({
     $core.String? status,
     $core.String? payerName,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (status != null) {
@@ -923,7 +923,7 @@ class CheckSessionStatusResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckSessionStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'status')
     ..aOS(2, _omitFieldNames ? '' : 'payerName')
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -967,15 +967,15 @@ class CheckSessionStatusResponse extends $pb.GeneratedMessage {
   void clearPayerName() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get updatedAt => $_getN(2);
+  $1.Timestamp get updatedAt => $_getN(2);
   @$pb.TagNumber(3)
-  set updatedAt($42.Timestamp v) { setField(3, v); }
+  set updatedAt($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUpdatedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearUpdatedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(2);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(2);
 }
 
 class AcknowledgeSessionReadRequest extends $pb.GeneratedMessage {
@@ -1109,10 +1109,10 @@ class PaymentSession extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? payerId,
     $core.String? payerName,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? expiresAt,
-    $42.Timestamp? readAt,
-    $42.Timestamp? completedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? expiresAt,
+    $1.Timestamp? readAt,
+    $1.Timestamp? completedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -1182,10 +1182,10 @@ class PaymentSession extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'status')
     ..aOS(11, _omitFieldNames ? '' : 'payerId')
     ..aOS(12, _omitFieldNames ? '' : 'payerName')
-    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'expiresAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'readAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'readAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1319,48 +1319,48 @@ class PaymentSession extends $pb.GeneratedMessage {
   void clearPayerName() => clearField(12);
 
   @$pb.TagNumber(13)
-  $42.Timestamp get createdAt => $_getN(12);
+  $1.Timestamp get createdAt => $_getN(12);
   @$pb.TagNumber(13)
-  set createdAt($42.Timestamp v) { setField(13, v); }
+  set createdAt($1.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasCreatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearCreatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $42.Timestamp ensureCreatedAt() => $_ensure(12);
+  $1.Timestamp ensureCreatedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
-  $42.Timestamp get expiresAt => $_getN(13);
+  $1.Timestamp get expiresAt => $_getN(13);
   @$pb.TagNumber(14)
-  set expiresAt($42.Timestamp v) { setField(14, v); }
+  set expiresAt($1.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasExpiresAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearExpiresAt() => clearField(14);
   @$pb.TagNumber(14)
-  $42.Timestamp ensureExpiresAt() => $_ensure(13);
+  $1.Timestamp ensureExpiresAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $42.Timestamp get readAt => $_getN(14);
+  $1.Timestamp get readAt => $_getN(14);
   @$pb.TagNumber(15)
-  set readAt($42.Timestamp v) { setField(15, v); }
+  set readAt($1.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasReadAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearReadAt() => clearField(15);
   @$pb.TagNumber(15)
-  $42.Timestamp ensureReadAt() => $_ensure(14);
+  $1.Timestamp ensureReadAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $42.Timestamp get completedAt => $_getN(15);
+  $1.Timestamp get completedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set completedAt($42.Timestamp v) { setField(16, v); }
+  set completedAt($1.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasCompletedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearCompletedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $42.Timestamp ensureCompletedAt() => $_ensure(15);
+  $1.Timestamp ensureCompletedAt() => $_ensure(15);
 }
 
 /// ContactlessTransaction represents a completed NFC payment
@@ -1382,7 +1382,7 @@ class ContactlessTransaction extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? referenceNumber,
     $core.String? status,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -1459,7 +1459,7 @@ class ContactlessTransaction extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'description')
     ..aOS(15, _omitFieldNames ? '' : 'referenceNumber')
     ..aOS(16, _omitFieldNames ? '' : 'status')
-    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1629,15 +1629,15 @@ class ContactlessTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(16);
 
   @$pb.TagNumber(17)
-  $42.Timestamp get createdAt => $_getN(16);
+  $1.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(17)
-  set createdAt($42.Timestamp v) { setField(17, v); }
+  set createdAt($1.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearCreatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $42.Timestamp ensureCreatedAt() => $_ensure(16);
+  $1.Timestamp ensureCreatedAt() => $_ensure(16);
 }
 
 /// NfcPayloadData is the structure encoded in NFC NDEF message

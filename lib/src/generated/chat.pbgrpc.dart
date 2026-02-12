@@ -15,24 +15,24 @@ import 'dart:core' as $core;
 import 'package:grpc/service_api.dart' as $grpc;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'chat.pb.dart' as $9;
+import 'chat.pb.dart' as $0;
 
 export 'chat.pb.dart';
 
 @$pb.GrpcServiceName('pb.ChatService')
 class ChatServiceClient extends $grpc.Client {
-  static final _$sendMessage = $grpc.ClientMethod<$9.SendMessageRequest, $9.SendMessageResponse>(
+  static final _$sendMessage = $grpc.ClientMethod<$0.SendMessageRequest, $0.SendMessageResponse>(
       '/pb.ChatService/SendMessage',
-      ($9.SendMessageRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $9.SendMessageResponse.fromBuffer(value));
-  static final _$getChatHistory = $grpc.ClientMethod<$9.GetChatHistoryRequest, $9.GetChatHistoryResponse>(
+      ($0.SendMessageRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.SendMessageResponse.fromBuffer(value));
+  static final _$getChatHistory = $grpc.ClientMethod<$0.GetChatHistoryRequest, $0.GetChatHistoryResponse>(
       '/pb.ChatService/GetChatHistory',
-      ($9.GetChatHistoryRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $9.GetChatHistoryResponse.fromBuffer(value));
-  static final _$streamChatMessages = $grpc.ClientMethod<$9.StreamChatHistoryRequest, $9.ChatMessage>(
+      ($0.GetChatHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetChatHistoryResponse.fromBuffer(value));
+  static final _$streamChatMessages = $grpc.ClientMethod<$0.StreamChatHistoryRequest, $0.ChatMessage>(
       '/pb.ChatService/StreamChatMessages',
-      ($9.StreamChatHistoryRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $9.ChatMessage.fromBuffer(value));
+      ($0.StreamChatHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ChatMessage.fromBuffer(value));
 
   ChatServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -40,15 +40,15 @@ class ChatServiceClient extends $grpc.Client {
       : super(channel, options: options,
         interceptors: interceptors);
 
-  $grpc.ResponseFuture<$9.SendMessageResponse> sendMessage($9.SendMessageRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.SendMessageResponse> sendMessage($0.SendMessageRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$sendMessage, request, options: options);
   }
 
-  $grpc.ResponseFuture<$9.GetChatHistoryResponse> getChatHistory($9.GetChatHistoryRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetChatHistoryResponse> getChatHistory($0.GetChatHistoryRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getChatHistory, request, options: options);
   }
 
-  $grpc.ResponseStream<$9.ChatMessage> streamChatMessages($9.StreamChatHistoryRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseStream<$0.ChatMessage> streamChatMessages($0.StreamChatHistoryRequest request, {$grpc.CallOptions? options}) {
     return $createStreamingCall(_$streamChatMessages, $async.Stream.fromIterable([request]), options: options);
   }
 }
@@ -58,42 +58,42 @@ abstract class ChatServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.ChatService';
 
   ChatServiceBase() {
-    $addMethod($grpc.ServiceMethod<$9.SendMessageRequest, $9.SendMessageResponse>(
+    $addMethod($grpc.ServiceMethod<$0.SendMessageRequest, $0.SendMessageResponse>(
         'SendMessage',
         sendMessage_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $9.SendMessageRequest.fromBuffer(value),
-        ($9.SendMessageResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$9.GetChatHistoryRequest, $9.GetChatHistoryResponse>(
+        ($core.List<$core.int> value) => $0.SendMessageRequest.fromBuffer(value),
+        ($0.SendMessageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetChatHistoryRequest, $0.GetChatHistoryResponse>(
         'GetChatHistory',
         getChatHistory_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $9.GetChatHistoryRequest.fromBuffer(value),
-        ($9.GetChatHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$9.StreamChatHistoryRequest, $9.ChatMessage>(
+        ($core.List<$core.int> value) => $0.GetChatHistoryRequest.fromBuffer(value),
+        ($0.GetChatHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.StreamChatHistoryRequest, $0.ChatMessage>(
         'StreamChatMessages',
         streamChatMessages_Pre,
         false,
         true,
-        ($core.List<$core.int> value) => $9.StreamChatHistoryRequest.fromBuffer(value),
-        ($9.ChatMessage value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $0.StreamChatHistoryRequest.fromBuffer(value),
+        ($0.ChatMessage value) => value.writeToBuffer()));
   }
 
-  $async.Future<$9.SendMessageResponse> sendMessage_Pre($grpc.ServiceCall call, $async.Future<$9.SendMessageRequest> request) async {
+  $async.Future<$0.SendMessageResponse> sendMessage_Pre($grpc.ServiceCall call, $async.Future<$0.SendMessageRequest> request) async {
     return sendMessage(call, await request);
   }
 
-  $async.Future<$9.GetChatHistoryResponse> getChatHistory_Pre($grpc.ServiceCall call, $async.Future<$9.GetChatHistoryRequest> request) async {
+  $async.Future<$0.GetChatHistoryResponse> getChatHistory_Pre($grpc.ServiceCall call, $async.Future<$0.GetChatHistoryRequest> request) async {
     return getChatHistory(call, await request);
   }
 
-  $async.Stream<$9.ChatMessage> streamChatMessages_Pre($grpc.ServiceCall call, $async.Future<$9.StreamChatHistoryRequest> request) async* {
+  $async.Stream<$0.ChatMessage> streamChatMessages_Pre($grpc.ServiceCall call, $async.Future<$0.StreamChatHistoryRequest> request) async* {
     yield* streamChatMessages(call, await request);
   }
 
-  $async.Future<$9.SendMessageResponse> sendMessage($grpc.ServiceCall call, $9.SendMessageRequest request);
-  $async.Future<$9.GetChatHistoryResponse> getChatHistory($grpc.ServiceCall call, $9.GetChatHistoryRequest request);
-  $async.Stream<$9.ChatMessage> streamChatMessages($grpc.ServiceCall call, $9.StreamChatHistoryRequest request);
+  $async.Future<$0.SendMessageResponse> sendMessage($grpc.ServiceCall call, $0.SendMessageRequest request);
+  $async.Future<$0.GetChatHistoryResponse> getChatHistory($grpc.ServiceCall call, $0.GetChatHistoryRequest request);
+  $async.Stream<$0.ChatMessage> streamChatMessages($grpc.ServiceCall call, $0.StreamChatHistoryRequest request);
 }

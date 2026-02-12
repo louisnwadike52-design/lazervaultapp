@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
@@ -79,7 +80,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     setState(() {});
   }
 
-  double get _gbpAmount {
+  double get _fiatAmount {
     if (_amountController.text.isEmpty) return 0.0;
     final amount = double.tryParse(_amountController.text) ?? 0.0;
     if (_isAmountInCrypto && _selectedCrypto != null) {
@@ -100,16 +101,16 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -162,7 +163,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -220,8 +221,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -261,7 +262,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             child: Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF0A0E27),
+                color: const Color(0xFF0A0A0A),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -319,7 +320,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '£${_selectedCrypto!.currentPrice.toStringAsFixed(2)}',
+                          '${CurrencySymbols.currentSymbol}${_selectedCrypto!.currentPrice.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -329,8 +330,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                         Row(
                           children: [
                             Icon(
-                              _selectedCrypto!.priceChangePercentage24h >= 0 
-                                ? Icons.arrow_upward 
+                              _selectedCrypto!.priceChangePercentage24h >= 0
+                                ? Icons.arrow_upward
                                 : Icons.arrow_downward,
                               color: _selectedCrypto!.priceChangePercentage24h >= 0 
                                 ? Colors.green 
@@ -388,8 +389,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -458,7 +459,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          _isAmountInCrypto ? 'GBP' : 'Crypto',
+                          _isAmountInCrypto ? CurrencySymbols.currentCurrency : 'Crypto',
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
                             color: const Color(0xFF6C5CE7),
@@ -475,7 +476,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF0A0E27),
+              color: const Color(0xFF0A0A0A),
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
           BoxShadow(
@@ -492,7 +493,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 Row(
                   children: [
                     Text(
-                      _isAmountInCrypto ? (_selectedCrypto?.symbol.toUpperCase() ?? '') : '£',
+                      _isAmountInCrypto ? (_selectedCrypto?.symbol.toUpperCase() ?? '') : CurrencySymbols.currentSymbol,
                       style: GoogleFonts.inter(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
@@ -527,7 +528,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   SizedBox(height: 8.h),
                   Text(
                     _isAmountInCrypto 
-                      ? '≈ £${_gbpAmount.toStringAsFixed(2)}'
+                      ? '≈ ${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'
                       : '≈ ${_cryptoAmount.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
@@ -539,17 +540,23 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          Row(
-            children: [
-              _buildQuickAmountButton('£25', 25),
-              SizedBox(width: 8.w),
-              _buildQuickAmountButton('£50', 50),
-              SizedBox(width: 8.w),
-              _buildQuickAmountButton('£100', 100),
-              SizedBox(width: 8.w),
-              _buildQuickAmountButton('£500', 500),
-            ],
-          ),
+          Builder(builder: (context) {
+            final sym = CurrencySymbols.currentSymbol;
+            final amounts = switch (CurrencySymbols.currentCurrency) {
+              'NGN' => [5000, 10000, 25000, 50000],
+              'JPY' => [3000, 5000, 10000, 50000],
+              'INR' => [2000, 5000, 10000, 25000],
+              _ => [25, 50, 100, 500],
+            };
+            return Row(
+              children: [
+                for (var i = 0; i < amounts.length; i++) ...[
+                  if (i > 0) SizedBox(width: 8.w),
+                  _buildQuickAmountButton('$sym${amounts[i]}', amounts[i].toDouble()),
+                ],
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -599,10 +606,10 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   }
 
   Widget _buildOrderSummary() {
-    final fee = _gbpAmount * 0.015; // 1.5% fee
+    final fee = _fiatAmount * 0.015; // 1.5% fee
     final networkFee = fee * 0.3;
     final tradingFee = fee * 0.7;
-    final total = _gbpAmount + fee;
+    final total = _fiatAmount + fee;
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -610,7 +617,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         gradient: LinearGradient(
           colors: [
             Colors.green.withValues(alpha: 0.1),
-            const Color(0xFF1E2746),
+            const Color(0xFF1F1F1F),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -645,11 +652,11 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('You pay', '£${_gbpAmount.toStringAsFixed(2)}'),
+          _buildSummaryRow('You pay', '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Network fee', '£${networkFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Network fee', '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Trading fee', '£${tradingFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Trading fee', '${CurrencySymbols.currentSymbol}${tradingFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
           _buildSummaryRow('You receive', '${_cryptoAmount.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}'),
           SizedBox(height: 12.h),
@@ -666,7 +673,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             ),
           ),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Total', '£${total.toStringAsFixed(2)}', isTotal: true),
+          _buildSummaryRow('Total', '${CurrencySymbols.currentSymbol}${total.toStringAsFixed(2)}', isTotal: true),
         ],
       ),
     );
@@ -702,8 +709,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -763,7 +770,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   ],
                 )
               : null,
-            color: isSelected ? null : const Color(0xFF0A0E27),
+            color: isSelected ? null : const Color(0xFF0A0A0A),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withValues(alpha: 0.1),
@@ -972,8 +979,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF1A1A3E),
-                const Color(0xFF0A0E27),
+                const Color(0xFF1F1F1F),
+                const Color(0xFF0A0A0A),
               ],
             ),
             borderRadius: BorderRadius.only(
@@ -1023,7 +1030,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                     hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
                     prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
                     filled: true,
-                    fillColor: const Color(0xFF1E2746),
+                    fillColor: const Color(0xFF1F1F1F),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
                       borderSide: BorderSide.none,
@@ -1087,7 +1094,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2746),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
@@ -1135,7 +1142,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '£${crypto.currentPrice.toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -1145,11 +1152,11 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 Row(
                   children: [
                     Icon(
-                      crypto.priceChangePercentage24h >= 0 
-                        ? Icons.arrow_upward 
+                      crypto.priceChangePercentage24h >= 0
+                        ? Icons.arrow_upward
                         : Icons.arrow_downward,
-                      color: crypto.priceChangePercentage24h >= 0 
-                        ? Colors.green 
+                      color: crypto.priceChangePercentage24h >= 0
+                        ? Colors.green
                         : Colors.red,
                       size: 12.sp,
                     ),
@@ -1186,8 +1193,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       });
 
       // Create transaction details
-      final fee = _gbpAmount * 0.015; // 1.5% fee
-      final total = _gbpAmount + fee;
+      final fee = _fiatAmount * 0.015; // 1.5% fee
+      final total = _fiatAmount + fee;
       
       final transactionDetails = CryptoTransactionDetails(
         type: CryptoTransactionType.buy,
@@ -1195,7 +1202,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         cryptoSymbol: _selectedCrypto!.symbol,
         cryptoAmount: _cryptoAmount.toStringAsFixed(6),
         pricePerUnit: _selectedCrypto!.currentPrice,
-        gbpAmount: _gbpAmount,
+        fiatAmount: _fiatAmount,
         networkFee: fee * 0.3, // 30% of total fee for network
         tradingFee: fee * 0.7, // 70% of total fee for LazerVault
         totalAmount: total,

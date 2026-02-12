@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 
 class InsurancePaymentConfirmationScreen extends StatefulWidget {
@@ -467,6 +468,99 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
   Widget _buildActionButtons() {
     return Column(
       children: [
+        if (widget.receiptUrl.isNotEmpty) ...[
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _viewReceipt,
+                      borderRadius: BorderRadius.circular(16.r),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.receipt_long,
+                              color: Colors.white,
+                              size: 20.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'View Receipt',
+                              style: GoogleFonts.inter(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Container(
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _emailReceipt,
+                      borderRadius: BorderRadius.circular(16.r),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.email_outlined,
+                              color: const Color(0xFF6366F1),
+                              size: 20.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Email Receipt',
+                              style: GoogleFonts.inter(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF6366F1),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.w),
+        ],
         Row(
           children: [
             Expanded(
@@ -601,6 +695,24 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
           ),
         ),
       ],
+    );
+  }
+
+  void _viewReceipt() {
+    if (widget.receiptUrl.isNotEmpty) {
+      launchUrl(
+        Uri.parse(widget.receiptUrl),
+        mode: LaunchMode.externalApplication,
+      );
+    }
+  }
+
+  void _emailReceipt() {
+    final subject = Uri.encodeComponent('Insurance Payment Receipt - ${widget.payment.policyNumber}');
+    final body = Uri.encodeComponent('Your insurance payment receipt: ${widget.receiptUrl}');
+    launchUrl(
+      Uri.parse('mailto:?subject=$subject&body=$body'),
+      mode: LaunchMode.externalApplication,
     );
   }
 

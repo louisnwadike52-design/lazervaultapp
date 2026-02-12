@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 import 'kyc.pbenum.dart';
 
 export 'kyc.pbenum.dart';
@@ -167,8 +167,8 @@ class KYCTierInfo extends $pb.GeneratedMessage {
     $fixnum.Int64? dailyTransactionLimit,
     $fixnum.Int64? dailyReceiveLimit,
     $fixnum.Int64? maxBalance,
-    $42.Timestamp? verifiedAt,
-    $42.Timestamp? expiresAt,
+    $1.Timestamp? verifiedAt,
+    $1.Timestamp? expiresAt,
     $core.bool? isCurrent,
     $core.bool? isLocked,
   }) {
@@ -224,8 +224,8 @@ class KYCTierInfo extends $pb.GeneratedMessage {
     ..aInt64(6, _omitFieldNames ? '' : 'dailyTransactionLimit')
     ..aInt64(7, _omitFieldNames ? '' : 'dailyReceiveLimit')
     ..aInt64(8, _omitFieldNames ? '' : 'maxBalance')
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'expiresAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
     ..aOB(11, _omitFieldNames ? '' : 'isCurrent')
     ..aOB(12, _omitFieldNames ? '' : 'isLocked')
     ..hasRequiredFields = false
@@ -319,26 +319,26 @@ class KYCTierInfo extends $pb.GeneratedMessage {
   void clearMaxBalance() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get verifiedAt => $_getN(8);
+  $1.Timestamp get verifiedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set verifiedAt($42.Timestamp v) { setField(9, v); }
+  set verifiedAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasVerifiedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearVerifiedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureVerifiedAt() => $_ensure(8);
+  $1.Timestamp ensureVerifiedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get expiresAt => $_getN(9);
+  $1.Timestamp get expiresAt => $_getN(9);
   @$pb.TagNumber(10)
-  set expiresAt($42.Timestamp v) { setField(10, v); }
+  set expiresAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasExpiresAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearExpiresAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureExpiresAt() => $_ensure(9);
+  $1.Timestamp ensureExpiresAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.bool get isCurrent => $_getBF(10);
@@ -622,7 +622,7 @@ class VerifyIDResponse extends $pb.GeneratedMessage {
     $core.String? message,
     KYCStatus? status,
     KYCTier? currentTier,
-    $42.Timestamp? verifiedAt,
+    $1.Timestamp? verifiedAt,
     $core.String? reference,
   }) {
     final $result = create();
@@ -655,7 +655,7 @@ class VerifyIDResponse extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'message')
     ..e<KYCStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCStatus.STATUS_UNKNOWN, valueOf: KYCStatus.valueOf, enumValues: KYCStatus.values)
     ..e<KYCTier>(4, _omitFieldNames ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
     ..aOS(6, _omitFieldNames ? '' : 'reference')
     ..hasRequiredFields = false
   ;
@@ -718,15 +718,15 @@ class VerifyIDResponse extends $pb.GeneratedMessage {
   void clearCurrentTier() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get verifiedAt => $_getN(4);
+  $1.Timestamp get verifiedAt => $_getN(4);
   @$pb.TagNumber(5)
-  set verifiedAt($42.Timestamp v) { setField(5, v); }
+  set verifiedAt($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasVerifiedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearVerifiedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureVerifiedAt() => $_ensure(4);
+  $1.Timestamp ensureVerifiedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get reference => $_getSZ(5);
@@ -796,7 +796,7 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
     KYCStatus? status,
     KYCTier? currentTier,
     $core.Iterable<KYCTierInfo>? tierInfo,
-    $42.Timestamp? lastUpdated,
+    $1.Timestamp? lastUpdated,
     $core.String? rejectionReason,
   }) {
     final $result = create();
@@ -829,7 +829,7 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
     ..e<KYCStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCStatus.STATUS_UNKNOWN, valueOf: KYCStatus.valueOf, enumValues: KYCStatus.values)
     ..e<KYCTier>(3, _omitFieldNames ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
     ..pc<KYCTierInfo>(4, _omitFieldNames ? '' : 'tierInfo', $pb.PbFieldType.PM, subBuilder: KYCTierInfo.create)
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
     ..aOS(6, _omitFieldNames ? '' : 'rejectionReason')
     ..hasRequiredFields = false
   ;
@@ -886,15 +886,15 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
   $core.List<KYCTierInfo> get tierInfo => $_getList(3);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get lastUpdated => $_getN(4);
+  $1.Timestamp get lastUpdated => $_getN(4);
   @$pb.TagNumber(5)
-  set lastUpdated($42.Timestamp v) { setField(5, v); }
+  set lastUpdated($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasLastUpdated() => $_has(4);
   @$pb.TagNumber(5)
   void clearLastUpdated() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureLastUpdated() => $_ensure(4);
+  $1.Timestamp ensureLastUpdated() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get rejectionReason => $_getSZ(5);
@@ -1343,8 +1343,8 @@ class VerificationDocument extends $pb.GeneratedMessage {
     IDType? documentType,
     $core.String? documentUrl,
     DocumentStatus? status,
-    $42.Timestamp? uploadedAt,
-    $42.Timestamp? verifiedAt,
+    $1.Timestamp? uploadedAt,
+    $1.Timestamp? verifiedAt,
     $core.String? rejectionReason,
   }) {
     final $result = create();
@@ -1380,8 +1380,8 @@ class VerificationDocument extends $pb.GeneratedMessage {
     ..e<IDType>(2, _omitFieldNames ? '' : 'documentType', $pb.PbFieldType.OE, defaultOrMaker: IDType.ID_UNKNOWN, valueOf: IDType.valueOf, enumValues: IDType.values)
     ..aOS(3, _omitFieldNames ? '' : 'documentUrl')
     ..e<DocumentStatus>(4, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DocumentStatus.DOC_STATUS_UNKNOWN, valueOf: DocumentStatus.valueOf, enumValues: DocumentStatus.values)
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'uploadedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'uploadedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
     ..aOS(7, _omitFieldNames ? '' : 'rejectionReason')
     ..hasRequiredFields = false
   ;
@@ -1444,26 +1444,26 @@ class VerificationDocument extends $pb.GeneratedMessage {
   void clearStatus() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get uploadedAt => $_getN(4);
+  $1.Timestamp get uploadedAt => $_getN(4);
   @$pb.TagNumber(5)
-  set uploadedAt($42.Timestamp v) { setField(5, v); }
+  set uploadedAt($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasUploadedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearUploadedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureUploadedAt() => $_ensure(4);
+  $1.Timestamp ensureUploadedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get verifiedAt => $_getN(5);
+  $1.Timestamp get verifiedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set verifiedAt($42.Timestamp v) { setField(6, v); }
+  set verifiedAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasVerifiedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearVerifiedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureVerifiedAt() => $_ensure(5);
+  $1.Timestamp ensureVerifiedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.String get rejectionReason => $_getSZ(6);

@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'autosave.pbenum.dart';
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 export 'autosave.pbenum.dart';
 
@@ -38,9 +38,9 @@ class AutoSaveRule extends $pb.GeneratedMessage {
     $core.double? targetAmount,
     $core.double? minimumBalance,
     $core.double? maximumPerSave,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
-    $42.Timestamp? lastTriggeredAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
+    $1.Timestamp? lastTriggeredAt,
     $core.int? triggerCount,
     $core.double? totalSaved,
   }) {
@@ -135,9 +135,9 @@ class AutoSaveRule extends $pb.GeneratedMessage {
     ..a<$core.double>(15, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(16, _omitFieldNames ? '' : 'minimumBalance', $pb.PbFieldType.OD)
     ..a<$core.double>(17, _omitFieldNames ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
-    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(19, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(20, _omitFieldNames ? '' : 'lastTriggeredAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(19, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(20, _omitFieldNames ? '' : 'lastTriggeredAt', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(21, _omitFieldNames ? '' : 'triggerCount', $pb.PbFieldType.O3)
     ..a<$core.double>(22, _omitFieldNames ? '' : 'totalSaved', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
@@ -322,37 +322,37 @@ class AutoSaveRule extends $pb.GeneratedMessage {
 
   /// Metadata
   @$pb.TagNumber(18)
-  $42.Timestamp get createdAt => $_getN(17);
+  $1.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
-  set createdAt($42.Timestamp v) { setField(18, v); }
+  set createdAt($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $42.Timestamp ensureCreatedAt() => $_ensure(17);
+  $1.Timestamp ensureCreatedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
-  $42.Timestamp get updatedAt => $_getN(18);
+  $1.Timestamp get updatedAt => $_getN(18);
   @$pb.TagNumber(19)
-  set updatedAt($42.Timestamp v) { setField(19, v); }
+  set updatedAt($1.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(18);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
-  $42.Timestamp get lastTriggeredAt => $_getN(19);
+  $1.Timestamp get lastTriggeredAt => $_getN(19);
   @$pb.TagNumber(20)
-  set lastTriggeredAt($42.Timestamp v) { setField(20, v); }
+  set lastTriggeredAt($1.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasLastTriggeredAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearLastTriggeredAt() => clearField(20);
   @$pb.TagNumber(20)
-  $42.Timestamp ensureLastTriggeredAt() => $_ensure(19);
+  $1.Timestamp ensureLastTriggeredAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
   $core.int get triggerCount => $_getIZ(20);
@@ -1389,7 +1389,7 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
     $core.String? triggerReason,
     $core.bool? success,
     $core.String? errorMessage,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -1442,7 +1442,7 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'triggerReason')
     ..aOB(9, _omitFieldNames ? '' : 'success')
     ..aOS(10, _omitFieldNames ? '' : 'errorMessage')
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1558,15 +1558,15 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(10);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get createdAt => $_getN(10);
+  $1.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($42.Timestamp v) { setField(11, v); }
+  set createdAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureCreatedAt() => $_ensure(10);
+  $1.Timestamp ensureCreatedAt() => $_ensure(10);
 }
 
 /// Get auto-save transactions request
@@ -2019,6 +2019,7 @@ class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
   factory TriggerAutoSaveRequest({
     $core.String? ruleId,
     $core.double? customAmount,
+    $core.String? transactionPinToken,
   }) {
     final $result = create();
     if (ruleId != null) {
@@ -2026,6 +2027,9 @@ class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
     }
     if (customAmount != null) {
       $result.customAmount = customAmount;
+    }
+    if (transactionPinToken != null) {
+      $result.transactionPinToken = transactionPinToken;
     }
     return $result;
   }
@@ -2036,6 +2040,7 @@ class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TriggerAutoSaveRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'ruleId')
     ..a<$core.double>(2, _omitFieldNames ? '' : 'customAmount', $pb.PbFieldType.OD)
+    ..aOS(15, _omitFieldNames ? '' : 'transactionPinToken')
     ..hasRequiredFields = false
   ;
 
@@ -2077,6 +2082,15 @@ class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
   $core.bool hasCustomAmount() => $_has(1);
   @$pb.TagNumber(2)
   void clearCustomAmount() => clearField(2);
+
+  @$pb.TagNumber(15)
+  $core.String get transactionPinToken => $_getSZ(2);
+  @$pb.TagNumber(15)
+  set transactionPinToken($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasTransactionPinToken() => $_has(2);
+  @$pb.TagNumber(15)
+  void clearTransactionPinToken() => clearField(15);
 }
 
 /// Manual trigger auto-save response

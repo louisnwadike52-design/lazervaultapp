@@ -192,13 +192,13 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         _buildHeader(group),
         _buildGroupOverview(group, members, contributions),
         if (currentUserMember != null)
-          _buildYourRoleCard(currentUserMember, group),
+          _buildCompactRoleChip(currentUserMember, group),
         _buildTabBar(),
         Expanded(
           child: TabBarView(
             controller: _tabController,
             children: [
-              _buildMembersTab(members, group),
+              _buildMembersTab(members, group, contributions),
               _buildContributionsTab(contributions, group),
             ],
           ),
@@ -207,27 +207,105 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
-  Widget _buildYourRoleCard(GroupMember currentMember, GroupAccount group) {
+  Widget _buildCompactRoleChip(GroupMember currentMember, GroupAccount group) {
     final role = currentMember.role;
-    final isAdmin = role == GroupMemberRole.admin;
-    final isModerator = role == GroupMemberRole.moderator;
 
-    // Get role color
     Color roleColor;
     IconData roleIcon;
     switch (role) {
       case GroupMemberRole.admin:
-        roleColor = const Color(0xFFEF4444); // Red
+        roleColor = const Color(0xFFEF4444);
         roleIcon = Icons.admin_panel_settings;
       case GroupMemberRole.moderator:
-        roleColor = const Color(0xFFF59E0B); // Orange
+        roleColor = const Color(0xFFF59E0B);
         roleIcon = Icons.shield;
       case GroupMemberRole.member:
-        roleColor = const Color(0xFF10B981); // Green
+        roleColor = const Color(0xFF10B981);
         roleIcon = Icons.person;
     }
 
-    // Build permissions list based on role
+    return GestureDetector(
+      onTap: () => _showRoleDetailsDialog(currentMember, group),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+            color: roleColor.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(roleIcon, color: roleColor, size: 16.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'Your Role: ',
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: Colors.grey[400],
+              ),
+            ),
+            Text(
+              role.displayName,
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+                color: roleColor,
+              ),
+            ),
+            if (group.adminId == currentMember.userId) ...[
+              SizedBox(width: 6.w),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+                child: Text(
+                  'Creator',
+                  style: GoogleFonts.inter(
+                    fontSize: 9.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[400],
+                  ),
+                ),
+              ),
+            ],
+            const Spacer(),
+            Icon(
+              Icons.info_outline,
+              color: Colors.grey[500],
+              size: 16.sp,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRoleDetailsDialog(GroupMember currentMember, GroupAccount group) {
+    final role = currentMember.role;
+    final isAdmin = role == GroupMemberRole.admin;
+    final isModerator = role == GroupMemberRole.moderator;
+
+    Color roleColor;
+    IconData roleIcon;
+    switch (role) {
+      case GroupMemberRole.admin:
+        roleColor = const Color(0xFFEF4444);
+        roleIcon = Icons.admin_panel_settings;
+      case GroupMemberRole.moderator:
+        roleColor = const Color(0xFFF59E0B);
+        roleIcon = Icons.shield;
+      case GroupMemberRole.member:
+        roleColor = const Color(0xFF10B981);
+        roleIcon = Icons.person;
+    }
+
     final permissions = <String>[];
     if (isAdmin) {
       permissions.addAll([
@@ -250,119 +328,137 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       ]);
     }
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: roleColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 340.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: EdgeInsets.all(10.w),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
-                  color: roleColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10.r),
+                  color: const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
                 ),
-                child: Icon(
-                  roleIcon,
-                  color: roleColor,
-                  size: 20.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      'Your Role',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.grey[400],
+                    Container(
+                      padding: EdgeInsets.all(10.w),
+                      decoration: BoxDecoration(
+                        color: roleColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
+                      child: Icon(roleIcon, color: roleColor, size: 22.sp),
                     ),
-                    SizedBox(height: 2.h),
-                    Row(
-                      children: [
-                        Text(
-                          role.displayName,
-                          style: GoogleFonts.inter(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            color: roleColor,
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Your Role',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: Colors.grey[400],
+                            ),
                           ),
-                        ),
-                        if (group.adminId == currentMember.userId) ...[
-                          SizedBox(width: 8.w),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4.r),
-                            ),
-                            child: Text(
-                              'Creator',
-                              style: GoogleFonts.inter(
-                                fontSize: 9.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[400],
+                          Row(
+                            children: [
+                              Text(
+                                role.displayName,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: roleColor,
+                                ),
                               ),
-                            ),
+                              if (group.adminId == currentMember.userId) ...[
+                                SizedBox(width: 8.w),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
+                                  child: Text(
+                                    'Creator',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 9.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[400],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ],
-                      ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: EdgeInsets.all(4.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3D3D3D),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Icon(Icons.close, color: Colors.white70, size: 18.sp),
+                      ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.info_outline,
-                color: Colors.grey[500],
-                size: 18.sp,
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Permissions',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    ...permissions.map((permission) => Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle, color: roleColor, size: 16.sp),
+                          SizedBox(width: 8.w),
+                          Text(
+                            permission,
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                  ],
+                ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
-          Wrap(
-            spacing: 6.w,
-            runSpacing: 6.h,
-            children: permissions.map((permission) => Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: roleColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.check_circle,
-                    color: roleColor,
-                    size: 12.sp,
-                  ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    permission,
-                    style: GoogleFonts.inter(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-                  ),
-                ],
-              ),
-            )).toList(),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -489,7 +585,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -532,7 +628,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             ],
           ),
           if (contributions.isNotEmpty) ...[
-            SizedBox(height: 20.h),
+            SizedBox(height: 10.h),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -542,23 +638,23 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                     Text(
                       'Total Progress',
                       style: GoogleFonts.inter(
-                        fontSize: 14.sp,
+                        fontSize: 11.sp,
                         color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                     Text(
                       '$currencySymbol${totalCurrent.toStringAsFixed(2)} / $currencySymbol${totalTarget.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
-                        fontSize: 14.sp,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 6.h),
                 Container(
-                  height: 8.h,
+                  height: 6.h,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4.r),
@@ -580,7 +676,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
               ],
             ),
           ],
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
           // External Social Media Links
           if (group.hasExternalLinks) _buildExternalLinksSection(group),
         ],
@@ -642,7 +738,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             if (links['facebook'] != null && links['facebook']!.isNotEmpty) ...[
               _buildSocialButton(
                 label: 'Facebook',
-                icon: Icons.alternate_email, // Using alternate_email as placeholder
+                icon: Icons.facebook,
                 color: const Color(0xFF1877F2),
                 onTap: () => _launchLink(links['facebook']!),
               ),
@@ -731,22 +827,22 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
           Icon(
             icon,
             color: Colors.white.withValues(alpha: 0.8),
-            size: 24.sp,
+            size: 18.sp,
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
           Text(
             value,
             style: GoogleFonts.inter(
-              fontSize: 24.sp,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 4.h),
+          SizedBox(height: 2.h),
           Text(
             title,
             style: GoogleFonts.inter(
-              fontSize: 12.sp,
+              fontSize: 10.sp,
               color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
@@ -757,7 +853,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
   Widget _buildTabBar() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
@@ -784,7 +880,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
-  Widget _buildMembersTab(List<GroupMember> members, GroupAccount group) {
+  Widget _buildMembersTab(List<GroupMember> members, GroupAccount group, List<Contribution> contributions) {
     // Check if current user can add members
     final currentUserId = context.read<GroupAccountCubit>().currentUserId;
     final currentMember = currentUserId != null
@@ -872,6 +968,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                     child: MemberCard(
                       member: member,
                       group: group,
+                      contributions: contributions,
                       onTap: () => _showMemberOptions(member, group),
                     ),
                   );
@@ -1192,12 +1289,20 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   void _showMemberOptions(GroupMember member, GroupAccount group) {
     final currentUserId = context.read<GroupAccountCubit>().currentUserId ?? '';
 
+    // Get contributions from current state
+    List<Contribution> contributions = [];
+    final state = context.read<GroupAccountCubit>().state;
+    if (state is GroupAccountGroupLoaded) {
+      contributions = state.contributions;
+    }
+
     showDialog(
       context: context,
       builder: (dialogContext) => MemberDetailDialog(
         member: member,
         group: group,
         currentUserId: currentUserId,
+        contributions: contributions,
         onChangeRole: () => _showChangeRoleDialog(member, group),
         onRemoveMember: () => _showRemoveMemberConfirmation(member, group),
       ),

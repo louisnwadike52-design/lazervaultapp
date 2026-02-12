@@ -3,20 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/create_policy_cubit.dart';
-import '../cubit/create_policy_state.dart';
 import '../cubit/insurance_cubit.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
-import '../widgets/create_policy/policy_type_selector_screen.dart';
-import '../widgets/create_policy/policy_holder_info_screen.dart';
-import '../widgets/create_policy/coverage_details_screen.dart';
-import '../widgets/create_policy/beneficiaries_features_screen.dart';
-import '../widgets/create_policy/policy_review_screen.dart';
-import 'payment_method_selection_screen.dart';
+import '../widgets/create_policy/insurance_category_products_screen.dart';
+import '../widgets/create_policy/insurance_form_screen.dart';
+import '../widgets/create_policy/insurance_quote_review_screen.dart';
+import '../widgets/create_policy/insurance_payment_confirm_screen.dart';
+import 'insurance_payment_processing_screen.dart';
 
-/// Main carousel controller for insurance policy creation
+/// Main carousel for MyCover.ai insurance policy creation
 ///
-/// Manages 5-screen flow with PageView, progress indicators, and validation
+/// 4-screen flow: Browse Products -> Fill Details -> Review Quote -> Confirm & Pay
 class CreateInsurancePolicyCarousel extends StatefulWidget {
   const CreateInsurancePolicyCarousel({super.key});
 
@@ -29,14 +27,13 @@ class _CreateInsurancePolicyCarouselState
     extends State<CreateInsurancePolicyCarousel> {
   late PageController _pageController;
   int _currentPage = 0;
-  final int _totalPages = 5;
+  final int _totalPages = 4;
 
   final List<String> _pageNames = [
-    'Policy Type',
-    'Personal Info',
-    'Coverage Details',
-    'Beneficiaries',
-    'Review & Confirm',
+    'Browse Plans',
+    'Your Details',
+    'Review Quote',
+    'Confirm & Pay',
   ];
 
   @override
@@ -44,7 +41,7 @@ class _CreateInsurancePolicyCarouselState
     super.initState();
     _pageController = PageController();
 
-    // Initialize form with user data
+    // Initialize form with user data - derives locale and loads categories
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is AuthenticationSuccess) {
@@ -64,33 +61,90 @@ class _CreateInsurancePolicyCarouselState
   Future<void> _goToNextPage() async {
     final cubit = context.read<CreatePolicyCubit>();
 
-    // Validate current page
-    bool isValid = false;
     switch (_currentPage) {
       case 0:
-        isValid = cubit.validateScreen1();
+        // Browse Products -> must have selected a product
+        if (cubit.selectedProduct == null) {
+          _showErrorSnackBar('Please select an insurance product');
+          return;
+        }
         break;
       case 1:
-        isValid = cubit.validateScreen2();
+        // Fill Details -> validate form fields and get quote
+        if (!cubit.validateFormFields()) {
+          _showErrorSnackBar('Please fill in all required fields');
+          return;
+        }
+        // Show loading while fetching quote with timeout
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(
+            child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+          ),
+        );
+        bool timedOut = false;
+        final timeout = Future.delayed(const Duration(seconds: 30), () {
+          timedOut = true;
+        });
+        await Future.any([cubit.getQuote(), timeout]);
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+        if (timedOut && mounted) {
+          _showErrorSnackBar('Quote request timed out. Please try again.');
+          return;
+        }
         break;
       case 2:
-        isValid = cubit.validateScreen3();
+        // Review Quote -> check if quote is expired
+        if (cubit.quote?.isExpired == true) {
+          if (!mounted) return;
+          final getNew = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: const Color(0xFF1F1F1F),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              title: Text(
+                'Quote Expired',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              content: Text(
+                'Your quote has expired. Would you like to get a new quote?',
+                style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text('Cancel',
+                      style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: Text('Get New Quote',
+                      style: GoogleFonts.inter(color: const Color(0xFF6366F1))),
+                ),
+              ],
+            ),
+          );
+          if (getNew == true && mounted) {
+            await cubit.getQuote();
+          }
+          return;
+        }
         break;
       case 3:
-        isValid = cubit.validateScreen4();
-        break;
-      case 4:
-        isValid = cubit.validateScreen5();
-        break;
-    }
-
-    if (!isValid) {
-      // Show error message if validation failed
-      if (cubit.state is CreatePolicyValidationError) {
-        final errorState = cubit.state as CreatePolicyValidationError;
-        _showErrorSnackBar(errorState.message);
-      }
-      return;
+        // Confirm & Pay -> validate account selection then trigger PIN entry
+        if (cubit.selectedAccountId == null) {
+          _showErrorSnackBar('Please select an account to pay from');
+          return;
+        }
+        _proceedToPurchase();
+        return;
     }
 
     if (_currentPage < _totalPages - 1) {
@@ -98,9 +152,6 @@ class _CreateInsurancePolicyCarouselState
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    } else {
-      // Last page - proceed to payment
-      _proceedToPayment();
     }
   }
 
@@ -111,12 +162,11 @@ class _CreateInsurancePolicyCarouselState
         curve: Curves.easeInOut,
       );
     } else {
-      // First page - go back to list screen
       Navigator.of(context).pop();
     }
   }
 
-  void _proceedToPayment() {
+  void _proceedToPurchase() {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       _showErrorSnackBar('Authentication required');
@@ -124,22 +174,19 @@ class _CreateInsurancePolicyCarouselState
     }
 
     final cubit = context.read<CreatePolicyCubit>();
-    final insurance = cubit.buildInsurance(authState.profile.user.id);
-
-    // Capture cubits from current context before navigation
     final insuranceCubit = context.read<InsuranceCubit>();
     final authCubit = context.read<AuthenticationCubit>();
 
+    // Navigate to processing screen which handles PIN entry
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => MultiBlocProvider(
           providers: [
+            BlocProvider.value(value: cubit),
             BlocProvider.value(value: insuranceCubit),
             BlocProvider.value(value: authCubit),
           ],
-          child: PaymentMethodSelectionScreen(
-            insurance: insurance,
-          ),
+          child: const InsurancePaymentProcessingScreen(),
         ),
       ),
     );
@@ -182,11 +229,10 @@ class _CreateInsurancePolicyCarouselState
                 setState(() => _currentPage = page);
               },
               children: const [
-                PolicyTypeSelectorScreen(),
-                PolicyHolderInfoScreen(),
-                CoverageDetailsScreen(),
-                BeneficiariesFeaturesScreen(),
-                PolicyReviewScreen(),
+                InsuranceCategoryProductsScreen(),
+                InsuranceFormScreen(),
+                InsuranceQuoteReviewScreen(),
+                InsurancePaymentConfirmScreen(),
               ],
             ),
           ),
@@ -201,11 +247,7 @@ class _CreateInsurancePolicyCarouselState
       backgroundColor: const Color(0xFF0A0A0A),
       elevation: 0,
       leading: IconButton(
-        icon: Icon(
-          Icons.arrow_back,
-          color: Colors.white,
-          size: 24.sp,
-        ),
+        icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
         onPressed: _goToPreviousPage,
       ),
       title: Column(
@@ -237,7 +279,6 @@ class _CreateInsurancePolicyCarouselState
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Column(
         children: [
-          // Linear progress bar
           Stack(
             children: [
               Container(
@@ -266,7 +307,6 @@ class _CreateInsurancePolicyCarouselState
             ],
           ),
           SizedBox(height: 12.h),
-          // Dot indicators
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
@@ -336,14 +376,15 @@ class _CreateInsurancePolicyCarouselState
               ),
             if (_currentPage > 0) SizedBox(width: 12.w),
             Expanded(
-              flex: _currentPage == 0 ? 1 : 1,
               child: GestureDetector(
                 onTap: _goToNextPage,
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    gradient: LinearGradient(
+                      colors: isLastPage
+                          ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                          : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -354,7 +395,7 @@ class _CreateInsurancePolicyCarouselState
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          isLastPage ? 'Review & Pay' : 'Continue',
+                          isLastPage ? 'Confirm & Pay' : 'Continue',
                           style: GoogleFonts.inter(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
@@ -363,11 +404,11 @@ class _CreateInsurancePolicyCarouselState
                         ),
                         if (!isLastPage) ...[
                           SizedBox(width: 8.w),
-                          Icon(
-                            Icons.arrow_forward,
-                            color: Colors.white,
-                            size: 20.sp,
-                          ),
+                          Icon(Icons.arrow_forward, color: Colors.white, size: 20.sp),
+                        ],
+                        if (isLastPage) ...[
+                          SizedBox(width: 8.w),
+                          Icon(Icons.lock, color: Colors.white, size: 18.sp),
                         ],
                       ],
                     ),

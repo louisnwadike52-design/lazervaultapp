@@ -403,6 +403,41 @@ final $typed_data.Uint8List getGlobalMarketDataResponseDescriptor = $convert.bas
     '9jdXJyZW5jaWVzEhgKB21hcmtldHMYBiABKAVSB21hcmtldHMSOQoKdXBkYXRlZF9hdBgHIAEo'
     'CzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdA==');
 
+@$core.Deprecated('Use getExchangeRateRequestDescriptor instead')
+const GetExchangeRateRequest$json = {
+  '1': 'GetExchangeRateRequest',
+  '2': [
+    {'1': 'crypto_id', '3': 1, '4': 1, '5': 9, '10': 'cryptoId'},
+    {'1': 'fiat_currency', '3': 2, '4': 1, '5': 9, '10': 'fiatCurrency'},
+  ],
+};
+
+/// Descriptor for `GetExchangeRateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExchangeRateRequestDescriptor = $convert.base64Decode(
+    'ChZHZXRFeGNoYW5nZVJhdGVSZXF1ZXN0EhsKCWNyeXB0b19pZBgBIAEoCVIIY3J5cHRvSWQSIw'
+    'oNZmlhdF9jdXJyZW5jeRgCIAEoCVIMZmlhdEN1cnJlbmN5');
+
+@$core.Deprecated('Use getExchangeRateResponseDescriptor instead')
+const GetExchangeRateResponse$json = {
+  '1': 'GetExchangeRateResponse',
+  '2': [
+    {'1': 'crypto_id', '3': 1, '4': 1, '5': 9, '10': 'cryptoId'},
+    {'1': 'fiat_currency', '3': 2, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    {'1': 'rate', '3': 3, '4': 1, '5': 1, '10': 'rate'},
+    {'1': 'fee_percentage', '3': 4, '4': 1, '5': 1, '10': 'feePercentage'},
+    {'1': 'spread', '3': 5, '4': 1, '5': 1, '10': 'spread'},
+    {'1': 'valid_until', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'validUntil'},
+  ],
+};
+
+/// Descriptor for `GetExchangeRateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExchangeRateResponseDescriptor = $convert.base64Decode(
+    'ChdHZXRFeGNoYW5nZVJhdGVSZXNwb25zZRIbCgljcnlwdG9faWQYASABKAlSCGNyeXB0b0lkEi'
+    'MKDWZpYXRfY3VycmVuY3kYAiABKAlSDGZpYXRDdXJyZW5jeRISCgRyYXRlGAMgASgBUgRyYXRl'
+    'EiUKDmZlZV9wZXJjZW50YWdlGAQgASgBUg1mZWVQZXJjZW50YWdlEhYKBnNwcmVhZBgFIAEoAV'
+    'IGc3ByZWFkEjsKC3ZhbGlkX3VudGlsGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFt'
+    'cFIKdmFsaWRVbnRpbA==');
+
 @$core.Deprecated('Use getCryptoHoldingsRequestDescriptor instead')
 const GetCryptoHoldingsRequest$json = {
   '1': 'GetCryptoHoldingsRequest',
@@ -481,6 +516,8 @@ const CryptoTransaction$json = {
     {'1': 'fiat_currency', '3': 7, '4': 1, '5': 9, '10': 'fiatCurrency'},
     {'1': 'timestamp', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
     {'1': 'status', '3': 9, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'fee', '3': 10, '4': 1, '5': 1, '10': 'fee'},
+    {'1': 'exchange_rate', '3': 11, '4': 1, '5': 1, '10': 'exchangeRate'},
   ],
 };
 
@@ -491,7 +528,8 @@ final $typed_data.Uint8List cryptoTransactionDescriptor = $convert.base64Decode(
     'eXB0b1N5bWJvbBIWCgZhbW91bnQYBSABKAFSBmFtb3VudBIdCgpmaWF0X3ZhbHVlGAYgASgBUg'
     'lmaWF0VmFsdWUSIwoNZmlhdF9jdXJyZW5jeRgHIAEoCVIMZmlhdEN1cnJlbmN5EjgKCXRpbWVz'
     'dGFtcBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXRpbWVzdGFtcBIWCgZzdG'
-    'F0dXMYCSABKAlSBnN0YXR1cw==');
+    'F0dXMYCSABKAlSBnN0YXR1cxIQCgNmZWUYCiABKAFSA2ZlZRIjCg1leGNoYW5nZV9yYXRlGAsg'
+    'ASgBUgxleGNoYW5nZVJhdGU=');
 
 @$core.Deprecated('Use getCryptoTransactionsResponseDescriptor instead')
 const GetCryptoTransactionsResponse$json = {
@@ -516,6 +554,8 @@ const BuyCryptoRequest$json = {
     {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
     {'1': 'fiat_amount', '3': 3, '4': 1, '5': 1, '10': 'fiatAmount'},
     {'1': 'fiat_currency', '3': 4, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    {'1': 'transaction_pin', '3': 5, '4': 1, '5': 9, '10': 'transactionPin'},
+    {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
@@ -523,7 +563,9 @@ const BuyCryptoRequest$json = {
 final $typed_data.Uint8List buyCryptoRequestDescriptor = $convert.base64Decode(
     'ChBCdXlDcnlwdG9SZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIbCgljcnlwdG9faW'
     'QYAiABKAlSCGNyeXB0b0lkEh8KC2ZpYXRfYW1vdW50GAMgASgBUgpmaWF0QW1vdW50EiMKDWZp'
-    'YXRfY3VycmVuY3kYBCABKAlSDGZpYXRDdXJyZW5jeQ==');
+    'YXRfY3VycmVuY3kYBCABKAlSDGZpYXRDdXJyZW5jeRInCg90cmFuc2FjdGlvbl9waW4YBSABKA'
+    'lSDnRyYW5zYWN0aW9uUGluEicKD2lkZW1wb3RlbmN5X2tleRgGIAEoCVIOaWRlbXBvdGVuY3lL'
+    'ZXk=');
 
 @$core.Deprecated('Use buyCryptoResponseDescriptor instead')
 const BuyCryptoResponse$json = {
@@ -534,6 +576,9 @@ const BuyCryptoResponse$json = {
     {'1': 'crypto_amount', '3': 3, '4': 1, '5': 1, '10': 'cryptoAmount'},
     {'1': 'fiat_amount', '3': 4, '4': 1, '5': 1, '10': 'fiatAmount'},
     {'1': 'status', '3': 5, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'fee', '3': 6, '4': 1, '5': 1, '10': 'fee'},
+    {'1': 'exchange_rate', '3': 7, '4': 1, '5': 1, '10': 'exchangeRate'},
+    {'1': 'net_amount', '3': 8, '4': 1, '5': 1, '10': 'netAmount'},
   ],
 };
 
@@ -542,7 +587,8 @@ final $typed_data.Uint8List buyCryptoResponseDescriptor = $convert.base64Decode(
     'ChFCdXlDcnlwdG9SZXNwb25zZRIlCg50cmFuc2FjdGlvbl9pZBgBIAEoCVINdHJhbnNhY3Rpb2'
     '5JZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEiMKDWNyeXB0b19hbW91bnQYAyABKAFS'
     'DGNyeXB0b0Ftb3VudBIfCgtmaWF0X2Ftb3VudBgEIAEoAVIKZmlhdEFtb3VudBIWCgZzdGF0dX'
-    'MYBSABKAlSBnN0YXR1cw==');
+    'MYBSABKAlSBnN0YXR1cxIQCgNmZWUYBiABKAFSA2ZlZRIjCg1leGNoYW5nZV9yYXRlGAcgASgB'
+    'UgxleGNoYW5nZVJhdGUSHQoKbmV0X2Ftb3VudBgIIAEoAVIJbmV0QW1vdW50');
 
 @$core.Deprecated('Use sellCryptoRequestDescriptor instead')
 const SellCryptoRequest$json = {
@@ -552,6 +598,8 @@ const SellCryptoRequest$json = {
     {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
     {'1': 'crypto_amount', '3': 3, '4': 1, '5': 1, '10': 'cryptoAmount'},
     {'1': 'fiat_currency', '3': 4, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    {'1': 'transaction_pin', '3': 5, '4': 1, '5': 9, '10': 'transactionPin'},
+    {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
@@ -559,7 +607,9 @@ const SellCryptoRequest$json = {
 final $typed_data.Uint8List sellCryptoRequestDescriptor = $convert.base64Decode(
     'ChFTZWxsQ3J5cHRvUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSGwoJY3J5cHRvX2'
     'lkGAIgASgJUghjcnlwdG9JZBIjCg1jcnlwdG9fYW1vdW50GAMgASgBUgxjcnlwdG9BbW91bnQS'
-    'IwoNZmlhdF9jdXJyZW5jeRgEIAEoCVIMZmlhdEN1cnJlbmN5');
+    'IwoNZmlhdF9jdXJyZW5jeRgEIAEoCVIMZmlhdEN1cnJlbmN5EicKD3RyYW5zYWN0aW9uX3Bpbh'
+    'gFIAEoCVIOdHJhbnNhY3Rpb25QaW4SJwoPaWRlbXBvdGVuY3lfa2V5GAYgASgJUg5pZGVtcG90'
+    'ZW5jeUtleQ==');
 
 @$core.Deprecated('Use sellCryptoResponseDescriptor instead')
 const SellCryptoResponse$json = {
@@ -570,6 +620,9 @@ const SellCryptoResponse$json = {
     {'1': 'fiat_amount', '3': 3, '4': 1, '5': 1, '10': 'fiatAmount'},
     {'1': 'crypto_amount', '3': 4, '4': 1, '5': 1, '10': 'cryptoAmount'},
     {'1': 'status', '3': 5, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'fee', '3': 6, '4': 1, '5': 1, '10': 'fee'},
+    {'1': 'exchange_rate', '3': 7, '4': 1, '5': 1, '10': 'exchangeRate'},
+    {'1': 'net_amount', '3': 8, '4': 1, '5': 1, '10': 'netAmount'},
   ],
 };
 
@@ -578,7 +631,8 @@ final $typed_data.Uint8List sellCryptoResponseDescriptor = $convert.base64Decode
     'ChJTZWxsQ3J5cHRvUmVzcG9uc2USJQoOdHJhbnNhY3Rpb25faWQYASABKAlSDXRyYW5zYWN0aW'
     '9uSWQSGwoJY3J5cHRvX2lkGAIgASgJUghjcnlwdG9JZBIfCgtmaWF0X2Ftb3VudBgDIAEoAVIK'
     'ZmlhdEFtb3VudBIjCg1jcnlwdG9fYW1vdW50GAQgASgBUgxjcnlwdG9BbW91bnQSFgoGc3RhdH'
-    'VzGAUgASgJUgZzdGF0dXM=');
+    'VzGAUgASgJUgZzdGF0dXMSEAoDZmVlGAYgASgBUgNmZWUSIwoNZXhjaGFuZ2VfcmF0ZRgHIAEo'
+    'AVIMZXhjaGFuZ2VSYXRlEh0KCm5ldF9hbW91bnQYCCABKAFSCW5ldEFtb3VudA==');
 
 @$core.Deprecated('Use convertCryptoRequestDescriptor instead')
 const ConvertCryptoRequest$json = {
@@ -588,6 +642,8 @@ const ConvertCryptoRequest$json = {
     {'1': 'from_crypto_id', '3': 2, '4': 1, '5': 9, '10': 'fromCryptoId'},
     {'1': 'to_crypto_id', '3': 3, '4': 1, '5': 9, '10': 'toCryptoId'},
     {'1': 'from_amount', '3': 4, '4': 1, '5': 1, '10': 'fromAmount'},
+    {'1': 'transaction_pin', '3': 5, '4': 1, '5': 9, '10': 'transactionPin'},
+    {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
@@ -595,7 +651,9 @@ const ConvertCryptoRequest$json = {
 final $typed_data.Uint8List convertCryptoRequestDescriptor = $convert.base64Decode(
     'ChRDb252ZXJ0Q3J5cHRvUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSJAoOZnJvbV'
     '9jcnlwdG9faWQYAiABKAlSDGZyb21DcnlwdG9JZBIgCgx0b19jcnlwdG9faWQYAyABKAlSCnRv'
-    'Q3J5cHRvSWQSHwoLZnJvbV9hbW91bnQYBCABKAFSCmZyb21BbW91bnQ=');
+    'Q3J5cHRvSWQSHwoLZnJvbV9hbW91bnQYBCABKAFSCmZyb21BbW91bnQSJwoPdHJhbnNhY3Rpb2'
+    '5fcGluGAUgASgJUg50cmFuc2FjdGlvblBpbhInCg9pZGVtcG90ZW5jeV9rZXkYBiABKAlSDmlk'
+    'ZW1wb3RlbmN5S2V5');
 
 @$core.Deprecated('Use convertCryptoResponseDescriptor instead')
 const ConvertCryptoResponse$json = {
@@ -605,6 +663,8 @@ const ConvertCryptoResponse$json = {
     {'1': 'to_amount', '3': 2, '4': 1, '5': 1, '10': 'toAmount'},
     {'1': 'rate', '3': 3, '4': 1, '5': 1, '10': 'rate'},
     {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'fee', '3': 5, '4': 1, '5': 1, '10': 'fee'},
+    {'1': 'from_amount', '3': 6, '4': 1, '5': 1, '10': 'fromAmount'},
   ],
 };
 
@@ -612,7 +672,8 @@ const ConvertCryptoResponse$json = {
 final $typed_data.Uint8List convertCryptoResponseDescriptor = $convert.base64Decode(
     'ChVDb252ZXJ0Q3J5cHRvUmVzcG9uc2USJQoOdHJhbnNhY3Rpb25faWQYASABKAlSDXRyYW5zYW'
     'N0aW9uSWQSGwoJdG9fYW1vdW50GAIgASgBUgh0b0Ftb3VudBISCgRyYXRlGAMgASgBUgRyYXRl'
-    'EhYKBnN0YXR1cxgEIAEoCVIGc3RhdHVz');
+    'EhYKBnN0YXR1cxgEIAEoCVIGc3RhdHVzEhAKA2ZlZRgFIAEoAVIDZmVlEh8KC2Zyb21fYW1vdW'
+    '50GAYgASgBUgpmcm9tQW1vdW50');
 
 @$core.Deprecated('Use getWalletsRequestDescriptor instead')
 const GetWalletsRequest$json = {
@@ -719,6 +780,155 @@ final $typed_data.Uint8List getWalletBalanceResponseDescriptor = $convert.base64
     'ChhHZXRXYWxsZXRCYWxhbmNlUmVzcG9uc2USGwoJd2FsbGV0X2lkGAEgASgJUgh3YWxsZXRJZB'
     'IbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEhgKB2JhbGFuY2UYAyABKAFSB2JhbGFuY2US'
     'HQoKZmlhdF92YWx1ZRgEIAEoAVIJZmlhdFZhbHVl');
+
+@$core.Deprecated('Use cryptoWatchlistProtoDescriptor instead')
+const CryptoWatchlistProto$json = {
+  '1': 'CryptoWatchlistProto',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'crypto_ids', '3': 4, '4': 3, '5': 9, '10': 'cryptoIds'},
+    {'1': 'created_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `CryptoWatchlistProto`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cryptoWatchlistProtoDescriptor = $convert.base64Decode(
+    'ChRDcnlwdG9XYXRjaGxpc3RQcm90bxIOCgJpZBgBIAEoCVICaWQSEgoEbmFtZRgCIAEoCVIEbm'
+    'FtZRIgCgtkZXNjcmlwdGlvbhgDIAEoCVILZGVzY3JpcHRpb24SHQoKY3J5cHRvX2lkcxgEIAMo'
+    'CVIJY3J5cHRvSWRzEjkKCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZX'
+    'N0YW1wUgljcmVhdGVkQXQSOQoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U'
+    'aW1lc3RhbXBSCXVwZGF0ZWRBdA==');
+
+@$core.Deprecated('Use createWatchlistRequestDescriptor instead')
+const CreateWatchlistRequest$json = {
+  '1': 'CreateWatchlistRequest',
+  '2': [
+    {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
+  ],
+};
+
+/// Descriptor for `CreateWatchlistRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createWatchlistRequestDescriptor = $convert.base64Decode(
+    'ChZDcmVhdGVXYXRjaGxpc3RSZXF1ZXN0EhIKBG5hbWUYASABKAlSBG5hbWUSIAoLZGVzY3JpcH'
+    'Rpb24YAiABKAlSC2Rlc2NyaXB0aW9u');
+
+@$core.Deprecated('Use createWatchlistResponseDescriptor instead')
+const CreateWatchlistResponse$json = {
+  '1': 'CreateWatchlistResponse',
+  '2': [
+    {'1': 'watchlist', '3': 1, '4': 1, '5': 11, '6': '.pb.CryptoWatchlistProto', '10': 'watchlist'},
+  ],
+};
+
+/// Descriptor for `CreateWatchlistResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createWatchlistResponseDescriptor = $convert.base64Decode(
+    'ChdDcmVhdGVXYXRjaGxpc3RSZXNwb25zZRI2Cgl3YXRjaGxpc3QYASABKAsyGC5wYi5DcnlwdG'
+    '9XYXRjaGxpc3RQcm90b1IJd2F0Y2hsaXN0');
+
+@$core.Deprecated('Use getWatchlistsRequestDescriptor instead')
+const GetWatchlistsRequest$json = {
+  '1': 'GetWatchlistsRequest',
+};
+
+/// Descriptor for `GetWatchlistsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getWatchlistsRequestDescriptor = $convert.base64Decode(
+    'ChRHZXRXYXRjaGxpc3RzUmVxdWVzdA==');
+
+@$core.Deprecated('Use getWatchlistsResponseDescriptor instead')
+const GetWatchlistsResponse$json = {
+  '1': 'GetWatchlistsResponse',
+  '2': [
+    {'1': 'watchlists', '3': 1, '4': 3, '5': 11, '6': '.pb.CryptoWatchlistProto', '10': 'watchlists'},
+  ],
+};
+
+/// Descriptor for `GetWatchlistsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getWatchlistsResponseDescriptor = $convert.base64Decode(
+    'ChVHZXRXYXRjaGxpc3RzUmVzcG9uc2USOAoKd2F0Y2hsaXN0cxgBIAMoCzIYLnBiLkNyeXB0b1'
+    'dhdGNobGlzdFByb3RvUgp3YXRjaGxpc3Rz');
+
+@$core.Deprecated('Use addToWatchlistRequestDescriptor instead')
+const AddToWatchlistRequest$json = {
+  '1': 'AddToWatchlistRequest',
+  '2': [
+    {'1': 'watchlist_id', '3': 1, '4': 1, '5': 9, '10': 'watchlistId'},
+    {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+  ],
+};
+
+/// Descriptor for `AddToWatchlistRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List addToWatchlistRequestDescriptor = $convert.base64Decode(
+    'ChVBZGRUb1dhdGNobGlzdFJlcXVlc3QSIQoMd2F0Y2hsaXN0X2lkGAEgASgJUgt3YXRjaGxpc3'
+    'RJZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lk');
+
+@$core.Deprecated('Use addToWatchlistResponseDescriptor instead')
+const AddToWatchlistResponse$json = {
+  '1': 'AddToWatchlistResponse',
+  '2': [
+    {'1': 'watchlist', '3': 1, '4': 1, '5': 11, '6': '.pb.CryptoWatchlistProto', '10': 'watchlist'},
+  ],
+};
+
+/// Descriptor for `AddToWatchlistResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List addToWatchlistResponseDescriptor = $convert.base64Decode(
+    'ChZBZGRUb1dhdGNobGlzdFJlc3BvbnNlEjYKCXdhdGNobGlzdBgBIAEoCzIYLnBiLkNyeXB0b1'
+    'dhdGNobGlzdFByb3RvUgl3YXRjaGxpc3Q=');
+
+@$core.Deprecated('Use removeFromWatchlistRequestDescriptor instead')
+const RemoveFromWatchlistRequest$json = {
+  '1': 'RemoveFromWatchlistRequest',
+  '2': [
+    {'1': 'watchlist_id', '3': 1, '4': 1, '5': 9, '10': 'watchlistId'},
+    {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+  ],
+};
+
+/// Descriptor for `RemoveFromWatchlistRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List removeFromWatchlistRequestDescriptor = $convert.base64Decode(
+    'ChpSZW1vdmVGcm9tV2F0Y2hsaXN0UmVxdWVzdBIhCgx3YXRjaGxpc3RfaWQYASABKAlSC3dhdG'
+    'NobGlzdElkEhsKCWNyeXB0b19pZBgCIAEoCVIIY3J5cHRvSWQ=');
+
+@$core.Deprecated('Use removeFromWatchlistResponseDescriptor instead')
+const RemoveFromWatchlistResponse$json = {
+  '1': 'RemoveFromWatchlistResponse',
+  '2': [
+    {'1': 'watchlist', '3': 1, '4': 1, '5': 11, '6': '.pb.CryptoWatchlistProto', '10': 'watchlist'},
+  ],
+};
+
+/// Descriptor for `RemoveFromWatchlistResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List removeFromWatchlistResponseDescriptor = $convert.base64Decode(
+    'ChtSZW1vdmVGcm9tV2F0Y2hsaXN0UmVzcG9uc2USNgoJd2F0Y2hsaXN0GAEgASgLMhgucGIuQ3'
+    'J5cHRvV2F0Y2hsaXN0UHJvdG9SCXdhdGNobGlzdA==');
+
+@$core.Deprecated('Use deleteWatchlistRequestDescriptor instead')
+const DeleteWatchlistRequest$json = {
+  '1': 'DeleteWatchlistRequest',
+  '2': [
+    {'1': 'watchlist_id', '3': 1, '4': 1, '5': 9, '10': 'watchlistId'},
+  ],
+};
+
+/// Descriptor for `DeleteWatchlistRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteWatchlistRequestDescriptor = $convert.base64Decode(
+    'ChZEZWxldGVXYXRjaGxpc3RSZXF1ZXN0EiEKDHdhdGNobGlzdF9pZBgBIAEoCVILd2F0Y2hsaX'
+    'N0SWQ=');
+
+@$core.Deprecated('Use deleteWatchlistResponseDescriptor instead')
+const DeleteWatchlistResponse$json = {
+  '1': 'DeleteWatchlistResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `DeleteWatchlistResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteWatchlistResponseDescriptor = $convert.base64Decode(
+    'ChdEZWxldGVXYXRjaGxpc3RSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNz');
 
 @$core.Deprecated('Use cryptoPaginationInfoDescriptor instead')
 const CryptoPaginationInfo$json = {

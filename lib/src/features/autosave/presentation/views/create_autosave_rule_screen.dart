@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
 
@@ -40,8 +41,9 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   @override
   void initState() {
     super.initState();
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
     context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-          userId: 'current_user',
+          userId: userId,
           accessToken: null,
         );
 
@@ -127,24 +129,12 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0A0A0A),
-        elevation: 0,
-        shadowColor: Colors.black.withValues(alpha: 0.05),
-        title: Text(
-          'Create Auto-Save Rule',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: BlocListener<AutoSaveCubit, AutoSaveState>(
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildCustomHeader(),
+            Expanded(
+              child: BlocListener<AutoSaveCubit, AutoSaveState>(
         listener: (context, state) {
           if (state is AutoSaveRuleCreated) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -335,6 +325,61 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             ),
           ),
         ),
+      ),
+    ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              width: 40.w,
+              height: 40.h,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Create Auto-Save Rule',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  'Set up automatic savings',
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[500],
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -947,12 +992,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         : null;
 
     // All validations passed - navigate to review screen
-    // First, get the account names for display
-    context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-      userId: 'current_user',
-      accessToken: null,
-    );
-
+    // Use already-loaded account data for display names
     final accountsState = context.read<AccountCardsSummaryCubit>().state;
     String sourceAccountName = 'Unknown Account';
     String destinationAccountName = 'Unknown Account';

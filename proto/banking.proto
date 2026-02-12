@@ -415,6 +415,26 @@ service BankingService {
             get: "/api/v1/transfers/fee"
         };
     }
+
+    // ===== CREDIT SCORE =====
+    rpc GetCreditScore(GetCreditScoreRequest) returns (CreditScoreResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/credit-score"
+        };
+    }
+
+    rpc GetCreditScoreHistory(GetCreditScoreHistoryRequest) returns (CreditScoreHistoryResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/credit-score/history"
+        };
+    }
+
+    rpc RefreshCreditScore(RefreshCreditScoreRequest) returns (CreditScoreResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/users/{user_id}/credit-score/refresh"
+            body: "*"
+        };
+    }
 }
 
 // =====================================================
@@ -1564,4 +1584,75 @@ message GetTransferFeeResponse {
 message FeeItem {
     string label = 1;                 // e.g., "Transfer Fee", "VAT", "Stamp Duty"
     int64 amount = 2;                 // Amount in minor units
+}
+
+// =====================================================
+// CREDIT SCORE MESSAGES
+// =====================================================
+
+message GetCreditScoreRequest {
+    string user_id = 1;
+}
+
+message CreditScoreResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    CreditScore credit_score = 4;
+}
+
+message CreditScore {
+    string id = 1;
+    string user_id = 2;
+    int32 score = 3;                          // 300-850 range
+    string rating = 4;                        // "excellent", "good", "fair", "poor"
+    string linked_account_id = 5;             // Which linked account was used
+    string bank_name = 6;                     // Bank name for display
+
+    // Score breakdown factors
+    double payment_history_score = 7;         // 0-100 (35% weight)
+    double income_stability_score = 8;        // 0-100 (25% weight)
+    double spending_discipline_score = 9;     // 0-100 (20% weight)
+    double account_age_score = 10;            // 0-100 (10% weight)
+    double balance_consistency_score = 11;    // 0-100 (10% weight)
+
+    // Context
+    int32 transactions_analyzed = 12;
+    int32 months_of_data = 13;
+    google.protobuf.Timestamp calculated_at = 14;
+    google.protobuf.Timestamp next_refresh_at = 15;
+
+    // Tips for improvement
+    repeated CreditScoreTip tips = 16;
+}
+
+message CreditScoreTip {
+    string title = 1;
+    string description = 2;
+    string category = 3;                      // "payment", "income", "spending", "balance"
+    int32 potential_impact = 4;               // Estimated score point improvement
+}
+
+message GetCreditScoreHistoryRequest {
+    string user_id = 1;
+    int32 months = 2;                         // Number of months of history (default: 12)
+}
+
+message CreditScoreHistoryResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated CreditScoreHistoryPoint history = 4;
+    int32 score_change = 5;                   // Change since first record
+}
+
+message CreditScoreHistoryPoint {
+    int32 score = 1;
+    string rating = 2;
+    google.protobuf.Timestamp date = 3;
+}
+
+message RefreshCreditScoreRequest {
+    string user_id = 1;
+    string linked_account_id = 2;             // Which linked account to analyze
 }

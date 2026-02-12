@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 import 'lock_funds.pbenum.dart';
 
 export 'lock_funds.pbenum.dart';
@@ -31,8 +31,8 @@ class LockFund extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.int? lockDurationDays,
     $core.double? interestRate,
-    $42.Timestamp? lockedAt,
-    $42.Timestamp? unlockAt,
+    $1.Timestamp? lockedAt,
+    $1.Timestamp? unlockAt,
     LockStatus? status,
     $core.bool? autoRenew,
     $core.String? goalName,
@@ -41,8 +41,8 @@ class LockFund extends $pb.GeneratedMessage {
     $core.double? accruedInterest,
     $core.String? paymentMethod,
     $core.String? transactionId,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
     $core.int? daysRemaining,
     $core.double? progressPercent,
     $core.double? totalValue,
@@ -140,8 +140,8 @@ class LockFund extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'currency')
     ..a<$core.int>(6, _omitFieldNames ? '' : 'lockDurationDays', $pb.PbFieldType.O3)
     ..a<$core.double>(7, _omitFieldNames ? '' : 'interestRate', $pb.PbFieldType.OD)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'lockedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'unlockAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'lockedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'unlockAt', subBuilder: $1.Timestamp.create)
     ..e<LockStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: LockStatus.LOCK_STATUS_UNSPECIFIED, valueOf: LockStatus.valueOf, enumValues: LockStatus.values)
     ..aOB(11, _omitFieldNames ? '' : 'autoRenew')
     ..aOS(12, _omitFieldNames ? '' : 'goalName')
@@ -150,8 +150,8 @@ class LockFund extends $pb.GeneratedMessage {
     ..a<$core.double>(15, _omitFieldNames ? '' : 'accruedInterest', $pb.PbFieldType.OD)
     ..aOS(16, _omitFieldNames ? '' : 'paymentMethod')
     ..aOS(17, _omitFieldNames ? '' : 'transactionId')
-    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(19, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(19, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(20, _omitFieldNames ? '' : 'daysRemaining', $pb.PbFieldType.O3)
     ..a<$core.double>(21, _omitFieldNames ? '' : 'progressPercent', $pb.PbFieldType.OD)
     ..a<$core.double>(22, _omitFieldNames ? '' : 'totalValue', $pb.PbFieldType.OD)
@@ -246,26 +246,26 @@ class LockFund extends $pb.GeneratedMessage {
   void clearInterestRate() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get lockedAt => $_getN(7);
+  $1.Timestamp get lockedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set lockedAt($42.Timestamp v) { setField(8, v); }
+  set lockedAt($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLockedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearLockedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureLockedAt() => $_ensure(7);
+  $1.Timestamp ensureLockedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get unlockAt => $_getN(8);
+  $1.Timestamp get unlockAt => $_getN(8);
   @$pb.TagNumber(9)
-  set unlockAt($42.Timestamp v) { setField(9, v); }
+  set unlockAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasUnlockAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearUnlockAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureUnlockAt() => $_ensure(8);
+  $1.Timestamp ensureUnlockAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
   LockStatus get status => $_getN(9);
@@ -340,26 +340,26 @@ class LockFund extends $pb.GeneratedMessage {
   void clearTransactionId() => clearField(17);
 
   @$pb.TagNumber(18)
-  $42.Timestamp get createdAt => $_getN(17);
+  $1.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
-  set createdAt($42.Timestamp v) { setField(18, v); }
+  set createdAt($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $42.Timestamp ensureCreatedAt() => $_ensure(17);
+  $1.Timestamp ensureCreatedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
-  $42.Timestamp get updatedAt => $_getN(18);
+  $1.Timestamp get updatedAt => $_getN(18);
   @$pb.TagNumber(19)
-  set updatedAt($42.Timestamp v) { setField(19, v); }
+  set updatedAt($1.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(18);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(18);
 
   /// Computed fields
   @$pb.TagNumber(20)
@@ -429,7 +429,7 @@ class LockTransaction extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? paymentMethod,
     $core.String? status,
-    $42.Timestamp? transactionDate,
+    $1.Timestamp? transactionDate,
     $core.String? description,
   }) {
     final $result = create();
@@ -478,7 +478,7 @@ class LockTransaction extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'currency')
     ..aOS(7, _omitFieldNames ? '' : 'paymentMethod')
     ..aOS(8, _omitFieldNames ? '' : 'status')
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
     ..aOS(10, _omitFieldNames ? '' : 'description')
     ..hasRequiredFields = false
   ;
@@ -577,15 +577,15 @@ class LockTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get transactionDate => $_getN(8);
+  $1.Timestamp get transactionDate => $_getN(8);
   @$pb.TagNumber(9)
-  set transactionDate($42.Timestamp v) { setField(9, v); }
+  set transactionDate($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasTransactionDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearTransactionDate() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureTransactionDate() => $_ensure(8);
+  $1.Timestamp ensureTransactionDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.String get description => $_getSZ(9);

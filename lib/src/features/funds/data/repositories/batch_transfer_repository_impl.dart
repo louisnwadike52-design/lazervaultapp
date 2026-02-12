@@ -1,11 +1,9 @@
-import 'package:fixnum/fixnum.dart';
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:lazervault/core/exceptions/server_exception.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/funds/data/datasources/batch_transfer_remote_data_source.dart';
-import 'package:lazervault/src/features/funds/data/models/batch_transfer_model.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_batch_transfer_repository.dart';
 
@@ -16,28 +14,21 @@ class BatchTransferRepositoryImpl implements IBatchTransferRepository {
 
   @override
   Future<Either<Failure, BatchTransferEntity>> initiateBatchTransfer({
-    required Int64 fromAccountId,
+    required String fromAccountId,
     required List<BatchTransferRecipient> recipients,
-    required String accessToken,
-    String? category,
-    String? reference,
+    required String transactionId,
+    required String verificationToken,
     DateTime? scheduledAt,
   }) async {
     try {
-      final remoteResponse = await remoteDataSource.initiateBatchTransfer(
+      final response = await remoteDataSource.initiateBatchTransfer(
         fromAccountId: fromAccountId,
         recipients: recipients,
-        accessToken: accessToken,
-        category: category,
-        reference: reference,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
         scheduledAt: scheduledAt,
       );
-      
-      // Convert the raw response to our model
-      final responseModel = InitiateBatchTransferResponseModel.fromProto(remoteResponse);
-      
-      // Return the model (which is a BatchTransferEntity) wrapped in Right
-      return Right(responseModel);
+      return Right(response);
     } on ServerException catch (e) {
       return Left(
           ServerFailure(message: e.message ?? 'Server Error', statusCode: 500));
@@ -50,70 +41,4 @@ class BatchTransferRepositoryImpl implements IBatchTransferRepository {
           message: 'Unexpected Error: ${e.toString()}', statusCode: 500));
     }
   }
-
-  @override
-  Future<Either<Failure, BatchTransferEntity>> getBatchTransferStatus({
-    required Int64 batchId,
-    required String accessToken,
-  }) async {
-    try {
-      final remoteResponse = await remoteDataSource.getBatchTransferStatus(
-        batchId: batchId,
-        accessToken: accessToken,
-      );
-      
-      // Convert the raw response to our model
-      final responseModel = InitiateBatchTransferResponseModel.fromProto(remoteResponse);
-      
-      // Return the model (which is a BatchTransferEntity) wrapped in Right
-      return Right(responseModel);
-    } on ServerException catch (e) {
-      return Left(
-          ServerFailure(message: e.message ?? 'Server Error', statusCode: 500));
-    } on GrpcError catch (e) {
-      return Left(ServerFailure(
-          message: 'gRPC Error: ${e.message ?? e.codeName}',
-          statusCode: e.code));
-    } catch (e) {
-      return Left(ServerFailure(
-          message: 'Unexpected Error: ${e.toString()}', statusCode: 500));
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<BatchTransferEntity>>> getBatchTransferHistory({
-    required String accessToken,
-    int limit = 20,
-    int offset = 0,
-  }) async {
-    try {
-      // Convert offset-based pagination to page-based pagination
-      final page = (offset ~/ limit) + 1;
-      final pageSize = limit;
-
-      final remoteResponse = await remoteDataSource.getBatchTransferHistory(
-        accessToken: accessToken,
-        page: page,
-        pageSize: pageSize,
-      );
-
-      // Convert the response to a list of entities
-      final List<BatchTransferEntity> history = remoteResponse.batches
-          .map((batch) => InitiateBatchTransferResponseModel.fromProto(batch))
-          .toList();
-
-      return Right(history);
-    } on ServerException catch (e) {
-      return Left(
-          ServerFailure(message: e.message ?? 'Server Error', statusCode: 500));
-    } on GrpcError catch (e) {
-      return Left(ServerFailure(
-          message: 'gRPC Error: ${e.message ?? e.codeName}',
-          statusCode: e.code));
-    } catch (e) {
-      return Left(ServerFailure(
-          message: 'Error fetching batch transfer history: ${e.toString()}',
-          statusCode: 500));
-    }
-  }
-} 
+}

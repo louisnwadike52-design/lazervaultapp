@@ -46,10 +46,10 @@ class _BottomNavMenuState extends State<BottomNavMenu>
     return MotionTabBar(
       controller: _motionTabBarController,
       initialSelectedTab: "Dashboard",
-      labels: const ["Dashboard", "Statistics", "AI Chat", "Lifestyle"],
+      labels: const ["Dashboard", "AI Budgeting", "AI Chat", "Lifestyle"],
       icons: const [
         Icons.dashboard_rounded,
-        Icons.analytics_rounded,
+        Icons.account_balance_wallet_rounded,
         Icons.smart_toy_rounded,
         Icons.party_mode
       ],

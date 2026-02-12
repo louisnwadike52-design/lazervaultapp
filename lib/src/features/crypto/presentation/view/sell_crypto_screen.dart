@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
+import '../../cubit/crypto_cubit.dart';
+import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import 'crypto_confirmation_screen.dart';
 
@@ -27,52 +31,6 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   bool _isAmountInCrypto = true;
   bool _isLoading = false;
 
-  // Mock holdings data - in real app this would come from the cubit
-  final List<CryptoHolding> _mockHoldings = [
-    CryptoHolding(
-      id: 'holding_1',
-      cryptoId: 'bitcoin',
-      cryptoName: 'Bitcoin',
-      cryptoSymbol: 'BTC',
-      quantity: 0.125,
-      averagePrice: 45000.0,
-      currentPrice: 67000.0,
-      totalValue: 8375.0,
-      totalGainLoss: 2750.0,
-      totalGainLossPercentage: 48.89,
-      purchaseDate: DateTime.now().subtract(const Duration(days: 30)),
-      lastUpdated: DateTime.now(),
-    ),
-    CryptoHolding(
-      id: 'holding_2',
-      cryptoId: 'ethereum',
-      cryptoName: 'Ethereum',
-      cryptoSymbol: 'ETH',
-      quantity: 2.5,
-      averagePrice: 2800.0,
-      currentPrice: 3100.0,
-      totalValue: 7750.0,
-      totalGainLoss: 750.0,
-      totalGainLossPercentage: 10.71,
-      purchaseDate: DateTime.now().subtract(const Duration(days: 45)),
-      lastUpdated: DateTime.now(),
-    ),
-    CryptoHolding(
-      id: 'holding_3',
-      cryptoId: 'solana',
-      cryptoName: 'Solana',
-      cryptoSymbol: 'SOL',
-      quantity: 45.0,
-      averagePrice: 120.0,
-      currentPrice: 157.0,
-      totalValue: 7065.0,
-      totalGainLoss: 1665.0,
-      totalGainLossPercentage: 30.83,
-      purchaseDate: DateTime.now().subtract(const Duration(days: 60)),
-      lastUpdated: DateTime.now(),
-    ),
-  ];
-  
   @override
   void initState() {
     super.initState();
@@ -120,7 +78,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     return _selectedHolding != null ? amount / _selectedHolding!.currentPrice : 0.0;
   }
 
-  double get _gbpAmount {
+  double get _fiatAmount {
     if (_amountController.text.isEmpty || _selectedHolding == null) return 0.0;
     final amount = double.tryParse(_amountController.text) ?? 0.0;
     if (_isAmountInCrypto) {
@@ -137,16 +95,16 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -199,7 +157,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -257,8 +215,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -298,7 +256,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             child: Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF0A0E27),
+                color: const Color(0xFF0A0A0A),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -356,7 +314,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '£${_selectedHolding!.currentPrice.toStringAsFixed(2)}',
+                          '${CurrencySymbols.currentSymbol}${_selectedHolding!.currentPrice.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -425,8 +383,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -495,7 +453,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          _isAmountInCrypto ? 'GBP' : 'Crypto',
+                          _isAmountInCrypto ? CurrencySymbols.currentCurrency : 'Crypto',
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
                             color: Colors.red,
@@ -512,7 +470,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF0A0E27),
+              color: const Color(0xFF0A0A0A),
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
           BoxShadow(
@@ -529,7 +487,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 Row(
                   children: [
                     Text(
-                      _isAmountInCrypto ? (_selectedHolding?.cryptoSymbol.toUpperCase() ?? '') : '£',
+                      _isAmountInCrypto ? (_selectedHolding?.cryptoSymbol.toUpperCase() ?? '') : CurrencySymbols.currentSymbol,
                       style: GoogleFonts.inter(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
@@ -564,7 +522,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                   SizedBox(height: 8.h),
                   Text(
                     _isAmountInCrypto 
-                      ? '≈ £${_gbpAmount.toStringAsFixed(2)}'
+                      ? '≈ ${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'
                       : '≈ ${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
@@ -657,10 +615,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   }
 
   Widget _buildOrderSummary() {
-    final fee = _gbpAmount * 0.015; // 1.5% fee
+    final fee = _fiatAmount * 0.015; // 1.5% fee
     final networkFee = fee * 0.3;
     final tradingFee = fee * 0.7;
-    final netProceeds = _gbpAmount - fee;
+    final netProceeds = _fiatAmount - fee;
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -668,7 +626,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         gradient: LinearGradient(
           colors: [
             Colors.red.withValues(alpha: 0.1),
-            const Color(0xFF1E2746),
+            const Color(0xFF1F1F1F),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -705,11 +663,11 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           SizedBox(height: 16.h),
           _buildSummaryRow('You sell', '${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Market value', '£${_gbpAmount.toStringAsFixed(2)}'),
+          _buildSummaryRow('Market value', '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Network fee', '£${networkFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Network fee', '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Trading fee', '£${tradingFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Trading fee', '${CurrencySymbols.currentSymbol}${tradingFee.toStringAsFixed(2)}'),
           SizedBox(height: 12.h),
           Container(
             height: 1.h,
@@ -724,7 +682,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             ),
           ),
           SizedBox(height: 12.h),
-          _buildSummaryRow('You receive', '£${netProceeds.toStringAsFixed(2)}', isTotal: true),
+          _buildSummaryRow('You receive', '${CurrencySymbols.currentSymbol}${netProceeds.toStringAsFixed(2)}', isTotal: true),
         ],
       ),
     );
@@ -760,8 +718,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -862,7 +820,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              'Selling cryptocurrency will convert your holdings to GBP. This action cannot be undone. Market prices are volatile and may change rapidly.',
+              'Selling cryptocurrency will convert your holdings to ${CurrencySymbols.currentCurrency}. This action cannot be undone. Market prices are volatile and may change rapidly.',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 color: Colors.white.withValues(alpha: 0.8),
@@ -957,6 +915,9 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   }
 
   void _showHoldingsBottomSheet() {
+    final cubitState = context.read<CryptoCubit>().state;
+    final holdings = cubitState is CryptosLoaded ? cubitState.holdings : <CryptoHolding>[];
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -968,8 +929,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
             ],
           ),
           borderRadius: BorderRadius.only(
@@ -1019,7 +980,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                   hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
                   prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
                   filled: true,
-                  fillColor: const Color(0xFF1E2746),
+                  fillColor: const Color(0xFF1F1F1F),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide.none,
@@ -1031,9 +992,9 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             Expanded(
               child: ListView.builder(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
-                itemCount: _mockHoldings.length,
+                itemCount: holdings.length,
                 itemBuilder: (context, index) {
-                  final holding = _mockHoldings[index];
+                  final holding = holdings[index];
                   return _buildHoldingItem(holding);
                 },
               ),
@@ -1057,7 +1018,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2746),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
@@ -1105,7 +1066,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '£${holding.totalValue.toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${holding.totalValue.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -1156,8 +1117,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       });
 
       // Create transaction details
-      final fee = _gbpAmount * 0.015; // 1.5% fee
-      final netProceeds = _gbpAmount - fee;
+      final fee = _fiatAmount * 0.015; // 1.5% fee
+      final netProceeds = _fiatAmount - fee;
       
       final transactionDetails = CryptoTransactionDetails(
         type: CryptoTransactionType.sell,
@@ -1165,7 +1126,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         cryptoSymbol: _selectedHolding!.cryptoSymbol,
         cryptoAmount: _cryptoAmount.toStringAsFixed(6),
         pricePerUnit: _selectedHolding!.currentPrice,
-        gbpAmount: netProceeds,
+        fiatAmount: netProceeds,
         networkFee: fee * 0.3, // 30% of total fee for network
         tradingFee: fee * 0.7, // 70% of total fee for LazerVault
         totalAmount: netProceeds,

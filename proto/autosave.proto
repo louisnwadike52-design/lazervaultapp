@@ -265,6 +265,7 @@ message TriggerAutoSaveRequest {
 
     string rule_id = 1;
     double custom_amount = 2;  // Optional: override calculated amount
+    string transaction_pin_token = 15;  // Pre-validated PIN token for financial security
 }
 
 // Manual trigger auto-save response

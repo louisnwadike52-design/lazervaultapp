@@ -21,11 +21,15 @@ abstract class CryptoRepository {
     required String cryptoId,
     required double quantity,
     required double price,
+    required String transactionPin,
+    String? fiatCurrency,
   });
   Future<CryptoTransaction> sellCrypto({
     required String cryptoId,
     required double quantity,
     required double price,
+    required String transactionPin,
+    String? fiatCurrency,
   });
   Future<List<CryptoTransaction>> getTransactions();
   Future<void> toggleFavorite(String cryptoId);

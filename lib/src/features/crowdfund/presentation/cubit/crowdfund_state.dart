@@ -29,15 +29,17 @@ class CrowdfundLoaded extends CrowdfundState {
   final List<Crowdfund> crowdfunds;
   final int totalCount;
   final int currentPage;
+  final bool isStale;
 
   const CrowdfundLoaded({
     required this.crowdfunds,
     this.totalCount = 0,
     this.currentPage = 1,
+    this.isStale = false,
   });
 
   @override
-  List<Object?> get props => [crowdfunds, totalCount, currentPage];
+  List<Object?> get props => [crowdfunds, totalCount, currentPage, isStale];
 }
 
 /// Single crowdfund details loaded with donations
@@ -45,15 +47,17 @@ class CrowdfundDetailsLoaded extends CrowdfundState {
   final Crowdfund crowdfund;
   final List<CrowdfundDonation> donations;
   final CrowdfundStatistics? statistics;
+  final bool isStale;
 
   const CrowdfundDetailsLoaded({
     required this.crowdfund,
     required this.donations,
     this.statistics,
+    this.isStale = false,
   });
 
   @override
-  List<Object?> get props => [crowdfund, donations, statistics];
+  List<Object?> get props => [crowdfund, donations, statistics, isStale];
 }
 
 /// Crowdfund created successfully
@@ -229,3 +233,4 @@ class CrowdfundReportShareError extends CrowdfundState {
   @override
   List<Object?> get props => [message, platform];
 }
+

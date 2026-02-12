@@ -77,6 +77,26 @@ class FinancialProductsServiceClient extends $grpc.Client {
       '/financialproducts.FinancialProductsService/GetInsurancePlans',
       ($0.GetInsurancePlansRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetInsurancePlansResponse.fromBuffer(value));
+  static final _$getInsuranceMarketplaceProducts = $grpc.ClientMethod<$0.GetInsuranceMarketplaceProductsRequest, $0.GetInsuranceMarketplaceProductsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceMarketplaceProducts',
+      ($0.GetInsuranceMarketplaceProductsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsuranceMarketplaceProductsResponse.fromBuffer(value));
+  static final _$getInsuranceMarketplaceCategories = $grpc.ClientMethod<$0.GetInsuranceMarketplaceCategoriesRequest, $0.GetInsuranceMarketplaceCategoriesResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceMarketplaceCategories',
+      ($0.GetInsuranceMarketplaceCategoriesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsuranceMarketplaceCategoriesResponse.fromBuffer(value));
+  static final _$getInsuranceQuote = $grpc.ClientMethod<$0.GetInsuranceQuoteRequest, $0.GetInsuranceQuoteResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceQuote',
+      ($0.GetInsuranceQuoteRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsuranceQuoteResponse.fromBuffer(value));
+  static final _$purchaseMarketplaceInsurance = $grpc.ClientMethod<$0.PurchaseMarketplaceInsuranceRequest, $0.PurchaseMarketplaceInsuranceResponse>(
+      '/financialproducts.FinancialProductsService/PurchaseMarketplaceInsurance',
+      ($0.PurchaseMarketplaceInsuranceRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.PurchaseMarketplaceInsuranceResponse.fromBuffer(value));
+  static final _$getInsurancePurchaseStatus = $grpc.ClientMethod<$0.GetInsurancePurchaseStatusRequest, $0.GetInsurancePurchaseStatusResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePurchaseStatus',
+      ($0.GetInsurancePurchaseStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsurancePurchaseStatusResponse.fromBuffer(value));
   static final _$createCrowdfund = $grpc.ClientMethod<$0.CreateCrowdfundRequest, $0.CreateCrowdfundResponse>(
       '/financialproducts.FinancialProductsService/CreateCrowdfund',
       ($0.CreateCrowdfundRequest value) => value.writeToBuffer(),
@@ -165,6 +185,42 @@ class FinancialProductsServiceClient extends $grpc.Client {
       '/financialproducts.FinancialProductsService/GetNotificationHistory',
       ($0.GetNotificationHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetNotificationHistoryResponse.fromBuffer(value));
+  static final _$getCrowdfundLeaderboard = $grpc.ClientMethod<$0.GetCrowdfundLeaderboardRequest, $0.GetCrowdfundLeaderboardResponse>(
+      '/financialproducts.FinancialProductsService/GetCrowdfundLeaderboard',
+      ($0.GetCrowdfundLeaderboardRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetCrowdfundLeaderboardResponse.fromBuffer(value));
+  static final _$createAutoSaveRule = $grpc.ClientMethod<$0.CreateAutoSaveRuleRequest2, $0.CreateAutoSaveRuleResponse2>(
+      '/financialproducts.FinancialProductsService/CreateAutoSaveRule',
+      ($0.CreateAutoSaveRuleRequest2 value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreateAutoSaveRuleResponse2.fromBuffer(value));
+  static final _$getAutoSaveRules = $grpc.ClientMethod<$0.GetAutoSaveRulesRequest2, $0.GetAutoSaveRulesResponse2>(
+      '/financialproducts.FinancialProductsService/GetAutoSaveRules',
+      ($0.GetAutoSaveRulesRequest2 value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAutoSaveRulesResponse2.fromBuffer(value));
+  static final _$updateAutoSaveRule = $grpc.ClientMethod<$0.UpdateAutoSaveRuleRequest2, $0.UpdateAutoSaveRuleResponse2>(
+      '/financialproducts.FinancialProductsService/UpdateAutoSaveRule',
+      ($0.UpdateAutoSaveRuleRequest2 value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateAutoSaveRuleResponse2.fromBuffer(value));
+  static final _$toggleAutoSaveRule = $grpc.ClientMethod<$0.ToggleAutoSaveRuleRequest2, $0.ToggleAutoSaveRuleResponse2>(
+      '/financialproducts.FinancialProductsService/ToggleAutoSaveRule',
+      ($0.ToggleAutoSaveRuleRequest2 value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ToggleAutoSaveRuleResponse2.fromBuffer(value));
+  static final _$deleteAutoSaveRule = $grpc.ClientMethod<$0.DeleteAutoSaveRuleRequest2, $0.DeleteAutoSaveRuleResponse2>(
+      '/financialproducts.FinancialProductsService/DeleteAutoSaveRule',
+      ($0.DeleteAutoSaveRuleRequest2 value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.DeleteAutoSaveRuleResponse2.fromBuffer(value));
+  static final _$getAutoSaveTransactions = $grpc.ClientMethod<$0.GetAutoSaveTransactionsRequest2, $0.GetAutoSaveTransactionsResponse2>(
+      '/financialproducts.FinancialProductsService/GetAutoSaveTransactions',
+      ($0.GetAutoSaveTransactionsRequest2 value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAutoSaveTransactionsResponse2.fromBuffer(value));
+  static final _$getAutoSaveStatistics = $grpc.ClientMethod<$0.GetAutoSaveStatisticsRequest2, $0.GetAutoSaveStatisticsResponse2>(
+      '/financialproducts.FinancialProductsService/GetAutoSaveStatistics',
+      ($0.GetAutoSaveStatisticsRequest2 value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAutoSaveStatisticsResponse2.fromBuffer(value));
+  static final _$triggerAutoSave = $grpc.ClientMethod<$0.TriggerAutoSaveRequest2, $0.TriggerAutoSaveResponse2>(
+      '/financialproducts.FinancialProductsService/TriggerAutoSave',
+      ($0.TriggerAutoSaveRequest2 value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.TriggerAutoSaveResponse2.fromBuffer(value));
 
   FinancialProductsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -226,6 +282,26 @@ class FinancialProductsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetInsurancePlansResponse> getInsurancePlans($0.GetInsurancePlansRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInsurancePlans, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsuranceMarketplaceProductsResponse> getInsuranceMarketplaceProducts($0.GetInsuranceMarketplaceProductsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsuranceMarketplaceProducts, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsuranceMarketplaceCategoriesResponse> getInsuranceMarketplaceCategories($0.GetInsuranceMarketplaceCategoriesRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsuranceMarketplaceCategories, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsuranceQuoteResponse> getInsuranceQuote($0.GetInsuranceQuoteRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsuranceQuote, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.PurchaseMarketplaceInsuranceResponse> purchaseMarketplaceInsurance($0.PurchaseMarketplaceInsuranceRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$purchaseMarketplaceInsurance, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsurancePurchaseStatusResponse> getInsurancePurchaseStatus($0.GetInsurancePurchaseStatusRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsurancePurchaseStatus, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.CreateCrowdfundResponse> createCrowdfund($0.CreateCrowdfundRequest request, {$grpc.CallOptions? options}) {
@@ -314,6 +390,42 @@ class FinancialProductsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetNotificationHistoryResponse> getNotificationHistory($0.GetNotificationHistoryRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getNotificationHistory, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard($0.GetCrowdfundLeaderboardRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCrowdfundLeaderboard, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateAutoSaveRuleResponse2> createAutoSaveRule($0.CreateAutoSaveRuleRequest2 request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createAutoSaveRule, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAutoSaveRulesResponse2> getAutoSaveRules($0.GetAutoSaveRulesRequest2 request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAutoSaveRules, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateAutoSaveRuleResponse2> updateAutoSaveRule($0.UpdateAutoSaveRuleRequest2 request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateAutoSaveRule, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule($0.ToggleAutoSaveRuleRequest2 request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$toggleAutoSaveRule, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule($0.DeleteAutoSaveRuleRequest2 request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deleteAutoSaveRule, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAutoSaveTransactionsResponse2> getAutoSaveTransactions($0.GetAutoSaveTransactionsRequest2 request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAutoSaveTransactions, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAutoSaveStatisticsResponse2> getAutoSaveStatistics($0.GetAutoSaveStatisticsRequest2 request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAutoSaveStatistics, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.TriggerAutoSaveResponse2> triggerAutoSave($0.TriggerAutoSaveRequest2 request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$triggerAutoSave, request, options: options);
   }
 }
 
@@ -420,6 +532,41 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetInsurancePlansRequest.fromBuffer(value),
         ($0.GetInsurancePlansResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceMarketplaceProductsRequest, $0.GetInsuranceMarketplaceProductsResponse>(
+        'GetInsuranceMarketplaceProducts',
+        getInsuranceMarketplaceProducts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsuranceMarketplaceProductsRequest.fromBuffer(value),
+        ($0.GetInsuranceMarketplaceProductsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceMarketplaceCategoriesRequest, $0.GetInsuranceMarketplaceCategoriesResponse>(
+        'GetInsuranceMarketplaceCategories',
+        getInsuranceMarketplaceCategories_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsuranceMarketplaceCategoriesRequest.fromBuffer(value),
+        ($0.GetInsuranceMarketplaceCategoriesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceQuoteRequest, $0.GetInsuranceQuoteResponse>(
+        'GetInsuranceQuote',
+        getInsuranceQuote_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsuranceQuoteRequest.fromBuffer(value),
+        ($0.GetInsuranceQuoteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PurchaseMarketplaceInsuranceRequest, $0.PurchaseMarketplaceInsuranceResponse>(
+        'PurchaseMarketplaceInsurance',
+        purchaseMarketplaceInsurance_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.PurchaseMarketplaceInsuranceRequest.fromBuffer(value),
+        ($0.PurchaseMarketplaceInsuranceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePurchaseStatusRequest, $0.GetInsurancePurchaseStatusResponse>(
+        'GetInsurancePurchaseStatus',
+        getInsurancePurchaseStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsurancePurchaseStatusRequest.fromBuffer(value),
+        ($0.GetInsurancePurchaseStatusResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CreateCrowdfundRequest, $0.CreateCrowdfundResponse>(
         'CreateCrowdfund',
         createCrowdfund_Pre,
@@ -574,6 +721,69 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetNotificationHistoryRequest.fromBuffer(value),
         ($0.GetNotificationHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundLeaderboardRequest, $0.GetCrowdfundLeaderboardResponse>(
+        'GetCrowdfundLeaderboard',
+        getCrowdfundLeaderboard_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetCrowdfundLeaderboardRequest.fromBuffer(value),
+        ($0.GetCrowdfundLeaderboardResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateAutoSaveRuleRequest2, $0.CreateAutoSaveRuleResponse2>(
+        'CreateAutoSaveRule',
+        createAutoSaveRule_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CreateAutoSaveRuleRequest2.fromBuffer(value),
+        ($0.CreateAutoSaveRuleResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAutoSaveRulesRequest2, $0.GetAutoSaveRulesResponse2>(
+        'GetAutoSaveRules',
+        getAutoSaveRules_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetAutoSaveRulesRequest2.fromBuffer(value),
+        ($0.GetAutoSaveRulesResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateAutoSaveRuleRequest2, $0.UpdateAutoSaveRuleResponse2>(
+        'UpdateAutoSaveRule',
+        updateAutoSaveRule_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UpdateAutoSaveRuleRequest2.fromBuffer(value),
+        ($0.UpdateAutoSaveRuleResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ToggleAutoSaveRuleRequest2, $0.ToggleAutoSaveRuleResponse2>(
+        'ToggleAutoSaveRule',
+        toggleAutoSaveRule_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ToggleAutoSaveRuleRequest2.fromBuffer(value),
+        ($0.ToggleAutoSaveRuleResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteAutoSaveRuleRequest2, $0.DeleteAutoSaveRuleResponse2>(
+        'DeleteAutoSaveRule',
+        deleteAutoSaveRule_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.DeleteAutoSaveRuleRequest2.fromBuffer(value),
+        ($0.DeleteAutoSaveRuleResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAutoSaveTransactionsRequest2, $0.GetAutoSaveTransactionsResponse2>(
+        'GetAutoSaveTransactions',
+        getAutoSaveTransactions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetAutoSaveTransactionsRequest2.fromBuffer(value),
+        ($0.GetAutoSaveTransactionsResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAutoSaveStatisticsRequest2, $0.GetAutoSaveStatisticsResponse2>(
+        'GetAutoSaveStatistics',
+        getAutoSaveStatistics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetAutoSaveStatisticsRequest2.fromBuffer(value),
+        ($0.GetAutoSaveStatisticsResponse2 value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TriggerAutoSaveRequest2, $0.TriggerAutoSaveResponse2>(
+        'TriggerAutoSave',
+        triggerAutoSave_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.TriggerAutoSaveRequest2.fromBuffer(value),
+        ($0.TriggerAutoSaveResponse2 value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateGroupAccountResponse> createGroupAccount_Pre($grpc.ServiceCall call, $async.Future<$0.CreateGroupAccountRequest> request) async {
@@ -630,6 +840,26 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetInsurancePlansResponse> getInsurancePlans_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsurancePlansRequest> request) async {
     return getInsurancePlans(call, await request);
+  }
+
+  $async.Future<$0.GetInsuranceMarketplaceProductsResponse> getInsuranceMarketplaceProducts_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsuranceMarketplaceProductsRequest> request) async {
+    return getInsuranceMarketplaceProducts(call, await request);
+  }
+
+  $async.Future<$0.GetInsuranceMarketplaceCategoriesResponse> getInsuranceMarketplaceCategories_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsuranceMarketplaceCategoriesRequest> request) async {
+    return getInsuranceMarketplaceCategories(call, await request);
+  }
+
+  $async.Future<$0.GetInsuranceQuoteResponse> getInsuranceQuote_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsuranceQuoteRequest> request) async {
+    return getInsuranceQuote(call, await request);
+  }
+
+  $async.Future<$0.PurchaseMarketplaceInsuranceResponse> purchaseMarketplaceInsurance_Pre($grpc.ServiceCall call, $async.Future<$0.PurchaseMarketplaceInsuranceRequest> request) async {
+    return purchaseMarketplaceInsurance(call, await request);
+  }
+
+  $async.Future<$0.GetInsurancePurchaseStatusResponse> getInsurancePurchaseStatus_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsurancePurchaseStatusRequest> request) async {
+    return getInsurancePurchaseStatus(call, await request);
   }
 
   $async.Future<$0.CreateCrowdfundResponse> createCrowdfund_Pre($grpc.ServiceCall call, $async.Future<$0.CreateCrowdfundRequest> request) async {
@@ -720,6 +950,42 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
     return getNotificationHistory(call, await request);
   }
 
+  $async.Future<$0.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard_Pre($grpc.ServiceCall call, $async.Future<$0.GetCrowdfundLeaderboardRequest> request) async {
+    return getCrowdfundLeaderboard(call, await request);
+  }
+
+  $async.Future<$0.CreateAutoSaveRuleResponse2> createAutoSaveRule_Pre($grpc.ServiceCall call, $async.Future<$0.CreateAutoSaveRuleRequest2> request) async {
+    return createAutoSaveRule(call, await request);
+  }
+
+  $async.Future<$0.GetAutoSaveRulesResponse2> getAutoSaveRules_Pre($grpc.ServiceCall call, $async.Future<$0.GetAutoSaveRulesRequest2> request) async {
+    return getAutoSaveRules(call, await request);
+  }
+
+  $async.Future<$0.UpdateAutoSaveRuleResponse2> updateAutoSaveRule_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateAutoSaveRuleRequest2> request) async {
+    return updateAutoSaveRule(call, await request);
+  }
+
+  $async.Future<$0.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule_Pre($grpc.ServiceCall call, $async.Future<$0.ToggleAutoSaveRuleRequest2> request) async {
+    return toggleAutoSaveRule(call, await request);
+  }
+
+  $async.Future<$0.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule_Pre($grpc.ServiceCall call, $async.Future<$0.DeleteAutoSaveRuleRequest2> request) async {
+    return deleteAutoSaveRule(call, await request);
+  }
+
+  $async.Future<$0.GetAutoSaveTransactionsResponse2> getAutoSaveTransactions_Pre($grpc.ServiceCall call, $async.Future<$0.GetAutoSaveTransactionsRequest2> request) async {
+    return getAutoSaveTransactions(call, await request);
+  }
+
+  $async.Future<$0.GetAutoSaveStatisticsResponse2> getAutoSaveStatistics_Pre($grpc.ServiceCall call, $async.Future<$0.GetAutoSaveStatisticsRequest2> request) async {
+    return getAutoSaveStatistics(call, await request);
+  }
+
+  $async.Future<$0.TriggerAutoSaveResponse2> triggerAutoSave_Pre($grpc.ServiceCall call, $async.Future<$0.TriggerAutoSaveRequest2> request) async {
+    return triggerAutoSave(call, await request);
+  }
+
   $async.Future<$0.CreateGroupAccountResponse> createGroupAccount($grpc.ServiceCall call, $0.CreateGroupAccountRequest request);
   $async.Future<$0.GetGroupAccountsResponse> getGroupAccounts($grpc.ServiceCall call, $0.GetGroupAccountsRequest request);
   $async.Future<$0.GetGroupAccountResponse> getGroupAccount($grpc.ServiceCall call, $0.GetGroupAccountRequest request);
@@ -734,6 +1000,11 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
   $async.Future<$0.MakeInsuranceClaimResponse> makeInsuranceClaim($grpc.ServiceCall call, $0.MakeInsuranceClaimRequest request);
   $async.Future<$0.CancelInsuranceResponse> cancelInsurance($grpc.ServiceCall call, $0.CancelInsuranceRequest request);
   $async.Future<$0.GetInsurancePlansResponse> getInsurancePlans($grpc.ServiceCall call, $0.GetInsurancePlansRequest request);
+  $async.Future<$0.GetInsuranceMarketplaceProductsResponse> getInsuranceMarketplaceProducts($grpc.ServiceCall call, $0.GetInsuranceMarketplaceProductsRequest request);
+  $async.Future<$0.GetInsuranceMarketplaceCategoriesResponse> getInsuranceMarketplaceCategories($grpc.ServiceCall call, $0.GetInsuranceMarketplaceCategoriesRequest request);
+  $async.Future<$0.GetInsuranceQuoteResponse> getInsuranceQuote($grpc.ServiceCall call, $0.GetInsuranceQuoteRequest request);
+  $async.Future<$0.PurchaseMarketplaceInsuranceResponse> purchaseMarketplaceInsurance($grpc.ServiceCall call, $0.PurchaseMarketplaceInsuranceRequest request);
+  $async.Future<$0.GetInsurancePurchaseStatusResponse> getInsurancePurchaseStatus($grpc.ServiceCall call, $0.GetInsurancePurchaseStatusRequest request);
   $async.Future<$0.CreateCrowdfundResponse> createCrowdfund($grpc.ServiceCall call, $0.CreateCrowdfundRequest request);
   $async.Future<$0.GetCrowdfundsResponse> getCrowdfunds($grpc.ServiceCall call, $0.GetCrowdfundsRequest request);
   $async.Future<$0.GetCrowdfundResponse> getCrowdfund($grpc.ServiceCall call, $0.GetCrowdfundRequest request);
@@ -756,4 +1027,13 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
   $async.Future<$0.GetTelegramBotInfoResponse> getTelegramBotInfo($grpc.ServiceCall call, $0.GetTelegramBotInfoRequest request);
   $async.Future<$0.VerifyTelegramChannelResponse> verifyTelegramChannel($grpc.ServiceCall call, $0.VerifyTelegramChannelRequest request);
   $async.Future<$0.GetNotificationHistoryResponse> getNotificationHistory($grpc.ServiceCall call, $0.GetNotificationHistoryRequest request);
+  $async.Future<$0.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard($grpc.ServiceCall call, $0.GetCrowdfundLeaderboardRequest request);
+  $async.Future<$0.CreateAutoSaveRuleResponse2> createAutoSaveRule($grpc.ServiceCall call, $0.CreateAutoSaveRuleRequest2 request);
+  $async.Future<$0.GetAutoSaveRulesResponse2> getAutoSaveRules($grpc.ServiceCall call, $0.GetAutoSaveRulesRequest2 request);
+  $async.Future<$0.UpdateAutoSaveRuleResponse2> updateAutoSaveRule($grpc.ServiceCall call, $0.UpdateAutoSaveRuleRequest2 request);
+  $async.Future<$0.ToggleAutoSaveRuleResponse2> toggleAutoSaveRule($grpc.ServiceCall call, $0.ToggleAutoSaveRuleRequest2 request);
+  $async.Future<$0.DeleteAutoSaveRuleResponse2> deleteAutoSaveRule($grpc.ServiceCall call, $0.DeleteAutoSaveRuleRequest2 request);
+  $async.Future<$0.GetAutoSaveTransactionsResponse2> getAutoSaveTransactions($grpc.ServiceCall call, $0.GetAutoSaveTransactionsRequest2 request);
+  $async.Future<$0.GetAutoSaveStatisticsResponse2> getAutoSaveStatistics($grpc.ServiceCall call, $0.GetAutoSaveStatisticsRequest2 request);
+  $async.Future<$0.TriggerAutoSaveResponse2> triggerAutoSave($grpc.ServiceCall call, $0.TriggerAutoSaveRequest2 request);
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Balance Trend Chart Widget
 /// Shows balance trends over time with change indicators
@@ -81,7 +82,7 @@ class BalanceTrendChart extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '\$${balance.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmount(balance),
                       style: TextStyle(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.bold,
@@ -178,7 +179,7 @@ class BalanceTrendChart extends StatelessWidget {
           ),
         ),
         Text(
-          '${isPositive ? '+' : ''}\$${value.toStringAsFixed(2)}',
+          '${isPositive ? '+' : ''}${CurrencySymbols.formatAmount(value)}',
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,

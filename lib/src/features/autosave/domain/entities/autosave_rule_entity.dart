@@ -74,7 +74,7 @@ class AutoSaveRuleEntity extends Equatable {
     required this.sourceAccountId,
     required this.destinationAccountId,
     required this.status,
-    this.currency = 'USD',
+    this.currency = 'NGN',
     this.frequency,
     this.scheduleTime,
     this.scheduleDay,
@@ -214,7 +214,7 @@ class AutoSaveTransactionEntity extends Equatable {
     required this.sourceAccountId,
     required this.destinationAccountId,
     required this.amount,
-    this.currency = 'USD',
+    this.currency = 'NGN',
     required this.triggerType,
     required this.triggerReason,
     required this.success,
@@ -262,7 +262,7 @@ class AutoSaveStatisticsEntity extends Equatable {
     required this.totalTransactions,
     required this.averageSaveAmount,
     this.mostActiveRule,
-    this.currency = 'USD',
+    this.currency = 'NGN',
   });
 
   @override

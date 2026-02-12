@@ -13,7 +13,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 class PortfolioAsset extends $pb.GeneratedMessage {
   factory PortfolioAsset({
@@ -28,7 +28,7 @@ class PortfolioAsset extends $pb.GeneratedMessage {
     $core.double? gainLoss,
     $core.double? gainLossPercent,
     $core.String? currency,
-    $42.Timestamp? lastUpdated,
+    $1.Timestamp? lastUpdated,
     $core.String? iconUrl,
   }) {
     final $result = create();
@@ -89,7 +89,7 @@ class PortfolioAsset extends $pb.GeneratedMessage {
     ..a<$core.double>(9, _omitFieldNames ? '' : 'gainLoss', $pb.PbFieldType.OD)
     ..a<$core.double>(10, _omitFieldNames ? '' : 'gainLossPercent', $pb.PbFieldType.OD)
     ..aOS(11, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
     ..aOS(13, _omitFieldNames ? '' : 'iconUrl')
     ..hasRequiredFields = false
   ;
@@ -215,15 +215,15 @@ class PortfolioAsset extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(11);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get lastUpdated => $_getN(11);
+  $1.Timestamp get lastUpdated => $_getN(11);
   @$pb.TagNumber(12)
-  set lastUpdated($42.Timestamp v) { setField(12, v); }
+  set lastUpdated($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasLastUpdated() => $_has(11);
   @$pb.TagNumber(12)
   void clearLastUpdated() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureLastUpdated() => $_ensure(11);
+  $1.Timestamp ensureLastUpdated() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get iconUrl => $_getSZ(12);
@@ -244,7 +244,7 @@ class PortfolioSummary extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.Map<$core.String, $core.double>? assetsByType,
     $core.int? assetCount,
-    $42.Timestamp? lastUpdated,
+    $1.Timestamp? lastUpdated,
   }) {
     final $result = create();
     if (totalValue != null) {
@@ -285,7 +285,7 @@ class PortfolioSummary extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'currency')
     ..m<$core.String, $core.double>(6, _omitFieldNames ? '' : 'assetsByType', entryClassName: 'PortfolioSummary.AssetsByTypeEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
     ..a<$core.int>(7, _omitFieldNames ? '' : 'assetCount', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -368,15 +368,15 @@ class PortfolioSummary extends $pb.GeneratedMessage {
   void clearAssetCount() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get lastUpdated => $_getN(7);
+  $1.Timestamp get lastUpdated => $_getN(7);
   @$pb.TagNumber(8)
-  set lastUpdated($42.Timestamp v) { setField(8, v); }
+  set lastUpdated($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLastUpdated() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastUpdated() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureLastUpdated() => $_ensure(7);
+  $1.Timestamp ensureLastUpdated() => $_ensure(7);
 }
 
 /// Get Complete Portfolio Request/Response
@@ -690,7 +690,7 @@ class GetPortfolioHistoryRequest extends $pb.GeneratedMessage {
 
 class PortfolioHistoryPoint extends $pb.GeneratedMessage {
   factory PortfolioHistoryPoint({
-    $42.Timestamp? date,
+    $1.Timestamp? date,
     $core.double? value,
   }) {
     final $result = create();
@@ -707,7 +707,7 @@ class PortfolioHistoryPoint extends $pb.GeneratedMessage {
   factory PortfolioHistoryPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PortfolioHistoryPoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'date', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'date', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(2, _omitFieldNames ? '' : 'value', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
@@ -734,15 +734,15 @@ class PortfolioHistoryPoint extends $pb.GeneratedMessage {
   static PortfolioHistoryPoint? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get date => $_getN(0);
+  $1.Timestamp get date => $_getN(0);
   @$pb.TagNumber(1)
-  set date($42.Timestamp v) { setField(1, v); }
+  set date($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureDate() => $_ensure(0);
+  $1.Timestamp ensureDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get value => $_getN(1);

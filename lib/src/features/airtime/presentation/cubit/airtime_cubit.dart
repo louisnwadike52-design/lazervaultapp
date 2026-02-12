@@ -1,4 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grpc/grpc.dart';
+import '../../../../../core/cache/cache_config.dart';
+import '../../../../../core/cache/swr_cache_manager.dart';
+import '../../../../../core/services/account_manager.dart';
+import '../../../../../core/services/secure_storage_service.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/network_provider.dart';
@@ -7,25 +14,71 @@ import 'airtime_state.dart';
 
 class AirtimeCubit extends Cubit<AirtimeState> {
   final AirtimeRepository repository;
+  final SWRCacheManager? _cacheManager;
+  final SecureStorageService _secureStorage;
+  final AccountManager? _accountManager;
 
-  AirtimeCubit({required this.repository}) : super(AirtimeInitial());
+  AirtimeCubit({
+    required this.repository,
+    required SecureStorageService secureStorage,
+    SWRCacheManager? cacheManager,
+    AccountManager? accountManager,
+  })  : _secureStorage = secureStorage,
+        _cacheManager = cacheManager,
+        _accountManager = accountManager,
+        super(AirtimeInitial());
 
-  // Load countries
-  Future<void> loadCountries() async {
-    try {
-      if (isClosed) return;
-      emit(AirtimeCountriesLoading());
-      final countries = await repository.getCountries();
-      if (isClosed) return;
-      emit(AirtimeCountriesLoaded(countries: countries));
-    } catch (e) {
-      if (isClosed) return;
-      emit(AirtimeCountriesError(message: e.toString()));
+  /// Get current user ID from secure storage, falling back to empty string
+  Future<String> _getCurrentUserId() async {
+    return await _secureStorage.getUserId() ?? '';
+  }
+
+  // Load network providers with SWR caching
+  Future<void> loadNetworkProviders(String countryCode) async {
+    if (_cacheManager != null) {
+      await _loadProvidersWithCache(countryCode);
+    } else {
+      await _loadProvidersDirect(countryCode);
     }
   }
 
-  // Load network providers for a country
-  Future<void> loadNetworkProviders(String countryCode) async {
+  Future<void> _loadProvidersWithCache(String countryCode) async {
+    try {
+      if (isClosed) return;
+      emit(AirtimeNetworkProvidersLoading());
+
+      await for (final result in _cacheManager!.get<List<NetworkProvider>>(
+        key: 'airtime_providers:$countryCode',
+        fetcher: () => repository.getNetworkProviders(countryCode),
+        config: CacheConfig.airtimeProviders,
+        serializer: (providers) =>
+            jsonEncode(providers.map((p) => p.toJson()).toList()),
+        deserializer: (json) => (jsonDecode(json) as List)
+            .map((j) => NetworkProvider.fromJson(j as Map<String, dynamic>))
+            .toList(),
+      )) {
+        if (isClosed) return;
+        if (result.hasData) {
+          emit(AirtimeNetworkProvidersLoaded(
+            providers: result.data!,
+            countryCode: countryCode,
+            isStale: result.isStale,
+          ));
+        } else if (result.hasError) {
+          emit(AirtimeNetworkProvidersError(
+            message: _friendlyErrorMessage(result.error),
+          ));
+        }
+      }
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeNetworkProvidersError(
+        message: _friendlyErrorMessage(e),
+      ));
+    }
+  }
+
+  Future<void> _loadProvidersDirect(String countryCode) async {
     try {
       if (isClosed) return;
       emit(AirtimeNetworkProvidersLoading());
@@ -37,19 +90,10 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(AirtimeNetworkProvidersError(message: e.toString()));
+      emit(AirtimeNetworkProvidersError(
+        message: _friendlyErrorMessage(e),
+      ));
     }
-  }
-
-  // Select country and load its providers
-  Future<void> selectCountry(Country country) async {
-    await loadNetworkProviders(country.code);
-  }
-
-  // Select network provider
-  void selectNetworkProvider(Country country, NetworkProvider provider) {
-    // This could emit a state indicating provider selection if needed
-    // For now, we'll let the UI handle the navigation
   }
 
   // Validate phone number
@@ -69,7 +113,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(AirtimeError(message: e.toString()));
+      emit(AirtimeError(message: _friendlyErrorMessage(e)));
     }
   }
 
@@ -86,6 +130,8 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       final totalAmount = amount + fee;
 
       if (isClosed) return;
+      // Emit loading first to break Equatable deduplication when same params are re-submitted
+      emit(AirtimeLoading());
       emit(AirtimeTransactionReviewReady(
         country: country,
         provider: provider,
@@ -97,60 +143,11 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(AirtimeError(message: e.toString()));
+      emit(AirtimeError(message: _friendlyErrorMessage(e)));
     }
   }
 
-  // Process payment
-  Future<void> processPayment({
-    required String countryCode,
-    required String networkProviderId,
-    required String phoneNumber,
-    required double amount,
-    required String currency,
-  }) async {
-    try {
-      // Create a temporary transaction for the processing state
-      final tempTransaction = AirtimeTransaction(
-        id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-        transactionReference: 'processing',
-        networkProvider: NetworkProviderType.mtn, // Will be updated
-        recipientPhoneNumber: phoneNumber,
-        amount: amount,
-        currency: currency,
-        status: AirtimeTransactionStatus.processing,
-        createdAt: DateTime.now(),
-        userId: 'current_user',
-        totalAmount: amount,
-      );
-
-      if (isClosed) return;
-      emit(AirtimePaymentProcessing(transaction: tempTransaction));
-
-      final transaction = await repository.purchaseAirtime(
-        countryCode: countryCode,
-        networkProviderId: networkProviderId,
-        phoneNumber: phoneNumber,
-        amount: amount,
-        currency: currency,
-      );
-
-      if (isClosed) return;
-      if (transaction.status == AirtimeTransactionStatus.completed) {
-        emit(AirtimePaymentSuccess(transaction: transaction));
-      } else {
-        emit(AirtimePaymentFailed(
-          message: transaction.failureReason ?? 'Payment failed',
-          transaction: transaction,
-        ));
-      }
-    } catch (e) {
-      if (isClosed) return;
-      emit(AirtimePaymentFailed(message: e.toString()));
-    }
-  }
-
-  // Process payment with verification token (for PIN-validated transactions)
+  // Process payment with verification token (production flow via gRPC)
   Future<void> processPaymentWithToken({
     required String countryCode,
     required String networkProviderId,
@@ -159,24 +156,43 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     required String currency,
     required String transactionId,
     required String verificationToken,
+    String? operatorId,
+    String? sourceAccountId,
   }) async {
     try {
-      // Create a temporary transaction for the processing state
+      final userId = await _getCurrentUserId();
       final tempTransaction = AirtimeTransaction(
         id: transactionId,
         transactionReference: 'processing',
-        networkProvider: NetworkProviderType.mtn, // Will be updated
+        networkProvider: NetworkProviderType.mtn,
         recipientPhoneNumber: phoneNumber,
         amount: amount,
         currency: currency,
         status: AirtimeTransactionStatus.processing,
         createdAt: DateTime.now(),
-        userId: 'current_user',
+        userId: userId,
         totalAmount: amount,
       );
 
       if (isClosed) return;
-      emit(AirtimePaymentProcessing(transaction: tempTransaction));
+      emit(AirtimePaymentProcessing(
+        transaction: tempTransaction,
+        progress: 0.2,
+        currentStep: 'Validating transaction...',
+      ));
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (isClosed) return;
+      emit(AirtimePaymentProcessing(
+        transaction: tempTransaction,
+        progress: 0.4,
+        currentStep: 'Debiting your account...',
+      ));
+
+      // Set the selected account as active so gRPC metadata includes x-account-id
+      if (sourceAccountId != null && _accountManager != null) {
+        _accountManager!.setActiveAccount(sourceAccountId);
+      }
 
       final transaction = await repository.purchaseAirtime(
         countryCode: countryCode,
@@ -186,10 +202,13 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         currency: currency,
         transactionId: transactionId,
         verificationToken: verificationToken,
+        operatorId: operatorId,
       );
 
       if (isClosed) return;
       if (transaction.status == AirtimeTransactionStatus.completed) {
+        // Invalidate provider cache on successful purchase (commission rates may update)
+        _cacheManager?.invalidatePattern('airtime_providers:');
         emit(AirtimePaymentSuccess(transaction: transaction));
       } else {
         emit(AirtimePaymentFailed(
@@ -199,7 +218,14 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(AirtimePaymentFailed(message: e.toString()));
+      // Financial operations are NEVER queued offline - security tokens expire, balances change
+      if (_isNetworkError(e)) {
+        emit(const AirtimePaymentFailed(
+          message: 'No internet connection. Please check your network and try again.',
+        ));
+      } else {
+        emit(AirtimePaymentFailed(message: _friendlyErrorMessage(e)));
+      }
     }
   }
 
@@ -218,7 +244,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(AirtimeError(message: e.toString()));
+      emit(AirtimeError(message: _friendlyErrorMessage(e)));
     }
   }
 
@@ -233,11 +259,11 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       if (transaction != null) {
         emit(AirtimeTransactionDetailsLoaded(transaction: transaction));
       } else {
-        emit(AirtimeError(message: 'Transaction not found'));
+        emit(const AirtimeError(message: 'Transaction not found'));
       }
     } catch (e) {
       if (isClosed) return;
-      emit(AirtimeError(message: e.toString()));
+      emit(AirtimeError(message: _friendlyErrorMessage(e)));
     }
   }
 
@@ -265,57 +291,70 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     emit(AirtimeInitial());
   }
 
-  // Simulate payment completion (for demo purposes)
-  Future<void> simulatePaymentCompletion(AirtimeTransaction transaction) async {
-    await Future.delayed(Duration(seconds: 2)); // Realistic processing time
-
+  // Backward compatibility - load countries (still used by local data for country info)
+  Future<void> loadCountries() async {
     try {
-      // Simulate 90% success rate
-      final isSuccess = DateTime.now().millisecond % 10 != 0;
-
       if (isClosed) return;
-      if (isSuccess) {
-        final successfulTransaction = AirtimeTransaction(
-          id: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-          transactionReference: 'REF${DateTime.now().millisecondsSinceEpoch}',
-          networkProvider: transaction.networkProvider,
-          recipientPhoneNumber: transaction.recipientPhoneNumber,
-          amount: transaction.amount,
-          currency: transaction.currency,
-          status: AirtimeTransactionStatus.completed,
-          createdAt: transaction.createdAt,
-          userId: transaction.userId,
-          totalAmount: transaction.totalAmount,
-          completedAt: DateTime.now(),
-        );
-
-        emit(AirtimePaymentSuccess(transaction: successfulTransaction));
-      } else {
-        final failedTransaction = transaction.copyWith(
-          status: AirtimeTransactionStatus.failed,
-          failureReason: 'Network provider temporarily unavailable',
-          completedAt: DateTime.now(),
-        );
-
-        emit(AirtimePaymentFailed(
-          message: 'Payment failed: Network provider temporarily unavailable',
-          transaction: failedTransaction,
-        ));
-      }
+      emit(AirtimeCountriesLoading());
+      final countries = await repository.getCountries();
+      if (isClosed) return;
+      emit(AirtimeCountriesLoaded(countries: countries));
     } catch (e) {
       if (isClosed) return;
-      emit(AirtimePaymentFailed(message: e.toString()));
+      emit(AirtimeCountriesError(message: e.toString()));
     }
   }
 
-  // Backward compatibility methods for existing screens
-  Future<void> loadDefaultNetworkProviders() async {
-    // Load Nigeria providers by default for backward compatibility
-    await loadNetworkProviders('NG');
+  // Select country and load its providers
+  Future<void> selectCountry(Country country) async {
+    await loadNetworkProviders(country.code);
   }
 
-  Future<void> detectNetworkFromPhoneNumberLegacy(String phoneNumber) async {
-    // Use Nigeria as default for backward compatibility
-    await validatePhoneNumber(phoneNumber, 'NG');
+  // Select network provider
+  void selectNetworkProvider(Country country, NetworkProvider provider) {
+    // UI handles navigation
   }
-} 
+
+  // Network error detection (matches pattern used in tag_pay_cubit, invoice_cubit)
+  bool _isNetworkError(dynamic error) {
+    if (error is GrpcError) {
+      return error.code == StatusCode.unavailable ||
+          error.code == StatusCode.deadlineExceeded ||
+          error.code == StatusCode.unknown;
+    }
+    final errorStr = error.toString().toLowerCase();
+    return errorStr.contains('network') ||
+        errorStr.contains('connection') ||
+        errorStr.contains('timeout') ||
+        errorStr.contains('unavailable') ||
+        errorStr.contains('failed to connect') ||
+        errorStr.contains('socket') ||
+        errorStr.contains('unreachable');
+  }
+
+  // Convert technical errors to user-friendly messages
+  String _friendlyErrorMessage(dynamic error) {
+    if (_isNetworkError(error)) {
+      return 'No internet connection. Please check your network and try again.';
+    }
+    if (error is GrpcError) {
+      switch (error.code) {
+        case StatusCode.permissionDenied:
+          return 'Transaction not authorized. Please verify your PIN and try again.';
+        case StatusCode.invalidArgument:
+          return 'Invalid transaction details. Please check and try again.';
+        case StatusCode.resourceExhausted:
+          return 'Too many requests. Please wait a moment and try again.';
+        case StatusCode.notFound:
+          return 'Service not available. Please try again later.';
+        default:
+          return error.message ?? 'Something went wrong. Please try again.';
+      }
+    }
+    final msg = error.toString();
+    if (msg.contains('Exception:')) {
+      return msg.replaceFirst(RegExp(r'^Exception:\s*'), '');
+    }
+    return msg;
+  }
+}

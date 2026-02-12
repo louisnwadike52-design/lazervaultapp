@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:injectable/injectable.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -154,27 +155,47 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   @override
   Future<String> getCurrentUserId() async {
     try {
-      // Get from token payload
-      final token = await _secureStorage.getAccessToken();
-      if (token != null && token.isNotEmpty) {
-        // Parse JWT token to get user ID
-        // This is a simplified version - in production you'd properly decode the JWT
-        // For now, we'll use a placeholder that should be replaced by proper JWT parsing
-        return _extractUserIdFromToken(token);
+      // First try reading the stored user ID directly (set during login)
+      final storedUserId = await _secureStorage.getUserId();
+      if (storedUserId != null && storedUserId.isNotEmpty) {
+        return storedUserId;
       }
 
-      throw Exception('User ID not found in token');
+      // Fallback: extract from JWT token payload
+      final token = await _secureStorage.getAccessToken();
+      if (token != null && token.isNotEmpty) {
+        final userId = _extractUserIdFromToken(token);
+        if (userId.isNotEmpty) {
+          return userId;
+        }
+      }
+
+      throw Exception('User ID not found in storage or token');
     } catch (e) {
       throw Exception('Failed to get current user ID: $e');
     }
   }
 
-  /// Extract user ID from JWT token
+  /// Extract user ID from JWT token by decoding the payload (base64 middle segment)
   String _extractUserIdFromToken(String token) {
-    // TODO: Implement proper JWT decoding
-    // For now, return a placeholder
-    // In production, decode the JWT and extract the 'sub' or 'user_id' claim
-    return 'current_user_id';
+    try {
+      final parts = token.split('.');
+      if (parts.length < 2) return '';
+
+      // Pad base64 if needed
+      String payload = parts[1];
+      while (payload.length % 4 != 0) {
+        payload += '=';
+      }
+
+      final decoded = utf8.decode(base64Url.decode(payload));
+      final Map<String, dynamic> claims = jsonDecode(decoded);
+
+      // Try 'sub' first (standard JWT claim), then 'user_id'
+      return (claims['sub'] ?? claims['user_id'] ?? '').toString();
+    } catch (e) {
+      return '';
+    }
   }
 
   /// Enroll voice with audio samples via gRPC

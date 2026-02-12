@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math';
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../cubit/insurance_cubit.dart';
@@ -790,11 +791,24 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
     );
   }
 
-  void _addDocument() {
-    // In a real app, this would open file picker
-    setState(() {
-      _documents.add('Document_${_documents.length + 1}.pdf');
-    });
+  Future<void> _addDocument() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg'],
+      );
+      if (result != null && result.files.single.name.isNotEmpty) {
+        setState(() {
+          _documents.add(result.files.single.name);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick document: $e')),
+        );
+      }
+    }
   }
 
   void _removeDocument(int index) {
@@ -803,18 +817,40 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
     });
   }
 
-  void _takePhoto() {
-    // In a real app, this would open camera
-    setState(() {
-      _attachments.add('Photo_${_attachments.length + 1}.jpg');
-    });
+  Future<void> _takePhoto() async {
+    try {
+      final picker = ImagePicker();
+      final photo = await picker.pickImage(source: ImageSource.camera);
+      if (photo != null) {
+        setState(() {
+          _attachments.add(photo.name);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to take photo: $e')),
+        );
+      }
+    }
   }
 
-  void _selectFromGallery() {
-    // In a real app, this would open gallery
-    setState(() {
-      _attachments.add('Image_${_attachments.length + 1}.jpg');
-    });
+  Future<void> _selectFromGallery() async {
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _attachments.add(image.name);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to select image: $e')),
+        );
+      }
+    }
   }
 
   void _removeAttachment(int index) {
@@ -823,22 +859,21 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
     });
   }
 
-  void _submitClaim() {
+  Future<void> _submitClaim() async {
     if (_formKey.currentState!.validate()) {
-      final random = Random();
       final claim = InsuranceClaim(
-        id: 'CLM${random.nextInt(999999).toString().padLeft(6, '0')}',
-        claimNumber: 'CN${random.nextInt(999999).toString().padLeft(6, '0')}',
+        id: '',
+        claimNumber: '',
         insuranceId: widget.insuranceId,
-        policyNumber: 'POL${random.nextInt(9999999).toString().padLeft(7, '0')}',
+        policyNumber: '',
         type: _selectedType,
         status: ClaimStatus.submitted,
-        title: _titleController.text,
-        description: _descriptionController.text,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
         claimAmount: double.parse(_claimAmountController.text),
         currency: 'USD',
         incidentDate: _incidentDate,
-        incidentLocation: _incidentLocationController.text,
+        incidentLocation: _incidentLocationController.text.trim(),
         attachments: List.from(_attachments),
         documents: List.from(_documents),
         additionalInfo: {},
@@ -847,24 +882,41 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
         userId: context.read<InsuranceCubit>().currentUserId,
       );
 
-      context.read<InsuranceCubit>().submitClaim(claim);
-      
-      // Show success message and navigate back
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Claim submitted successfully!',
-            style: GoogleFonts.inter(color: Colors.white),
+      try {
+        await context.read<InsuranceCubit>().submitClaim(claim);
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Claim submitted successfully!',
+              style: GoogleFonts.inter(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
           ),
-          backgroundColor: const Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
+        );
+
+        Get.back();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to submit claim: $e',
+              style: GoogleFonts.inter(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
           ),
-        ),
-      );
-      
-      Get.back();
+        );
+      }
     }
   }
 } 

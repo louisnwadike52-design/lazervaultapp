@@ -5,7 +5,7 @@ import 'package:lazervault/src/generated/group_account.pbgrpc.dart' as pb;
 import 'package:lazervault/src/generated/group_account.pbenum.dart' as pb_enum;
 import '../models/group_account_models.dart';
 import '../../domain/entities/group_entities.dart';
-import 'group_account_remote_data_source.dart';
+import 'group_account_remote_data_source.dart' show GroupAccountRemoteDataSource, ActivityLogEntryModel;
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as $pb_timestamp;
 
@@ -81,7 +81,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final response = await _client.getGroup(request, options: callOptions);
       print('🟢 GroupAccountGrpcDataSource: getGroup response received');
 
-      // TODO: Ensure _mapGroupFromProto converts Timestamps and Int64s properly
       return _mapGroupFromProto(response.group);
     } on GrpcError catch (e) {
       print('🔴 GroupAccountGrpcDataSource: getGroupById gRPC Error - ${e.codeName}: ${e.message}');
@@ -98,6 +97,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     required String description,
     required String adminId,
     Map<String, dynamic>? metadata,
+    GroupVisibility? visibility,
+    String? imageUrl,
   }) async {
     try {
       final request = pb.CreateGroupRequest()
@@ -109,10 +110,17 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         request.metadata = _encodeMetadata(metadata);
       }
 
+      if (visibility != null) {
+        request.visibility = _visibilityToProto(visibility);
+      }
+
+      if (imageUrl != null) {
+        request.imageUrl = imageUrl;
+      }
+
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.createGroup(request, options: callOptions);
 
-      // TODO: Ensure _mapGroupFromProto converts Timestamps and Int64s properly
       return _mapGroupFromProto(response.group);
     } on GrpcError catch (e) {
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to create group'}');
@@ -136,7 +144,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.updateGroup(request, options: callOptions);
 
-      // TODO: Ensure _mapGroupFromProto converts Timestamps and Int64s properly
       return _mapGroupFromProto(response.group);
     } on GrpcError catch (e) {
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update group'}');
@@ -907,7 +914,20 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       updatedAt: _timestampToDateTime(group.updatedAt),
       status: _mapGroupStatusFromProto(group.status),
       metadata: group.metadata.isNotEmpty ? _decodeMetadata(group.metadata) : null,
+      visibility: _visibilityFromProto(group.visibility),
+      memberCount: group.memberCount,
+      totalRaised: _int64ToAmount(group.totalRaised),
+      imageUrl: group.imageUrl.isNotEmpty ? group.imageUrl : null,
     );
+  }
+
+  GroupVisibility _visibilityFromProto(pb.GroupVisibility visibility) {
+    switch (visibility) {
+      case pb.GroupVisibility.GROUP_VISIBILITY_PUBLIC:
+        return GroupVisibility.public;
+      default:
+        return GroupVisibility.private;
+    }
   }
 
   GroupMemberModel _mapMemberFromProto(pb.GroupMemberMessage member) {
@@ -1044,7 +1064,9 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       paymentDate: _timestampToDateTime(receipt.paymentDate),
       generatedAt: _timestampToDateTime(receipt.generatedAt),
       receiptNumber: receipt.receiptNumber,
-      receiptData: {}, // TODO: Parse JSON from receipt.receiptData if needed
+      receiptData: receipt.receiptData.isNotEmpty
+          ? (jsonDecode(receipt.receiptData) as Map<String, dynamic>)
+          : {},
     );
   }
 
@@ -1057,7 +1079,13 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       payments: transcript.payments.map((p) => _mapPaymentFromProto(p)).toList(),
       totalAmount: _int64ToAmount(transcript.totalAmount),
       currency: transcript.currency,
-      memberContributions: {}, // TODO: Parse JSON from transcript.memberContributions if needed
+      memberContributions: transcript.memberContributions.isNotEmpty
+          ? Map<String, double>.from(
+              (jsonDecode(transcript.memberContributions) as Map<String, dynamic>).map(
+                (k, v) => MapEntry(k, (v as num).toDouble()),
+              ),
+            )
+          : {},
     );
   }
 
@@ -1387,6 +1415,101 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     } catch (e) {
       print('🔴 GroupAccountGrpcDataSource: Failed to decode metadata - $e');
       return {};
+    }
+  }
+
+  pb.GroupVisibility _visibilityToProto(GroupVisibility visibility) {
+    switch (visibility) {
+      case GroupVisibility.private:
+        return pb.GroupVisibility.GROUP_VISIBILITY_PRIVATE;
+      case GroupVisibility.public:
+        return pb.GroupVisibility.GROUP_VISIBILITY_PUBLIC;
+    }
+  }
+
+  // ============================================================================
+  // PUBLIC GROUP DISCOVERY
+  // ============================================================================
+
+  @override
+  Future<List<GroupAccountModel>> listPublicGroups({
+    int page = 1,
+    int pageSize = 20,
+    String? sortBy,
+    String? searchQuery,
+  }) async {
+    try {
+      final request = pb.ListPublicGroupsRequest()
+        ..page = page
+        ..pageSize = pageSize;
+
+      if (sortBy != null && sortBy.isNotEmpty) {
+        request.sortBy = sortBy;
+      }
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        request.searchQuery = searchQuery;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.listPublicGroups(request, options: callOptions);
+
+      return response.groups.map((group) => _mapGroupFromProto(group)).toList();
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to list public groups'}');
+    }
+  }
+
+  @override
+  Future<PublicGroupDetailModel> getPublicGroup(String groupId) async {
+    try {
+      final request = pb.GetPublicGroupRequest()..groupId = groupId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.getPublicGroup(request, options: callOptions);
+
+      final group = _mapGroupFromProto(response.group);
+      final topContributors = response.topContributors.map((c) =>
+        PublicGroupContributor(
+          userId: c.userId,
+          displayName: c.displayName,
+          totalContributed: _int64ToAmount(c.totalContributed),
+          contributionCount: c.contributionCount,
+          profileImage: c.profileImage.isNotEmpty ? c.profileImage : null,
+        ),
+      ).toList();
+
+      final stats = response.hasStatistics() ? <String, dynamic>{
+        'memberCount': response.statistics.memberCount,
+        'activeContributions': response.statistics.activeContributions,
+        'totalContributions': response.statistics.totalContributions,
+        'completedContributions': response.statistics.completedContributions,
+        'totalTargetAmount': _int64ToAmount(response.statistics.totalTargetAmount),
+        'totalCurrentAmount': _int64ToAmount(response.statistics.totalCurrentAmount),
+        'completionRate': response.statistics.completionRate,
+      } : null;
+
+      return PublicGroupDetailModel(
+        group: group,
+        statistics: stats,
+        topContributors: topContributors,
+        isMember: response.isMember,
+      );
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get public group'}');
+    }
+  }
+
+  @override
+  Future<GroupAccountModel> joinPublicGroup(String groupId) async {
+    try {
+      final request = pb.JoinPublicGroupRequest()..groupId = groupId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.joinPublicGroup(request, options: callOptions);
+
+      return _mapGroupFromProto(response.group);
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to join public group'}');
     }
   }
 

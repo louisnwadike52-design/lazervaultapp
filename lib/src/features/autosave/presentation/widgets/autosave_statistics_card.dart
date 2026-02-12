@@ -17,28 +17,130 @@ class AutoSaveStatisticsCard extends StatelessWidget {
     return StreamBuilder<String>(
       stream: CurrencySymbols.currencySymbolStream,
       builder: (context, snapshot) {
-        final currencySymbol = snapshot.data ?? CurrencySymbols.getSymbol(statistics.currency);
-
         return Container(
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: Colors.grey[800]!),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1A1A3E),
+                Color(0xFF0A0E27),
+                Color(0xFF0F0F23),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16.r),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Auto-Save Statistics',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+              Icon(
+                Icons.savings,
+                size: 48.sp,
+                color: const Color(0xFF4E03D0),
               ),
               SizedBox(height: 16.h),
-              _buildStatsGrid(currencySymbol),
+              Text(
+                'Savings Overview',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: 24.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildMetricItem(
+                    label: 'Active Rules',
+                    value: statistics.activeRulesCount.toString(),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40.h,
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                  _buildMetricItem(
+                    label: 'Total Saved',
+                    value: statistics.formattedTotalSavedAllTime,
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40.h,
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                  _buildMetricItem(
+                    label: 'This Month',
+                    value: statistics.formattedTotalSavedThisMonth,
+                  ),
+                ],
+              ),
+              SizedBox(height: 24.h),
+              // Secondary stats row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSecondaryStatItem(
+                      'This Week',
+                      statistics.formattedTotalSavedThisWeek,
+                      Icons.date_range,
+                      const Color(0xFFF59E0B),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _buildSecondaryStatItem(
+                      'Transactions',
+                      statistics.totalTransactions.toString(),
+                      Icons.receipt,
+                      const Color(0xFF14B8A6),
+                    ),
+                  ),
+                ],
+              ),
+              if (statistics.averageSaveAmount > 0) ...[
+                SizedBox(height: 12.h),
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.analytics,
+                        color: const Color(0xFF3B82F6),
+                        size: 20.sp,
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Average per Save',
+                              style: GoogleFonts.inter(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              statistics.formattedAverageSaveAmount,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF3B82F6),
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         );
@@ -46,185 +148,42 @@ class AutoSaveStatisticsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid(String currencySymbol) {
+  Widget _buildMetricItem({required String label, required String value}) {
     return Column(
       children: [
-        // Main featured stat - Total Saved All Time
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF10B981),
-                const Color(0xFF059669),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Icon(
-                  Icons.savings,
-                  color: Colors.white,
-                  size: 28.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Total Saved',
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      statistics.formattedTotalSavedAllTime,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        SizedBox(height: 16.h),
-        // First row of stats
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatItem(
-                'Active Rules',
-                statistics.activeRulesCount.toString(),
-                Icons.rule,
-                const Color(0xFF3B82F6),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildStatItem(
-                'This Month',
-                statistics.formattedTotalSavedThisMonth,
-                Icons.calendar_month,
-                const Color(0xFF8B5CF6),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12.h),
-        // Second row of stats
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatItem(
-                'This Week',
-                statistics.formattedTotalSavedThisWeek,
-                Icons.date_range,
-                const Color(0xFFF59E0B),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildStatItem(
-                'Transactions',
-                statistics.totalTransactions.toString(),
-                Icons.receipt,
-                const Color(0xFF14B8A6),
-              ),
-            ),
-          ],
-        ),
-        if (statistics.averageSaveAmount > 0) ...[
-          SizedBox(height: 12.h),
-          // Average save amount
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.analytics,
-                  color: const Color(0xFF3B82F6),
-                  size: 20.sp,
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Average per Save',
-                        style: GoogleFonts.inter(
-                          color: Colors.grey[400],
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        statistics.formattedAverageSaveAmount,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF3B82F6),
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+        SizedBox(height: 4.h),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.6),
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w500,
           ),
-        ],
+        ),
       ],
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildSecondaryStatItem(
+      String label, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 18.sp,
-          ),
+          Icon(icon, color: color, size: 18.sp),
           SizedBox(height: 8.h),
           Text(
             value,
@@ -238,7 +197,7 @@ class AutoSaveStatisticsCard extends StatelessWidget {
           Text(
             label,
             style: GoogleFonts.inter(
-              color: Colors.grey[400],
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 10.sp,
               fontWeight: FontWeight.w500,
             ),

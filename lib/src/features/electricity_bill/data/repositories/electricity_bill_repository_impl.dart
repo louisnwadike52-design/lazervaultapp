@@ -59,6 +59,22 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
   }
 
   @override
+  Future<Either<Failure, SmartMeterValidationResult>> smartValidateMeter({
+    required String meterNumber,
+  }) async {
+    try {
+      final result = await remoteDataSource.smartValidateMeter(
+        meterNumber: meterNumber,
+      );
+      return Right(result);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(message: e.message ?? 'Smart meter validation failed', statusCode: e.codeName));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+    }
+  }
+
+  @override
   Future<Either<Failure, BillPaymentEntity>> initiatePayment({
     required String providerCode,
     required String meterNumber,

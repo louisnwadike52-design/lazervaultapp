@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../cubit/create_lock_cubit.dart';
@@ -29,8 +30,9 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     // Ensure accounts are loaded
     final accountState = context.read<AccountCardsSummaryCubit>().state;
     if (accountState is! AccountCardsSummaryLoaded) {
+      final userId = context.read<AuthenticationCubit>().userId ?? '';
       context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-            userId: 'current_user',
+            userId: userId,
           );
     }
 
@@ -562,8 +564,9 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           SizedBox(height: 16.h),
           GestureDetector(
             onTap: () {
+              final userId = context.read<AuthenticationCubit>().userId ?? '';
               context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-                    userId: 'current_user',
+                    userId: userId,
                   );
             },
             child: Container(

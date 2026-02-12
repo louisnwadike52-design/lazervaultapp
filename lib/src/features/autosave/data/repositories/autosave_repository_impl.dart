@@ -70,18 +70,15 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.maximumPerSave = maximumPerSave;
       }
 
-      print('Sending gRPC CreateAutoSaveRule request: name=$name, trigger=$triggerType');
-
-      // Use executeWithTokenRotation for automatic token refresh on auth errors
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-        final callOptions = await _callOptionsHelper.withAuth();
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
         return await _autoSaveServiceClient.createAutoSaveRule(
           request,
           options: callOptions,
         );
       });
-
-      print('CreateAutoSaveRule response: success=${response.success}, msg=${response.msg}');
 
       if (response.success && response.hasRule()) {
         return Right(AutoSaveRuleModel.fromProto(response.rule));
@@ -92,13 +89,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during createAutoSaveRule: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to create auto-save rule.',
         statusCode: e.code,
       ));
     } catch (e) {
-      print('Unexpected error during createAutoSaveRule: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while creating auto-save rule.',
         statusCode: 500,
@@ -121,18 +116,15 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.status = _statusToProto(status);
       }
 
-      print('Sending gRPC GetAutoSaveRules request: accountId=$accountId, status=$status');
-
-      // Use executeWithTokenRotation for automatic token refresh on auth errors
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-        final callOptions = await _callOptionsHelper.withAuth();
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
         return await _autoSaveServiceClient.getAutoSaveRules(
           request,
           options: callOptions,
         );
       });
-
-      print('GetAutoSaveRules response: success=${response.success}, rules count=${response.rules.length}');
 
       if (response.success) {
         final rules = response.rules
@@ -146,13 +138,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during getAutoSaveRules: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to get auto-save rules.',
         statusCode: e.code,
       ));
     } catch (e) {
-      print('Unexpected error during getAutoSaveRules: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while getting auto-save rules.',
         statusCode: 500,
@@ -214,18 +204,15 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.maximumPerSave = maximumPerSave;
       }
 
-      print('Sending gRPC UpdateAutoSaveRule request: ruleId=$ruleId');
-
-      // Use executeWithTokenRotation for automatic token refresh on auth errors
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-        final callOptions = await _callOptionsHelper.withAuth();
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
         return await _autoSaveServiceClient.updateAutoSaveRule(
           request,
           options: callOptions,
         );
       });
-
-      print('UpdateAutoSaveRule response: success=${response.success}, msg=${response.msg}');
 
       if (response.success && response.hasRule()) {
         return Right(AutoSaveRuleModel.fromProto(response.rule));
@@ -236,13 +223,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during updateAutoSaveRule: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to update auto-save rule.',
         statusCode: e.code,
       ));
     } catch (e) {
-      print('Unexpected error during updateAutoSaveRule: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while updating auto-save rule.',
         statusCode: 500,
@@ -261,18 +246,15 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         action: action,
       );
 
-      print('Sending gRPC ToggleAutoSaveRule request: ruleId=$ruleId, action=$action');
-
-      // Use executeWithTokenRotation for automatic token refresh on auth errors
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-        final callOptions = await _callOptionsHelper.withAuth();
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
         return await _autoSaveServiceClient.toggleAutoSaveRule(
           request,
           options: callOptions,
         );
       });
-
-      print('ToggleAutoSaveRule response: success=${response.success}, msg=${response.msg}');
 
       if (response.success && response.hasRule()) {
         return Right(AutoSaveRuleModel.fromProto(response.rule));
@@ -283,13 +265,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during toggleAutoSaveRule: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to toggle auto-save rule.',
         statusCode: e.code,
       ));
     } catch (e) {
-      print('Unexpected error during toggleAutoSaveRule: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while toggling auto-save rule.',
         statusCode: 500,
@@ -306,18 +286,15 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ruleId: ruleId,
       );
 
-      print('Sending gRPC DeleteAutoSaveRule request: ruleId=$ruleId');
-
-      // Use executeWithTokenRotation for automatic token refresh on auth errors
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-        final callOptions = await _callOptionsHelper.withAuth();
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
         return await _autoSaveServiceClient.deleteAutoSaveRule(
           request,
           options: callOptions,
         );
       });
-
-      print('DeleteAutoSaveRule response: success=${response.success}, msg=${response.msg}');
 
       if (response.success) {
         return const Right(true);
@@ -328,13 +305,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during deleteAutoSaveRule: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to delete auto-save rule.',
         statusCode: e.code,
       ));
     } catch (e) {
-      print('Unexpected error during deleteAutoSaveRule: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while deleting auto-save rule.',
         statusCode: 500,
@@ -365,15 +340,15 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.offset = offset;
       }
 
-      print('Sending gRPC GetAutoSaveTransactions request: ruleId=$ruleId, accountId=$accountId');
-
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _autoSaveServiceClient.getAutoSaveTransactions(
-        request,
-        options: callOptions,
-      );
-
-      print('GetAutoSaveTransactions response: success=${response.success}, transactions count=${response.transactions.length}');
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
+        return await _autoSaveServiceClient.getAutoSaveTransactions(
+          request,
+          options: callOptions,
+        );
+      });
 
       if (response.success) {
         final transactions = response.transactions
@@ -387,13 +362,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during getAutoSaveTransactions: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to get auto-save transactions.',
         statusCode: e.code,
       ));
     } catch (e) {
-      print('Unexpected error during getAutoSaveTransactions: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while getting auto-save transactions.',
         statusCode: 500,
@@ -406,15 +379,15 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
     try {
       final request = autosave_pb.GetAutoSaveStatisticsRequest();
 
-      print('Sending gRPC GetAutoSaveStatistics request');
-
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _autoSaveServiceClient.getAutoSaveStatistics(
-        request,
-        options: callOptions,
-      );
-
-      print('GetAutoSaveStatistics response: success=${response.success}');
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
+        return await _autoSaveServiceClient.getAutoSaveStatistics(
+          request,
+          options: callOptions,
+        );
+      });
 
       if (response.success && response.hasStatistics()) {
         return Right(AutoSaveStatisticsModel.fromProto(response.statistics));
@@ -425,13 +398,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during getAutoSaveStatistics: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to get auto-save statistics.',
         statusCode: e.code,
       ));
     } catch (e) {
-      print('Unexpected error during getAutoSaveStatistics: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while getting auto-save statistics.',
         statusCode: 500,
@@ -443,25 +414,27 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
   Future<Either<Failure, entity.AutoSaveTransactionEntity>> triggerAutoSave({
     required String ruleId,
     double? customAmount,
+    required String transactionPinToken,
   }) async {
     try {
       final request = autosave_pb.TriggerAutoSaveRequest(
         ruleId: ruleId,
+        transactionPinToken: transactionPinToken,
       );
 
       if (customAmount != null) {
         request.customAmount = customAmount;
       }
 
-      print('Sending gRPC TriggerAutoSave request: ruleId=$ruleId, customAmount=$customAmount');
-
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _autoSaveServiceClient.triggerAutoSave(
-        request,
-        options: callOptions,
-      );
-
-      print('TriggerAutoSave response: success=${response.success}, msg=${response.msg}');
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 30)),
+        );
+        return await _autoSaveServiceClient.triggerAutoSave(
+          request,
+          options: callOptions,
+        );
+      });
 
       if (response.success && response.hasTransaction()) {
         return Right(AutoSaveTransactionModel.fromProto(response.transaction));
@@ -472,13 +445,11 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         ));
       }
     } on GrpcError catch (e) {
-      print('gRPC Error during triggerAutoSave: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
         message: e.message ?? 'Failed to trigger auto-save.',
         statusCode: e.code,
       ));
     } catch (e) {
-      print('Unexpected error during triggerAutoSave: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while triggering auto-save.',
         statusCode: 500,

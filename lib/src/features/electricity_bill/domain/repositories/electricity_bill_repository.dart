@@ -21,6 +21,10 @@ abstract class ElectricityBillRepository {
     required MeterType meterType,
   });
 
+  Future<Either<Failure, SmartMeterValidationResult>> smartValidateMeter({
+    required String meterNumber,
+  });
+
   // Payment Operations
   Future<Either<Failure, BillPaymentEntity>> initiatePayment({
     required String providerCode,
@@ -150,5 +154,35 @@ class MeterValidationResult {
     required this.meterNumber,
     required this.meterType,
     required this.isValid,
+  });
+}
+
+class SmartMeterValidationResult {
+  final bool isValid;
+  final String customerName;
+  final String? customerAddress;
+  final String meterType;
+  final String meterNumber;
+  final String providerCode;
+  final String providerName;
+  final String? message;
+  final double minAmount;
+  final double maxAmount;
+  final double serviceFee;
+  final bool fromCache;
+
+  const SmartMeterValidationResult({
+    required this.isValid,
+    required this.customerName,
+    this.customerAddress,
+    required this.meterType,
+    required this.meterNumber,
+    required this.providerCode,
+    required this.providerName,
+    this.message,
+    required this.minAmount,
+    required this.maxAmount,
+    required this.serviceFee,
+    this.fromCache = false,
   });
 }

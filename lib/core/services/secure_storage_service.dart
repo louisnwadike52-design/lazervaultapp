@@ -2,6 +2,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
   static const String _keyUserEmail = 'user_email';
+  static const String _keyUserId = 'user_id';
+  static const String _keyUserFirstName = 'user_first_name';
+  static const String _keyUserLastName = 'user_last_name';
   static const String _keyHasPasscode = 'has_passcode';
   static const String _keyAccessToken = 'access_token';
   static const String _keyRefreshToken = 'refresh_token';
@@ -21,6 +24,22 @@ class SecureStorageService {
 
   Future<void> deleteUserEmail() async {
     await _storage.delete(key: _keyUserEmail);
+  }
+
+  // User ID (stored during login by AuthenticationCubit)
+  Future<String?> getUserId() async {
+    return await _storage.read(key: _keyUserId);
+  }
+
+  // User full name (stored during login by AuthenticationCubit)
+  Future<String?> getUserFullName() async {
+    final firstName = await _storage.read(key: _keyUserFirstName);
+    final lastName = await _storage.read(key: _keyUserLastName);
+    if (firstName == null && lastName == null) return null;
+    return [
+      if (firstName != null && firstName.isNotEmpty) firstName,
+      if (lastName != null && lastName.isNotEmpty) lastName,
+    ].join(' ');
   }
 
   // Passcode flag

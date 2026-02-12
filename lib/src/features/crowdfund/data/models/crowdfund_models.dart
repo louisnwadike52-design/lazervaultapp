@@ -260,6 +260,27 @@ class CrowdfundStatisticsModel extends CrowdfundStatistics {
 }
 
 // ============================================================================
+// LEADERBOARD MODELS
+// ============================================================================
+
+class LeaderboardEntryModel extends LeaderboardEntry {
+  const LeaderboardEntryModel({
+    required super.rank,
+    required super.crowdfund,
+  });
+
+  factory LeaderboardEntryModel.fromProto(pb.LeaderboardCrowdfundEntry proto) {
+    if (!proto.hasCrowdfund()) {
+      throw ArgumentError('LeaderboardCrowdfundEntry missing crowdfund data');
+    }
+    return LeaderboardEntryModel(
+      rank: proto.rank > 0 ? proto.rank : 1,
+      crowdfund: CrowdfundModel.fromProto(proto.crowdfund),
+    );
+  }
+}
+
+// ============================================================================
 // CAMPAIGN WALLET MODELS
 // ============================================================================
 

@@ -547,7 +547,7 @@ class _EditInsurancePolicyViewState extends State<EditInsurancePolicyView> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () {}, // Add beneficiaries management dialog
+                  onTap: _showManageBeneficiariesDialog,
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
@@ -704,7 +704,7 @@ class _EditInsurancePolicyViewState extends State<EditInsurancePolicyView> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () {}, // Add features browse dialog
+                  onTap: _showBrowseFeaturesDialog,
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
@@ -1375,6 +1375,163 @@ class _EditInsurancePolicyViewState extends State<EditInsurancePolicyView> {
   }
 
   void _showProviderSelectionDialog() {
-    // Simple provider selection - copy from create view if needed
+    final providers = [
+      'AXA Mansard',
+      'Leadway Assurance',
+      'AIICO Insurance',
+      'Custodian Investment',
+      'Cornerstone Insurance',
+      'NEM Insurance',
+      'Mutual Benefits',
+      'Other',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Select Provider',
+              style: GoogleFonts.inter(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            ...providers.map((provider) => ListTile(
+              title: Text(
+                provider,
+                style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
+              ),
+              trailing: _providerController.text == provider
+                  ? Icon(Icons.check, color: const Color(0xFF3B82F6), size: 20.sp)
+                  : null,
+              onTap: () {
+                setState(() => _providerController.text = provider);
+                Navigator.pop(context);
+              },
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showManageBeneficiariesDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Manage Beneficiaries',
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              if (_beneficiaries.isEmpty)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  child: Center(
+                    child: Text(
+                      'No beneficiaries added yet',
+                      style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
+                    ),
+                  ),
+                )
+              else
+                ..._beneficiaries.map((beneficiary) => ListTile(
+                  title: Text(
+                    beneficiary,
+                    style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
+                  ),
+                  trailing: IconButton(
+                    icon: Icon(Icons.remove_circle_outline, color: const Color(0xFFEF4444), size: 20.sp),
+                    onPressed: () {
+                      setState(() => _beneficiaries.remove(beneficiary));
+                      setSheetState(() {});
+                    },
+                  ),
+                )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showBrowseFeaturesDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Coverage Features',
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              if (_features.isEmpty)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  child: Center(
+                    child: Text(
+                      'No features added yet',
+                      style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF)),
+                    ),
+                  ),
+                )
+              else
+                ..._features.map((feature) => ListTile(
+                  leading: Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 20.sp),
+                  title: Text(
+                    feature,
+                    style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
+                  ),
+                  trailing: IconButton(
+                    icon: Icon(Icons.remove_circle_outline, color: const Color(0xFFEF4444), size: 20.sp),
+                    onPressed: () {
+                      setState(() => _features.remove(feature));
+                      setSheetState(() {});
+                    },
+                  ),
+                )),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

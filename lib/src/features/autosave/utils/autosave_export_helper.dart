@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:csv/csv.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:intl/intl.dart';
 
@@ -143,9 +144,9 @@ Completed Rules: $completedCount
 ═══════════════════════════════════════
 FINANCIAL SUMMARY
 ═══════════════════════════════════════
-Total Saved: \$${totalSaved.toStringAsFixed(2)}
-Average Per Rule: \$${avgSaved.toStringAsFixed(2)}
-Best Performer: ${bestPerformer?.name ?? 'N/A'} (\$${bestPerformer?.totalSaved.toStringAsFixed(2) ?? '0.00'})
+Total Saved: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSaved, 'NGN')}
+Average Per Rule: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(avgSaved.toDouble(), 'NGN')}
+Best Performer: ${bestPerformer?.name ?? 'N/A'} (${bestPerformer != null ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(bestPerformer.totalSaved, 'NGN') : '0.00'})
 
 ═══════════════════════════════════════
 RULE BREAKDOWN
@@ -154,8 +155,8 @@ ${rules.map((rule) => '''
 Rule: ${rule.name}
   Status: ${_getStatusText(rule.status)}
   Trigger: ${_getTriggerTypeText(rule.triggerType)}
-  Amount: ${rule.amountType == AmountType.fixed ? '\$' : ''}${rule.amountValue}${rule.amountType == AmountType.percentage ? '%' : ''}
-  Total Saved: \$${rule.totalSaved.toStringAsFixed(2)}
+  Amount: ${rule.amountType == AmountType.fixed ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.amountValue, rule.currency) : '${rule.amountValue}%'}
+  Total Saved: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.totalSaved, rule.currency)}
   Times Triggered: ${rule.triggerCount}
 ''').join('\n')}
 ═══════════════════════════════════════

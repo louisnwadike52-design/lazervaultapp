@@ -2,6 +2,7 @@ import 'package:grpc/grpc.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
+import '../../domain/entities/insurance_product_entity.dart';
 import '../../domain/repositories/insurance_repository.dart';
 import '../datasources/insurance_remote_datasource.dart';
 import '../../../../../core/services/secure_storage_service.dart';
@@ -142,18 +143,6 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<InsurancePayment> updatePayment(InsurancePayment payment) async {
-    try {
-      final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.createPayment(payment: payment, accessToken: accessToken);
-    } on GrpcError catch (e) {
-      throw _handleGrpcError(e);
-    } catch (e) {
-      throw Exception('Failed to update payment: $e');
-    }
-  }
-
-  @override
   Future<List<InsurancePayment>> getOverduePayments(String userId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
@@ -229,16 +218,6 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<void> deleteClaim(String id) async {
-    try {
-      // Note: deleteClaim not in remote datasource interface, might need to add
-      throw UnimplementedError('Delete claim not yet implemented in remote datasource');
-    } catch (e) {
-      throw Exception('Failed to delete claim: $e');
-    }
-  }
-
-  @override
   Future<String> generatePaymentReceipt(String paymentId) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
@@ -290,6 +269,85 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
     }
   }
 
+  // MyCover.ai Marketplace Operations
+
+  @override
+  Future<List<InsuranceProduct>> getInsuranceProducts({required String locale, String? category}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceProducts(locale: locale, category: category, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance products: $e');
+    }
+  }
+
+  @override
+  Future<List<InsuranceCategoryInfo>> getInsuranceCategories({required String locale}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceCategories(locale: locale, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance categories: $e');
+    }
+  }
+
+  @override
+  Future<InsuranceQuote> getInsuranceQuote({required String productId, required Map<String, String> formData, required String locale}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceQuote(productId: productId, formData: formData, locale: locale, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to get insurance quote: $e');
+    }
+  }
+
+  @override
+  Future<InsurancePurchaseResult> purchaseInsurance({
+    required String quoteId,
+    required String productId,
+    required String accountId,
+    required String transactionPin,
+    required String idempotencyKey,
+    required Map<String, String> formData,
+    required String locale,
+  }) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.purchaseInsurance(
+        quoteId: quoteId,
+        productId: productId,
+        accountId: accountId,
+        transactionPin: transactionPin,
+        idempotencyKey: idempotencyKey,
+        formData: formData,
+        locale: locale,
+        accessToken: accessToken,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to purchase insurance: $e');
+    }
+  }
+
+  @override
+  Future<InsurancePurchaseResult> getInsurancePurchaseStatus({required String reference}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsurancePurchaseStatus(reference: reference, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to get purchase status: $e');
+    }
+  }
+
   // Error Handling Helper
   Exception _handleGrpcError(GrpcError error) {
     switch (error.code) {
@@ -303,6 +361,8 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
         return Exception('Invalid data provided: ${error.message}');
       case StatusCode.alreadyExists:
         return Exception('Insurance already exists');
+      case StatusCode.failedPrecondition:
+        return Exception('Insurance marketplace is not available. Please contact support.');
       case StatusCode.unavailable:
         return Exception('Service temporarily unavailable. Please try again later.');
       default:

@@ -14,6 +14,11 @@ import 'package:lazervault/src/features/widgets/dashboard/invite_friends.dart';
 import 'package:lazervault/src/features/widgets/dashboard/monthly_summary.dart';
 import 'package:lazervault/src/features/widgets/dashboard/portfolio.dart';
 import 'package:lazervault/src/features/widgets/recent_history.dart';
+import 'package:lazervault/src/features/widgets/dashboard/trending_crowdfunds.dart';
+import 'package:lazervault/src/features/widgets/dashboard/public_groups.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_cubit.dart';
+import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -76,6 +81,16 @@ class _DashboardState extends State<Dashboard> {
                         InviteFriends(),
                         SizedBox(height: 16.0.h),
                         RecentHistory(),
+                        SizedBox(height: 16.0.h),
+                        BlocProvider(
+                          create: (_) => serviceLocator<LeaderboardCubit>(),
+                          child: const TrendingCrowdfunds(),
+                        ),
+                        SizedBox(height: 16.0.h),
+                        BlocProvider.value(
+                          value: serviceLocator<GroupAccountCubit>(),
+                          child: const PublicGroups(),
+                        ),
                         SizedBox(height: 16.0.h),
                         GenerateBankCard(),
                         SizedBox(height: 16.0.h),

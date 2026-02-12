@@ -257,7 +257,7 @@ class CryptoHolding extends Equatable {
       ];
 }
 
-enum TransactionType { buy, sell }
+enum TransactionType { buy, sell, swap }
 
 class CryptoTransaction extends Equatable {
   final String id;

@@ -14,8 +14,8 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'common.pb.dart' as $43;
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'common.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $2;
 import 'user.pbenum.dart';
 
 export 'user.pbenum.dart';
@@ -186,7 +186,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   factory CreateUserResponse({
     $core.bool? success,
     $core.String? message,
-    $43.Data? data,
+    $1.Data? data,
   }) {
     final $result = create();
     if (success != null) {
@@ -207,7 +207,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateUserResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<$43.Data>(3, _omitFieldNames ? '' : 'data', subBuilder: $43.Data.create)
+    ..aOM<$1.Data>(3, _omitFieldNames ? '' : 'data', subBuilder: $1.Data.create)
     ..hasRequiredFields = false
   ;
 
@@ -251,15 +251,15 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $43.Data get data => $_getN(2);
+  $1.Data get data => $_getN(2);
   @$pb.TagNumber(3)
-  set data($43.Data v) { setField(3, v); }
+  set data($1.Data v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasData() => $_has(2);
   @$pb.TagNumber(3)
   void clearData() => clearField(3);
   @$pb.TagNumber(3)
-  $43.Data ensureData() => $_ensure(2);
+  $1.Data ensureData() => $_ensure(2);
 }
 
 class GetUserProfileRequest extends $pb.GeneratedMessage {
@@ -298,7 +298,7 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   factory GetUserProfileResponse({
     $core.bool? success,
     $core.String? message,
-    $43.User? user,
+    $1.User? user,
     UserPreferences? preferences,
   }) {
     final $result = create();
@@ -323,7 +323,7 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserProfileResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<$43.User>(3, _omitFieldNames ? '' : 'user', subBuilder: $43.User.create)
+    ..aOM<$1.User>(3, _omitFieldNames ? '' : 'user', subBuilder: $1.User.create)
     ..aOM<UserPreferences>(4, _omitFieldNames ? '' : 'preferences', subBuilder: UserPreferences.create)
     ..hasRequiredFields = false
   ;
@@ -368,15 +368,15 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $43.User get user => $_getN(2);
+  $1.User get user => $_getN(2);
   @$pb.TagNumber(3)
-  set user($43.User v) { setField(3, v); }
+  set user($1.User v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUser() => $_has(2);
   @$pb.TagNumber(3)
   void clearUser() => clearField(3);
   @$pb.TagNumber(3)
-  $43.User ensureUser() => $_ensure(2);
+  $1.User ensureUser() => $_ensure(2);
 
   @$pb.TagNumber(4)
   UserPreferences get preferences => $_getN(3);
@@ -542,7 +542,7 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   factory UpdateUserProfileResponse({
     $core.bool? success,
     $core.String? message,
-    $43.User? user,
+    $1.User? user,
   }) {
     final $result = create();
     if (success != null) {
@@ -563,7 +563,7 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateUserProfileResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<$43.User>(3, _omitFieldNames ? '' : 'user', subBuilder: $43.User.create)
+    ..aOM<$1.User>(3, _omitFieldNames ? '' : 'user', subBuilder: $1.User.create)
     ..hasRequiredFields = false
   ;
 
@@ -607,15 +607,15 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $43.User get user => $_getN(2);
+  $1.User get user => $_getN(2);
   @$pb.TagNumber(3)
-  set user($43.User v) { setField(3, v); }
+  set user($1.User v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUser() => $_has(2);
   @$pb.TagNumber(3)
   void clearUser() => clearField(3);
   @$pb.TagNumber(3)
-  $43.User ensureUser() => $_ensure(2);
+  $1.User ensureUser() => $_ensure(2);
 }
 
 class UpdatePasswordRequest extends $pb.GeneratedMessage {
@@ -1153,8 +1153,8 @@ class IDDocument extends $pb.GeneratedMessage {
     $core.String? documentBackUrl,
     VerificationStatus? verificationStatus,
     $core.String? rejectionReason,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? verifiedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? verifiedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -1222,8 +1222,8 @@ class IDDocument extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'documentBackUrl')
     ..e<VerificationStatus>(12, _omitFieldNames ? '' : 'verificationStatus', $pb.PbFieldType.OE, defaultOrMaker: VerificationStatus.VERIFICATION_STATUS_PENDING, valueOf: VerificationStatus.valueOf, enumValues: VerificationStatus.values)
     ..aOS(13, _omitFieldNames ? '' : 'rejectionReason')
-    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(15, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1366,26 +1366,26 @@ class IDDocument extends $pb.GeneratedMessage {
   void clearRejectionReason() => clearField(13);
 
   @$pb.TagNumber(14)
-  $42.Timestamp get createdAt => $_getN(13);
+  $2.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($42.Timestamp v) { setField(14, v); }
+  set createdAt($2.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $42.Timestamp ensureCreatedAt() => $_ensure(13);
+  $2.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $42.Timestamp get verifiedAt => $_getN(14);
+  $2.Timestamp get verifiedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set verifiedAt($42.Timestamp v) { setField(15, v); }
+  set verifiedAt($2.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasVerifiedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearVerifiedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $42.Timestamp ensureVerifiedAt() => $_ensure(14);
+  $2.Timestamp ensureVerifiedAt() => $_ensure(14);
 }
 
 class UploadIDDocumentRequest extends $pb.GeneratedMessage {
@@ -1789,8 +1789,8 @@ class FacialData extends $pb.GeneratedMessage {
     $core.String? faceEncoding,
     $core.String? imageUrl,
     $core.bool? isVerified,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? lastVerifiedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? lastVerifiedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -1830,8 +1830,8 @@ class FacialData extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'faceEncoding')
     ..aOS(5, _omitFieldNames ? '' : 'imageUrl')
     ..aOB(6, _omitFieldNames ? '' : 'isVerified')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'lastVerifiedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(8, _omitFieldNames ? '' : 'lastVerifiedAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1911,26 +1911,26 @@ class FacialData extends $pb.GeneratedMessage {
   void clearIsVerified() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get createdAt => $_getN(6);
+  $2.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($42.Timestamp v) { setField(7, v); }
+  set createdAt($2.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureCreatedAt() => $_ensure(6);
+  $2.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get lastVerifiedAt => $_getN(7);
+  $2.Timestamp get lastVerifiedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set lastVerifiedAt($42.Timestamp v) { setField(8, v); }
+  set lastVerifiedAt($2.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLastVerifiedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastVerifiedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureLastVerifiedAt() => $_ensure(7);
+  $2.Timestamp ensureLastVerifiedAt() => $_ensure(7);
 }
 
 class UserRegisterFaceRequest extends $pb.GeneratedMessage {
@@ -2788,7 +2788,7 @@ class DevicePermission extends $pb.GeneratedMessage {
   factory DevicePermission({
     PermissionType? permissionType,
     $core.bool? isGranted,
-    $42.Timestamp? grantedAt,
+    $2.Timestamp? grantedAt,
   }) {
     final $result = create();
     if (permissionType != null) {
@@ -2809,7 +2809,7 @@ class DevicePermission extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DevicePermission', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..e<PermissionType>(1, _omitFieldNames ? '' : 'permissionType', $pb.PbFieldType.OE, defaultOrMaker: PermissionType.PERMISSION_TYPE_CAMERA, valueOf: PermissionType.valueOf, enumValues: PermissionType.values)
     ..aOB(2, _omitFieldNames ? '' : 'isGranted')
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'grantedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'grantedAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -2853,15 +2853,15 @@ class DevicePermission extends $pb.GeneratedMessage {
   void clearIsGranted() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get grantedAt => $_getN(2);
+  $2.Timestamp get grantedAt => $_getN(2);
   @$pb.TagNumber(3)
-  set grantedAt($42.Timestamp v) { setField(3, v); }
+  set grantedAt($2.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasGrantedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearGrantedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureGrantedAt() => $_ensure(2);
+  $2.Timestamp ensureGrantedAt() => $_ensure(2);
 }
 
 class UpdateDevicePermissionsRequest extends $pb.GeneratedMessage {

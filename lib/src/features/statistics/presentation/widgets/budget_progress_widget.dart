@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../generated/statistics.pb.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 
 /// Budget Progress Widget
 /// Displays budget progress with visual indicators
@@ -23,11 +24,11 @@ class BudgetProgressWidget extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A1A1A).withValues(alpha: 0.08),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -43,7 +44,7 @@ class BudgetProgressWidget extends StatelessWidget {
               children: [
                 Icon(
                   Icons.account_balance_wallet,
-                  color: const Color(0xFF4E03D0),
+                  color: const Color(0xFF3B82F6),
                   size: 24.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -52,7 +53,7 @@ class BudgetProgressWidget extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1A1A1A),
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -108,7 +109,7 @@ class _BudgetProgressItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1A1A1A),
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -136,7 +137,7 @@ class _BudgetProgressItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(6.r),
             child: LinearProgressIndicator(
               value: percentage / 100,
-              backgroundColor: const Color(0xFFE5E7EB),
+              backgroundColor: const Color(0xFF2D2D2D),
               valueColor: AlwaysStoppedAnimation<Color>(status.color),
               minHeight: 8.h,
             ),
@@ -149,17 +150,17 @@ class _BudgetProgressItem extends StatelessWidget {
             children: [
               _DetailItem(
                 label: 'Spent',
-                value: '\$${progress.spentAmount.toStringAsFixed(2)}',
+                value: CurrencySymbols.formatAmount(progress.spentAmount),
                 color: const Color(0xFFEF4444),
               ),
               _DetailItem(
                 label: 'Budget',
-                value: '\$${progress.budgetAmount.toStringAsFixed(2)}',
-                color: const Color(0xFF4E03D0),
+                value: CurrencySymbols.formatAmount(progress.budgetAmount),
+                color: const Color(0xFF3B82F6),
               ),
               _DetailItem(
                 label: 'Remaining',
-                value: '\$${remaining.toStringAsFixed(2)}',
+                value: CurrencySymbols.formatAmount(remaining),
                 color: remaining >= 0
                     ? const Color(0xFF10B981)
                     : const Color(0xFFEF4444),
@@ -222,7 +223,7 @@ class _DetailItem extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12.sp,
-            color: const Color(0xFF6B7280),
+            color: const Color(0xFF9CA3AF),
           ),
         ),
         SizedBox(height: 4.h),

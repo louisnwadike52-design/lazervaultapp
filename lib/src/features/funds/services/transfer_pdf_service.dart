@@ -21,6 +21,8 @@ class TransferPdfService {
 
   /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
   static String _currencySymbolFor(String code) {
+    // Use ASCII-safe currency codes instead of symbols (₦, £, €, ¥)
+    // This ensures PDFs work correctly across all viewers
     switch (code.toUpperCase()) {
       case 'NGN':
         return 'NGN ';
@@ -40,6 +42,36 @@ class TransferPdfService {
         return 'INR ';
       case 'JPY':
         return 'JPY ';
+      case 'KES':
+        return 'KES ';
+      case 'GHS':
+        return 'GHS ';
+      case 'EGP':
+        return 'EGP ';
+      case 'UGX':
+        return 'UGX ';
+      case 'ZMW':
+        return 'ZMW ';
+      case 'RWF':
+        return 'RWF ';
+      case 'XAF':
+        return 'XAF ';
+      case 'XOF':
+        return 'XOF ';
+      case 'CDF':
+        return 'CDF ';
+      case 'SLL':
+        return 'SLL ';
+      case 'GMD':
+        return 'GMD ';
+      case 'LRD':
+        return 'LRD ';
+      case 'SOS':
+        return 'SOS ';
+      case 'SZL':
+        return 'SZL ';
+      case 'ZWL':
+        return 'ZWL ';
       default:
         return '$code ';
     }
@@ -366,43 +398,15 @@ class TransferPdfService {
         children: [
           _buildSummaryRow('Value Date', transactionDate),
           _buildSummaryRow('Operation Date', transactionDate),
-          pw.Container(
-            padding: const pw.EdgeInsets.symmetric(vertical: 4),
-            decoration: const pw.BoxDecoration(
-              border: pw.Border(
-                bottom: pw.BorderSide(color: PdfColors.grey200, width: 0.5),
-              ),
-            ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(
-                  'Status',
-                  style: _getTextStyle(fontSize: 11, color: PdfColors.grey700),
-                ),
-                pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: pw.BoxDecoration(
-                    color: statusColor.shade(50),
-                    borderRadius: pw.BorderRadius.circular(4),
-                  ),
-                  child: pw.Text(
-                    status,
-                    style: _getTextStyle(fontSize: 10, isBold: true)
-                        .copyWith(color: statusColor),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _buildSummaryRow('Type', type),
-          _buildSummaryRow('Network', network),
+          _buildSummaryRow('Status', status, isStatus: true),
         ],
       ),
     );
   }
 
-  static pw.Widget _buildSummaryRow(String label, String value) {
+  static pw.Widget _buildSummaryRow(String label, String value, {bool isStatus = false}) {
+    final statusColor = _getStatusColor(value);
+
     return pw.Container(
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
       decoration: const pw.BoxDecoration(
@@ -419,11 +423,33 @@ class TransferPdfService {
           ),
           pw.Text(
             value,
-            style: _getTextStyle(fontSize: 11),
+            style: _getTextStyle(
+              fontSize: isStatus ? 10 : 11,
+              isBold: isStatus,
+              color: isStatus ? statusColor : null,
+            ),
           ),
         ],
       ),
     );
+  }
+
+  static PdfColor _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'success':
+      case 'successful':
+        return PdfColors.green700;
+      case 'pending':
+      case 'processing':
+        return PdfColors.orange700;
+      case 'failed':
+        return PdfColors.red700;
+      case 'scheduled':
+        return PdfColors.blue700;
+      default:
+        return PdfColors.grey700;
+    }
   }
 
   static pw.Widget _buildTransferDetails({

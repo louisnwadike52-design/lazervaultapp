@@ -186,6 +186,24 @@ message GetGlobalMarketDataResponse {
 }
 
 // ============================================================================
+// EXCHANGE RATE
+// ============================================================================
+
+message GetExchangeRateRequest {
+  string crypto_id = 1;
+  string fiat_currency = 2; // e.g., NGN, GBP, USD
+}
+
+message GetExchangeRateResponse {
+  string crypto_id = 1;
+  string fiat_currency = 2;
+  double rate = 3;             // Current exchange rate
+  double fee_percentage = 4;   // Platform fee percentage
+  double spread = 5;           // Spread markup
+  google.protobuf.Timestamp valid_until = 6; // Rate expiry time
+}
+
+// ============================================================================
 // WALLET & TRADING METHODS
 // ============================================================================
 
@@ -219,7 +237,7 @@ message GetCryptoTransactionsRequest {
 
 message CryptoTransaction {
   string id = 1;
-  string type = 2; // buy, sell, deposit, withdrawal
+  string type = 2; // buy, sell, swap, deposit, withdrawal
   string crypto_id = 3;
   string crypto_symbol = 4;
   double amount = 5;
@@ -227,6 +245,8 @@ message CryptoTransaction {
   string fiat_currency = 7;
   google.protobuf.Timestamp timestamp = 8;
   string status = 9;
+  double fee = 10;
+  double exchange_rate = 11;
 }
 
 message GetCryptoTransactionsResponse {
@@ -240,6 +260,8 @@ message BuyCryptoRequest {
   string crypto_id = 2;
   double fiat_amount = 3;
   string fiat_currency = 4;
+  string transaction_pin = 5;    // Required: user's transaction PIN
+  string idempotency_key = 6;    // Required: prevents duplicate execution
 }
 
 message BuyCryptoResponse {
@@ -248,6 +270,9 @@ message BuyCryptoResponse {
   double crypto_amount = 3;
   double fiat_amount = 4;
   string status = 5;
+  double fee = 6;                // Platform fee charged
+  double exchange_rate = 7;      // Rate used for the trade
+  double net_amount = 8;         // Fiat amount after fee deduction
 }
 
 // Sell Crypto
@@ -256,6 +281,8 @@ message SellCryptoRequest {
   string crypto_id = 2;
   double crypto_amount = 3;
   string fiat_currency = 4;
+  string transaction_pin = 5;    // Required: user's transaction PIN
+  string idempotency_key = 6;    // Required: prevents duplicate execution
 }
 
 message SellCryptoResponse {
@@ -264,6 +291,9 @@ message SellCryptoResponse {
   double fiat_amount = 3;
   double crypto_amount = 4;
   string status = 5;
+  double fee = 6;                // Platform fee charged
+  double exchange_rate = 7;      // Rate used for the trade
+  double net_amount = 8;         // Fiat amount after fee deduction
 }
 
 // Convert Crypto
@@ -272,6 +302,8 @@ message ConvertCryptoRequest {
   string from_crypto_id = 2;
   string to_crypto_id = 3;
   double from_amount = 4;
+  string transaction_pin = 5;    // Required: user's transaction PIN
+  string idempotency_key = 6;    // Required: prevents duplicate execution
 }
 
 message ConvertCryptoResponse {
@@ -279,6 +311,8 @@ message ConvertCryptoResponse {
   double to_amount = 2;
   double rate = 3;
   string status = 4;
+  double fee = 5;                // Platform fee charged
+  double from_amount = 6;        // Original amount (for confirmation)
 }
 
 // Get Wallets
@@ -323,6 +357,62 @@ message GetWalletBalanceResponse {
   string crypto_id = 2;
   double balance = 3;
   double fiat_value = 4;
+}
+
+// ============================================================================
+// WATCHLIST METHODS
+// ============================================================================
+
+message CryptoWatchlistProto {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string crypto_ids = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateWatchlistRequest {
+  string name = 1;
+  string description = 2;
+}
+
+message CreateWatchlistResponse {
+  CryptoWatchlistProto watchlist = 1;
+}
+
+message GetWatchlistsRequest {
+  // User ID extracted from JWT
+}
+
+message GetWatchlistsResponse {
+  repeated CryptoWatchlistProto watchlists = 1;
+}
+
+message AddToWatchlistRequest {
+  string watchlist_id = 1;
+  string crypto_id = 2;
+}
+
+message AddToWatchlistResponse {
+  CryptoWatchlistProto watchlist = 1;
+}
+
+message RemoveFromWatchlistRequest {
+  string watchlist_id = 1;
+  string crypto_id = 2;
+}
+
+message RemoveFromWatchlistResponse {
+  CryptoWatchlistProto watchlist = 1;
+}
+
+message DeleteWatchlistRequest {
+  string watchlist_id = 1;
+}
+
+message DeleteWatchlistResponse {
+  bool success = 1;
 }
 
 // ============================================================================
@@ -399,6 +489,13 @@ service CryptoService {
     };
   }
 
+  // Get live exchange rate for a crypto/fiat pair
+  rpc GetExchangeRate(GetExchangeRateRequest) returns (GetExchangeRateResponse) {
+    option (google.api.http) = {
+      get: "/v1/crypto/exchange-rate"
+    };
+  }
+
   // Get user's crypto holdings
   rpc GetCryptoHoldings(GetCryptoHoldingsRequest) returns (GetCryptoHoldingsResponse) {
     option (google.api.http) = {
@@ -456,6 +553,44 @@ service CryptoService {
   rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
     option (google.api.http) = {
       get: "/v1/crypto/wallets/{wallet_id}/balance"
+    };
+  }
+
+  // Create a new watchlist
+  rpc CreateWatchlist(CreateWatchlistRequest) returns (CreateWatchlistResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/watchlists"
+      body: "*"
+    };
+  }
+
+  // Get user's watchlists
+  rpc GetWatchlists(GetWatchlistsRequest) returns (GetWatchlistsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crypto/watchlists"
+    };
+  }
+
+  // Add crypto to a watchlist
+  rpc AddToWatchlist(AddToWatchlistRequest) returns (AddToWatchlistResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/watchlists/{watchlist_id}/add"
+      body: "*"
+    };
+  }
+
+  // Remove crypto from a watchlist
+  rpc RemoveFromWatchlist(RemoveFromWatchlistRequest) returns (RemoveFromWatchlistResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/watchlists/{watchlist_id}/remove"
+      body: "*"
+    };
+  }
+
+  // Delete a watchlist
+  rpc DeleteWatchlist(DeleteWatchlistRequest) returns (DeleteWatchlistResponse) {
+    option (google.api.http) = {
+      delete: "/v1/crypto/watchlists/{watchlist_id}"
     };
   }
 }

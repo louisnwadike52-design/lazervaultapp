@@ -3,12 +3,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../utils/member_rating_calculator.dart';
+import 'member_star_rating.dart';
 
 /// Dialog showing detailed member information with permission-based actions
 class MemberDetailDialog extends StatelessWidget {
   final GroupMember member;
   final GroupAccount group;
   final String currentUserId;
+  final List<Contribution> contributions;
   final ContributionMember? contributionMember;
   final Contribution? contribution;
   final VoidCallback? onChangeRole;
@@ -19,6 +22,7 @@ class MemberDetailDialog extends StatelessWidget {
     required this.member,
     required this.group,
     required this.currentUserId,
+    this.contributions = const [],
     this.contributionMember,
     this.contribution,
     this.onChangeRole,
@@ -67,6 +71,7 @@ class MemberDetailDialog extends StatelessWidget {
           children: [
             _buildHeader(context),
             _buildMemberInfo(),
+            if (contributions.isNotEmpty) _buildAIRating(),
             if (contributionMember != null && contribution != null)
               _buildContributionProgress(),
             if (_canManageMember) _buildActions(context),
@@ -380,6 +385,17 @@ class MemberDetailDialog extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAIRating() {
+    final rating = MemberRatingCalculator.calculateRating(member, contributions);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+      child: MemberStarRating(
+        rating: rating,
+        compact: false,
+      ),
     );
   }
 

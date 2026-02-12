@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
+import '../../../../../core/types/app_routes.dart';
 
-/// Processing screen with multi-step progress animation for gift card purchase
 class GiftCardPurchaseProcessingScreen extends StatefulWidget {
   const GiftCardPurchaseProcessingScreen({super.key});
 
@@ -19,49 +19,14 @@ class _GiftCardPurchaseProcessingScreenState
     extends State<GiftCardPurchaseProcessingScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation<double> _rotationAnimation;
-  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-
-    // Setup animations
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
-
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.linear,
-    ));
-
-    _pulseAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    // Start purchase processing
-    final args = Get.arguments as Map<String, dynamic>;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<GiftCardCubit>().purchaseGiftCard(
-            brandId: args['brandId'],
-            amount: args['amount'],
-            currency: args['currency'],
-            brand: args['brand'],
-            userBalance: args['userBalance'] ?? 0.0,
-            recipientEmail: args['recipientEmail'],
-            recipientName: args['recipientName'],
-            message: args['message'],
-          );
-    });
   }
 
   @override
@@ -73,26 +38,20 @@ class _GiftCardPurchaseProcessingScreenState
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false, // Prevent back navigation during processing
+      canPop: false,
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         body: BlocListener<GiftCardCubit, GiftCardState>(
           listener: (context, state) {
             if (state is GiftCardPurchaseCompleted) {
-              // Navigate to confirmation screen
               Get.offNamed(
-                '/gift-cards/purchase-confirmation',
-                arguments: {
-                  'giftCard': state.giftCard,
-                  'receiptUrl': state.receiptUrl,
-                  'transactionId': state.transactionId,
-                },
+                AppRoutes.giftCardDetails,
+                arguments: state.giftCard,
               );
             } else if (state is GiftCardPurchaseError ||
                 state is GiftCardInsufficientFunds ||
                 state is GiftCardNetworkError ||
                 state is GiftCardSoldOut) {
-              // Show error and go back
               _showErrorDialog(state);
             }
           },
@@ -112,50 +71,32 @@ class _GiftCardPurchaseProcessingScreenState
                   child: Column(
                     children: [
                       SizedBox(height: 60.h),
-
-                      // Animated Processing Icon
                       _buildAnimatedIcon(),
-
                       SizedBox(height: 40.h),
-
-                      // Processing Title
                       Text(
                         'Processing Your Purchase',
                         style: GoogleFonts.inter(
-                          fontSize: 24.sp,
+                          fontSize: 22.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                         textAlign: TextAlign.center,
                       ),
-
                       SizedBox(height: 12.h),
-
-                      // Current Step
                       Text(
                         currentStep,
                         style: GoogleFonts.inter(
-                          fontSize: 15.sp,
-                          color: Colors.grey[400],
+                          fontSize: 14.sp,
+                          color: const Color(0xFF9CA3AF),
                         ),
                         textAlign: TextAlign.center,
                       ),
-
                       SizedBox(height: 40.h),
-
-                      // Progress Bar
                       _buildProgressBar(progress),
-
                       SizedBox(height: 40.h),
-
-                      // Step Indicators
                       _buildStepIndicators(progress),
-
                       const Spacer(),
-
-                      // Security Message
                       _buildSecurityMessage(),
-
                       SizedBox(height: 20.h),
                     ],
                   ),
@@ -172,31 +113,24 @@ class _GiftCardPurchaseProcessingScreenState
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _pulseAnimation.value,
-          child: Transform.rotate(
-            angle: _rotationAnimation.value * 2 * 3.14159,
+        return Container(
+          width: 100.w,
+          height: 100.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+          ),
+          child: Center(
             child: Container(
-              width: 120.w,
-              height: 120.w,
-              decoration: BoxDecoration(
+              width: 72.w,
+              height: 72.w,
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                    blurRadius: 30,
-                    spreadRadius: 5,
-                  ),
-                ],
+                color: Color(0xFF3B82F6),
               ),
               child: Icon(
                 Icons.card_giftcard,
-                size: 60.sp,
+                size: 36.sp,
                 color: Colors.white,
               ),
             ),
@@ -215,28 +149,29 @@ class _GiftCardPurchaseProcessingScreenState
             Text(
               'Progress',
               style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                color: Colors.grey[500],
+                fontSize: 13.sp,
+                color: const Color(0xFF9CA3AF),
               ),
             ),
             Text(
               '${(progress * 100).toInt()}%',
               style: GoogleFonts.inter(
-                fontSize: 14.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF3B82F6),
               ),
             ),
           ],
         ),
-        SizedBox(height: 12.h),
+        SizedBox(height: 10.h),
         ClipRRect(
-          borderRadius: BorderRadius.circular(8.r),
+          borderRadius: BorderRadius.circular(6.r),
           child: LinearProgressIndicator(
             value: progress,
-            minHeight: 8.h,
-            backgroundColor: Colors.grey[800],
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+            minHeight: 6.h,
+            backgroundColor: const Color(0xFF1F1F1F),
+            valueColor:
+                const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
           ),
         ),
       ],
@@ -258,65 +193,56 @@ class _GiftCardPurchaseProcessingScreenState
         final step = entry.value;
         final isCompleted = progress >= (step['threshold'] as double);
         final isActive = !isCompleted &&
-            (index == 0 || progress >= (steps[index - 1]['threshold'] as double));
+            (index == 0 ||
+                progress >= (steps[index - 1]['threshold'] as double));
 
         return Padding(
-          padding: EdgeInsets.only(bottom: 16.h),
+          padding: EdgeInsets.only(bottom: 14.h),
           child: Row(
             children: [
-              // Step Number/Check Icon
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 32.w,
-                height: 32.w,
+              Container(
+                width: 28.w,
+                height: 28.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isCompleted
                       ? const Color(0xFF10B981)
                       : isActive
-                          ? const Color(0xFF6366F1)
-                          : Colors.grey[800],
+                          ? const Color(0xFF3B82F6)
+                          : const Color(0xFF1F1F1F),
                   border: Border.all(
                     color: isCompleted
                         ? const Color(0xFF10B981)
                         : isActive
-                            ? const Color(0xFF6366F1)
-                            : Colors.grey[700]!,
+                            ? const Color(0xFF3B82F6)
+                            : const Color(0xFF2D2D2D),
                     width: 2,
                   ),
                 ),
                 child: Center(
                   child: isCompleted
-                      ? Icon(
-                          Icons.check,
-                          size: 18.sp,
-                          color: Colors.white,
-                        )
+                      ? Icon(Icons.check, size: 16.sp, color: Colors.white)
                       : isActive
                           ? SizedBox(
                               width: 12.w,
                               height: 12.w,
-                              child: CircularProgressIndicator(
+                              child: const CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white),
                               ),
                             )
                           : Text(
                               '${index + 1}',
                               style: GoogleFonts.inter(
-                                fontSize: 12.sp,
+                                fontSize: 11.sp,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[600],
+                                color: const Color(0xFF9CA3AF),
                               ),
                             ),
                 ),
               ),
-
               SizedBox(width: 12.w),
-
-              // Step Label
               Expanded(
                 child: Text(
                   step['label'] as String,
@@ -329,7 +255,7 @@ class _GiftCardPurchaseProcessingScreenState
                         ? const Color(0xFF10B981)
                         : isActive
                             ? Colors.white
-                            : Colors.grey[600],
+                            : const Color(0xFF9CA3AF),
                   ),
                 ),
               ),
@@ -342,19 +268,17 @@ class _GiftCardPurchaseProcessingScreenState
 
   Widget _buildSecurityMessage() {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Row(
         children: [
           Icon(
             Icons.lock,
-            size: 20.sp,
+            size: 18.sp,
             color: const Color(0xFF10B981),
           ),
           SizedBox(width: 12.w),
@@ -363,7 +287,7 @@ class _GiftCardPurchaseProcessingScreenState
               'Your payment is encrypted and secure',
               style: GoogleFonts.inter(
                 fontSize: 13.sp,
-                color: Colors.grey[400],
+                color: const Color(0xFF9CA3AF),
               ),
             ),
           ),
@@ -380,11 +304,13 @@ class _GiftCardPurchaseProcessingScreenState
 
     if (state is GiftCardInsufficientFunds) {
       title = 'Insufficient Funds';
-      message = 'You need \$${state.required.toStringAsFixed(2)} but only have \$${state.available.toStringAsFixed(2)} in your wallet.';
+      message =
+          'You need ${state.required.toStringAsFixed(2)} but only have ${state.available.toStringAsFixed(2)} in your wallet.';
       icon = Icons.account_balance_wallet_outlined;
     } else if (state is GiftCardSoldOut) {
       title = 'Sold Out';
-      message = '${state.brandName} gift cards are currently sold out. Please try again later.';
+      message =
+          '${state.brandName} gift cards are currently sold out. Please try again later.';
       icon = Icons.inventory_2_outlined;
     } else if (state is GiftCardNetworkError) {
       title = 'Network Error';
@@ -404,13 +330,13 @@ class _GiftCardPurchaseProcessingScreenState
         ),
         title: Row(
           children: [
-            Icon(icon, color: iconColor, size: 28.sp),
+            Icon(icon, color: iconColor, size: 24.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
                 title,
                 style: GoogleFonts.inter(
-                  fontSize: 18.sp,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
@@ -422,7 +348,7 @@ class _GiftCardPurchaseProcessingScreenState
           message,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.grey[400],
+            color: const Color(0xFF9CA3AF),
             height: 1.5,
           ),
         ),
@@ -430,14 +356,14 @@ class _GiftCardPurchaseProcessingScreenState
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Get.back(); // Go back to payment method selection
+              Get.back();
             },
             child: Text(
               'Go Back',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF3B82F6),
               ),
             ),
           ),

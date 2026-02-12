@@ -9,6 +9,8 @@ abstract class GroupAccountRepository {
     required String description,
     required String adminId,
     Map<String, dynamic>? metadata,
+    GroupVisibility? visibility,
+    String? imageUrl,
   });
   Future<GroupAccount> updateGroup(GroupAccount group);
   Future<void> deleteGroup(String groupId);
@@ -107,4 +109,14 @@ abstract class GroupAccountRepository {
   // Activity Log methods
   Future<List<ActivityLogEntry>> getGroupActivityLogs(String groupId);
   Future<List<ActivityLogEntry>> getContributionActivityLogs(String contributionId);
-} 
+
+  // Public Group Discovery methods
+  Future<List<GroupAccount>> listPublicGroups({
+    int page = 1,
+    int pageSize = 20,
+    String? sortBy,
+    String? searchQuery,
+  });
+  Future<PublicGroupDetail> getPublicGroup(String groupId);
+  Future<GroupAccount> joinPublicGroup(String groupId);
+}

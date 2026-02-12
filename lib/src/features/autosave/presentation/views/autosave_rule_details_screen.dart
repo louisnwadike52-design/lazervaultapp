@@ -4,11 +4,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:get_it/get_it.dart';
+import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 class AutoSaveRuleDetailsScreen extends StatefulWidget {
   const AutoSaveRuleDetailsScreen({super.key});
@@ -17,7 +24,11 @@ class AutoSaveRuleDetailsScreen extends StatefulWidget {
   State<AutoSaveRuleDetailsScreen> createState() => _AutoSaveRuleDetailsScreenState();
 }
 
-class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
+class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   late AutoSaveRuleEntity rule;
   bool _isTogglingRule = false;
   bool _isDeletingRule = false;
@@ -33,11 +44,36 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
   }
 
   Future<void> _fetchAccountNames() async {
-    // For now, use account type as name (can be enhanced later to fetch actual names)
-    setState(() {
-      _sourceAccountName = 'Account ${rule.sourceAccountId.substring(0, 8)}...';
-      _destinationAccountName = 'Account ${rule.destinationAccountId.substring(0, 8)}...';
-    });
+    // Look up real account names from AccountCardsSummaryCubit
+    final accountState = context.read<AccountCardsSummaryCubit>().state;
+    if (accountState is AccountCardsSummaryLoaded) {
+      final source = accountState.accountSummaries.where(
+        (a) => a.id.toString() == rule.sourceAccountId,
+      );
+      final dest = accountState.accountSummaries.where(
+        (a) => a.id.toString() == rule.destinationAccountId,
+      );
+      setState(() {
+        _sourceAccountName = source.isNotEmpty
+            ? '${source.first.accountType} (****${source.first.accountNumberLast4})'
+            : _truncateId(rule.sourceAccountId);
+        _destinationAccountName = dest.isNotEmpty
+            ? '${dest.first.accountType} (****${dest.first.accountNumberLast4})'
+            : _truncateId(rule.destinationAccountId);
+      });
+    } else {
+      setState(() {
+        _sourceAccountName = _truncateId(rule.sourceAccountId);
+        _destinationAccountName = _truncateId(rule.destinationAccountId);
+      });
+    }
+  }
+
+  String _truncateId(String id) {
+    if (id.length >= 8) {
+      return 'Account ${id.substring(0, 8)}...';
+    }
+    return 'Account $id';
   }
 
   void _showConfirmationDialog({
@@ -148,16 +184,28 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
     );
   }
 
-  void _triggerManualSave() {
-    _showConfirmationDialog(
-      title: 'Trigger Manual Save',
-      message: 'This will immediately execute a save based on this rule\'s settings. The amount will be transferred from your source account to your destination account.',
-      confirmColor: const Color.fromARGB(255, 78, 3, 208),
-      confirmText: 'Trigger Save',
-      onConfirm: () {
-        setState(() => _isTriggeringRule = true);
-        context.read<AutoSaveCubit>().triggerSave(ruleId: rule.id);
-      },
+  void _triggerManualSave() async {
+    HapticFeedback.mediumImpact();
+
+    final idPrefix = rule.id.length >= 8 ? rule.id.substring(0, 8) : rule.id;
+    final transactionId = 'AUTOSAVE-$idPrefix';
+
+    final pinResult = await validatePinOnly(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'autosave_trigger',
+      amount: rule.amountValue,
+      currency: rule.currency,
+    );
+
+    if (pinResult == null || !pinResult.success) return;
+
+    setState(() => _isTriggeringRule = true);
+
+    if (!mounted) return;
+    context.read<AutoSaveCubit>().triggerSave(
+      ruleId: rule.id,
+      transactionPinToken: pinResult.verificationToken ?? '',
     );
   }
 
@@ -186,11 +234,11 @@ Amount: ${_getAmountDescription()}
 Source Account: ${_sourceAccountName ?? rule.sourceAccountId}
 Destination Account: ${_destinationAccountName ?? rule.destinationAccountId}
 
-Total Saved: \$${rule.totalSaved.toStringAsFixed(2)}
+Total Saved: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.totalSaved, rule.currency)}
 Times Triggered: ${rule.triggerCount}
-${rule.targetAmount != null ? 'Target: \$${rule.targetAmount!.toStringAsFixed(2)}' : ''}
-${rule.minimumBalance != null ? 'Min Balance: \$${rule.minimumBalance!.toStringAsFixed(2)}' : ''}
-${rule.maximumPerSave != null ? 'Max Per Save: \$${rule.maximumPerSave!.toStringAsFixed(2)}' : ''}
+${rule.targetAmount != null ? 'Target: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.targetAmount!, rule.currency)}' : ''}
+${rule.minimumBalance != null ? 'Min Balance: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.minimumBalance!, rule.currency)}' : ''}
+${rule.maximumPerSave != null ? 'Max Per Save: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.maximumPerSave!, rule.currency)}' : ''}
 
 Created: ${DateFormat('MMM dd, yyyy').format(rule.createdAt)}
 ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').format(rule.lastTriggeredAt!)}' : ''}
@@ -255,7 +303,7 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
             return 'Scheduled';
         }
       case TriggerType.roundUp:
-        return 'Round Up to \$${rule.roundUpTo ?? 0}';
+        return 'Round Up to ${currency_formatter.CurrencySymbols.formatAmountWithCurrency((rule.roundUpTo ?? 0).toDouble(), rule.currency)}';
       default:
         return 'Unknown';
     }
@@ -269,7 +317,7 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
 
   String _getAmountDescription() {
     if (rule.amountType == AmountType.fixed) {
-      return '\$${rule.amountValue.toStringAsFixed(2)}';
+      return currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.amountValue, rule.currency);
     } else {
       return '${rule.amountValue.toStringAsFixed(0)}% of deposit';
     }
@@ -330,7 +378,7 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
 
           Get.snackbar(
             'Success',
-            'Manual save triggered successfully for \$${state.transaction.amount.toStringAsFixed(2)}',
+            'Manual save triggered successfully for ${state.transaction.formattedAmount}',
             backgroundColor: const Color(0xFF10B981),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP,
@@ -713,7 +761,7 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
           if (rule.targetAmount != null) ...[
             _buildDetailRow(
               'Target Amount',
-              '\$${rule.targetAmount!.toStringAsFixed(2)}',
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.targetAmount!, rule.currency),
             ),
             SizedBox(height: 8.h),
             _buildProgressBar(),
@@ -722,14 +770,14 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
           if (rule.minimumBalance != null) ...[
             _buildDetailRow(
               'Minimum Balance',
-              '\$${rule.minimumBalance!.toStringAsFixed(2)}',
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.minimumBalance!, rule.currency),
             ),
             SizedBox(height: 12.h),
           ],
           if (rule.maximumPerSave != null)
             _buildDetailRow(
               'Maximum Per Save',
-              '\$${rule.maximumPerSave!.toStringAsFixed(2)}',
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.maximumPerSave!, rule.currency),
             ),
         ],
       ),
@@ -751,7 +799,7 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '\$${rule.totalSaved.toStringAsFixed(2)}',
+              currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.totalSaved, rule.currency),
               style: GoogleFonts.inter(
                 color: const Color.fromARGB(255, 78, 3, 208),
                 fontSize: 14.sp,
@@ -830,7 +878,7 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
               Expanded(
                 child: _buildStatItem(
                   'Total Saved',
-                  '\$${rule.totalSaved.toStringAsFixed(2)}',
+                  currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.totalSaved, rule.currency),
                   Icons.savings_outlined,
                   const Color(0xFF10B981),
                 ),

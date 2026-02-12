@@ -4,14 +4,14 @@ enum AppServiceName {
   tagPay,
   invoice,
   payInvoice,
-  payElectricityBill,
+  payBills,
   invest,
   stocks,
   exchange,
   crypto,
   giftCards,
   aiScanToPay,
-  barcodeQuickPay,
+  qrPay,
   contactlessPay,
   groupAccount,
   insurance,
@@ -20,6 +20,11 @@ enum AppServiceName {
   crowdfund,
   lockFunds,
   whatsappIntegration,
+  payroll,
+  businessDashboard,
+  businessAnalytics,
+  customers,
+  expenses,
 }
 
 extension AppServiceNameExtension on AppServiceName {
@@ -35,8 +40,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Invoices';
       case AppServiceName.payInvoice:
         return 'Invoices';
-      case AppServiceName.payElectricityBill:
-        return 'Pay Electricity Bill';
+      case AppServiceName.payBills:
+        return 'Pay Bills';
       case AppServiceName.invest:
         return 'Invest';
       case AppServiceName.stocks:
@@ -49,8 +54,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Gift Cards';
       case AppServiceName.aiScanToPay:
         return 'AI Scan to Pay';
-      case AppServiceName.barcodeQuickPay:
-        return 'Barcode QuickPay';
+      case AppServiceName.qrPay:
+        return 'QR Pay';
       case AppServiceName.contactlessPay:
         return 'Contactless Pay';
       case AppServiceName.groupAccount:
@@ -67,6 +72,16 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Lock Funds';
       case AppServiceName.whatsappIntegration:
         return 'WhatsApp Banking';
+      case AppServiceName.payroll:
+        return 'Payroll';
+      case AppServiceName.businessDashboard:
+        return 'Dashboard';
+      case AppServiceName.businessAnalytics:
+        return 'Analytics';
+      case AppServiceName.customers:
+        return 'Customers';
+      case AppServiceName.expenses:
+        return 'Expenses';
     }
   }
 
@@ -84,7 +99,7 @@ extension AppServiceNameExtension on AppServiceName {
         return 'invoice-service';
       case AppServiceName.payInvoice:
         return 'invoice-service';
-      case AppServiceName.payElectricityBill:
+      case AppServiceName.payBills:
         return 'utility-payments-service';
       case AppServiceName.invest:
         return 'investments-service';
@@ -98,8 +113,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'giftcards-service';
       case AppServiceName.aiScanToPay:
         return 'core-payments-service';
-      case AppServiceName.barcodeQuickPay:
-        return 'core-payments-service';
+      case AppServiceName.qrPay:
+        return 'qr-pay-service';
       case AppServiceName.contactlessPay:
         return 'contactless-payment-service';
       case AppServiceName.groupAccount:
@@ -116,6 +131,16 @@ extension AppServiceNameExtension on AppServiceName {
         return 'accounts-service';
       case AppServiceName.whatsappIntegration:
         return 'whatsapp-service';
+      case AppServiceName.payroll:
+        return 'payroll-service';
+      case AppServiceName.businessDashboard:
+        return 'accounts-service';
+      case AppServiceName.businessAnalytics:
+        return 'accounts-service';
+      case AppServiceName.customers:
+        return 'payroll-service';
+      case AppServiceName.expenses:
+        return 'accounts-service';
     }
   }
 }
@@ -133,14 +158,14 @@ enum AppServiceImg {
   tagPay,
   invoice,
   payInvoice,
-  payElectricityBill,
+  payBills,
   invest,
   stocks,
   exchange,
   crypto,
   giftCards,
   aiScanToPay,
-  barcodeQuickPay,
+  qrPay,
   contactlessPay,
   groupAccount,
   insurance,
@@ -149,6 +174,11 @@ enum AppServiceImg {
   crowdfund,
   lockFunds,
   whatsappIntegration,
+  payroll,
+  businessDashboard,
+  businessAnalytics,
+  customers,
+  expenses,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -164,7 +194,7 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/money-receive.png';
       case AppServiceImg.payInvoice:
         return 'assets/images/wallet.png';
-      case AppServiceImg.payElectricityBill:
+      case AppServiceImg.payBills:
         return 'assets/images/receive-square.png';
       case AppServiceImg.invest:
         return 'assets/images/trending-up.png';
@@ -178,8 +208,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/gift-cards.png';
       case AppServiceImg.aiScanToPay:
         return 'assets/images/ai-scan.png';
-      case AppServiceImg.barcodeQuickPay:
-        return 'assets/images/barcode.png';
+      case AppServiceImg.qrPay:
+        return 'assets/images/qr-pay.png';
       case AppServiceImg.contactlessPay:
         return 'assets/images/contactless.png';
       case AppServiceImg.groupAccount:
@@ -196,6 +226,16 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/lock.png';
       case AppServiceImg.whatsappIntegration:
         return 'assets/images/whatsapp-banking.png';
+      case AppServiceImg.payroll:
+        return 'assets/images/payroll.png';
+      case AppServiceImg.businessDashboard:
+        return 'assets/images/payroll.png';
+      case AppServiceImg.businessAnalytics:
+        return 'assets/images/trending-up.png';
+      case AppServiceImg.customers:
+        return 'assets/images/group-account.png';
+      case AppServiceImg.expenses:
+        return 'assets/images/receive-square.png';
     }
   }
 }

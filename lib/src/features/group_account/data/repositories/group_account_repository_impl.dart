@@ -36,6 +36,8 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     required String description,
     required String adminId,
     Map<String, dynamic>? metadata,
+    GroupVisibility? visibility,
+    String? imageUrl,
   }) async {
     try {
       final groupModel = await remoteDataSource.createGroup(
@@ -43,6 +45,8 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         description: description,
         adminId: adminId,
         metadata: metadata,
+        visibility: visibility,
+        imageUrl: imageUrl,
       );
       return groupModel;
     } catch (e) {
@@ -405,6 +409,44 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       return logModels.map((m) => m.toEntity()).toList();
     } catch (e) {
       throw Exception('Failed to get contribution activity logs: $e');
+    }
+  }
+
+  @override
+  Future<List<GroupAccount>> listPublicGroups({
+    int page = 1,
+    int pageSize = 20,
+    String? sortBy,
+    String? searchQuery,
+  }) async {
+    try {
+      final groupModels = await remoteDataSource.listPublicGroups(
+        page: page,
+        pageSize: pageSize,
+        sortBy: sortBy,
+        searchQuery: searchQuery,
+      );
+      return groupModels.cast<GroupAccount>();
+    } catch (e) {
+      throw Exception('Failed to list public groups: $e');
+    }
+  }
+
+  @override
+  Future<PublicGroupDetail> getPublicGroup(String groupId) async {
+    try {
+      return await remoteDataSource.getPublicGroup(groupId);
+    } catch (e) {
+      throw Exception('Failed to get public group: $e');
+    }
+  }
+
+  @override
+  Future<GroupAccount> joinPublicGroup(String groupId) async {
+    try {
+      return await remoteDataSource.joinPublicGroup(groupId);
+    } catch (e) {
+      throw Exception('Failed to join public group: $e');
     }
   }
 } 

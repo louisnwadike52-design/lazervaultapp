@@ -25,6 +25,8 @@ abstract class CrowdfundRepository {
     String? statusFilter,
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
+    String? sortBy,
+    CrowdfundVisibility? visibility,
   });
 
   Future<List<Crowdfund>> searchCrowdfunds({
@@ -75,4 +77,12 @@ abstract class CrowdfundRepository {
 
   // Statistics
   Future<CrowdfundStatistics> getCrowdfundStatistics(String crowdfundId);
+
+  // Leaderboard
+  Future<List<LeaderboardEntry>> getCrowdfundLeaderboard({
+    LeaderboardSortBy sortBy = LeaderboardSortBy.mostFunded,
+    String? category,
+    int limit = 20,
+    int offset = 0,
+  });
 }

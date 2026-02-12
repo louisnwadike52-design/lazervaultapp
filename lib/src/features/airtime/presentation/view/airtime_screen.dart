@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import '../cubit/airtime_cubit.dart';
+import '../widgets/network_providers_card.dart';
 import '../widgets/quick_actions_card.dart';
 import '../widgets/recent_transactions_card.dart';
 
@@ -24,30 +26,21 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
 
   void _loadInitialData() {
     final cubit = context.read<AirtimeCubit>();
-    
-    // Load countries first
-    cubit.loadCountries();
-    
-    // Load transaction history with mock data
-    cubit.loadTransactionHistory('current_user');
+
+    // Load network providers for user's locale (default Nigeria)
+    cubit.loadNetworkProviders('NG');
+
+    // Load transaction history
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    cubit.loadTransactionHistory(userId);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1F1F1F),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
-            ],
-          ),
-        ),
+        color: const Color(0xFF0A0A0A),
         child: SafeArea(
           child: Column(
             children: [
@@ -65,9 +58,14 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
                       
                       // Quick Actions
                       QuickActionsCard(),
-                      
+
                       SizedBox(height: 24.h),
-                      
+
+                      // Network Providers
+                      NetworkProvidersCard(),
+
+                      SizedBox(height: 24.h),
+
                       // Recent Transactions
                       RecentTransactionsCard(),
                       

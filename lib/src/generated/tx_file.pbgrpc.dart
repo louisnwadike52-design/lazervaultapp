@@ -15,16 +15,16 @@ import 'dart:core' as $core;
 import 'package:grpc/service_api.dart' as $grpc;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'tx_file.pb.dart' as $36;
+import 'tx_file.pb.dart' as $0;
 
 export 'tx_file.pb.dart';
 
 @$pb.GrpcServiceName('pb.TxFileService')
 class TxFileServiceClient extends $grpc.Client {
-  static final _$getUserTxFileUrl = $grpc.ClientMethod<$36.GetUserTxFileUrlRequest, $36.GetUserTxFileUrlResponse>(
+  static final _$getUserTxFileUrl = $grpc.ClientMethod<$0.GetUserTxFileUrlRequest, $0.GetUserTxFileUrlResponse>(
       '/pb.TxFileService/GetUserTxFileUrl',
-      ($36.GetUserTxFileUrlRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $36.GetUserTxFileUrlResponse.fromBuffer(value));
+      ($0.GetUserTxFileUrlRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetUserTxFileUrlResponse.fromBuffer(value));
 
   TxFileServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -32,7 +32,7 @@ class TxFileServiceClient extends $grpc.Client {
       : super(channel, options: options,
         interceptors: interceptors);
 
-  $grpc.ResponseFuture<$36.GetUserTxFileUrlResponse> getUserTxFileUrl($36.GetUserTxFileUrlRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.GetUserTxFileUrlResponse> getUserTxFileUrl($0.GetUserTxFileUrlRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserTxFileUrl, request, options: options);
   }
 }
@@ -42,18 +42,18 @@ abstract class TxFileServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.TxFileService';
 
   TxFileServiceBase() {
-    $addMethod($grpc.ServiceMethod<$36.GetUserTxFileUrlRequest, $36.GetUserTxFileUrlResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetUserTxFileUrlRequest, $0.GetUserTxFileUrlResponse>(
         'GetUserTxFileUrl',
         getUserTxFileUrl_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $36.GetUserTxFileUrlRequest.fromBuffer(value),
-        ($36.GetUserTxFileUrlResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $0.GetUserTxFileUrlRequest.fromBuffer(value),
+        ($0.GetUserTxFileUrlResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$36.GetUserTxFileUrlResponse> getUserTxFileUrl_Pre($grpc.ServiceCall call, $async.Future<$36.GetUserTxFileUrlRequest> request) async {
+  $async.Future<$0.GetUserTxFileUrlResponse> getUserTxFileUrl_Pre($grpc.ServiceCall call, $async.Future<$0.GetUserTxFileUrlRequest> request) async {
     return getUserTxFileUrl(call, await request);
   }
 
-  $async.Future<$36.GetUserTxFileUrlResponse> getUserTxFileUrl($grpc.ServiceCall call, $36.GetUserTxFileUrlRequest request);
+  $async.Future<$0.GetUserTxFileUrlResponse> getUserTxFileUrl($grpc.ServiceCall call, $0.GetUserTxFileUrlRequest request);
 }

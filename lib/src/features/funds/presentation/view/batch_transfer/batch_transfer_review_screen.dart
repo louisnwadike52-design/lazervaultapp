@@ -3,11 +3,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:uuid/uuid.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {
@@ -28,22 +31,14 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   Map<String, dynamic> transferData = {};
   Map<String, String> recipientNames = {};
-  final bool _isProcessing = false;
+  bool _isProcessing = false;
   late String _currency;
   late String _currencySymbol;
 
-  String _getCurrencySymbol(String currency) {
-    switch (currency) {
-      case 'NGN': return '\u20a6';
-      case 'GBP': return '£';
-      case 'USD': return '\$';
-      case 'EUR': return '€';
-      case 'GHS': return 'GH\u20b5';
-      case 'KES': return 'KSh';
-      case 'ZAR': return 'R';
-      default: return currency;
-    }
-  }
+  // Scheduling state
+  bool _isScheduled = false;
+  DateTime? _scheduledDate;
+  TimeOfDay? _scheduledTime;
 
   @override
   void initState() {
@@ -56,7 +51,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     _currency = transferData['currency'] as String? ??
         accountManager.activeAccountDetails?.currency ?? 'NGN';
     _currencySymbol = transferData['currencySymbol'] as String? ??
-        _getCurrencySymbol(_currency);
+        batchCurrencySymbol(_currency);
 
     _setupAnimations();
   }
@@ -85,16 +80,137 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     super.dispose();
   }
 
+  DateTime? get _scheduledDateTime {
+    if (!_isScheduled || _scheduledDate == null) return null;
+    final time = _scheduledTime ?? const TimeOfDay(hour: 9, minute: 0);
+    return DateTime(
+      _scheduledDate!.year,
+      _scheduledDate!.month,
+      _scheduledDate!.day,
+      time.hour,
+      time.minute,
+    );
+  }
+
+  Future<void> _selectScheduleDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _scheduledDate ?? DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now().add(const Duration(hours: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: btBlue,
+              onPrimary: btTextPrimary,
+              surface: btCardElevated,
+              onSurface: btTextPrimary,
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: btCard,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (date != null && mounted) {
+      setState(() {
+        _scheduledDate = date;
+      });
+      _selectScheduleTime();
+    }
+  }
+
+  Future<void> _selectScheduleTime() async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: _scheduledTime ?? const TimeOfDay(hour: 9, minute: 0),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: btBlue,
+              onPrimary: btTextPrimary,
+              surface: btCardElevated,
+              onSurface: btTextPrimary,
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: btCard,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (time != null && mounted) {
+      setState(() {
+        _scheduledTime = time;
+      });
+    }
+  }
+
   void _confirmTransfer() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+
     // Calculate total amount for PIN validation
     final recipients = transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+
+    if (recipients.isEmpty) {
+      setState(() => _isProcessing = false);
+      _showError('No recipients found. Please go back and add recipients.');
+      return;
+    }
+
     final totalAmount = recipients.fold<double>(
       0.0,
       (sum, recipient) => sum + (recipient.amount.toDouble() / 100),
     );
 
+    if (totalAmount <= 0) {
+      setState(() => _isProcessing = false);
+      _showError('Total amount must be greater than zero.');
+      return;
+    }
+
+    // Client-side balance check
+    final accountManager = GetIt.I<AccountManager>();
+    final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
+    final availableBalance = selectedAccount?.balance ?? accountManager.activeAccountDetails?.balance ?? 0.0;
+
+    if (totalAmount > availableBalance) {
+      setState(() => _isProcessing = false);
+      _showError('Insufficient balance. Available: $_currencySymbol${availableBalance.toStringAsFixed(2)}');
+      return;
+    }
+
+    // Validate schedule if set
+    if (_isScheduled) {
+      final scheduledDt = _scheduledDateTime;
+      if (scheduledDt == null) {
+        setState(() => _isProcessing = false);
+        _showError('Please select a date and time for the scheduled transfer.');
+        return;
+      }
+      if (scheduledDt.isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
+        setState(() => _isProcessing = false);
+        _showError('Scheduled time must be at least 5 minutes in the future.');
+        return;
+      }
+    }
+
     // Generate unique transaction ID
     final transactionId = 'batch_transfer_${const Uuid().v4()}';
+
+    final pinMessage = _isScheduled
+        ? 'Schedule batch transfer of $_currencySymbol${totalAmount.toStringAsFixed(2)} to ${recipients.length} ${recipients.length == 1 ? 'recipient' : 'recipients'}?'
+        : 'Confirm batch transfer of $_currencySymbol${totalAmount.toStringAsFixed(2)} to ${recipients.length} ${recipients.length == 1 ? 'recipient' : 'recipients'}?';
 
     // Validate PIN before processing batch transfer
     final success = await validateTransactionPin(
@@ -103,29 +219,48 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       transactionType: 'batch_transfer',
       amount: totalAmount,
       currency: _currency,
-      title: 'Confirm Batch Transfer',
-      message: 'Confirm batch transfer of $_currencySymbol${totalAmount.toStringAsFixed(2)} to ${recipients.length} ${recipients.length == 1 ? 'recipient' : 'recipients'}?',
+      title: _isScheduled ? 'Schedule Batch Transfer' : 'Confirm Batch Transfer',
+      message: pinMessage,
       onPinValidated: (verificationToken) async {
-        // PIN is valid, proceed with batch transfer
         _executeBatchTransferWithToken(transactionId, verificationToken);
       },
     );
 
     if (!success) {
-      // PIN validation failed or was cancelled
-      // User has already been notified via the mixin
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
-  /// Execute batch transfer with verification token
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        backgroundColor: btRed,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   void _executeBatchTransferWithToken(String transactionId, String verificationToken) {
-    // Add verification token and currency to transfer data
     transferData['transactionId'] = transactionId;
     transferData['verificationToken'] = verificationToken;
     transferData['currency'] = _currency;
     transferData['currencySymbol'] = _currencySymbol;
 
-    // Navigate to processing screen with all transfer data
+    // Extract sender info from selected account for receipt/PDF
+    final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
+    if (selectedAccount != null) {
+      transferData['senderAccountName'] = selectedAccount.displayName;
+      transferData['senderAccountInfo'] = '\u2022\u2022\u2022\u2022 ${selectedAccount.accountNumberLast4}';
+    }
+
+    if (_isScheduled && _scheduledDateTime != null) {
+      transferData['scheduledAt'] = _scheduledDateTime!.toUtc().toIso8601String();
+      transferData['isScheduled'] = true;
+    }
+
     Get.offNamed(
       AppRoutes.batchTransferProcessing,
       arguments: transferData,
@@ -135,20 +270,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F23),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF0F0F23),
-              const Color(0xFF0A0A1A),
-            ],
-          ),
-        ),
-        child: SafeArea(
+      backgroundColor: btBackground,
+      body: SafeArea(
           child: Column(
             children: [
               _buildHeader(),
@@ -164,30 +287,25 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
               _buildConfirmButton(),
             ],
           ),
-        ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Get.back(),
             child: Container(
-              width: 40.w,
-              height: 40.w,
+              width: 44.w,
+              height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12.r),
+                color: btCardElevated,
+                borderRadius: BorderRadius.circular(22.r),
               ),
-              child: Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.white,
-                size: 20.sp,
-              ),
+              child: Icon(Icons.arrow_back_ios_new, color: btTextPrimary, size: 18.sp),
             ),
           ),
           SizedBox(width: 16.w),
@@ -198,17 +316,16 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                 Text(
                   'Review Transfer',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: btTextPrimary,
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 2.h),
                 Text(
-                  'Please confirm your batch transfer details',
+                  'Confirm your batch transfer details',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: btTextSecondary,
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -228,10 +345,10 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       (sum, recipient) => sum + (recipient.amount.toDouble() / 100),
     );
     final category = transferData['category'] as String?;
-    final reference = transferData['reference'] as String?;
+    final reference = transferData['batchReference'] as String?;
+    final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
 
-    // Calculate fee (0.5% for internal transfers)
-    final fee = totalAmount * 0.005;
+    const fee = 0.0;
     final grandTotal = totalAmount + fee;
 
     return SingleChildScrollView(
@@ -241,22 +358,34 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
         children: [
           SizedBox(height: 20.h),
 
+          // Source account card
+          if (selectedAccount != null)
+            _buildSourceAccountCard(selectedAccount, grandTotal),
+
+          if (selectedAccount != null)
+            SizedBox(height: 20.h),
+
           // Transaction summary card
           _buildTransactionSummaryCard(totalAmount, recipients.length),
 
-          SizedBox(height: 24.h),
+          SizedBox(height: 20.h),
 
-          // Batch details card (if reference or category exists)
+          // Schedule toggle
+          _buildScheduleSection(),
+
+          SizedBox(height: 20.h),
+
+          // Batch details card
           if (reference != null && reference.isNotEmpty || category != null && category.isNotEmpty)
             _buildBatchDetailsCard(reference, category),
 
           if (reference != null && reference.isNotEmpty || category != null && category.isNotEmpty)
-            SizedBox(height: 24.h),
+            SizedBox(height: 20.h),
 
           // Recipients list card
           _buildRecipientsCard(recipients),
 
-          SizedBox(height: 24.h),
+          SizedBox(height: 20.h),
 
           // Payment breakdown card
           _buildPaymentBreakdownCard(totalAmount, fee, grandTotal),
@@ -267,46 +396,259 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
   }
 
+  Widget _buildSourceAccountCard(AccountSummaryEntity account, double total) {
+    final hasInsufficientBalance = total > account.balance;
+
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: btCard,
+        borderRadius: BorderRadius.circular(16.r),
+        border: hasInsufficientBalance
+            ? Border.all(color: btRed.withValues(alpha: 0.5))
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.account_balance_wallet_outlined, color: btTextSecondary, size: 16.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'Sending From',
+                style: GoogleFonts.inter(
+                  color: btTextSecondary,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: btBlue.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(Icons.account_balance_wallet, color: btBlue, size: 22.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      account.displayName,
+                      style: GoogleFonts.inter(
+                        color: btTextPrimary,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      '\u2022\u2022\u2022\u2022 ${account.accountNumberLast4} \u2022 ${account.currency}',
+                      style: GoogleFonts.inter(
+                        color: btTextSecondary,
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Balance',
+                    style: GoogleFonts.inter(color: btTextTertiary, fontSize: 11.sp),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    '$_currencySymbol${account.balance.toStringAsFixed(2)}',
+                    style: GoogleFonts.inter(
+                      color: hasInsufficientBalance ? btRed : btGreen,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          if (hasInsufficientBalance) ...[
+            SizedBox(height: 12.h),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: btRed.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: btRed.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: btRed, size: 16.sp),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Insufficient balance for this transfer',
+                      style: GoogleFonts.inter(color: btRed, fontSize: 12.sp, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScheduleSection() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: btCard,
+        borderRadius: BorderRadius.circular(16.r),
+        border: _isScheduled ? Border.all(color: btOrange.withValues(alpha: 0.3)) : null,
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: btOrange.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(Icons.schedule_outlined, color: btOrange, size: 20.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Schedule Transfer',
+                      style: GoogleFonts.inter(
+                        color: btTextPrimary,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      _isScheduled ? 'Transfer will be executed at scheduled time' : 'Send immediately or schedule for later',
+                      style: GoogleFonts.inter(
+                        color: btTextSecondary,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: _isScheduled,
+                onChanged: (value) {
+                  setState(() {
+                    _isScheduled = value;
+                    if (value && _scheduledDate == null) {
+                      _selectScheduleDate();
+                    }
+                  });
+                },
+                activeThumbColor: btOrange,
+                activeTrackColor: btOrange.withValues(alpha: 0.3),
+                inactiveThumbColor: btTextTertiary,
+                inactiveTrackColor: btBorder,
+              ),
+            ],
+          ),
+          if (_isScheduled) ...[
+            SizedBox(height: 12.h),
+            GestureDetector(
+              onTap: _selectScheduleDate,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(14.w),
+                decoration: BoxDecoration(
+                  color: btBackground,
+                  borderRadius: BorderRadius.circular(12.r),
+                          ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined, color: btOrange, size: 18.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_scheduledDate != null) ...[
+                            Text(
+                              DateFormat('EEEE, MMMM dd, yyyy').format(_scheduledDate!),
+                              style: GoogleFonts.inter(
+                                color: btTextPrimary,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (_scheduledTime != null)
+                              Text(
+                                'at ${_scheduledTime!.format(context)}',
+                                style: GoogleFonts.inter(
+                                  color: btOrange,
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                          ] else
+                            Text(
+                              'Tap to select date & time',
+                              style: GoogleFonts.inter(
+                                color: btTextTertiary,
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: btTextTertiary, size: 20.sp),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildTransactionSummaryCard(double totalAmount, int recipientCount) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: btCard,
         borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         children: [
-          // Icon and title
           Row(
             children: [
               Container(
-                width: 60.w,
-                height: 60.w,
+                width: 52.w,
+                height: 52.w,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue[600]!, Colors.blue[500]!],
-                  ),
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue[600]!.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  color: btBlue.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(26.r),
                 ),
-                child: Icon(
-                  Icons.batch_prediction,
-                  color: Colors.white,
-                  size: 28.sp,
-                ),
+                child: Icon(Icons.send_rounded, color: btBlue, size: 24.sp),
               ),
               SizedBox(width: 16.w),
               Expanded(
@@ -314,19 +656,19 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Batch Transfer',
+                      _isScheduled ? 'Scheduled Batch Transfer' : 'Batch Transfer',
                       style: GoogleFonts.inter(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: btTextPrimary,
                       ),
                     ),
                     SizedBox(height: 4.h),
                     Text(
                       '$recipientCount ${recipientCount == 1 ? 'recipient' : 'recipients'}',
                       style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 13.sp,
+                        color: btTextSecondary,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -338,21 +680,20 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
           SizedBox(height: 20.h),
 
-          // Amount display
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: btBackground,
               borderRadius: BorderRadius.circular(12.r),
-            ),
+                  ),
             child: Column(
               children: [
                 Text(
                   'Total Amount',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: btTextSecondary,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -362,7 +703,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   style: GoogleFonts.inter(
                     fontSize: 32.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: btTextPrimary,
                   ),
                 ),
               ],
@@ -377,15 +718,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: btCard,
         borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,7 +729,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             style: GoogleFonts.inter(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: btTextPrimary,
             ),
           ),
           SizedBox(height: 16.h),
@@ -414,15 +748,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: btCard,
         borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -432,7 +759,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             style: GoogleFonts.inter(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: btTextPrimary,
             ),
           ),
           SizedBox(height: 16.h),
@@ -453,14 +780,13 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   Widget _buildRecipientRow(BatchTransferRecipient recipient, int index) {
     final amount = recipient.amount.toDouble() / 100;
-    // Get the recipient name from the map, or use a fallback
-    final recipientId = recipient.recipientId?.toString() ?? '0';
+    final recipientId = recipient.toAccountNumber;
     final recipientName = recipientNames[recipientId] ?? 'Recipient ${index + 1}';
 
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: btBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -469,16 +795,14 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.purple[600]!, Colors.purple[500]!],
-              ),
+              color: btBlue.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 recipientName[0].toUpperCase(),
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: btBlue,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -493,7 +817,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                 Text(
                   recipientName,
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: btTextPrimary,
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -502,7 +826,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   Text(
                     recipient.reference!,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: btTextSecondary,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -513,7 +837,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           Text(
             '$_currencySymbol${amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: btTextPrimary,
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,
             ),
@@ -527,15 +851,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: btCard,
         borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -545,15 +862,23 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             style: GoogleFonts.inter(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: btTextPrimary,
             ),
           ),
           SizedBox(height: 16.h),
           _buildBreakdownRow('Transfer Amount', totalAmount),
           SizedBox(height: 8.h),
-          _buildBreakdownRow('Service Fee (0.5%)', fee),
+          _buildBreakdownRow('Service Fee', fee),
+          if (_isScheduled && _scheduledDateTime != null) ...[
+            SizedBox(height: 8.h),
+            _buildBreakdownRowText(
+              'Scheduled For',
+              DateFormat('MMM dd, yyyy \u2022 HH:mm').format(_scheduledDateTime!),
+              valueColor: btOrange,
+            ),
+          ],
           SizedBox(height: 12.h),
-          Divider(color: Colors.white.withValues(alpha: 0.1)),
+          Divider(color: btBorder),
           SizedBox(height: 12.h),
           _buildBreakdownRow('Total Amount', grandTotal, isTotal: true),
         ],
@@ -569,16 +894,19 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withValues(alpha: 0.6),
+            color: btTextSecondary,
             fontWeight: FontWeight.w400,
           ),
         ),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: 14.sp,
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
+        Flexible(
+          child: Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              color: btTextPrimary,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.right,
           ),
         ),
       ],
@@ -593,16 +921,40 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
-            color: isTotal ? Colors.white : Colors.white.withValues(alpha: 0.6),
+            color: isTotal ? btTextPrimary : btTextSecondary,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
         Text(
-          '$_currencySymbol${amount.toStringAsFixed(2)}',
+          amount == 0 && !isTotal ? 'Free' : '$_currencySymbol${amount.toStringAsFixed(2)}',
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
-            color: Colors.white,
+            color: amount == 0 && !isTotal ? btGreen : (isTotal ? btGreen : btTextPrimary),
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBreakdownRowText(String label, String value, {Color? valueColor}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 14.sp,
+            color: btTextSecondary,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 14.sp,
+            color: valueColor ?? btTextPrimary,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -611,36 +963,51 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   Widget _buildConfirmButton() {
     return Container(
-      padding: EdgeInsets.all(20.w),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56.h,
-        child: ElevatedButton(
-          onPressed: _isProcessing ? null : _confirmTransfer,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: btCard,
+        border: Border(top: BorderSide(color: btBorder)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          width: double.infinity,
+          height: 52.h,
+          child: ElevatedButton(
+            onPressed: _isProcessing ? null : _confirmTransfer,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _isScheduled ? btOrange : btBlue,
+              foregroundColor: btTextPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
             ),
+            child: _isProcessing
+                ? SizedBox(
+                    height: 20.h,
+                    width: 20.w,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(btTextPrimary),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _isScheduled ? Icons.schedule : Icons.lock_outlined,
+                        size: 18.sp,
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        _isScheduled ? 'Schedule Transfer' : 'Confirm Transfer',
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
-          child: _isProcessing
-              ? SizedBox(
-                  height: 20.h,
-                  width: 20.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(
-                  'Confirm Transfer',
-                  style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
         ),
       ),
     );

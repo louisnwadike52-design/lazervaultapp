@@ -1,153 +1,81 @@
 import 'package:bloc/bloc.dart';
-import 'package:fixnum/fixnum.dart';
+import 'package:grpc/grpc.dart';
 
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_batch_transfer_usecase.dart';
-import 'package:lazervault/src/features/funds/domain/usecases/get_batch_transfer_history_usecase.dart';
 
 class BatchTransferCubit extends Cubit<BatchTransferState> {
   final InitiateBatchTransferUseCase initiateBatchTransferUseCase;
-  final GetBatchTransferHistoryUseCase getBatchTransferHistoryUseCase;
-  final GetBatchTransferStatusUseCase getBatchTransferStatusUseCase;
+  bool _isProcessing = false;
 
   BatchTransferCubit({
     required this.initiateBatchTransferUseCase,
-    required this.getBatchTransferHistoryUseCase,
-    required this.getBatchTransferStatusUseCase,
   }) : super(const BatchTransferInitial());
 
+  bool _isNetworkError(dynamic error) {
+    if (error is GrpcError) {
+      return error.code == StatusCode.unavailable ||
+          error.code == StatusCode.deadlineExceeded ||
+          error.code == StatusCode.unknown;
+    }
+    final errorStr = error.toString().toLowerCase();
+    return errorStr.contains('network') ||
+        errorStr.contains('connection') ||
+        errorStr.contains('timeout') ||
+        errorStr.contains('unavailable') ||
+        errorStr.contains('failed to connect') ||
+        errorStr.contains('socket') ||
+        errorStr.contains('unreachable');
+  }
+
   Future<void> initiateBatchTransfer({
-    required Int64 fromAccountId,
+    required String fromAccountId,
     required List<BatchTransferRecipient> recipients,
-    required String accessToken,
-    String? category,
-    String? reference,
+    required String transactionId,
+    required String verificationToken,
     DateTime? scheduledAt,
   }) async {
-    print("BatchTransferCubit: initiateBatchTransfer method entered.");
-    if (isClosed) return;
+    if (_isProcessing || isClosed) return;
+    _isProcessing = true;
     emit(const BatchTransferLoading());
 
     final params = InitiateBatchTransferParams(
       fromAccountId: fromAccountId,
       recipients: recipients,
-      accessToken: accessToken,
-      category: category,
-      reference: reference,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
       scheduledAt: scheduledAt,
     );
 
-    print("BatchTransferCubit: initiateBatchTransfer called with params: $params");
-    print("BatchTransferCubit: Calling initiateBatchTransferUseCase...");
-
     try {
       final result = await initiateBatchTransferUseCase(params);
-      print("BatchTransferCubit: Use case call completed. Result: $result");
 
       if (isClosed) return;
       result.fold(
         (failure) {
-          print("BatchTransferCubit: Emitting Failure - ${failure.message}");
-          emit(BatchTransferFailure(
-              message: failure.message));
+          emit(BatchTransferFailure(message: failure.message));
         },
         (batchTransferEntity) {
-          print("BatchTransferCubit: Emitting Success - Response: $batchTransferEntity");
-          emit(BatchTransferSuccess(response: batchTransferEntity));
+          if (batchTransferEntity.status == 'partial' ||
+              batchTransferEntity.status == 'partially_failed') {
+            emit(BatchTransferPartialSuccess(response: batchTransferEntity));
+          } else {
+            emit(BatchTransferSuccess(response: batchTransferEntity));
+          }
         },
       );
-    } catch (e, stackTrace) {
-      print("BatchTransferCubit: Error caught BEFORE result.fold: $e\n$stackTrace");
+    } catch (e) {
       if (isClosed) return;
-      emit(BatchTransferFailure(
-          message: 'Error during batch transfer process: ${e.toString()}'));
+      if (_isNetworkError(e)) {
+        emit(const BatchTransferNetworkError(
+            message: 'No internet connection. Please check your network and try again.'));
+      } else {
+        emit(BatchTransferFailure(
+            message: 'Error during batch transfer process: ${e.toString()}'));
+      }
+    } finally {
+      _isProcessing = false;
     }
   }
-
-  Future<void> getBatchTransferHistory({
-    required String accessToken,
-    int limit = 20,
-    int offset = 0,
-  }) async {
-    print("BatchTransferCubit: getBatchTransferHistory method entered.");
-    if (isClosed) return;
-    emit(const BatchTransferHistoryLoading());
-
-    final params = GetBatchTransferHistoryParams(
-      accessToken: accessToken,
-      limit: limit,
-      offset: offset,
-    );
-
-    print("BatchTransferCubit: getBatchTransferHistory called with params: $params");
-
-    try {
-      final result = await getBatchTransferHistoryUseCase(params);
-      print("BatchTransferCubit: History use case call completed. Result: $result");
-
-      if (isClosed) return;
-      result.fold(
-        (failure) {
-          print("BatchTransferCubit: Emitting History Failure - ${failure.message}");
-          emit(BatchTransferFailure(
-              message: failure.message));
-        },
-        (historyList) {
-          print("BatchTransferCubit: Emitting History Success - Response: $historyList");
-          emit(BatchTransferHistorySuccess(history: historyList));
-        },
-      );
-    } catch (e, stackTrace) {
-      print("BatchTransferCubit: Error caught in history fetch: $e\n$stackTrace");
-      if (isClosed) return;
-      emit(BatchTransferFailure(
-          message: 'Error during batch transfer history fetch: ${e.toString()}'));
-    }
-  }
-
-  Future<void> getBatchTransferStatus({
-    required Int64 batchId,
-    required String accessToken,
-  }) async {
-    print("BatchTransferCubit: getBatchTransferStatus method entered for batch ID: $batchId");
-
-    // Preserve current history if it exists
-    final currentHistory = state is BatchTransferHistorySuccess
-        ? (state as BatchTransferHistorySuccess).history
-        : <BatchTransferEntity>[];
-
-    if (isClosed) return;
-    emit(BatchTransferStatusLoading(history: currentHistory));
-
-    final params = GetBatchTransferStatusParams(
-      batchId: batchId,
-      accessToken: accessToken,
-    );
-
-    print("BatchTransferCubit: getBatchTransferStatus called with params: $params");
-
-    try {
-      final result = await getBatchTransferStatusUseCase(params);
-      print("BatchTransferCubit: Status use case call completed. Result: $result");
-
-      if (isClosed) return;
-      result.fold(
-        (failure) {
-          print("BatchTransferCubit: Emitting Status Failure - ${failure.message}");
-          emit(BatchTransferFailure(
-              message: failure.message));
-        },
-        (batchTransferEntity) {
-          print("BatchTransferCubit: Emitting Status Success - Response: $batchTransferEntity");
-          emit(BatchTransferStatusSuccess(response: batchTransferEntity, history: currentHistory));
-        },
-      );
-    } catch (e, stackTrace) {
-      print("BatchTransferCubit: Error caught in status fetch: $e\n$stackTrace");
-      if (isClosed) return;
-      emit(BatchTransferFailure(
-          message: 'Error during batch transfer status fetch: ${e.toString()}'));
-    }
-  }
-} 
+}

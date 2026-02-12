@@ -1,42 +1,92 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:lazervault/core/errors/failure.dart';
 import '../entities/gift_card_entity.dart';
- 
+
 abstract class IGiftCardRepository {
-  Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrands();
-  Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrandsByCategory(GiftCardCategory category);
-  Future<Either<Failure, List<GiftCardBrand>>> searchGiftCardBrands(String query);
-  Future<Either<Failure, GiftCardBrand>> getGiftCardBrandById(String brandId);
-  
-  Future<Either<Failure, GiftCard>> purchaseGiftCard({
+  Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrands({
+    String? category,
+    String? countryCode,
+  });
+
+  Future<Either<Failure, GiftCard>> buyGiftCard({
     required String brandId,
     required double amount,
-    required String currency,
+    required String transactionId,
+    required String verificationToken,
+    int? productId,
     String? recipientEmail,
     String? recipientName,
-    String? message,
+    String? giftMessage,
+    String? senderName,
+    String? recipientPhone,
+    String? countryCode,
+    String? idempotencyKey,
+    int quantity,
   });
-  
-  Future<Either<Failure, List<GiftCard>>> getUserGiftCards();
+
+  Future<Either<Failure, List<GiftCard>>> getUserGiftCards({
+    String? status,
+    String? brandId,
+    int limit,
+    int offset,
+  });
+
   Future<Either<Failure, GiftCard>> getGiftCardById(String giftCardId);
-  Future<Either<Failure, GiftCard>> redeemGiftCard(String giftCardId, String code);
-  
-  Future<Either<Failure, List<GiftCardTransaction>>> getGiftCardTransactions();
-  Future<Either<Failure, GiftCardTransaction>> getTransactionById(String transactionId);
-  
-  Future<Either<Failure, GiftCard>> sendGiftCard({
+
+  Future<Either<Failure, List<GiftCardTransaction>>> getGiftCardHistory({
+    String? giftCardId,
+    String? transactionType,
+    int limit,
+    int offset,
+  });
+
+  Future<Either<Failure, GiftCard>> redeemGiftCard({
+    required String accountId,
+    required String cardNumber,
+    required String cardPin,
+  });
+
+  Future<Either<Failure, GiftCard>> transferGiftCard({
     required String giftCardId,
     required String recipientEmail,
-    String? message,
+    required String recipientName,
+    required String message,
+    required String transactionId,
+    required String verificationToken,
   });
-  
-  Future<Either<Failure, bool>> validateGiftCardCode(String code);
-  Future<Either<Failure, double>> getGiftCardBalance(String giftCardId);
-  
-  Future<Either<Failure, GiftCard>> sellGiftCard({
-    required String giftCardId,
-    required double sellingPrice,
+
+  Future<Either<Failure, GiftCardBalance>> getGiftCardBalance({
+    required String cardNumber,
+    required String cardPin,
   });
-  
-  Future<Either<Failure, List<GiftCard>>> getResellableGiftCards();
-} 
+
+  // Sell flow methods
+
+  Future<Either<Failure, List<SellableCard>>> getSellableCards();
+
+  Future<Either<Failure, SellRate>> getSellRate({
+    required String cardType,
+    required double denomination,
+    String? currency,
+  });
+
+  Future<Either<Failure, GiftCardSale>> sellGiftCard({
+    required String cardType,
+    required String cardNumber,
+    required String cardPin,
+    required double denomination,
+    required String transactionId,
+    required String verificationToken,
+    String? currency,
+    List<String>? images,
+    String? idempotencyKey,
+  });
+
+  Future<Either<Failure, GiftCardSale>> getSellStatus(String saleId);
+
+  Future<Either<Failure, List<GiftCardSale>>> getMySales({
+    String? status,
+    int limit,
+    int offset,
+  });
+}

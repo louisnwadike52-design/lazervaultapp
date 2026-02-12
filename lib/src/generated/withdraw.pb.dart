@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 import 'withdraw.pbenum.dart';
 
 export 'withdraw.pbenum.dart';
@@ -30,9 +30,9 @@ class WithdrawalTransaction extends $pb.GeneratedMessage {
     $core.String? targetAccountNumber,
     $core.String? targetSortCode,
     WithdrawalStatus? status,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? completedAt,
-    $42.Timestamp? failedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? completedAt,
+    $1.Timestamp? failedAt,
     $core.String? failureReason,
   }) {
     final $result = create();
@@ -87,9 +87,9 @@ class WithdrawalTransaction extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'targetAccountNumber')
     ..aOS(9, _omitFieldNames ? '' : 'targetSortCode')
     ..e<WithdrawalStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: WithdrawalStatus.WITHDRAWAL_STATUS_UNSPECIFIED, valueOf: WithdrawalStatus.valueOf, enumValues: WithdrawalStatus.values)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'failedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'failedAt', subBuilder: $1.Timestamp.create)
     ..aOS(14, _omitFieldNames ? '' : 'failureReason')
     ..hasRequiredFields = false
   ;
@@ -190,37 +190,37 @@ class WithdrawalTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(10);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get createdAt => $_getN(8);
+  $1.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(11)
-  set createdAt($42.Timestamp v) { setField(11, v); }
+  set createdAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureCreatedAt() => $_ensure(8);
+  $1.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get completedAt => $_getN(9);
+  $1.Timestamp get completedAt => $_getN(9);
   @$pb.TagNumber(12)
-  set completedAt($42.Timestamp v) { setField(12, v); }
+  set completedAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCompletedAt() => $_has(9);
   @$pb.TagNumber(12)
   void clearCompletedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureCompletedAt() => $_ensure(9);
+  $1.Timestamp ensureCompletedAt() => $_ensure(9);
 
   @$pb.TagNumber(13)
-  $42.Timestamp get failedAt => $_getN(10);
+  $1.Timestamp get failedAt => $_getN(10);
   @$pb.TagNumber(13)
-  set failedAt($42.Timestamp v) { setField(13, v); }
+  set failedAt($1.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasFailedAt() => $_has(10);
   @$pb.TagNumber(13)
   void clearFailedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $42.Timestamp ensureFailedAt() => $_ensure(10);
+  $1.Timestamp ensureFailedAt() => $_ensure(10);
 
   @$pb.TagNumber(14)
   $core.String get failureReason => $_getSZ(11);
@@ -494,10 +494,10 @@ class GetWithdrawalDetailsResponse extends $pb.GeneratedMessage {
     $core.String? targetAccountNumber,
     $core.String? targetSortCode,
     WithdrawalStatus? status,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? processingAt,
-    $42.Timestamp? completedAt,
-    $42.Timestamp? failedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? processingAt,
+    $1.Timestamp? completedAt,
+    $1.Timestamp? failedAt,
     $core.String? failureReason,
     $core.String? externalTransactionId,
   }) {
@@ -559,10 +559,10 @@ class GetWithdrawalDetailsResponse extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'target_account_number')
     ..aOS(7, _omitFieldNames ? '' : 'target_sort_code')
     ..e<WithdrawalStatus>(8, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: WithdrawalStatus.WITHDRAWAL_STATUS_UNSPECIFIED, valueOf: WithdrawalStatus.valueOf, enumValues: WithdrawalStatus.values)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'created_at', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'processing_at', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'completed_at', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'failed_at', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'created_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'processing_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'completed_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'failed_at', subBuilder: $1.Timestamp.create)
     ..aOS(13, _omitFieldNames ? '' : 'failure_reason')
     ..aOS(14, _omitFieldNames ? '' : 'external_transaction_id')
     ..hasRequiredFields = false
@@ -663,48 +663,48 @@ class GetWithdrawalDetailsResponse extends $pb.GeneratedMessage {
   void clearStatus() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get createdAt => $_getN(8);
+  $1.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($42.Timestamp v) { setField(9, v); }
+  set createdAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureCreatedAt() => $_ensure(8);
+  $1.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get processingAt => $_getN(9);
+  $1.Timestamp get processingAt => $_getN(9);
   @$pb.TagNumber(10)
-  set processingAt($42.Timestamp v) { setField(10, v); }
+  set processingAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasProcessingAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearProcessingAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureProcessingAt() => $_ensure(9);
+  $1.Timestamp ensureProcessingAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get completedAt => $_getN(10);
+  $1.Timestamp get completedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set completedAt($42.Timestamp v) { setField(11, v); }
+  set completedAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCompletedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCompletedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureCompletedAt() => $_ensure(10);
+  $1.Timestamp ensureCompletedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get failedAt => $_getN(11);
+  $1.Timestamp get failedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set failedAt($42.Timestamp v) { setField(12, v); }
+  set failedAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasFailedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearFailedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureFailedAt() => $_ensure(11);
+  $1.Timestamp ensureFailedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get failureReason => $_getSZ(12);

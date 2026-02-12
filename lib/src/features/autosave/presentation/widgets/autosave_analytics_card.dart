@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 
 class AutoSaveAnalyticsCard extends StatelessWidget {
@@ -55,7 +56,7 @@ class AutoSaveAnalyticsCard extends StatelessWidget {
               Expanded(
                 child: _buildStatItem(
                   label: 'Total Saved',
-                  value: '\$${totalSaved.toStringAsFixed(2)}',
+                  value: currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSaved, 'NGN'),
                   icon: Icons.savings,
                 ),
               ),
@@ -74,7 +75,7 @@ class AutoSaveAnalyticsCard extends StatelessWidget {
               Expanded(
                 child: _buildStatItem(
                   label: 'Avg Per Rule',
-                  value: '\$${avgSaved.toStringAsFixed(2)}',
+                  value: currency_formatter.CurrencySymbols.formatAmountWithCurrency(avgSaved.toDouble(), 'NGN'),
                   icon: Icons.trending_up,
                 ),
               ),

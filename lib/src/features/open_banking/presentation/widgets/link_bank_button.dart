@@ -33,10 +33,10 @@ class LinkBankButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6C5CE7),
+          backgroundColor: const Color(0xFF3B82F6),
           foregroundColor: Colors.white,
           elevation: 2,
-          shadowColor: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
+          shadowColor: const Color(0xFF3B82F6).withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
           ),
@@ -78,9 +78,9 @@ class LinkBankButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: isLoading ? null : onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFF6C5CE7),
+          foregroundColor: const Color(0xFF3B82F6),
           side: const BorderSide(
-            color: Color(0xFF6C5CE7),
+            color: Color(0xFF3B82F6),
             width: 1.5,
           ),
           shape: RoundedRectangleBorder(
@@ -92,7 +92,7 @@ class LinkBankButton extends StatelessWidget {
                 width: 22.w,
                 height: 22.w,
                 child: const CircularProgressIndicator(
-                  color: Color(0xFF6C5CE7),
+                  color: Color(0xFF3B82F6),
                   strokeWidth: 2,
                 ),
               )
@@ -136,14 +136,14 @@ class CompactLinkBankButton extends StatelessWidget {
       icon: Icon(
         Icons.add_circle_outline,
         size: 18.sp,
-        color: const Color(0xFF6C5CE7),
+        color: const Color(0xFF3B82F6),
       ),
       label: Text(
         label ?? 'Link Bank',
         style: TextStyle(
           fontSize: 13.sp,
           fontWeight: FontWeight.w600,
-          color: const Color(0xFF6C5CE7),
+          color: const Color(0xFF3B82F6),
         ),
       ),
       style: TextButton.styleFrom(

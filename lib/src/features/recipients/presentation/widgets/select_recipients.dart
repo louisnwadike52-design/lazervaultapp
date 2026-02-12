@@ -31,6 +31,9 @@ import 'package:get_it/get_it.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_transaction_history_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_transaction_history_modal.dart';
 import 'dart:io';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/qr_scan_confirmation_sheet.dart';
 
 class SelectRecipients extends StatefulWidget {
   const SelectRecipients({super.key});
@@ -62,6 +65,25 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       return authState.profile.session.accessToken;
     }
     return null;
+  }
+
+  /// Get initials from name - capitalize first letter of each word
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0].toUpperCase()}${parts[1][0].toUpperCase()}';
+    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return '??';
+  }
+
+  /// Convert to title case (only capitalize first letter of each word)
+  String _toTitleCase(String text) {
+    return text.trim().split(' ').map((word) {
+      if (word.isEmpty) return '';
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
   }
 
   @override
@@ -620,7 +642,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                   ),
                   child: Center(
                     child: Text(
-                      recipient.name.substring(0, 2).toUpperCase(),
+                      _getInitials(recipient.name),
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
@@ -631,11 +653,13 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                 ),
                 SizedBox(width: 16.w),
 
-                // Name, Alias, and Account Number
+                // Name, Alias, and Account Number - Expanded to take available space
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Name row with favorite icon
                       Row(
                         children: [
                           if (recipient.isFavorite)
@@ -649,7 +673,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             ),
                           Expanded(
                             child: Text(
-                              recipient.name,
+                              _toTitleCase(recipient.name),
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
@@ -662,6 +686,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                           ),
                         ],
                       ),
+                      // Alias row if exists
                       if (recipient.alias != null && recipient.alias!.isNotEmpty) ...[
                         SizedBox(height: 2.h),
                         Row(
@@ -687,36 +712,39 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                           ],
                         ),
                       ],
+                      // Account number row with bank info
                       SizedBox(height: 4.h),
-                      Text(
-                        recipient.accountNumber,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Colors.grey[600],
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            recipient.accountNumber,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          // Show bank name next to account number if not LazerVault
+                          if (recipient.bankName.toLowerCase() != 'lazervault') ...[
+                            SizedBox(width: 8.w),
+                            Text(
+                              '• ${recipient.bankName}',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: Colors.grey[500],
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
                 ),
+                SizedBox(width: 8.w),
 
-                // Bank info (hide for LazerVault platform recipients)
-                if (recipient.bankName.toLowerCase() != 'lazervault') ...[
-                  Flexible(
-                    child: Text(
-                      recipient.bankName,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: Colors.grey[500],
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.end,
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                ],
-
+                // Action icons - fixed position on the right
                 // Quick repeat transfer button
                 Material(
                   color: Colors.transparent,
@@ -724,7 +752,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                     borderRadius: BorderRadius.circular(20.r),
                     onTap: () => _quickSendToRecipient(recipient),
                     child: Padding(
-                      padding: EdgeInsets.all(8.w),
+                      padding: EdgeInsets.all(6.w),
                       child: Icon(
                         Icons.repeat,
                         color: const Color(0xFF4E03D0),
@@ -741,7 +769,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                     borderRadius: BorderRadius.circular(20.r),
                     onTap: () => _showRecipientOptionsSheet(recipient),
                     child: Padding(
-                      padding: EdgeInsets.all(8.w),
+                      padding: EdgeInsets.all(6.w),
                       child: Icon(
                         Icons.more_vert,
                         color: Colors.grey[600],
@@ -817,7 +845,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                     ),
                     child: Center(
                       child: Text(
-                        recipient.name.substring(0, 1).toUpperCase(),
+                        _getInitials(recipient.name),
                         style: TextStyle(
                           color: const Color(0xFF4E03D0),
                           fontSize: 20.sp,
@@ -832,7 +860,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          recipient.name,
+                          _toTitleCase(recipient.name),
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -1098,7 +1126,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             ),
                             SizedBox(height: 8.h),
                             Text(
-                              recipient.name.toUpperCase(),
+                              _toTitleCase(recipient.name),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 20.sp,
@@ -2369,36 +2397,123 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
   Future<void> _launchQRScanner() async {
     try {
+      // Step 1: Open QR scanner and wait for result
       final result = await Get.toNamed(AppRoutes.qrScanner);
 
-      if (result != null && result is Map<String, dynamic>) {
-        // QR code scanned successfully - create recipient from scanned data
+      if (result == null || result is! Map<String, dynamic>) return;
+      if (!mounted) return;
+
+      final username = result['username'] as String? ?? '';
+      final userId = result['recipientId'] as String? ?? '';
+
+      // Validate we have enough data to verify
+      if (username.isEmpty && userId.isEmpty) {
+        _showQrScanErrorSheet(
+          'Invalid QR Data',
+          'The scanned QR code is missing recipient information. Please try scanning again.',
+        );
+        return;
+      }
+
+      // Step 2: Show verification loading sheet immediately
+      _showQrVerificationLoadingSheet();
+      // Allow the bottom sheet to render before starting network call
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Step 3: Verify user exists on backend
+      ProfileCubit? profileCubit;
+      try {
+        profileCubit = serviceLocator<ProfileCubit>();
+        final searchQuery = username.isNotEmpty ? username : userId;
+        final users = await profileCubit.searchUsers(searchQuery, limit: 5);
+
+        // Dismiss loading sheet
+        if (Get.isBottomSheetOpen ?? false) Get.back();
+        if (!mounted) return;
+
+        // Step 4: Match by userId or exact username
+        UserSearchResultEntity? matchedUser;
+        for (final u in users) {
+          if ((userId.isNotEmpty && u.userId == userId) ||
+              (username.isNotEmpty && u.username == username)) {
+            matchedUser = u;
+            break;
+          }
+        }
+
+        if (matchedUser == null) {
+          _showQrScanErrorSheet(
+            'User Not Found',
+            'The scanned QR code belongs to a user that could not be found. They may have deleted their account.',
+          );
+          return;
+        }
+
+        if (!mounted) return;
+
+        // Step 5: Show confirmation bottom sheet with verified user details
         final qrCurrency = result['currency'] as String?;
-        final currency = qrCurrency ?? CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
-        final recipient = RecipientModel(
-          id: result['recipientId'] ?? '',
-          name: result['name'] ?? result['username'] ?? 'Unknown',
-          accountNumber: result['username'] ?? '',
-          bankName: 'LazerVault',
-          sortCode: '',
-          isFavorite: false,
-          countryCode: _currentCountry,
-          currency: currency,
+        final currency = qrCurrency ??
+            CountryConfigs.getByCode(_currentCountry)?.currency ??
+            'NGN';
+        final rawAmount = result['amount'];
+        final qrAmount = rawAmount is int
+            ? rawAmount
+            : rawAmount is num
+                ? rawAmount.toInt()
+                : null;
+
+        final action = await QrScanConfirmationSheet.show(
+          context,
+          user: matchedUser,
+          requestedAmount: qrAmount,
+          requestedCurrency: currency,
         );
 
-        // Navigate to send funds with scanned recipient
-        // Include pre-filled amount if from v2 payment QR
-        final arguments = <String, dynamic>{'recipient': recipient};
-        if (result['amount'] != null) {
-          arguments['prefillAmount'] = result['amount'];
-          arguments['prefillCurrency'] = currency;
+        if (!mounted) return;
+
+        if (action == QrScanAction.rescan) {
+          // Re-launch scanner (loop)
+          _launchQRScanner();
+          return;
         }
-        Get.toNamed(AppRoutes.initiateSendFunds, arguments: arguments);
+
+        if (action == QrScanAction.confirm) {
+          // Step 6: Create recipient from verified data and navigate
+          final recipient = RecipientModel(
+            id: matchedUser.userId,
+            name: matchedUser.fullName,
+            accountNumber: matchedUser.username,
+            bankName: 'LazerVault',
+            sortCode: '',
+            isFavorite: false,
+            countryCode: _currentCountry,
+            currency: currency,
+            profileImageUrl: matchedUser.profilePicture,
+          );
+
+          final arguments = <String, dynamic>{'recipient': recipient};
+          if (qrAmount != null) {
+            arguments['prefillAmount'] = qrAmount;
+            arguments['prefillCurrency'] = currency;
+          }
+          Get.toNamed(AppRoutes.initiateSendFunds, arguments: arguments);
+        }
+      } catch (e) {
+        // Dismiss loading sheet if still open
+        if (Get.isBottomSheetOpen ?? false) Get.back();
+        if (!mounted) return;
+        _showQrScanErrorSheet(
+          'Verification Failed',
+          'Could not verify the recipient. Please check your internet connection and try again.',
+        );
+      } finally {
+        profileCubit?.close();
       }
     } catch (e) {
       Get.snackbar(
         'QR Scanner Error',
-        'Failed to open QR scanner: ${e.toString()}',
+        'Failed to open QR scanner. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.7),
         colorText: Colors.white,
@@ -2481,6 +2596,181 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       if (Get.isBottomSheetOpen ?? false) Get.back();
       _showScanErrorSheet('Error', 'Something went wrong. Please try again.\n${e.toString()}');
     }
+  }
+
+  void _showQrVerificationLoadingSheet() {
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 32.h),
+            Container(
+              width: 72.w,
+              height: 72.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: 36.w,
+                  height: 36.h,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              'Verifying Recipient',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF111827),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Checking user details...',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            LinearProgressIndicator(
+              backgroundColor: const Color(0xFFE5E7EB),
+              valueColor: const AlwaysStoppedAnimation(Color(0xFF4E03D0)),
+              minHeight: 3.h,
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+      isDismissible: false,
+      enableDrag: false,
+    );
+  }
+
+  void _showQrScanErrorSheet(String title, String message, {bool isWarning = false}) {
+    final color = isWarning ? Colors.orange : Colors.red;
+    final icon = isWarning ? Icons.warning_amber_rounded : Icons.error_outline;
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 32.h),
+            Container(
+              width: 72.w,
+              height: 72.h,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 36.sp),
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF111827),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      'Close',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Get.back();
+                      _launchQRScanner();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4E03D0),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      'Try Again',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showScanProcessingSheet() {

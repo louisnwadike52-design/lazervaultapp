@@ -43,6 +43,8 @@ class CreateGroup extends UseCase<GroupAccount, CreateGroupParams> {
       description: params.description,
       adminId: params.adminId,
       metadata: params.metadata,
+      visibility: params.visibility,
+      imageUrl: params.imageUrl,
     );
   }
 }
@@ -369,12 +371,16 @@ class CreateGroupParams {
   final String description;
   final String adminId;
   final Map<String, dynamic>? metadata;
+  final GroupVisibility? visibility;
+  final String? imageUrl;
 
   CreateGroupParams({
     required this.name,
     required this.description,
     required this.adminId,
     this.metadata,
+    this.visibility,
+    this.imageUrl,
   });
 }
 
@@ -520,6 +526,47 @@ class RemoveMemberFromContributionParams {
     required this.contributionId,
     required this.userId,
   });
+}
+
+// Public Group Discovery Use Cases
+class ListPublicGroups {
+  final GroupAccountRepository repository;
+
+  ListPublicGroups(this.repository);
+
+  Future<List<GroupAccount>> call({
+    int page = 1,
+    int pageSize = 20,
+    String? sortBy,
+    String? searchQuery,
+  }) {
+    return repository.listPublicGroups(
+      page: page,
+      pageSize: pageSize,
+      sortBy: sortBy,
+      searchQuery: searchQuery,
+    );
+  }
+}
+
+class GetPublicGroup {
+  final GroupAccountRepository repository;
+
+  GetPublicGroup(this.repository);
+
+  Future<PublicGroupDetail> call(String groupId) {
+    return repository.getPublicGroup(groupId);
+  }
+}
+
+class JoinPublicGroup {
+  final GroupAccountRepository repository;
+
+  JoinPublicGroup(this.repository);
+
+  Future<GroupAccount> call(String groupId) {
+    return repository.joinPublicGroup(groupId);
+  }
 }
 
 // Activity Log Use Cases
