@@ -238,12 +238,13 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                   ],
                 ),
                 SizedBox(height: 20.h),
-                // Creator profile
+                // Creator profile (compact - tap to expand)
                 CreatorProfileCard(
                   creator: crowdfund.creator,
-                  showFullDetails: true,
+                  showFullDetails: false,
+                  onTap: () => _showCreatorDetailsDialog(crowdfund.creator),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: 16.h),
                 // Description
                 Text(
                   'About',
@@ -286,7 +287,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                 ],
                 // Progress section
                 Container(
-                  padding: EdgeInsets.all(20.w),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -311,15 +312,15 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                                 'Raised',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF9CA3AF),
-                                  fontSize: 12.sp,
+                                  fontSize: 11.sp,
                                 ),
                               ),
-                              SizedBox(height: 4.h),
+                              SizedBox(height: 2.h),
                               Text(
                                 '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(2)}',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF6366F1),
-                                  fontSize: 28.sp,
+                                  fontSize: 22.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -332,15 +333,15 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                                 'Goal',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF9CA3AF),
-                                  fontSize: 12.sp,
+                                  fontSize: 11.sp,
                                 ),
                               ),
-                              SizedBox(height: 4.h),
+                              SizedBox(height: 2.h),
                               Text(
                                 '${crowdfund.currency} ${crowdfund.targetAmount.toStringAsFixed(2)}',
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
-                                  fontSize: 18.sp,
+                                  fontSize: 15.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -348,13 +349,13 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 10.h),
                       CrowdfundProgressIndicator(
                         progressPercentage: crowdfund.progressPercentage,
                         showMilestones: true,
-                        height: 10,
+                        height: 8,
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 10.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -381,7 +382,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                     ],
                   ),
                 ),
-                SizedBox(height: 24.h),
+                SizedBox(height: 16.h),
                 // Donors section
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -447,6 +448,8 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                 else
                   ...displayedDonations.map((donation) => DonorCard(
                         donation: donation,
+                        allDonations: donations,
+                        crowdfund: crowdfund,
                       )),
                 SizedBox(height: 100.h), // Padding for FAB
               ],
@@ -468,14 +471,14 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
         Icon(
           icon,
           color: isWarning ? const Color(0xFFF59E0B) : const Color(0xFF6366F1),
-          size: 20.sp,
+          size: 16.sp,
         ),
-        SizedBox(height: 4.h),
+        SizedBox(height: 2.h),
         Text(
           value,
           style: GoogleFonts.inter(
             color: Colors.white,
-            fontSize: 16.sp,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -483,7 +486,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
           label,
           style: GoogleFonts.inter(
             color: const Color(0xFF6B7280),
-            fontSize: 11.sp,
+            fontSize: 10.sp,
           ),
         ),
       ],
@@ -510,6 +513,195 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
         duration: const Duration(seconds: 2),
       ),
     );
+  }
+
+  void _showCreatorDetailsDialog(CrowdfundCreator creator) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 340.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(20.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Campaign Creator',
+                          style: GoogleFonts.inter(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            padding: EdgeInsets.all(4.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3D3D3D),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Icon(Icons.close, color: Colors.white70, size: 18.sp),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.h),
+                    // Large avatar
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 40.r,
+                          backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                          backgroundImage: creator.profilePicture != null
+                              ? NetworkImage(creator.profilePicture!)
+                              : null,
+                          child: creator.profilePicture == null
+                              ? Text(
+                                  '${creator.firstName[0]}${creator.lastName[0]}',
+                                  style: TextStyle(
+                                    color: const Color(0xFF4E03D0),
+                                    fontSize: 24.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        if (creator.verified)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(4.w),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF10B981),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.verified, color: Colors.white, size: 16.sp),
+                            ),
+                          ),
+                      ],
+                    ),
+                    SizedBox(height: 12.h),
+                    Text(
+                      '${creator.firstName} ${creator.lastName}',
+                      style: GoogleFonts.inter(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      '@${creator.username}',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  children: [
+                    if (creator.verified) ...[
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.verified_user, color: const Color(0xFF10B981), size: 16.sp),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Verified Creator',
+                              style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF10B981),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (creator.verifiedAt != null) ...[
+                        SizedBox(height: 8.h),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, color: Colors.grey[500], size: 14.sp),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Verified ${_formatCreatorDate(creator.verifiedAt!)}',
+                              style: GoogleFonts.inter(
+                                fontSize: 12.sp,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      SizedBox(height: 8.h),
+                    ],
+                    if (creator.facialRecognitionEnabled) ...[
+                      Row(
+                        children: [
+                          Icon(Icons.face_retouching_natural, color: const Color(0xFF4E03D0), size: 14.sp),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'Facial Recognition Enabled',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: Colors.grey[400],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatCreatorDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    if (difference.inDays < 30) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()} months ago';
+    }
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   void _navigateToReport(

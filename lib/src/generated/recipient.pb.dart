@@ -14,9 +14,9 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'common.pb.dart' as $43;
-import 'google/protobuf/timestamp.pb.dart' as $42;
-import 'google/protobuf/wrappers.pb.dart' as $44;
+import 'common.pb.dart' as $2;
+import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/wrappers.pb.dart' as $3;
 
 /// Represents a saved recipient entity.
 class Recipient extends $pb.GeneratedMessage {
@@ -31,8 +31,8 @@ class Recipient extends $pb.GeneratedMessage {
     $core.String? sortCode,
     $core.String? bankName,
     $core.String? countryCode,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
     $core.String? email,
     $core.String? phoneNumber,
     $core.String? currency,
@@ -112,8 +112,8 @@ class Recipient extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'sortCode')
     ..aOS(9, _omitFieldNames ? '' : 'bankName')
     ..aOS(10, _omitFieldNames ? '' : 'countryCode')
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(13, _omitFieldNames ? '' : 'email')
     ..aOS(14, _omitFieldNames ? '' : 'phoneNumber')
     ..aOS(15, _omitFieldNames ? '' : 'currency')
@@ -237,26 +237,26 @@ class Recipient extends $pb.GeneratedMessage {
   void clearCountryCode() => clearField(10);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get createdAt => $_getN(10);
+  $1.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($42.Timestamp v) { setField(11, v); }
+  set createdAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureCreatedAt() => $_ensure(10);
+  $1.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get updatedAt => $_getN(11);
+  $1.Timestamp get updatedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set updatedAt($42.Timestamp v) { setField(12, v); }
+  set updatedAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasUpdatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearUpdatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(11);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get email => $_getSZ(12);
@@ -709,7 +709,7 @@ class ListRecipientsRequest extends $pb.GeneratedMessage {
 class ListRecipientsResponse extends $pb.GeneratedMessage {
   factory ListRecipientsResponse({
     $core.Iterable<Recipient>? recipients,
-    $43.PaginationInfo? pagination,
+    $2.PaginationInfo? pagination,
   }) {
     final $result = create();
     if (recipients != null) {
@@ -726,7 +726,7 @@ class ListRecipientsResponse extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListRecipientsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..pc<Recipient>(1, _omitFieldNames ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: Recipient.create)
-    ..aOM<$43.PaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: $43.PaginationInfo.create)
+    ..aOM<$2.PaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: $2.PaginationInfo.create)
     ..hasRequiredFields = false
   ;
 
@@ -755,27 +755,27 @@ class ListRecipientsResponse extends $pb.GeneratedMessage {
   $core.List<Recipient> get recipients => $_getList(0);
 
   @$pb.TagNumber(2)
-  $43.PaginationInfo get pagination => $_getN(1);
+  $2.PaginationInfo get pagination => $_getN(1);
   @$pb.TagNumber(2)
-  set pagination($43.PaginationInfo v) { setField(2, v); }
+  set pagination($2.PaginationInfo v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasPagination() => $_has(1);
   @$pb.TagNumber(2)
   void clearPagination() => clearField(2);
   @$pb.TagNumber(2)
-  $43.PaginationInfo ensurePagination() => $_ensure(1);
+  $2.PaginationInfo ensurePagination() => $_ensure(1);
 }
 
 class UpdateRecipientRequest extends $pb.GeneratedMessage {
   factory UpdateRecipientRequest({
     $fixnum.Int64? recipientId,
-    $44.StringValue? name,
-    $44.BoolValue? isFavorite,
-    $44.StringValue? accountNumber,
-    $44.StringValue? sortCode,
-    $44.StringValue? bankName,
-    $44.StringValue? countryCode,
-    $44.StringValue? alias,
+    $3.StringValue? name,
+    $3.BoolValue? isFavorite,
+    $3.StringValue? accountNumber,
+    $3.StringValue? sortCode,
+    $3.StringValue? bankName,
+    $3.StringValue? countryCode,
+    $3.StringValue? alias,
   }) {
     final $result = create();
     if (recipientId != null) {
@@ -810,13 +810,13 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateRecipientRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$44.StringValue>(2, _omitFieldNames ? '' : 'name', subBuilder: $44.StringValue.create)
-    ..aOM<$44.BoolValue>(3, _omitFieldNames ? '' : 'isFavorite', subBuilder: $44.BoolValue.create)
-    ..aOM<$44.StringValue>(4, _omitFieldNames ? '' : 'accountNumber', subBuilder: $44.StringValue.create)
-    ..aOM<$44.StringValue>(5, _omitFieldNames ? '' : 'sortCode', subBuilder: $44.StringValue.create)
-    ..aOM<$44.StringValue>(6, _omitFieldNames ? '' : 'bankName', subBuilder: $44.StringValue.create)
-    ..aOM<$44.StringValue>(7, _omitFieldNames ? '' : 'countryCode', subBuilder: $44.StringValue.create)
-    ..aOM<$44.StringValue>(8, _omitFieldNames ? '' : 'alias', subBuilder: $44.StringValue.create)
+    ..aOM<$3.StringValue>(2, _omitFieldNames ? '' : 'name', subBuilder: $3.StringValue.create)
+    ..aOM<$3.BoolValue>(3, _omitFieldNames ? '' : 'isFavorite', subBuilder: $3.BoolValue.create)
+    ..aOM<$3.StringValue>(4, _omitFieldNames ? '' : 'accountNumber', subBuilder: $3.StringValue.create)
+    ..aOM<$3.StringValue>(5, _omitFieldNames ? '' : 'sortCode', subBuilder: $3.StringValue.create)
+    ..aOM<$3.StringValue>(6, _omitFieldNames ? '' : 'bankName', subBuilder: $3.StringValue.create)
+    ..aOM<$3.StringValue>(7, _omitFieldNames ? '' : 'countryCode', subBuilder: $3.StringValue.create)
+    ..aOM<$3.StringValue>(8, _omitFieldNames ? '' : 'alias', subBuilder: $3.StringValue.create)
     ..hasRequiredFields = false
   ;
 
@@ -853,81 +853,81 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
   /// Optional fields to update. Use wrappers to distinguish between
   /// setting a field to its default value (e.g., false, "") and not updating it.
   @$pb.TagNumber(2)
-  $44.StringValue get name => $_getN(1);
+  $3.StringValue get name => $_getN(1);
   @$pb.TagNumber(2)
-  set name($44.StringValue v) { setField(2, v); }
+  set name($3.StringValue v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
   void clearName() => clearField(2);
   @$pb.TagNumber(2)
-  $44.StringValue ensureName() => $_ensure(1);
+  $3.StringValue ensureName() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $44.BoolValue get isFavorite => $_getN(2);
+  $3.BoolValue get isFavorite => $_getN(2);
   @$pb.TagNumber(3)
-  set isFavorite($44.BoolValue v) { setField(3, v); }
+  set isFavorite($3.BoolValue v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasIsFavorite() => $_has(2);
   @$pb.TagNumber(3)
   void clearIsFavorite() => clearField(3);
   @$pb.TagNumber(3)
-  $44.BoolValue ensureIsFavorite() => $_ensure(2);
+  $3.BoolValue ensureIsFavorite() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $44.StringValue get accountNumber => $_getN(3);
+  $3.StringValue get accountNumber => $_getN(3);
   @$pb.TagNumber(4)
-  set accountNumber($44.StringValue v) { setField(4, v); }
+  set accountNumber($3.StringValue v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasAccountNumber() => $_has(3);
   @$pb.TagNumber(4)
   void clearAccountNumber() => clearField(4);
   @$pb.TagNumber(4)
-  $44.StringValue ensureAccountNumber() => $_ensure(3);
+  $3.StringValue ensureAccountNumber() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $44.StringValue get sortCode => $_getN(4);
+  $3.StringValue get sortCode => $_getN(4);
   @$pb.TagNumber(5)
-  set sortCode($44.StringValue v) { setField(5, v); }
+  set sortCode($3.StringValue v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasSortCode() => $_has(4);
   @$pb.TagNumber(5)
   void clearSortCode() => clearField(5);
   @$pb.TagNumber(5)
-  $44.StringValue ensureSortCode() => $_ensure(4);
+  $3.StringValue ensureSortCode() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $44.StringValue get bankName => $_getN(5);
+  $3.StringValue get bankName => $_getN(5);
   @$pb.TagNumber(6)
-  set bankName($44.StringValue v) { setField(6, v); }
+  set bankName($3.StringValue v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasBankName() => $_has(5);
   @$pb.TagNumber(6)
   void clearBankName() => clearField(6);
   @$pb.TagNumber(6)
-  $44.StringValue ensureBankName() => $_ensure(5);
+  $3.StringValue ensureBankName() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $44.StringValue get countryCode => $_getN(6);
+  $3.StringValue get countryCode => $_getN(6);
   @$pb.TagNumber(7)
-  set countryCode($44.StringValue v) { setField(7, v); }
+  set countryCode($3.StringValue v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCountryCode() => $_has(6);
   @$pb.TagNumber(7)
   void clearCountryCode() => clearField(7);
   @$pb.TagNumber(7)
-  $44.StringValue ensureCountryCode() => $_ensure(6);
+  $3.StringValue ensureCountryCode() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $44.StringValue get alias => $_getN(7);
+  $3.StringValue get alias => $_getN(7);
   @$pb.TagNumber(8)
-  set alias($44.StringValue v) { setField(8, v); }
+  set alias($3.StringValue v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasAlias() => $_has(7);
   @$pb.TagNumber(8)
   void clearAlias() => clearField(8);
   @$pb.TagNumber(8)
-  $44.StringValue ensureAlias() => $_ensure(7);
+  $3.StringValue ensureAlias() => $_ensure(7);
 }
 
 class UpdateRecipientResponse extends $pb.GeneratedMessage {

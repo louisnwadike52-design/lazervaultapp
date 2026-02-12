@@ -1,9 +1,6 @@
-import 'dart:math';
 import '../models/airtime_transaction_model.dart';
 import '../models/country_model.dart';
 import '../models/network_provider_model.dart';
-import '../../domain/entities/network_provider.dart';
-import '../../domain/entities/airtime_transaction.dart';
 
 abstract class AirtimeLocalDataSource {
   Future<List<CountryModel>> getCountries();
@@ -11,77 +8,11 @@ abstract class AirtimeLocalDataSource {
   Future<List<NetworkProviderModel>> getNetworkProviders(String countryCode);
   Future<NetworkProviderModel?> getNetworkProviderById(String providerId);
   Future<NetworkProviderModel?> detectNetworkFromPhoneNumber(String phoneNumber, String countryCode);
-  Future<AirtimeTransactionModel> saveTransaction(AirtimeTransactionModel transaction);
   Future<List<AirtimeTransactionModel>> getTransactionHistory(String userId);
   Future<AirtimeTransactionModel?> getTransactionById(String transactionId);
 }
 
 class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
-  // Mock storage for transactions
-  static final List<AirtimeTransactionModel> _transactions = [
-    // Mock transaction 1
-    AirtimeTransactionModel(
-      id: 'TXN_001',
-      transactionReference: 'REF_001_${DateTime.now().millisecondsSinceEpoch}',
-      networkProvider: NetworkProviderType.mtn,
-      recipientPhoneNumber: '+2348012345678',
-      recipientName: 'John Doe',
-      amount: 1000.0,
-      currency: 'NGN',
-      status: AirtimeTransactionStatus.completed,
-      createdAt: DateTime.now().subtract(Duration(hours: 2)),
-      completedAt: DateTime.now().subtract(Duration(hours: 1, minutes: 45)),
-      userId: 'current_user',
-      fee: 25.0,
-      totalAmount: 1025.0,
-      discount: 2.0,
-      metadata: {
-        'countryCode': 'NG',
-        'networkProviderId': 'mtn_ng',
-      },
-    ),
-    // Mock transaction 2
-    AirtimeTransactionModel(
-      id: 'TXN_002',
-      transactionReference: 'REF_002_${DateTime.now().millisecondsSinceEpoch}',
-      networkProvider: NetworkProviderType.airtel,
-      recipientPhoneNumber: '+2348087654321',
-      recipientName: 'Jane Smith',
-      amount: 500.0,
-      currency: 'NGN',
-      status: AirtimeTransactionStatus.completed,
-      createdAt: DateTime.now().subtract(Duration(days: 1)),
-      completedAt: DateTime.now().subtract(Duration(days: 1)).add(Duration(minutes: 2)),
-      userId: 'current_user',
-      fee: 15.0,
-      totalAmount: 515.0,
-      discount: 1.5,
-      metadata: {
-        'countryCode': 'NG',
-        'networkProviderId': 'airtel_ng',
-      },
-    ),
-    // Mock transaction 3
-    AirtimeTransactionModel(
-      id: 'TXN_003',
-      transactionReference: 'REF_003_${DateTime.now().millisecondsSinceEpoch}',
-      networkProvider: NetworkProviderType.glo,
-      recipientPhoneNumber: '+2348056789123',
-      amount: 2000.0,
-      currency: 'NGN',
-      status: AirtimeTransactionStatus.pending,
-      createdAt: DateTime.now().subtract(Duration(minutes: 30)),
-      userId: 'current_user',
-      fee: 40.0,
-      totalAmount: 2040.0,
-      discount: 1.0,
-      metadata: {
-        'countryCode': 'NG',
-        'networkProviderId': 'glo_ng',
-      },
-    ),
-  ];
-  
   // Mock countries data
   static const List<Map<String, dynamic>> _countriesData = [
     {
@@ -452,39 +383,12 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
   }
 
   @override
-  Future<AirtimeTransactionModel> saveTransaction(AirtimeTransactionModel transaction) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Generate ID if not provided
-    final id = transaction.id.isEmpty ? _generateTransactionId() : transaction.id;
-    final savedTransaction = transaction.copyWith(id: id);
-    
-    _transactions.add(savedTransaction);
-    return savedTransaction;
-  }
-
-  @override
   Future<List<AirtimeTransactionModel>> getTransactionHistory(String userId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _transactions
-        .where((transaction) => transaction.userId == userId)
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return [];
   }
 
   @override
   Future<AirtimeTransactionModel?> getTransactionById(String transactionId) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    try {
-      return _transactions.firstWhere((transaction) => transaction.id == transactionId);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  String _generateTransactionId() {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final random = Random().nextInt(9999);
-    return 'TXN${timestamp}_$random';
+    return null;
   }
 } 

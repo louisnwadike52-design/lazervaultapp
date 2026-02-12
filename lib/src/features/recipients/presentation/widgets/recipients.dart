@@ -35,6 +35,25 @@ class _RecipientsState extends State<Recipients> {
     return null;
   }
 
+  /// Get initials from name - capitalize first letter of each word
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0].toUpperCase()}${parts[1][0].toUpperCase()}';
+    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return '??';
+  }
+
+  /// Convert to title case (only capitalize first letter of each word)
+  String _toTitleCase(String text) {
+    return text.trim().split(' ').map((word) {
+      if (word.isEmpty) return '';
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+
   void _shareRecipient(RecipientModel recipient) {
     var shareText =
         'Account details for:\nName: ${recipient.name}\nAccount Number: ${recipient.accountNumber}';
@@ -330,7 +349,7 @@ class _RecipientsState extends State<Recipients> {
                             ),
                             SizedBox(height: 8.h),
                             Text(
-                              recipient.name.toUpperCase(),
+                              _toTitleCase(recipient.name),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 20.sp,
@@ -529,10 +548,11 @@ class _RecipientsState extends State<Recipients> {
                       height: 48.w,
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
-                        shape: BoxShape.circle,                      ),
+                        shape: BoxShape.circle,
+                      ),
                       child: Center(
                         child: Text(
-                          recipient.name.substring(0, 2).toUpperCase(),
+                          _getInitials(recipient.name),
                           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.grey[700]),
                         ),
                       ),
@@ -545,7 +565,7 @@ class _RecipientsState extends State<Recipients> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            recipient.name,
+                            _toTitleCase(recipient.name),
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,

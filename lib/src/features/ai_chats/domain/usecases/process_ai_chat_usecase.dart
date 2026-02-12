@@ -11,8 +11,16 @@ class ProcessChatUseCase {
   Future<Either<Failure, ProcessChatResponse>> call({
     required String query,
     required String accessToken,
+    String? sessionId,
+    String? sourceContext,
+    String? language,
   }) async {
-    // Add any business logic before/after calling repository if needed
-    return await _repository.processChat(query: query, accessToken: accessToken);
+    return await _repository.processChat(
+      query: query,
+      accessToken: accessToken,
+      sessionId: sessionId,
+      sourceContext: sourceContext,
+      language: language,
+    );
   }
 } 

@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $0;
 
 export 'common.pbenum.dart';
 
@@ -30,8 +30,8 @@ class User extends $pb.GeneratedMessage {
     $core.String? role,
     $core.bool? verified,
     $core.bool? isEmailVerified,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $0.Timestamp? createdAt,
+    $0.Timestamp? updatedAt,
     $core.String? language,
     $core.String? currency,
     $core.String? country,
@@ -99,8 +99,8 @@ class User extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'role')
     ..aOB(8, _omitFieldNames ? '' : 'verified')
     ..aOB(9, _omitFieldNames ? '' : 'isEmailVerified')
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$0.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $0.Timestamp.create)
+    ..aOM<$0.Timestamp>(11, _omitFieldNames ? '' : 'updatedAt', subBuilder: $0.Timestamp.create)
     ..aOS(12, _omitFieldNames ? '' : 'language')
     ..aOS(13, _omitFieldNames ? '' : 'currency')
     ..aOS(14, _omitFieldNames ? '' : 'country')
@@ -211,26 +211,26 @@ class User extends $pb.GeneratedMessage {
   void clearIsEmailVerified() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get createdAt => $_getN(9);
+  $0.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($42.Timestamp v) { setField(10, v); }
+  set createdAt($0.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureCreatedAt() => $_ensure(9);
+  $0.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get updatedAt => $_getN(10);
+  $0.Timestamp get updatedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set updatedAt($42.Timestamp v) { setField(11, v); }
+  set updatedAt($0.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasUpdatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearUpdatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(10);
+  $0.Timestamp ensureUpdatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get language => $_getSZ(11);
@@ -343,8 +343,8 @@ class Session extends $pb.GeneratedMessage {
     $fixnum.Int64? userId,
     $core.String? accessToken,
     $core.String? refreshToken,
-    $42.Timestamp? accessTokenExpiresAt,
-    $42.Timestamp? refreshTokenExpiresAt,
+    $0.Timestamp? accessTokenExpiresAt,
+    $0.Timestamp? refreshTokenExpiresAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -376,8 +376,8 @@ class Session extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, _omitFieldNames ? '' : 'accessToken')
     ..aOS(4, _omitFieldNames ? '' : 'refreshToken')
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'accessTokenExpiresAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'refreshTokenExpiresAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$0.Timestamp>(5, _omitFieldNames ? '' : 'accessTokenExpiresAt', subBuilder: $0.Timestamp.create)
+    ..aOM<$0.Timestamp>(6, _omitFieldNames ? '' : 'refreshTokenExpiresAt', subBuilder: $0.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -439,26 +439,26 @@ class Session extends $pb.GeneratedMessage {
   void clearRefreshToken() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get accessTokenExpiresAt => $_getN(4);
+  $0.Timestamp get accessTokenExpiresAt => $_getN(4);
   @$pb.TagNumber(5)
-  set accessTokenExpiresAt($42.Timestamp v) { setField(5, v); }
+  set accessTokenExpiresAt($0.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasAccessTokenExpiresAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearAccessTokenExpiresAt() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
+  $0.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get refreshTokenExpiresAt => $_getN(5);
+  $0.Timestamp get refreshTokenExpiresAt => $_getN(5);
   @$pb.TagNumber(6)
-  set refreshTokenExpiresAt($42.Timestamp v) { setField(6, v); }
+  set refreshTokenExpiresAt($0.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasRefreshTokenExpiresAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearRefreshTokenExpiresAt() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
+  $0.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
 }
 
 /// Pagination Info - Common pagination structure

@@ -338,6 +338,35 @@ class MutationQueue {
     ));
   }
 
+  /// Convenience method to enqueue a gift card sell submission.
+  /// This is safe to queue because sell submissions are non-financial from the
+  /// user's perspective — they're submitting card details for review, not paying.
+  /// The actual payout happens asynchronously via provider webhook.
+  Future<QueuedMutation?> enqueueGiftCardSell({
+    required String cardType,
+    required String cardNumber,
+    required String cardPin,
+    required double denomination,
+    String? currency,
+    List<String>? images,
+    String? idempotencyKey,
+  }) {
+    return enqueue(QueuedMutation.create(
+      type: MutationType.generic,
+      payload: {
+        'operation': 'giftcard_sell',
+        'cardType': cardType,
+        'cardNumber': cardNumber,
+        'cardPin': cardPin,
+        'denomination': denomination,
+        'currency': currency ?? 'USD',
+        'images': images,
+        'idempotencyKey': idempotencyKey,
+      },
+      description: 'Sell $cardType gift card (\$${denomination.toStringAsFixed(0)})',
+    ));
+  }
+
   // NOTE: Payment convenience methods (enqueueTagPayment, enqueueInvoicePayment,
   // enqueueGroupContribution) have been intentionally removed. Financial payments
   // should NEVER be queued offline due to stale balance risk, token expiration,

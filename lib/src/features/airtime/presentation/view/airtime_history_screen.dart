@@ -4,11 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/network_provider.dart';
-import '../../domain/entities/country.dart';
+import '../utils/airtime_navigation_utils.dart';
 
 class AirtimeHistoryScreen extends StatefulWidget {
   const AirtimeHistoryScreen({super.key});
@@ -21,7 +22,8 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AirtimeCubit>().loadTransactionHistory('current_user');
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    context.read<AirtimeCubit>().loadTransactionHistory(userId);
   }
 
   @override
@@ -52,7 +54,15 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   builder: (context, state) {
                     if (state is AirtimeTransactionHistoryLoaded) {
                       if (state.transactions.isEmpty) {
-                        return _buildEmptyState();
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            final userId = context.read<AuthenticationCubit>().userId ?? '';
+                            context.read<AirtimeCubit>().loadTransactionHistory(userId);
+                          },
+                          backgroundColor: Color(0xFF1F1F1F),
+                          color: Color(0xFF3B82F6),
+                          child: _buildEmptyState(),
+                        );
                       }
                       return _buildTransactionsList(state.transactions);
                     } else if (state is AirtimeError) {
@@ -162,7 +172,8 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
   Widget _buildTransactionsList(List<AirtimeTransaction> transactions) {
     return RefreshIndicator(
       onRefresh: () async {
-        context.read<AirtimeCubit>().loadTransactionHistory('current_user');
+        final userId = context.read<AuthenticationCubit>().userId ?? '';
+        context.read<AirtimeCubit>().loadTransactionHistory(userId);
       },
       backgroundColor: Color(0xFF1F1F1F),
       color: Color(0xFF3B82F6),
@@ -184,7 +195,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
     return GestureDetector(
       onTap: () => Get.toNamed(
         AppRoutes.airtimeDetails,
-        arguments: transaction.id,
+        arguments: {'transaction': transaction},
       ),
       onLongPress: () => _showQuickActions(transaction),
       child: Container(
@@ -210,7 +221,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: _getProviderColor(transaction.networkProvider),
+                    color: transaction.networkProvider.color,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Center(
@@ -272,20 +283,20 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '₦${transaction.amount.toStringAsFixed(0)}',
+                      '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
-                    
+
                     SizedBox(height: 4.h),
-                    
+
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
+                        color: transaction.status.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
@@ -293,7 +304,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                         style: TextStyle(
                           fontSize: 10.sp,
                           fontWeight: FontWeight.w600,
-                          color: _getStatusColor(transaction.status),
+                          color: transaction.status.color,
                         ),
                       ),
                     ),
@@ -343,36 +354,38 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.history,
-            size: 80.sp,
-            color: Colors.white.withValues(alpha: 0.3),
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: 120.h),
+        Icon(
+          Icons.history,
+          size: 80.sp,
+          color: Colors.white.withValues(alpha: 0.3),
+        ),
+        SizedBox(height: 24.h),
+        Text(
+          'No Transactions Yet',
+          style: TextStyle(
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
-          SizedBox(height: 24.h),
-          Text(
-            'No Transactions Yet',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 12.h),
+        Text(
+          'Your airtime purchase history will appear here',
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: Colors.white.withValues(alpha: 0.6),
+            fontWeight: FontWeight.w400,
           ),
-          SizedBox(height: 12.h),
-          Text(
-            'Your airtime purchase history will appear here',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.white.withValues(alpha: 0.6),
-              fontWeight: FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 32.h),
-          ElevatedButton(
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 32.h),
+        Center(
+          child: ElevatedButton(
             onPressed: () => Get.offNamed(AppRoutes.airtime),
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF3B82F6),
@@ -390,8 +403,8 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -446,7 +459,10 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
           ),
           SizedBox(height: 24.h),
           ElevatedButton(
-            onPressed: () => context.read<AirtimeCubit>().loadTransactionHistory('current_user'),
+            onPressed: () {
+              final userId = context.read<AuthenticationCubit>().userId ?? '';
+              context.read<AirtimeCubit>().loadTransactionHistory(userId);
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF3B82F6),
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
@@ -551,7 +567,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: _getProviderColor(transaction.networkProvider),
+                    color: transaction.networkProvider.color,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Center(
@@ -589,7 +605,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   ),
                 ),
                 Text(
-                  '₦${transaction.amount.toStringAsFixed(0)}',
+                  '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
@@ -610,7 +626,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Get.back(); // Close bottom sheet
-                      _repeatTransactionQuick(transaction);
+                      repeatAirtimeTransaction(context, transaction);
                     },
                     icon: Icon(Icons.repeat, color: Colors.white, size: 20.sp),
                     label: Text(
@@ -639,7 +655,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       Get.back(); // Close bottom sheet
-                      Get.toNamed(AppRoutes.airtimeDetails, arguments: transaction.id);
+                      Get.toNamed(AppRoutes.airtimeDetails, arguments: {'transaction': transaction});
                     },
                     icon: Icon(Icons.receipt_long, color: Colors.white.withValues(alpha: 0.8), size: 20.sp),
                     label: Text(
@@ -669,108 +685,4 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
     );
   }
 
-  void _repeatTransactionQuick(AirtimeTransaction transaction) {
-    try {
-      // Create country object (default to Nigeria)
-      final country = Country(
-        id: 'ng',
-        code: 'NG',
-        name: 'Nigeria',
-        currency: 'NGN',
-        dialCode: '+234',
-        flag: '🇳🇬',
-        currencySymbol: '₦',
-      );
-
-      // Create network provider object from transaction
-      final networkProvider = NetworkProvider(
-        id: transaction.networkProvider.name.toLowerCase(),
-        type: transaction.networkProvider,
-        name: transaction.networkProvider.displayName,
-        shortName: transaction.networkProvider.shortName,
-        logo: transaction.networkProvider.logo,
-        primaryColor: transaction.networkProvider.primaryColor,
-        prefixes: transaction.networkProvider.prefixes,
-        countryCode: 'NG',
-      );
-
-      // Navigate to recipient input screen with pre-filled data
-      Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {
-        'country': country,
-        'networkProvider': networkProvider,
-        'prefillPhone': transaction.recipientPhoneNumber,
-        'prefillName': transaction.recipientName,
-        'prefillAmount': transaction.amount,
-        'isRepeatTransaction': true,
-      });
-
-      // Show success feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.repeat, color: Colors.white, size: 20.sp),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Text(
-                  'Repeating transaction...',
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(16.w),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to repeat transaction. Please try again.'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(16.w),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-        ),
-      );
-    }
-  }
-
-  Color _getProviderColor(NetworkProviderType type) {
-    switch (type) {
-      case NetworkProviderType.mtn:
-        return Color(0xFFFFCC00);
-      case NetworkProviderType.airtel:
-        return Color(0xFFFF0000);
-      case NetworkProviderType.glo:
-        return Color(0xFF00B04F);
-      case NetworkProviderType.etisalat:
-      case NetworkProviderType.ninemobile:
-        return Color(0xFF00AA4F);
-      default:
-        return Color(0xFF3B82F6); // Default blue color
-    }
-  }
-
-  Color _getStatusColor(AirtimeTransactionStatus status) {
-    switch (status) {
-      case AirtimeTransactionStatus.pending:
-        return Color(0xFFFFA500);
-      case AirtimeTransactionStatus.processing:
-        return Color(0xFF0066CC);
-      case AirtimeTransactionStatus.completed:
-        return Color(0xFF00AA4F);
-      case AirtimeTransactionStatus.failed:
-        return Color(0xFFFF0000);
-      case AirtimeTransactionStatus.refunded:
-        return Color(0xFF6B46C1);
-    }
-  }
 } 

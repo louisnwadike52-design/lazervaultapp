@@ -1,499 +1,486 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import '../../domain/entities/insurance_payment_entity.dart';
-import '../cubit/insurance_cubit.dart';
-import '../cubit/insurance_state.dart';
+import '../cubit/create_policy_cubit.dart';
+import '../cubit/create_policy_state.dart';
 
+/// Processing screen for MyCover.ai insurance purchase
+///
+/// Shows step-by-step progress with animated indicators.
+/// Prompts for transaction PIN, then processes the purchase.
 class InsurancePaymentProcessingScreen extends StatefulWidget {
-  final InsurancePayment payment;
-
-  const InsurancePaymentProcessingScreen({
-    super.key,
-    required this.payment,
-  });
+  const InsurancePaymentProcessingScreen({super.key});
 
   @override
-  State<InsurancePaymentProcessingScreen> createState() => _InsurancePaymentProcessingScreenState();
+  State<InsurancePaymentProcessingScreen> createState() =>
+      _InsurancePaymentProcessingScreenState();
 }
 
-class _InsurancePaymentProcessingScreenState extends State<InsurancePaymentProcessingScreen>
+class _InsurancePaymentProcessingScreenState
+    extends State<InsurancePaymentProcessingScreen>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _rotationController;
   late Animation<double> _pulseAnimation;
-  late Animation<double> _rotationAnimation;
+  bool _pinEntered = false;
+  bool _processingPurchase = false;
+  String? _pinErrorMessage;
+  final _pinController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    
-    // Initialize animations
+
     _pulseController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
     _rotationController = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
     );
 
-    _pulseAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.linear,
-    ));
-
-    // Start animations
-    _pulseController.repeat(reverse: true);
-    _rotationController.repeat();
-
-    // Start payment processing
-    context.read<InsuranceCubit>().processPayment(widget.payment);
+    // Show PIN entry first
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showPinDialog();
+    });
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
     _rotationController.dispose();
+    _pinController.dispose();
     super.dispose();
+  }
+
+  void _showPinDialog() {
+    _pinController.clear();
+    _pinErrorMessage = null;
+    _processingPurchase = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1F1F1F),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text('Enter Transaction PIN',
+            style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Enter your 4-digit transaction PIN to confirm this purchase',
+                style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+              SizedBox(height: 20.h),
+              TextField(
+                controller: _pinController,
+                obscureText: true,
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 24.sp, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 8),
+                decoration: InputDecoration(
+                  counterText: '',
+                  filled: true,
+                  fillColor: const Color(0xFF0A0A0A),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: const BorderSide(color: Color(0xFF2D2D2D))),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: _pinErrorMessage != null
+                        ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D))),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: const BorderSide(color: Color(0xFF6366F1))),
+                ),
+                onChanged: (_) {
+                  if (_pinErrorMessage != null) {
+                    setDialogState(() => _pinErrorMessage = null);
+                  }
+                },
+              ),
+              if (_pinErrorMessage != null) ...[
+                SizedBox(height: 8.h),
+                Text(_pinErrorMessage!,
+                  style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444))),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop(); // Go back to carousel
+              },
+              child: Text('Cancel', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
+            ),
+            GestureDetector(
+              onTap: _processingPurchase ? null : () {
+                final pin = _pinController.text;
+                if (pin.length == 4 && RegExp(r'^\d{4}$').hasMatch(pin)) {
+                  FocusScope.of(dialogContext).unfocus();
+                  setDialogState(() => _processingPurchase = true);
+                  Navigator.of(dialogContext).pop();
+                  _startPurchase(pin);
+                } else if (pin.length < 4) {
+                  setDialogState(() => _pinErrorMessage = 'Please enter a 4-digit PIN');
+                } else {
+                  setDialogState(() => _pinErrorMessage = 'PIN must contain only numbers');
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: _processingPurchase
+                      ? [const Color(0xFF4B4B4B), const Color(0xFF4B4B4B)]
+                      : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)]),
+                  borderRadius: BorderRadius.circular(8.r)),
+                child: Text(_processingPurchase ? 'Processing...' : 'Confirm',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _startPurchase(String pin) {
+    final cubit = context.read<CreatePolicyCubit>();
+
+    // Validate account selection - no 'default' fallback
+    if (cubit.selectedAccountId == null) {
+      _processingPurchase = false;
+      _showErrorDialog('Please select a payment account in the previous step');
+      return;
+    }
+
+    setState(() => _pinEntered = true);
+    _pulseController.repeat(reverse: true);
+    _rotationController.repeat();
+
+    cubit.purchaseInsurance(
+      accountId: cubit.selectedAccountId!,
+      transactionPin: pin,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false, // Prevent back navigation during processing
+      canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0E27),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF1A1A3E),
-                const Color(0xFF0A0E27),
-                const Color(0xFF0F0F23),
-              ],
-            ),
-          ),
-          child: BlocConsumer<InsuranceCubit, InsuranceState>(
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: BlocConsumer<CreatePolicyCubit, CreatePolicyState>(
           listener: (context, state) {
-            if (state is PaymentCompleted) {
-              // Navigate to confirmation screen using route
-              Get.offNamed(
-                AppRoutes.insurancePaymentConfirmation,
-                arguments: {
-                  'payment': state.payment,
-                  'receiptUrl': state.receiptUrl,
-                },
+            if (state is InsurancePurchaseSuccess) {
+              _pulseController.stop();
+              _rotationController.stop();
+              // Navigate to confirmation/receipt
+              Future.delayed(const Duration(milliseconds: 500), () {
+                Get.offAllNamed(AppRoutes.dashboard);
+                Get.snackbar(
+                  'Purchase Successful',
+                  'Your insurance policy ${state.purchaseResult.policyNumber} is now active!',
+                  backgroundColor: const Color(0xFF10B981),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                );
+              });
+            } else if (state is InsurancePurchaseQueued) {
+              Get.offAllNamed(AppRoutes.dashboard);
+              Get.snackbar(
+                'Purchase Queued',
+                state.message,
+                backgroundColor: const Color(0xFFFB923C),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP,
               );
-            } else if (state is PaymentFailed) {
-              // Show error and navigate back
-              _showErrorDialog(state.error);
+            } else if (state is CreatePolicyError) {
+              _processingPurchase = false;
+              final msg = state.message.toLowerCase();
+              if (msg.contains('pin') || msg.contains('verification token')) {
+                // PIN-related error: re-show PIN dialog with inline error
+                _pinErrorMessage = state.message;
+                _showPinDialog();
+              } else {
+                _showErrorDialog(state.message);
+              }
             }
           },
           builder: (context, state) {
-            if (state is PaymentProcessing) {
+            if (!_pinEntered) {
+              return _buildWaitingForPin();
+            }
+
+            if (state is InsurancePurchaseProcessing) {
               return _buildProcessingView(state);
             }
-            
-            return _buildProcessingView(PaymentProcessing(
-              payment: widget.payment,
-              step: 'Initializing payment...',
-              progress: 0.1,
-            ));
+
+            if (state is InsurancePurchaseSuccess) {
+              return _buildSuccessView(state);
+            }
+
+            // Default processing view
+            return _buildDefaultProcessingView();
           },
-          ),
         ),
       ),
     );
   }
 
-  Widget _buildProcessingView(PaymentProcessing state) {
+  Widget _buildWaitingForPin() {
+    return SafeArea(
+      child: Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(Icons.lock_outline, size: 64.sp, color: const Color(0xFF6366F1)),
+          SizedBox(height: 16.h),
+          Text('Enter PIN to Continue',
+            style: GoogleFonts.inter(fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildDefaultProcessingView() {
+    final cubit = context.read<CreatePolicyCubit>();
+    return _buildProcessingContent(
+      step: InsuranceProcessingStep.initiated,
+      progress: 0.1,
+      productName: cubit.selectedProduct?.name ?? 'Insurance',
+      premium: cubit.quote?.premium ?? 0,
+      currency: cubit.quote?.currency ?? '',
+    );
+  }
+
+  Widget _buildProcessingView(InsurancePurchaseProcessing state) {
+    return _buildProcessingContent(
+      step: state.step,
+      progress: state.progress,
+      productName: state.product.name,
+      premium: state.quote.premium,
+      currency: state.quote.currency,
+    );
+  }
+
+  Widget _buildSuccessView(InsurancePurchaseSuccess state) {
+    return SafeArea(
+      child: Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Container(
+            width: 100.w, height: 100.w,
+            decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF10B981)),
+            child: Icon(Icons.check, size: 60.sp, color: Colors.white),
+          ),
+          SizedBox(height: 24.h),
+          Text('Purchase Successful!',
+            style: GoogleFonts.inter(fontSize: 24.sp, fontWeight: FontWeight.w800, color: Colors.white)),
+          SizedBox(height: 8.h),
+          Text('Policy #${state.purchaseResult.policyNumber}',
+            style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildProcessingContent({
+    required InsuranceProcessingStep step,
+    required double progress,
+    required String productName,
+    required double premium,
+    required String currency,
+  }) {
+    final formatter = NumberFormat('#,##0.00');
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 24.w),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height - 
-                      MediaQuery.of(context).padding.top - 
-                      MediaQuery.of(context).padding.bottom,
+            minHeight: MediaQuery.of(context).size.height -
+                MediaQuery.of(context).padding.top -
+                MediaQuery.of(context).padding.bottom,
           ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
               SizedBox(height: 40.h),
-            
-            // Animated processing icon
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _pulseAnimation.value,
-                  child: AnimatedBuilder(
-                    animation: _rotationAnimation,
-                    builder: (context, child) {
-                      return Transform.rotate(
-                        angle: _rotationAnimation.value * 2 * 3.14159,
-                        child: Container(
-                          width: 120.w,
-                          height: 120.w,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.2),
-                            boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                          ),
-                          child: Icon(
-                            Icons.shield_outlined,
-                            size: 60.sp,
-                            color: Colors.white,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
 
-              SizedBox(height: 32.h),
-
-            // Processing title
-            Text(
-              'Processing Payment',
-                style: GoogleFonts.inter(
-                fontSize: 28.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-              SizedBox(height: 12.h),
-
-            // Processing step
-            Text(
-              state.step,
-                style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                  color: Colors.white.withValues(alpha: 0.9),
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-              SizedBox(height: 32.h),
-
-            // Progress bar
-            Container(
-              width: double.infinity,
-              height: 8.h,
-              decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: state.progress,
-                child: Container(
-                  decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              // Animated icon
+              AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _pulseAnimation.value,
+                    child: Container(
+                      width: 100.w, height: 100.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.2),
                       ),
-                    borderRadius: BorderRadius.circular(4.r),
+                      child: Icon(Icons.shield_outlined, size: 50.sp, color: const Color(0xFF6366F1)),
+                    ),
+                  );
+                },
+              ),
+
+              SizedBox(height: 32.h),
+
+              Text('Processing Purchase',
+                style: GoogleFonts.inter(fontSize: 24.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+              SizedBox(height: 8.h),
+              Text(_stepMessage(step),
+                style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
+
+              SizedBox(height: 32.h),
+
+              // Progress bar
+              Container(
+                width: double.infinity, height: 6.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(3.r)),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: progress.clamp(0.0, 1.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                      borderRadius: BorderRadius.circular(3.r)),
                   ),
                 ),
               ),
-            ),
-
-              SizedBox(height: 12.h),
-
-            // Progress percentage
-            Text(
-              '${(state.progress * 100).toInt()}%',
-                style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                  color: Colors.white.withValues(alpha: 0.8),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+              SizedBox(height: 8.h),
+              Text('${(progress * 100).toInt()}%',
+                style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF9CA3AF))),
 
               SizedBox(height: 32.h),
 
-            // Payment details card
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-                      const Color(0xFF1F1F35).withValues(alpha: 0.9),
-                    ],
-                  ),
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              // Purchase details card
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: const Color(0xFF2D2D2D)),
+                ),
+                child: Column(children: [
+                  _buildDetailRow('Product', productName),
+                  SizedBox(height: 12.h),
+                  _buildDetailRow('Amount', '$currency ${formatter.format(premium)}'),
+                ]),
               ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Amount',
-                          style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                            color: const Color(0xFF9CA3AF),
-                        ),
-                      ),
-                      Text(
-                        '\$${widget.payment.amount.toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w700,
-                            color: const Color(0xFF10B981),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Policy Number',
-                          style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                            color: const Color(0xFF9CA3AF),
-                        ),
-                      ),
-                      Text(
-                        widget.payment.policyNumber,
-                          style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Payment Method',
-                          style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                            color: const Color(0xFF9CA3AF),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                            Container(
-                              padding: EdgeInsets.all(4.w),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6.r),
-                              ),
-                              child: Text(
-                            widget.payment.paymentMethod.icon,
-                                style: TextStyle(fontSize: 14.sp),
-                              ),
-                          ),
-                          SizedBox(width: 8.w),
-                          Text(
-                            widget.payment.paymentMethod.displayName,
-                              style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
 
               SizedBox(height: 24.h),
 
-            // Processing steps indicator
-            _buildProcessingSteps(state.progress),
+              // Processing steps
+              _buildProcessingSteps(step),
 
-              SizedBox(height: 32.h),
+              SizedBox(height: 24.h),
 
-            // Security note
+              // Security note
               Container(
-                padding: EdgeInsets.all(16.w),
+                padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                ),
-                child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.lock_outline,
-                  size: 16.sp,
-                      color: const Color(0xFF6366F1),
-                ),
-                SizedBox(width: 8.w),
-                    Expanded(
-                      child: Text(
-                  'Your payment is secured with end-to-end encryption',
-                        style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                          color: const Color(0xFF6366F1),
-                        ),
-                        textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-                ),
-            ),
-
-            SizedBox(height: 40.h),
-          ],
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8.r)),
+                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.lock_outline, size: 14.sp, color: const Color(0xFF6366F1)),
+                  SizedBox(width: 6.w),
+                  Text('Payment secured with end-to-end encryption',
+                    style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF6366F1))),
+                ]),
+              ),
+              SizedBox(height: 40.h),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildProcessingSteps(double progress) {
-    final steps = _getProcessingSteps();
-    
+  Widget _buildDetailRow(String label, String value) {
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Text(label, style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+      Text(value, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+    ]);
+  }
+
+  Widget _buildProcessingSteps(InsuranceProcessingStep currentStep) {
+    final steps = [
+      (InsuranceProcessingStep.initiated, 'Initiating purchase...'),
+      (InsuranceProcessingStep.validatingPin, 'Validating transaction PIN...'),
+      (InsuranceProcessingStep.holdingFunds, 'Securing payment...'),
+      (InsuranceProcessingStep.purchasingPolicy, 'Purchasing insurance policy...'),
+      (InsuranceProcessingStep.completed, 'Insurance purchased!'),
+    ];
+
     return Column(
-      children: steps.asMap().entries.map((entry) {
-        final index = entry.key;
-        final step = entry.value;
-        final stepProgress = (index + 1) / steps.length;
-        final isCompleted = progress >= stepProgress;
-        final isActive = progress > (index / steps.length) && progress <= stepProgress;
+      children: steps.map((entry) {
+        final stepEnum = entry.$1;
+        final label = entry.$2;
+        final isCompleted = stepEnum.index < currentStep.index;
+        final isActive = stepEnum == currentStep;
 
         return Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.h),
-          child: Row(
-            children: [
-              Container(
-                width: 24.w,
-                height: 24.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isCompleted 
-                      ? const Color(0xFF10B981)
-                      : isActive 
-                          ? const Color(0xFF6366F1)
-                          : Colors.white.withValues(alpha: 0.2),
-                ),
-                child: Icon(
-                  isCompleted ? Icons.check : Icons.circle,
-                  size: 14.sp,
-                  color: isCompleted || isActive ? Colors.white : const Color(0xFF9CA3AF),
-                ),
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          child: Row(children: [
+            Container(
+              width: 24.w, height: 24.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isCompleted
+                    ? const Color(0xFF10B981)
+                    : isActive
+                        ? const Color(0xFF6366F1)
+                        : Colors.white.withValues(alpha: 0.1),
               ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Text(
-                  step,
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    color: isCompleted || isActive 
-                        ? Colors.white 
-                        : const Color(0xFF9CA3AF),
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
+              child: Icon(
+                isCompleted ? Icons.check : isActive ? Icons.sync : Icons.circle,
+                size: 14.sp,
+                color: isCompleted || isActive ? Colors.white : const Color(0xFF9CA3AF),
               ),
-            ],
-          ),
+            ),
+            SizedBox(width: 12.w),
+            Text(label, style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              color: isCompleted || isActive ? Colors.white : const Color(0xFF9CA3AF),
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal)),
+          ]),
         );
       }).toList(),
     );
   }
 
-  List<String> _getProcessingSteps() {
-    switch (widget.payment.paymentMethod) {
-      case PaymentMethod.card:
-        return [
-          'Validating card details',
-          'Processing with bank',
-          'Confirming transaction',
-          'Updating policy status'
-        ];
-      case PaymentMethod.bankTransfer:
-        return [
-          'Initiating bank transfer',
-          'Verifying account details',
-          'Processing transfer',
-          'Confirming payment'
-        ];
-      case PaymentMethod.mobileMoney:
-        return [
-          'Connecting to mobile money',
-          'Authenticating payment',
-          'Processing transaction',
-          'Confirming payment'
-        ];
-      case PaymentMethod.crypto:
-        return [
-          'Validating wallet',
-          'Broadcasting transaction',
-          'Waiting for confirmations',
-          'Payment confirmed'
-        ];
-      case PaymentMethod.wallet:
-        return [
-          'Checking wallet balance',
-          'Authorizing payment',
-          'Processing transaction',
-          'Payment completed'
-        ];
+  String _stepMessage(InsuranceProcessingStep step) {
+    switch (step) {
+      case InsuranceProcessingStep.initiated:
+        return 'Initiating your insurance purchase...';
+      case InsuranceProcessingStep.validatingPin:
+        return 'Validating your transaction PIN...';
+      case InsuranceProcessingStep.holdingFunds:
+        return 'Securing payment from your account...';
+      case InsuranceProcessingStep.purchasingPolicy:
+        return 'Purchasing your insurance policy...';
+      case InsuranceProcessingStep.completed:
+        return 'Purchase completed successfully!';
+      case InsuranceProcessingStep.failed:
+        return 'Purchase failed. Please try again.';
     }
   }
 
@@ -501,44 +488,33 @@ class _InsurancePaymentProcessingScreenState extends State<InsurancePaymentProce
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: Text(
-          'Payment Failed',
-          style: GoogleFonts.inter(color: Colors.white),
-        ),
-        content: Text(
-          error,
-          style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
-        ),
+        title: Text('Purchase Failed', style: GoogleFonts.inter(color: Colors.white)),
+        content: Text(error, style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
         actions: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              ),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: ElevatedButton(
+          TextButton(
             onPressed: () {
+              Navigator.of(dialogContext).pop();
               Navigator.of(context).pop();
-              Get.back(); // Return to previous screen
             },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-            ),
-              child: Text(
-              'Try Again',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            child: Text('Go Back', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(dialogContext).pop();
+              _showPinDialog(); // Re-enter PIN to retry
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                borderRadius: BorderRadius.circular(8.r)),
+              child: Text('Retry', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
             ),
           ),
         ],
       ),
     );
   }
-} 
+}

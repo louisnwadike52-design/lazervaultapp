@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 import 'crypto_receipt_screen.dart';
-import 'crypto_transaction_history_screen.dart';
 
 class CryptoConfirmationScreen extends StatefulWidget {
   final CryptoTransactionDetails transactionDetails;
@@ -18,21 +22,29 @@ class CryptoConfirmationScreen extends StatefulWidget {
 }
 
 class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, TransactionPinMixin {
   late AnimationController _animationController;
   late AnimationController _processingController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
   late Animation<double> _rotationAnimation;
-  
+
   bool _isProcessing = false;
   bool _isCompleted = false;
   String _transactionId = '';
+
+  // Rate countdown
+  int _rateCountdown = 30;
+  Timer? _countdownTimer;
+
+  @override
+  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
+    _startRateCountdown();
   }
 
   void _setupAnimations() {
@@ -61,40 +73,95 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     _animationController.forward();
   }
 
+  void _startRateCountdown() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        if (_rateCountdown > 0) {
+          _rateCountdown--;
+        } else {
+          timer.cancel();
+          // Rate expired - could refresh rate here
+        }
+      });
+    });
+  }
+
+  void _resetRateCountdown() {
+    _countdownTimer?.cancel();
+    setState(() {
+      _rateCountdown = 30;
+    });
+    _startRateCountdown();
+  }
+
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _animationController.dispose();
     _processingController.dispose();
     super.dispose();
   }
 
   void _processTransaction() async {
-    setState(() {
-      _isProcessing = true;
-    });
-    
-    _processingController.repeat();
-    
-    // Simulate processing time with realistic delays
-    await Future.delayed(const Duration(seconds: 2));
-    
-    // Simulate payment verification
-    await Future.delayed(const Duration(seconds: 1));
-    
-    // Simulate blockchain confirmation
-    await Future.delayed(const Duration(seconds: 2));
-    
-    _processingController.stop();
-    
-    setState(() {
-      _isProcessing = false;
-      _isCompleted = true;
-      _transactionId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
-    });
-    
-    // Auto navigate to receipt after success
-    await Future.delayed(const Duration(seconds: 1));
-    _viewReceipt();
+    if (_rateCountdown <= 0) {
+      // Rate expired, refresh
+      _resetRateCountdown();
+      Get.snackbar(
+        'Rate Expired',
+        'Exchange rate has been refreshed. Please confirm again.',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
+    final details = widget.transactionDetails;
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: 'CRYPTO-${DateTime.now().millisecondsSinceEpoch}',
+      transactionType: details.type.name,
+      amount: details.fiatAmount,
+      currency: CurrencySymbols.currentCurrency,
+      currencySymbol: CurrencySymbols.currentSymbol,
+      fee: details.networkFee + details.tradingFee,
+      totalAmount: details.totalAmount,
+      onPinValidated: (verificationToken) async {
+        // PIN validated - now show processing screen
+        if (mounted) {
+          setState(() {
+            _isProcessing = true;
+          });
+          _processingController.repeat();
+        }
+
+        // Simulate backend trade execution
+        await Future.delayed(const Duration(seconds: 3));
+
+        _processingController.stop();
+
+        if (mounted) {
+          setState(() {
+            _isProcessing = false;
+            _isCompleted = true;
+            _transactionId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
+          });
+        }
+
+        // Navigate to receipt after brief success display
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) _viewReceipt();
+      },
+    );
+
+    if (!success && mounted) {
+      // PIN validation was cancelled or failed
+      _resetRateCountdown();
+    }
   }
 
   void _viewReceipt() {
@@ -111,16 +178,16 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -161,7 +228,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -220,7 +287,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
         gradient: LinearGradient(
           colors: [
             const Color(0xFF6C5CE7).withValues(alpha: 0.1),
-            const Color(0xFF1E2746),
+            const Color(0xFF1F1F1F),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -280,15 +347,57 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           SizedBox(height: 24.h),
           _buildSummaryRow('Amount', widget.transactionDetails.cryptoAmount, widget.transactionDetails.cryptoSymbol),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Price per ${widget.transactionDetails.cryptoSymbol}', '£${widget.transactionDetails.pricePerUnit.toStringAsFixed(2)}', ''),
+          _buildSummaryRow('Price per ${widget.transactionDetails.cryptoSymbol}', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.pricePerUnit.toStringAsFixed(2)}', ''),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Total GBP', '£${widget.transactionDetails.gbpAmount.toStringAsFixed(2)}', ''),
+          _buildSummaryRow('Total ${CurrencySymbols.currentCurrency}', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.fiatAmount.toStringAsFixed(2)}', ''),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Network Fee', '£${widget.transactionDetails.networkFee.toStringAsFixed(2)}', ''),
+          _buildSummaryRow('Network Fee', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.networkFee.toStringAsFixed(2)}', ''),
           SizedBox(height: 12.h),
-          _buildSummaryRow('LazerVault Fee', '£${widget.transactionDetails.tradingFee.toStringAsFixed(2)}', ''),
+          _buildSummaryRow('LazerVault Fee', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.tradingFee.toStringAsFixed(2)}', ''),
           Divider(color: Colors.white.withValues(alpha: 0.2), height: 24.h),
-          _buildSummaryRow('Total', '£${widget.transactionDetails.totalAmount.toStringAsFixed(2)}', '', isTotal: true),
+          _buildSummaryRow('Total', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.totalAmount.toStringAsFixed(2)}', '', isTotal: true),
+          SizedBox(height: 16.h),
+          // Rate countdown indicator
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: _rateCountdown > 10
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : _rateCountdown > 0
+                      ? Colors.orange.withValues(alpha: 0.1)
+                      : Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.timer,
+                  size: 16.sp,
+                  color: _rateCountdown > 10
+                      ? Colors.green
+                      : _rateCountdown > 0
+                          ? Colors.orange
+                          : Colors.red,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  _rateCountdown > 0
+                      ? 'Rate valid for ${_rateCountdown}s'
+                      : 'Rate expired - tap confirm to refresh',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: _rateCountdown > 10
+                        ? Colors.green
+                        : _rateCountdown > 0
+                            ? Colors.orange
+                            : Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -298,7 +407,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -374,7 +483,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -413,7 +522,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           SizedBox(height: 8.h),
           _buildSecurityFeature('Multi-Signature Protection', Icons.verified_user),
           SizedBox(height: 8.h),
-          _buildSecurityFeature('FCA Regulated', Icons.gavel),
+          _buildSecurityFeature('SEC Nigeria Licensed', Icons.gavel),
         ],
       ),
     );
@@ -525,7 +634,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           Container(
             padding: EdgeInsets.all(40.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               shape: BoxShape.circle,
             ),
             child: AnimatedBuilder(
@@ -570,7 +679,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
@@ -644,7 +753,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
@@ -756,7 +865,7 @@ class CryptoTransactionDetails {
   final String cryptoSymbol;
   final String cryptoAmount;
   final double pricePerUnit;
-  final double gbpAmount;
+  final double fiatAmount;
   final double networkFee;
   final double tradingFee;
   final double totalAmount;
@@ -770,7 +879,7 @@ class CryptoTransactionDetails {
     required this.cryptoSymbol,
     required this.cryptoAmount,
     required this.pricePerUnit,
-    required this.gbpAmount,
+    required this.fiatAmount,
     required this.networkFee,
     required this.tradingFee,
     required this.totalAmount,

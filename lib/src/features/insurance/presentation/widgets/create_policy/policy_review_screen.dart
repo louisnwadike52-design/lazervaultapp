@@ -370,6 +370,8 @@ class _PolicyReviewScreenState extends State<PolicyReviewScreen>
         return 'Travel Insurance';
       case InsuranceType.business:
         return 'Business Insurance';
+      case InsuranceType.gadget:
+        return 'Gadget Insurance';
     }
   }
 }

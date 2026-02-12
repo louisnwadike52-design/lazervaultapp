@@ -21,6 +21,12 @@ const ProcessChatRequest$json = {
     {'1': 'tx_history', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'txHistory'},
     {'1': 'user_id', '3': 3, '4': 1, '5': 13, '8': {}, '10': 'userId'},
     {'1': 'uploaded_file', '3': 4, '4': 1, '5': 11, '6': '.pb.ChatFile', '8': {}, '9': 0, '10': 'uploadedFile', '17': true},
+    {'1': 'session_id', '3': 5, '4': 1, '5': 9, '8': {}, '10': 'sessionId'},
+    {'1': 'source_context', '3': 6, '4': 1, '5': 9, '8': {}, '10': 'sourceContext'},
+    {'1': 'language', '3': 7, '4': 1, '5': 9, '8': {}, '10': 'language'},
+    {'1': 'account_id', '3': 8, '4': 1, '5': 9, '8': {}, '10': 'accountId'},
+    {'1': 'user_country', '3': 9, '4': 1, '5': 9, '8': {}, '10': 'userCountry'},
+    {'1': 'currency', '3': 10, '4': 1, '5': 9, '8': {}, '10': 'currency'},
   ],
   '7': {},
   '8': [
@@ -36,9 +42,18 @@ final $typed_data.Uint8List processChatRequestDescriptor = $convert.base64Decode
     'kSRAoHdXNlcl9pZBgDIAEoDUIrkkEoMiZUaGUgSUQgb2YgdGhlIHVzZXIgbWFraW5nIHRoZSBy'
     'ZXF1ZXN0LlIGdXNlcklkEnIKDXVwbG9hZGVkX2ZpbGUYBCABKAsyDC5wYi5DaGF0RmlsZUI6kk'
     'E3MjVPcHRpb25hbCBmaWxlIHVwbG9hZGVkIGJ5IHRoZSB1c2VyIGZvciBBSSBwcm9jZXNzaW5n'
-    'LkgAUgx1cGxvYWRlZEZpbGWIAQE6fJJBeQp3KhdBSSBQcm9jZXNzIENoYXQgUmVxdWVzdDJKUG'
-    'F5bG9hZCBjb250YWluaW5nIHRoZSB1c2VyJ3MgcXVlcnkgZm9yIHRoZSBBSSBjaGF0Ym90IHdp'
-    'dGggb3B0aW9uYWwgZmlsZS7SAQVxdWVyedIBB3VzZXJfaWRCEAoOX3VwbG9hZGVkX2ZpbGU=');
+    'LkgAUgx1cGxvYWRlZEZpbGWIAQESUwoKc2Vzc2lvbl9pZBgFIAEoCUI0kkExMi9TZXNzaW9uIG'
+    'lkZW50aWZpZXIgZm9yIGNvbnZlcnNhdGlvbiBjb250aW51aXR5LlIJc2Vzc2lvbklkEmsKDnNv'
+    'dXJjZV9jb250ZXh0GAYgASgJQkSSQUEyP1doZXJlIHRoZSBjaGF0IHdhcyBpbml0aWF0ZWQgZn'
+    'JvbSAoZS5nLiwgZGFzaGJvYXJkLCB0cmFuc2ZlcnMpLlINc291cmNlQ29udGV4dBJPCghsYW5n'
+    'dWFnZRgHIAEoCUIzkkEwMi5Vc2VyJ3MgcHJlZmVycmVkIGxhbmd1YWdlIGNvZGUgKGUuZy4sIG'
+    'VuLCBmcikuUghsYW5ndWFnZRI9CgphY2NvdW50X2lkGAggASgJQh6SQRsyGVVzZXIncyBhY3Rp'
+    'dmUgYWNjb3VudCBJRC5SCWFjY291bnRJZBJLCgx1c2VyX2NvdW50cnkYCSABKAlCKJJBJTIjVX'
+    'NlcidzIGNvdW50cnkgY29kZSAoZS5nLiwgTkcsIEdIKS5SC3VzZXJDb3VudHJ5EkcKCGN1cnJl'
+    'bmN5GAogASgJQiuSQSgyJlVzZXIncyBjdXJyZW5jeSBjb2RlIChlLmcuLCBOR04sIEdIUykuUg'
+    'hjdXJyZW5jeTp8kkF5CncqF0FJIFByb2Nlc3MgQ2hhdCBSZXF1ZXN0MkpQYXlsb2FkIGNvbnRh'
+    'aW5pbmcgdGhlIHVzZXIncyBxdWVyeSBmb3IgdGhlIEFJIGNoYXRib3Qgd2l0aCBvcHRpb25hbC'
+    'BmaWxlLtIBBXF1ZXJ50gEHdXNlcl9pZEIQCg5fdXBsb2FkZWRfZmlsZQ==');
 
 @$core.Deprecated('Use processChatResponseDescriptor instead')
 const ProcessChatResponse$json = {
@@ -50,8 +65,26 @@ const ProcessChatResponse$json = {
     {'1': 'response', '3': 4, '4': 1, '5': 9, '8': {}, '10': 'response'},
     {'1': 'generated_files', '3': 5, '4': 3, '5': 11, '6': '.pb.ChatFile', '8': {}, '10': 'generatedFiles'},
     {'1': 'file_analysis', '3': 6, '4': 1, '5': 11, '6': '.pb.FileAnalysis', '8': {}, '10': 'fileAnalysis'},
+    {'1': 'intent', '3': 7, '4': 1, '5': 9, '8': {}, '10': 'intent'},
+    {'1': 'entities', '3': 8, '4': 3, '5': 11, '6': '.pb.ProcessChatResponse.EntitiesEntry', '8': {}, '10': 'entities'},
+    {'1': 'requires_confirmation', '3': 9, '4': 1, '5': 8, '8': {}, '10': 'requiresConfirmation'},
+    {'1': 'action_buttons', '3': 10, '4': 3, '5': 11, '6': '.pb.ActionButton', '8': {}, '10': 'actionButtons'},
+    {'1': 'session_id', '3': 11, '4': 1, '5': 9, '8': {}, '10': 'sessionId'},
+    {'1': 'confirmation_data', '3': 12, '4': 1, '5': 11, '6': '.pb.ConfirmationData', '8': {}, '10': 'confirmationData'},
+    {'1': 'conversation_state', '3': 13, '4': 1, '5': 9, '8': {}, '10': 'conversationState'},
   ],
+  '3': [ProcessChatResponse_EntitiesEntry$json],
   '7': {},
+};
+
+@$core.Deprecated('Use processChatResponseDescriptor instead')
+const ProcessChatResponse_EntitiesEntry$json = {
+  '1': 'EntitiesEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
 };
 
 /// Descriptor for `ProcessChatResponse`. Decode as a `google.protobuf.DescriptorProto`.
@@ -65,8 +98,22 @@ final $typed_data.Uint8List processChatResponseDescriptor = $convert.base64Decod
     'NTIzRmlsZXMgZ2VuZXJhdGVkIGJ5IHRoZSBBSSBpbiByZXNwb25zZSB0byB0aGUgcXVlcnkuUg'
     '5nZW5lcmF0ZWRGaWxlcxJfCg1maWxlX2FuYWx5c2lzGAYgASgLMhAucGIuRmlsZUFuYWx5c2lz'
     'QiiSQSUyI0FuYWx5c2lzIHJlc3VsdHMgb2YgdXBsb2FkZWQgZmlsZXMuUgxmaWxlQW5hbHlzaX'
-    'M6VpJBUwpRKhhBSSBQcm9jZXNzIENoYXQgUmVzcG9uc2UyNUNvbnRhaW5zIHRoZSBBSSBjaGF0'
-    'Ym90J3MgcmVzcG9uc2UgYWxvbmcgd2l0aCBzdGF0dXMu');
+    'MSRQoGaW50ZW50GAcgASgJQi2SQSoyKENsYXNzaWZpZWQgaW50ZW50IG9mIHRoZSB1c2VyJ3Mg'
+    'bWVzc2FnZS5SBmludGVudBJ1CghlbnRpdGllcxgIIAMoCzIlLnBiLlByb2Nlc3NDaGF0UmVzcG'
+    '9uc2UuRW50aXRpZXNFbnRyeUIykkEvMi1FeHRyYWN0ZWQgZW50aXRpZXMgKGFtb3VudCwgcmVj'
+    'aXBpZW50LCBldGMuKS5SCGVudGl0aWVzEmIKFXJlcXVpcmVzX2NvbmZpcm1hdGlvbhgJIAEoCE'
+    'ItkkEqMihXaGV0aGVyIHRoZSB1c2VyIG11c3QgY29uZmlybSBhbiBhY3Rpb24uUhRyZXF1aXJl'
+    'c0NvbmZpcm1hdGlvbhJkCg5hY3Rpb25fYnV0dG9ucxgKIAMoCzIQLnBiLkFjdGlvbkJ1dHRvbk'
+    'IrkkEoMiZTdWdnZXN0ZWQgYWN0aW9uIGJ1dHRvbnMgZm9yIHRoZSB1c2VyLlINYWN0aW9uQnV0'
+    'dG9ucxJLCgpzZXNzaW9uX2lkGAsgASgJQiySQSkyJ1Nlc3Npb24gSUQgZm9yIGNvbnZlcnNhdG'
+    'lvbiBjb250aW51aXR5LlIJc2Vzc2lvbklkEnUKEWNvbmZpcm1hdGlvbl9kYXRhGAwgASgLMhQu'
+    'cGIuQ29uZmlybWF0aW9uRGF0YUIykkEvMi1TdHJ1Y3R1cmVkIGRhdGEgZm9yIHRyYW5zYWN0aW'
+    '9uIGNvbmZpcm1hdGlvbi5SEGNvbmZpcm1hdGlvbkRhdGEScwoSY29udmVyc2F0aW9uX3N0YXRl'
+    'GA0gASgJQkSSQUEyP0N1cnJlbnQgY29udmVyc2F0aW9uIHN0YXRlIChJRExFLCBBV0FJVElOR1'
+    '9DT05GSVJNQVRJT04sIGV0Yy4pLlIRY29udmVyc2F0aW9uU3RhdGUaOwoNRW50aXRpZXNFbnRy'
+    'eRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgBOlaSQVMKUSoYQU'
+    'kgUHJvY2VzcyBDaGF0IFJlc3BvbnNlMjVDb250YWlucyB0aGUgQUkgY2hhdGJvdCdzIHJlc3Bv'
+    'bnNlIGFsb25nIHdpdGggc3RhdHVzLg==');
 
 @$core.Deprecated('Use chatFileDescriptor instead')
 const ChatFile$json = {
@@ -270,4 +317,63 @@ final $typed_data.Uint8List getAIChatHistoryResponseDescriptor = $convert.base64
     'cmVkIGNocm9ub2xvZ2ljYWxseS5SB2hpc3Rvcnk6VJJBUQpPKhxHZXQgQUkgQ2hhdCBIaXN0b3'
     'J5IFJlc3BvbnNlMi9BIGxpc3Qgb2YgQUkgY2hhdCBoaXN0b3J5IGVudHJpZXMgZm9yIHRoZSB1'
     'c2VyLg==');
+
+@$core.Deprecated('Use actionButtonDescriptor instead')
+const ActionButton$json = {
+  '1': 'ActionButton',
+  '2': [
+    {'1': 'label', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'label'},
+    {'1': 'action_type', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'actionType'},
+    {'1': 'payload', '3': 3, '4': 1, '5': 9, '8': {}, '10': 'payload'},
+    {'1': 'icon', '3': 4, '4': 1, '5': 9, '8': {}, '10': 'icon'},
+  ],
+};
+
+/// Descriptor for `ActionButton`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List actionButtonDescriptor = $convert.base64Decode(
+    'CgxBY3Rpb25CdXR0b24SNwoFbGFiZWwYASABKAlCIZJBHjIcRGlzcGxheSB0ZXh0IGZvciB0aG'
+    'UgYnV0dG9uLlIFbGFiZWwSVQoLYWN0aW9uX3R5cGUYAiABKAlCNJJBMTIvVHlwZSBvZiBhY3Rp'
+    'b246IG5hdmlnYXRlLCBjb25maXJtLCBxdWlja19yZXBseS5SCmFjdGlvblR5cGUSNwoHcGF5bG'
+    '9hZBgDIAEoCUIdkkEaMhhBY3Rpb24gcGF5bG9hZCBvciByb3V0ZS5SB3BheWxvYWQSLAoEaWNv'
+    'bhgEIAEoCUIYkkEVMhNPcHRpb25hbCBpY29uIG5hbWUuUgRpY29u');
+
+@$core.Deprecated('Use confirmationDataDescriptor instead')
+const ConfirmationData$json = {
+  '1': 'ConfirmationData',
+  '2': [
+    {'1': 'action_type', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'actionType'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'amount'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '8': {}, '10': 'currency'},
+    {'1': 'recipient_name', '3': 4, '4': 1, '5': 9, '8': {}, '10': 'recipientName'},
+    {'1': 'recipient_id', '3': 5, '4': 1, '5': 9, '8': {}, '10': 'recipientId'},
+    {'1': 'description', '3': 6, '4': 1, '5': 9, '8': {}, '10': 'description'},
+    {'1': 'extra', '3': 7, '4': 3, '5': 11, '6': '.pb.ConfirmationData.ExtraEntry', '8': {}, '10': 'extra'},
+  ],
+  '3': [ConfirmationData_ExtraEntry$json],
+};
+
+@$core.Deprecated('Use confirmationDataDescriptor instead')
+const ConfirmationData_ExtraEntry$json = {
+  '1': 'ExtraEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `ConfirmationData`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List confirmationDataDescriptor = $convert.base64Decode(
+    'ChBDb25maXJtYXRpb25EYXRhElkKC2FjdGlvbl90eXBlGAEgASgJQjiSQTUyM1R5cGUgb2YgZm'
+    'luYW5jaWFsIGFjdGlvbiAodHJhbnNmZXIsIHRhZ19wYXksIGV0Yy4pLlIKYWN0aW9uVHlwZRI/'
+    'CgZhbW91bnQYAiABKAlCJ5JBJDIiVHJhbnNhY3Rpb24gYW1vdW50IGluIG1pbm9yIHVuaXRzLl'
+    'IGYW1vdW50EkAKCGN1cnJlbmN5GAMgASgJQiSSQSEyH0N1cnJlbmN5IGNvZGUgKE5HTiwgVVNE'
+    'LCBldGMuKS5SCGN1cnJlbmN5EkMKDnJlY2lwaWVudF9uYW1lGAQgASgJQhySQRkyF1JlY2lwaW'
+    'VudCBkaXNwbGF5IG5hbWUuUg1yZWNpcGllbnROYW1lEkUKDHJlY2lwaWVudF9pZBgFIAEoCUIi'
+    'kkEfMh1SZWNpcGllbnQgdXNlciBvciBhY2NvdW50IElELlILcmVjaXBpZW50SWQSPwoLZGVzY3'
+    'JpcHRpb24YBiABKAlCHZJBGjIYVHJhbnNhY3Rpb24gZGVzY3JpcHRpb24uUgtkZXNjcmlwdGlv'
+    'bhJrCgVleHRyYRgHIAMoCzIfLnBiLkNvbmZpcm1hdGlvbkRhdGEuRXh0cmFFbnRyeUI0kkExMi'
+    '9BZGRpdGlvbmFsIGtleS12YWx1ZSBkYXRhIGZvciB0aGUgY29uZmlybWF0aW9uLlIFZXh0cmEa'
+    'OAoKRXh0cmFFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6Aj'
+    'gB');
 

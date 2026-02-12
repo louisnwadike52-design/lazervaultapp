@@ -59,7 +59,28 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     double? maximumPerSave,
   }) async {
     if (isClosed) return;
-    emit(AutoSaveLoading());
+
+    // Step 1: Configure
+    emit(const AutoSaveRuleCreating(
+      step: 'Configuring rule...',
+      currentStepIndex: 0,
+    ));
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    // Step 2: Validate
+    if (isClosed) return;
+    emit(const AutoSaveRuleCreating(
+      step: 'Validating settings...',
+      currentStepIndex: 1,
+    ));
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Step 3: Create
+    if (isClosed) return;
+    emit(const AutoSaveRuleCreating(
+      step: 'Creating rule...',
+      currentStepIndex: 2,
+    ));
 
     final result = await createAutoSaveRuleUseCase(
       name: name,
@@ -80,7 +101,17 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
 
     result.fold(
       (failure) => emit(AutoSaveError(failure.message)),
-      (rule) => emit(AutoSaveRuleCreated(rule)),
+      (rule) {
+        // Step 4: Confirm
+        if (isClosed) return;
+        emit(const AutoSaveRuleCreating(
+          step: 'Rule created!',
+          currentStepIndex: 3,
+        ));
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (!isClosed) emit(AutoSaveRuleCreated(rule));
+        });
+      },
     );
   }
 
@@ -206,21 +237,85 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     );
   }
 
+  /// Load dashboard data (statistics + rules) in a single call to avoid race conditions.
+  Future<void> loadDashboard() async {
+    if (isClosed) return;
+    emit(AutoSaveLoading());
+
+    final statsResult = await getAutoSaveStatisticsUseCase();
+    final rulesResult = await getAutoSaveRulesUseCase();
+
+    if (isClosed) return;
+
+    statsResult.fold(
+      (failure) => emit(AutoSaveError(failure.message)),
+      (statistics) {
+        rulesResult.fold(
+          (failure) => emit(AutoSaveError(failure.message)),
+          (rules) {
+            _cachedRules = rules;
+            _lastFetch = DateTime.now();
+            emit(AutoSaveDashboardLoaded(
+              statistics: statistics,
+              rules: rules,
+            ));
+          },
+        );
+      },
+    );
+  }
+
   Future<void> triggerSave({
     required String ruleId,
+    required String transactionPinToken,
     double? customAmount,
   }) async {
     if (isClosed) return;
-    emit(AutoSaveRuleTriggeringState(ruleId));
+
+    // Step 1: Validate
+    emit(const AutoSaveTriggerProcessing(
+      step: 'Validating rule...',
+      currentStepIndex: 0,
+    ));
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    // Step 2: Execute
+    if (isClosed) return;
+    emit(const AutoSaveTriggerProcessing(
+      step: 'Executing transfer...',
+      currentStepIndex: 1,
+    ));
 
     final result = await triggerAutoSaveUseCase(
       ruleId: ruleId,
       customAmount: customAmount,
+      transactionPinToken: transactionPinToken,
     );
 
     result.fold(
-      (failure) => emit(AutoSaveError(failure.message)),
-      (transaction) => emit(AutoSaveTransactionTriggered(transaction)),
+      (failure) {
+        if (isClosed) return;
+        emit(AutoSaveError(failure.message));
+      },
+      (transaction) {
+        // Step 3: Update
+        if (isClosed) return;
+        emit(const AutoSaveTriggerProcessing(
+          step: 'Updating records...',
+          currentStepIndex: 2,
+        ));
+        Future.delayed(const Duration(milliseconds: 400), () {
+          if (isClosed) return;
+          // Step 4: Receipt
+          emit(const AutoSaveTriggerProcessing(
+            step: 'Save complete!',
+            currentStepIndex: 3,
+          ));
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (!isClosed) emit(AutoSaveTransactionTriggered(transaction));
+          });
+        });
+      },
     );
   }
 

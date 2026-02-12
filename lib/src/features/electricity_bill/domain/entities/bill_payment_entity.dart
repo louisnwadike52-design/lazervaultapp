@@ -117,6 +117,30 @@ class BillPaymentEntity extends Equatable {
     this.failedAt,
   });
 
+  /// Creates an empty entity for use as a placeholder (e.g., null safety fallback).
+  factory BillPaymentEntity.empty() {
+    final now = DateTime.now();
+    return BillPaymentEntity(
+      id: '',
+      userId: '',
+      providerId: '',
+      providerCode: '',
+      providerName: '',
+      meterNumber: '',
+      customerName: '',
+      meterType: MeterType.prepaid,
+      amount: 0,
+      currency: 'NGN',
+      serviceFee: 0,
+      totalAmount: 0,
+      status: BillPaymentStatus.pending,
+      paymentGateway: '',
+      referenceNumber: '',
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
   bool get isPending => status == BillPaymentStatus.pending;
   bool get isProcessing => status == BillPaymentStatus.processing;
   bool get isCompleted => status == BillPaymentStatus.completed;

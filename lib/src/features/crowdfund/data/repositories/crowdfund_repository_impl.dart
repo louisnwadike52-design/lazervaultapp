@@ -1,3 +1,4 @@
+import 'package:lazervault/src/generated/crowdfund.pb.dart' as pb;
 import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/repositories/crowdfund_repository.dart';
 import '../datasources/crowdfund_grpc_data_source.dart';
@@ -54,6 +55,8 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     String? statusFilter,
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
+    String? sortBy,
+    CrowdfundVisibility? visibility,
   }) async {
     try {
       return await remoteDataSource.listCrowdfunds(
@@ -62,6 +65,8 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         statusFilter: statusFilter,
         categoryFilter: categoryFilter,
         myCrowdfundsOnly: myCrowdfundsOnly,
+        sortBy: sortBy,
+        visibility: visibility,
       );
     } catch (e) {
       throw Exception('Failed to list crowdfunds: $e');
@@ -202,6 +207,41 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
       return await remoteDataSource.getCrowdfundStatistics(crowdfundId);
     } catch (e) {
       throw Exception('Failed to get statistics: $e');
+    }
+  }
+
+  @override
+  Future<List<LeaderboardEntry>> getCrowdfundLeaderboard({
+    LeaderboardSortBy sortBy = LeaderboardSortBy.mostFunded,
+    String? category,
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    try {
+      final pbSortBy = _leaderboardSortByToProto(sortBy);
+      return await remoteDataSource.getCrowdfundLeaderboard(
+        sortBy: pbSortBy,
+        category: category,
+        limit: limit,
+        offset: offset,
+      );
+    } catch (e) {
+      throw Exception('Failed to get leaderboard: $e');
+    }
+  }
+
+  static pb.LeaderboardSortBy _leaderboardSortByToProto(LeaderboardSortBy sortBy) {
+    switch (sortBy) {
+      case LeaderboardSortBy.mostFunded:
+        return pb.LeaderboardSortBy.LEADERBOARD_SORT_MOST_FUNDED;
+      case LeaderboardSortBy.mostDonors:
+        return pb.LeaderboardSortBy.LEADERBOARD_SORT_MOST_DONORS;
+      case LeaderboardSortBy.trending:
+        return pb.LeaderboardSortBy.LEADERBOARD_SORT_TRENDING;
+      case LeaderboardSortBy.nearlyComplete:
+        return pb.LeaderboardSortBy.LEADERBOARD_SORT_NEARLY_COMPLETE;
+      case LeaderboardSortBy.newest:
+        return pb.LeaderboardSortBy.LEADERBOARD_SORT_NEWEST;
     }
   }
 }

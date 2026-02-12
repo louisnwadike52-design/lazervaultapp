@@ -13,6 +13,10 @@ class GroupAccountModel extends GroupAccount {
     required super.updatedAt,
     required super.status,
     super.metadata,
+    super.visibility,
+    super.memberCount,
+    super.totalRaised,
+    super.imageUrl,
   });
 
   factory GroupAccountModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,17 @@ class GroupAccountModel extends GroupAccount {
         orElse: () => GroupAccountStatus.active,
       ),
       metadata: json['metadata'] as Map<String, dynamic>?,
+      visibility: json['visibility'] != null
+          ? GroupVisibility.values.firstWhere(
+              (e) => e.toString().split('.').last == json['visibility'],
+              orElse: () => GroupVisibility.private,
+            )
+          : GroupVisibility.private,
+      memberCount: json['memberCount'] as int? ?? 0,
+      totalRaised: json['totalRaised'] != null
+          ? (json['totalRaised'] as num).toDouble()
+          : 0.0,
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 
@@ -51,6 +66,10 @@ class GroupAccountModel extends GroupAccount {
       'updatedAt': updatedAt.toIso8601String(),
       'status': status.toString().split('.').last,
       'metadata': metadata,
+      'visibility': visibility.toString().split('.').last,
+      'memberCount': memberCount,
+      'totalRaised': totalRaised,
+      'imageUrl': imageUrl,
     };
   }
 
@@ -66,6 +85,10 @@ class GroupAccountModel extends GroupAccount {
       updatedAt: entity.updatedAt,
       status: entity.status,
       metadata: entity.metadata,
+      visibility: entity.visibility,
+      memberCount: entity.memberCount,
+      totalRaised: entity.totalRaised,
+      imageUrl: entity.imageUrl,
     );
   }
 
@@ -81,6 +104,10 @@ class GroupAccountModel extends GroupAccount {
     DateTime? updatedAt,
     GroupAccountStatus? status,
     Map<String, dynamic>? metadata,
+    GroupVisibility? visibility,
+    int? memberCount,
+    double? totalRaised,
+    String? imageUrl,
   }) {
     return GroupAccountModel(
       id: id ?? this.id,
@@ -93,6 +120,10 @@ class GroupAccountModel extends GroupAccount {
       updatedAt: updatedAt ?? this.updatedAt,
       status: status ?? this.status,
       metadata: metadata ?? this.metadata,
+      visibility: visibility ?? this.visibility,
+      memberCount: memberCount ?? this.memberCount,
+      totalRaised: totalRaised ?? this.totalRaised,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }
@@ -828,6 +859,25 @@ class PayoutScheduleModel extends PayoutSchedule {
       receivedDate: receivedDate ?? this.receivedDate,
       actualAmount: actualAmount ?? this.actualAmount,
       notes: notes ?? this.notes,
+    );
+  }
+}
+
+// Public Group Detail Model
+class PublicGroupDetailModel extends PublicGroupDetail {
+  const PublicGroupDetailModel({
+    required super.group,
+    super.statistics,
+    super.topContributors,
+    required super.isMember,
+  });
+
+  factory PublicGroupDetailModel.fromEntity(PublicGroupDetail entity) {
+    return PublicGroupDetailModel(
+      group: entity.group,
+      statistics: entity.statistics,
+      topContributors: entity.topContributors,
+      isMember: entity.isMember,
     );
   }
 }

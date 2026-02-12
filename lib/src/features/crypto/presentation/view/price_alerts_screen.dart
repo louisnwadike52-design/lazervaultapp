@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class PriceAlertsScreen extends StatefulWidget {
   const PriceAlertsScreen({super.key});
@@ -48,7 +49,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: Column(
           children: [
@@ -87,7 +88,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -113,7 +114,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -133,7 +134,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -181,7 +182,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -266,7 +267,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: alert.isActive 
-            ? (isTriggered ? Colors.green.withValues(alpha: 0.1) : const Color(0xFF0A0E27))
+            ? (isTriggered ? Colors.green.withValues(alpha: 0.1) : const Color(0xFF0A0A0A))
             : Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
@@ -309,7 +310,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                       ),
                     ),
                     Text(
-                      '${alert.alertType == AlertType.above ? 'Above' : 'Below'} £${alert.targetPrice.toStringAsFixed(2)}',
+                      '${alert.alertType == AlertType.above ? 'Above' : 'Below'} ${CurrencySymbols.currentSymbol}${alert.targetPrice.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: Colors.white.withValues(alpha: 0.6),
@@ -322,7 +323,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '£${alert.currentPrice.toStringAsFixed(2)}',
+                    '${CurrencySymbols.currentSymbol}${alert.currentPrice.toStringAsFixed(2)}',
                     style: GoogleFonts.inter(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
@@ -421,7 +422,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -462,7 +463,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0E27),
+        color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -535,7 +536,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
         child: Container(
           padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2746),
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Column(
@@ -676,7 +677,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
       height: 600.h,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: Column(
@@ -739,7 +740,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   margin: EdgeInsets.only(bottom: 8.h),
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : const Color(0xFF0A0E27),
+                    color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
           BoxShadow(
@@ -785,7 +786,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                         ),
                       ),
                       Text(
-                        '£${crypto['price'].toStringAsFixed(2)}',
+                        '${CurrencySymbols.currentSymbol}${crypto['price'].toStringAsFixed(2)}',
                         style: GoogleFonts.inter(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
@@ -826,7 +827,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   decoration: BoxDecoration(
                     color: _selectedAlertType == AlertType.above 
                         ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) 
-                        : const Color(0xFF0A0E27),
+                        : const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
           BoxShadow(
@@ -867,7 +868,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   decoration: BoxDecoration(
                     color: _selectedAlertType == AlertType.below 
                         ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) 
-                        : const Color(0xFF0A0E27),
+                        : const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
           BoxShadow(
@@ -935,7 +936,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
             prefixIcon: Padding(
               padding: EdgeInsets.only(left: 16.w, top: 16.h),
               child: Text(
-                '£',
+                CurrencySymbols.currentSymbol,
                 style: GoogleFonts.inter(
                   fontSize: 18.sp,
                   color: Colors.white,
@@ -944,7 +945,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
               ),
             ),
             filled: true,
-            fillColor: const Color(0xFF0A0E27),
+            fillColor: const Color(0xFF0A0A0A),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide.none,

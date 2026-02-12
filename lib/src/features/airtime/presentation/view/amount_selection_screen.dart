@@ -8,6 +8,7 @@ import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
+import '../widgets/airtime_step_indicator.dart';
 
 class AmountSelectionScreen extends StatefulWidget {
   const AmountSelectionScreen({super.key});
@@ -27,6 +28,8 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
   Country? selectedCountry;
   
   final List<double> quickAmounts = [50, 100, 200, 500, 1000, 2000, 5000];
+
+  String get _cs => selectedCountry?.currencySymbol ?? '₦';
 
   @override
   void initState() {
@@ -69,9 +72,22 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
     });
   }
 
+  bool get _isAmountValid =>
+      selectedAmount != null && selectedAmount! >= 50 && selectedAmount! <= 50000;
+
   void _validateAndProceed() {
     if (selectedAmount == null) {
       _showError('Please select or enter an amount');
+      return;
+    }
+
+    if (selectedAmount! < 50) {
+      _showError('Minimum amount is ${_cs}50');
+      return;
+    }
+
+    if (selectedAmount! > 50000) {
+      _showError('Maximum amount is ${_cs}50,000');
       return;
     }
 
@@ -81,15 +97,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
     }
 
     context.read<AirtimeCubit>().prepareTransactionReview(
-      country: selectedCountry ?? Country(
-        id: 'ng',
-        code: 'NG',
-        name: 'Nigeria',
-        currency: '₦',
-        dialCode: '+234',
-        flag: '🇳🇬',
-        currencySymbol: '₦',
-      ),
+      country: selectedCountry ?? DefaultCountries.nigeria,
       provider: networkProvider!,
       phoneNumber: phoneNumber!,
       recipientName: recipientName ?? '',
@@ -114,21 +122,9 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A0E27),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1F1F1F),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: BlocListener<AirtimeCubit, AirtimeState>(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: SafeArea(
+        child: BlocListener<AirtimeCubit, AirtimeState>(
             listener: (context, state) {
               if (state is AirtimeTransactionReviewReady) {
                 Get.toNamed(AppRoutes.airtimeReview, arguments: {
@@ -146,10 +142,8 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             },
             child: Column(
               children: [
-                // Header
                 _buildHeader(),
-                
-                // Content
+                const AirtimeStepIndicator(currentStep: 2),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -188,44 +182,31 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             ),
           ),
         ),
-      ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
-          // Back button
           GestureDetector(
             onTap: () => Get.back(),
             child: Container(
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
-                boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
                 color: Colors.white,
-                size: 20.sp,
+                size: 18.sp,
               ),
             ),
           ),
-          
           SizedBox(width: 16.w),
-          
-          // Title and subtitle
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,19 +214,17 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                 Text(
                   'Select Amount',
                   style: TextStyle(
-                    fontSize: 24.sp,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
-                    letterSpacing: 0.5,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 2.h),
                 Text(
                   'How much airtime would you like to purchase?',
                   style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontWeight: FontWeight.w400,
+                    fontSize: 13.sp,
+                    color: const Color(0xFF9CA3AF),
                   ),
                 ),
               ],
@@ -260,7 +239,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -277,7 +256,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: _getProviderColor(networkProvider!.type),
+              color: networkProvider!.type.color,
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Center(
@@ -348,7 +327,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
         
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -396,7 +375,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
               prefixIcon: Container(
                 padding: EdgeInsets.all(16.w),
                 child: Text(
-                  '₦',
+                  selectedCountry?.currencySymbol ?? '₦',
                   style: TextStyle(
                     fontSize: 24.sp,
                     color: Colors.white,
@@ -416,7 +395,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
         SizedBox(height: 8.h),
         
         Text(
-          'Minimum: ₦50 • Maximum: ₦50,000',
+          'Minimum: ${selectedCountry?.currencySymbol ?? '₦'}50 • Maximum: ${selectedCountry?.currencySymbol ?? '₦'}50,000',
           style: TextStyle(
             fontSize: 12.sp,
             color: Colors.white.withValues(alpha: 0.5),
@@ -454,7 +433,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                 decoration: BoxDecoration(
                   color: isSelected 
                     ? Color(0xFF3B82F6) 
-                    : Colors.white.withValues(alpha: 0.05),
+                    : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
           BoxShadow(
@@ -466,7 +445,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
         
                 ),
                 child: Text(
-                  '₦${amount.toStringAsFixed(0)}',
+                  '${selectedCountry?.currencySymbol ?? '₦'}${amount.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -492,7 +471,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -505,17 +484,17 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
       ),
       child: Column(
         children: [
-          _buildSummaryRow('Airtime Amount', '₦${selectedAmount!.toStringAsFixed(0)}'),
+          _buildSummaryRow('Airtime Amount', '$_cs${selectedAmount!.toStringAsFixed(0)}'),
           if (discount > 0) ...[
             SizedBox(height: 8.h),
-            _buildSummaryRow('Discount (${networkProvider!.discount!.toStringAsFixed(0)}%)', '-₦${discount.toStringAsFixed(0)}', isDiscount: true),
+            _buildSummaryRow('Discount (${networkProvider!.discount!.toStringAsFixed(0)}%)', '-$_cs${discount.toStringAsFixed(0)}', isDiscount: true),
           ],
           SizedBox(height: 8.h),
-          _buildSummaryRow('Service Fee', '₦${clampedFee.toStringAsFixed(0)}'),
+          _buildSummaryRow('Service Fee', '$_cs${clampedFee.toStringAsFixed(0)}'),
           SizedBox(height: 12.h),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Total Amount', '₦${total.toStringAsFixed(0)}', isTotal: true),
+          _buildSummaryRow('Total Amount', '$_cs${total.toStringAsFixed(0)}', isTotal: true),
         ],
       ),
     );
@@ -555,10 +534,10 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: selectedAmount != null && selectedAmount! >= 50 ? _validateAndProceed : null,
+          onPressed: _isAmountValid ? _validateAndProceed : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: selectedAmount != null && selectedAmount! >= 50 
-              ? Color(0xFF3B82F6) 
+            backgroundColor: _isAmountValid
+              ? Color(0xFF3B82F6)
               : Colors.white.withValues(alpha: 0.1),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
@@ -571,8 +550,8 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: selectedAmount != null && selectedAmount! >= 50 
-                ? Colors.white 
+              color: _isAmountValid
+                ? Colors.white
                 : Colors.white.withValues(alpha: 0.4),
             ),
           ),
@@ -581,19 +560,4 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
     );
   }
 
-  Color _getProviderColor(NetworkProviderType type) {
-    switch (type) {
-      case NetworkProviderType.mtn:
-        return Color(0xFFFFCC00);
-      case NetworkProviderType.airtel:
-        return Color(0xFFFF0000);
-      case NetworkProviderType.glo:
-        return Color(0xFF00B04F);
-      case NetworkProviderType.etisalat:
-      case NetworkProviderType.ninemobile:
-        return Color(0xFF00AA4F);
-      default:
-        return Color(0xFF3B82F6); // Default blue color
-    }
-  }
-} 
+}

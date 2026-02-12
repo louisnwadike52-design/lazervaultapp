@@ -74,15 +74,15 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F23),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
               const Color(0xFF0A0A1A),
             ],
           ),
@@ -993,8 +993,8 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
             ],
           ),
           borderRadius: BorderRadius.only(

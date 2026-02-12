@@ -74,10 +74,143 @@ class CacheConfig {
     cacheTime: Duration(minutes: 5),
   );
 
+  /// Configuration for airtime network providers.
+  /// Short stale time (2 min) for freshness, 12 hour cache.
+  static const airtimeProviders = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for auto-save rules.
+  /// Short stale time (3 min) as rules can be toggled/updated frequently.
+  static const autosaveRules = CacheConfig(
+    staleTime: Duration(minutes: 3),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for auto-save statistics.
+  /// Short stale time (2 min) as stats change with each trigger.
+  static const autosaveStatistics = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 6),
+  );
+
   /// Configuration for rarely changing reference data (banks, countries, etc).
   static const referenceData = CacheConfig(
     staleTime: Duration(hours: 1),
     cacheTime: Duration(days: 7),
+  );
+
+  /// Configuration for crowdfund campaign list.
+  /// Medium stale time (3 min) for balance between freshness and caching.
+  static const crowdfunds = CacheConfig(
+    staleTime: Duration(minutes: 3),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for crowdfund campaign details.
+  /// Short stale time (1 min) to keep details current.
+  static const crowdfundDetails = CacheConfig(
+    staleTime: Duration(minutes: 1),
+    cacheTime: Duration(hours: 6),
+  );
+
+  /// Configuration for trending crowdfunds on discovery page.
+  /// Short stale time (2 min) for freshness, 6 hour cache.
+  static const trendingCrowdfunds = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 6),
+  );
+
+  /// Configuration for crowdfund leaderboard.
+  /// Short stale time (1 min) for freshness, 6 hour cache.
+  static const leaderboard = CacheConfig(
+    staleTime: Duration(minutes: 1),
+    cacheTime: Duration(hours: 6),
+  );
+
+  /// Configuration for public groups discovery.
+  /// Medium stale time (3 min) as public groups change less frequently.
+  static const publicGroups = CacheConfig(
+    staleTime: Duration(minutes: 3),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for insurance products from MyCover.ai marketplace.
+  /// Longer stale time (30 min) as products change infrequently, 12 hour cache.
+  static const insuranceProducts = CacheConfig(
+    staleTime: Duration(minutes: 30),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for insurance quotes.
+  /// Short stale time (2 min) as quotes have limited validity, 15 min cache.
+  static const insuranceQuotes = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(minutes: 15),
+  );
+
+  /// Configuration for stock listings and search results.
+  /// Short stale time (2 min) for market freshness, 12 hour cache.
+  static const stocks = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for investment portfolio data.
+  /// Short stale time (2 min) as portfolio values change with market, 12 hour cache.
+  static const portfolio = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for stock holdings list.
+  /// Short stale time (2 min) for freshness, 12 hour cache.
+  static const holdings = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for gift card brands catalog.
+  /// Longer stale time (30 min) as brand catalog changes infrequently.
+  static const giftCardBrands = CacheConfig(
+    staleTime: Duration(minutes: 30),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for user's gift cards list.
+  /// Short stale time (2 min) to reflect purchases/redemptions quickly.
+  static const giftCards = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for gift card sales list.
+  /// Short stale time (2 min) to reflect status changes.
+  static const giftCardSales = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for electricity bill providers.
+  /// Longer stale time (10 min) as providers rarely change, 12 hour cache.
+  static const electricityProviders = CacheConfig(
+    staleTime: Duration(minutes: 10),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for business dashboard summary data.
+  /// Medium stale time (5 min) for business metrics, 24 hour cache.
+  static const businessDashboard = CacheConfig(
+    staleTime: Duration(minutes: 5),
+    cacheTime: Duration(hours: 24),
+  );
+
+  /// Configuration for business analytics charts data.
+  /// Medium stale time (10 min) for analytics, 24 hour cache.
+  static const businessAnalytics = CacheConfig(
+    staleTime: Duration(minutes: 10),
+    cacheTime: Duration(hours: 24),
   );
 
   @override

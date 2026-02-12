@@ -14,7 +14,6 @@ import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/device_service.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
 import 'package:lazervault/core/types/transaction.dart';
 // Network Optimization: Cache & Offline Queue
@@ -125,6 +124,7 @@ import 'package:lazervault/src/generated/referral.pbgrpc.dart';
 import 'package:lazervault/src/generated/exchange.pbgrpc.dart';
 import 'package:lazervault/src/generated/voice-biometrics.pbgrpc.dart';
 import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
+import 'package:lazervault/src/generated/statistics.pbgrpc.dart' as statistics_grpc;
 import 'package:lazervault/src/features/currency_exchange/data/repositories/exchange_repository_impl.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/src/features/voice_enrollment/data/voice_enrollment_repository_impl.dart';
@@ -139,17 +139,17 @@ import 'package:lazervault/src/features/presentation/views/facial_biometric_veri
 import 'package:lazervault/src/features/presentation/views/flights/flights_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/deposit_funds_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/initiate_send_funds_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_processing_screen.dart';
+import 'package:lazervault/src/features/send_funds/presentation/chatbot_transfer_screen.dart';
 import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
 import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
-import 'package:lazervault/src/features/presentation/views/review_electricity_bills_screen.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
-import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
 import 'package:lazervault/src/features/presentation/views/select_country_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
@@ -171,7 +171,6 @@ import 'package:lazervault/src/features/funds/data/datasources/batch_transfer_re
 import 'package:lazervault/src/features/funds/data/repositories/batch_transfer_repository_impl.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_batch_transfer_repository.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_batch_transfer_usecase.dart';
-import 'package:lazervault/src/features/funds/domain/usecases/get_batch_transfer_history_usecase.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 
 import '../../src/features/authentication/data/datasources/authentication_remote_data_source.dart';
@@ -194,6 +193,7 @@ import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawa
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_remote_datasource.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_grpc_datasource.dart';
+import 'package:lazervault/src/features/open_banking/data/datasources/credit_score_ai_service.dart';
 
 // Card Settings Imports
 import 'package:lazervault/src/features/card_settings/data/repositories/card_settings_repository_impl.dart';
@@ -206,6 +206,7 @@ import 'package:lazervault/src/features/card_settings/cubit/card_settings_cubit.
 
 // AI Chat Imports
 import 'package:lazervault/src/generated/ai_chat.pbgrpc.dart';
+import 'package:lazervault/src/features/ai_chats/data/datasources/http_ai_chat_datasource.dart';
 import 'package:lazervault/src/features/ai_chats/data/datasources/grpc_ai_chat_service.dart';
 import 'package:lazervault/src/features/ai_chats/data/repository/ai_chat_repository_impl.dart';
 import 'package:lazervault/src/features/ai_chats/domain/repositories/i_ai_chat_repository.dart';
@@ -236,9 +237,6 @@ import 'package:lazervault/src/features/gift_cards/domain/usecases/get_user_gift
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_gift_cards_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/sell_to_contact_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/saved_recipients_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/quick_sell_screen.dart';
 // End Gift Cards Imports
 
 // Identity Verification Imports
@@ -296,6 +294,7 @@ import 'package:lazervault/src/features/group_account/services/group_account_rep
 import 'package:lazervault/src/features/crowdfund/domain/repositories/crowdfund_repository.dart';
 import 'package:lazervault/src/features/crowdfund/domain/usecases/crowdfund_usecases.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_cubit.dart';
 // End Crowdfund Imports
 
 // Invoice Imports
@@ -331,12 +330,12 @@ import 'package:lazervault/src/features/tag_pay/domain/repositories/tag_pay_repo
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
 // End Tag Pay Imports
 
-// Barcode Payment Imports
-import 'package:lazervault/src/features/barcode_payment/data/datasources/barcode_payment_remote_datasource.dart';
-import 'package:lazervault/src/features/barcode_payment/data/repositories/barcode_payment_repository_impl.dart';
-import 'package:lazervault/src/features/barcode_payment/domain/repositories/barcode_payment_repository.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/cubit/barcode_payment_cubit.dart';
-// End Barcode Payment Imports
+// QR Payment Imports
+import 'package:lazervault/src/features/qr_payment/data/datasources/qr_payment_remote_datasource.dart';
+import 'package:lazervault/src/features/qr_payment/data/repositories/qr_payment_repository_impl.dart';
+import 'package:lazervault/src/features/qr_payment/domain/repositories/qr_payment_repository.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
+// End QR Payment Imports
 
 // Contactless Payment (NFC) Imports
 import 'package:lazervault/src/features/contactless_payment/data/repositories/contactless_payment_repository_impl.dart';
@@ -354,8 +353,23 @@ import 'package:lazervault/src/features/electricity_bill/presentation/cubit/auto
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/reminder_cubit.dart';
 // End Electricity Bill Imports
 
+// Cable TV Imports
+import 'package:lazervault/src/features/cable_tv/data/datasources/cable_tv_remote_datasource.dart';
+import 'package:lazervault/src/features/cable_tv/data/repositories/cable_tv_repository_impl.dart';
+import 'package:lazervault/src/features/cable_tv/domain/repositories/cable_tv_repository.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_cubit.dart';
+// End Cable TV Imports
+
+// Education Imports
+import 'package:lazervault/src/features/education/data/datasources/education_remote_datasource.dart';
+import 'package:lazervault/src/features/education/data/repositories/education_repository_impl.dart';
+import 'package:lazervault/src/features/education/domain/repositories/education_repository.dart';
+import 'package:lazervault/src/features/education/presentation/cubit/education_cubit.dart';
+// End Education Imports
+
 // Airtime Imports
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_local_datasource.dart';
+import 'package:lazervault/src/features/airtime/data/datasources/airtime_remote_datasource.dart';
 import 'package:lazervault/src/features/airtime/data/repositories/airtime_repository_impl.dart';
 import 'package:lazervault/src/features/airtime/domain/repositories/airtime_repository.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
@@ -377,6 +391,7 @@ import 'package:lazervault/src/features/group_account/data/repositories/group_ac
 import 'package:lazervault/src/features/group_account/domain/repositories/group_account_repository.dart';
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
+import 'package:lazervault/src/features/group_account/presentation/cubit/discovery_cubit.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart';
 
 // Family Account Imports
@@ -394,6 +409,7 @@ import 'package:lazervault/src/features/insurance/data/datasources/insurance_rem
 import 'package:lazervault/src/features/insurance/data/repositories/insurance_repository_impl.dart';
 import 'package:lazervault/src/features/insurance/domain/repositories/insurance_repository.dart';
 import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
+import 'package:lazervault/src/features/insurance/presentation/cubit/create_policy_cubit.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_list_screen.dart';
 
 // Lock Funds Feature
@@ -414,11 +430,12 @@ import 'package:lazervault/src/features/contacts/presentation/cubit/contact_sync
 
 // Statistics Imports
 import 'package:lazervault/src/core/network/grpc_client.dart';
-import 'package:lazervault/src/features/statistics/data/statistics_repository.dart';
+import 'package:lazervault/src/features/statistics/data/financial_analytics_repository.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
-import 'package:lazervault/src/features/statistics/presentation/screens/statistics_screen.dart';
-import 'package:lazervault/src/features/statistics/presentation/screens/add_expense_screen.dart';
-import 'package:lazervault/src/features/statistics/presentation/screens/add_budget_screen.dart';
+// Budget Imports
+import 'package:lazervault/src/features/statistics/data/budget_repository.dart';
+import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 // End Statistics Imports
 
 // Portfolio Imports - Using GrpcClient
@@ -459,6 +476,23 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
 // End Transaction History Imports
+
+// Payroll Imports (Business)
+import 'package:lazervault/src/generated/payroll.pbgrpc.dart' as payroll_pb;
+import 'package:lazervault/src/features/payroll/data/repositories/payroll_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/payroll/domain/repositories/payroll_repository.dart';
+import 'package:lazervault/src/features/payroll/presentation/cubit/payroll_cubit.dart';
+// End Payroll Imports
+
+// Business Dashboard Imports
+import 'package:lazervault/src/features/business_dashboard/data/repositories/business_dashboard_repository_impl.dart';
+import 'package:lazervault/src/features/business_dashboard/domain/repositories/business_dashboard_repository.dart';
+import 'package:lazervault/src/features/business_dashboard/presentation/cubit/business_dashboard_cubit.dart';
+// End Business Dashboard Imports
+
+// Business Analytics Imports
+import 'package:lazervault/src/features/business_analytics/presentation/cubit/business_analytics_cubit.dart';
+// End Business Analytics Imports
 
 final serviceLocator = GetIt.instance;
 
@@ -736,6 +770,13 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<payments_grpc.PaymentsServiceClient>(
     () => payments_grpc.PaymentsServiceClient(
       serviceLocator<ClientChannel>(instanceName: 'transferChannel'),
+    ),
+  );
+
+  // Statistics Service Client - Uses Investment Gateway (9090)
+  serviceLocator.registerLazySingleton<statistics_grpc.StatisticsServiceClient>(
+    () => statistics_grpc.StatisticsServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'investmentChannel'),
     ),
   );
 
@@ -1102,7 +1143,20 @@ Future<void> init() async {
   );
 
   // Blocs/Cubits - Using gRPC for better performance
-  serviceLocator.registerFactory(() => OpenBankingCubit.withGrpc(serviceLocator<OpenBankingGrpcDataSource>()));
+  // Lazy singleton: shared state (linked accounts, credit score) persists across tab switches
+  serviceLocator.registerLazySingleton(() => OpenBankingCubit.withGrpc(serviceLocator<OpenBankingGrpcDataSource>()));
+
+  // Credit Score AI Insights Service
+  serviceLocator.registerLazySingleton<CreditScoreAIService>(
+    () => CreditScoreAIService(
+      dio: serviceLocator<Dio>(),
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
+      getAccessToken: () async {
+        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        return token ?? '';
+      },
+    ),
+  );
 
 
   // ================== Feature: Funds (Withdrawal) ==================
@@ -1143,7 +1197,7 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<IBatchTransferRemoteDataSource>(
     () => BatchTransferRemoteDataSourceImpl(
-      serviceLocator<TransferServiceClient>(),
+      serviceLocator<payments_grpc.PaymentsServiceClient>(),
       serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
@@ -1155,24 +1209,30 @@ Future<void> init() async {
 
   // Use Cases
   serviceLocator.registerLazySingleton(() => InitiateBatchTransferUseCase(serviceLocator<IBatchTransferRepository>()));
-  serviceLocator.registerLazySingleton(() => GetBatchTransferHistoryUseCase(repository: serviceLocator<IBatchTransferRepository>()));
-  serviceLocator.registerLazySingleton(() => GetBatchTransferStatusUseCase(serviceLocator<IBatchTransferRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => BatchTransferCubit(
     initiateBatchTransferUseCase: serviceLocator<InitiateBatchTransferUseCase>(),
-    getBatchTransferHistoryUseCase: serviceLocator<GetBatchTransferHistoryUseCase>(),
-    getBatchTransferStatusUseCase: serviceLocator<GetBatchTransferStatusUseCase>(),
   ));
 
 
   // ================== Feature: AI Chat ==================
 
-  // Data Sources
+  // Data Sources - Use HTTP to call Chat Agent Gateway directly
+  // Architecture: Flutter HTTP -> Chat Agent Gateway (port 3011)
+  // Chat Agent Gateway handles: authentication, chat history storage, context injection, LLM routing
   serviceLocator.registerLazySingleton<IAiChatDataSource>(
-    () => GrpcAiChatDataSource(
-      client: serviceLocator<AIChatServiceClient>(),
-      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    () => HttpAiChatDataSource(
+      dio: Dio(BaseOptions(
+        baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011', // Use 10.0.2.2 for Android emulator
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        headers: {'Content-Type': 'application/json'},
+      )),
+      secureStorageService: serviceLocator<SecureStorageService>(),
+      accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
     ),
   );
 
@@ -1224,7 +1284,11 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(
-    () => GiftCardCubit(repository: serviceLocator<IGiftCardRepository>()),
+    () => GiftCardCubit(
+      repository: serviceLocator<IGiftCardRepository>(),
+      cacheManager: serviceLocator<SWRCacheManager>(),
+      mutationQueue: serviceLocator<MutationQueue>(),
+    ),
   );
 
 
@@ -1238,22 +1302,22 @@ Future<void> init() async {
     ),
   );
 
-  // Data Sources - Use gRPC or HTTP based on environment variable
+  // Data Sources - Default to gRPC, fall back to HTTP if explicitly set
   serviceLocator.registerLazySingleton<IStockRemoteDataSource>(
     () {
-      final useGrpc = dotenv.env['USE_STOCKS_GRPC']?.toLowerCase() == 'true';
+      final useHttp = dotenv.env['USE_STOCKS_HTTP']?.toLowerCase() == 'true';
 
-      if (useGrpc) {
-        // Use gRPC implementation
-        return StockRemoteDataSourceGrpcImpl(
-          channelManager: serviceLocator<GrpcChannelManager>(),
-        );
-      } else {
-        // Use HTTP implementation
+      if (useHttp) {
+        // Use HTTP implementation (legacy fallback)
         return StockRemoteDataSourceRealImpl(
           client: serviceLocator<http.Client>(),
           baseUrl: dotenv.env['STOCKS_API_URL'] ?? 'http://10.0.2.2:8081/api/v1',
           secureStorage: serviceLocator<SecureStorageService>(),
+        );
+      } else {
+        // Use gRPC implementation (default)
+        return StockRemoteDataSourceGrpcImpl(
+          channelManager: serviceLocator<GrpcChannelManager>(),
         );
       }
     },
@@ -1277,7 +1341,8 @@ Future<void> init() async {
     placeOrderUseCase: serviceLocator<PlaceOrderUseCase>(),
     getWatchlistsUseCase: serviceLocator<GetWatchlistsUseCase>(),
     repository: serviceLocator<IStockRepository>(),
-      ));
+    cacheManager: serviceLocator<SWRCacheManager>(),
+  ));
 
 
   // ================== Feature: Crypto ==================
@@ -1293,6 +1358,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CryptoRemoteDataSource>(
     () => CryptoRemoteDataSourceImpl(
       grpcClient: serviceLocator<CryptoGrpcClient>(),
+      localeManager: serviceLocator<LocaleManager>(),
     ),
   );
 
@@ -1301,6 +1367,7 @@ Future<void> init() async {
     () => CryptoRepositoryImpl(
       remoteDataSource: serviceLocator<CryptoRemoteDataSource>(),
       grpcClient: serviceLocator<CryptoGrpcClient>(),
+      localeManager: serviceLocator<LocaleManager>(),
     ),
   );
 
@@ -1371,8 +1438,14 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GenerateDonationReceiptUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetUserReceiptsUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetCrowdfundStatisticsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetCrowdfundLeaderboardUseCase(serviceLocator<CrowdfundRepository>()));
 
   // Blocs/Cubits
+  serviceLocator.registerFactory(() => LeaderboardCubit(
+    getCrowdfundLeaderboardUseCase: serviceLocator<GetCrowdfundLeaderboardUseCase>(),
+    cacheManager: serviceLocator<SWRCacheManager>(),
+  ));
+
   serviceLocator.registerFactory(() => CrowdfundCubit(
     createCrowdfundUseCase: serviceLocator<CreateCrowdfundUseCase>(),
     getCrowdfundUseCase: serviceLocator<GetCrowdfundUseCase>(),
@@ -1387,6 +1460,7 @@ Future<void> init() async {
     getUserReceiptsUseCase: serviceLocator<GetUserReceiptsUseCase>(),
     getCrowdfundStatisticsUseCase: serviceLocator<GetCrowdfundStatisticsUseCase>(),
     reportService: serviceLocator<CrowdfundReportService>(),
+    cacheManager: serviceLocator<SWRCacheManager>(),
   ));
 
 
@@ -1468,25 +1542,25 @@ Future<void> init() async {
     mutationQueue: serviceLocator<MutationQueue>(),
   ));
 
-  // ================== Feature: Barcode QuickPay ==================
+  // ================== Feature: QR Pay ==================
 
   // Data Sources
-  serviceLocator.registerLazySingleton<BarcodePaymentRemoteDataSource>(
-    () => BarcodePaymentRemoteDataSourceImpl(
+  serviceLocator.registerLazySingleton<QRPaymentRemoteDataSource>(
+    () => QRPaymentRemoteDataSourceImpl(
       grpcClient: serviceLocator<GrpcClient>(),
     ),
   );
 
   // Repositories
-  serviceLocator.registerLazySingleton<BarcodePaymentRepository>(
-    () => BarcodePaymentRepositoryImpl(
-      remoteDataSource: serviceLocator<BarcodePaymentRemoteDataSource>(),
+  serviceLocator.registerLazySingleton<QRPaymentRepository>(
+    () => QRPaymentRepositoryImpl(
+      remoteDataSource: serviceLocator<QRPaymentRemoteDataSource>(),
     ),
   );
 
   // Blocs/Cubits
-  serviceLocator.registerFactory(() => BarcodePaymentCubit(
-    repository: serviceLocator<BarcodePaymentRepository>(),
+  serviceLocator.registerFactory(() => QRPaymentCubit(
+    repository: serviceLocator<QRPaymentRepository>(),
   ));
 
   // ================== Feature: Contactless Payment (NFC) ==================
@@ -1519,14 +1593,26 @@ Future<void> init() async {
     () => AirtimeLocalDataSourceImpl(),
   );
 
+  serviceLocator.registerLazySingleton<AirtimeRemoteDataSource>(
+    () => AirtimeRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
   // Repositories
   serviceLocator.registerLazySingleton<AirtimeRepository>(
-    () => AirtimeRepositoryImpl(localDataSource: serviceLocator<AirtimeLocalDataSource>()),
+    () => AirtimeRepositoryImpl(
+      localDataSource: serviceLocator<AirtimeLocalDataSource>(),
+      remoteDataSource: serviceLocator<AirtimeRemoteDataSource>(),
+    ),
   );
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => AirtimeCubit(
     repository: serviceLocator<AirtimeRepository>(),
+    secureStorage: serviceLocator<SecureStorageService>(),
+    cacheManager: serviceLocator<SWRCacheManager>(),
+    accountManager: serviceLocator<AccountManager>(),
   ));
 
   // ================== Feature: Electricity Bill Payment ==================
@@ -1548,6 +1634,7 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ElectricityBillCubit(
     repository: serviceLocator<ElectricityBillRepository>(),
+    cacheManager: serviceLocator<SWRCacheManager>(),
   ));
 
   serviceLocator.registerFactory(() => BeneficiaryCubit(
@@ -1560,6 +1647,48 @@ Future<void> init() async {
 
   serviceLocator.registerFactory(() => ReminderCubit(
     repository: serviceLocator<ElectricityBillRepository>(),
+  ));
+
+  // ================== Feature: Cable TV ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<CableTVRemoteDataSource>(
+    () => CableTVRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<CableTVRepository>(
+    () => CableTVRepositoryImpl(
+      remoteDataSource: serviceLocator<CableTVRemoteDataSource>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => CableTVCubit(
+    repository: serviceLocator<CableTVRepository>(),
+  ));
+
+  // ================== Feature: Education PINs ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<EducationRemoteDataSource>(
+    () => EducationRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<EducationRepository>(
+    () => EducationRepositoryImpl(
+      remoteDataSource: serviceLocator<EducationRemoteDataSource>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => EducationCubit(
+    repository: serviceLocator<EducationRepository>(),
   ));
 
   // ================== Screens / Presentation ==================
@@ -1579,7 +1708,6 @@ Future<void> init() async {
           (invoiceId, _) => InvoiceDetailsScreen(invoiceId: invoiceId))
       ..registerFactoryParam<InputPinScreen, User, void>(
           (recipient, _) => InputPinScreen(recipient: recipient))
-      ..registerFactory(() => PayElectricityBillScreen())
       ..registerFactory(() => ProfileSettingsScreen())
       ..registerFactory(() => LanguagesScreen())
       ..registerFactory(() => MyAccountScreen())
@@ -1608,9 +1736,6 @@ Future<void> init() async {
           (currencyCode, _) => CurrencyDepositScreen(currencyCode: currencyCode))
       ..registerFactory(() => GiftCardsScreen())
       ..registerFactory(() => MyGiftCardsScreen())
-      ..registerFactory(() => SellToContactScreen())
-      ..registerFactory(() => SavedRecipientsScreen())
-      ..registerFactory(() => QuickSellScreen())
       ..registerFactory(() => StockFeature.StocksScreen())
       ..registerFactoryParam<StockDetailsScreen, Stock, void>(
           (stock, _) => StockDetailsScreen(stock: stock))
@@ -1628,10 +1753,8 @@ Future<void> init() async {
           (transferDetails, _) => TransferProofScreen(transferDetails: transferDetails))
       ..registerFactoryParam<SendFundReceiptScreen, Transaction, void>(
           (transaction, _) => SendFundReceiptScreen(transaction: transaction))
-      ..registerFactoryParam<ReviewElectricityBillsScreen, ElectricityBillDetails,
-              void>(
-          (electricityBillDetails, _) => ReviewElectricityBillsScreen(
-              electricityBillDetails: electricityBillDetails))
+      ..registerFactory(() => ChatbotTransferScreen())
+      ..registerFactory(() => TransferProcessingScreen())
       ..registerFactoryParam<DepositFundsScreen, Map<String, dynamic>, void>(
         (selectedCard, _) => DepositFundsScreen(selectedCard: selectedCard),
       )
@@ -1789,6 +1912,9 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetGroupActivityLogs(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => GetContributionActivityLogs(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => RemoveMemberFromContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => ListPublicGroups(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetPublicGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => JoinPublicGroup(serviceLocator<GroupAccountRepository>()));
 
   // Blocs/Cubits - Use singleton to preserve user ID across screens
   serviceLocator.registerLazySingleton(() => GroupAccountCubit(
@@ -1820,17 +1946,41 @@ Future<void> init() async {
     getGroupActivityLogs: serviceLocator<GetGroupActivityLogs>(),
     getContributionActivityLogs: serviceLocator<GetContributionActivityLogs>(),
     removeMemberFromContribution: serviceLocator<RemoveMemberFromContribution>(),
+    listPublicGroups: serviceLocator<ListPublicGroups>(),
+    getPublicGroup: serviceLocator<GetPublicGroup>(),
+    joinPublicGroup: serviceLocator<JoinPublicGroup>(),
     cacheManager: serviceLocator<SWRCacheManager>(),
     mutationQueue: serviceLocator<MutationQueue>(),
     reportService: serviceLocator<GroupAccountReportService>(),
   ));
 
+  // DiscoveryCubit - Dashboard discovery carousel
+  serviceLocator.registerFactory(() => DiscoveryCubit(
+    listCrowdfunds: serviceLocator<ListCrowdfundsUseCase>(),
+    listPublicGroups: serviceLocator<ListPublicGroups>(),
+    getPublicGroup: serviceLocator<GetPublicGroup>(),
+    joinPublicGroup: serviceLocator<JoinPublicGroup>(),
+    cacheManager: serviceLocator<SWRCacheManager>(),
+  ));
+
   // ================== Feature: Insurance ==================
 
-  // Data Sources - Using gRPC
+  // Insurance GrpcClient - Uses Products Gateway (50078)
+  final insuranceGrpcClient = GrpcClient(
+    channel: serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
+    secureStorage: serviceLocator<FlutterSecureStorage>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
+  await insuranceGrpcClient.initialize();
+  serviceLocator.registerLazySingleton<GrpcClient>(
+    () => insuranceGrpcClient,
+    instanceName: 'insuranceGrpcClient',
+  );
+
+  // Data Sources - Using gRPC via Products Gateway
   serviceLocator.registerLazySingleton<InsuranceRemoteDataSource>(
     () => InsuranceRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'insuranceGrpcClient'),
     ),
   );
 
@@ -1846,6 +1996,14 @@ Future<void> init() async {
   serviceLocator.registerFactory<InsuranceCubit>(
     () => InsuranceCubit(
       repository: serviceLocator<InsuranceRepository>(),
+    ),
+  );
+
+  serviceLocator.registerFactory<CreatePolicyCubit>(
+    () => CreatePolicyCubit(
+      repository: serviceLocator<InsuranceRepository>(),
+      cacheManager: serviceLocator<SWRCacheManager>(),
+      mutationQueue: serviceLocator<MutationQueue>(),
     ),
   );
 
@@ -1926,19 +2084,43 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<GrpcClient>(() => grpcClient);
 
   // Repositories
-  serviceLocator.registerLazySingleton<StatisticsRepository>(
-    () => StatisticsRepository(grpcClient: serviceLocator<GrpcClient>()),
+  serviceLocator.registerLazySingleton<FinancialAnalyticsRepository>(
+    () => FinancialAnalyticsRepository(
+      grpcClient: serviceLocator<AccountsGrpcClient>(),
+      accountManager: serviceLocator<AccountManager>(),
+    ),
   );
 
   // Blocs/Cubits
-  serviceLocator.registerFactory<StatisticsCubit>(
-    () => StatisticsCubit(repository: serviceLocator<StatisticsRepository>()),
+  serviceLocator.registerLazySingleton<StatisticsCubit>(
+    () => StatisticsCubit(
+      analyticsRepository: serviceLocator<FinancialAnalyticsRepository>(),
+    ),
   );
 
-  // Screens
-  serviceLocator.registerFactory(() => const StatisticsScreen());
-  serviceLocator.registerFactory(() => const AddExpenseScreen());
-  serviceLocator.registerFactory(() => const AddBudgetScreen());
+  // Budget Feature - Budget Repository, AI Service, and Cubit
+  serviceLocator.registerLazySingleton<BudgetRepository>(
+    () => BudgetRepository(
+      grpcClient: serviceLocator<statistics_grpc.StatisticsServiceClient>(),
+      accountManager: serviceLocator<AccountManager>(),
+    ),
+  );
+  serviceLocator.registerLazySingleton<BudgetAIService>(
+    () => BudgetAIService(
+      dio: serviceLocator<Dio>(),
+      baseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'http://localhost:3011',
+      getAccessToken: () async {
+        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        return token ?? '';
+      },
+    ),
+  );
+  serviceLocator.registerLazySingleton<BudgetCubit>(
+    () => BudgetCubit(
+      budgetRepository: serviceLocator<BudgetRepository>(),
+      budgetAIService: serviceLocator<BudgetAIService>(),
+    ),
+  );
 
 
   // ================== Feature: Cards ==================
@@ -2007,6 +2189,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<FamilyAccountRepository>(
     () => FamilyAccountRepositoryImpl(
       remoteDataSource: serviceLocator<FamilyAccountRemoteDataSource>(),
+      secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
 
@@ -2215,6 +2398,58 @@ Future<void> init() async {
 
     return executor;
   });
+
+  // ================== Feature: Payroll (Business) ==================
+  // Uses dedicated Business Gateway (gRPC:50079, HTTP:8085)
+
+  // Business Gateway gRPC Channel
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createBusinessChannel(),
+    instanceName: 'businessChannel',
+  );
+
+  // PayrollServiceClient - via Business Gateway
+  serviceLocator.registerLazySingleton<payroll_pb.PayrollServiceClient>(
+    () => payroll_pb.PayrollServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'businessChannel'),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<PayrollRepository>(
+    () => PayrollRepositoryGrpcImpl(
+      client: serviceLocator<payroll_pb.PayrollServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => PayrollCubit(
+    repository: serviceLocator<PayrollRepository>(),
+  ));
+
+  // ================== Feature: Business Dashboard ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<BusinessDashboardRepository>(
+    () => BusinessDashboardRepositoryImpl(
+      accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
+      payrollClient: serviceLocator<payroll_pb.PayrollServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => BusinessDashboardCubit(
+    repository: serviceLocator<BusinessDashboardRepository>(),
+  ));
+
+  // ================== Feature: Business Analytics ==================
+
+  serviceLocator.registerFactory(() => BusinessAnalyticsCubit(
+    accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  ));
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

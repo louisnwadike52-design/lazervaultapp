@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class SecureWalletScreen extends StatefulWidget {
   const SecureWalletScreen({super.key});
@@ -32,15 +33,15 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -75,7 +76,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -125,7 +126,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1E2746)],
+          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1F1F1F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -183,7 +184,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: TabBar(
@@ -255,7 +256,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -332,7 +333,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -360,9 +361,9 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          _buildLimitItem('Daily Limit', '£5,000', '£2,340 remaining'),
-          _buildLimitItem('Per Transaction', '£1,000', 'Maximum'),
-          _buildLimitItem('Monthly Limit', '£50,000', '£32,100 remaining'),
+          _buildLimitItem('Daily Limit', '${CurrencySymbols.currentSymbol}5,000', '${CurrencySymbols.currentSymbol}2,340 remaining'),
+          _buildLimitItem('Per Transaction', '${CurrencySymbols.currentSymbol}1,000', 'Maximum'),
+          _buildLimitItem('Monthly Limit', '${CurrencySymbols.currentSymbol}50,000', '${CurrencySymbols.currentSymbol}32,100 remaining'),
         ],
       ),
     );
@@ -372,7 +373,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -417,7 +418,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                       ),
                     ),
                     Text(
-                      '£342.50 (5%)',
+                      '${CurrencySymbols.currentSymbol}342.50 (5%)',
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -439,7 +440,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                       ),
                     ),
                     Text(
-                      '£6,507.50 (95%)',
+                      '${CurrencySymbols.currentSymbol}6,507.50 (95%)',
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -460,7 +461,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -508,7 +509,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -570,7 +571,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -618,7 +619,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -658,7 +659,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -737,7 +738,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -765,7 +766,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -952,7 +953,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
   void _showQRCode() {
     Get.dialog(
       Dialog(
-        backgroundColor: const Color(0xFF1E2746),
+        backgroundColor: const Color(0xFF1F1F1F),
         child: Container(
           padding: EdgeInsets.all(24.w),
           child: Column(
@@ -1028,7 +1029,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
   void _viewSeedPhrase() {
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E2746),
+        backgroundColor: const Color(0xFF1F1F1F),
         title: Text(
           'Security Warning',
           style: GoogleFonts.inter(color: Colors.white),

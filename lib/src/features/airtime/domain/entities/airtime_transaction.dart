@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:equatable/equatable.dart';
 import 'network_provider.dart';
 
@@ -37,6 +38,21 @@ extension AirtimeTransactionStatusExtension on AirtimeTransactionStatus {
         return '#FF0000';
       case AirtimeTransactionStatus.refunded:
         return '#6B46C1';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case AirtimeTransactionStatus.pending:
+        return const Color(0xFFFFA500);
+      case AirtimeTransactionStatus.processing:
+        return const Color(0xFF0066CC);
+      case AirtimeTransactionStatus.completed:
+        return const Color(0xFF00AA4F);
+      case AirtimeTransactionStatus.failed:
+        return const Color(0xFFFF0000);
+      case AirtimeTransactionStatus.refunded:
+        return const Color(0xFF6B46C1);
     }
   }
 }
@@ -81,6 +97,27 @@ class AirtimeTransaction extends Equatable {
   bool get isCompleted => status == AirtimeTransactionStatus.completed;
   bool get isFailed => status == AirtimeTransactionStatus.failed;
   bool get isPending => status == AirtimeTransactionStatus.pending || status == AirtimeTransactionStatus.processing;
+
+  String get currencySymbol {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '\u20A6';
+      case 'USD':
+        return '\$';
+      case 'GBP':
+        return '\u00A3';
+      case 'EUR':
+        return '\u20AC';
+      case 'KES':
+        return 'KSh';
+      case 'GHS':
+        return 'GH\u20B5';
+      case 'ZAR':
+        return 'R';
+      default:
+        return '$currency ';
+    }
+  }
   
   String get formattedRecipientNumber {
     final cleanNumber = recipientPhoneNumber.replaceAll(RegExp(r'[^\d]'), '');

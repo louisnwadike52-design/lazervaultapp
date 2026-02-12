@@ -83,6 +83,12 @@ enum PayoutTransactionStatus {
   PAYOUT_TRANSACTION_STATUS_REFUNDED = 5;
 }
 
+enum GroupVisibility {
+  GROUP_VISIBILITY_UNSPECIFIED = 0;
+  GROUP_VISIBILITY_PRIVATE = 1;
+  GROUP_VISIBILITY_PUBLIC = 2;
+}
+
 // ============================================================================
 // GROUP ACCOUNT MESSAGES
 // ============================================================================
@@ -98,6 +104,10 @@ message GroupAccountMessage {
   string metadata = 8;
   repeated GroupMemberMessage members = 9;
   repeated ContributionMessage contributions = 10;
+  GroupVisibility visibility = 11;
+  int32 member_count = 12;
+  uint64 total_raised = 13;
+  string image_url = 14;
 }
 
 message GroupMemberMessage {
@@ -247,6 +257,8 @@ message CreateGroupRequest {
   string name = 1;
   string description = 2;
   string metadata = 3;  // JSON string for external links (whatsapp, telegram) etc
+  GroupVisibility visibility = 4;
+  string image_url = 5;
 }
 
 message CreateGroupResponse {
@@ -278,6 +290,8 @@ message UpdateGroupRequest {
   string description = 3;
   GroupAccountStatus status = 4;
   string metadata = 5;
+  GroupVisibility visibility = 6;
+  string image_url = 7;
 }
 
 message UpdateGroupResponse {
@@ -609,6 +623,51 @@ message GetContributionAnalyticsResponse {
 }
 
 // ============================================================================
+// PUBLIC GROUP DISCOVERY MESSAGES
+// ============================================================================
+
+message ListPublicGroupsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string sort_by = 3;       // "most_members", "most_raised", "newest", "trending"
+  string search_query = 4;  // Optional text search
+}
+
+message ListPublicGroupsResponse {
+  repeated GroupAccountMessage groups = 1;
+  GroupPaginationInfo pagination = 2;
+}
+
+message GetPublicGroupRequest {
+  string group_id = 1;
+}
+
+message PublicGroupContributor {
+  string user_id = 1;
+  string display_name = 2;
+  string profile_image = 3;
+  uint64 total_contributed = 4;
+  int32 contribution_count = 5;
+}
+
+message GetPublicGroupResponse {
+  GroupAccountMessage group = 1;
+  GetGroupStatisticsResponse statistics = 2;
+  repeated PublicGroupContributor top_contributors = 3;
+  bool is_member = 4;
+}
+
+message JoinPublicGroupRequest {
+  string group_id = 1;
+}
+
+message JoinPublicGroupResponse {
+  GroupMemberMessage member = 1;
+  GroupAccountMessage group = 2;
+  string message = 3;
+}
+
+// ============================================================================
 // PAGINATION INFO
 // ============================================================================
 
@@ -923,6 +982,26 @@ service GroupAccountService {
   rpc GetContributionActivityLogs(GetContributionActivityLogsRequest) returns (GetContributionActivityLogsResponse) {
     option (google.api.http) = {
       get: "/v1/contributions/{contribution_id}/activity"
+    };
+  }
+
+  // Public Group Discovery
+  rpc ListPublicGroups(ListPublicGroupsRequest) returns (ListPublicGroupsResponse) {
+    option (google.api.http) = {
+      get: "/v1/groups/public"
+    };
+  }
+
+  rpc GetPublicGroup(GetPublicGroupRequest) returns (GetPublicGroupResponse) {
+    option (google.api.http) = {
+      get: "/v1/groups/public/{group_id}"
+    };
+  }
+
+  rpc JoinPublicGroup(JoinPublicGroupRequest) returns (JoinPublicGroupResponse) {
+    option (google.api.http) = {
+      post: "/v1/groups/public/{group_id}/join"
+      body: "*"
     };
   }
 }

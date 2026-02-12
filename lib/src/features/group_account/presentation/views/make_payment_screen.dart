@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
@@ -58,8 +59,9 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
     // Ensure accounts are loaded
     final accountState = context.read<AccountCardsSummaryCubit>().state;
     if (accountState is! AccountCardsSummaryLoaded) {
+      final userId = context.read<AuthenticationCubit>().userId ?? '';
       context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-            userId: 'current_user',
+            userId: userId,
           );
     }
   }
@@ -743,8 +745,9 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 SizedBox(height: 8.h),
                 TextButton(
                   onPressed: () {
+                    final userId = context.read<AuthenticationCubit>().userId ?? '';
                     context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-                          userId: 'current_user',
+                          userId: userId,
                         );
                   },
                   child: Text(

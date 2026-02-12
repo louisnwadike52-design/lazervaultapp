@@ -57,8 +57,8 @@ final List<NotificationService> notifications = [
 final List<NotificationService> olderNotifications = [
   NotificationService(
     appService: const AppService(
-        serviceName: AppServiceName.payElectricityBill,
-        serviceImg: AppServiceImg.payElectricityBill),
+        serviceName: AppServiceName.payBills,
+        serviceImg: AppServiceImg.payBills),
     title: 'Electricity Bill Paid',
     subTitle: "Monthly electricity bill payment completed",
     date: DateTime.now().subtract(Duration(days: 7)),

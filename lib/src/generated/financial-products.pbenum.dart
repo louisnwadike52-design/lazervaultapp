@@ -13,6 +13,88 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
+/// Auto-save trigger types
+class AutoSaveTriggerType extends $pb.ProtobufEnum {
+  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_UNKNOWN = AutoSaveTriggerType._(0, _omitEnumNames ? '' : 'AUTO_SAVE_TRIGGER_UNKNOWN');
+  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_ON_DEPOSIT = AutoSaveTriggerType._(1, _omitEnumNames ? '' : 'AUTO_SAVE_TRIGGER_ON_DEPOSIT');
+  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_SCHEDULED = AutoSaveTriggerType._(2, _omitEnumNames ? '' : 'AUTO_SAVE_TRIGGER_SCHEDULED');
+  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_ROUND_UP = AutoSaveTriggerType._(3, _omitEnumNames ? '' : 'AUTO_SAVE_TRIGGER_ROUND_UP');
+
+  static const $core.List<AutoSaveTriggerType> values = <AutoSaveTriggerType> [
+    AUTO_SAVE_TRIGGER_UNKNOWN,
+    AUTO_SAVE_TRIGGER_ON_DEPOSIT,
+    AUTO_SAVE_TRIGGER_SCHEDULED,
+    AUTO_SAVE_TRIGGER_ROUND_UP,
+  ];
+
+  static final $core.Map<$core.int, AutoSaveTriggerType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static AutoSaveTriggerType? valueOf($core.int value) => _byValue[value];
+
+  const AutoSaveTriggerType._($core.int v, $core.String n) : super(v, n);
+}
+
+/// Schedule frequency for scheduled auto-saves
+class AutoSaveScheduleFrequency extends $pb.ProtobufEnum {
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_UNKNOWN = AutoSaveScheduleFrequency._(0, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_UNKNOWN');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_DAILY = AutoSaveScheduleFrequency._(1, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_DAILY');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_WEEKLY = AutoSaveScheduleFrequency._(2, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_WEEKLY');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_BIWEEKLY = AutoSaveScheduleFrequency._(3, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_BIWEEKLY');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_MONTHLY = AutoSaveScheduleFrequency._(4, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_MONTHLY');
+
+  static const $core.List<AutoSaveScheduleFrequency> values = <AutoSaveScheduleFrequency> [
+    AUTO_SAVE_FREQUENCY_UNKNOWN,
+    AUTO_SAVE_FREQUENCY_DAILY,
+    AUTO_SAVE_FREQUENCY_WEEKLY,
+    AUTO_SAVE_FREQUENCY_BIWEEKLY,
+    AUTO_SAVE_FREQUENCY_MONTHLY,
+  ];
+
+  static final $core.Map<$core.int, AutoSaveScheduleFrequency> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static AutoSaveScheduleFrequency? valueOf($core.int value) => _byValue[value];
+
+  const AutoSaveScheduleFrequency._($core.int v, $core.String n) : super(v, n);
+}
+
+/// Auto-save rule status
+class AutoSaveRuleStatus extends $pb.ProtobufEnum {
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_UNKNOWN = AutoSaveRuleStatus._(0, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_UNKNOWN');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_ACTIVE = AutoSaveRuleStatus._(1, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_ACTIVE');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_PAUSED = AutoSaveRuleStatus._(2, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_PAUSED');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_COMPLETED = AutoSaveRuleStatus._(3, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_COMPLETED');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_CANCELLED = AutoSaveRuleStatus._(4, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_CANCELLED');
+
+  static const $core.List<AutoSaveRuleStatus> values = <AutoSaveRuleStatus> [
+    AUTO_SAVE_STATUS_UNKNOWN,
+    AUTO_SAVE_STATUS_ACTIVE,
+    AUTO_SAVE_STATUS_PAUSED,
+    AUTO_SAVE_STATUS_COMPLETED,
+    AUTO_SAVE_STATUS_CANCELLED,
+  ];
+
+  static final $core.Map<$core.int, AutoSaveRuleStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static AutoSaveRuleStatus? valueOf($core.int value) => _byValue[value];
+
+  const AutoSaveRuleStatus._($core.int v, $core.String n) : super(v, n);
+}
+
+/// Amount calculation type
+class AutoSaveAmountType extends $pb.ProtobufEnum {
+  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_UNKNOWN = AutoSaveAmountType._(0, _omitEnumNames ? '' : 'AUTO_SAVE_AMOUNT_UNKNOWN');
+  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_FIXED = AutoSaveAmountType._(1, _omitEnumNames ? '' : 'AUTO_SAVE_AMOUNT_FIXED');
+  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_PERCENTAGE = AutoSaveAmountType._(2, _omitEnumNames ? '' : 'AUTO_SAVE_AMOUNT_PERCENTAGE');
+
+  static const $core.List<AutoSaveAmountType> values = <AutoSaveAmountType> [
+    AUTO_SAVE_AMOUNT_UNKNOWN,
+    AUTO_SAVE_AMOUNT_FIXED,
+    AUTO_SAVE_AMOUNT_PERCENTAGE,
+  ];
+
+  static final $core.Map<$core.int, AutoSaveAmountType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static AutoSaveAmountType? valueOf($core.int value) => _byValue[value];
+
+  const AutoSaveAmountType._($core.int v, $core.String n) : super(v, n);
+}
+
 /// Notification channel types
 class NotificationChannelType extends $pb.ProtobufEnum {
   static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED = NotificationChannelType._(0, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED');
@@ -89,6 +171,29 @@ class NotificationEventType extends $pb.ProtobufEnum {
   static NotificationEventType? valueOf($core.int value) => _byValue[value];
 
   const NotificationEventType._($core.int v, $core.String n) : super(v, n);
+}
+
+class LeaderboardSortBy extends $pb.ProtobufEnum {
+  static const LeaderboardSortBy LEADERBOARD_SORT_UNSPECIFIED = LeaderboardSortBy._(0, _omitEnumNames ? '' : 'LEADERBOARD_SORT_UNSPECIFIED');
+  static const LeaderboardSortBy LEADERBOARD_SORT_MOST_FUNDED = LeaderboardSortBy._(1, _omitEnumNames ? '' : 'LEADERBOARD_SORT_MOST_FUNDED');
+  static const LeaderboardSortBy LEADERBOARD_SORT_MOST_DONORS = LeaderboardSortBy._(2, _omitEnumNames ? '' : 'LEADERBOARD_SORT_MOST_DONORS');
+  static const LeaderboardSortBy LEADERBOARD_SORT_TRENDING = LeaderboardSortBy._(3, _omitEnumNames ? '' : 'LEADERBOARD_SORT_TRENDING');
+  static const LeaderboardSortBy LEADERBOARD_SORT_NEARLY_COMPLETE = LeaderboardSortBy._(4, _omitEnumNames ? '' : 'LEADERBOARD_SORT_NEARLY_COMPLETE');
+  static const LeaderboardSortBy LEADERBOARD_SORT_NEWEST = LeaderboardSortBy._(5, _omitEnumNames ? '' : 'LEADERBOARD_SORT_NEWEST');
+
+  static const $core.List<LeaderboardSortBy> values = <LeaderboardSortBy> [
+    LEADERBOARD_SORT_UNSPECIFIED,
+    LEADERBOARD_SORT_MOST_FUNDED,
+    LEADERBOARD_SORT_MOST_DONORS,
+    LEADERBOARD_SORT_TRENDING,
+    LEADERBOARD_SORT_NEARLY_COMPLETE,
+    LEADERBOARD_SORT_NEWEST,
+  ];
+
+  static final $core.Map<$core.int, LeaderboardSortBy> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static LeaderboardSortBy? valueOf($core.int value) => _byValue[value];
+
+  const LeaderboardSortBy._($core.int v, $core.String n) : super(v, n);
 }
 
 

@@ -151,5 +151,28 @@ class NotificationEventType extends $pb.ProtobufEnum {
   const NotificationEventType._($core.int v, $core.String n) : super(v, n);
 }
 
+class LeaderboardSortBy extends $pb.ProtobufEnum {
+  static const LeaderboardSortBy LEADERBOARD_SORT_UNSPECIFIED = LeaderboardSortBy._(0, _omitEnumNames ? '' : 'LEADERBOARD_SORT_UNSPECIFIED');
+  static const LeaderboardSortBy LEADERBOARD_SORT_MOST_FUNDED = LeaderboardSortBy._(1, _omitEnumNames ? '' : 'LEADERBOARD_SORT_MOST_FUNDED');
+  static const LeaderboardSortBy LEADERBOARD_SORT_MOST_DONORS = LeaderboardSortBy._(2, _omitEnumNames ? '' : 'LEADERBOARD_SORT_MOST_DONORS');
+  static const LeaderboardSortBy LEADERBOARD_SORT_TRENDING = LeaderboardSortBy._(3, _omitEnumNames ? '' : 'LEADERBOARD_SORT_TRENDING');
+  static const LeaderboardSortBy LEADERBOARD_SORT_NEARLY_COMPLETE = LeaderboardSortBy._(4, _omitEnumNames ? '' : 'LEADERBOARD_SORT_NEARLY_COMPLETE');
+  static const LeaderboardSortBy LEADERBOARD_SORT_NEWEST = LeaderboardSortBy._(5, _omitEnumNames ? '' : 'LEADERBOARD_SORT_NEWEST');
+
+  static const $core.List<LeaderboardSortBy> values = <LeaderboardSortBy> [
+    LEADERBOARD_SORT_UNSPECIFIED,
+    LEADERBOARD_SORT_MOST_FUNDED,
+    LEADERBOARD_SORT_MOST_DONORS,
+    LEADERBOARD_SORT_TRENDING,
+    LEADERBOARD_SORT_NEARLY_COMPLETE,
+    LEADERBOARD_SORT_NEWEST,
+  ];
+
+  static final $core.Map<$core.int, LeaderboardSortBy> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static LeaderboardSortBy? valueOf($core.int value) => _byValue[value];
+
+  const LeaderboardSortBy._($core.int v, $core.String n) : super(v, n);
+}
+
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

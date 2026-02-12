@@ -183,6 +183,21 @@ final $typed_data.Uint8List payoutTransactionStatusDescriptor = $convert.base64D
     'NUSU9OX1NUQVRVU19DT01QTEVURUQQAxIkCiBQQVlPVVRfVFJBTlNBQ1RJT05fU1RBVFVTX0ZB'
     'SUxFRBAEEiYKIlBBWU9VVF9UUkFOU0FDVElPTl9TVEFUVVNfUkVGVU5ERUQQBQ==');
 
+@$core.Deprecated('Use groupVisibilityDescriptor instead')
+const GroupVisibility$json = {
+  '1': 'GroupVisibility',
+  '2': [
+    {'1': 'GROUP_VISIBILITY_UNSPECIFIED', '2': 0},
+    {'1': 'GROUP_VISIBILITY_PRIVATE', '2': 1},
+    {'1': 'GROUP_VISIBILITY_PUBLIC', '2': 2},
+  ],
+};
+
+/// Descriptor for `GroupVisibility`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List groupVisibilityDescriptor = $convert.base64Decode(
+    'Cg9Hcm91cFZpc2liaWxpdHkSIAocR1JPVVBfVklTSUJJTElUWV9VTlNQRUNJRklFRBAAEhwKGE'
+    'dST1VQX1ZJU0lCSUxJVFlfUFJJVkFURRABEhsKF0dST1VQX1ZJU0lCSUxJVFlfUFVCTElDEAI=');
+
 @$core.Deprecated('Use groupAccountMessageDescriptor instead')
 const GroupAccountMessage$json = {
   '1': 'GroupAccountMessage',
@@ -197,6 +212,10 @@ const GroupAccountMessage$json = {
     {'1': 'metadata', '3': 8, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'members', '3': 9, '4': 3, '5': 11, '6': '.pb.GroupMemberMessage', '10': 'members'},
     {'1': 'contributions', '3': 10, '4': 3, '5': 11, '6': '.pb.ContributionMessage', '10': 'contributions'},
+    {'1': 'visibility', '3': 11, '4': 1, '5': 14, '6': '.pb.GroupVisibility', '10': 'visibility'},
+    {'1': 'member_count', '3': 12, '4': 1, '5': 5, '10': 'memberCount'},
+    {'1': 'total_raised', '3': 13, '4': 1, '5': 4, '10': 'totalRaised'},
+    {'1': 'image_url', '3': 14, '4': 1, '5': 9, '10': 'imageUrl'},
   ],
 };
 
@@ -209,7 +228,10 @@ final $typed_data.Uint8List groupAccountMessageDescriptor = $convert.base64Decod
     'ZEF0EjkKCnVwZGF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cG'
     'RhdGVkQXQSGgoIbWV0YWRhdGEYCCABKAlSCG1ldGFkYXRhEjAKB21lbWJlcnMYCSADKAsyFi5w'
     'Yi5Hcm91cE1lbWJlck1lc3NhZ2VSB21lbWJlcnMSPQoNY29udHJpYnV0aW9ucxgKIAMoCzIXLn'
-    'BiLkNvbnRyaWJ1dGlvbk1lc3NhZ2VSDWNvbnRyaWJ1dGlvbnM=');
+    'BiLkNvbnRyaWJ1dGlvbk1lc3NhZ2VSDWNvbnRyaWJ1dGlvbnMSMwoKdmlzaWJpbGl0eRgLIAEo'
+    'DjITLnBiLkdyb3VwVmlzaWJpbGl0eVIKdmlzaWJpbGl0eRIhCgxtZW1iZXJfY291bnQYDCABKA'
+    'VSC21lbWJlckNvdW50EiEKDHRvdGFsX3JhaXNlZBgNIAEoBFILdG90YWxSYWlzZWQSGwoJaW1h'
+    'Z2VfdXJsGA4gASgJUghpbWFnZVVybA==');
 
 @$core.Deprecated('Use groupMemberMessageDescriptor instead')
 const GroupMemberMessage$json = {
@@ -493,13 +515,17 @@ const CreateGroupRequest$json = {
     {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
     {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
     {'1': 'metadata', '3': 3, '4': 1, '5': 9, '10': 'metadata'},
+    {'1': 'visibility', '3': 4, '4': 1, '5': 14, '6': '.pb.GroupVisibility', '10': 'visibility'},
+    {'1': 'image_url', '3': 5, '4': 1, '5': 9, '10': 'imageUrl'},
   ],
 };
 
 /// Descriptor for `CreateGroupRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createGroupRequestDescriptor = $convert.base64Decode(
     'ChJDcmVhdGVHcm91cFJlcXVlc3QSEgoEbmFtZRgBIAEoCVIEbmFtZRIgCgtkZXNjcmlwdGlvbh'
-    'gCIAEoCVILZGVzY3JpcHRpb24SGgoIbWV0YWRhdGEYAyABKAlSCG1ldGFkYXRh');
+    'gCIAEoCVILZGVzY3JpcHRpb24SGgoIbWV0YWRhdGEYAyABKAlSCG1ldGFkYXRhEjMKCnZpc2li'
+    'aWxpdHkYBCABKA4yEy5wYi5Hcm91cFZpc2liaWxpdHlSCnZpc2liaWxpdHkSGwoJaW1hZ2VfdX'
+    'JsGAUgASgJUghpbWFnZVVybA==');
 
 @$core.Deprecated('Use createGroupResponseDescriptor instead')
 const CreateGroupResponse$json = {
@@ -578,6 +604,8 @@ const UpdateGroupRequest$json = {
     {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
     {'1': 'status', '3': 4, '4': 1, '5': 14, '6': '.pb.GroupAccountStatus', '10': 'status'},
     {'1': 'metadata', '3': 5, '4': 1, '5': 9, '10': 'metadata'},
+    {'1': 'visibility', '3': 6, '4': 1, '5': 14, '6': '.pb.GroupVisibility', '10': 'visibility'},
+    {'1': 'image_url', '3': 7, '4': 1, '5': 9, '10': 'imageUrl'},
   ],
 };
 
@@ -586,7 +614,8 @@ final $typed_data.Uint8List updateGroupRequestDescriptor = $convert.base64Decode
     'ChJVcGRhdGVHcm91cFJlcXVlc3QSGQoIZ3JvdXBfaWQYASABKAlSB2dyb3VwSWQSEgoEbmFtZR'
     'gCIAEoCVIEbmFtZRIgCgtkZXNjcmlwdGlvbhgDIAEoCVILZGVzY3JpcHRpb24SLgoGc3RhdHVz'
     'GAQgASgOMhYucGIuR3JvdXBBY2NvdW50U3RhdHVzUgZzdGF0dXMSGgoIbWV0YWRhdGEYBSABKA'
-    'lSCG1ldGFkYXRh');
+    'lSCG1ldGFkYXRhEjMKCnZpc2liaWxpdHkYBiABKA4yEy5wYi5Hcm91cFZpc2liaWxpdHlSCnZp'
+    'c2liaWxpdHkSGwoJaW1hZ2VfdXJsGAcgASgJUghpbWFnZVVybA==');
 
 @$core.Deprecated('Use updateGroupResponseDescriptor instead')
 const UpdateGroupResponse$json = {
@@ -1510,6 +1539,116 @@ final $typed_data.Uint8List getContributionAnalyticsResponseDescriptor = $conver
     '5leHRfcGF5b3V0X2RhdGUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUg5uZXh0'
     'UGF5b3V0RGF0ZRIrChFjb21wbGV0ZWRfcGF5b3V0cxgDIAEoBVIQY29tcGxldGVkUGF5b3V0cx'
     'InCg9wZW5kaW5nX3BheW91dHMYBCABKAVSDnBlbmRpbmdQYXlvdXRz');
+
+@$core.Deprecated('Use listPublicGroupsRequestDescriptor instead')
+const ListPublicGroupsRequest$json = {
+  '1': 'ListPublicGroupsRequest',
+  '2': [
+    {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
+    {'1': 'sort_by', '3': 3, '4': 1, '5': 9, '10': 'sortBy'},
+    {'1': 'search_query', '3': 4, '4': 1, '5': 9, '10': 'searchQuery'},
+  ],
+};
+
+/// Descriptor for `ListPublicGroupsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listPublicGroupsRequestDescriptor = $convert.base64Decode(
+    'ChdMaXN0UHVibGljR3JvdXBzUmVxdWVzdBISCgRwYWdlGAEgASgFUgRwYWdlEhsKCXBhZ2Vfc2'
+    'l6ZRgCIAEoBVIIcGFnZVNpemUSFwoHc29ydF9ieRgDIAEoCVIGc29ydEJ5EiEKDHNlYXJjaF9x'
+    'dWVyeRgEIAEoCVILc2VhcmNoUXVlcnk=');
+
+@$core.Deprecated('Use listPublicGroupsResponseDescriptor instead')
+const ListPublicGroupsResponse$json = {
+  '1': 'ListPublicGroupsResponse',
+  '2': [
+    {'1': 'groups', '3': 1, '4': 3, '5': 11, '6': '.pb.GroupAccountMessage', '10': 'groups'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.GroupPaginationInfo', '10': 'pagination'},
+  ],
+};
+
+/// Descriptor for `ListPublicGroupsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listPublicGroupsResponseDescriptor = $convert.base64Decode(
+    'ChhMaXN0UHVibGljR3JvdXBzUmVzcG9uc2USLwoGZ3JvdXBzGAEgAygLMhcucGIuR3JvdXBBY2'
+    'NvdW50TWVzc2FnZVIGZ3JvdXBzEjcKCnBhZ2luYXRpb24YAiABKAsyFy5wYi5Hcm91cFBhZ2lu'
+    'YXRpb25JbmZvUgpwYWdpbmF0aW9u');
+
+@$core.Deprecated('Use getPublicGroupRequestDescriptor instead')
+const GetPublicGroupRequest$json = {
+  '1': 'GetPublicGroupRequest',
+  '2': [
+    {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
+  ],
+};
+
+/// Descriptor for `GetPublicGroupRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPublicGroupRequestDescriptor = $convert.base64Decode(
+    'ChVHZXRQdWJsaWNHcm91cFJlcXVlc3QSGQoIZ3JvdXBfaWQYASABKAlSB2dyb3VwSWQ=');
+
+@$core.Deprecated('Use publicGroupContributorDescriptor instead')
+const PublicGroupContributor$json = {
+  '1': 'PublicGroupContributor',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'display_name', '3': 2, '4': 1, '5': 9, '10': 'displayName'},
+    {'1': 'profile_image', '3': 3, '4': 1, '5': 9, '10': 'profileImage'},
+    {'1': 'total_contributed', '3': 4, '4': 1, '5': 4, '10': 'totalContributed'},
+    {'1': 'contribution_count', '3': 5, '4': 1, '5': 5, '10': 'contributionCount'},
+  ],
+};
+
+/// Descriptor for `PublicGroupContributor`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List publicGroupContributorDescriptor = $convert.base64Decode(
+    'ChZQdWJsaWNHcm91cENvbnRyaWJ1dG9yEhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIhCgxkaX'
+    'NwbGF5X25hbWUYAiABKAlSC2Rpc3BsYXlOYW1lEiMKDXByb2ZpbGVfaW1hZ2UYAyABKAlSDHBy'
+    'b2ZpbGVJbWFnZRIrChF0b3RhbF9jb250cmlidXRlZBgEIAEoBFIQdG90YWxDb250cmlidXRlZB'
+    'ItChJjb250cmlidXRpb25fY291bnQYBSABKAVSEWNvbnRyaWJ1dGlvbkNvdW50');
+
+@$core.Deprecated('Use getPublicGroupResponseDescriptor instead')
+const GetPublicGroupResponse$json = {
+  '1': 'GetPublicGroupResponse',
+  '2': [
+    {'1': 'group', '3': 1, '4': 1, '5': 11, '6': '.pb.GroupAccountMessage', '10': 'group'},
+    {'1': 'statistics', '3': 2, '4': 1, '5': 11, '6': '.pb.GetGroupStatisticsResponse', '10': 'statistics'},
+    {'1': 'top_contributors', '3': 3, '4': 3, '5': 11, '6': '.pb.PublicGroupContributor', '10': 'topContributors'},
+    {'1': 'is_member', '3': 4, '4': 1, '5': 8, '10': 'isMember'},
+  ],
+};
+
+/// Descriptor for `GetPublicGroupResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPublicGroupResponseDescriptor = $convert.base64Decode(
+    'ChZHZXRQdWJsaWNHcm91cFJlc3BvbnNlEi0KBWdyb3VwGAEgASgLMhcucGIuR3JvdXBBY2NvdW'
+    '50TWVzc2FnZVIFZ3JvdXASPgoKc3RhdGlzdGljcxgCIAEoCzIeLnBiLkdldEdyb3VwU3RhdGlz'
+    'dGljc1Jlc3BvbnNlUgpzdGF0aXN0aWNzEkUKEHRvcF9jb250cmlidXRvcnMYAyADKAsyGi5wYi'
+    '5QdWJsaWNHcm91cENvbnRyaWJ1dG9yUg90b3BDb250cmlidXRvcnMSGwoJaXNfbWVtYmVyGAQg'
+    'ASgIUghpc01lbWJlcg==');
+
+@$core.Deprecated('Use joinPublicGroupRequestDescriptor instead')
+const JoinPublicGroupRequest$json = {
+  '1': 'JoinPublicGroupRequest',
+  '2': [
+    {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
+  ],
+};
+
+/// Descriptor for `JoinPublicGroupRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List joinPublicGroupRequestDescriptor = $convert.base64Decode(
+    'ChZKb2luUHVibGljR3JvdXBSZXF1ZXN0EhkKCGdyb3VwX2lkGAEgASgJUgdncm91cElk');
+
+@$core.Deprecated('Use joinPublicGroupResponseDescriptor instead')
+const JoinPublicGroupResponse$json = {
+  '1': 'JoinPublicGroupResponse',
+  '2': [
+    {'1': 'member', '3': 1, '4': 1, '5': 11, '6': '.pb.GroupMemberMessage', '10': 'member'},
+    {'1': 'group', '3': 2, '4': 1, '5': 11, '6': '.pb.GroupAccountMessage', '10': 'group'},
+    {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `JoinPublicGroupResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List joinPublicGroupResponseDescriptor = $convert.base64Decode(
+    'ChdKb2luUHVibGljR3JvdXBSZXNwb25zZRIuCgZtZW1iZXIYASABKAsyFi5wYi5Hcm91cE1lbW'
+    'Jlck1lc3NhZ2VSBm1lbWJlchItCgVncm91cBgCIAEoCzIXLnBiLkdyb3VwQWNjb3VudE1lc3Nh'
+    'Z2VSBWdyb3VwEhgKB21lc3NhZ2UYAyABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use groupPaginationInfoDescriptor instead')
 const GroupPaginationInfo$json = {

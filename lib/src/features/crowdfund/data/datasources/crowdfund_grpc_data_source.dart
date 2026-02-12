@@ -122,6 +122,8 @@ class CrowdfundGrpcDataSource {
     String? statusFilter,
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
+    String? sortBy,
+    CrowdfundVisibility? visibility,
   }) async {
     try {
       final request = pb.ListCrowdfundsRequest()
@@ -135,6 +137,14 @@ class CrowdfundGrpcDataSource {
 
       if (categoryFilter != null) {
         request.category = categoryFilter;
+      }
+
+      if (sortBy != null) {
+        request.sortBy = sortBy;
+      }
+
+      if (visibility != null) {
+        request.visibility = _visibilityToProto(visibility);
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
@@ -437,6 +447,40 @@ class CrowdfundGrpcDataSource {
     } on GrpcError catch (e) {
       throw Exception(
           'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to withdraw from crowdfund'}');
+    }
+  }
+
+  // ============================================================================
+  // LEADERBOARD OPERATIONS
+  // ============================================================================
+
+  /// Get crowdfund leaderboard
+  Future<List<LeaderboardEntryModel>> getCrowdfundLeaderboard({
+    required pb.LeaderboardSortBy sortBy,
+    String? category,
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    try {
+      final request = pb.GetCrowdfundLeaderboardRequest()
+        ..sortBy = sortBy
+        ..limit = limit
+        ..offset = offset;
+
+      if (category != null && category.isNotEmpty) {
+        request.category = category;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.getCrowdfundLeaderboard(request, options: callOptions);
+
+      return response.entries
+          .map((e) => LeaderboardEntryModel.fromProto(e))
+          .toList();
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get leaderboard'}');
     }
   }
 

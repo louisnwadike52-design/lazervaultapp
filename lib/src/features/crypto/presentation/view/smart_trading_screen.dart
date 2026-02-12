@@ -46,16 +46,16 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -92,7 +92,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -148,7 +148,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: TabBar(
@@ -229,7 +229,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
         gradient: LinearGradient(
           colors: [
             Colors.purple.withValues(alpha: 0.2),
-            const Color(0xFF1E2746),
+            const Color(0xFF1F1F1F),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -295,7 +295,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -328,7 +328,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -356,7 +356,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -390,7 +390,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -418,7 +418,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -466,7 +466,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -513,7 +513,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -546,7 +546,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -574,7 +574,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -951,7 +951,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
   void _showCreateAlertDialog() {
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E2746),
+        backgroundColor: const Color(0xFF1F1F1F),
         title: Text(
           'Create AI Alert',
           style: GoogleFonts.inter(color: Colors.white),
@@ -974,7 +974,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
             ),
             SizedBox(height: 16.h),
             DropdownButtonFormField<String>(
-              dropdownColor: const Color(0xFF1E2746),
+              dropdownColor: const Color(0xFF1F1F1F),
               style: GoogleFonts.inter(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Alert Type',

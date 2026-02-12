@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package insurance;
+package pb;
 option go_package = "lazervaultGo/pb";
 
 import "google/api/annotations.proto";
@@ -260,6 +260,134 @@ message GetPaymentStatisticsResponse {
     string msg = 9;
 }
 
+// ===== MYCOVER.AI INSURANCE MARKETPLACE =====
+
+// MyCover.ai product form field definition for dynamic forms
+message InsuranceProductFormField {
+    string name = 1;                         // Field identifier
+    string label = 2;                        // Display label
+    string type = 3;                         // "text", "number", "date", "select", "boolean", "email", "phone"
+    bool required = 4;
+    repeated string options = 5;             // For "select" type fields
+    string default_value = 6;
+    string validation_regex = 7;
+    string placeholder = 8;
+    string description = 9;                  // Help text for the field
+}
+
+// MyCover.ai insurance product
+message InsuranceProduct {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string category = 4;                     // "auto", "health", "travel", "gadget", "home", "life", "marine", "personal_accident"
+    string provider_name = 5;
+    string provider_logo = 6;
+    double min_premium = 7;
+    double max_premium = 8;
+    string currency = 9;
+    repeated string benefits = 10;
+    string terms_url = 11;
+    map<string, string> metadata = 12;
+    repeated InsuranceProductFormField form_fields = 13;
+    bool is_active = 14;
+}
+
+// Insurance category metadata
+message InsuranceCategory {
+    string id = 1;
+    string name = 2;
+    string icon = 3;
+    string description = 4;
+    int32 product_count = 5;
+}
+
+// Quote result from MyCover.ai
+message InsuranceQuote {
+    string quote_id = 1;
+    string product_id = 2;
+    double premium = 3;
+    string currency = 4;
+    string coverage_summary = 5;
+    repeated string coverage_items = 6;
+    string valid_until = 7;                  // ISO8601 timestamp
+    map<string, string> quote_details = 8;   // Additional quote metadata
+}
+
+// Purchase result
+message InsurancePurchaseResult {
+    string policy_id = 1;
+    string policy_number = 2;
+    string reference = 3;
+    string status = 4;                       // "completed", "pending", "failed"
+    string provider_reference = 5;
+    Insurance insurance = 6;                 // The created insurance policy
+}
+
+// ===== MYCOVER.AI REQUEST/RESPONSE MESSAGES =====
+
+message GetInsuranceProductsRequest {
+    string category = 1;                     // Filter by category
+    string locale = 2;                       // User locale (e.g., "NG", "US", "GB")
+    int32 page = 3;
+    int32 limit = 4;
+}
+
+message GetInsuranceProductsResponse {
+    repeated InsuranceProduct products = 1;
+    int32 total = 2;
+    bool success = 3;
+    string msg = 4;
+}
+
+message GetInsuranceCategoriesRequest {
+    string locale = 1;
+}
+
+message GetInsuranceCategoriesResponse {
+    repeated InsuranceCategory categories = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message GetInsuranceQuoteRequest {
+    string product_id = 1;
+    map<string, string> form_data = 2;       // Filled form fields
+    string locale = 3;
+}
+
+message GetInsuranceQuoteResponse {
+    InsuranceQuote quote = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message PurchaseInsuranceRequest {
+    string quote_id = 1;
+    string product_id = 2;
+    string account_id = 3;                   // LazerVault account to debit
+    string transaction_pin = 4;              // Pre-validated PIN token
+    string idempotency_key = 5;
+    map<string, string> form_data = 6;       // Customer form data
+    string locale = 7;
+}
+
+message PurchaseInsuranceResponse {
+    InsurancePurchaseResult result = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message GetInsurancePurchaseStatusRequest {
+    string reference = 1;
+}
+
+message GetInsurancePurchaseStatusResponse {
+    InsurancePurchaseResult result = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
 // Data Models
 message Insurance {
     string id = 1;
@@ -467,6 +595,40 @@ service InsuranceService {
     rpc GetPaymentStatistics(GetPaymentStatisticsRequest) returns (GetPaymentStatisticsResponse) {
         option (google.api.http) = {
             get: "/v1/insurance/payments/statistics"
+        };
+    }
+
+    // ===== MyCover.ai Insurance Marketplace =====
+
+    rpc GetInsuranceProducts(GetInsuranceProductsRequest) returns (GetInsuranceProductsResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/products"
+        };
+    }
+
+    rpc GetInsuranceCategories(GetInsuranceCategoriesRequest) returns (GetInsuranceCategoriesResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/categories"
+        };
+    }
+
+    rpc GetInsuranceQuote(GetInsuranceQuoteRequest) returns (GetInsuranceQuoteResponse) {
+        option (google.api.http) = {
+            post: "/v1/insurance/quote"
+            body: "*"
+        };
+    }
+
+    rpc PurchaseInsurance(PurchaseInsuranceRequest) returns (PurchaseInsuranceResponse) {
+        option (google.api.http) = {
+            post: "/v1/insurance/purchase"
+            body: "*"
+        };
+    }
+
+    rpc GetInsurancePurchaseStatus(GetInsurancePurchaseStatusRequest) returns (GetInsurancePurchaseStatusResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/purchase/{reference}/status"
         };
     }
 }

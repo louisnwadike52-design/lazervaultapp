@@ -399,7 +399,7 @@ final $typed_data.Uint8List generateMemberCardRequestDescriptor = $convert.base6
 const GenerateMemberCardResponse$json = {
   '1': 'GenerateMemberCardResponse',
   '2': [
-    {'1': 'card', '3': 1, '4': 1, '5': 11, '6': '.accounts.v1.AccountCard', '10': 'card'},
+    {'1': 'card_id', '3': 1, '4': 1, '5': 9, '10': 'cardId'},
     {'1': 'member', '3': 2, '4': 1, '5': 11, '6': '.accounts.v1.FamilyMember', '10': 'member'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -407,9 +407,9 @@ const GenerateMemberCardResponse$json = {
 
 /// Descriptor for `GenerateMemberCardResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List generateMemberCardResponseDescriptor = $convert.base64Decode(
-    'ChpHZW5lcmF0ZU1lbWJlckNhcmRSZXNwb25zZRIsCgRjYXJkGAEgASgLMhguYWNjb3VudHMudj'
-    'EuQWNjb3VudENhcmRSBGNhcmQSMQoGbWVtYmVyGAIgASgLMhkuYWNjb3VudHMudjEuRmFtaWx5'
-    'TWVtYmVyUgZtZW1iZXISGAoHbWVzc2FnZRgDIAEoCVIHbWVzc2FnZQ==');
+    'ChpHZW5lcmF0ZU1lbWJlckNhcmRSZXNwb25zZRIXCgdjYXJkX2lkGAEgASgJUgZjYXJkSWQSMQ'
+    'oGbWVtYmVyGAIgASgLMhkuYWNjb3VudHMudjEuRmFtaWx5TWVtYmVyUgZtZW1iZXISGAoHbWVz'
+    'c2FnZRgDIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use freezeFamilyAccountRequestDescriptor instead')
 const FreezeFamilyAccountRequest$json = {
@@ -700,16 +700,4 @@ final $typed_data.Uint8List familyMemberSpendingDescriptor = $convert.base64Deco
     '1lbWJlcl9uYW1lGAIgASgJUgptZW1iZXJOYW1lEiMKDW1lbWJlcl9hdmF0YXIYAyABKAlSDG1l'
     'bWJlckF2YXRhchIhCgxhbW91bnRfc3BlbnQYBCABKAFSC2Ftb3VudFNwZW50EisKEXRyYW5zYW'
     'N0aW9uX2NvdW50GAUgASgFUhB0cmFuc2FjdGlvbkNvdW50');
-
-@$core.Deprecated('Use accountCardDescriptor instead')
-const AccountCard$json = {
-  '1': 'AccountCard',
-  '9': [
-    {'1': 1, '2': 53},
-  ],
-};
-
-/// Descriptor for `AccountCard`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List accountCardDescriptor = $convert.base64Decode(
-    'CgtBY2NvdW50Q2FyZEoECAEQNQ==');
 

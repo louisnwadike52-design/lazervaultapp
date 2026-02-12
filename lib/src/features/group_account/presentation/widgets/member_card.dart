@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../utils/member_rating_calculator.dart';
+import 'member_star_rating.dart';
 
 class MemberCard extends StatelessWidget {
   final GroupMember member;
   final GroupAccount group;
+  final List<Contribution> contributions;
   final VoidCallback? onTap;
 
   const MemberCard({
     super.key,
     required this.member,
     required this.group,
+    this.contributions = const [],
     this.onTap,
   });
 
@@ -95,6 +99,13 @@ class MemberCard extends StatelessWidget {
                       ],
                     ],
                   ),
+                  if (contributions.isNotEmpty) ...[
+                    SizedBox(height: 4.h),
+                    MemberStarRating(
+                      rating: MemberRatingCalculator.calculateRating(member, contributions),
+                      compact: true,
+                    ),
+                  ],
                 ],
               ),
             ),

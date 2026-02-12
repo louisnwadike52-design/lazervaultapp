@@ -14,9 +14,9 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'account.pb.dart' as $1;
+import 'account.pb.dart' as $0;
 import 'deposit.pbenum.dart';
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $2;
 
 export 'deposit.pbenum.dart';
 
@@ -253,13 +253,13 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? sourceBankName,
     DepositStatus? status,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? processingAt,
-    $42.Timestamp? completedAt,
-    $42.Timestamp? failedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? processingAt,
+    $2.Timestamp? completedAt,
+    $2.Timestamp? failedAt,
     $core.String? failureReason,
     $core.String? externalTransactionId,
-    $1.AccountDetails? updatedAccount,
+    $0.AccountDetails? updatedAccount,
   }) {
     final $result = create();
     if (depositId != null) {
@@ -314,13 +314,13 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'currency')
     ..aOS(5, _omitFieldNames ? '' : 'source_bank_name')
     ..e<DepositStatus>(6, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DepositStatus.DEPOSIT_STATUS_UNSPECIFIED, valueOf: DepositStatus.valueOf, enumValues: DepositStatus.values)
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'created_at', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'processing_at', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'completed_at', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'failed_at', subBuilder: $42.Timestamp.create)
+    ..aOM<$2.Timestamp>(7, _omitFieldNames ? '' : 'created_at', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(8, _omitFieldNames ? '' : 'processing_at', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(9, _omitFieldNames ? '' : 'completed_at', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(10, _omitFieldNames ? '' : 'failed_at', subBuilder: $2.Timestamp.create)
     ..aOS(11, _omitFieldNames ? '' : 'failure_reason')
     ..aOS(12, _omitFieldNames ? '' : 'external_transaction_id')
-    ..aOM<$1.AccountDetails>(13, _omitFieldNames ? '' : 'updated_account', subBuilder: $1.AccountDetails.create)
+    ..aOM<$0.AccountDetails>(13, _omitFieldNames ? '' : 'updated_account', subBuilder: $0.AccountDetails.create)
     ..hasRequiredFields = false
   ;
 
@@ -401,48 +401,48 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
   void clearStatus() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get createdAt => $_getN(6);
+  $2.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($42.Timestamp v) { setField(7, v); }
+  set createdAt($2.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureCreatedAt() => $_ensure(6);
+  $2.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get processingAt => $_getN(7);
+  $2.Timestamp get processingAt => $_getN(7);
   @$pb.TagNumber(8)
-  set processingAt($42.Timestamp v) { setField(8, v); }
+  set processingAt($2.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasProcessingAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearProcessingAt() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureProcessingAt() => $_ensure(7);
+  $2.Timestamp ensureProcessingAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get completedAt => $_getN(8);
+  $2.Timestamp get completedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set completedAt($42.Timestamp v) { setField(9, v); }
+  set completedAt($2.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCompletedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCompletedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureCompletedAt() => $_ensure(8);
+  $2.Timestamp ensureCompletedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get failedAt => $_getN(9);
+  $2.Timestamp get failedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set failedAt($42.Timestamp v) { setField(10, v); }
+  set failedAt($2.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasFailedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearFailedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureFailedAt() => $_ensure(9);
+  $2.Timestamp ensureFailedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get failureReason => $_getSZ(10);
@@ -464,15 +464,15 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
 
   /// Updated account details are included only if the deposit status is COMPLETED.
   @$pb.TagNumber(13)
-  $1.AccountDetails get updatedAccount => $_getN(12);
+  $0.AccountDetails get updatedAccount => $_getN(12);
   @$pb.TagNumber(13)
-  set updatedAccount($1.AccountDetails v) { setField(13, v); }
+  set updatedAccount($0.AccountDetails v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasUpdatedAccount() => $_has(12);
   @$pb.TagNumber(13)
   void clearUpdatedAccount() => clearField(13);
   @$pb.TagNumber(13)
-  $1.AccountDetails ensureUpdatedAccount() => $_ensure(12);
+  $0.AccountDetails ensureUpdatedAccount() => $_ensure(12);
 }
 
 

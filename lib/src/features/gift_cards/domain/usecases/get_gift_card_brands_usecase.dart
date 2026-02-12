@@ -8,27 +8,13 @@ class GetGiftCardBrandsUseCase {
 
   GetGiftCardBrandsUseCase(this._repository);
 
-  Future<Either<Failure, List<GiftCardBrand>>> call() async {
-    return await _repository.getGiftCardBrands();
+  Future<Either<Failure, List<GiftCardBrand>>> call({
+    String? category,
+    String? countryCode,
+  }) async {
+    return await _repository.getGiftCardBrands(
+      category: category,
+      countryCode: countryCode,
+    );
   }
 }
-
-class GetGiftCardBrandsByCategoryUseCase {
-  final IGiftCardRepository _repository;
-
-  GetGiftCardBrandsByCategoryUseCase(this._repository);
-
-  Future<Either<Failure, List<GiftCardBrand>>> call(GiftCardCategory category) async {
-    return await _repository.getGiftCardBrandsByCategory(category);
-  }
-}
-
-class SearchGiftCardBrandsUseCase {
-  final IGiftCardRepository _repository;
-
-  SearchGiftCardBrandsUseCase(this._repository);
-
-  Future<Either<Failure, List<GiftCardBrand>>> call(String query) async {
-    return await _repository.searchGiftCardBrands(query);
-  }
-} 

@@ -24,8 +24,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         // Both invoice services now go to the consolidated screen
         Get.toNamed(AppRoutes.invoice);
         break;
-      case AppServiceName.payElectricityBill:
-        Get.toNamed(AppRoutes.payElectricityBill);
+      case AppServiceName.payBills:
+        Get.toNamed(AppRoutes.billsHub);
         break;
       case AppServiceName.crypto:
         Get.toNamed(AppRoutes.crypto);
@@ -45,8 +45,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.aiScanToPay:
         Get.toNamed(AppRoutes.aiScanToPay);
         break;
-      case AppServiceName.barcodeQuickPay:
-        Get.toNamed(AppRoutes.barcodeQuickPayHome);
+      case AppServiceName.qrPay:
+        Get.toNamed(AppRoutes.qrPayHome);
         break;
       case AppServiceName.contactlessPay:
         Get.toNamed(AppRoutes.contactlessPay);
@@ -80,6 +80,23 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.sendFunds:
         Get.toNamed(AppRoutes.selectRecipient);
+        break;
+      case AppServiceName.payroll:
+        Get.toNamed(AppRoutes.payroll);
+        break;
+      case AppServiceName.businessDashboard:
+        Get.toNamed(AppRoutes.businessDashboard);
+        break;
+      case AppServiceName.businessAnalytics:
+        Get.toNamed(AppRoutes.businessAnalytics);
+        break;
+      case AppServiceName.customers:
+        // TODO: Phase 4 - Customer Management
+        Get.toNamed(AppRoutes.businessDashboard);
+        break;
+      case AppServiceName.expenses:
+        // TODO: Phase 5 - Expense Tracking
+        Get.toNamed(AppRoutes.businessDashboard);
         break;
     }
   }
@@ -180,8 +197,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.payInvoice:
         iconData = Icons.receipt_long; // Same icon as invoice since they're consolidated
         break;
-      case AppServiceName.payElectricityBill:
-        iconData = Icons.receipt;
+      case AppServiceName.payBills:
+        iconData = Icons.receipt_long;
         break;
       case AppServiceName.invest:
         iconData = Icons.trending_up;
@@ -201,7 +218,7 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.aiScanToPay:
         iconData = Icons.qr_code_scanner;
         break;
-      case AppServiceName.barcodeQuickPay:
+      case AppServiceName.qrPay:
         iconData = Icons.qr_code_2;
         break;
       case AppServiceName.contactlessPay:
@@ -227,6 +244,21 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.whatsappIntegration:
         iconData = Icons.chat_bubble;
+        break;
+      case AppServiceName.payroll:
+        iconData = Icons.payments;
+        break;
+      case AppServiceName.businessDashboard:
+        iconData = Icons.dashboard_rounded;
+        break;
+      case AppServiceName.businessAnalytics:
+        iconData = Icons.analytics_rounded;
+        break;
+      case AppServiceName.customers:
+        iconData = Icons.people_rounded;
+        break;
+      case AppServiceName.expenses:
+        iconData = Icons.account_balance_wallet_rounded;
         break;
     }
 

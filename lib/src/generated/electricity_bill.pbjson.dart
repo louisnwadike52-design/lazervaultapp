@@ -331,6 +331,49 @@ final $typed_data.Uint8List validateMeterResponseDescriptor = $convert.base64Dec
     'V0c3RhbmRpbmdfYmFsYW5jZRgFIAEoAVISb3V0c3RhbmRpbmdCYWxhbmNlEhgKB21lc3NhZ2UY'
     'BiABKAlSB21lc3NhZ2USIQoMbWV0ZXJfbnVtYmVyGAcgASgJUgttZXRlck51bWJlcg==');
 
+@$core.Deprecated('Use smartValidateMeterRequestDescriptor instead')
+const SmartValidateMeterRequest$json = {
+  '1': 'SmartValidateMeterRequest',
+  '2': [
+    {'1': 'meter_number', '3': 1, '4': 1, '5': 9, '10': 'meterNumber'},
+  ],
+};
+
+/// Descriptor for `SmartValidateMeterRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List smartValidateMeterRequestDescriptor = $convert.base64Decode(
+    'ChlTbWFydFZhbGlkYXRlTWV0ZXJSZXF1ZXN0EiEKDG1ldGVyX251bWJlchgBIAEoCVILbWV0ZX'
+    'JOdW1iZXI=');
+
+@$core.Deprecated('Use smartValidateMeterResponseDescriptor instead')
+const SmartValidateMeterResponse$json = {
+  '1': 'SmartValidateMeterResponse',
+  '2': [
+    {'1': 'is_valid', '3': 1, '4': 1, '5': 8, '10': 'isValid'},
+    {'1': 'customer_name', '3': 2, '4': 1, '5': 9, '10': 'customerName'},
+    {'1': 'customer_address', '3': 3, '4': 1, '5': 9, '10': 'customerAddress'},
+    {'1': 'meter_type', '3': 4, '4': 1, '5': 9, '10': 'meterType'},
+    {'1': 'meter_number', '3': 5, '4': 1, '5': 9, '10': 'meterNumber'},
+    {'1': 'provider_code', '3': 6, '4': 1, '5': 9, '10': 'providerCode'},
+    {'1': 'provider_name', '3': 7, '4': 1, '5': 9, '10': 'providerName'},
+    {'1': 'message', '3': 8, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'min_amount', '3': 9, '4': 1, '5': 1, '10': 'minAmount'},
+    {'1': 'max_amount', '3': 10, '4': 1, '5': 1, '10': 'maxAmount'},
+    {'1': 'service_fee', '3': 11, '4': 1, '5': 1, '10': 'serviceFee'},
+    {'1': 'from_cache', '3': 12, '4': 1, '5': 8, '10': 'fromCache'},
+  ],
+};
+
+/// Descriptor for `SmartValidateMeterResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List smartValidateMeterResponseDescriptor = $convert.base64Decode(
+    'ChpTbWFydFZhbGlkYXRlTWV0ZXJSZXNwb25zZRIZCghpc192YWxpZBgBIAEoCFIHaXNWYWxpZB'
+    'IjCg1jdXN0b21lcl9uYW1lGAIgASgJUgxjdXN0b21lck5hbWUSKQoQY3VzdG9tZXJfYWRkcmVz'
+    'cxgDIAEoCVIPY3VzdG9tZXJBZGRyZXNzEh0KCm1ldGVyX3R5cGUYBCABKAlSCW1ldGVyVHlwZR'
+    'IhCgxtZXRlcl9udW1iZXIYBSABKAlSC21ldGVyTnVtYmVyEiMKDXByb3ZpZGVyX2NvZGUYBiAB'
+    'KAlSDHByb3ZpZGVyQ29kZRIjCg1wcm92aWRlcl9uYW1lGAcgASgJUgxwcm92aWRlck5hbWUSGA'
+    'oHbWVzc2FnZRgIIAEoCVIHbWVzc2FnZRIdCgptaW5fYW1vdW50GAkgASgBUgltaW5BbW91bnQS'
+    'HQoKbWF4X2Ftb3VudBgKIAEoAVIJbWF4QW1vdW50Eh8KC3NlcnZpY2VfZmVlGAsgASgBUgpzZX'
+    'J2aWNlRmVlEh0KCmZyb21fY2FjaGUYDCABKAhSCWZyb21DYWNoZQ==');
+
 @$core.Deprecated('Use getBillDetailsRequestDescriptor instead')
 const GetBillDetailsRequest$json = {
   '1': 'GetBillDetailsRequest',
@@ -376,6 +419,9 @@ const InitiatePaymentRequest$json = {
     {'1': 'payment_gateway', '3': 6, '4': 1, '5': 9, '10': 'paymentGateway'},
     {'1': 'source_account_id', '3': 7, '4': 1, '5': 9, '10': 'sourceAccountId'},
     {'1': 'beneficiary_id', '3': 8, '4': 1, '5': 9, '10': 'beneficiaryId'},
+    {'1': 'transaction_id', '3': 9, '4': 1, '5': 9, '10': 'transactionId'},
+    {'1': 'verification_token', '3': 10, '4': 1, '5': 9, '10': 'verificationToken'},
+    {'1': 'phone_number', '3': 11, '4': 1, '5': 9, '10': 'phoneNumber'},
   ],
 };
 
@@ -386,7 +432,9 @@ final $typed_data.Uint8List initiatePaymentRequestDescriptor = $convert.base64De
     'AVIGYW1vdW50EhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeRIdCgptZXRlcl90eXBlGAUgAS'
     'gJUgltZXRlclR5cGUSJwoPcGF5bWVudF9nYXRld2F5GAYgASgJUg5wYXltZW50R2F0ZXdheRIq'
     'ChFzb3VyY2VfYWNjb3VudF9pZBgHIAEoCVIPc291cmNlQWNjb3VudElkEiUKDmJlbmVmaWNpYX'
-    'J5X2lkGAggASgJUg1iZW5lZmljaWFyeUlk');
+    'J5X2lkGAggASgJUg1iZW5lZmljaWFyeUlkEiUKDnRyYW5zYWN0aW9uX2lkGAkgASgJUg10cmFu'
+    'c2FjdGlvbklkEi0KEnZlcmlmaWNhdGlvbl90b2tlbhgKIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW'
+    '4SIQoMcGhvbmVfbnVtYmVyGAsgASgJUgtwaG9uZU51bWJlcg==');
 
 @$core.Deprecated('Use initiatePaymentResponseDescriptor instead')
 const InitiatePaymentResponse$json = {

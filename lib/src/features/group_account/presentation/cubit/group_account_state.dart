@@ -404,3 +404,43 @@ class GroupAccountReportShareError extends GroupAccountState {
   List<Object?> get props => [message];
 }
 
+/// Public groups loaded for discovery
+class PublicGroupsLoaded extends GroupAccountState {
+  final List<GroupAccount> groups;
+  final int totalCount;
+  final bool isStale;
+
+  const PublicGroupsLoaded({
+    required this.groups,
+    required this.totalCount,
+    this.isStale = false,
+  });
+
+  @override
+  List<Object?> get props => [groups, totalCount, isStale];
+}
+
+/// Public group detail loaded
+class PublicGroupDetailLoaded extends GroupAccountState {
+  final PublicGroupDetail detail;
+
+  const PublicGroupDetailLoaded(this.detail);
+
+  @override
+  List<Object?> get props => [detail];
+}
+
+/// Successfully joined a public group
+class JoinPublicGroupSuccess extends GroupAccountState {
+  final GroupAccount group;
+  final String message;
+
+  const JoinPublicGroupSuccess({
+    required this.group,
+    this.message = 'Successfully joined group',
+  });
+
+  @override
+  List<Object?> get props => [group, message];
+}
+

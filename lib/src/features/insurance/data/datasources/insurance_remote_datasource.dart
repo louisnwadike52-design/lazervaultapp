@@ -3,6 +3,7 @@ import '../../../../core/network/grpc_client.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
+import '../../domain/entities/insurance_product_entity.dart';
 
 abstract class InsuranceRemoteDataSource {
   Future<List<Insurance>> getUserInsurances({
@@ -112,6 +113,41 @@ abstract class InsuranceRemoteDataSource {
     required String accessToken,
     DateTime? startDate,
     DateTime? endDate,
+  });
+
+  // MyCover.ai Marketplace Operations
+  Future<List<InsuranceProduct>> getInsuranceProducts({
+    required String accessToken,
+    required String locale,
+    String? category,
+  });
+
+  Future<List<InsuranceCategoryInfo>> getInsuranceCategories({
+    required String accessToken,
+    required String locale,
+  });
+
+  Future<InsuranceQuote> getInsuranceQuote({
+    required String accessToken,
+    required String productId,
+    required Map<String, String> formData,
+    required String locale,
+  });
+
+  Future<InsurancePurchaseResult> purchaseInsurance({
+    required String accessToken,
+    required String quoteId,
+    required String productId,
+    required String accountId,
+    required String transactionPin,
+    required String idempotencyKey,
+    required Map<String, String> formData,
+    required String locale,
+  });
+
+  Future<InsurancePurchaseResult> getInsurancePurchaseStatus({
+    required String accessToken,
+    required String reference,
   });
 }
 
@@ -424,6 +460,156 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       'completed_amount': response.completedAmount,
       'payments_by_method': response.paymentsByMethod,
     };
+  }
+
+  // MyCover.ai Marketplace Operations
+
+  @override
+  Future<List<InsuranceProduct>> getInsuranceProducts({
+    required String accessToken,
+    required String locale,
+    String? category,
+  }) async {
+    final request = pb.GetInsuranceProductsRequest()
+      ..locale = locale;
+    if (category != null && category.isNotEmpty) {
+      request.category = category;
+    }
+
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsuranceProducts(request, options: options);
+
+    return response.products.map((p) => _insuranceProductFromProto(p)).toList();
+  }
+
+  @override
+  Future<List<InsuranceCategoryInfo>> getInsuranceCategories({
+    required String accessToken,
+    required String locale,
+  }) async {
+    final request = pb.GetInsuranceCategoriesRequest()..locale = locale;
+
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsuranceCategories(request, options: options);
+
+    return response.categories.map((c) => InsuranceCategoryInfo(
+      id: c.id,
+      name: c.name,
+      icon: c.icon,
+      description: c.description,
+      productCount: c.productCount,
+    )).toList();
+  }
+
+  @override
+  Future<InsuranceQuote> getInsuranceQuote({
+    required String accessToken,
+    required String productId,
+    required Map<String, String> formData,
+    required String locale,
+  }) async {
+    final request = pb.GetInsuranceQuoteRequest()
+      ..productId = productId
+      ..locale = locale;
+    request.formData.addAll(formData);
+
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsuranceQuote(request, options: options);
+
+    return _quoteFromProto(response.quote);
+  }
+
+  @override
+  Future<InsurancePurchaseResult> purchaseInsurance({
+    required String accessToken,
+    required String quoteId,
+    required String productId,
+    required String accountId,
+    required String transactionPin,
+    required String idempotencyKey,
+    required Map<String, String> formData,
+    required String locale,
+  }) async {
+    final request = pb.PurchaseInsuranceRequest()
+      ..quoteId = quoteId
+      ..productId = productId
+      ..accountId = accountId
+      ..transactionPin = transactionPin
+      ..idempotencyKey = idempotencyKey
+      ..locale = locale;
+    request.formData.addAll(formData);
+
+    final options = await grpcClient.callOptions;
+    final response = await _client.purchaseInsurance(request, options: options);
+
+    return _purchaseResultFromProto(response.result);
+  }
+
+  @override
+  Future<InsurancePurchaseResult> getInsurancePurchaseStatus({
+    required String accessToken,
+    required String reference,
+  }) async {
+    final request = pb.GetInsurancePurchaseStatusRequest()..reference = reference;
+
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsurancePurchaseStatus(request, options: options);
+
+    return _purchaseResultFromProto(response.result);
+  }
+
+  // MyCover.ai Proto Conversion Helpers
+
+  InsuranceProduct _insuranceProductFromProto(pb.InsuranceProduct proto) {
+    return InsuranceProduct(
+      id: proto.id,
+      name: proto.name,
+      description: proto.description,
+      category: InsuranceProductCategory.fromString(proto.category),
+      providerName: proto.providerName,
+      providerLogo: proto.providerLogo,
+      minPremium: proto.minPremium,
+      maxPremium: proto.maxPremium,
+      currency: proto.currency,
+      benefits: proto.benefits.toList(),
+      termsUrl: proto.termsUrl,
+      metadata: Map<String, String>.from(proto.metadata),
+      formFields: proto.formFields.map((f) => InsuranceProductFormField(
+        name: f.name,
+        label: f.label,
+        type: f.type,
+        required: f.required,
+        options: f.options.toList(),
+        defaultValue: f.defaultValue,
+        validationRegex: f.validationRegex,
+        placeholder: f.placeholder,
+        description: f.description,
+      )).toList(),
+      isActive: proto.isActive,
+    );
+  }
+
+  InsuranceQuote _quoteFromProto(pb.InsuranceQuote proto) {
+    return InsuranceQuote(
+      quoteId: proto.quoteId,
+      productId: proto.productId,
+      premium: proto.premium,
+      currency: proto.currency,
+      coverageSummary: proto.coverageSummary,
+      coverageItems: proto.coverageItems.toList(),
+      validUntil: proto.validUntil.isNotEmpty ? DateTime.tryParse(proto.validUntil) : null,
+      quoteDetails: Map<String, String>.from(proto.quoteDetails),
+    );
+  }
+
+  InsurancePurchaseResult _purchaseResultFromProto(pb.InsurancePurchaseResult proto) {
+    return InsurancePurchaseResult(
+      policyId: proto.policyId,
+      policyNumber: proto.policyNumber,
+      reference: proto.reference,
+      status: proto.status,
+      providerReference: proto.providerReference,
+    );
   }
 
   // Conversion Helpers

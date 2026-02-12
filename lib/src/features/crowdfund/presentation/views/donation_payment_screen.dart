@@ -63,7 +63,9 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
           ? double.parse(_amountController.text.trim())
           : _selectedSuggestedAmount!;
 
-      context.read<CrowdfundCubit>().makeDonation(
+      final cubit = context.read<CrowdfundCubit>();
+
+      cubit.makeDonation(
             crowdfundId: widget.crowdfund.id,
             amount: amount,
             message: _messageController.text.trim().isEmpty
@@ -76,8 +78,11 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => DonationProcessingScreen(
-            crowdfund: widget.crowdfund,
+          builder: (_) => BlocProvider.value(
+            value: cubit,
+            child: DonationProcessingScreen(
+              crowdfund: widget.crowdfund,
+            ),
           ),
         ),
       );

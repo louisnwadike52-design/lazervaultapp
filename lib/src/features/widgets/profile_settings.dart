@@ -10,6 +10,7 @@ import 'package:lazervault/core/types/countries.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/widgets/rounded_centered_image.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_settings_tile.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -61,8 +62,11 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                   const SizedBox(height: 8.0),
                   // KYC Verification Tile
                   BlocProvider(
-                    create: (context) => serviceLocator<KYCCubit>()
-                      ..getKYCStatus('current_user_id'),
+                    create: (context) {
+                      final userId = context.read<AuthenticationCubit>().userId ?? '';
+                      return serviceLocator<KYCCubit>()
+                        ..getKYCStatus(userId);
+                    },
                     child: const KYCSettingsTile(),
                   ),
                   const SizedBox(height: 8.0),

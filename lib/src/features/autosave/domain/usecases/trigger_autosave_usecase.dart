@@ -11,10 +11,12 @@ class TriggerAutoSaveUseCase {
   Future<Either<Failure, AutoSaveTransactionEntity>> call({
     required String ruleId,
     double? customAmount,
+    required String transactionPinToken,
   }) {
     return repository.triggerAutoSave(
       ruleId: ruleId,
       customAmount: customAmount,
+      transactionPinToken: transactionPinToken,
     );
   }
 }

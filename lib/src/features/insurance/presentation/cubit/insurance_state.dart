@@ -145,6 +145,15 @@ class InsuranceSearchResults extends InsuranceState {
   List<Object?> get props => [results, query];
 }
 
+class ClaimUpdated extends InsuranceState {
+  final InsuranceClaim claim;
+
+  const ClaimUpdated(this.claim);
+
+  @override
+  List<Object?> get props => [claim];
+}
+
 class InsuranceError extends InsuranceState {
   final String message;
 

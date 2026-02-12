@@ -1,15 +1,65 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/cache/cache_config.dart';
+import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../domain/entities/bill_payment_entity.dart';
+import '../../domain/entities/provider_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import 'electricity_bill_state.dart';
 
 class ElectricityBillCubit extends Cubit<ElectricityBillState> {
   final ElectricityBillRepository repository;
+  final SWRCacheManager? _cacheManager;
 
-  ElectricityBillCubit({required this.repository}) : super(ElectricityBillInitial());
+  ElectricityBillCubit({
+    required this.repository,
+    SWRCacheManager? cacheManager,
+  })  : _cacheManager = cacheManager,
+        super(ElectricityBillInitial());
 
   Future<void> getProviders({String? country}) async {
     if (isClosed) return;
+
+    if (_cacheManager != null) {
+      await _getProvidersWithCache(country: country);
+    } else {
+      await _getProvidersDirect(country: country);
+    }
+  }
+
+  Future<void> _getProvidersWithCache({String? country}) async {
+    final cacheKey = 'electricity_providers:${country ?? 'all'}';
+
+    await for (final result in _cacheManager!.get<List<ElectricityProviderEntity>>(
+      key: cacheKey,
+      fetcher: () async {
+        final result = await repository.getProviders(country: country);
+        return result.fold(
+          (failure) => throw Exception(failure.message),
+          (providers) => providers,
+        );
+      },
+      config: CacheConfig.electricityProviders,
+      serializer: (providers) =>
+          jsonEncode(providers.map((p) => p.toJson()).toList()),
+      deserializer: (json) => (jsonDecode(json) as List)
+          .map((j) => ElectricityProviderEntity.fromJson(j as Map<String, dynamic>))
+          .toList(),
+    )) {
+      if (isClosed) return;
+      if (result.hasData) {
+        emit(ProvidersLoaded(
+          providers: result.data!,
+          isStale: result.isStale,
+        ));
+      } else if (result.hasError) {
+        emit(ElectricityBillError(message: result.error.toString()));
+      }
+    }
+  }
+
+  Future<void> _getProvidersDirect({String? country}) async {
     emit(ElectricityBillLoading());
 
     final result = await repository.getProviders(country: country);
@@ -57,6 +107,29 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
         meterNumber: meterNumber,
         meterType: meterType,
       )),
+    );
+  }
+
+  Future<void> smartValidateMeter({required String meterNumber}) async {
+    if (isClosed) return;
+    emit(SmartMeterValidating());
+
+    final result = await repository.smartValidateMeter(
+      meterNumber: meterNumber,
+    );
+
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(SmartMeterValidationFailed(message: failure.message)),
+      (smartResult) {
+        if (smartResult.isValid) {
+          emit(SmartMeterValidated(result: smartResult));
+        } else {
+          emit(SmartMeterValidationFailed(
+            message: 'Meter not found. Try manual entry.',
+          ));
+        }
+      },
     );
   }
 
@@ -138,31 +211,45 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
   Future<void> verifyPayment({required String paymentId}) async {
     if (isClosed) return;
 
+    // C9: Capture payment from current state safely to avoid unsafe casts
+    BillPaymentEntity? currentPayment;
+    final currentState = state;
+    if (currentState is PaymentInitiated) {
+      currentPayment = currentState.payment;
+    } else if (currentState is PaymentProcessing) {
+      currentPayment = currentState.payment;
+    } else if (currentState is PaymentVerified) {
+      currentPayment = currentState.payment;
+    }
+
+    if (currentPayment == null) return;
+
     // Emit progressive states for better UX
     emit(PaymentProcessing(
-      payment: (state as PaymentInitiated).payment,
+      payment: currentPayment,
       progress: 0.1,
       currentStep: 'Validating meter number...',
     ));
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    if (isClosed) {
+    // C10: Fixed inverted isClosed logic - emit only when NOT closed
+    if (!isClosed) {
       emit(PaymentProcessing(
-      payment: (state as PaymentInitiated).payment,
-      progress: 0.3,
-      currentStep: 'Checking account balance...',
-    ));
+        payment: currentPayment,
+        progress: 0.3,
+        currentStep: 'Checking account balance...',
+      ));
     }
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    if (isClosed) {
+    if (!isClosed) {
       emit(PaymentProcessing(
-      payment: (state as PaymentInitiated).payment,
-      progress: 0.5,
-      currentStep: 'Processing with provider...',
-    ));
+        payment: currentPayment,
+        progress: 0.5,
+        currentStep: 'Processing with provider...',
+      ));
     }
 
     final result = await repository.verifyPayment(paymentId: paymentId);
@@ -172,15 +259,14 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     result.fold(
       // Left side: Failure
       (failure) {
-        emit(PaymentProcessing(
-          payment: (state as PaymentInitiated).payment,
-          progress: 0.5,
-          currentStep: 'Processing...',
-        ));
-        emit(ElectricityBillError(message: failure.message));
+        if (!isClosed) {
+          emit(ElectricityBillError(message: failure.message));
+        }
       },
       // Right side: Success
       (payment) {
+        if (isClosed) return;
+
         // Show progress near completion
         emit(PaymentProcessing(
           payment: payment,
@@ -189,6 +275,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
         ));
 
         if (payment.isCompleted) {
+          // Invalidate provider cache after successful payment
+          _cacheManager?.invalidatePattern('electricity_providers:');
           emit(PaymentSuccess(payment: payment));
         } else if (payment.isFailed) {
           emit(PaymentFailed(

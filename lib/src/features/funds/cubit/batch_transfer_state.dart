@@ -25,6 +25,15 @@ final class BatchTransferSuccess extends BatchTransferState {
   List<Object?> get props => [response];
 }
 
+final class BatchTransferPartialSuccess extends BatchTransferState {
+  final BatchTransferEntity response;
+
+  const BatchTransferPartialSuccess({required this.response});
+
+  @override
+  List<Object?> get props => [response];
+}
+
 final class BatchTransferFailure extends BatchTransferState {
   final String message;
 
@@ -34,34 +43,11 @@ final class BatchTransferFailure extends BatchTransferState {
   List<Object?> get props => [message];
 }
 
-final class BatchTransferStatusLoading extends BatchTransferState {
-  final List<BatchTransferEntity> history;
+final class BatchTransferNetworkError extends BatchTransferState {
+  final String message;
 
-  const BatchTransferStatusLoading({this.history = const []});
-
-  @override
-  List<Object?> get props => [history];
-}
-
-final class BatchTransferStatusSuccess extends BatchTransferState {
-  final BatchTransferEntity response;
-  final List<BatchTransferEntity> history;
-
-  const BatchTransferStatusSuccess({required this.response, this.history = const []});
+  const BatchTransferNetworkError({required this.message});
 
   @override
-  List<Object?> get props => [response, history];
+  List<Object?> get props => [message];
 }
-
-final class BatchTransferHistoryLoading extends BatchTransferState {
-  const BatchTransferHistoryLoading();
-}
-
-final class BatchTransferHistorySuccess extends BatchTransferState {
-  final List<BatchTransferEntity> history;
-
-  const BatchTransferHistorySuccess({required this.history});
-
-  @override
-  List<Object?> get props => [history];
-} 

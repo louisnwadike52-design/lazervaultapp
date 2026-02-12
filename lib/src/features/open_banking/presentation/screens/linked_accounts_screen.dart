@@ -55,14 +55,16 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Unlink Account'),
+        backgroundColor: const Color(0xFF1F1F1F),
+        title: const Text('Unlink Account', style: TextStyle(color: Colors.white)),
         content: Text(
           'Are you sure you want to unlink ${account.bankName} (${account.displayAccountNumber})?',
+          style: const TextStyle(color: Color(0xFF9CA3AF)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF9CA3AF))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -101,10 +103,10 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         title: const Text('Linked Banks'),
-        backgroundColor: const Color(0xFF6C5CE7),
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -193,7 +195,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
             Icon(
               Icons.account_balance_outlined,
               size: 80.sp,
-              color: Colors.grey[400],
+              color: const Color(0xFF9CA3AF),
             ),
             SizedBox(height: 24.h),
             Text(
@@ -201,7 +203,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[700],
+                color: Colors.white,
               ),
             ),
             SizedBox(height: 8.h),
@@ -210,7 +212,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
-                color: Colors.grey[600],
+                color: const Color(0xFF9CA3AF),
               ),
             ),
             SizedBox(height: 32.h),

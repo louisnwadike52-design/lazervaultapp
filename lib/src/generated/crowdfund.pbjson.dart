@@ -140,6 +140,26 @@ final $typed_data.Uint8List notificationEventTypeDescriptor = $convert.base64Dec
     '9FVkVOVF9UWVBFX0NBTVBBSUdOX0VOREVEEAgSJgoiTk9USUZJQ0FUSU9OX0VWRU5UX1RZUEVf'
     'V0lUSERSQVdBTBAJ');
 
+@$core.Deprecated('Use leaderboardSortByDescriptor instead')
+const LeaderboardSortBy$json = {
+  '1': 'LeaderboardSortBy',
+  '2': [
+    {'1': 'LEADERBOARD_SORT_UNSPECIFIED', '2': 0},
+    {'1': 'LEADERBOARD_SORT_MOST_FUNDED', '2': 1},
+    {'1': 'LEADERBOARD_SORT_MOST_DONORS', '2': 2},
+    {'1': 'LEADERBOARD_SORT_TRENDING', '2': 3},
+    {'1': 'LEADERBOARD_SORT_NEARLY_COMPLETE', '2': 4},
+    {'1': 'LEADERBOARD_SORT_NEWEST', '2': 5},
+  ],
+};
+
+/// Descriptor for `LeaderboardSortBy`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List leaderboardSortByDescriptor = $convert.base64Decode(
+    'ChFMZWFkZXJib2FyZFNvcnRCeRIgChxMRUFERVJCT0FSRF9TT1JUX1VOU1BFQ0lGSUVEEAASIA'
+    'ocTEVBREVSQk9BUkRfU09SVF9NT1NUX0ZVTkRFRBABEiAKHExFQURFUkJPQVJEX1NPUlRfTU9T'
+    'VF9ET05PUlMQAhIdChlMRUFERVJCT0FSRF9TT1JUX1RSRU5ESU5HEAMSJAogTEVBREVSQk9BUk'
+    'RfU09SVF9ORUFSTFlfQ09NUExFVEUQBBIbChdMRUFERVJCT0FSRF9TT1JUX05FV0VTVBAF');
+
 @$core.Deprecated('Use crowdfundCreatorMessageDescriptor instead')
 const CrowdfundCreatorMessage$json = {
   '1': 'CrowdfundCreatorMessage',
@@ -370,6 +390,8 @@ const ListCrowdfundsRequest$json = {
     {'1': 'status', '3': 3, '4': 1, '5': 9, '10': 'status'},
     {'1': 'category', '3': 4, '4': 1, '5': 9, '10': 'category'},
     {'1': 'my_crowdfunds_only', '3': 5, '4': 1, '5': 8, '10': 'myCrowdfundsOnly'},
+    {'1': 'sort_by', '3': 6, '4': 1, '5': 9, '10': 'sortBy'},
+    {'1': 'visibility', '3': 7, '4': 1, '5': 14, '6': '.pb.CrowdfundVisibility', '10': 'visibility'},
   ],
 };
 
@@ -378,7 +400,8 @@ final $typed_data.Uint8List listCrowdfundsRequestDescriptor = $convert.base64Dec
     'ChVMaXN0Q3Jvd2RmdW5kc1JlcXVlc3QSEgoEcGFnZRgBIAEoBVIEcGFnZRIbCglwYWdlX3Npem'
     'UYAiABKAVSCHBhZ2VTaXplEhYKBnN0YXR1cxgDIAEoCVIGc3RhdHVzEhoKCGNhdGVnb3J5GAQg'
     'ASgJUghjYXRlZ29yeRIsChJteV9jcm93ZGZ1bmRzX29ubHkYBSABKAhSEG15Q3Jvd2RmdW5kc0'
-    '9ubHk=');
+    '9ubHkSFwoHc29ydF9ieRgGIAEoCVIGc29ydEJ5EjcKCnZpc2liaWxpdHkYByABKA4yFy5wYi5D'
+    'cm93ZGZ1bmRWaXNpYmlsaXR5Ugp2aXNpYmlsaXR5');
 
 @$core.Deprecated('Use listCrowdfundsResponseDescriptor instead')
 const ListCrowdfundsResponse$json = {
@@ -1313,4 +1336,50 @@ final $typed_data.Uint8List getNotificationHistoryResponseDescriptor = $convert.
     'BiLk5vdGlmaWNhdGlvbkRlbGl2ZXJ5TWVzc2FnZVIKZGVsaXZlcmllcxIUCgV0b3RhbBgCIAEo'
     'BVIFdG90YWwSEgoEcGFnZRgDIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYBCABKAVSCHBhZ2VTaX'
     'plEhkKCGhhc19tb3JlGAUgASgIUgdoYXNNb3Jl');
+
+@$core.Deprecated('Use getCrowdfundLeaderboardRequestDescriptor instead')
+const GetCrowdfundLeaderboardRequest$json = {
+  '1': 'GetCrowdfundLeaderboardRequest',
+  '2': [
+    {'1': 'sort_by', '3': 1, '4': 1, '5': 14, '6': '.pb.LeaderboardSortBy', '10': 'sortBy'},
+    {'1': 'category', '3': 2, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 4, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetCrowdfundLeaderboardRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCrowdfundLeaderboardRequestDescriptor = $convert.base64Decode(
+    'Ch5HZXRDcm93ZGZ1bmRMZWFkZXJib2FyZFJlcXVlc3QSLgoHc29ydF9ieRgBIAEoDjIVLnBiLk'
+    'xlYWRlcmJvYXJkU29ydEJ5UgZzb3J0QnkSGgoIY2F0ZWdvcnkYAiABKAlSCGNhdGVnb3J5EhQK'
+    'BWxpbWl0GAMgASgFUgVsaW1pdBIWCgZvZmZzZXQYBCABKAVSBm9mZnNldA==');
+
+@$core.Deprecated('Use getCrowdfundLeaderboardResponseDescriptor instead')
+const GetCrowdfundLeaderboardResponse$json = {
+  '1': 'GetCrowdfundLeaderboardResponse',
+  '2': [
+    {'1': 'entries', '3': 1, '4': 3, '5': 11, '6': '.pb.LeaderboardCrowdfundEntry', '10': 'entries'},
+    {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+  ],
+};
+
+/// Descriptor for `GetCrowdfundLeaderboardResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCrowdfundLeaderboardResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRDcm93ZGZ1bmRMZWFkZXJib2FyZFJlc3BvbnNlEjcKB2VudHJpZXMYASADKAsyHS5wYi'
+    '5MZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5UgdlbnRyaWVzEh8KC3RvdGFsX2NvdW50GAIgASgF'
+    'Ugp0b3RhbENvdW50');
+
+@$core.Deprecated('Use leaderboardCrowdfundEntryDescriptor instead')
+const LeaderboardCrowdfundEntry$json = {
+  '1': 'LeaderboardCrowdfundEntry',
+  '2': [
+    {'1': 'rank', '3': 1, '4': 1, '5': 5, '10': 'rank'},
+    {'1': 'crowdfund', '3': 2, '4': 1, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfund'},
+  ],
+};
+
+/// Descriptor for `LeaderboardCrowdfundEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List leaderboardCrowdfundEntryDescriptor = $convert.base64Decode(
+    'ChlMZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5EhIKBHJhbmsYASABKAVSBHJhbmsSMgoJY3Jvd2'
+    'RmdW5kGAIgASgLMhQucGIuQ3Jvd2RmdW5kTWVzc2FnZVIJY3Jvd2RmdW5k');
 

@@ -1,5 +1,20 @@
 import 'package:equatable/equatable.dart';
 
+/// Default countries used throughout the airtime feature
+class DefaultCountries {
+  DefaultCountries._();
+
+  static const nigeria = Country(
+    id: 'ng',
+    code: 'NG',
+    name: 'Nigeria',
+    currency: 'NGN',
+    dialCode: '+234',
+    flag: '\u{1F1F3}\u{1F1EC}',
+    currencySymbol: '₦',
+  );
+}
+
 class Country extends Equatable {
   final String id;
   final String name;

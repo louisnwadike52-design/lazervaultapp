@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 
@@ -20,6 +21,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
   final _whatsappLinkController = TextEditingController();
   final _telegramLinkController = TextEditingController();
   bool _isLoading = false;
+  bool _isPublic = false;
 
   @override
   void dispose() {
@@ -267,6 +269,117 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                     ),
                     SizedBox(height: 24.h),
 
+                    // Visibility Selection
+                    Text(
+                      'Visibility',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _isPublic = false),
+                            child: Container(
+                              padding: EdgeInsets.all(14.w),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0A0A0A),
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: !_isPublic
+                                      ? const Color.fromARGB(255, 78, 3, 208)
+                                      : const Color(0xFF2D2D2D),
+                                  width: !_isPublic ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.lock_outline,
+                                    color: !_isPublic
+                                        ? const Color.fromARGB(255, 78, 3, 208)
+                                        : const Color(0xFF9CA3AF),
+                                    size: 24.sp,
+                                  ),
+                                  SizedBox(height: 8.h),
+                                  Text(
+                                    'Private',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: !_isPublic ? Colors.white : const Color(0xFF9CA3AF),
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Text(
+                                    'Only invited members can see and join',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11.sp,
+                                      color: Colors.grey[500],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _isPublic = true),
+                            child: Container(
+                              padding: EdgeInsets.all(14.w),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0A0A0A),
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: _isPublic
+                                      ? const Color.fromARGB(255, 78, 3, 208)
+                                      : const Color(0xFF2D2D2D),
+                                  width: _isPublic ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.public,
+                                    color: _isPublic
+                                        ? const Color.fromARGB(255, 78, 3, 208)
+                                        : const Color(0xFF9CA3AF),
+                                    size: 24.sp,
+                                  ),
+                                  SizedBox(height: 8.h),
+                                  Text(
+                                    'Public',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: _isPublic ? Colors.white : const Color(0xFF9CA3AF),
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Text(
+                                    'Anyone can discover and join your group',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11.sp,
+                                      color: Colors.grey[500],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 24.h),
+
                     // External Links Section
                     Row(
                       children: [
@@ -459,6 +572,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
             name: _nameController.text.trim(),
             description: _descriptionController.text.trim(),
             metadata: metadata.isEmpty ? null : metadata,
+            visibility: _isPublic ? GroupVisibility.public : GroupVisibility.private,
           );
     }
   }

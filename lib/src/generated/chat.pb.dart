@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'chat.pbenum.dart';
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 export 'chat.pbenum.dart';
 
@@ -25,7 +25,7 @@ class ChatMessage extends $pb.GeneratedMessage {
     $core.String? senderUserId,
     $core.String? receiverUserId,
     $core.String? content,
-    $42.Timestamp? timestamp,
+    $1.Timestamp? timestamp,
     MessageType? messageType,
     $core.String? attachmentUrl,
     $core.String? replyToMessageId,
@@ -66,7 +66,7 @@ class ChatMessage extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'senderUserId')
     ..aOS(3, _omitFieldNames ? '' : 'receiverUserId')
     ..aOS(4, _omitFieldNames ? '' : 'content')
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'timestamp', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
     ..e<MessageType>(6, _omitFieldNames ? '' : 'messageType', $pb.PbFieldType.OE, defaultOrMaker: MessageType.TEXT, valueOf: MessageType.valueOf, enumValues: MessageType.values)
     ..aOS(7, _omitFieldNames ? '' : 'attachmentUrl')
     ..aOS(8, _omitFieldNames ? '' : 'replyToMessageId')
@@ -131,15 +131,15 @@ class ChatMessage extends $pb.GeneratedMessage {
   void clearContent() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get timestamp => $_getN(4);
+  $1.Timestamp get timestamp => $_getN(4);
   @$pb.TagNumber(5)
-  set timestamp($42.Timestamp v) { setField(5, v); }
+  set timestamp($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasTimestamp() => $_has(4);
   @$pb.TagNumber(5)
   void clearTimestamp() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureTimestamp() => $_ensure(4);
+  $1.Timestamp ensureTimestamp() => $_ensure(4);
 
   @$pb.TagNumber(6)
   MessageType get messageType => $_getN(5);

@@ -1,8 +1,3 @@
-import '../entities/gift_card_entity.dart';
-
-abstract class GiftCardRepository {
-  Future<List<GiftCardBrand>> getGiftCardBrands();
-  Future<List<GiftCardBrand>> getGiftCardBrandsByCategory(GiftCardCategory category);
-  Future<List<GiftCardBrand>> searchGiftCardBrands(String query);
-  Future<List<GiftCard>> getMyGiftCards();
-} 
+// This file is deprecated. Use i_gift_card_repository.dart instead.
+// Kept for backwards compatibility during migration.
+export 'i_gift_card_repository.dart';

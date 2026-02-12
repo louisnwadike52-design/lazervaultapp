@@ -202,5 +202,22 @@ class PayoutTransactionStatus extends $pb.ProtobufEnum {
   const PayoutTransactionStatus._($core.int v, $core.String n) : super(v, n);
 }
 
+class GroupVisibility extends $pb.ProtobufEnum {
+  static const GroupVisibility GROUP_VISIBILITY_UNSPECIFIED = GroupVisibility._(0, _omitEnumNames ? '' : 'GROUP_VISIBILITY_UNSPECIFIED');
+  static const GroupVisibility GROUP_VISIBILITY_PRIVATE = GroupVisibility._(1, _omitEnumNames ? '' : 'GROUP_VISIBILITY_PRIVATE');
+  static const GroupVisibility GROUP_VISIBILITY_PUBLIC = GroupVisibility._(2, _omitEnumNames ? '' : 'GROUP_VISIBILITY_PUBLIC');
+
+  static const $core.List<GroupVisibility> values = <GroupVisibility> [
+    GROUP_VISIBILITY_UNSPECIFIED,
+    GROUP_VISIBILITY_PRIVATE,
+    GROUP_VISIBILITY_PUBLIC,
+  ];
+
+  static final $core.Map<$core.int, GroupVisibility> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static GroupVisibility? valueOf($core.int value) => _byValue[value];
+
+  const GroupVisibility._($core.int v, $core.String n) : super(v, n);
+}
+
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

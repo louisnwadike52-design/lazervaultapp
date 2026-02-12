@@ -7,6 +7,11 @@ enum GroupAccountStatus {
   deleted,
 }
 
+enum GroupVisibility {
+  private,
+  public,
+}
+
 enum GroupMemberRole {
   admin,
   moderator,
@@ -80,6 +85,10 @@ class GroupAccount extends Equatable {
   final DateTime updatedAt;
   final GroupAccountStatus status;
   final Map<String, dynamic>? metadata;
+  final GroupVisibility visibility;
+  final int memberCount;
+  final double totalRaised;
+  final String? imageUrl;
 
   const GroupAccount({
     required this.id,
@@ -92,6 +101,10 @@ class GroupAccount extends Equatable {
     required this.updatedAt,
     required this.status,
     this.metadata,
+    this.visibility = GroupVisibility.private,
+    this.memberCount = 0,
+    this.totalRaised = 0,
+    this.imageUrl,
   });
 
   @override
@@ -106,6 +119,10 @@ class GroupAccount extends Equatable {
         updatedAt,
         status,
         metadata,
+        visibility,
+        memberCount,
+        totalRaised,
+        imageUrl,
       ];
 
   GroupAccount copyWith({
@@ -119,6 +136,10 @@ class GroupAccount extends Equatable {
     DateTime? updatedAt,
     GroupAccountStatus? status,
     Map<String, dynamic>? metadata,
+    GroupVisibility? visibility,
+    int? memberCount,
+    double? totalRaised,
+    String? imageUrl,
   }) {
     return GroupAccount(
       id: id ?? this.id,
@@ -131,6 +152,10 @@ class GroupAccount extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
       status: status ?? this.status,
       metadata: metadata ?? this.metadata,
+      visibility: visibility ?? this.visibility,
+      memberCount: memberCount ?? this.memberCount,
+      totalRaised: totalRaised ?? this.totalRaised,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 
@@ -1425,4 +1450,54 @@ class GroupAccountReport extends Equatable {
       if (error != null) 'error': error,
     };
   }
-} 
+}
+
+/// Top contributor info for public group detail view
+class PublicGroupContributor extends Equatable {
+  final String userId;
+  final String displayName;
+  final String? profileImage;
+  final double totalContributed;
+  final int contributionCount;
+
+  const PublicGroupContributor({
+    required this.userId,
+    required this.displayName,
+    this.profileImage,
+    required this.totalContributed,
+    required this.contributionCount,
+  });
+
+  @override
+  List<Object?> get props => [userId, displayName, profileImage, totalContributed, contributionCount];
+}
+
+/// Public group detail with statistics and membership info
+class PublicGroupDetail extends Equatable {
+  final GroupAccount group;
+  final Map<String, dynamic>? statistics;
+  final List<PublicGroupContributor> topContributors;
+  final bool isMember;
+
+  const PublicGroupDetail({
+    required this.group,
+    this.statistics,
+    this.topContributors = const [],
+    required this.isMember,
+  });
+
+  @override
+  List<Object?> get props => [group, statistics, topContributors, isMember];
+}
+
+/// Extension for GroupVisibility display
+extension GroupVisibilityExtension on GroupVisibility {
+  String get displayName {
+    switch (this) {
+      case GroupVisibility.private:
+        return 'Private';
+      case GroupVisibility.public:
+        return 'Public';
+    }
+  }
+}

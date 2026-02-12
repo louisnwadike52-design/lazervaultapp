@@ -18,22 +18,37 @@ class EditAutoRechargeScreen extends StatefulWidget {
 class _EditAutoRechargeScreenState extends State<EditAutoRechargeScreen> {
   final TextEditingController _amountController = TextEditingController();
 
-  late AutoRechargeEntity _autoRecharge;
-  late RechargeFrequency _selectedFrequency;
-  late int _selectedDayOfWeek;
-  late int _selectedDayOfMonth;
+  AutoRechargeEntity? _autoRecharge;
+  RechargeFrequency _selectedFrequency = RechargeFrequency.daily;
+  int _selectedDayOfWeek = 1;
+  int _selectedDayOfMonth = 1;
+  bool _argsValid = false;
 
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments as Map<String, dynamic>;
-    _autoRecharge = args['autoRecharge'] as AutoRechargeEntity;
+    final args = Get.arguments;
+    if (args is Map<String, dynamic> && args['autoRecharge'] is AutoRechargeEntity) {
+      final autoRecharge = args['autoRecharge'] as AutoRechargeEntity;
+      _autoRecharge = autoRecharge;
+      _argsValid = true;
 
-    // Pre-fill form with existing values
-    _amountController.text = _autoRecharge.amount.toStringAsFixed(0);
-    _selectedFrequency = _autoRecharge.frequency;
-    _selectedDayOfWeek = _autoRecharge.dayOfWeek ?? 1;
-    _selectedDayOfMonth = _autoRecharge.dayOfMonth ?? 1;
+      // Pre-fill form with existing values
+      _amountController.text = autoRecharge.amount.toStringAsFixed(0);
+      _selectedFrequency = autoRecharge.frequency;
+      _selectedDayOfWeek = autoRecharge.dayOfWeek ?? 1;
+      _selectedDayOfMonth = autoRecharge.dayOfMonth ?? 1;
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.back();
+        Get.snackbar(
+          'Error',
+          'Invalid auto-recharge data',
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
+          colorText: Colors.white,
+        );
+      });
+    }
   }
 
   @override
@@ -43,6 +58,7 @@ class _EditAutoRechargeScreenState extends State<EditAutoRechargeScreen> {
   }
 
   void _updateAutoRecharge() {
+    if (_autoRecharge == null) return;
     final amountText = _amountController.text.trim();
     if (amountText.isEmpty) {
       Get.snackbar(
@@ -66,7 +82,7 @@ class _EditAutoRechargeScreenState extends State<EditAutoRechargeScreen> {
     }
 
     context.read<AutoRechargeCubit>().updateAutoRecharge(
-          autoRechargeId: _autoRecharge.id,
+          autoRechargeId: _autoRecharge!.id,
           amount: amount,
           frequency: _selectedFrequency,
           dayOfWeek: _selectedFrequency == RechargeFrequency.weekly ? _selectedDayOfWeek : null,
@@ -76,6 +92,9 @@ class _EditAutoRechargeScreenState extends State<EditAutoRechargeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_argsValid) {
+      return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+    }
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
@@ -257,7 +276,7 @@ class _EditAutoRechargeScreenState extends State<EditAutoRechargeScreen> {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      _autoRecharge.customerName,
+                      _autoRecharge!.customerName,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,
@@ -277,7 +296,7 @@ class _EditAutoRechargeScreenState extends State<EditAutoRechargeScreen> {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    _autoRecharge.meterNumber,
+                    _autoRecharge!.meterNumber,
                     style: GoogleFonts.inter(
                       color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 12.sp,
@@ -292,7 +311,7 @@ class _EditAutoRechargeScreenState extends State<EditAutoRechargeScreen> {
                       borderRadius: BorderRadius.circular(6.r),
                     ),
                     child: Text(
-                      _autoRecharge.meterType.displayName,
+                      _autoRecharge!.meterType.displayName,
                       style: GoogleFonts.inter(
                         color: const Color(0xFF4E03D0),
                         fontSize: 10.sp,

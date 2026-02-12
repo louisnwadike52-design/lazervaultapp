@@ -21,6 +21,12 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
     $core.String? txHistory,
     $core.int? userId,
     ChatFile? uploadedFile,
+    $core.String? sessionId,
+    $core.String? sourceContext,
+    $core.String? language,
+    $core.String? accountId,
+    $core.String? userCountry,
+    $core.String? currency,
   }) {
     final $result = create();
     if (query != null) {
@@ -35,6 +41,24 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
     if (uploadedFile != null) {
       $result.uploadedFile = uploadedFile;
     }
+    if (sessionId != null) {
+      $result.sessionId = sessionId;
+    }
+    if (sourceContext != null) {
+      $result.sourceContext = sourceContext;
+    }
+    if (language != null) {
+      $result.language = language;
+    }
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (userCountry != null) {
+      $result.userCountry = userCountry;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
     return $result;
   }
   ProcessChatRequest._() : super();
@@ -46,6 +70,12 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'txHistory')
     ..a<$core.int>(3, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU3)
     ..aOM<ChatFile>(4, _omitFieldNames ? '' : 'uploadedFile', subBuilder: ChatFile.create)
+    ..aOS(5, _omitFieldNames ? '' : 'sessionId')
+    ..aOS(6, _omitFieldNames ? '' : 'sourceContext')
+    ..aOS(7, _omitFieldNames ? '' : 'language')
+    ..aOS(8, _omitFieldNames ? '' : 'accountId')
+    ..aOS(9, _omitFieldNames ? '' : 'userCountry')
+    ..aOS(10, _omitFieldNames ? '' : 'currency')
     ..hasRequiredFields = false
   ;
 
@@ -108,6 +138,62 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
   void clearUploadedFile() => clearField(4);
   @$pb.TagNumber(4)
   ChatFile ensureUploadedFile() => $_ensure(3);
+
+  /// Conversation context fields
+  @$pb.TagNumber(5)
+  $core.String get sessionId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set sessionId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSessionId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSessionId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get sourceContext => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set sourceContext($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSourceContext() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSourceContext() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get language => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set language($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasLanguage() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearLanguage() => clearField(7);
+
+  /// Account context fields for agent routing
+  @$pb.TagNumber(8)
+  $core.String get accountId => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set accountId($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasAccountId() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAccountId() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get userCountry => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set userCountry($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasUserCountry() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearUserCountry() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get currency => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set currency($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCurrency() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCurrency() => clearField(10);
 }
 
 /// Response message for the AI Chat endpoint
@@ -119,6 +205,13 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
     $core.String? response,
     $core.Iterable<ChatFile>? generatedFiles,
     FileAnalysis? fileAnalysis,
+    $core.String? intent,
+    $core.Map<$core.String, $core.String>? entities,
+    $core.bool? requiresConfirmation,
+    $core.Iterable<ActionButton>? actionButtons,
+    $core.String? sessionId,
+    ConfirmationData? confirmationData,
+    $core.String? conversationState,
   }) {
     final $result = create();
     if (success != null) {
@@ -139,6 +232,27 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
     if (fileAnalysis != null) {
       $result.fileAnalysis = fileAnalysis;
     }
+    if (intent != null) {
+      $result.intent = intent;
+    }
+    if (entities != null) {
+      $result.entities.addAll(entities);
+    }
+    if (requiresConfirmation != null) {
+      $result.requiresConfirmation = requiresConfirmation;
+    }
+    if (actionButtons != null) {
+      $result.actionButtons.addAll(actionButtons);
+    }
+    if (sessionId != null) {
+      $result.sessionId = sessionId;
+    }
+    if (confirmationData != null) {
+      $result.confirmationData = confirmationData;
+    }
+    if (conversationState != null) {
+      $result.conversationState = conversationState;
+    }
     return $result;
   }
   ProcessChatResponse._() : super();
@@ -152,6 +266,13 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'response')
     ..pc<ChatFile>(5, _omitFieldNames ? '' : 'generatedFiles', $pb.PbFieldType.PM, subBuilder: ChatFile.create)
     ..aOM<FileAnalysis>(6, _omitFieldNames ? '' : 'fileAnalysis', subBuilder: FileAnalysis.create)
+    ..aOS(7, _omitFieldNames ? '' : 'intent')
+    ..m<$core.String, $core.String>(8, _omitFieldNames ? '' : 'entities', entryClassName: 'ProcessChatResponse.EntitiesEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
+    ..aOB(9, _omitFieldNames ? '' : 'requiresConfirmation')
+    ..pc<ActionButton>(10, _omitFieldNames ? '' : 'actionButtons', $pb.PbFieldType.PM, subBuilder: ActionButton.create)
+    ..aOS(11, _omitFieldNames ? '' : 'sessionId')
+    ..aOM<ConfirmationData>(12, _omitFieldNames ? '' : 'confirmationData', subBuilder: ConfirmationData.create)
+    ..aOS(13, _omitFieldNames ? '' : 'conversationState')
     ..hasRequiredFields = false
   ;
 
@@ -212,7 +333,7 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearResponse() => clearField(4);
 
-  /// Optional file handling response fields (for future AI service enhancements)
+  /// Optional file handling response fields
   @$pb.TagNumber(5)
   $core.List<ChatFile> get generatedFiles => $_getList(4);
 
@@ -226,6 +347,60 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
   void clearFileAnalysis() => clearField(6);
   @$pb.TagNumber(6)
   FileAnalysis ensureFileAnalysis() => $_ensure(5);
+
+  /// Conversation intelligence fields
+  @$pb.TagNumber(7)
+  $core.String get intent => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set intent($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasIntent() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIntent() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.Map<$core.String, $core.String> get entities => $_getMap(7);
+
+  @$pb.TagNumber(9)
+  $core.bool get requiresConfirmation => $_getBF(8);
+  @$pb.TagNumber(9)
+  set requiresConfirmation($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasRequiresConfirmation() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearRequiresConfirmation() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.List<ActionButton> get actionButtons => $_getList(9);
+
+  @$pb.TagNumber(11)
+  $core.String get sessionId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set sessionId($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasSessionId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearSessionId() => clearField(11);
+
+  @$pb.TagNumber(12)
+  ConfirmationData get confirmationData => $_getN(11);
+  @$pb.TagNumber(12)
+  set confirmationData(ConfirmationData v) { setField(12, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasConfirmationData() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearConfirmationData() => clearField(12);
+  @$pb.TagNumber(12)
+  ConfirmationData ensureConfirmationData() => $_ensure(11);
+
+  @$pb.TagNumber(13)
+  $core.String get conversationState => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set conversationState($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasConversationState() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearConversationState() => clearField(13);
 }
 
 /// Represents a file in chat context
@@ -904,6 +1079,228 @@ class GetAIChatHistoryResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<AIChatHistoryEntry> get history => $_getList(0);
+}
+
+/// Action button for rich chat responses
+class ActionButton extends $pb.GeneratedMessage {
+  factory ActionButton({
+    $core.String? label,
+    $core.String? actionType,
+    $core.String? payload,
+    $core.String? icon,
+  }) {
+    final $result = create();
+    if (label != null) {
+      $result.label = label;
+    }
+    if (actionType != null) {
+      $result.actionType = actionType;
+    }
+    if (payload != null) {
+      $result.payload = payload;
+    }
+    if (icon != null) {
+      $result.icon = icon;
+    }
+    return $result;
+  }
+  ActionButton._() : super();
+  factory ActionButton.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ActionButton.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ActionButton', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'label')
+    ..aOS(2, _omitFieldNames ? '' : 'actionType')
+    ..aOS(3, _omitFieldNames ? '' : 'payload')
+    ..aOS(4, _omitFieldNames ? '' : 'icon')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ActionButton clone() => ActionButton()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ActionButton copyWith(void Function(ActionButton) updates) => super.copyWith((message) => updates(message as ActionButton)) as ActionButton;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ActionButton create() => ActionButton._();
+  ActionButton createEmptyInstance() => create();
+  static $pb.PbList<ActionButton> createRepeated() => $pb.PbList<ActionButton>();
+  @$core.pragma('dart2js:noInline')
+  static ActionButton getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ActionButton>(create);
+  static ActionButton? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get label => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set label($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLabel() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLabel() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get actionType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set actionType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasActionType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearActionType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get payload => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set payload($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPayload() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPayload() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get icon => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set icon($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIcon() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIcon() => clearField(4);
+}
+
+/// Structured confirmation data for financial actions
+class ConfirmationData extends $pb.GeneratedMessage {
+  factory ConfirmationData({
+    $core.String? actionType,
+    $core.String? amount,
+    $core.String? currency,
+    $core.String? recipientName,
+    $core.String? recipientId,
+    $core.String? description,
+    $core.Map<$core.String, $core.String>? extra,
+  }) {
+    final $result = create();
+    if (actionType != null) {
+      $result.actionType = actionType;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (recipientName != null) {
+      $result.recipientName = recipientName;
+    }
+    if (recipientId != null) {
+      $result.recipientId = recipientId;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (extra != null) {
+      $result.extra.addAll(extra);
+    }
+    return $result;
+  }
+  ConfirmationData._() : super();
+  factory ConfirmationData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ConfirmationData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConfirmationData', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'actionType')
+    ..aOS(2, _omitFieldNames ? '' : 'amount')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'recipientName')
+    ..aOS(5, _omitFieldNames ? '' : 'recipientId')
+    ..aOS(6, _omitFieldNames ? '' : 'description')
+    ..m<$core.String, $core.String>(7, _omitFieldNames ? '' : 'extra', entryClassName: 'ConfirmationData.ExtraEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ConfirmationData clone() => ConfirmationData()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ConfirmationData copyWith(void Function(ConfirmationData) updates) => super.copyWith((message) => updates(message as ConfirmationData)) as ConfirmationData;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ConfirmationData create() => ConfirmationData._();
+  ConfirmationData createEmptyInstance() => create();
+  static $pb.PbList<ConfirmationData> createRepeated() => $pb.PbList<ConfirmationData>();
+  @$core.pragma('dart2js:noInline')
+  static ConfirmationData getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ConfirmationData>(create);
+  static ConfirmationData? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get actionType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set actionType($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasActionType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearActionType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get amount => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set amount($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get recipientName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set recipientName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRecipientName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRecipientName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get recipientId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set recipientId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasRecipientId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearRecipientId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get description => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set description($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDescription() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDescription() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.Map<$core.String, $core.String> get extra => $_getMap(6);
 }
 
 

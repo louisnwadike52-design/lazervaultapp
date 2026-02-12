@@ -1,0 +1,365 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "lazervaultGo/pb";
+
+import "google/protobuf/timestamp.proto";
+
+// PayrollService - Business payroll management
+service PayrollService {
+  // Employee Management
+  rpc AddEmployee(AddEmployeeRequest) returns (AddEmployeeResponse);
+  rpc UpdateEmployee(UpdateEmployeeRequest) returns (UpdateEmployeeResponse);
+  rpc RemoveEmployee(RemoveEmployeeRequest) returns (RemoveEmployeeResponse);
+  rpc GetEmployee(GetEmployeeRequest) returns (GetEmployeeResponse);
+  rpc ListEmployees(ListEmployeesRequest) returns (ListEmployeesResponse);
+
+  // Pay Run Management
+  rpc CreatePayRun(CreatePayRunRequest) returns (CreatePayRunResponse);
+  rpc CalculatePayRun(CalculatePayRunRequest) returns (CalculatePayRunResponse);
+  rpc ApprovePayRun(ApprovePayRunRequest) returns (ApprovePayRunResponse);
+  rpc ProcessPayRun(ProcessPayRunRequest) returns (ProcessPayRunResponse);
+  rpc GetPayRun(GetPayRunRequest) returns (GetPayRunResponse);
+  rpc ListPayRuns(ListPayRunsRequest) returns (ListPayRunsResponse);
+
+  // Payslips
+  rpc GetPaySlip(GetPaySlipRequest) returns (GetPaySlipResponse);
+  rpc ListPaySlips(ListPaySlipsRequest) returns (ListPaySlipsResponse);
+
+  // Reporting
+  rpc GetPayrollSummary(GetPayrollSummaryRequest) returns (GetPayrollSummaryResponse);
+  rpc GetTaxReport(GetTaxReportRequest) returns (GetTaxReportResponse);
+}
+
+// ========== Enums ==========
+
+enum EmploymentType {
+  EMPLOYMENT_TYPE_FULL_TIME = 0;
+  EMPLOYMENT_TYPE_PART_TIME = 1;
+  EMPLOYMENT_TYPE_CONTRACT = 2;
+}
+
+enum PayFrequency {
+  PAY_FREQUENCY_MONTHLY = 0;
+  PAY_FREQUENCY_BIWEEKLY = 1;
+  PAY_FREQUENCY_WEEKLY = 2;
+}
+
+enum EmployeeStatus {
+  EMPLOYEE_STATUS_ACTIVE = 0;
+  EMPLOYEE_STATUS_INACTIVE = 1;
+  EMPLOYEE_STATUS_TERMINATED = 2;
+}
+
+enum PayRunStatus {
+  PAY_RUN_STATUS_DRAFT = 0;
+  PAY_RUN_STATUS_CALCULATING = 1;
+  PAY_RUN_STATUS_READY = 2;
+  PAY_RUN_STATUS_APPROVED = 3;
+  PAY_RUN_STATUS_PROCESSING = 4;
+  PAY_RUN_STATUS_COMPLETED = 5;
+  PAY_RUN_STATUS_FAILED = 6;
+}
+
+enum PaymentStatus {
+  PAYMENT_STATUS_PENDING = 0;
+  PAYMENT_STATUS_PAID = 1;
+  PAYMENT_STATUS_FAILED = 2;
+}
+
+// ========== Core Messages ==========
+
+message Employee {
+  string id = 1;
+  string user_id = 2;
+  string business_id = 3;
+  string full_name = 4;
+  string email = 5;
+  string phone = 6;
+  string nin = 7; // National Insurance Number
+  string bank_account_number = 8;
+  string bank_code = 9;
+  string bank_name = 10;
+  EmploymentType employment_type = 11;
+  int64 pay_rate = 12; // Minor units (kobo)
+  PayFrequency pay_frequency = 13;
+  string department = 14;
+  string job_title = 15;
+  string start_date = 16;
+  EmployeeStatus status = 17;
+  google.protobuf.Timestamp created_at = 18;
+  google.protobuf.Timestamp updated_at = 19;
+}
+
+message PayRun {
+  string id = 1;
+  string business_id = 2;
+  string pay_period_start = 3;
+  string pay_period_end = 4;
+  PayRunStatus status = 5;
+  int64 total_gross = 6;
+  int64 total_deductions = 7;
+  int64 total_net = 8;
+  int64 total_employer_contributions = 9;
+  int32 employee_count = 10;
+  string created_by = 11;
+  string approved_by = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp processed_at = 14;
+}
+
+message PaySlip {
+  string id = 1;
+  string pay_run_id = 2;
+  string employee_id = 3;
+  string employee_name = 4;
+  int64 gross_pay = 5;
+  int64 income_tax = 6; // PAYE
+  int64 national_insurance = 7; // NHF
+  int64 student_loan_repayment = 8;
+  int64 pension_contribution = 9;
+  int64 other_deductions = 10;
+  int64 total_deductions = 11;
+  int64 net_pay = 12;
+  int64 employer_nic = 13; // NSITF
+  int64 employer_pension = 14;
+  double hours_worked = 15;
+  double overtime_hours = 16;
+  int64 overtime_pay = 17;
+  int64 bonuses = 18;
+  int64 commissions = 19;
+  PaymentStatus payment_status = 20;
+  string payment_reference = 21;
+  google.protobuf.Timestamp created_at = 22;
+}
+
+message DeductionSummary {
+  string type = 1;
+  int64 amount = 2;
+  string description = 3;
+}
+
+message PayrollPaginationInfo {
+  int32 current_page = 1;
+  int32 total_pages = 2;
+  int32 total_items = 3;
+  int32 items_per_page = 4;
+}
+
+// ========== Employee Management ==========
+
+message AddEmployeeRequest {
+  string full_name = 1;
+  string email = 2;
+  string phone = 3;
+  string nin = 4;
+  string bank_account_number = 5;
+  string bank_code = 6;
+  string bank_name = 7;
+  EmploymentType employment_type = 8;
+  int64 pay_rate = 9;
+  PayFrequency pay_frequency = 10;
+  string department = 11;
+  string job_title = 12;
+  string start_date = 13;
+  string user_id = 14; // Optional: LazerVault user ID for internal employees
+}
+
+message AddEmployeeResponse {
+  bool success = 1;
+  string message = 2;
+  Employee employee = 3;
+}
+
+message UpdateEmployeeRequest {
+  string employee_id = 1;
+  string full_name = 2;
+  string email = 3;
+  string phone = 4;
+  string nin = 5;
+  string bank_account_number = 6;
+  string bank_code = 7;
+  string bank_name = 8;
+  EmploymentType employment_type = 9;
+  int64 pay_rate = 10;
+  PayFrequency pay_frequency = 11;
+  string department = 12;
+  string job_title = 13;
+  EmployeeStatus status = 14;
+}
+
+message UpdateEmployeeResponse {
+  bool success = 1;
+  string message = 2;
+  Employee employee = 3;
+}
+
+message RemoveEmployeeRequest {
+  string employee_id = 1;
+}
+
+message RemoveEmployeeResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetEmployeeRequest {
+  string employee_id = 1;
+}
+
+message GetEmployeeResponse {
+  bool success = 1;
+  string message = 2;
+  Employee employee = 3;
+}
+
+message ListEmployeesRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  EmployeeStatus status = 3;
+  string department = 4;
+  string search = 5;
+}
+
+message ListEmployeesResponse {
+  repeated Employee employees = 1;
+  PayrollPaginationInfo pagination = 2;
+}
+
+// ========== Pay Run Management ==========
+
+message CreatePayRunRequest {
+  string pay_period_start = 1;
+  string pay_period_end = 2;
+}
+
+message CreatePayRunResponse {
+  bool success = 1;
+  string message = 2;
+  PayRun pay_run = 3;
+}
+
+message CalculatePayRunRequest {
+  string pay_run_id = 1;
+}
+
+message CalculatePayRunResponse {
+  bool success = 1;
+  string message = 2;
+  PayRun pay_run = 3;
+  repeated PaySlip pay_slips = 4;
+}
+
+message ApprovePayRunRequest {
+  string pay_run_id = 1;
+}
+
+message ApprovePayRunResponse {
+  bool success = 1;
+  string message = 2;
+  PayRun pay_run = 3;
+}
+
+message ProcessPayRunRequest {
+  string pay_run_id = 1;
+  string transaction_pin = 2;
+  string source_account_id = 3;
+}
+
+message ProcessPayRunResponse {
+  bool success = 1;
+  string message = 2;
+  PayRun pay_run = 3;
+  int32 successful_payments = 4;
+  int32 failed_payments = 5;
+}
+
+message GetPayRunRequest {
+  string pay_run_id = 1;
+}
+
+message GetPayRunResponse {
+  bool success = 1;
+  string message = 2;
+  PayRun pay_run = 3;
+}
+
+message ListPayRunsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  PayRunStatus status = 3;
+}
+
+message ListPayRunsResponse {
+  repeated PayRun pay_runs = 1;
+  PayrollPaginationInfo pagination = 2;
+}
+
+// ========== Payslips ==========
+
+message GetPaySlipRequest {
+  string pay_slip_id = 1;
+}
+
+message GetPaySlipResponse {
+  bool success = 1;
+  string message = 2;
+  PaySlip pay_slip = 3;
+}
+
+message ListPaySlipsRequest {
+  string pay_run_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message ListPaySlipsResponse {
+  repeated PaySlip pay_slips = 1;
+  PayrollPaginationInfo pagination = 2;
+}
+
+// ========== Reporting ==========
+
+message GetPayrollSummaryRequest {
+  string period_start = 1;
+  string period_end = 2;
+}
+
+message GetPayrollSummaryResponse {
+  bool success = 1;
+  string message = 2;
+  int32 total_employees = 3;
+  int32 total_pay_runs = 4;
+  int64 total_gross_paid = 5;
+  int64 total_deductions = 6;
+  int64 total_net_paid = 7;
+  int64 total_employer_contributions = 8;
+  repeated DeductionSummary deduction_breakdown = 9;
+}
+
+message GetTaxReportRequest {
+  string period_start = 1;
+  string period_end = 2;
+}
+
+message GetTaxReportResponse {
+  bool success = 1;
+  string message = 2;
+  int64 total_paye = 3;
+  int64 total_nhf = 4;
+  int64 total_pension_employee = 5;
+  int64 total_pension_employer = 6;
+  int64 total_nsitf = 7;
+  int64 total_itf = 8;
+  repeated EmployeeTaxSummary employee_summaries = 9;
+}
+
+message EmployeeTaxSummary {
+  string employee_id = 1;
+  string employee_name = 2;
+  int64 gross_pay = 3;
+  int64 paye = 4;
+  int64 nhf = 5;
+  int64 pension = 6;
+  int64 net_pay = 7;
+}

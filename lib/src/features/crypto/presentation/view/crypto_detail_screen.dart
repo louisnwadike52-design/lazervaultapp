@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'dart:math' as math;
 import '../../cubit/crypto_cubit.dart';
 import '../../domain/entities/crypto_entity.dart';
@@ -79,15 +80,15 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F23),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
               const Color(0xFF0A0A1A),
             ],
           ),
@@ -340,7 +341,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           ),
           SizedBox(height: 16.h),
           Text(
-            '\$${widget.crypto.currentPrice.toStringAsFixed(2)}',
+            '${CurrencySymbols.currentSymbol}${widget.crypto.currentPrice.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 32.sp,
@@ -366,7 +367,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
               ),
               SizedBox(width: 8.w),
               Text(
-                '(\$${widget.crypto.priceChange24h.toStringAsFixed(2)})',
+                '(${CurrencySymbols.currentSymbol}${widget.crypto.priceChange24h.toStringAsFixed(2)})',
                 style: GoogleFonts.inter(
                   color: Colors.grey[400],
                   fontSize: 14.sp,
@@ -550,7 +551,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                         return touchedBarSpots.map((barSpot) {
                           return LineTooltipItem(
-                            '\$${barSpot.y.toStringAsFixed(0)}',
+                            '${CurrencySymbols.currentSymbol}${barSpot.y.toStringAsFixed(0)}',
                             GoogleFonts.inter(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -861,11 +862,11 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           SizedBox(height: 20.h),
           _buildDataPointRow('Volume', '${(volume / 1e9).toStringAsFixed(2)}B'),
           SizedBox(height: 16.h),
-          _buildDataPointRow('Previous close', '\$${previousClose.toStringAsFixed(2)} USD'),
+          _buildDataPointRow('Previous close', '${CurrencySymbols.currentSymbol}${previousClose.toStringAsFixed(2)} ${CurrencySymbols.currentCurrency}'),
           SizedBox(height: 16.h),
-          _buildDataPointRow('Open', '\$${open.toStringAsFixed(2)} USD'),
+          _buildDataPointRow('Open', '${CurrencySymbols.currentSymbol}${open.toStringAsFixed(2)} ${CurrencySymbols.currentCurrency}'),
           SizedBox(height: 16.h),
-          _buildDataPointRow('Day\'s range', '\$${dayLow.toStringAsFixed(2)} — \$${dayHigh.toStringAsFixed(2)} USD'),
+          _buildDataPointRow('Day\'s range', '${CurrencySymbols.currentSymbol}${dayLow.toStringAsFixed(2)} — ${CurrencySymbols.currentSymbol}${dayHigh.toStringAsFixed(2)} ${CurrencySymbols.currentCurrency}'),
         ],
       ),
     );
@@ -1020,7 +1021,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       final price = widget.crypto.currentPrice * (1 - (index + 1) * 0.001);
                       final volume = (math.Random().nextDouble() * 10).toStringAsFixed(2);
                       return _buildOrderBookRow(
-                        '\$${price.toStringAsFixed(2)}',
+                        '${CurrencySymbols.currentSymbol}${price.toStringAsFixed(2)}',
                         volume,
                         Colors.green.withValues(alpha: 0.1),
                         Colors.green,
@@ -1046,7 +1047,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       final price = widget.crypto.currentPrice * (1 + (index + 1) * 0.001);
                       final volume = (math.Random().nextDouble() * 10).toStringAsFixed(2);
                       return _buildOrderBookRow(
-                        '\$${price.toStringAsFixed(2)}',
+                        '${CurrencySymbols.currentSymbol}${price.toStringAsFixed(2)}',
                         volume,
                         Colors.red.withValues(alpha: 0.1),
                         Colors.red,

@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 import 'transfer.pbenum.dart';
 
 export 'transfer.pbenum.dart';
@@ -31,7 +31,7 @@ class TransferTransaction extends $pb.GeneratedMessage {
     TransferType? transferType,
     $core.String? category,
     $core.String? description,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (transactionId != null) {
@@ -80,7 +80,7 @@ class TransferTransaction extends $pb.GeneratedMessage {
     ..e<TransferType>(7, _omitFieldNames ? '' : 'transferType', $pb.PbFieldType.OE, defaultOrMaker: TransferType.TRANSFER_TYPE_UNSPECIFIED, valueOf: TransferType.valueOf, enumValues: TransferType.values)
     ..aOS(8, _omitFieldNames ? '' : 'category')
     ..aOS(9, _omitFieldNames ? '' : 'description')
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -187,15 +187,15 @@ class TransferTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get createdAt => $_getN(9);
+  $1.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($42.Timestamp v) { setField(10, v); }
+  set createdAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureCreatedAt() => $_ensure(9);
+  $1.Timestamp ensureCreatedAt() => $_ensure(9);
 }
 
 /// Request message for initiating a transfer
@@ -371,7 +371,7 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? amount,
     $fixnum.Int64? fee,
     $fixnum.Int64? totalAmount,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (transferId != null) {
@@ -404,7 +404,7 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -475,21 +475,21 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
   void clearTotalAmount() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get createdAt => $_getN(5);
+  $1.Timestamp get createdAt => $_getN(5);
   @$pb.TagNumber(6)
-  set createdAt($42.Timestamp v) { setField(6, v); }
+  set createdAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasCreatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearCreatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureCreatedAt() => $_ensure(5);
+  $1.Timestamp ensureCreatedAt() => $_ensure(5);
 }
 
 /// Represents a single point in a time series chart
 class TimeSeriesPoint extends $pb.GeneratedMessage {
   factory TimeSeriesPoint({
-    $42.Timestamp? timestamp,
+    $1.Timestamp? timestamp,
     $core.double? amount,
   }) {
     final $result = create();
@@ -506,7 +506,7 @@ class TimeSeriesPoint extends $pb.GeneratedMessage {
   factory TimeSeriesPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TimeSeriesPoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'timestamp', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
@@ -533,15 +533,15 @@ class TimeSeriesPoint extends $pb.GeneratedMessage {
   static TimeSeriesPoint? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get timestamp => $_getN(0);
+  $1.Timestamp get timestamp => $_getN(0);
   @$pb.TagNumber(1)
-  set timestamp($42.Timestamp v) { setField(1, v); }
+  set timestamp($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTimestamp() => $_has(0);
   @$pb.TagNumber(1)
   void clearTimestamp() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureTimestamp() => $_ensure(0);
+  $1.Timestamp ensureTimestamp() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get amount => $_getN(1);
@@ -1079,10 +1079,10 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? reference,
     $core.String? category,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
     $core.String? scheduledAt,
-    $42.Timestamp? completedAt,
-    $42.Timestamp? failedAt,
+    $1.Timestamp? completedAt,
+    $1.Timestamp? failedAt,
     $core.String? failureReason,
   }) {
     final $result = create();
@@ -1156,10 +1156,10 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'status')
     ..aOS(11, _omitFieldNames ? '' : 'reference')
     ..aOS(12, _omitFieldNames ? '' : 'category')
-    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'created_at', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'created_at', subBuilder: $1.Timestamp.create)
     ..aOS(14, _omitFieldNames ? '' : 'scheduled_at')
-    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'completed_at', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'failed_at', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'completed_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'failed_at', subBuilder: $1.Timestamp.create)
     ..aOS(17, _omitFieldNames ? '' : 'failure_reason')
     ..hasRequiredFields = false
   ;
@@ -1294,15 +1294,15 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   void clearCategory() => clearField(12);
 
   @$pb.TagNumber(13)
-  $42.Timestamp get createdAt => $_getN(12);
+  $1.Timestamp get createdAt => $_getN(12);
   @$pb.TagNumber(13)
-  set createdAt($42.Timestamp v) { setField(13, v); }
+  set createdAt($1.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasCreatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearCreatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $42.Timestamp ensureCreatedAt() => $_ensure(12);
+  $1.Timestamp ensureCreatedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
   $core.String get scheduledAt => $_getSZ(13);
@@ -1314,26 +1314,26 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   void clearScheduledAt() => clearField(14);
 
   @$pb.TagNumber(15)
-  $42.Timestamp get completedAt => $_getN(14);
+  $1.Timestamp get completedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set completedAt($42.Timestamp v) { setField(15, v); }
+  set completedAt($1.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCompletedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCompletedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $42.Timestamp ensureCompletedAt() => $_ensure(14);
+  $1.Timestamp ensureCompletedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $42.Timestamp get failedAt => $_getN(15);
+  $1.Timestamp get failedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set failedAt($42.Timestamp v) { setField(16, v); }
+  set failedAt($1.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasFailedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearFailedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $42.Timestamp ensureFailedAt() => $_ensure(15);
+  $1.Timestamp ensureFailedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
   $core.String get failureReason => $_getSZ(16);
@@ -1635,890 +1635,6 @@ class ListTransfersResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<GetTransferDetailsResponse> get transfers => $_getList(0);
-
-  @$pb.TagNumber(2)
-  TransferPaginationInfo get pagination => $_getN(1);
-  @$pb.TagNumber(2)
-  set pagination(TransferPaginationInfo v) { setField(2, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPagination() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPagination() => clearField(2);
-  @$pb.TagNumber(2)
-  TransferPaginationInfo ensurePagination() => $_ensure(1);
-}
-
-/// Represents a single recipient in a batch transfer
-class BatchRecipient extends $pb.GeneratedMessage {
-  factory BatchRecipient({
-    $fixnum.Int64? recipientId,
-    $fixnum.Int64? toAccountId,
-    $fixnum.Int64? amount,
-    $core.String? reference,
-    $core.String? category,
-  }) {
-    final $result = create();
-    if (recipientId != null) {
-      $result.recipientId = recipientId;
-    }
-    if (toAccountId != null) {
-      $result.toAccountId = toAccountId;
-    }
-    if (amount != null) {
-      $result.amount = amount;
-    }
-    if (reference != null) {
-      $result.reference = reference;
-    }
-    if (category != null) {
-      $result.category = category;
-    }
-    return $result;
-  }
-  BatchRecipient._() : super();
-  factory BatchRecipient.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory BatchRecipient.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchRecipient', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'toAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(4, _omitFieldNames ? '' : 'reference')
-    ..aOS(5, _omitFieldNames ? '' : 'category')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  BatchRecipient clone() => BatchRecipient()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  BatchRecipient copyWith(void Function(BatchRecipient) updates) => super.copyWith((message) => updates(message as BatchRecipient)) as BatchRecipient;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static BatchRecipient create() => BatchRecipient._();
-  BatchRecipient createEmptyInstance() => create();
-  static $pb.PbList<BatchRecipient> createRepeated() => $pb.PbList<BatchRecipient>();
-  @$core.pragma('dart2js:noInline')
-  static BatchRecipient getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchRecipient>(create);
-  static BatchRecipient? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get recipientId => $_getI64(0);
-  @$pb.TagNumber(1)
-  set recipientId($fixnum.Int64 v) { $_setInt64(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasRecipientId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearRecipientId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $fixnum.Int64 get toAccountId => $_getI64(1);
-  @$pb.TagNumber(2)
-  set toAccountId($fixnum.Int64 v) { $_setInt64(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasToAccountId() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearToAccountId() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $fixnum.Int64 get amount => $_getI64(2);
-  @$pb.TagNumber(3)
-  set amount($fixnum.Int64 v) { $_setInt64(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasAmount() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearAmount() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get reference => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set reference($core.String v) { $_setString(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasReference() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearReference() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get category => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set category($core.String v) { $_setString(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasCategory() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearCategory() => clearField(5);
-}
-
-/// Request message for initiating a batch transfer
-class InitiateBatchTransferRequest extends $pb.GeneratedMessage {
-  factory InitiateBatchTransferRequest({
-    $fixnum.Int64? fromAccountId,
-    $core.Iterable<BatchRecipient>? recipients,
-    $core.String? scheduledAt,
-  }) {
-    final $result = create();
-    if (fromAccountId != null) {
-      $result.fromAccountId = fromAccountId;
-    }
-    if (recipients != null) {
-      $result.recipients.addAll(recipients);
-    }
-    if (scheduledAt != null) {
-      $result.scheduledAt = scheduledAt;
-    }
-    return $result;
-  }
-  InitiateBatchTransferRequest._() : super();
-  factory InitiateBatchTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory InitiateBatchTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateBatchTransferRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'from_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..pc<BatchRecipient>(2, _omitFieldNames ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: BatchRecipient.create)
-    ..aOS(3, _omitFieldNames ? '' : 'scheduledAt')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  InitiateBatchTransferRequest clone() => InitiateBatchTransferRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  InitiateBatchTransferRequest copyWith(void Function(InitiateBatchTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateBatchTransferRequest)) as InitiateBatchTransferRequest;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static InitiateBatchTransferRequest create() => InitiateBatchTransferRequest._();
-  InitiateBatchTransferRequest createEmptyInstance() => create();
-  static $pb.PbList<InitiateBatchTransferRequest> createRepeated() => $pb.PbList<InitiateBatchTransferRequest>();
-  @$core.pragma('dart2js:noInline')
-  static InitiateBatchTransferRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateBatchTransferRequest>(create);
-  static InitiateBatchTransferRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get fromAccountId => $_getI64(0);
-  @$pb.TagNumber(1)
-  set fromAccountId($fixnum.Int64 v) { $_setInt64(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasFromAccountId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearFromAccountId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.List<BatchRecipient> get recipients => $_getList(1);
-
-  @$pb.TagNumber(3)
-  $core.String get scheduledAt => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set scheduledAt($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasScheduledAt() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearScheduledAt() => clearField(3);
-}
-
-/// Represents the result of a single transfer within a batch
-class BatchTransferResult extends $pb.GeneratedMessage {
-  factory BatchTransferResult({
-    $fixnum.Int64? transferId,
-    $core.String? status,
-    $fixnum.Int64? amount,
-    $fixnum.Int64? fee,
-    $core.String? recipientName,
-    $core.String? recipientAccount,
-    $core.String? failureReason,
-  }) {
-    final $result = create();
-    if (transferId != null) {
-      $result.transferId = transferId;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (amount != null) {
-      $result.amount = amount;
-    }
-    if (fee != null) {
-      $result.fee = fee;
-    }
-    if (recipientName != null) {
-      $result.recipientName = recipientName;
-    }
-    if (recipientAccount != null) {
-      $result.recipientAccount = recipientAccount;
-    }
-    if (failureReason != null) {
-      $result.failureReason = failureReason;
-    }
-    return $result;
-  }
-  BatchTransferResult._() : super();
-  factory BatchTransferResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory BatchTransferResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchTransferResult', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'transferId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, _omitFieldNames ? '' : 'status')
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(5, _omitFieldNames ? '' : 'recipientName')
-    ..aOS(6, _omitFieldNames ? '' : 'recipientAccount')
-    ..aOS(7, _omitFieldNames ? '' : 'failureReason')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  BatchTransferResult clone() => BatchTransferResult()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  BatchTransferResult copyWith(void Function(BatchTransferResult) updates) => super.copyWith((message) => updates(message as BatchTransferResult)) as BatchTransferResult;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static BatchTransferResult create() => BatchTransferResult._();
-  BatchTransferResult createEmptyInstance() => create();
-  static $pb.PbList<BatchTransferResult> createRepeated() => $pb.PbList<BatchTransferResult>();
-  @$core.pragma('dart2js:noInline')
-  static BatchTransferResult getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchTransferResult>(create);
-  static BatchTransferResult? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get transferId => $_getI64(0);
-  @$pb.TagNumber(1)
-  set transferId($fixnum.Int64 v) { $_setInt64(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasTransferId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTransferId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get status => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set status($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasStatus() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearStatus() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $fixnum.Int64 get amount => $_getI64(2);
-  @$pb.TagNumber(3)
-  set amount($fixnum.Int64 v) { $_setInt64(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasAmount() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearAmount() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $fixnum.Int64 get fee => $_getI64(3);
-  @$pb.TagNumber(4)
-  set fee($fixnum.Int64 v) { $_setInt64(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasFee() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearFee() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get recipientName => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set recipientName($core.String v) { $_setString(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasRecipientName() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearRecipientName() => clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.String get recipientAccount => $_getSZ(5);
-  @$pb.TagNumber(6)
-  set recipientAccount($core.String v) { $_setString(5, v); }
-  @$pb.TagNumber(6)
-  $core.bool hasRecipientAccount() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearRecipientAccount() => clearField(6);
-
-  @$pb.TagNumber(7)
-  $core.String get failureReason => $_getSZ(6);
-  @$pb.TagNumber(7)
-  set failureReason($core.String v) { $_setString(6, v); }
-  @$pb.TagNumber(7)
-  $core.bool hasFailureReason() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearFailureReason() => clearField(7);
-}
-
-/// Response message for initiating a batch transfer
-class InitiateBatchTransferResponse extends $pb.GeneratedMessage {
-  factory InitiateBatchTransferResponse({
-    $fixnum.Int64? batchId,
-    $core.String? status,
-    $fixnum.Int64? totalAmount,
-    $fixnum.Int64? totalFee,
-    $fixnum.Int64? totalAmountWithFee,
-    $core.int? successfulTransfers,
-    $core.int? failedTransfers,
-    $core.int? totalTransfers,
-    $core.Iterable<BatchTransferResult>? results,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? completedAt,
-  }) {
-    final $result = create();
-    if (batchId != null) {
-      $result.batchId = batchId;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (totalAmount != null) {
-      $result.totalAmount = totalAmount;
-    }
-    if (totalFee != null) {
-      $result.totalFee = totalFee;
-    }
-    if (totalAmountWithFee != null) {
-      $result.totalAmountWithFee = totalAmountWithFee;
-    }
-    if (successfulTransfers != null) {
-      $result.successfulTransfers = successfulTransfers;
-    }
-    if (failedTransfers != null) {
-      $result.failedTransfers = failedTransfers;
-    }
-    if (totalTransfers != null) {
-      $result.totalTransfers = totalTransfers;
-    }
-    if (results != null) {
-      $result.results.addAll(results);
-    }
-    if (createdAt != null) {
-      $result.createdAt = createdAt;
-    }
-    if (completedAt != null) {
-      $result.completedAt = completedAt;
-    }
-    return $result;
-  }
-  InitiateBatchTransferResponse._() : super();
-  factory InitiateBatchTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory InitiateBatchTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateBatchTransferResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'batchId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, _omitFieldNames ? '' : 'status')
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'totalFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'totalAmountWithFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(6, _omitFieldNames ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'failedTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(8, _omitFieldNames ? '' : 'totalTransfers', $pb.PbFieldType.O3)
-    ..pc<BatchTransferResult>(9, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResult.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  InitiateBatchTransferResponse clone() => InitiateBatchTransferResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  InitiateBatchTransferResponse copyWith(void Function(InitiateBatchTransferResponse) updates) => super.copyWith((message) => updates(message as InitiateBatchTransferResponse)) as InitiateBatchTransferResponse;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static InitiateBatchTransferResponse create() => InitiateBatchTransferResponse._();
-  InitiateBatchTransferResponse createEmptyInstance() => create();
-  static $pb.PbList<InitiateBatchTransferResponse> createRepeated() => $pb.PbList<InitiateBatchTransferResponse>();
-  @$core.pragma('dart2js:noInline')
-  static InitiateBatchTransferResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateBatchTransferResponse>(create);
-  static InitiateBatchTransferResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get batchId => $_getI64(0);
-  @$pb.TagNumber(1)
-  set batchId($fixnum.Int64 v) { $_setInt64(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasBatchId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearBatchId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get status => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set status($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasStatus() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearStatus() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $fixnum.Int64 get totalAmount => $_getI64(2);
-  @$pb.TagNumber(3)
-  set totalAmount($fixnum.Int64 v) { $_setInt64(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasTotalAmount() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearTotalAmount() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $fixnum.Int64 get totalFee => $_getI64(3);
-  @$pb.TagNumber(4)
-  set totalFee($fixnum.Int64 v) { $_setInt64(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasTotalFee() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearTotalFee() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $fixnum.Int64 get totalAmountWithFee => $_getI64(4);
-  @$pb.TagNumber(5)
-  set totalAmountWithFee($fixnum.Int64 v) { $_setInt64(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasTotalAmountWithFee() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearTotalAmountWithFee() => clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.int get successfulTransfers => $_getIZ(5);
-  @$pb.TagNumber(6)
-  set successfulTransfers($core.int v) { $_setSignedInt32(5, v); }
-  @$pb.TagNumber(6)
-  $core.bool hasSuccessfulTransfers() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearSuccessfulTransfers() => clearField(6);
-
-  @$pb.TagNumber(7)
-  $core.int get failedTransfers => $_getIZ(6);
-  @$pb.TagNumber(7)
-  set failedTransfers($core.int v) { $_setSignedInt32(6, v); }
-  @$pb.TagNumber(7)
-  $core.bool hasFailedTransfers() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearFailedTransfers() => clearField(7);
-
-  @$pb.TagNumber(8)
-  $core.int get totalTransfers => $_getIZ(7);
-  @$pb.TagNumber(8)
-  set totalTransfers($core.int v) { $_setSignedInt32(7, v); }
-  @$pb.TagNumber(8)
-  $core.bool hasTotalTransfers() => $_has(7);
-  @$pb.TagNumber(8)
-  void clearTotalTransfers() => clearField(8);
-
-  @$pb.TagNumber(9)
-  $core.List<BatchTransferResult> get results => $_getList(8);
-
-  @$pb.TagNumber(10)
-  $42.Timestamp get createdAt => $_getN(9);
-  @$pb.TagNumber(10)
-  set createdAt($42.Timestamp v) { setField(10, v); }
-  @$pb.TagNumber(10)
-  $core.bool hasCreatedAt() => $_has(9);
-  @$pb.TagNumber(10)
-  void clearCreatedAt() => clearField(10);
-  @$pb.TagNumber(10)
-  $42.Timestamp ensureCreatedAt() => $_ensure(9);
-
-  @$pb.TagNumber(11)
-  $42.Timestamp get completedAt => $_getN(10);
-  @$pb.TagNumber(11)
-  set completedAt($42.Timestamp v) { setField(11, v); }
-  @$pb.TagNumber(11)
-  $core.bool hasCompletedAt() => $_has(10);
-  @$pb.TagNumber(11)
-  void clearCompletedAt() => clearField(11);
-  @$pb.TagNumber(11)
-  $42.Timestamp ensureCompletedAt() => $_ensure(10);
-}
-
-/// Request message for getting batch transfer status
-class GetBatchTransferStatusRequest extends $pb.GeneratedMessage {
-  factory GetBatchTransferStatusRequest({
-    $fixnum.Int64? batchId,
-  }) {
-    final $result = create();
-    if (batchId != null) {
-      $result.batchId = batchId;
-    }
-    return $result;
-  }
-  GetBatchTransferStatusRequest._() : super();
-  factory GetBatchTransferStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetBatchTransferStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBatchTransferStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'batch_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetBatchTransferStatusRequest clone() => GetBatchTransferStatusRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetBatchTransferStatusRequest copyWith(void Function(GetBatchTransferStatusRequest) updates) => super.copyWith((message) => updates(message as GetBatchTransferStatusRequest)) as GetBatchTransferStatusRequest;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetBatchTransferStatusRequest create() => GetBatchTransferStatusRequest._();
-  GetBatchTransferStatusRequest createEmptyInstance() => create();
-  static $pb.PbList<GetBatchTransferStatusRequest> createRepeated() => $pb.PbList<GetBatchTransferStatusRequest>();
-  @$core.pragma('dart2js:noInline')
-  static GetBatchTransferStatusRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchTransferStatusRequest>(create);
-  static GetBatchTransferStatusRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get batchId => $_getI64(0);
-  @$pb.TagNumber(1)
-  set batchId($fixnum.Int64 v) { $_setInt64(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasBatchId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearBatchId() => clearField(1);
-}
-
-/// Response message for getting batch transfer status (same as initiate response)
-class GetBatchTransferStatusResponse extends $pb.GeneratedMessage {
-  factory GetBatchTransferStatusResponse({
-    $fixnum.Int64? batchId,
-    $core.String? status,
-    $fixnum.Int64? totalAmount,
-    $fixnum.Int64? totalFee,
-    $fixnum.Int64? totalAmountWithFee,
-    $core.int? successfulTransfers,
-    $core.int? failedTransfers,
-    $core.int? totalTransfers,
-    $core.Iterable<BatchTransferResult>? results,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? completedAt,
-  }) {
-    final $result = create();
-    if (batchId != null) {
-      $result.batchId = batchId;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (totalAmount != null) {
-      $result.totalAmount = totalAmount;
-    }
-    if (totalFee != null) {
-      $result.totalFee = totalFee;
-    }
-    if (totalAmountWithFee != null) {
-      $result.totalAmountWithFee = totalAmountWithFee;
-    }
-    if (successfulTransfers != null) {
-      $result.successfulTransfers = successfulTransfers;
-    }
-    if (failedTransfers != null) {
-      $result.failedTransfers = failedTransfers;
-    }
-    if (totalTransfers != null) {
-      $result.totalTransfers = totalTransfers;
-    }
-    if (results != null) {
-      $result.results.addAll(results);
-    }
-    if (createdAt != null) {
-      $result.createdAt = createdAt;
-    }
-    if (completedAt != null) {
-      $result.completedAt = completedAt;
-    }
-    return $result;
-  }
-  GetBatchTransferStatusResponse._() : super();
-  factory GetBatchTransferStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetBatchTransferStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBatchTransferStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'batchId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, _omitFieldNames ? '' : 'status')
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'totalFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'totalAmountWithFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(6, _omitFieldNames ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'failedTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(8, _omitFieldNames ? '' : 'totalTransfers', $pb.PbFieldType.O3)
-    ..pc<BatchTransferResult>(9, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResult.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetBatchTransferStatusResponse clone() => GetBatchTransferStatusResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetBatchTransferStatusResponse copyWith(void Function(GetBatchTransferStatusResponse) updates) => super.copyWith((message) => updates(message as GetBatchTransferStatusResponse)) as GetBatchTransferStatusResponse;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetBatchTransferStatusResponse create() => GetBatchTransferStatusResponse._();
-  GetBatchTransferStatusResponse createEmptyInstance() => create();
-  static $pb.PbList<GetBatchTransferStatusResponse> createRepeated() => $pb.PbList<GetBatchTransferStatusResponse>();
-  @$core.pragma('dart2js:noInline')
-  static GetBatchTransferStatusResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchTransferStatusResponse>(create);
-  static GetBatchTransferStatusResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get batchId => $_getI64(0);
-  @$pb.TagNumber(1)
-  set batchId($fixnum.Int64 v) { $_setInt64(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasBatchId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearBatchId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get status => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set status($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasStatus() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearStatus() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $fixnum.Int64 get totalAmount => $_getI64(2);
-  @$pb.TagNumber(3)
-  set totalAmount($fixnum.Int64 v) { $_setInt64(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasTotalAmount() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearTotalAmount() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $fixnum.Int64 get totalFee => $_getI64(3);
-  @$pb.TagNumber(4)
-  set totalFee($fixnum.Int64 v) { $_setInt64(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasTotalFee() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearTotalFee() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $fixnum.Int64 get totalAmountWithFee => $_getI64(4);
-  @$pb.TagNumber(5)
-  set totalAmountWithFee($fixnum.Int64 v) { $_setInt64(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasTotalAmountWithFee() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearTotalAmountWithFee() => clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.int get successfulTransfers => $_getIZ(5);
-  @$pb.TagNumber(6)
-  set successfulTransfers($core.int v) { $_setSignedInt32(5, v); }
-  @$pb.TagNumber(6)
-  $core.bool hasSuccessfulTransfers() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearSuccessfulTransfers() => clearField(6);
-
-  @$pb.TagNumber(7)
-  $core.int get failedTransfers => $_getIZ(6);
-  @$pb.TagNumber(7)
-  set failedTransfers($core.int v) { $_setSignedInt32(6, v); }
-  @$pb.TagNumber(7)
-  $core.bool hasFailedTransfers() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearFailedTransfers() => clearField(7);
-
-  @$pb.TagNumber(8)
-  $core.int get totalTransfers => $_getIZ(7);
-  @$pb.TagNumber(8)
-  set totalTransfers($core.int v) { $_setSignedInt32(7, v); }
-  @$pb.TagNumber(8)
-  $core.bool hasTotalTransfers() => $_has(7);
-  @$pb.TagNumber(8)
-  void clearTotalTransfers() => clearField(8);
-
-  @$pb.TagNumber(9)
-  $core.List<BatchTransferResult> get results => $_getList(8);
-
-  @$pb.TagNumber(10)
-  $42.Timestamp get createdAt => $_getN(9);
-  @$pb.TagNumber(10)
-  set createdAt($42.Timestamp v) { setField(10, v); }
-  @$pb.TagNumber(10)
-  $core.bool hasCreatedAt() => $_has(9);
-  @$pb.TagNumber(10)
-  void clearCreatedAt() => clearField(10);
-  @$pb.TagNumber(10)
-  $42.Timestamp ensureCreatedAt() => $_ensure(9);
-
-  @$pb.TagNumber(11)
-  $42.Timestamp get completedAt => $_getN(10);
-  @$pb.TagNumber(11)
-  set completedAt($42.Timestamp v) { setField(11, v); }
-  @$pb.TagNumber(11)
-  $core.bool hasCompletedAt() => $_has(10);
-  @$pb.TagNumber(11)
-  void clearCompletedAt() => clearField(11);
-  @$pb.TagNumber(11)
-  $42.Timestamp ensureCompletedAt() => $_ensure(10);
-}
-
-/// Request message for getting batch transfer history
-class GetBatchTransferHistoryRequest extends $pb.GeneratedMessage {
-  factory GetBatchTransferHistoryRequest({
-    $core.int? page,
-    $core.int? pageSize,
-    $core.String? status,
-  }) {
-    final $result = create();
-    if (page != null) {
-      $result.page = page;
-    }
-    if (pageSize != null) {
-      $result.pageSize = pageSize;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    return $result;
-  }
-  GetBatchTransferHistoryRequest._() : super();
-  factory GetBatchTransferHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetBatchTransferHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBatchTransferHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(3, _omitFieldNames ? '' : 'status')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetBatchTransferHistoryRequest clone() => GetBatchTransferHistoryRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetBatchTransferHistoryRequest copyWith(void Function(GetBatchTransferHistoryRequest) updates) => super.copyWith((message) => updates(message as GetBatchTransferHistoryRequest)) as GetBatchTransferHistoryRequest;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetBatchTransferHistoryRequest create() => GetBatchTransferHistoryRequest._();
-  GetBatchTransferHistoryRequest createEmptyInstance() => create();
-  static $pb.PbList<GetBatchTransferHistoryRequest> createRepeated() => $pb.PbList<GetBatchTransferHistoryRequest>();
-  @$core.pragma('dart2js:noInline')
-  static GetBatchTransferHistoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchTransferHistoryRequest>(create);
-  static GetBatchTransferHistoryRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.int get page => $_getIZ(0);
-  @$pb.TagNumber(1)
-  set page($core.int v) { $_setSignedInt32(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasPage() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearPage() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.int get pageSize => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set pageSize($core.int v) { $_setSignedInt32(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPageSize() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPageSize() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get status => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set status($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasStatus() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearStatus() => clearField(3);
-}
-
-/// Response message for getting batch transfer history
-class GetBatchTransferHistoryResponse extends $pb.GeneratedMessage {
-  factory GetBatchTransferHistoryResponse({
-    $core.Iterable<GetBatchTransferStatusResponse>? batches,
-    TransferPaginationInfo? pagination,
-  }) {
-    final $result = create();
-    if (batches != null) {
-      $result.batches.addAll(batches);
-    }
-    if (pagination != null) {
-      $result.pagination = pagination;
-    }
-    return $result;
-  }
-  GetBatchTransferHistoryResponse._() : super();
-  factory GetBatchTransferHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetBatchTransferHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBatchTransferHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<GetBatchTransferStatusResponse>(1, _omitFieldNames ? '' : 'batches', $pb.PbFieldType.PM, subBuilder: GetBatchTransferStatusResponse.create)
-    ..aOM<TransferPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: TransferPaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetBatchTransferHistoryResponse clone() => GetBatchTransferHistoryResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetBatchTransferHistoryResponse copyWith(void Function(GetBatchTransferHistoryResponse) updates) => super.copyWith((message) => updates(message as GetBatchTransferHistoryResponse)) as GetBatchTransferHistoryResponse;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetBatchTransferHistoryResponse create() => GetBatchTransferHistoryResponse._();
-  GetBatchTransferHistoryResponse createEmptyInstance() => create();
-  static $pb.PbList<GetBatchTransferHistoryResponse> createRepeated() => $pb.PbList<GetBatchTransferHistoryResponse>();
-  @$core.pragma('dart2js:noInline')
-  static GetBatchTransferHistoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchTransferHistoryResponse>(create);
-  static GetBatchTransferHistoryResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.List<GetBatchTransferStatusResponse> get batches => $_getList(0);
 
   @$pb.TagNumber(2)
   TransferPaginationInfo get pagination => $_getN(1);

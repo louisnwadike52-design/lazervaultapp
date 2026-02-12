@@ -1923,13 +1923,13 @@ class GenerateMemberCardRequest extends $pb.GeneratedMessage {
 
 class GenerateMemberCardResponse extends $pb.GeneratedMessage {
   factory GenerateMemberCardResponse({
-    AccountCard? card,
+    $core.String? cardId,
     FamilyMember? member,
     $core.String? message,
   }) {
     final $result = create();
-    if (card != null) {
-      $result.card = card;
+    if (cardId != null) {
+      $result.cardId = cardId;
     }
     if (member != null) {
       $result.member = member;
@@ -1944,7 +1944,7 @@ class GenerateMemberCardResponse extends $pb.GeneratedMessage {
   factory GenerateMemberCardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateMemberCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardId')
     ..aOM<FamilyMember>(2, _omitFieldNames ? '' : 'member', subBuilder: FamilyMember.create)
     ..aOS(3, _omitFieldNames ? '' : 'message')
     ..hasRequiredFields = false
@@ -1972,15 +1972,13 @@ class GenerateMemberCardResponse extends $pb.GeneratedMessage {
   static GenerateMemberCardResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  AccountCard get card => $_getN(0);
+  $core.String get cardId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set card(AccountCard v) { setField(1, v); }
+  set cardId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasCard() => $_has(0);
+  $core.bool hasCardId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearCard() => clearField(1);
-  @$pb.TagNumber(1)
-  AccountCard ensureCard() => $_ensure(0);
+  void clearCardId() => clearField(1);
 
   @$pb.TagNumber(2)
   FamilyMember get member => $_getN(1);
@@ -3660,40 +3658,6 @@ class FamilyMemberSpending extends $pb.GeneratedMessage {
   $core.bool hasTransactionCount() => $_has(4);
   @$pb.TagNumber(5)
   void clearTransactionCount() => clearField(5);
-}
-
-/// Import AccountCard from accounts.proto
-/// This is a placeholder - the actual definition is in accounts.proto
-class AccountCard extends $pb.GeneratedMessage {
-  factory AccountCard() => create();
-  AccountCard._() : super();
-  factory AccountCard.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AccountCard.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AccountCard', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  AccountCard clone() => AccountCard()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  AccountCard copyWith(void Function(AccountCard) updates) => super.copyWith((message) => updates(message as AccountCard)) as AccountCard;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static AccountCard create() => AccountCard._();
-  AccountCard createEmptyInstance() => create();
-  static $pb.PbList<AccountCard> createRepeated() => $pb.PbList<AccountCard>();
-  @$core.pragma('dart2js:noInline')
-  static AccountCard getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AccountCard>(create);
-  static AccountCard? _defaultInstance;
 }
 
 

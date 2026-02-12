@@ -11,62 +11,32 @@ class PurchaseGiftCardUseCase {
   Future<Either<Failure, GiftCard>> call({
     required String brandId,
     required double amount,
-    required String currency,
+    required String transactionId,
+    required String verificationToken,
+    int? productId,
     String? recipientEmail,
     String? recipientName,
-    String? message,
+    String? giftMessage,
+    String? senderName,
+    String? recipientPhone,
+    String? countryCode,
+    String? idempotencyKey,
+    int quantity = 1,
   }) async {
-    return await _repository.purchaseGiftCard(
+    return await _repository.buyGiftCard(
       brandId: brandId,
       amount: amount,
-      currency: currency,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+      productId: productId,
       recipientEmail: recipientEmail,
       recipientName: recipientName,
-      message: message,
+      giftMessage: giftMessage,
+      senderName: senderName,
+      recipientPhone: recipientPhone,
+      countryCode: countryCode,
+      idempotencyKey: idempotencyKey,
+      quantity: quantity,
     );
   }
 }
-
-class RedeemGiftCardUseCase {
-  final IGiftCardRepository _repository;
-
-  RedeemGiftCardUseCase(this._repository);
-
-  Future<Either<Failure, GiftCard>> call(String giftCardId, String code) async {
-    return await _repository.redeemGiftCard(giftCardId, code);
-  }
-}
-
-class SendGiftCardUseCase {
-  final IGiftCardRepository _repository;
-
-  SendGiftCardUseCase(this._repository);
-
-  Future<Either<Failure, GiftCard>> call({
-    required String giftCardId,
-    required String recipientEmail,
-    String? message,
-  }) async {
-    return await _repository.sendGiftCard(
-      giftCardId: giftCardId,
-      recipientEmail: recipientEmail,
-      message: message,
-    );
-  }
-}
-
-class SellGiftCardUseCase {
-  final IGiftCardRepository _repository;
-
-  SellGiftCardUseCase(this._repository);
-
-  Future<Either<Failure, GiftCard>> call({
-    required String giftCardId,
-    required double sellingPrice,
-  }) async {
-    return await _repository.sellGiftCard(
-      giftCardId: giftCardId,
-      sellingPrice: sellingPrice,
-    );
-  }
-} 

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 
-abstract class AutoSaveState extends Equatable {
+sealed class AutoSaveState extends Equatable {
   const AutoSaveState();
 
   @override
@@ -187,6 +187,59 @@ enum BulkOperationType {
   resume,
   delete,
   archive,
+}
+
+// Processing states for step-by-step feedback
+class AutoSaveRuleCreating extends AutoSaveState {
+  final String step;
+  final int currentStepIndex;
+  final int totalSteps;
+
+  const AutoSaveRuleCreating({
+    required this.step,
+    required this.currentStepIndex,
+    this.totalSteps = 4,
+  });
+
+  @override
+  List<Object?> get props => [step, currentStepIndex, totalSteps];
+}
+
+class AutoSaveTriggerProcessing extends AutoSaveState {
+  final String step;
+  final int currentStepIndex;
+  final int totalSteps;
+
+  const AutoSaveTriggerProcessing({
+    required this.step,
+    required this.currentStepIndex,
+    this.totalSteps = 4,
+  });
+
+  @override
+  List<Object?> get props => [step, currentStepIndex, totalSteps];
+}
+
+class AutoSaveTriggerQueued extends AutoSaveState {
+  final String message;
+
+  const AutoSaveTriggerQueued({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class AutoSaveDashboardLoaded extends AutoSaveState {
+  final AutoSaveStatisticsEntity statistics;
+  final List<AutoSaveRuleEntity> rules;
+
+  const AutoSaveDashboardLoaded({
+    required this.statistics,
+    required this.rules,
+  });
+
+  @override
+  List<Object?> get props => [statistics, rules];
 }
 
 class AutoSaveError extends AutoSaveState {

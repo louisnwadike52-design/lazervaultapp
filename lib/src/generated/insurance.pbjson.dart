@@ -51,8 +51,8 @@ final $typed_data.Uint8List getUserInsurancesRequestDescriptor = $convert.base64
 const GetUserInsurancesResponse$json = {
   '1': 'GetUserInsurancesResponse',
   '2': [
-    {'1': 'insurances', '3': 1, '4': 3, '5': 11, '6': '.insurance.Insurance', '10': 'insurances'},
-    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.insurance.InsurancePaginationInfo', '10': 'pagination'},
+    {'1': 'insurances', '3': 1, '4': 3, '5': 11, '6': '.pb.Insurance', '10': 'insurances'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.InsurancePaginationInfo', '10': 'pagination'},
     {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -60,10 +60,10 @@ const GetUserInsurancesResponse$json = {
 
 /// Descriptor for `GetUserInsurancesResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getUserInsurancesResponseDescriptor = $convert.base64Decode(
-    'ChlHZXRVc2VySW5zdXJhbmNlc1Jlc3BvbnNlEjQKCmluc3VyYW5jZXMYASADKAsyFC5pbnN1cm'
-    'FuY2UuSW5zdXJhbmNlUgppbnN1cmFuY2VzEkIKCnBhZ2luYXRpb24YAiABKAsyIi5pbnN1cmFu'
-    'Y2UuSW5zdXJhbmNlUGFnaW5hdGlvbkluZm9SCnBhZ2luYXRpb24SGAoHc3VjY2VzcxgDIAEoCF'
-    'IHc3VjY2VzcxIQCgNtc2cYBCABKAlSA21zZw==');
+    'ChlHZXRVc2VySW5zdXJhbmNlc1Jlc3BvbnNlEi0KCmluc3VyYW5jZXMYASADKAsyDS5wYi5Jbn'
+    'N1cmFuY2VSCmluc3VyYW5jZXMSOwoKcGFnaW5hdGlvbhgCIAEoCzIbLnBiLkluc3VyYW5jZVBh'
+    'Z2luYXRpb25JbmZvUgpwYWdpbmF0aW9uEhgKB3N1Y2Nlc3MYAyABKAhSB3N1Y2Nlc3MSEAoDbX'
+    'NnGAQgASgJUgNtc2c=');
 
 @$core.Deprecated('Use getInsuranceByIdRequestDescriptor instead')
 const GetInsuranceByIdRequest$json = {
@@ -81,7 +81,7 @@ final $typed_data.Uint8List getInsuranceByIdRequestDescriptor = $convert.base64D
 const GetInsuranceByIdResponse$json = {
   '1': 'GetInsuranceByIdResponse',
   '2': [
-    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.insurance.Insurance', '10': 'insurance'},
+    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.pb.Insurance', '10': 'insurance'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -89,28 +89,28 @@ const GetInsuranceByIdResponse$json = {
 
 /// Descriptor for `GetInsuranceByIdResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getInsuranceByIdResponseDescriptor = $convert.base64Decode(
-    'ChhHZXRJbnN1cmFuY2VCeUlkUmVzcG9uc2USMgoJaW5zdXJhbmNlGAEgASgLMhQuaW5zdXJhbm'
-    'NlLkluc3VyYW5jZVIJaW5zdXJhbmNlEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNn'
-    'GAMgASgJUgNtc2c=');
+    'ChhHZXRJbnN1cmFuY2VCeUlkUmVzcG9uc2USKwoJaW5zdXJhbmNlGAEgASgLMg0ucGIuSW5zdX'
+    'JhbmNlUglpbnN1cmFuY2USGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2VzcxIQCgNtc2cYAyABKAlS'
+    'A21zZw==');
 
 @$core.Deprecated('Use createInsuranceRequestDescriptor instead')
 const CreateInsuranceRequest$json = {
   '1': 'CreateInsuranceRequest',
   '2': [
-    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.insurance.Insurance', '10': 'insurance'},
+    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.pb.Insurance', '10': 'insurance'},
   ],
 };
 
 /// Descriptor for `CreateInsuranceRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createInsuranceRequestDescriptor = $convert.base64Decode(
-    'ChZDcmVhdGVJbnN1cmFuY2VSZXF1ZXN0EjIKCWluc3VyYW5jZRgBIAEoCzIULmluc3VyYW5jZS'
-    '5JbnN1cmFuY2VSCWluc3VyYW5jZQ==');
+    'ChZDcmVhdGVJbnN1cmFuY2VSZXF1ZXN0EisKCWluc3VyYW5jZRgBIAEoCzINLnBiLkluc3VyYW'
+    '5jZVIJaW5zdXJhbmNl');
 
 @$core.Deprecated('Use createInsuranceResponseDescriptor instead')
 const CreateInsuranceResponse$json = {
   '1': 'CreateInsuranceResponse',
   '2': [
-    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.insurance.Insurance', '10': 'insurance'},
+    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.pb.Insurance', '10': 'insurance'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -118,28 +118,28 @@ const CreateInsuranceResponse$json = {
 
 /// Descriptor for `CreateInsuranceResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createInsuranceResponseDescriptor = $convert.base64Decode(
-    'ChdDcmVhdGVJbnN1cmFuY2VSZXNwb25zZRIyCglpbnN1cmFuY2UYASABKAsyFC5pbnN1cmFuY2'
-    'UuSW5zdXJhbmNlUglpbnN1cmFuY2USGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2VzcxIQCgNtc2cY'
-    'AyABKAlSA21zZw==');
+    'ChdDcmVhdGVJbnN1cmFuY2VSZXNwb25zZRIrCglpbnN1cmFuY2UYASABKAsyDS5wYi5JbnN1cm'
+    'FuY2VSCWluc3VyYW5jZRIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNzEhAKA21zZxgDIAEoCVID'
+    'bXNn');
 
 @$core.Deprecated('Use updateInsuranceRequestDescriptor instead')
 const UpdateInsuranceRequest$json = {
   '1': 'UpdateInsuranceRequest',
   '2': [
-    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.insurance.Insurance', '10': 'insurance'},
+    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.pb.Insurance', '10': 'insurance'},
   ],
 };
 
 /// Descriptor for `UpdateInsuranceRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List updateInsuranceRequestDescriptor = $convert.base64Decode(
-    'ChZVcGRhdGVJbnN1cmFuY2VSZXF1ZXN0EjIKCWluc3VyYW5jZRgBIAEoCzIULmluc3VyYW5jZS'
-    '5JbnN1cmFuY2VSCWluc3VyYW5jZQ==');
+    'ChZVcGRhdGVJbnN1cmFuY2VSZXF1ZXN0EisKCWluc3VyYW5jZRgBIAEoCzINLnBiLkluc3VyYW'
+    '5jZVIJaW5zdXJhbmNl');
 
 @$core.Deprecated('Use updateInsuranceResponseDescriptor instead')
 const UpdateInsuranceResponse$json = {
   '1': 'UpdateInsuranceResponse',
   '2': [
-    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.insurance.Insurance', '10': 'insurance'},
+    {'1': 'insurance', '3': 1, '4': 1, '5': 11, '6': '.pb.Insurance', '10': 'insurance'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -147,9 +147,9 @@ const UpdateInsuranceResponse$json = {
 
 /// Descriptor for `UpdateInsuranceResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List updateInsuranceResponseDescriptor = $convert.base64Decode(
-    'ChdVcGRhdGVJbnN1cmFuY2VSZXNwb25zZRIyCglpbnN1cmFuY2UYASABKAsyFC5pbnN1cmFuY2'
-    'UuSW5zdXJhbmNlUglpbnN1cmFuY2USGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2VzcxIQCgNtc2cY'
-    'AyABKAlSA21zZw==');
+    'ChdVcGRhdGVJbnN1cmFuY2VSZXNwb25zZRIrCglpbnN1cmFuY2UYASABKAsyDS5wYi5JbnN1cm'
+    'FuY2VSCWluc3VyYW5jZRIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNzEhAKA21zZxgDIAEoCVID'
+    'bXNn');
 
 @$core.Deprecated('Use deleteInsuranceRequestDescriptor instead')
 const DeleteInsuranceRequest$json = {
@@ -196,8 +196,8 @@ final $typed_data.Uint8List searchInsurancesRequestDescriptor = $convert.base64D
 const SearchInsurancesResponse$json = {
   '1': 'SearchInsurancesResponse',
   '2': [
-    {'1': 'insurances', '3': 1, '4': 3, '5': 11, '6': '.insurance.Insurance', '10': 'insurances'},
-    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.insurance.InsurancePaginationInfo', '10': 'pagination'},
+    {'1': 'insurances', '3': 1, '4': 3, '5': 11, '6': '.pb.Insurance', '10': 'insurances'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.InsurancePaginationInfo', '10': 'pagination'},
     {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -205,10 +205,10 @@ const SearchInsurancesResponse$json = {
 
 /// Descriptor for `SearchInsurancesResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List searchInsurancesResponseDescriptor = $convert.base64Decode(
-    'ChhTZWFyY2hJbnN1cmFuY2VzUmVzcG9uc2USNAoKaW5zdXJhbmNlcxgBIAMoCzIULmluc3VyYW'
-    '5jZS5JbnN1cmFuY2VSCmluc3VyYW5jZXMSQgoKcGFnaW5hdGlvbhgCIAEoCzIiLmluc3VyYW5j'
-    'ZS5JbnN1cmFuY2VQYWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbhIYCgdzdWNjZXNzGAMgASgIUg'
-    'dzdWNjZXNzEhAKA21zZxgEIAEoCVIDbXNn');
+    'ChhTZWFyY2hJbnN1cmFuY2VzUmVzcG9uc2USLQoKaW5zdXJhbmNlcxgBIAMoCzINLnBiLkluc3'
+    'VyYW5jZVIKaW5zdXJhbmNlcxI7CgpwYWdpbmF0aW9uGAIgASgLMhsucGIuSW5zdXJhbmNlUGFn'
+    'aW5hdGlvbkluZm9SCnBhZ2luYXRpb24SGAoHc3VjY2VzcxgDIAEoCFIHc3VjY2VzcxIQCgNtc2'
+    'cYBCABKAlSA21zZw==');
 
 @$core.Deprecated('Use getInsurancePaymentsRequestDescriptor instead')
 const GetInsurancePaymentsRequest$json = {
@@ -229,8 +229,8 @@ final $typed_data.Uint8List getInsurancePaymentsRequestDescriptor = $convert.bas
 const GetInsurancePaymentsResponse$json = {
   '1': 'GetInsurancePaymentsResponse',
   '2': [
-    {'1': 'payments', '3': 1, '4': 3, '5': 11, '6': '.insurance.InsurancePayment', '10': 'payments'},
-    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.insurance.InsurancePaginationInfo', '10': 'pagination'},
+    {'1': 'payments', '3': 1, '4': 3, '5': 11, '6': '.pb.InsurancePayment', '10': 'payments'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.InsurancePaginationInfo', '10': 'pagination'},
     {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -238,10 +238,10 @@ const GetInsurancePaymentsResponse$json = {
 
 /// Descriptor for `GetInsurancePaymentsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getInsurancePaymentsResponseDescriptor = $convert.base64Decode(
-    'ChxHZXRJbnN1cmFuY2VQYXltZW50c1Jlc3BvbnNlEjcKCHBheW1lbnRzGAEgAygLMhsuaW5zdX'
-    'JhbmNlLkluc3VyYW5jZVBheW1lbnRSCHBheW1lbnRzEkIKCnBhZ2luYXRpb24YAiABKAsyIi5p'
-    'bnN1cmFuY2UuSW5zdXJhbmNlUGFnaW5hdGlvbkluZm9SCnBhZ2luYXRpb24SGAoHc3VjY2Vzcx'
-    'gDIAEoCFIHc3VjY2VzcxIQCgNtc2cYBCABKAlSA21zZw==');
+    'ChxHZXRJbnN1cmFuY2VQYXltZW50c1Jlc3BvbnNlEjAKCHBheW1lbnRzGAEgAygLMhQucGIuSW'
+    '5zdXJhbmNlUGF5bWVudFIIcGF5bWVudHMSOwoKcGFnaW5hdGlvbhgCIAEoCzIbLnBiLkluc3Vy'
+    'YW5jZVBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9uEhgKB3N1Y2Nlc3MYAyABKAhSB3N1Y2Nlc3'
+    'MSEAoDbXNnGAQgASgJUgNtc2c=');
 
 @$core.Deprecated('Use getUserPaymentsRequestDescriptor instead')
 const GetUserPaymentsRequest$json = {
@@ -261,8 +261,8 @@ final $typed_data.Uint8List getUserPaymentsRequestDescriptor = $convert.base64De
 const GetUserPaymentsResponse$json = {
   '1': 'GetUserPaymentsResponse',
   '2': [
-    {'1': 'payments', '3': 1, '4': 3, '5': 11, '6': '.insurance.InsurancePayment', '10': 'payments'},
-    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.insurance.InsurancePaginationInfo', '10': 'pagination'},
+    {'1': 'payments', '3': 1, '4': 3, '5': 11, '6': '.pb.InsurancePayment', '10': 'payments'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.InsurancePaginationInfo', '10': 'pagination'},
     {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -270,29 +270,29 @@ const GetUserPaymentsResponse$json = {
 
 /// Descriptor for `GetUserPaymentsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getUserPaymentsResponseDescriptor = $convert.base64Decode(
-    'ChdHZXRVc2VyUGF5bWVudHNSZXNwb25zZRI3CghwYXltZW50cxgBIAMoCzIbLmluc3VyYW5jZS'
-    '5JbnN1cmFuY2VQYXltZW50UghwYXltZW50cxJCCgpwYWdpbmF0aW9uGAIgASgLMiIuaW5zdXJh'
-    'bmNlLkluc3VyYW5jZVBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9uEhgKB3N1Y2Nlc3MYAyABKA'
-    'hSB3N1Y2Nlc3MSEAoDbXNnGAQgASgJUgNtc2c=');
+    'ChdHZXRVc2VyUGF5bWVudHNSZXNwb25zZRIwCghwYXltZW50cxgBIAMoCzIULnBiLkluc3VyYW'
+    '5jZVBheW1lbnRSCHBheW1lbnRzEjsKCnBhZ2luYXRpb24YAiABKAsyGy5wYi5JbnN1cmFuY2VQ'
+    'YWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbhIYCgdzdWNjZXNzGAMgASgIUgdzdWNjZXNzEhAKA2'
+    '1zZxgEIAEoCVIDbXNn');
 
 @$core.Deprecated('Use createPaymentRequestDescriptor instead')
 const CreatePaymentRequest$json = {
   '1': 'CreatePaymentRequest',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsurancePayment', '10': 'payment'},
+    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.pb.InsurancePayment', '10': 'payment'},
   ],
 };
 
 /// Descriptor for `CreatePaymentRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createPaymentRequestDescriptor = $convert.base64Decode(
-    'ChRDcmVhdGVQYXltZW50UmVxdWVzdBI1CgdwYXltZW50GAEgASgLMhsuaW5zdXJhbmNlLkluc3'
-    'VyYW5jZVBheW1lbnRSB3BheW1lbnQ=');
+    'ChRDcmVhdGVQYXltZW50UmVxdWVzdBIuCgdwYXltZW50GAEgASgLMhQucGIuSW5zdXJhbmNlUG'
+    'F5bWVudFIHcGF5bWVudA==');
 
 @$core.Deprecated('Use createPaymentResponseDescriptor instead')
 const CreatePaymentResponse$json = {
   '1': 'CreatePaymentResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsurancePayment', '10': 'payment'},
+    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.pb.InsurancePayment', '10': 'payment'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -300,9 +300,9 @@ const CreatePaymentResponse$json = {
 
 /// Descriptor for `CreatePaymentResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createPaymentResponseDescriptor = $convert.base64Decode(
-    'ChVDcmVhdGVQYXltZW50UmVzcG9uc2USNQoHcGF5bWVudBgBIAEoCzIbLmluc3VyYW5jZS5Jbn'
-    'N1cmFuY2VQYXltZW50UgdwYXltZW50EhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNn'
-    'GAMgASgJUgNtc2c=');
+    'ChVDcmVhdGVQYXltZW50UmVzcG9uc2USLgoHcGF5bWVudBgBIAEoCzIULnBiLkluc3VyYW5jZV'
+    'BheW1lbnRSB3BheW1lbnQSGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2VzcxIQCgNtc2cYAyABKAlS'
+    'A21zZw==');
 
 @$core.Deprecated('Use processPaymentRequestDescriptor instead')
 const ProcessPaymentRequest$json = {
@@ -310,7 +310,7 @@ const ProcessPaymentRequest$json = {
   '2': [
     {'1': 'payment_id', '3': 1, '4': 1, '5': 9, '10': 'paymentId'},
     {'1': 'payment_method', '3': 2, '4': 1, '5': 9, '10': 'paymentMethod'},
-    {'1': 'payment_details', '3': 3, '4': 3, '5': 11, '6': '.insurance.ProcessPaymentRequest.PaymentDetailsEntry', '10': 'paymentDetails'},
+    {'1': 'payment_details', '3': 3, '4': 3, '5': 11, '6': '.pb.ProcessPaymentRequest.PaymentDetailsEntry', '10': 'paymentDetails'},
   ],
   '3': [ProcessPaymentRequest_PaymentDetailsEntry$json],
 };
@@ -328,16 +328,16 @@ const ProcessPaymentRequest_PaymentDetailsEntry$json = {
 /// Descriptor for `ProcessPaymentRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List processPaymentRequestDescriptor = $convert.base64Decode(
     'ChVQcm9jZXNzUGF5bWVudFJlcXVlc3QSHQoKcGF5bWVudF9pZBgBIAEoCVIJcGF5bWVudElkEi'
-    'UKDnBheW1lbnRfbWV0aG9kGAIgASgJUg1wYXltZW50TWV0aG9kEl0KD3BheW1lbnRfZGV0YWls'
-    'cxgDIAMoCzI0Lmluc3VyYW5jZS5Qcm9jZXNzUGF5bWVudFJlcXVlc3QuUGF5bWVudERldGFpbH'
-    'NFbnRyeVIOcGF5bWVudERldGFpbHMaQQoTUGF5bWVudERldGFpbHNFbnRyeRIQCgNrZXkYASAB'
-    'KAlSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
+    'UKDnBheW1lbnRfbWV0aG9kGAIgASgJUg1wYXltZW50TWV0aG9kElYKD3BheW1lbnRfZGV0YWls'
+    'cxgDIAMoCzItLnBiLlByb2Nlc3NQYXltZW50UmVxdWVzdC5QYXltZW50RGV0YWlsc0VudHJ5Ug'
+    '5wYXltZW50RGV0YWlscxpBChNQYXltZW50RGV0YWlsc0VudHJ5EhAKA2tleRgBIAEoCVIDa2V5'
+    'EhQKBXZhbHVlGAIgASgJUgV2YWx1ZToCOAE=');
 
 @$core.Deprecated('Use processPaymentResponseDescriptor instead')
 const ProcessPaymentResponse$json = {
   '1': 'ProcessPaymentResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsurancePayment', '10': 'payment'},
+    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.pb.InsurancePayment', '10': 'payment'},
     {'1': 'transaction_id', '3': 2, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'reference_number', '3': 3, '4': 1, '5': 9, '10': 'referenceNumber'},
     {'1': 'receipt_url', '3': 4, '4': 1, '5': 9, '10': 'receiptUrl'},
@@ -348,11 +348,11 @@ const ProcessPaymentResponse$json = {
 
 /// Descriptor for `ProcessPaymentResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List processPaymentResponseDescriptor = $convert.base64Decode(
-    'ChZQcm9jZXNzUGF5bWVudFJlc3BvbnNlEjUKB3BheW1lbnQYASABKAsyGy5pbnN1cmFuY2UuSW'
-    '5zdXJhbmNlUGF5bWVudFIHcGF5bWVudBIlCg50cmFuc2FjdGlvbl9pZBgCIAEoCVINdHJhbnNh'
-    'Y3Rpb25JZBIpChByZWZlcmVuY2VfbnVtYmVyGAMgASgJUg9yZWZlcmVuY2VOdW1iZXISHwoLcm'
-    'VjZWlwdF91cmwYBCABKAlSCnJlY2VpcHRVcmwSGAoHc3VjY2VzcxgFIAEoCFIHc3VjY2VzcxIQ'
-    'CgNtc2cYBiABKAlSA21zZw==');
+    'ChZQcm9jZXNzUGF5bWVudFJlc3BvbnNlEi4KB3BheW1lbnQYASABKAsyFC5wYi5JbnN1cmFuY2'
+    'VQYXltZW50UgdwYXltZW50EiUKDnRyYW5zYWN0aW9uX2lkGAIgASgJUg10cmFuc2FjdGlvbklk'
+    'EikKEHJlZmVyZW5jZV9udW1iZXIYAyABKAlSD3JlZmVyZW5jZU51bWJlchIfCgtyZWNlaXB0X3'
+    'VybBgEIAEoCVIKcmVjZWlwdFVybBIYCgdzdWNjZXNzGAUgASgIUgdzdWNjZXNzEhAKA21zZxgG'
+    'IAEoCVIDbXNn');
 
 @$core.Deprecated('Use getPaymentByIdRequestDescriptor instead')
 const GetPaymentByIdRequest$json = {
@@ -370,7 +370,7 @@ final $typed_data.Uint8List getPaymentByIdRequestDescriptor = $convert.base64Dec
 const GetPaymentByIdResponse$json = {
   '1': 'GetPaymentByIdResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsurancePayment', '10': 'payment'},
+    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.pb.InsurancePayment', '10': 'payment'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -378,9 +378,9 @@ const GetPaymentByIdResponse$json = {
 
 /// Descriptor for `GetPaymentByIdResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getPaymentByIdResponseDescriptor = $convert.base64Decode(
-    'ChZHZXRQYXltZW50QnlJZFJlc3BvbnNlEjUKB3BheW1lbnQYASABKAsyGy5pbnN1cmFuY2UuSW'
-    '5zdXJhbmNlUGF5bWVudFIHcGF5bWVudBIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNzEhAKA21z'
-    'ZxgDIAEoCVIDbXNn');
+    'ChZHZXRQYXltZW50QnlJZFJlc3BvbnNlEi4KB3BheW1lbnQYASABKAsyFC5wYi5JbnN1cmFuY2'
+    'VQYXltZW50UgdwYXltZW50EhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNnGAMgASgJ'
+    'UgNtc2c=');
 
 @$core.Deprecated('Use getOverduePaymentsRequestDescriptor instead')
 const GetOverduePaymentsRequest$json = {
@@ -395,7 +395,7 @@ final $typed_data.Uint8List getOverduePaymentsRequestDescriptor = $convert.base6
 const GetOverduePaymentsResponse$json = {
   '1': 'GetOverduePaymentsResponse',
   '2': [
-    {'1': 'payments', '3': 1, '4': 3, '5': 11, '6': '.insurance.InsurancePayment', '10': 'payments'},
+    {'1': 'payments', '3': 1, '4': 3, '5': 11, '6': '.pb.InsurancePayment', '10': 'payments'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -403,9 +403,9 @@ const GetOverduePaymentsResponse$json = {
 
 /// Descriptor for `GetOverduePaymentsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getOverduePaymentsResponseDescriptor = $convert.base64Decode(
-    'ChpHZXRPdmVyZHVlUGF5bWVudHNSZXNwb25zZRI3CghwYXltZW50cxgBIAMoCzIbLmluc3VyYW'
-    '5jZS5JbnN1cmFuY2VQYXltZW50UghwYXltZW50cxIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNz'
-    'EhAKA21zZxgDIAEoCVIDbXNn');
+    'ChpHZXRPdmVyZHVlUGF5bWVudHNSZXNwb25zZRIwCghwYXltZW50cxgBIAMoCzIULnBiLkluc3'
+    'VyYW5jZVBheW1lbnRSCHBheW1lbnRzEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNn'
+    'GAMgASgJUgNtc2c=');
 
 @$core.Deprecated('Use getInsuranceClaimsRequestDescriptor instead')
 const GetInsuranceClaimsRequest$json = {
@@ -426,8 +426,8 @@ final $typed_data.Uint8List getInsuranceClaimsRequestDescriptor = $convert.base6
 const GetInsuranceClaimsResponse$json = {
   '1': 'GetInsuranceClaimsResponse',
   '2': [
-    {'1': 'claims', '3': 1, '4': 3, '5': 11, '6': '.insurance.InsuranceClaim', '10': 'claims'},
-    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.insurance.InsurancePaginationInfo', '10': 'pagination'},
+    {'1': 'claims', '3': 1, '4': 3, '5': 11, '6': '.pb.InsuranceClaim', '10': 'claims'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.InsurancePaginationInfo', '10': 'pagination'},
     {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -435,10 +435,10 @@ const GetInsuranceClaimsResponse$json = {
 
 /// Descriptor for `GetInsuranceClaimsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getInsuranceClaimsResponseDescriptor = $convert.base64Decode(
-    'ChpHZXRJbnN1cmFuY2VDbGFpbXNSZXNwb25zZRIxCgZjbGFpbXMYASADKAsyGS5pbnN1cmFuY2'
-    'UuSW5zdXJhbmNlQ2xhaW1SBmNsYWltcxJCCgpwYWdpbmF0aW9uGAIgASgLMiIuaW5zdXJhbmNl'
-    'Lkluc3VyYW5jZVBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9uEhgKB3N1Y2Nlc3MYAyABKAhSB3'
-    'N1Y2Nlc3MSEAoDbXNnGAQgASgJUgNtc2c=');
+    'ChpHZXRJbnN1cmFuY2VDbGFpbXNSZXNwb25zZRIqCgZjbGFpbXMYASADKAsyEi5wYi5JbnN1cm'
+    'FuY2VDbGFpbVIGY2xhaW1zEjsKCnBhZ2luYXRpb24YAiABKAsyGy5wYi5JbnN1cmFuY2VQYWdp'
+    'bmF0aW9uSW5mb1IKcGFnaW5hdGlvbhIYCgdzdWNjZXNzGAMgASgIUgdzdWNjZXNzEhAKA21zZx'
+    'gEIAEoCVIDbXNn');
 
 @$core.Deprecated('Use getUserClaimsRequestDescriptor instead')
 const GetUserClaimsRequest$json = {
@@ -458,8 +458,8 @@ final $typed_data.Uint8List getUserClaimsRequestDescriptor = $convert.base64Deco
 const GetUserClaimsResponse$json = {
   '1': 'GetUserClaimsResponse',
   '2': [
-    {'1': 'claims', '3': 1, '4': 3, '5': 11, '6': '.insurance.InsuranceClaim', '10': 'claims'},
-    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.insurance.InsurancePaginationInfo', '10': 'pagination'},
+    {'1': 'claims', '3': 1, '4': 3, '5': 11, '6': '.pb.InsuranceClaim', '10': 'claims'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.InsurancePaginationInfo', '10': 'pagination'},
     {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -467,29 +467,29 @@ const GetUserClaimsResponse$json = {
 
 /// Descriptor for `GetUserClaimsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getUserClaimsResponseDescriptor = $convert.base64Decode(
-    'ChVHZXRVc2VyQ2xhaW1zUmVzcG9uc2USMQoGY2xhaW1zGAEgAygLMhkuaW5zdXJhbmNlLkluc3'
-    'VyYW5jZUNsYWltUgZjbGFpbXMSQgoKcGFnaW5hdGlvbhgCIAEoCzIiLmluc3VyYW5jZS5JbnN1'
-    'cmFuY2VQYWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbhIYCgdzdWNjZXNzGAMgASgIUgdzdWNjZX'
-    'NzEhAKA21zZxgEIAEoCVIDbXNn');
+    'ChVHZXRVc2VyQ2xhaW1zUmVzcG9uc2USKgoGY2xhaW1zGAEgAygLMhIucGIuSW5zdXJhbmNlQ2'
+    'xhaW1SBmNsYWltcxI7CgpwYWdpbmF0aW9uGAIgASgLMhsucGIuSW5zdXJhbmNlUGFnaW5hdGlv'
+    'bkluZm9SCnBhZ2luYXRpb24SGAoHc3VjY2VzcxgDIAEoCFIHc3VjY2VzcxIQCgNtc2cYBCABKA'
+    'lSA21zZw==');
 
 @$core.Deprecated('Use createClaimRequestDescriptor instead')
 const CreateClaimRequest$json = {
   '1': 'CreateClaimRequest',
   '2': [
-    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsuranceClaim', '10': 'claim'},
+    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.pb.InsuranceClaim', '10': 'claim'},
   ],
 };
 
 /// Descriptor for `CreateClaimRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createClaimRequestDescriptor = $convert.base64Decode(
-    'ChJDcmVhdGVDbGFpbVJlcXVlc3QSLwoFY2xhaW0YASABKAsyGS5pbnN1cmFuY2UuSW5zdXJhbm'
-    'NlQ2xhaW1SBWNsYWlt');
+    'ChJDcmVhdGVDbGFpbVJlcXVlc3QSKAoFY2xhaW0YASABKAsyEi5wYi5JbnN1cmFuY2VDbGFpbV'
+    'IFY2xhaW0=');
 
 @$core.Deprecated('Use createClaimResponseDescriptor instead')
 const CreateClaimResponse$json = {
   '1': 'CreateClaimResponse',
   '2': [
-    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsuranceClaim', '10': 'claim'},
+    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.pb.InsuranceClaim', '10': 'claim'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -497,28 +497,27 @@ const CreateClaimResponse$json = {
 
 /// Descriptor for `CreateClaimResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createClaimResponseDescriptor = $convert.base64Decode(
-    'ChNDcmVhdGVDbGFpbVJlc3BvbnNlEi8KBWNsYWltGAEgASgLMhkuaW5zdXJhbmNlLkluc3VyYW'
-    '5jZUNsYWltUgVjbGFpbRIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNzEhAKA21zZxgDIAEoCVID'
-    'bXNn');
+    'ChNDcmVhdGVDbGFpbVJlc3BvbnNlEigKBWNsYWltGAEgASgLMhIucGIuSW5zdXJhbmNlQ2xhaW'
+    '1SBWNsYWltEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNnGAMgASgJUgNtc2c=');
 
 @$core.Deprecated('Use updateClaimRequestDescriptor instead')
 const UpdateClaimRequest$json = {
   '1': 'UpdateClaimRequest',
   '2': [
-    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsuranceClaim', '10': 'claim'},
+    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.pb.InsuranceClaim', '10': 'claim'},
   ],
 };
 
 /// Descriptor for `UpdateClaimRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List updateClaimRequestDescriptor = $convert.base64Decode(
-    'ChJVcGRhdGVDbGFpbVJlcXVlc3QSLwoFY2xhaW0YASABKAsyGS5pbnN1cmFuY2UuSW5zdXJhbm'
-    'NlQ2xhaW1SBWNsYWlt');
+    'ChJVcGRhdGVDbGFpbVJlcXVlc3QSKAoFY2xhaW0YASABKAsyEi5wYi5JbnN1cmFuY2VDbGFpbV'
+    'IFY2xhaW0=');
 
 @$core.Deprecated('Use updateClaimResponseDescriptor instead')
 const UpdateClaimResponse$json = {
   '1': 'UpdateClaimResponse',
   '2': [
-    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsuranceClaim', '10': 'claim'},
+    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.pb.InsuranceClaim', '10': 'claim'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -526,9 +525,8 @@ const UpdateClaimResponse$json = {
 
 /// Descriptor for `UpdateClaimResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List updateClaimResponseDescriptor = $convert.base64Decode(
-    'ChNVcGRhdGVDbGFpbVJlc3BvbnNlEi8KBWNsYWltGAEgASgLMhkuaW5zdXJhbmNlLkluc3VyYW'
-    '5jZUNsYWltUgVjbGFpbRIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNzEhAKA21zZxgDIAEoCVID'
-    'bXNn');
+    'ChNVcGRhdGVDbGFpbVJlc3BvbnNlEigKBWNsYWltGAEgASgLMhIucGIuSW5zdXJhbmNlQ2xhaW'
+    '1SBWNsYWltEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNnGAMgASgJUgNtc2c=');
 
 @$core.Deprecated('Use getClaimByIdRequestDescriptor instead')
 const GetClaimByIdRequest$json = {
@@ -546,7 +544,7 @@ final $typed_data.Uint8List getClaimByIdRequestDescriptor = $convert.base64Decod
 const GetClaimByIdResponse$json = {
   '1': 'GetClaimByIdResponse',
   '2': [
-    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.insurance.InsuranceClaim', '10': 'claim'},
+    {'1': 'claim', '3': 1, '4': 1, '5': 11, '6': '.pb.InsuranceClaim', '10': 'claim'},
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -554,9 +552,8 @@ const GetClaimByIdResponse$json = {
 
 /// Descriptor for `GetClaimByIdResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getClaimByIdResponseDescriptor = $convert.base64Decode(
-    'ChRHZXRDbGFpbUJ5SWRSZXNwb25zZRIvCgVjbGFpbRgBIAEoCzIZLmluc3VyYW5jZS5JbnN1cm'
-    'FuY2VDbGFpbVIFY2xhaW0SGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2VzcxIQCgNtc2cYAyABKAlS'
-    'A21zZw==');
+    'ChRHZXRDbGFpbUJ5SWRSZXNwb25zZRIoCgVjbGFpbRgBIAEoCzISLnBiLkluc3VyYW5jZUNsYW'
+    'ltUgVjbGFpbRIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNzEhAKA21zZxgDIAEoCVIDbXNn');
 
 @$core.Deprecated('Use generatePaymentReceiptRequestDescriptor instead')
 const GeneratePaymentReceiptRequest$json = {
@@ -607,7 +604,7 @@ const GetUserReceiptsResponse$json = {
   '1': 'GetUserReceiptsResponse',
   '2': [
     {'1': 'receipt_urls', '3': 1, '4': 3, '5': 9, '10': 'receiptUrls'},
-    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.insurance.InsurancePaginationInfo', '10': 'pagination'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.InsurancePaginationInfo', '10': 'pagination'},
     {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -616,9 +613,8 @@ const GetUserReceiptsResponse$json = {
 /// Descriptor for `GetUserReceiptsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getUserReceiptsResponseDescriptor = $convert.base64Decode(
     'ChdHZXRVc2VyUmVjZWlwdHNSZXNwb25zZRIhCgxyZWNlaXB0X3VybHMYASADKAlSC3JlY2VpcH'
-    'RVcmxzEkIKCnBhZ2luYXRpb24YAiABKAsyIi5pbnN1cmFuY2UuSW5zdXJhbmNlUGFnaW5hdGlv'
-    'bkluZm9SCnBhZ2luYXRpb24SGAoHc3VjY2VzcxgDIAEoCFIHc3VjY2VzcxIQCgNtc2cYBCABKA'
-    'lSA21zZw==');
+    'RVcmxzEjsKCnBhZ2luYXRpb24YAiABKAsyGy5wYi5JbnN1cmFuY2VQYWdpbmF0aW9uSW5mb1IK'
+    'cGFnaW5hdGlvbhIYCgdzdWNjZXNzGAMgASgIUgdzdWNjZXNzEhAKA21zZxgEIAEoCVIDbXNn');
 
 @$core.Deprecated('Use getInsuranceStatisticsRequestDescriptor instead')
 const GetInsuranceStatisticsRequest$json = {
@@ -638,7 +634,7 @@ const GetInsuranceStatisticsResponse$json = {
     {'1': 'expired_policies', '3': 3, '4': 1, '5': 5, '10': 'expiredPolicies'},
     {'1': 'total_coverage_amount', '3': 4, '4': 1, '5': 1, '10': 'totalCoverageAmount'},
     {'1': 'total_premium_amount', '3': 5, '4': 1, '5': 1, '10': 'totalPremiumAmount'},
-    {'1': 'policies_by_type', '3': 6, '4': 3, '5': 11, '6': '.insurance.GetInsuranceStatisticsResponse.PoliciesByTypeEntry', '10': 'policiesByType'},
+    {'1': 'policies_by_type', '3': 6, '4': 3, '5': 11, '6': '.pb.GetInsuranceStatisticsResponse.PoliciesByTypeEntry', '10': 'policiesByType'},
     {'1': 'success', '3': 7, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 8, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -661,11 +657,11 @@ final $typed_data.Uint8List getInsuranceStatisticsResponseDescriptor = $convert.
     'VSDXRvdGFsUG9saWNpZXMSJwoPYWN0aXZlX3BvbGljaWVzGAIgASgFUg5hY3RpdmVQb2xpY2ll'
     'cxIpChBleHBpcmVkX3BvbGljaWVzGAMgASgFUg9leHBpcmVkUG9saWNpZXMSMgoVdG90YWxfY2'
     '92ZXJhZ2VfYW1vdW50GAQgASgBUhN0b3RhbENvdmVyYWdlQW1vdW50EjAKFHRvdGFsX3ByZW1p'
-    'dW1fYW1vdW50GAUgASgBUhJ0b3RhbFByZW1pdW1BbW91bnQSZwoQcG9saWNpZXNfYnlfdHlwZR'
-    'gGIAMoCzI9Lmluc3VyYW5jZS5HZXRJbnN1cmFuY2VTdGF0aXN0aWNzUmVzcG9uc2UuUG9saWNp'
-    'ZXNCeVR5cGVFbnRyeVIOcG9saWNpZXNCeVR5cGUSGAoHc3VjY2VzcxgHIAEoCFIHc3VjY2Vzcx'
-    'IQCgNtc2cYCCABKAlSA21zZxpBChNQb2xpY2llc0J5VHlwZUVudHJ5EhAKA2tleRgBIAEoCVID'
-    'a2V5EhQKBXZhbHVlGAIgASgFUgV2YWx1ZToCOAE=');
+    'dW1fYW1vdW50GAUgASgBUhJ0b3RhbFByZW1pdW1BbW91bnQSYAoQcG9saWNpZXNfYnlfdHlwZR'
+    'gGIAMoCzI2LnBiLkdldEluc3VyYW5jZVN0YXRpc3RpY3NSZXNwb25zZS5Qb2xpY2llc0J5VHlw'
+    'ZUVudHJ5Ug5wb2xpY2llc0J5VHlwZRIYCgdzdWNjZXNzGAcgASgIUgdzdWNjZXNzEhAKA21zZx'
+    'gIIAEoCVIDbXNnGkEKE1BvbGljaWVzQnlUeXBlRW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoF'
+    'dmFsdWUYAiABKAVSBXZhbHVlOgI4AQ==');
 
 @$core.Deprecated('Use getPaymentStatisticsRequestDescriptor instead')
 const GetPaymentStatisticsRequest$json = {
@@ -691,7 +687,7 @@ const GetPaymentStatisticsResponse$json = {
     {'1': 'failed_payments', '3': 4, '4': 1, '5': 5, '10': 'failedPayments'},
     {'1': 'total_amount', '3': 5, '4': 1, '5': 1, '10': 'totalAmount'},
     {'1': 'completed_amount', '3': 6, '4': 1, '5': 1, '10': 'completedAmount'},
-    {'1': 'payments_by_method', '3': 7, '4': 3, '5': 11, '6': '.insurance.GetPaymentStatisticsResponse.PaymentsByMethodEntry', '10': 'paymentsByMethod'},
+    {'1': 'payments_by_method', '3': 7, '4': 3, '5': 11, '6': '.pb.GetPaymentStatisticsResponse.PaymentsByMethodEntry', '10': 'paymentsByMethod'},
     {'1': 'success', '3': 8, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 9, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -715,11 +711,343 @@ final $typed_data.Uint8List getPaymentStatisticsResponseDescriptor = $convert.ba
     'bWVudHMSKQoQcGVuZGluZ19wYXltZW50cxgDIAEoBVIPcGVuZGluZ1BheW1lbnRzEicKD2ZhaW'
     'xlZF9wYXltZW50cxgEIAEoBVIOZmFpbGVkUGF5bWVudHMSIQoMdG90YWxfYW1vdW50GAUgASgB'
     'Ugt0b3RhbEFtb3VudBIpChBjb21wbGV0ZWRfYW1vdW50GAYgASgBUg9jb21wbGV0ZWRBbW91bn'
-    'QSawoScGF5bWVudHNfYnlfbWV0aG9kGAcgAygLMj0uaW5zdXJhbmNlLkdldFBheW1lbnRTdGF0'
-    'aXN0aWNzUmVzcG9uc2UuUGF5bWVudHNCeU1ldGhvZEVudHJ5UhBwYXltZW50c0J5TWV0aG9kEh'
-    'gKB3N1Y2Nlc3MYCCABKAhSB3N1Y2Nlc3MSEAoDbXNnGAkgASgJUgNtc2caQwoVUGF5bWVudHNC'
-    'eU1ldGhvZEVudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgFUgV2YWx1ZToCOA'
-    'E=');
+    'QSZAoScGF5bWVudHNfYnlfbWV0aG9kGAcgAygLMjYucGIuR2V0UGF5bWVudFN0YXRpc3RpY3NS'
+    'ZXNwb25zZS5QYXltZW50c0J5TWV0aG9kRW50cnlSEHBheW1lbnRzQnlNZXRob2QSGAoHc3VjY2'
+    'VzcxgIIAEoCFIHc3VjY2VzcxIQCgNtc2cYCSABKAlSA21zZxpDChVQYXltZW50c0J5TWV0aG9k'
+    'RW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAiABKAVSBXZhbHVlOgI4AQ==');
+
+@$core.Deprecated('Use insuranceProductFormFieldDescriptor instead')
+const InsuranceProductFormField$json = {
+  '1': 'InsuranceProductFormField',
+  '2': [
+    {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'label', '3': 2, '4': 1, '5': 9, '10': 'label'},
+    {'1': 'type', '3': 3, '4': 1, '5': 9, '10': 'type'},
+    {'1': 'required', '3': 4, '4': 1, '5': 8, '10': 'required'},
+    {'1': 'options', '3': 5, '4': 3, '5': 9, '10': 'options'},
+    {'1': 'default_value', '3': 6, '4': 1, '5': 9, '10': 'defaultValue'},
+    {'1': 'validation_regex', '3': 7, '4': 1, '5': 9, '10': 'validationRegex'},
+    {'1': 'placeholder', '3': 8, '4': 1, '5': 9, '10': 'placeholder'},
+    {'1': 'description', '3': 9, '4': 1, '5': 9, '10': 'description'},
+  ],
+};
+
+/// Descriptor for `InsuranceProductFormField`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List insuranceProductFormFieldDescriptor = $convert.base64Decode(
+    'ChlJbnN1cmFuY2VQcm9kdWN0Rm9ybUZpZWxkEhIKBG5hbWUYASABKAlSBG5hbWUSFAoFbGFiZW'
+    'wYAiABKAlSBWxhYmVsEhIKBHR5cGUYAyABKAlSBHR5cGUSGgoIcmVxdWlyZWQYBCABKAhSCHJl'
+    'cXVpcmVkEhgKB29wdGlvbnMYBSADKAlSB29wdGlvbnMSIwoNZGVmYXVsdF92YWx1ZRgGIAEoCV'
+    'IMZGVmYXVsdFZhbHVlEikKEHZhbGlkYXRpb25fcmVnZXgYByABKAlSD3ZhbGlkYXRpb25SZWdl'
+    'eBIgCgtwbGFjZWhvbGRlchgIIAEoCVILcGxhY2Vob2xkZXISIAoLZGVzY3JpcHRpb24YCSABKA'
+    'lSC2Rlc2NyaXB0aW9u');
+
+@$core.Deprecated('Use insuranceProductDescriptor instead')
+const InsuranceProduct$json = {
+  '1': 'InsuranceProduct',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'category', '3': 4, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'provider_name', '3': 5, '4': 1, '5': 9, '10': 'providerName'},
+    {'1': 'provider_logo', '3': 6, '4': 1, '5': 9, '10': 'providerLogo'},
+    {'1': 'min_premium', '3': 7, '4': 1, '5': 1, '10': 'minPremium'},
+    {'1': 'max_premium', '3': 8, '4': 1, '5': 1, '10': 'maxPremium'},
+    {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'benefits', '3': 10, '4': 3, '5': 9, '10': 'benefits'},
+    {'1': 'terms_url', '3': 11, '4': 1, '5': 9, '10': 'termsUrl'},
+    {'1': 'metadata', '3': 12, '4': 3, '5': 11, '6': '.pb.InsuranceProduct.MetadataEntry', '10': 'metadata'},
+    {'1': 'form_fields', '3': 13, '4': 3, '5': 11, '6': '.pb.InsuranceProductFormField', '10': 'formFields'},
+    {'1': 'is_active', '3': 14, '4': 1, '5': 8, '10': 'isActive'},
+  ],
+  '3': [InsuranceProduct_MetadataEntry$json],
+};
+
+@$core.Deprecated('Use insuranceProductDescriptor instead')
+const InsuranceProduct_MetadataEntry$json = {
+  '1': 'MetadataEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `InsuranceProduct`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List insuranceProductDescriptor = $convert.base64Decode(
+    'ChBJbnN1cmFuY2VQcm9kdWN0Eg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEi'
+    'AKC2Rlc2NyaXB0aW9uGAMgASgJUgtkZXNjcmlwdGlvbhIaCghjYXRlZ29yeRgEIAEoCVIIY2F0'
+    'ZWdvcnkSIwoNcHJvdmlkZXJfbmFtZRgFIAEoCVIMcHJvdmlkZXJOYW1lEiMKDXByb3ZpZGVyX2'
+    'xvZ28YBiABKAlSDHByb3ZpZGVyTG9nbxIfCgttaW5fcHJlbWl1bRgHIAEoAVIKbWluUHJlbWl1'
+    'bRIfCgttYXhfcHJlbWl1bRgIIAEoAVIKbWF4UHJlbWl1bRIaCghjdXJyZW5jeRgJIAEoCVIIY3'
+    'VycmVuY3kSGgoIYmVuZWZpdHMYCiADKAlSCGJlbmVmaXRzEhsKCXRlcm1zX3VybBgLIAEoCVII'
+    'dGVybXNVcmwSPgoIbWV0YWRhdGEYDCADKAsyIi5wYi5JbnN1cmFuY2VQcm9kdWN0Lk1ldGFkYX'
+    'RhRW50cnlSCG1ldGFkYXRhEj4KC2Zvcm1fZmllbGRzGA0gAygLMh0ucGIuSW5zdXJhbmNlUHJv'
+    'ZHVjdEZvcm1GaWVsZFIKZm9ybUZpZWxkcxIbCglpc19hY3RpdmUYDiABKAhSCGlzQWN0aXZlGj'
+    'sKDU1ldGFkYXRhRW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVl'
+    'OgI4AQ==');
+
+@$core.Deprecated('Use insuranceCategoryDescriptor instead')
+const InsuranceCategory$json = {
+  '1': 'InsuranceCategory',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'icon', '3': 3, '4': 1, '5': 9, '10': 'icon'},
+    {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'product_count', '3': 5, '4': 1, '5': 5, '10': 'productCount'},
+  ],
+};
+
+/// Descriptor for `InsuranceCategory`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List insuranceCategoryDescriptor = $convert.base64Decode(
+    'ChFJbnN1cmFuY2VDYXRlZ29yeRIOCgJpZBgBIAEoCVICaWQSEgoEbmFtZRgCIAEoCVIEbmFtZR'
+    'ISCgRpY29uGAMgASgJUgRpY29uEiAKC2Rlc2NyaXB0aW9uGAQgASgJUgtkZXNjcmlwdGlvbhIj'
+    'Cg1wcm9kdWN0X2NvdW50GAUgASgFUgxwcm9kdWN0Q291bnQ=');
+
+@$core.Deprecated('Use insuranceQuoteDescriptor instead')
+const InsuranceQuote$json = {
+  '1': 'InsuranceQuote',
+  '2': [
+    {'1': 'quote_id', '3': 1, '4': 1, '5': 9, '10': 'quoteId'},
+    {'1': 'product_id', '3': 2, '4': 1, '5': 9, '10': 'productId'},
+    {'1': 'premium', '3': 3, '4': 1, '5': 1, '10': 'premium'},
+    {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'coverage_summary', '3': 5, '4': 1, '5': 9, '10': 'coverageSummary'},
+    {'1': 'coverage_items', '3': 6, '4': 3, '5': 9, '10': 'coverageItems'},
+    {'1': 'valid_until', '3': 7, '4': 1, '5': 9, '10': 'validUntil'},
+    {'1': 'quote_details', '3': 8, '4': 3, '5': 11, '6': '.pb.InsuranceQuote.QuoteDetailsEntry', '10': 'quoteDetails'},
+  ],
+  '3': [InsuranceQuote_QuoteDetailsEntry$json],
+};
+
+@$core.Deprecated('Use insuranceQuoteDescriptor instead')
+const InsuranceQuote_QuoteDetailsEntry$json = {
+  '1': 'QuoteDetailsEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `InsuranceQuote`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List insuranceQuoteDescriptor = $convert.base64Decode(
+    'Cg5JbnN1cmFuY2VRdW90ZRIZCghxdW90ZV9pZBgBIAEoCVIHcXVvdGVJZBIdCgpwcm9kdWN0X2'
+    'lkGAIgASgJUglwcm9kdWN0SWQSGAoHcHJlbWl1bRgDIAEoAVIHcHJlbWl1bRIaCghjdXJyZW5j'
+    'eRgEIAEoCVIIY3VycmVuY3kSKQoQY292ZXJhZ2Vfc3VtbWFyeRgFIAEoCVIPY292ZXJhZ2VTdW'
+    '1tYXJ5EiUKDmNvdmVyYWdlX2l0ZW1zGAYgAygJUg1jb3ZlcmFnZUl0ZW1zEh8KC3ZhbGlkX3Vu'
+    'dGlsGAcgASgJUgp2YWxpZFVudGlsEkkKDXF1b3RlX2RldGFpbHMYCCADKAsyJC5wYi5JbnN1cm'
+    'FuY2VRdW90ZS5RdW90ZURldGFpbHNFbnRyeVIMcXVvdGVEZXRhaWxzGj8KEVF1b3RlRGV0YWls'
+    'c0VudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgJUgV2YWx1ZToCOAE=');
+
+@$core.Deprecated('Use insurancePurchaseResultDescriptor instead')
+const InsurancePurchaseResult$json = {
+  '1': 'InsurancePurchaseResult',
+  '2': [
+    {'1': 'policy_id', '3': 1, '4': 1, '5': 9, '10': 'policyId'},
+    {'1': 'policy_number', '3': 2, '4': 1, '5': 9, '10': 'policyNumber'},
+    {'1': 'reference', '3': 3, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'provider_reference', '3': 5, '4': 1, '5': 9, '10': 'providerReference'},
+    {'1': 'insurance', '3': 6, '4': 1, '5': 11, '6': '.pb.Insurance', '10': 'insurance'},
+  ],
+};
+
+/// Descriptor for `InsurancePurchaseResult`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List insurancePurchaseResultDescriptor = $convert.base64Decode(
+    'ChdJbnN1cmFuY2VQdXJjaGFzZVJlc3VsdBIbCglwb2xpY3lfaWQYASABKAlSCHBvbGljeUlkEi'
+    'MKDXBvbGljeV9udW1iZXIYAiABKAlSDHBvbGljeU51bWJlchIcCglyZWZlcmVuY2UYAyABKAlS'
+    'CXJlZmVyZW5jZRIWCgZzdGF0dXMYBCABKAlSBnN0YXR1cxItChJwcm92aWRlcl9yZWZlcmVuY2'
+    'UYBSABKAlSEXByb3ZpZGVyUmVmZXJlbmNlEisKCWluc3VyYW5jZRgGIAEoCzINLnBiLkluc3Vy'
+    'YW5jZVIJaW5zdXJhbmNl');
+
+@$core.Deprecated('Use getInsuranceProductsRequestDescriptor instead')
+const GetInsuranceProductsRequest$json = {
+  '1': 'GetInsuranceProductsRequest',
+  '2': [
+    {'1': 'category', '3': 1, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'locale', '3': 2, '4': 1, '5': 9, '10': 'locale'},
+    {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'limit', '3': 4, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceProductsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceProductsRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRJbnN1cmFuY2VQcm9kdWN0c1JlcXVlc3QSGgoIY2F0ZWdvcnkYASABKAlSCGNhdGVnb3'
+    'J5EhYKBmxvY2FsZRgCIAEoCVIGbG9jYWxlEhIKBHBhZ2UYAyABKAVSBHBhZ2USFAoFbGltaXQY'
+    'BCABKAVSBWxpbWl0');
+
+@$core.Deprecated('Use getInsuranceProductsResponseDescriptor instead')
+const GetInsuranceProductsResponse$json = {
+  '1': 'GetInsuranceProductsResponse',
+  '2': [
+    {'1': 'products', '3': 1, '4': 3, '5': 11, '6': '.pb.InsuranceProduct', '10': 'products'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+    {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceProductsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceProductsResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRJbnN1cmFuY2VQcm9kdWN0c1Jlc3BvbnNlEjAKCHByb2R1Y3RzGAEgAygLMhQucGIuSW'
+    '5zdXJhbmNlUHJvZHVjdFIIcHJvZHVjdHMSFAoFdG90YWwYAiABKAVSBXRvdGFsEhgKB3N1Y2Nl'
+    'c3MYAyABKAhSB3N1Y2Nlc3MSEAoDbXNnGAQgASgJUgNtc2c=');
+
+@$core.Deprecated('Use getInsuranceCategoriesRequestDescriptor instead')
+const GetInsuranceCategoriesRequest$json = {
+  '1': 'GetInsuranceCategoriesRequest',
+  '2': [
+    {'1': 'locale', '3': 1, '4': 1, '5': 9, '10': 'locale'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceCategoriesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceCategoriesRequestDescriptor = $convert.base64Decode(
+    'Ch1HZXRJbnN1cmFuY2VDYXRlZ29yaWVzUmVxdWVzdBIWCgZsb2NhbGUYASABKAlSBmxvY2FsZQ'
+    '==');
+
+@$core.Deprecated('Use getInsuranceCategoriesResponseDescriptor instead')
+const GetInsuranceCategoriesResponse$json = {
+  '1': 'GetInsuranceCategoriesResponse',
+  '2': [
+    {'1': 'categories', '3': 1, '4': 3, '5': 11, '6': '.pb.InsuranceCategory', '10': 'categories'},
+    {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceCategoriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceCategoriesResponseDescriptor = $convert.base64Decode(
+    'Ch5HZXRJbnN1cmFuY2VDYXRlZ29yaWVzUmVzcG9uc2USNQoKY2F0ZWdvcmllcxgBIAMoCzIVLn'
+    'BiLkluc3VyYW5jZUNhdGVnb3J5UgpjYXRlZ29yaWVzEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nl'
+    'c3MSEAoDbXNnGAMgASgJUgNtc2c=');
+
+@$core.Deprecated('Use getInsuranceQuoteRequestDescriptor instead')
+const GetInsuranceQuoteRequest$json = {
+  '1': 'GetInsuranceQuoteRequest',
+  '2': [
+    {'1': 'product_id', '3': 1, '4': 1, '5': 9, '10': 'productId'},
+    {'1': 'form_data', '3': 2, '4': 3, '5': 11, '6': '.pb.GetInsuranceQuoteRequest.FormDataEntry', '10': 'formData'},
+    {'1': 'locale', '3': 3, '4': 1, '5': 9, '10': 'locale'},
+  ],
+  '3': [GetInsuranceQuoteRequest_FormDataEntry$json],
+};
+
+@$core.Deprecated('Use getInsuranceQuoteRequestDescriptor instead')
+const GetInsuranceQuoteRequest_FormDataEntry$json = {
+  '1': 'FormDataEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `GetInsuranceQuoteRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceQuoteRequestDescriptor = $convert.base64Decode(
+    'ChhHZXRJbnN1cmFuY2VRdW90ZVJlcXVlc3QSHQoKcHJvZHVjdF9pZBgBIAEoCVIJcHJvZHVjdE'
+    'lkEkcKCWZvcm1fZGF0YRgCIAMoCzIqLnBiLkdldEluc3VyYW5jZVF1b3RlUmVxdWVzdC5Gb3Jt'
+    'RGF0YUVudHJ5Ughmb3JtRGF0YRIWCgZsb2NhbGUYAyABKAlSBmxvY2FsZRo7Cg1Gb3JtRGF0YU'
+    'VudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgJUgV2YWx1ZToCOAE=');
+
+@$core.Deprecated('Use getInsuranceQuoteResponseDescriptor instead')
+const GetInsuranceQuoteResponse$json = {
+  '1': 'GetInsuranceQuoteResponse',
+  '2': [
+    {'1': 'quote', '3': 1, '4': 1, '5': 11, '6': '.pb.InsuranceQuote', '10': 'quote'},
+    {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceQuoteResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceQuoteResponseDescriptor = $convert.base64Decode(
+    'ChlHZXRJbnN1cmFuY2VRdW90ZVJlc3BvbnNlEigKBXF1b3RlGAEgASgLMhIucGIuSW5zdXJhbm'
+    'NlUXVvdGVSBXF1b3RlEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNnGAMgASgJUgNt'
+    'c2c=');
+
+@$core.Deprecated('Use purchaseInsuranceRequestDescriptor instead')
+const PurchaseInsuranceRequest$json = {
+  '1': 'PurchaseInsuranceRequest',
+  '2': [
+    {'1': 'quote_id', '3': 1, '4': 1, '5': 9, '10': 'quoteId'},
+    {'1': 'product_id', '3': 2, '4': 1, '5': 9, '10': 'productId'},
+    {'1': 'account_id', '3': 3, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'transaction_pin', '3': 4, '4': 1, '5': 9, '10': 'transactionPin'},
+    {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'form_data', '3': 6, '4': 3, '5': 11, '6': '.pb.PurchaseInsuranceRequest.FormDataEntry', '10': 'formData'},
+    {'1': 'locale', '3': 7, '4': 1, '5': 9, '10': 'locale'},
+  ],
+  '3': [PurchaseInsuranceRequest_FormDataEntry$json],
+};
+
+@$core.Deprecated('Use purchaseInsuranceRequestDescriptor instead')
+const PurchaseInsuranceRequest_FormDataEntry$json = {
+  '1': 'FormDataEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `PurchaseInsuranceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List purchaseInsuranceRequestDescriptor = $convert.base64Decode(
+    'ChhQdXJjaGFzZUluc3VyYW5jZVJlcXVlc3QSGQoIcXVvdGVfaWQYASABKAlSB3F1b3RlSWQSHQ'
+    'oKcHJvZHVjdF9pZBgCIAEoCVIJcHJvZHVjdElkEh0KCmFjY291bnRfaWQYAyABKAlSCWFjY291'
+    'bnRJZBInCg90cmFuc2FjdGlvbl9waW4YBCABKAlSDnRyYW5zYWN0aW9uUGluEicKD2lkZW1wb3'
+    'RlbmN5X2tleRgFIAEoCVIOaWRlbXBvdGVuY3lLZXkSRwoJZm9ybV9kYXRhGAYgAygLMioucGIu'
+    'UHVyY2hhc2VJbnN1cmFuY2VSZXF1ZXN0LkZvcm1EYXRhRW50cnlSCGZvcm1EYXRhEhYKBmxvY2'
+    'FsZRgHIAEoCVIGbG9jYWxlGjsKDUZvcm1EYXRhRW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoF'
+    'dmFsdWUYAiABKAlSBXZhbHVlOgI4AQ==');
+
+@$core.Deprecated('Use purchaseInsuranceResponseDescriptor instead')
+const PurchaseInsuranceResponse$json = {
+  '1': 'PurchaseInsuranceResponse',
+  '2': [
+    {'1': 'result', '3': 1, '4': 1, '5': 11, '6': '.pb.InsurancePurchaseResult', '10': 'result'},
+    {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `PurchaseInsuranceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List purchaseInsuranceResponseDescriptor = $convert.base64Decode(
+    'ChlQdXJjaGFzZUluc3VyYW5jZVJlc3BvbnNlEjMKBnJlc3VsdBgBIAEoCzIbLnBiLkluc3VyYW'
+    '5jZVB1cmNoYXNlUmVzdWx0UgZyZXN1bHQSGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2VzcxIQCgNt'
+    'c2cYAyABKAlSA21zZw==');
+
+@$core.Deprecated('Use getInsurancePurchaseStatusRequestDescriptor instead')
+const GetInsurancePurchaseStatusRequest$json = {
+  '1': 'GetInsurancePurchaseStatusRequest',
+  '2': [
+    {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `GetInsurancePurchaseStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsurancePurchaseStatusRequestDescriptor = $convert.base64Decode(
+    'CiFHZXRJbnN1cmFuY2VQdXJjaGFzZVN0YXR1c1JlcXVlc3QSHAoJcmVmZXJlbmNlGAEgASgJUg'
+    'lyZWZlcmVuY2U=');
+
+@$core.Deprecated('Use getInsurancePurchaseStatusResponseDescriptor instead')
+const GetInsurancePurchaseStatusResponse$json = {
+  '1': 'GetInsurancePurchaseStatusResponse',
+  '2': [
+    {'1': 'result', '3': 1, '4': 1, '5': 11, '6': '.pb.InsurancePurchaseResult', '10': 'result'},
+    {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `GetInsurancePurchaseStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsurancePurchaseStatusResponseDescriptor = $convert.base64Decode(
+    'CiJHZXRJbnN1cmFuY2VQdXJjaGFzZVN0YXR1c1Jlc3BvbnNlEjMKBnJlc3VsdBgBIAEoCzIbLn'
+    'BiLkluc3VyYW5jZVB1cmNoYXNlUmVzdWx0UgZyZXN1bHQSGAoHc3VjY2VzcxgCIAEoCFIHc3Vj'
+    'Y2VzcxIQCgNtc2cYAyABKAlSA21zZw==');
 
 @$core.Deprecated('Use insuranceDescriptor instead')
 const Insurance$json = {
@@ -741,7 +1069,7 @@ const Insurance$json = {
     {'1': 'next_payment_date', '3': 14, '4': 1, '5': 9, '10': 'nextPaymentDate'},
     {'1': 'status', '3': 15, '4': 1, '5': 9, '10': 'status'},
     {'1': 'beneficiaries', '3': 16, '4': 3, '5': 9, '10': 'beneficiaries'},
-    {'1': 'coverage_details', '3': 17, '4': 3, '5': 11, '6': '.insurance.Insurance.CoverageDetailsEntry', '10': 'coverageDetails'},
+    {'1': 'coverage_details', '3': 17, '4': 3, '5': 11, '6': '.pb.Insurance.CoverageDetailsEntry', '10': 'coverageDetails'},
     {'1': 'description', '3': 18, '4': 1, '5': 9, '10': 'description'},
     {'1': 'user_id', '3': 19, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'created_at', '3': 20, '4': 1, '5': 9, '10': 'createdAt'},
@@ -772,12 +1100,11 @@ final $typed_data.Uint8List insuranceDescriptor = $convert.base64Decode(
     'lSCGN1cnJlbmN5Eh0KCnN0YXJ0X2RhdGUYDCABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgN'
     'IAEoCVIHZW5kRGF0ZRIqChFuZXh0X3BheW1lbnRfZGF0ZRgOIAEoCVIPbmV4dFBheW1lbnREYX'
     'RlEhYKBnN0YXR1cxgPIAEoCVIGc3RhdHVzEiQKDWJlbmVmaWNpYXJpZXMYECADKAlSDWJlbmVm'
-    'aWNpYXJpZXMSVAoQY292ZXJhZ2VfZGV0YWlscxgRIAMoCzIpLmluc3VyYW5jZS5JbnN1cmFuY2'
-    'UuQ292ZXJhZ2VEZXRhaWxzRW50cnlSD2NvdmVyYWdlRGV0YWlscxIgCgtkZXNjcmlwdGlvbhgS'
-    'IAEoCVILZGVzY3JpcHRpb24SFwoHdXNlcl9pZBgTIAEoCVIGdXNlcklkEh0KCmNyZWF0ZWRfYX'
-    'QYFCABKAlSCWNyZWF0ZWRBdBIdCgp1cGRhdGVkX2F0GBUgASgJUgl1cGRhdGVkQXQaQgoUQ292'
-    'ZXJhZ2VEZXRhaWxzRW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAiABKAlSBXZhbH'
-    'VlOgI4AQ==');
+    'aWNpYXJpZXMSTQoQY292ZXJhZ2VfZGV0YWlscxgRIAMoCzIiLnBiLkluc3VyYW5jZS5Db3Zlcm'
+    'FnZURldGFpbHNFbnRyeVIPY292ZXJhZ2VEZXRhaWxzEiAKC2Rlc2NyaXB0aW9uGBIgASgJUgtk'
+    'ZXNjcmlwdGlvbhIXCgd1c2VyX2lkGBMgASgJUgZ1c2VySWQSHQoKY3JlYXRlZF9hdBgUIAEoCV'
+    'IJY3JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYFSABKAlSCXVwZGF0ZWRBdBpCChRDb3ZlcmFnZURl'
+    'dGFpbHNFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
 
 @$core.Deprecated('Use insurancePaymentDescriptor instead')
 const InsurancePayment$json = {
@@ -795,7 +1122,7 @@ const InsurancePayment$json = {
     {'1': 'payment_date', '3': 10, '4': 1, '5': 9, '10': 'paymentDate'},
     {'1': 'due_date', '3': 11, '4': 1, '5': 9, '10': 'dueDate'},
     {'1': 'processed_at', '3': 12, '4': 1, '5': 9, '10': 'processedAt'},
-    {'1': 'payment_details', '3': 13, '4': 3, '5': 11, '6': '.insurance.InsurancePayment.PaymentDetailsEntry', '10': 'paymentDetails'},
+    {'1': 'payment_details', '3': 13, '4': 3, '5': 11, '6': '.pb.InsurancePayment.PaymentDetailsEntry', '10': 'paymentDetails'},
     {'1': 'failure_reason', '3': 14, '4': 1, '5': 9, '10': 'failureReason'},
     {'1': 'receipt_url', '3': 15, '4': 1, '5': 9, '10': 'receiptUrl'},
     {'1': 'user_id', '3': 16, '4': 1, '5': 9, '10': 'userId'},
@@ -824,12 +1151,12 @@ final $typed_data.Uint8List insurancePaymentDescriptor = $convert.base64Decode(
     'JQoOdHJhbnNhY3Rpb25faWQYCCABKAlSDXRyYW5zYWN0aW9uSWQSKQoQcmVmZXJlbmNlX251bW'
     'JlchgJIAEoCVIPcmVmZXJlbmNlTnVtYmVyEiEKDHBheW1lbnRfZGF0ZRgKIAEoCVILcGF5bWVu'
     'dERhdGUSGQoIZHVlX2RhdGUYCyABKAlSB2R1ZURhdGUSIQoMcHJvY2Vzc2VkX2F0GAwgASgJUg'
-    'twcm9jZXNzZWRBdBJYCg9wYXltZW50X2RldGFpbHMYDSADKAsyLy5pbnN1cmFuY2UuSW5zdXJh'
-    'bmNlUGF5bWVudC5QYXltZW50RGV0YWlsc0VudHJ5Ug5wYXltZW50RGV0YWlscxIlCg5mYWlsdX'
-    'JlX3JlYXNvbhgOIAEoCVINZmFpbHVyZVJlYXNvbhIfCgtyZWNlaXB0X3VybBgPIAEoCVIKcmVj'
-    'ZWlwdFVybBIXCgd1c2VyX2lkGBAgASgJUgZ1c2VySWQSHQoKY3JlYXRlZF9hdBgRIAEoCVIJY3'
-    'JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYEiABKAlSCXVwZGF0ZWRBdBpBChNQYXltZW50RGV0YWls'
-    'c0VudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgJUgV2YWx1ZToCOAE=');
+    'twcm9jZXNzZWRBdBJRCg9wYXltZW50X2RldGFpbHMYDSADKAsyKC5wYi5JbnN1cmFuY2VQYXlt'
+    'ZW50LlBheW1lbnREZXRhaWxzRW50cnlSDnBheW1lbnREZXRhaWxzEiUKDmZhaWx1cmVfcmVhc2'
+    '9uGA4gASgJUg1mYWlsdXJlUmVhc29uEh8KC3JlY2VpcHRfdXJsGA8gASgJUgpyZWNlaXB0VXJs'
+    'EhcKB3VzZXJfaWQYECABKAlSBnVzZXJJZBIdCgpjcmVhdGVkX2F0GBEgASgJUgljcmVhdGVkQX'
+    'QSHQoKdXBkYXRlZF9hdBgSIAEoCVIJdXBkYXRlZEF0GkEKE1BheW1lbnREZXRhaWxzRW50cnkS'
+    'EAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVlOgI4AQ==');
 
 @$core.Deprecated('Use insuranceClaimDescriptor instead')
 const InsuranceClaim$json = {
@@ -850,7 +1177,7 @@ const InsuranceClaim$json = {
     {'1': 'incident_location', '3': 13, '4': 1, '5': 9, '10': 'incidentLocation'},
     {'1': 'attachments', '3': 14, '4': 3, '5': 9, '10': 'attachments'},
     {'1': 'documents', '3': 15, '4': 3, '5': 9, '10': 'documents'},
-    {'1': 'additional_info', '3': 16, '4': 3, '5': 11, '6': '.insurance.InsuranceClaim.AdditionalInfoEntry', '10': 'additionalInfo'},
+    {'1': 'additional_info', '3': 16, '4': 3, '5': 11, '6': '.pb.InsuranceClaim.AdditionalInfoEntry', '10': 'additionalInfo'},
     {'1': 'rejection_reason', '3': 17, '4': 1, '5': 9, '10': 'rejectionReason'},
     {'1': 'settlement_date', '3': 18, '4': 1, '5': 9, '10': 'settlementDate'},
     {'1': 'settlement_details', '3': 19, '4': 1, '5': 9, '10': 'settlementDetails'},
@@ -881,12 +1208,12 @@ final $typed_data.Uint8List insuranceClaimDescriptor = $convert.base64Decode(
     '9hcHByb3ZlZF9hbW91bnQYCiABKAFSDmFwcHJvdmVkQW1vdW50EhoKCGN1cnJlbmN5GAsgASgJ'
     'UghjdXJyZW5jeRIjCg1pbmNpZGVudF9kYXRlGAwgASgJUgxpbmNpZGVudERhdGUSKwoRaW5jaW'
     'RlbnRfbG9jYXRpb24YDSABKAlSEGluY2lkZW50TG9jYXRpb24SIAoLYXR0YWNobWVudHMYDiAD'
-    'KAlSC2F0dGFjaG1lbnRzEhwKCWRvY3VtZW50cxgPIAMoCVIJZG9jdW1lbnRzElYKD2FkZGl0aW'
-    '9uYWxfaW5mbxgQIAMoCzItLmluc3VyYW5jZS5JbnN1cmFuY2VDbGFpbS5BZGRpdGlvbmFsSW5m'
-    'b0VudHJ5Ug5hZGRpdGlvbmFsSW5mbxIpChByZWplY3Rpb25fcmVhc29uGBEgASgJUg9yZWplY3'
-    'Rpb25SZWFzb24SJwoPc2V0dGxlbWVudF9kYXRlGBIgASgJUg5zZXR0bGVtZW50RGF0ZRItChJz'
-    'ZXR0bGVtZW50X2RldGFpbHMYEyABKAlSEXNldHRsZW1lbnREZXRhaWxzEhcKB3VzZXJfaWQYFC'
-    'ABKAlSBnVzZXJJZBIdCgpjcmVhdGVkX2F0GBUgASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9h'
-    'dBgWIAEoCVIJdXBkYXRlZEF0GkEKE0FkZGl0aW9uYWxJbmZvRW50cnkSEAoDa2V5GAEgASgJUg'
-    'NrZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVlOgI4AQ==');
+    'KAlSC2F0dGFjaG1lbnRzEhwKCWRvY3VtZW50cxgPIAMoCVIJZG9jdW1lbnRzEk8KD2FkZGl0aW'
+    '9uYWxfaW5mbxgQIAMoCzImLnBiLkluc3VyYW5jZUNsYWltLkFkZGl0aW9uYWxJbmZvRW50cnlS'
+    'DmFkZGl0aW9uYWxJbmZvEikKEHJlamVjdGlvbl9yZWFzb24YESABKAlSD3JlamVjdGlvblJlYX'
+    'NvbhInCg9zZXR0bGVtZW50X2RhdGUYEiABKAlSDnNldHRsZW1lbnREYXRlEi0KEnNldHRsZW1l'
+    'bnRfZGV0YWlscxgTIAEoCVIRc2V0dGxlbWVudERldGFpbHMSFwoHdXNlcl9pZBgUIAEoCVIGdX'
+    'NlcklkEh0KCmNyZWF0ZWRfYXQYFSABKAlSCWNyZWF0ZWRBdBIdCgp1cGRhdGVkX2F0GBYgASgJ'
+    'Ugl1cGRhdGVkQXQaQQoTQWRkaXRpb25hbEluZm9FbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCg'
+    'V2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
 

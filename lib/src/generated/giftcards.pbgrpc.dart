@@ -53,6 +53,26 @@ class GiftCardsServiceClient extends $grpc.Client {
       '/giftcards.GiftCardsService/GetGiftCardHistory',
       ($0.GetGiftCardHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetGiftCardHistoryResponse.fromBuffer(value));
+  static final _$getSellableCards = $grpc.ClientMethod<$0.GetSellableCardsRequest, $0.GetSellableCardsResponse>(
+      '/giftcards.GiftCardsService/GetSellableCards',
+      ($0.GetSellableCardsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetSellableCardsResponse.fromBuffer(value));
+  static final _$getSellRate = $grpc.ClientMethod<$0.GetSellRateRequest, $0.GetSellRateResponse>(
+      '/giftcards.GiftCardsService/GetSellRate',
+      ($0.GetSellRateRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetSellRateResponse.fromBuffer(value));
+  static final _$sellGiftCard = $grpc.ClientMethod<$0.SellGiftCardRequest, $0.SellGiftCardResponse>(
+      '/giftcards.GiftCardsService/SellGiftCard',
+      ($0.SellGiftCardRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.SellGiftCardResponse.fromBuffer(value));
+  static final _$getSellStatus = $grpc.ClientMethod<$0.GetSellStatusRequest, $0.GetSellStatusResponse>(
+      '/giftcards.GiftCardsService/GetSellStatus',
+      ($0.GetSellStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetSellStatusResponse.fromBuffer(value));
+  static final _$getMySales = $grpc.ClientMethod<$0.GetMySalesRequest, $0.GetMySalesResponse>(
+      '/giftcards.GiftCardsService/GetMySales',
+      ($0.GetMySalesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetMySalesResponse.fromBuffer(value));
 
   GiftCardsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -90,6 +110,26 @@ class GiftCardsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetGiftCardHistoryResponse> getGiftCardHistory($0.GetGiftCardHistoryRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getGiftCardHistory, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetSellableCardsResponse> getSellableCards($0.GetSellableCardsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSellableCards, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetSellRateResponse> getSellRate($0.GetSellRateRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSellRate, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SellGiftCardResponse> sellGiftCard($0.SellGiftCardRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$sellGiftCard, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetSellStatusResponse> getSellStatus($0.GetSellStatusRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSellStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetMySalesResponse> getMySales($0.GetMySalesRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMySales, request, options: options);
   }
 }
 
@@ -154,6 +194,41 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetGiftCardHistoryRequest.fromBuffer(value),
         ($0.GetGiftCardHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetSellableCardsRequest, $0.GetSellableCardsResponse>(
+        'GetSellableCards',
+        getSellableCards_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetSellableCardsRequest.fromBuffer(value),
+        ($0.GetSellableCardsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetSellRateRequest, $0.GetSellRateResponse>(
+        'GetSellRate',
+        getSellRate_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetSellRateRequest.fromBuffer(value),
+        ($0.GetSellRateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SellGiftCardRequest, $0.SellGiftCardResponse>(
+        'SellGiftCard',
+        sellGiftCard_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.SellGiftCardRequest.fromBuffer(value),
+        ($0.SellGiftCardResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetSellStatusRequest, $0.GetSellStatusResponse>(
+        'GetSellStatus',
+        getSellStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetSellStatusRequest.fromBuffer(value),
+        ($0.GetSellStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMySalesRequest, $0.GetMySalesResponse>(
+        'GetMySales',
+        getMySales_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMySalesRequest.fromBuffer(value),
+        ($0.GetMySalesResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.BuyGiftCardResponse> buyGiftCard_Pre($grpc.ServiceCall call, $async.Future<$0.BuyGiftCardRequest> request) async {
@@ -188,6 +263,26 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
     return getGiftCardHistory(call, await request);
   }
 
+  $async.Future<$0.GetSellableCardsResponse> getSellableCards_Pre($grpc.ServiceCall call, $async.Future<$0.GetSellableCardsRequest> request) async {
+    return getSellableCards(call, await request);
+  }
+
+  $async.Future<$0.GetSellRateResponse> getSellRate_Pre($grpc.ServiceCall call, $async.Future<$0.GetSellRateRequest> request) async {
+    return getSellRate(call, await request);
+  }
+
+  $async.Future<$0.SellGiftCardResponse> sellGiftCard_Pre($grpc.ServiceCall call, $async.Future<$0.SellGiftCardRequest> request) async {
+    return sellGiftCard(call, await request);
+  }
+
+  $async.Future<$0.GetSellStatusResponse> getSellStatus_Pre($grpc.ServiceCall call, $async.Future<$0.GetSellStatusRequest> request) async {
+    return getSellStatus(call, await request);
+  }
+
+  $async.Future<$0.GetMySalesResponse> getMySales_Pre($grpc.ServiceCall call, $async.Future<$0.GetMySalesRequest> request) async {
+    return getMySales(call, await request);
+  }
+
   $async.Future<$0.BuyGiftCardResponse> buyGiftCard($grpc.ServiceCall call, $0.BuyGiftCardRequest request);
   $async.Future<$0.RedeemGiftCardResponse> redeemGiftCard($grpc.ServiceCall call, $0.RedeemGiftCardRequest request);
   $async.Future<$0.GetGiftCardsResponse> getGiftCards($grpc.ServiceCall call, $0.GetGiftCardsRequest request);
@@ -196,4 +291,9 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
   $async.Future<$0.GetGiftCardBalanceResponse> getGiftCardBalance($grpc.ServiceCall call, $0.GetGiftCardBalanceRequest request);
   $async.Future<$0.GetGiftCardBrandsResponse> getGiftCardBrands($grpc.ServiceCall call, $0.GetGiftCardBrandsRequest request);
   $async.Future<$0.GetGiftCardHistoryResponse> getGiftCardHistory($grpc.ServiceCall call, $0.GetGiftCardHistoryRequest request);
+  $async.Future<$0.GetSellableCardsResponse> getSellableCards($grpc.ServiceCall call, $0.GetSellableCardsRequest request);
+  $async.Future<$0.GetSellRateResponse> getSellRate($grpc.ServiceCall call, $0.GetSellRateRequest request);
+  $async.Future<$0.SellGiftCardResponse> sellGiftCard($grpc.ServiceCall call, $0.SellGiftCardRequest request);
+  $async.Future<$0.GetSellStatusResponse> getSellStatus($grpc.ServiceCall call, $0.GetSellStatusRequest request);
+  $async.Future<$0.GetMySalesResponse> getMySales($grpc.ServiceCall call, $0.GetMySalesRequest request);
 }

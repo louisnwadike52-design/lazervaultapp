@@ -13,7 +13,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 class ElectricityProvider extends $pb.GeneratedMessage {
   factory ElectricityProvider({
@@ -28,7 +28,7 @@ class ElectricityProvider extends $pb.GeneratedMessage {
     $core.double? maxAmount,
     $core.double? serviceFee,
     $core.String? feeType,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -85,7 +85,7 @@ class ElectricityProvider extends $pb.GeneratedMessage {
     ..a<$core.double>(9, _omitFieldNames ? '' : 'maxAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(10, _omitFieldNames ? '' : 'serviceFee', $pb.PbFieldType.OD)
     ..aOS(11, _omitFieldNames ? '' : 'feeType')
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -210,15 +210,15 @@ class ElectricityProvider extends $pb.GeneratedMessage {
   void clearFeeType() => clearField(11);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get createdAt => $_getN(11);
+  $1.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($42.Timestamp v) { setField(12, v); }
+  set createdAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureCreatedAt() => $_ensure(11);
+  $1.Timestamp ensureCreatedAt() => $_ensure(11);
 }
 
 class BillPayment extends $pb.GeneratedMessage {
@@ -242,12 +242,12 @@ class BillPayment extends $pb.GeneratedMessage {
     $core.double? units,
     $core.String? meterType,
     $core.String? failureReason,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? completedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? completedAt,
     $core.String? providerId,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? updatedAt,
     $core.String? errorMessage,
-    $42.Timestamp? failedAt,
+    $1.Timestamp? failedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -351,12 +351,12 @@ class BillPayment extends $pb.GeneratedMessage {
     ..a<$core.double>(17, _omitFieldNames ? '' : 'units', $pb.PbFieldType.OD)
     ..aOS(18, _omitFieldNames ? '' : 'meterType')
     ..aOS(19, _omitFieldNames ? '' : 'failureReason')
-    ..aOM<$42.Timestamp>(20, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(21, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(20, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(21, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
     ..aOS(22, _omitFieldNames ? '' : 'providerId')
-    ..aOM<$42.Timestamp>(23, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(23, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(24, _omitFieldNames ? '' : 'errorMessage')
-    ..aOM<$42.Timestamp>(25, _omitFieldNames ? '' : 'failedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(25, _omitFieldNames ? '' : 'failedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -553,26 +553,26 @@ class BillPayment extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(19);
 
   @$pb.TagNumber(20)
-  $42.Timestamp get createdAt => $_getN(19);
+  $1.Timestamp get createdAt => $_getN(19);
   @$pb.TagNumber(20)
-  set createdAt($42.Timestamp v) { setField(20, v); }
+  set createdAt($1.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasCreatedAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearCreatedAt() => clearField(20);
   @$pb.TagNumber(20)
-  $42.Timestamp ensureCreatedAt() => $_ensure(19);
+  $1.Timestamp ensureCreatedAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
-  $42.Timestamp get completedAt => $_getN(20);
+  $1.Timestamp get completedAt => $_getN(20);
   @$pb.TagNumber(21)
-  set completedAt($42.Timestamp v) { setField(21, v); }
+  set completedAt($1.Timestamp v) { setField(21, v); }
   @$pb.TagNumber(21)
   $core.bool hasCompletedAt() => $_has(20);
   @$pb.TagNumber(21)
   void clearCompletedAt() => clearField(21);
   @$pb.TagNumber(21)
-  $42.Timestamp ensureCompletedAt() => $_ensure(20);
+  $1.Timestamp ensureCompletedAt() => $_ensure(20);
 
   @$pb.TagNumber(22)
   $core.String get providerId => $_getSZ(21);
@@ -584,15 +584,15 @@ class BillPayment extends $pb.GeneratedMessage {
   void clearProviderId() => clearField(22);
 
   @$pb.TagNumber(23)
-  $42.Timestamp get updatedAt => $_getN(22);
+  $1.Timestamp get updatedAt => $_getN(22);
   @$pb.TagNumber(23)
-  set updatedAt($42.Timestamp v) { setField(23, v); }
+  set updatedAt($1.Timestamp v) { setField(23, v); }
   @$pb.TagNumber(23)
   $core.bool hasUpdatedAt() => $_has(22);
   @$pb.TagNumber(23)
   void clearUpdatedAt() => clearField(23);
   @$pb.TagNumber(23)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(22);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(22);
 
   @$pb.TagNumber(24)
   $core.String get errorMessage => $_getSZ(23);
@@ -604,15 +604,15 @@ class BillPayment extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(24);
 
   @$pb.TagNumber(25)
-  $42.Timestamp get failedAt => $_getN(24);
+  $1.Timestamp get failedAt => $_getN(24);
   @$pb.TagNumber(25)
-  set failedAt($42.Timestamp v) { setField(25, v); }
+  set failedAt($1.Timestamp v) { setField(25, v); }
   @$pb.TagNumber(25)
   $core.bool hasFailedAt() => $_has(24);
   @$pb.TagNumber(25)
   void clearFailedAt() => clearField(25);
   @$pb.TagNumber(25)
-  $42.Timestamp ensureFailedAt() => $_ensure(24);
+  $1.Timestamp ensureFailedAt() => $_ensure(24);
 }
 
 class BillBeneficiary extends $pb.GeneratedMessage {
@@ -626,11 +626,11 @@ class BillBeneficiary extends $pb.GeneratedMessage {
     $core.String? nickname,
     $core.String? meterType,
     $core.bool? isDefault,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? lastUsedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? lastUsedAt,
     $core.String? providerId,
     $core.String? customerAddress,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -691,11 +691,11 @@ class BillBeneficiary extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'nickname')
     ..aOS(8, _omitFieldNames ? '' : 'meterType')
     ..aOB(9, _omitFieldNames ? '' : 'isDefault')
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $1.Timestamp.create)
     ..aOS(12, _omitFieldNames ? '' : 'providerId')
     ..aOS(13, _omitFieldNames ? '' : 'customerAddress')
-    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -802,26 +802,26 @@ class BillBeneficiary extends $pb.GeneratedMessage {
   void clearIsDefault() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get createdAt => $_getN(9);
+  $1.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($42.Timestamp v) { setField(10, v); }
+  set createdAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureCreatedAt() => $_ensure(9);
+  $1.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get lastUsedAt => $_getN(10);
+  $1.Timestamp get lastUsedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set lastUsedAt($42.Timestamp v) { setField(11, v); }
+  set lastUsedAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLastUsedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearLastUsedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureLastUsedAt() => $_ensure(10);
+  $1.Timestamp ensureLastUsedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get providerId => $_getSZ(11);
@@ -842,15 +842,15 @@ class BillBeneficiary extends $pb.GeneratedMessage {
   void clearCustomerAddress() => clearField(13);
 
   @$pb.TagNumber(14)
-  $42.Timestamp get updatedAt => $_getN(13);
+  $1.Timestamp get updatedAt => $_getN(13);
   @$pb.TagNumber(14)
-  set updatedAt($42.Timestamp v) { setField(14, v); }
+  set updatedAt($1.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasUpdatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearUpdatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(13);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(13);
 }
 
 class AutoRecharge extends $pb.GeneratedMessage {
@@ -864,11 +864,11 @@ class AutoRecharge extends $pb.GeneratedMessage {
     $core.String? frequency,
     $core.int? dayOfWeek,
     $core.int? dayOfMonth,
-    $42.Timestamp? nextRunDate,
-    $42.Timestamp? lastRunDate,
+    $1.Timestamp? nextRunDate,
+    $1.Timestamp? lastRunDate,
     $core.String? status,
     $core.int? failureCount,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
     BillBeneficiary? beneficiary,
     $core.String? providerId,
     $core.String? providerCode,
@@ -876,7 +876,7 @@ class AutoRecharge extends $pb.GeneratedMessage {
     $core.String? customerName,
     $core.String? meterType,
     $core.int? maxRetries,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -961,11 +961,11 @@ class AutoRecharge extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'frequency')
     ..a<$core.int>(8, _omitFieldNames ? '' : 'dayOfWeek', $pb.PbFieldType.O3)
     ..a<$core.int>(9, _omitFieldNames ? '' : 'dayOfMonth', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'nextRunDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'lastRunDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'nextRunDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'lastRunDate', subBuilder: $1.Timestamp.create)
     ..aOS(12, _omitFieldNames ? '' : 'status')
     ..a<$core.int>(13, _omitFieldNames ? '' : 'failureCount', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..aOM<BillBeneficiary>(15, _omitFieldNames ? '' : 'beneficiary', subBuilder: BillBeneficiary.create)
     ..aOS(16, _omitFieldNames ? '' : 'providerId')
     ..aOS(17, _omitFieldNames ? '' : 'providerCode')
@@ -973,7 +973,7 @@ class AutoRecharge extends $pb.GeneratedMessage {
     ..aOS(19, _omitFieldNames ? '' : 'customerName')
     ..aOS(20, _omitFieldNames ? '' : 'meterType')
     ..a<$core.int>(21, _omitFieldNames ? '' : 'maxRetries', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(22, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(22, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1080,26 +1080,26 @@ class AutoRecharge extends $pb.GeneratedMessage {
   void clearDayOfMonth() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get nextRunDate => $_getN(9);
+  $1.Timestamp get nextRunDate => $_getN(9);
   @$pb.TagNumber(10)
-  set nextRunDate($42.Timestamp v) { setField(10, v); }
+  set nextRunDate($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasNextRunDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearNextRunDate() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureNextRunDate() => $_ensure(9);
+  $1.Timestamp ensureNextRunDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get lastRunDate => $_getN(10);
+  $1.Timestamp get lastRunDate => $_getN(10);
   @$pb.TagNumber(11)
-  set lastRunDate($42.Timestamp v) { setField(11, v); }
+  set lastRunDate($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLastRunDate() => $_has(10);
   @$pb.TagNumber(11)
   void clearLastRunDate() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureLastRunDate() => $_ensure(10);
+  $1.Timestamp ensureLastRunDate() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get status => $_getSZ(11);
@@ -1120,15 +1120,15 @@ class AutoRecharge extends $pb.GeneratedMessage {
   void clearFailureCount() => clearField(13);
 
   @$pb.TagNumber(14)
-  $42.Timestamp get createdAt => $_getN(13);
+  $1.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($42.Timestamp v) { setField(14, v); }
+  set createdAt($1.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $42.Timestamp ensureCreatedAt() => $_ensure(13);
+  $1.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
   BillBeneficiary get beneficiary => $_getN(14);
@@ -1196,15 +1196,15 @@ class AutoRecharge extends $pb.GeneratedMessage {
   void clearMaxRetries() => clearField(21);
 
   @$pb.TagNumber(22)
-  $42.Timestamp get updatedAt => $_getN(21);
+  $1.Timestamp get updatedAt => $_getN(21);
   @$pb.TagNumber(22)
-  set updatedAt($42.Timestamp v) { setField(22, v); }
+  set updatedAt($1.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasUpdatedAt() => $_has(21);
   @$pb.TagNumber(22)
   void clearUpdatedAt() => clearField(22);
   @$pb.TagNumber(22)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(21);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(21);
 }
 
 class BillPaymentReminder extends $pb.GeneratedMessage {
@@ -1214,15 +1214,15 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
     $core.String? beneficiaryId,
     $core.String? title,
     $core.String? description,
-    $42.Timestamp? reminderDate,
+    $1.Timestamp? reminderDate,
     $core.double? amount,
     $core.bool? isRecurring,
     $core.String? recurrenceType,
     $core.String? status,
-    $42.Timestamp? notifiedAt,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? notifiedAt,
+    $1.Timestamp? createdAt,
     $core.String? currency,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -1279,15 +1279,15 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'beneficiaryId')
     ..aOS(4, _omitFieldNames ? '' : 'title')
     ..aOS(5, _omitFieldNames ? '' : 'description')
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'reminderDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'reminderDate', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(7, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOB(8, _omitFieldNames ? '' : 'isRecurring')
     ..aOS(9, _omitFieldNames ? '' : 'recurrenceType')
     ..aOS(10, _omitFieldNames ? '' : 'status')
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'notifiedAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'notifiedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..aOS(13, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1358,15 +1358,15 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
   void clearDescription() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get reminderDate => $_getN(5);
+  $1.Timestamp get reminderDate => $_getN(5);
   @$pb.TagNumber(6)
-  set reminderDate($42.Timestamp v) { setField(6, v); }
+  set reminderDate($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasReminderDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearReminderDate() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureReminderDate() => $_ensure(5);
+  $1.Timestamp ensureReminderDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.double get amount => $_getN(6);
@@ -1405,26 +1405,26 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
   void clearStatus() => clearField(10);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get notifiedAt => $_getN(10);
+  $1.Timestamp get notifiedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set notifiedAt($42.Timestamp v) { setField(11, v); }
+  set notifiedAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasNotifiedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearNotifiedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureNotifiedAt() => $_ensure(10);
+  $1.Timestamp ensureNotifiedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get createdAt => $_getN(11);
+  $1.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($42.Timestamp v) { setField(12, v); }
+  set createdAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureCreatedAt() => $_ensure(11);
+  $1.Timestamp ensureCreatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get currency => $_getSZ(12);
@@ -1436,15 +1436,15 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(13);
 
   @$pb.TagNumber(14)
-  $42.Timestamp get updatedAt => $_getN(13);
+  $1.Timestamp get updatedAt => $_getN(13);
   @$pb.TagNumber(14)
-  set updatedAt($42.Timestamp v) { setField(14, v); }
+  set updatedAt($1.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasUpdatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearUpdatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(13);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(13);
 }
 
 class ReceiptData extends $pb.GeneratedMessage {
@@ -2073,6 +2073,261 @@ class ValidateMeterResponse extends $pb.GeneratedMessage {
   void clearMeterNumber() => clearField(7);
 }
 
+/// Smart Validation Messages
+class SmartValidateMeterRequest extends $pb.GeneratedMessage {
+  factory SmartValidateMeterRequest({
+    $core.String? meterNumber,
+  }) {
+    final $result = create();
+    if (meterNumber != null) {
+      $result.meterNumber = meterNumber;
+    }
+    return $result;
+  }
+  SmartValidateMeterRequest._() : super();
+  factory SmartValidateMeterRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SmartValidateMeterRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SmartValidateMeterRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'meterNumber')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SmartValidateMeterRequest clone() => SmartValidateMeterRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SmartValidateMeterRequest copyWith(void Function(SmartValidateMeterRequest) updates) => super.copyWith((message) => updates(message as SmartValidateMeterRequest)) as SmartValidateMeterRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SmartValidateMeterRequest create() => SmartValidateMeterRequest._();
+  SmartValidateMeterRequest createEmptyInstance() => create();
+  static $pb.PbList<SmartValidateMeterRequest> createRepeated() => $pb.PbList<SmartValidateMeterRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SmartValidateMeterRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SmartValidateMeterRequest>(create);
+  static SmartValidateMeterRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get meterNumber => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set meterNumber($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMeterNumber() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMeterNumber() => clearField(1);
+}
+
+class SmartValidateMeterResponse extends $pb.GeneratedMessage {
+  factory SmartValidateMeterResponse({
+    $core.bool? isValid,
+    $core.String? customerName,
+    $core.String? customerAddress,
+    $core.String? meterType,
+    $core.String? meterNumber,
+    $core.String? providerCode,
+    $core.String? providerName,
+    $core.String? message,
+    $core.double? minAmount,
+    $core.double? maxAmount,
+    $core.double? serviceFee,
+    $core.bool? fromCache,
+  }) {
+    final $result = create();
+    if (isValid != null) {
+      $result.isValid = isValid;
+    }
+    if (customerName != null) {
+      $result.customerName = customerName;
+    }
+    if (customerAddress != null) {
+      $result.customerAddress = customerAddress;
+    }
+    if (meterType != null) {
+      $result.meterType = meterType;
+    }
+    if (meterNumber != null) {
+      $result.meterNumber = meterNumber;
+    }
+    if (providerCode != null) {
+      $result.providerCode = providerCode;
+    }
+    if (providerName != null) {
+      $result.providerName = providerName;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (minAmount != null) {
+      $result.minAmount = minAmount;
+    }
+    if (maxAmount != null) {
+      $result.maxAmount = maxAmount;
+    }
+    if (serviceFee != null) {
+      $result.serviceFee = serviceFee;
+    }
+    if (fromCache != null) {
+      $result.fromCache = fromCache;
+    }
+    return $result;
+  }
+  SmartValidateMeterResponse._() : super();
+  factory SmartValidateMeterResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SmartValidateMeterResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SmartValidateMeterResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'isValid')
+    ..aOS(2, _omitFieldNames ? '' : 'customerName')
+    ..aOS(3, _omitFieldNames ? '' : 'customerAddress')
+    ..aOS(4, _omitFieldNames ? '' : 'meterType')
+    ..aOS(5, _omitFieldNames ? '' : 'meterNumber')
+    ..aOS(6, _omitFieldNames ? '' : 'providerCode')
+    ..aOS(7, _omitFieldNames ? '' : 'providerName')
+    ..aOS(8, _omitFieldNames ? '' : 'message')
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'minAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'maxAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'serviceFee', $pb.PbFieldType.OD)
+    ..aOB(12, _omitFieldNames ? '' : 'fromCache')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SmartValidateMeterResponse clone() => SmartValidateMeterResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SmartValidateMeterResponse copyWith(void Function(SmartValidateMeterResponse) updates) => super.copyWith((message) => updates(message as SmartValidateMeterResponse)) as SmartValidateMeterResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SmartValidateMeterResponse create() => SmartValidateMeterResponse._();
+  SmartValidateMeterResponse createEmptyInstance() => create();
+  static $pb.PbList<SmartValidateMeterResponse> createRepeated() => $pb.PbList<SmartValidateMeterResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SmartValidateMeterResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SmartValidateMeterResponse>(create);
+  static SmartValidateMeterResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get isValid => $_getBF(0);
+  @$pb.TagNumber(1)
+  set isValid($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasIsValid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIsValid() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get customerName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set customerName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCustomerName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCustomerName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get customerAddress => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set customerAddress($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCustomerAddress() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCustomerAddress() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get meterType => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set meterType($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMeterType() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMeterType() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get meterNumber => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set meterNumber($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasMeterNumber() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMeterNumber() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get providerCode => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set providerCode($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProviderCode() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProviderCode() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get providerName => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set providerName($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasProviderName() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearProviderName() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get message => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set message($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasMessage() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearMessage() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.double get minAmount => $_getN(8);
+  @$pb.TagNumber(9)
+  set minAmount($core.double v) { $_setDouble(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasMinAmount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearMinAmount() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get maxAmount => $_getN(9);
+  @$pb.TagNumber(10)
+  set maxAmount($core.double v) { $_setDouble(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasMaxAmount() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearMaxAmount() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.double get serviceFee => $_getN(10);
+  @$pb.TagNumber(11)
+  set serviceFee($core.double v) { $_setDouble(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasServiceFee() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearServiceFee() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.bool get fromCache => $_getBF(11);
+  @$pb.TagNumber(12)
+  set fromCache($core.bool v) { $_setBool(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasFromCache() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearFromCache() => clearField(12);
+}
+
 class GetBillDetailsRequest extends $pb.GeneratedMessage {
   factory GetBillDetailsRequest({
     $core.String? providerCode,
@@ -2254,6 +2509,9 @@ class InitiatePaymentRequest extends $pb.GeneratedMessage {
     $core.String? paymentGateway,
     $core.String? sourceAccountId,
     $core.String? beneficiaryId,
+    $core.String? transactionId,
+    $core.String? verificationToken,
+    $core.String? phoneNumber,
   }) {
     final $result = create();
     if (providerCode != null) {
@@ -2280,6 +2538,15 @@ class InitiatePaymentRequest extends $pb.GeneratedMessage {
     if (beneficiaryId != null) {
       $result.beneficiaryId = beneficiaryId;
     }
+    if (transactionId != null) {
+      $result.transactionId = transactionId;
+    }
+    if (verificationToken != null) {
+      $result.verificationToken = verificationToken;
+    }
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
     return $result;
   }
   InitiatePaymentRequest._() : super();
@@ -2295,6 +2562,9 @@ class InitiatePaymentRequest extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'paymentGateway')
     ..aOS(7, _omitFieldNames ? '' : 'sourceAccountId')
     ..aOS(8, _omitFieldNames ? '' : 'beneficiaryId')
+    ..aOS(9, _omitFieldNames ? '' : 'transactionId')
+    ..aOS(10, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(11, _omitFieldNames ? '' : 'phoneNumber')
     ..hasRequiredFields = false
   ;
 
@@ -2390,6 +2660,33 @@ class InitiatePaymentRequest extends $pb.GeneratedMessage {
   $core.bool hasBeneficiaryId() => $_has(7);
   @$pb.TagNumber(8)
   void clearBeneficiaryId() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get transactionId => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set transactionId($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTransactionId() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTransactionId() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get verificationToken => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set verificationToken($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasVerificationToken() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearVerificationToken() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get phoneNumber => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set phoneNumber($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasPhoneNumber() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearPhoneNumber() => clearField(11);
 }
 
 class InitiatePaymentResponse extends $pb.GeneratedMessage {
@@ -4265,7 +4562,7 @@ class CreateReminderRequest extends $pb.GeneratedMessage {
     $core.String? beneficiaryId,
     $core.String? title,
     $core.String? description,
-    $42.Timestamp? reminderDate,
+    $1.Timestamp? reminderDate,
     $core.double? amount,
     $core.bool? isRecurring,
     $core.String? recurrenceType,
@@ -4306,7 +4603,7 @@ class CreateReminderRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'beneficiaryId')
     ..aOS(2, _omitFieldNames ? '' : 'title')
     ..aOS(3, _omitFieldNames ? '' : 'description')
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'reminderDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'reminderDate', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOB(6, _omitFieldNames ? '' : 'isRecurring')
     ..aOS(7, _omitFieldNames ? '' : 'recurrenceType')
@@ -4363,15 +4660,15 @@ class CreateReminderRequest extends $pb.GeneratedMessage {
   void clearDescription() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get reminderDate => $_getN(3);
+  $1.Timestamp get reminderDate => $_getN(3);
   @$pb.TagNumber(4)
-  set reminderDate($42.Timestamp v) { setField(4, v); }
+  set reminderDate($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasReminderDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearReminderDate() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureReminderDate() => $_ensure(3);
+  $1.Timestamp ensureReminderDate() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.double get amount => $_getN(4);
@@ -4589,7 +4886,7 @@ class UpdateReminderRequest extends $pb.GeneratedMessage {
     $core.String? reminderId,
     $core.String? title,
     $core.String? description,
-    $42.Timestamp? reminderDate,
+    $1.Timestamp? reminderDate,
     $core.double? amount,
     $core.String? currency,
     $core.bool? isRecurring,
@@ -4630,7 +4927,7 @@ class UpdateReminderRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'reminderId')
     ..aOS(2, _omitFieldNames ? '' : 'title')
     ..aOS(3, _omitFieldNames ? '' : 'description')
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'reminderDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'reminderDate', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(6, _omitFieldNames ? '' : 'currency')
     ..aOB(7, _omitFieldNames ? '' : 'isRecurring')
@@ -4687,15 +4984,15 @@ class UpdateReminderRequest extends $pb.GeneratedMessage {
   void clearDescription() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get reminderDate => $_getN(3);
+  $1.Timestamp get reminderDate => $_getN(3);
   @$pb.TagNumber(4)
-  set reminderDate($42.Timestamp v) { setField(4, v); }
+  set reminderDate($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasReminderDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearReminderDate() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureReminderDate() => $_ensure(3);
+  $1.Timestamp ensureReminderDate() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.double get amount => $_getN(4);

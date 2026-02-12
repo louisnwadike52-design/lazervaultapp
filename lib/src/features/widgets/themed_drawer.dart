@@ -25,7 +25,7 @@ class ThemedDrawer extends StatelessWidget {
           final String userName = currentProfile != null
               ? "${currentProfile.user.firstName} ${currentProfile.user.lastName}"
               : "Guest User";
-          final String userEmail = currentProfile?.user.email ?? "guest@example.com";
+          final String userEmail = currentProfile?.user.email ?? "";
           final String userInitials = currentProfile != null
               ? "${currentProfile.user.firstName[0]}${currentProfile.user.lastName[0]}"
               : "GU";

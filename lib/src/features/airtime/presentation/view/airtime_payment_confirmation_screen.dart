@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/network_provider.dart';
+import '../../services/airtime_pdf_service.dart';
 
 class AirtimePaymentConfirmationScreen extends StatefulWidget {
   const AirtimePaymentConfirmationScreen({super.key});
@@ -19,10 +20,12 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
   late AnimationController _fadeController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   AirtimeTransaction? transaction;
   bool isSuccess = false;
   String? errorMessage;
+  bool _isDownloading = false;
+  bool _isSharing = false;
 
   @override
   void initState() {
@@ -45,7 +48,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
       duration: Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeController = AnimationController(
       duration: Duration(milliseconds: 1000),
       vsync: this,
@@ -78,60 +81,112 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
     super.dispose();
   }
 
+  Future<void> _downloadReceipt() async {
+    if (transaction == null || _isDownloading) return;
+
+    setState(() => _isDownloading = true);
+    try {
+      final filePath = await AirtimePdfService.downloadReceipt(
+        transaction: transaction!,
+      );
+      if (mounted) {
+        Get.snackbar(
+          'Receipt Downloaded',
+          'Saved to: $filePath',
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar(
+          'Download Failed',
+          'Could not download receipt. Please try again.',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
+
+  Future<void> _shareReceipt() async {
+    if (transaction == null || _isSharing) return;
+
+    setState(() => _isSharing = true);
+    try {
+      await AirtimePdfService.shareReceipt(
+        transaction: transaction!,
+      );
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar(
+          'Share Failed',
+          'Could not share receipt. Please try again.',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A0E27),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1F1F1F),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
-              ),
-              child: Column(
-                children: [
-                  SizedBox(height: 40.h),
-                  
-                  // Status icon and message
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 40.h),
+
+                // Status icon and message
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: _buildStatusSection(),
+                ),
+
+                SizedBox(height: 40.h),
+
+                // Receipt card
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: _buildReceiptCard(),
+                  ),
+                ),
+
+                SizedBox(height: 24.h),
+
+                // Download/Share buttons (only on success)
+                if (isSuccess && transaction != null)
                   FadeTransition(
                     opacity: _fadeAnimation,
-                    child: _buildStatusSection(),
+                    child: _buildReceiptActions(),
                   ),
-                  
-                  SizedBox(height: 40.h),
-                  
-                  // Receipt card
-                  SlideTransition(
-                    position: _slideAnimation,
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: _buildReceiptCard(),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 40.h),
-                  
-                  // Action buttons
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: _buildActionButtons(),
-                  ),
-                  
-                  SizedBox(height: 20.h),
-                ],
-              ),
+
+                SizedBox(height: 24.h),
+
+                // Action buttons
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: _buildActionButtons(),
+                ),
+
+                SizedBox(height: 20.h),
+              ],
             ),
           ),
         ),
@@ -163,9 +218,9 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             size: 48.sp,
           ),
         ),
-        
+
         SizedBox(height: 24.h),
-        
+
         // Status title
         Text(
           isSuccess ? 'Payment Successful!' : 'Payment Failed',
@@ -176,12 +231,12 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             letterSpacing: 0.5,
           ),
         ),
-        
+
         SizedBox(height: 12.h),
-        
+
         // Status message
         Text(
-          isSuccess 
+          isSuccess
             ? 'Your airtime purchase has been completed successfully'
             : errorMessage ?? 'Something went wrong with your payment',
           style: TextStyle(
@@ -198,7 +253,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
 
   Widget _buildReceiptCard() {
     if (transaction == null) return SizedBox.shrink();
-    
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
@@ -215,16 +270,12 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
         borderRadius: BorderRadius.circular(24.r),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),          ),
+            color: const Color(0xFF1F1F1F),
+          ),
           child: Column(
             children: [
-              // Receipt header
               _buildReceiptHeader(),
-              
-              // Receipt body
               _buildReceiptBody(),
-              
-              // Receipt footer
               _buildReceiptFooter(),
             ],
           ),
@@ -251,7 +302,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                 width: 50.w,
                 height: 50.w,
                 decoration: BoxDecoration(
-                  color: _getProviderColor(transaction!.networkProvider),
+                  color: transaction!.networkProvider.color,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Center(
@@ -265,9 +316,9 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                   ),
                 ),
               ),
-              
+
               SizedBox(width: 16.w),
-              
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,12 +344,12 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
               ),
             ],
           ),
-          
+
           SizedBox(height: 20.h),
-          
+
           // Amount
           Text(
-            '₦${transaction!.amount.toStringAsFixed(0)}',
+            '${transaction!.currencySymbol}${transaction!.amount.toStringAsFixed(0)}',
             style: TextStyle(
               fontSize: 36.sp,
               fontWeight: FontWeight.w700,
@@ -327,28 +378,28 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
           _buildDivider(),
           _buildReceiptRow('Date & Time', DateFormat('MMM dd, yyyy • hh:mm a').format(transaction!.createdAt)),
           _buildDivider(),
-          _buildReceiptRow('Status', transaction!.status.displayName, 
+          _buildReceiptRow('Status', transaction!.status.displayName,
             valueColor: isSuccess ? Color(0xFF10B981) : Color(0xFFEF4444)),
-          
+
           if (transaction!.fee != null || transaction!.discount != null) ...[
             SizedBox(height: 16.h),
             Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.03),
+                color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Column(
                 children: [
-                  _buildReceiptRow('Airtime Amount', '₦${transaction!.amount.toStringAsFixed(0)}'),
+                  _buildReceiptRow('Airtime Amount', '${transaction!.currencySymbol}${transaction!.amount.toStringAsFixed(0)}'),
                   if (transaction!.discount != null && transaction!.discount! > 0) ...[
                     SizedBox(height: 8.h),
-                    _buildReceiptRow('Discount', '-₦${transaction!.discount!.toStringAsFixed(0)}', 
+                    _buildReceiptRow('Discount', '-${transaction!.currencySymbol}${transaction!.discount!.toStringAsFixed(0)}',
                       valueColor: Color(0xFF10B981)),
                   ],
                   if (transaction!.fee != null) ...[
                     SizedBox(height: 8.h),
-                    _buildReceiptRow('Service Fee', '₦${transaction!.fee!.toStringAsFixed(0)}'),
+                    _buildReceiptRow('Service Fee', '${transaction!.currencySymbol}${transaction!.fee!.toStringAsFixed(0)}'),
                   ],
                   SizedBox(height: 12.h),
                   Container(
@@ -356,7 +407,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                     color: Colors.white.withValues(alpha: 0.1),
                   ),
                   SizedBox(height: 12.h),
-                  _buildReceiptRow('Total Paid', '₦${transaction!.totalAmount.toStringAsFixed(0)}', 
+                  _buildReceiptRow('Total Paid', '${transaction!.currencySymbol}${transaction!.totalAmount.toStringAsFixed(0)}',
                     isTotal: true),
                 ],
               ),
@@ -371,7 +422,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.02),
+        color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
         border: Border(
           top: BorderSide(
             color: Colors.white.withValues(alpha: 0.1),
@@ -396,6 +447,77 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
               fontSize: 12.sp,
               color: Colors.white.withValues(alpha: 0.5),
               fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptActions() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _isDownloading ? null : _downloadReceipt,
+              icon: _isDownloading
+                  ? SizedBox(
+                      width: 16.w,
+                      height: 16.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                      ),
+                    )
+                  : Icon(Icons.download, size: 18.sp),
+              label: Text(
+                _isDownloading ? 'Downloading...' : 'Download',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF3B82F6),
+                side: const BorderSide(color: Color(0xFF3B82F6)),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _isSharing ? null : _shareReceipt,
+              icon: _isSharing
+                  ? SizedBox(
+                      width: 16.w,
+                      height: 16.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                      ),
+                    )
+                  : Icon(Icons.share, size: 18.sp),
+              label: Text(
+                _isSharing ? 'Sharing...' : 'Share',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF3B82F6),
+                side: const BorderSide(color: Color(0xFF3B82F6)),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
             ),
           ),
         ],
@@ -466,9 +588,9 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
               ),
             ),
           ),
-          
+
           SizedBox(height: 12.h),
-          
+
           // Secondary action buttons
           Row(
             children: [
@@ -492,9 +614,9 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                   ),
                 ),
               ),
-              
+
               SizedBox(width: 12.w),
-              
+
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => Get.toNamed(AppRoutes.airtimeHistory),
@@ -522,19 +644,4 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
     );
   }
 
-  Color _getProviderColor(NetworkProviderType type) {
-    switch (type) {
-      case NetworkProviderType.mtn:
-        return Color(0xFFFFCC00);
-      case NetworkProviderType.airtel:
-        return Color(0xFFFF0000);
-      case NetworkProviderType.glo:
-        return Color(0xFF00B04F);
-      case NetworkProviderType.etisalat:
-      case NetworkProviderType.ninemobile:
-        return Color(0xFF00AA4F);
-      default:
-        return Color(0xFF3B82F6); // Default blue color
-    }
-  }
-} 
+}

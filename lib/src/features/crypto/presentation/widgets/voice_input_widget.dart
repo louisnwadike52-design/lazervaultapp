@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:get/get.dart';
 import '../../../../core/grpc/voice_grpc_client.dart';
@@ -159,7 +160,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
 
     if (lowerCommand.contains('bitcoin') || lowerCommand.contains('btc')) {
       if (lowerCommand.contains('price')) {
-        return 'Bitcoin is currently trading at £43,250.50, up 2.73% in the last 24 hours.';
+        return 'Bitcoin is currently trading at ${CurrencySymbols.currentSymbol}43,250.50, up 2.73% in the last 24 hours.';
       } else if (lowerCommand.contains('buy')) {
         return 'To buy Bitcoin, please specify the amount you\'d like to purchase.';
       }
@@ -167,7 +168,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
 
     if (lowerCommand.contains('ethereum') || lowerCommand.contains('eth')) {
       if (lowerCommand.contains('price')) {
-        return 'Ethereum is currently trading at £2,650.75, up 2.73% in the last 24 hours.';
+        return 'Ethereum is currently trading at ${CurrencySymbols.currentSymbol}2,650.75, up 2.73% in the last 24 hours.';
       } else if (lowerCommand.contains('buy')) {
         return 'To buy Ethereum, please specify the amount you\'d like to purchase.';
       }
@@ -178,7 +179,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
     }
 
     if (lowerCommand.contains('portfolio') || lowerCommand.contains('holdings')) {
-      return 'Your current portfolio value is £17,439.49 with a total gain of £1,439.49 (9.25%).';
+      return 'Your current portfolio value is ${CurrencySymbols.currentSymbol}17,439.49 with a total gain of ${CurrencySymbols.currentSymbol}1,439.49 (9.25%).';
     }
 
     return 'I\'m here to help with crypto information. You can ask about prices, trending coins, or your portfolio.';
@@ -197,7 +198,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
     return Container(
       height: Get.height * 0.7,
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0E27),
+        color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24.r),
           topRight: Radius.circular(24.r),
@@ -266,8 +267,8 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                                         const Color(0xFF00B4D8),
                                       ]
                                     : [
-                                        const Color(0xFF1E2746),
-                                        const Color(0xFF2A3A5C),
+                                        const Color(0xFF1F1F1F),
+                                        const Color(0xFF2D2D2D),
                                       ],
                               ),
                               boxShadow: _isListening
@@ -318,7 +319,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                       width: double.infinity,
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E2746),
+                        color: const Color(0xFF1F1F1F),
                         borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: Column(
@@ -452,7 +453,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                     width: double.infinity,
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E2746).withValues(alpha: 0.5),
+                      color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(16.r),
                     ),
                     child: Column(

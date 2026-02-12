@@ -152,6 +152,8 @@ message ListCrowdfundsRequest {
   string status = 3; // Optional filter
   string category = 4; // Optional filter
   bool my_crowdfunds_only = 5; // Filter to user's own crowdfunds
+  string sort_by = 6; // "trending", "most_funded", "newest", "ending_soon"
+  CrowdfundVisibility visibility = 7; // Filter by visibility (e.g. PUBLIC for discovery)
 }
 
 message ListCrowdfundsResponse {
@@ -478,6 +480,13 @@ service CrowdfundService {
     };
   }
 
+  // Crowdfund Leaderboard (public, no auth required)
+  rpc GetCrowdfundLeaderboard(GetCrowdfundLeaderboardRequest) returns (GetCrowdfundLeaderboardResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/leaderboard"
+    };
+  }
+
   // Notification Channel Operations
   rpc ConnectNotificationChannel(ConnectNotificationChannelRequest) returns (ConnectNotificationChannelResponse) {
     option (google.api.http) = {
@@ -740,4 +749,34 @@ message GetNotificationHistoryResponse {
   int32 page = 3;
   int32 page_size = 4;
   bool has_more = 5;
+}
+
+// ============================================================================
+// LEADERBOARD
+// ============================================================================
+
+enum LeaderboardSortBy {
+  LEADERBOARD_SORT_UNSPECIFIED = 0;
+  LEADERBOARD_SORT_MOST_FUNDED = 1;
+  LEADERBOARD_SORT_MOST_DONORS = 2;
+  LEADERBOARD_SORT_TRENDING = 3;
+  LEADERBOARD_SORT_NEARLY_COMPLETE = 4;
+  LEADERBOARD_SORT_NEWEST = 5;
+}
+
+message GetCrowdfundLeaderboardRequest {
+  LeaderboardSortBy sort_by = 1;
+  string category = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message GetCrowdfundLeaderboardResponse {
+  repeated LeaderboardCrowdfundEntry entries = 1;
+  int32 total_count = 2;
+}
+
+message LeaderboardCrowdfundEntry {
+  int32 rank = 1;
+  CrowdfundMessage crowdfund = 2;
 }

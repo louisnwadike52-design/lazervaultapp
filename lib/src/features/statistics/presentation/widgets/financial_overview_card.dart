@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../generated/statistics.pb.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 
 /// Financial Overview Card displaying key financial metrics
 /// WCAG AA compliant colors with 4.5:1 contrast ratio
@@ -182,7 +183,7 @@ class _MetricCard extends StatelessWidget {
   }
 
   String _formatCurrency(double amount, String currency) {
-    return '\$${amount.toStringAsFixed(2)}';
+    return CurrencySymbols.formatAmountWithCurrency(amount, currency);
   }
 }
 

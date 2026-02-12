@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class LearnEarnScreen extends StatefulWidget {
   const LearnEarnScreen({super.key});
@@ -40,15 +41,15 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -84,7 +85,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -134,7 +135,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1E2746)],
+          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1F1F1F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -146,7 +147,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('Total Earned', '£$_totalEarned', Icons.monetization_on, Colors.green),
+              _buildStatItem('Total Earned', '${CurrencySymbols.currentSymbol}$_totalEarned', Icons.monetization_on, Colors.green),
               _buildStatItem('Courses', '$_coursesCompleted', Icons.book, Colors.blue),
               _buildStatItem('Streak', '$_currentStreak days', Icons.local_fire_department, Colors.orange),
             ],
@@ -162,7 +163,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: TabBar(
@@ -329,7 +330,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.withValues(alpha: 0.3), const Color(0xFF1E2746)],
+          colors: [Colors.blue.withValues(alpha: 0.3), const Color(0xFF1F1F1F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -392,7 +393,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
               SizedBox(width: 16.w),
               _buildCourseInfo(Icons.play_circle_outline, '12 lessons'),
               SizedBox(width: 16.w),
-              _buildCourseInfo(Icons.monetization_on, '£25'),
+              _buildCourseInfo(Icons.monetization_on, '${CurrencySymbols.currentSymbol}25'),
             ],
           ),
           SizedBox(height: 16.h),
@@ -426,7 +427,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2746),
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
@@ -491,7 +492,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.purple.withValues(alpha: 0.2), const Color(0xFF1E2746)],
+          colors: [Colors.purple.withValues(alpha: 0.2), const Color(0xFF1F1F1F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -521,7 +522,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  '£5 Reward',
+                  '${CurrencySymbols.currentSymbol}5 Reward',
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
@@ -583,10 +584,10 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
 
   Widget _buildQuizList() {
     final quizzes = [
-      {'title': 'Blockchain Basics', 'reward': '£3', 'difficulty': 'Easy', 'color': Colors.green},
-      {'title': 'Crypto Trading', 'reward': '£7', 'difficulty': 'Medium', 'color': Colors.orange},
-      {'title': 'Smart Contracts', 'reward': '£10', 'difficulty': 'Hard', 'color': Colors.red},
-      {'title': 'NFT Fundamentals', 'reward': '£5', 'difficulty': 'Easy', 'color': Colors.green},
+      {'title': 'Blockchain Basics', 'reward': '${CurrencySymbols.currentSymbol}3', 'difficulty': 'Easy', 'color': Colors.green},
+      {'title': 'Crypto Trading', 'reward': '${CurrencySymbols.currentSymbol}7', 'difficulty': 'Medium', 'color': Colors.orange},
+      {'title': 'Smart Contracts', 'reward': '${CurrencySymbols.currentSymbol}10', 'difficulty': 'Hard', 'color': Colors.red},
+      {'title': 'NFT Fundamentals', 'reward': '${CurrencySymbols.currentSymbol}5', 'difficulty': 'Easy', 'color': Colors.green},
     ];
 
     return Column(
@@ -616,7 +617,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -693,7 +694,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -712,9 +713,9 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildRewardStat('This Week', '£23'),
-              _buildRewardStat('This Month', '£87'),
-              _buildRewardStat('All Time', '£$_totalEarned'),
+              _buildRewardStat('This Week', '${CurrencySymbols.currentSymbol}23'),
+              _buildRewardStat('This Month', '${CurrencySymbols.currentSymbol}87'),
+              _buildRewardStat('All Time', '${CurrencySymbols.currentSymbol}$_totalEarned'),
             ],
           ),
           SizedBox(height: 16.h),
@@ -728,7 +729,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
               ),
             ),
             child: Text(
-              'Claim Available Rewards (£23)',
+              'Claim Available Rewards (${CurrencySymbols.currentSymbol}23)',
               style: GoogleFonts.inter(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
@@ -744,7 +745,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -760,9 +761,9 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          _buildRewardHistoryItem('Completed DeFi Quiz', '£5', '2 hours ago'),
-          _buildRewardHistoryItem('Finished Bitcoin Course', '£25', 'Yesterday'),
-          _buildRewardHistoryItem('Weekly Challenge', '£10', '3 days ago'),
+          _buildRewardHistoryItem('Completed DeFi Quiz', '${CurrencySymbols.currentSymbol}5', '2 hours ago'),
+          _buildRewardHistoryItem('Finished Bitcoin Course', '${CurrencySymbols.currentSymbol}25', 'Yesterday'),
+          _buildRewardHistoryItem('Weekly Challenge', '${CurrencySymbols.currentSymbol}10', '3 days ago'),
         ],
       ),
     );
@@ -772,7 +773,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -805,7 +806,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -834,7 +835,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -863,7 +864,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -1188,7 +1189,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   void _claimRewards() {
     Get.snackbar(
       'Rewards Claimed!',
-      'Successfully claimed £23 in rewards',
+      'Successfully claimed ${CurrencySymbols.currentSymbol}23 in rewards',
       backgroundColor: Colors.green.withValues(alpha: 0.2),
       colorText: Colors.white,
     );

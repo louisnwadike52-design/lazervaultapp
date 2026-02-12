@@ -8,8 +8,18 @@ class GetUserGiftCardsUseCase {
 
   GetUserGiftCardsUseCase(this._repository);
 
-  Future<Either<Failure, List<GiftCard>>> call() async {
-    return await _repository.getUserGiftCards();
+  Future<Either<Failure, List<GiftCard>>> call({
+    String? status,
+    String? brandId,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    return await _repository.getUserGiftCards(
+      status: status,
+      brandId: brandId,
+      limit: limit,
+      offset: offset,
+    );
   }
 }
 
@@ -23,32 +33,22 @@ class GetGiftCardByIdUseCase {
   }
 }
 
-class GetGiftCardTransactionsUseCase {
+class GetGiftCardHistoryUseCase {
   final IGiftCardRepository _repository;
 
-  GetGiftCardTransactionsUseCase(this._repository);
+  GetGiftCardHistoryUseCase(this._repository);
 
-  Future<Either<Failure, List<GiftCardTransaction>>> call() async {
-    return await _repository.getGiftCardTransactions();
+  Future<Either<Failure, List<GiftCardTransaction>>> call({
+    String? giftCardId,
+    String? transactionType,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    return await _repository.getGiftCardHistory(
+      giftCardId: giftCardId,
+      transactionType: transactionType,
+      limit: limit,
+      offset: offset,
+    );
   }
 }
-
-class ValidateGiftCardCodeUseCase {
-  final IGiftCardRepository _repository;
-
-  ValidateGiftCardCodeUseCase(this._repository);
-
-  Future<Either<Failure, bool>> call(String code) async {
-    return await _repository.validateGiftCardCode(code);
-  }
-}
-
-class GetGiftCardBalanceUseCase {
-  final IGiftCardRepository _repository;
-
-  GetGiftCardBalanceUseCase(this._repository);
-
-  Future<Either<Failure, double>> call(String giftCardId) async {
-    return await _repository.getGiftCardBalance(giftCardId);
-  }
-} 

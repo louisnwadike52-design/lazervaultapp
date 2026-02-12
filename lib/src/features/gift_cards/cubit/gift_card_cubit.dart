@@ -1,4 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grpc/grpc.dart';
+import 'package:uuid/uuid.dart';
+import '../../../../core/cache/cache_config.dart';
+import '../../../../core/cache/swr_cache_manager.dart';
+import '../../../../core/offline/mutation_queue.dart';
+import '../../../../core/utils/debouncer.dart';
 import '../domain/entities/gift_card_entity.dart';
 import '../domain/repositories/i_gift_card_repository.dart';
 import '../domain/validation/gift_card_validation.dart';
@@ -6,33 +14,55 @@ import 'gift_card_state.dart';
 
 class GiftCardCubit extends Cubit<GiftCardState> {
   final IGiftCardRepository _repository;
+  final SWRCacheManager _cacheManager;
+  final MutationQueue _mutationQueue;
+  final Debouncer _searchDebouncer = Debouncer.search();
 
-  GiftCardCubit({required IGiftCardRepository repository})
-      : _repository = repository,
+  GiftCardCubit({
+    required IGiftCardRepository repository,
+    required SWRCacheManager cacheManager,
+    required MutationQueue mutationQueue,
+  })  : _repository = repository,
+        _cacheManager = cacheManager,
+        _mutationQueue = mutationQueue,
         super(GiftCardInitial());
 
-  Future<void> loadGiftCardBrands() async {
+  Future<void> loadGiftCardBrands({String? countryCode, String? category}) async {
     try {
       if (isClosed) return;
       emit(GiftCardBrandsLoading());
 
-      final result = await _repository.getGiftCardBrands();
-      if (isClosed) return;
+      final cacheKey = 'gift_card_brands_${countryCode ?? 'all'}_${category ?? 'all'}';
 
-      result.fold(
-        (failure) => emit(GiftCardNetworkError(
-          message: failure.message,
-          canRetry: true,
-          operation: 'Loading brands',
-        )),
-        (brands) {
-          if (brands.isEmpty) {
-            emit(const GiftCardBrandsEmpty());
-          } else {
-            emit(GiftCardBrandsLoaded(brands));
-          }
+      await for (final result in _cacheManager.get<List<GiftCardBrand>>(
+        key: cacheKey,
+        fetcher: () async {
+          final r = await _repository.getGiftCardBrands(
+            category: category,
+            countryCode: countryCode,
+          );
+          return r.fold(
+            (failure) => throw Exception(failure.message),
+            (brands) => brands,
+          );
         },
-      );
+        config: CacheConfig.giftCardBrands,
+        serializer: (brands) => jsonEncode(brands.map((b) => b.toJson()).toList()),
+        deserializer: (json) {
+          final list = jsonDecode(json) as List;
+          return list.map((j) => GiftCardBrand.fromJson(j as Map<String, dynamic>)).toList();
+        },
+      )) {
+        if (isClosed) return;
+        if (result.data != null) {
+          final brands = result.data!;
+          if (brands.isEmpty) {
+            emit(GiftCardBrandsEmpty(category: category));
+          } else {
+            emit(GiftCardBrandsLoaded(brands, selectedCategory: category, isStale: result.isStale));
+          }
+        }
+      }
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardNetworkError(
@@ -43,41 +73,15 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
-  Future<void> loadGiftCardBrandsByCategory(GiftCardCategory category) async {
-    try {
-      if (isClosed) return;
-      emit(GiftCardBrandsLoading());
-
-      final result = await _repository.getGiftCardBrandsByCategory(category);
-      if (isClosed) return;
-
-      result.fold(
-        (failure) => emit(GiftCardNetworkError(
-          message: failure.message,
-          canRetry: true,
-          operation: 'Loading brands by category',
-        )),
-        (brands) {
-          if (brands.isEmpty) {
-            emit(const GiftCardBrandsEmpty());
-          } else {
-            emit(GiftCardBrandsLoaded(brands));
-          }
-        },
-      );
-    } catch (e) {
-      if (isClosed) return;
-      emit(GiftCardNetworkError(
-        message: e.toString(),
-        canRetry: true,
-        operation: 'Loading brands by category',
-      ));
+  void searchGiftCardBrandsDebounced(String query, {String? countryCode}) {
+    if (query.trim().isEmpty) {
+      return;
     }
+    _searchDebouncer.run(() => searchGiftCardBrands(query, countryCode: countryCode));
   }
 
-  Future<void> searchGiftCardBrands(String query) async {
+  Future<void> searchGiftCardBrands(String query, {String? countryCode}) async {
     try {
-      // Validate search query
       if (query.trim().isEmpty) {
         if (isClosed) return;
         emit(const GiftCardValidationError(
@@ -90,7 +94,10 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       if (isClosed) return;
       emit(GiftCardBrandsLoading());
 
-      final result = await _repository.searchGiftCardBrands(query);
+      // Use getGiftCardBrands and filter client-side for search
+      final result = await _repository.getGiftCardBrands(
+        countryCode: countryCode,
+      );
       if (isClosed) return;
 
       result.fold(
@@ -100,10 +107,17 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           operation: 'Searching brands',
         )),
         (brands) {
-          if (brands.isEmpty) {
-            emit(const GiftCardBrandsEmpty());
+          final lowerQuery = query.toLowerCase();
+          final filtered = brands
+              .where((b) =>
+                  b.name.toLowerCase().contains(lowerQuery) ||
+                  b.description.toLowerCase().contains(lowerQuery) ||
+                  b.category.toLowerCase().contains(lowerQuery))
+              .toList();
+          if (filtered.isEmpty) {
+            emit(GiftCardBrandsEmpty(searchQuery: query));
           } else {
-            emit(GiftCardBrandsSearched(brands, query));
+            emit(GiftCardBrandsSearched(filtered, query));
           }
         },
       );
@@ -117,29 +131,48 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
-  Future<void> purchaseGiftCard({
+  /// Generate an idempotency key for gift card purchases.
+  /// Format: gc-purchase-{brandId short}-{uuid}
+  static String generateIdempotencyKey(String brandId) {
+    final shortBrand = brandId.length > 8 ? brandId.substring(0, 8) : brandId;
+    return 'gc-purchase-$shortBrand-${const Uuid().v4()}';
+  }
+
+  /// Generate an idempotency key for gift card sell operations.
+  static String generateSellIdempotencyKey(String cardType) {
+    return 'gc-sell-$cardType-${const Uuid().v4()}';
+  }
+
+  /// Purchase gift card with verification token (PIN-validated transaction)
+  Future<void> purchaseGiftCardWithToken({
     required String brandId,
     required double amount,
-    required String currency,
     required GiftCardBrand brand,
     required double userBalance,
+    required String transactionId,
+    required String verificationToken,
+    int? productId,
     String? recipientEmail,
     String? recipientName,
-    String? message,
+    String? giftMessage,
+    String? senderName,
+    String? recipientPhone,
+    String? countryCode,
+    String? idempotencyKey,
+    int quantity = 1,
   }) async {
     try {
       // Validate purchase request before processing
       final validation = GiftCardValidation.validatePurchaseRequest(
         amount: amount,
         brand: brand,
-        currency: currency,
+        currency: brand.currencyCode.isNotEmpty ? brand.currencyCode : 'NGN',
         userBalance: userBalance,
         recipientEmail: recipientEmail,
         recipientName: recipientName,
-        message: message,
+        message: giftMessage,
       );
 
-      // If validation fails, emit error immediately
       if (validation.isLeft()) {
         if (isClosed) return;
         final error = validation.fold(
@@ -153,87 +186,95 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         return;
       }
 
-      // Step 1: Initializing (10%)
+      // Generate idempotency key if not provided
+      final effectiveIdempotencyKey = idempotencyKey ?? generateIdempotencyKey(brandId);
+
+      // Step 1: Validating (10%)
       if (isClosed) return;
       emit(GiftCardPurchaseProcessing(
         brandId: brandId,
         amount: amount,
-        currentStep: 'Initializing purchase...',
+        currentStep: 'Validating purchase...',
         progress: 0.1,
       ));
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (isClosed) return;
 
-      // Step 2: Validating payment (30%)
+      // Step 2: Debiting (30%)
+      if (isClosed) return;
       emit(GiftCardPurchaseProcessing(
         brandId: brandId,
         amount: amount,
-        currentStep: 'Validating payment method...',
+        currentStep: 'Debiting your account...',
         progress: 0.3,
       ));
-      await Future.delayed(const Duration(milliseconds: 800));
-      if (isClosed) return;
 
-      // Step 3: Processing purchase (60%)
+      // Step 3: Purchasing (60%)
+      if (isClosed) return;
       emit(GiftCardPurchaseProcessing(
         brandId: brandId,
         amount: amount,
-        currentStep: 'Generating gift card...',
+        currentStep: 'Purchasing gift card...',
         progress: 0.6,
       ));
 
       // Make the actual purchase
-      final result = await _repository.purchaseGiftCard(
+      final result = await _repository.buyGiftCard(
         brandId: brandId,
         amount: amount,
-        currency: currency,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
+        productId: productId,
         recipientEmail: recipientEmail,
         recipientName: recipientName,
-        message: message,
+        giftMessage: giftMessage,
+        senderName: senderName,
+        recipientPhone: recipientPhone,
+        countryCode: countryCode,
+        idempotencyKey: effectiveIdempotencyKey,
+        quantity: quantity,
       );
       if (isClosed) return;
 
       result.fold(
         (failure) {
-          // Handle specific error cases
           if (failure.message.contains('Insufficient funds')) {
-            // Extract amounts from error if possible, or use defaults
             emit(GiftCardInsufficientFunds(
               required: amount,
-              available: 0.0, // Would need to get actual balance
-              brandName: 'Gift Card',
+              available: userBalance,
+              brandName: brand.name,
             ));
           } else if (failure.message.contains('not found')) {
             emit(GiftCardNotFound(
               identifier: brandId,
               type: 'brand',
             ));
-          } else if (failure.message.contains('sold out')) {
+          } else if (failure.message.contains('unavailable')) {
             emit(GiftCardSoldOut(
               brandId: brandId,
-              brandName: 'Gift Card',
+              brandName: brand.name,
             ));
           } else {
             emit(GiftCardPurchaseError(failure.message));
           }
         },
         (giftCard) async {
-          // Step 4: Finalizing (90%)
+          // Step 4: Delivering (90%)
           if (isClosed) return;
           emit(GiftCardPurchaseProcessing(
             brandId: brandId,
             amount: amount,
-            currentStep: 'Finalizing purchase...',
+            currentStep: 'Delivering your gift card...',
             progress: 0.9,
           ));
-          await Future.delayed(const Duration(milliseconds: 500));
+          await Future.delayed(const Duration(milliseconds: 300));
           if (isClosed) return;
+
+          // Invalidate user's gift cards cache so next load gets fresh data
+          _cacheManager.invalidate('my_gift_cards');
 
           // Complete
           emit(GiftCardPurchaseCompleted(
             giftCard: giftCard,
-            receiptUrl: null,
-            transactionId: giftCard.transactionId,
+            transactionId: giftCard.providerTransactionId,
           ));
         },
       );
@@ -243,228 +284,141 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
-  /// Purchase gift card with verification token (for PIN-validated transactions)
-  Future<void> purchaseGiftCardWithToken({
-    required String brandId,
-    required double amount,
-    required String currency,
-    required GiftCardBrand brand,
-    required double userBalance,
-    String? recipientEmail,
-    String? recipientName,
-    String? message,
+  /// Redeem a gift card — credits the card balance to the user's account
+  Future<void> redeemGiftCard({
+    required String accountId,
+    required String cardNumber,
+    required String cardPin,
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(GiftCardRedeeming());
+
+      final result = await _repository.redeemGiftCard(
+        accountId: accountId,
+        cardNumber: cardNumber,
+        cardPin: cardPin,
+      );
+      if (isClosed) return;
+
+      result.fold(
+        (failure) {
+          if (failure.message.contains('not found')) {
+            emit(const GiftCardRedeemError('Gift card not found'));
+          } else if (failure.message.contains('invalid PIN') ||
+              failure.message.contains('Invalid PIN')) {
+            emit(const GiftCardRedeemError('Invalid PIN'));
+          } else if (failure.message.contains('not active')) {
+            emit(const GiftCardRedeemError('This gift card is no longer active'));
+          } else if (failure.message.contains('zero balance')) {
+            emit(const GiftCardRedeemError('This gift card has no remaining balance'));
+          } else if (failure.message.contains('expired')) {
+            emit(const GiftCardRedeemError('This gift card has expired'));
+          } else {
+            emit(GiftCardRedeemError(failure.message));
+          }
+        },
+        (giftCard) {
+          // Invalidate cache after redemption
+          _cacheManager.invalidate('my_gift_cards');
+
+          emit(GiftCardRedeemed(
+            giftCard: giftCard,
+            amountRedeemed: giftCard.currentBalance,
+          ));
+        },
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(GiftCardRedeemError(e.toString()));
+    }
+  }
+
+  /// Transfer a gift card to another user
+  Future<void> transferGiftCard({
+    required String giftCardId,
+    required String recipientEmail,
+    required String recipientName,
+    required String message,
     required String transactionId,
     required String verificationToken,
   }) async {
     try {
-      // Validate purchase request before processing
-      final validation = GiftCardValidation.validatePurchaseRequest(
-        amount: amount,
-        brand: brand,
-        currency: currency,
-        userBalance: userBalance,
+      if (isClosed) return;
+      emit(GiftCardTransferring());
+
+      final result = await _repository.transferGiftCard(
+        giftCardId: giftCardId,
         recipientEmail: recipientEmail,
         recipientName: recipientName,
         message: message,
-      );
-
-      // If validation fails, emit error immediately
-      if (validation.isLeft()) {
-        if (isClosed) return;
-        final error = validation.fold(
-          (l) => l,
-          (r) => const GeneralValidationError('Validation failed'),
-        );
-        emit(GiftCardValidationError(
-          message: GiftCardValidation.getErrorMessage(error),
-          field: error.field ?? 'unknown',
-        ));
-        return;
-      }
-
-      // Step 1: Initializing (10%)
-      if (isClosed) return;
-      emit(GiftCardPurchaseProcessing(
-        brandId: brandId,
-        amount: amount,
-        currentStep: 'Initializing purchase...',
-        progress: 0.1,
-      ));
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (isClosed) return;
-
-      // Step 2: Validating payment (30%)
-      emit(GiftCardPurchaseProcessing(
-        brandId: brandId,
-        amount: amount,
-        currentStep: 'Validating payment method...',
-        progress: 0.3,
-      ));
-      await Future.delayed(const Duration(milliseconds: 800));
-      if (isClosed) return;
-
-      // Step 3: Processing purchase (60%)
-      emit(GiftCardPurchaseProcessing(
-        brandId: brandId,
-        amount: amount,
-        currentStep: 'Generating gift card...',
-        progress: 0.6,
-      ));
-
-      // Make the actual purchase with verification token
-      final result = await _repository.purchaseGiftCard(
-        brandId: brandId,
-        amount: amount,
-        currency: currency,
-        recipientEmail: recipientEmail,
-        recipientName: recipientName,
-        message: message,
-        // Note: transactionId and verificationToken are handled separately by the repository
+        transactionId: transactionId,
+        verificationToken: verificationToken,
       );
       if (isClosed) return;
 
       result.fold(
         (failure) {
-          // Handle specific error cases
-          if (failure.message.contains('Insufficient funds')) {
-            emit(GiftCardInsufficientFunds(
-              required: amount,
-              available: 0.0, // Would need to get actual balance
-              brandName: 'Gift Card',
-            ));
+          if (failure.message.contains('Invalid transaction PIN')) {
+            emit(const GiftCardTransferError('Invalid transaction PIN'));
           } else if (failure.message.contains('not found')) {
-            emit(GiftCardNotFound(
-              identifier: brandId,
-              type: 'brand',
-            ));
-          } else if (failure.message.contains('sold out')) {
-            emit(GiftCardSoldOut(
-              brandId: brandId,
-              brandName: 'Gift Card',
-            ));
+            emit(const GiftCardTransferError('Gift card not found'));
+          } else if (failure.message.contains('not active') ||
+              failure.message.contains('only transfer active')) {
+            emit(const GiftCardTransferError('Only active gift cards can be transferred'));
           } else {
-            emit(GiftCardPurchaseError(failure.message));
+            emit(GiftCardTransferError(failure.message));
           }
         },
-        (giftCard) async {
-          // Step 4: Finalizing (90%)
-          if (isClosed) return;
-          emit(GiftCardPurchaseProcessing(
-            brandId: brandId,
-            amount: amount,
-            currentStep: 'Finalizing purchase...',
-            progress: 0.9,
-          ));
-          await Future.delayed(const Duration(milliseconds: 500));
-          if (isClosed) return;
+        (giftCard) {
+          // Invalidate cache after transfer
+          _cacheManager.invalidate('my_gift_cards');
 
-          // Complete
-          emit(GiftCardPurchaseCompleted(
-            giftCard: giftCard,
-            receiptUrl: null,
-            transactionId: giftCard.transactionId,
-          ));
+          emit(GiftCardTransferred(giftCard: giftCard));
         },
       );
     } catch (e) {
       if (isClosed) return;
-      emit(GiftCardPurchaseError(e.toString()));
+      emit(GiftCardTransferError(e.toString()));
     }
   }
 
-  Future<void> redeemGiftCard(
-    String giftCardId,
-    String code, {
-    String? pin,
+  /// Check the balance of a gift card by card number and PIN
+  Future<void> checkGiftCardBalance({
+    required String cardNumber,
+    required String cardPin,
   }) async {
     try {
-      // Validate code format first
-      final codeValidation = GiftCardValidation.validateGiftCardCode(code);
-      if (codeValidation.isLeft()) {
-        if (isClosed) return;
-        final error = codeValidation.fold(
-          (l) => l,
-          (r) => const CodeValidationError('Invalid code'),
-        );
-        emit(GiftCardValidationError(
-          message: GiftCardValidation.getErrorMessage(error),
-          field: error.field ?? 'unknown',
-        ));
-        return;
-      }
-
-      // Validate PIN if provided
-      if (pin != null && pin.isNotEmpty) {
-        final pinValidation = GiftCardValidation.validatePin(pin);
-        if (pinValidation.isLeft()) {
-          if (isClosed) return;
-          final error = pinValidation.fold(
-            (l) => l,
-            (r) => const CodeValidationError('Invalid PIN'),
-          );
-          emit(GiftCardValidationError(
-            message: GiftCardValidation.getErrorMessage(error),
-            field: error.field ?? 'unknown',
-          ));
-          return;
-        }
-      }
-
       if (isClosed) return;
-      emit(GiftCardRedeeming());
+      emit(GiftCardBalanceLoading());
 
-      // In production, this would call the repository
-      // For now, simulate redemption
-      await Future.delayed(const Duration(seconds: 2));
+      final result = await _repository.getGiftCardBalance(
+        cardNumber: cardNumber,
+        cardPin: cardPin,
+      );
       if (isClosed) return;
 
-      final giftCard = GiftCard(
-        id: giftCardId,
-        brandId: '1',
-        brandName: 'Amazon',
-        logoUrl: 'https://example.com/amazon-logo.png',
-        amount: 100.0,
-        discountPercentage: 5.0,
-        finalPrice: 95.0,
-        currency: 'USD',
-        status: GiftCardStatus.used,
-        type: GiftCardType.digital,
-        category: GiftCardCategory.shopping,
-        description: 'Amazon Gift Card',
-        termsAndConditions: 'Terms and conditions apply',
-        expiryDate: DateTime.now().add(const Duration(days: 365)),
-        purchaseDate: DateTime.now().subtract(const Duration(days: 30)),
-        code: code,
-        pin: pin,
-        isRedeemed: true,
-        availableDenominations: ['25', '50', '100'],
+      result.fold(
+        (failure) {
+          if (failure.message.contains('not found')) {
+            emit(const GiftCardBalanceError('Gift card not found'));
+          } else if (failure.message.contains('Invalid') ||
+              failure.message.contains('invalid')) {
+            emit(const GiftCardBalanceError('Invalid card number or PIN'));
+          } else {
+            emit(GiftCardBalanceError(failure.message));
+          }
+        },
+        (balance) => emit(GiftCardBalanceLoaded(
+          balance: balance.balance,
+          brandName: balance.brandName,
+          expiryDate: balance.expiryDate,
+          status: balance.status,
+        )),
       );
-
-      // Validate the complete redemption request
-      final redemptionValidation =
-          GiftCardValidation.validateRedemptionRequest(
-        giftCard: giftCard,
-        code: code,
-        pin: pin,
-      );
-
-      if (redemptionValidation.isLeft()) {
-        if (isClosed) return;
-        final error = redemptionValidation.fold(
-          (l) => l,
-          (r) => const GeneralValidationError('Redemption validation failed'),
-        );
-        emit(GiftCardValidationError(
-          message: GiftCardValidation.getErrorMessage(error),
-          field: error.field ?? 'unknown',
-        ));
-        return;
-      }
-
-      emit(GiftCardRedeemed(giftCard));
     } catch (e) {
       if (isClosed) return;
-      emit(GiftCardRedeemError(e.toString()));
+      emit(GiftCardBalanceError(e.toString()));
     }
   }
 
@@ -473,28 +427,42 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     emit(GiftCardInitial());
   }
 
-  Future<void> loadMyGiftCards() async {
+  Future<void> loadMyGiftCards({String? status, String? brandId}) async {
     try {
       if (isClosed) return;
       emit(GiftCardLoading());
 
-      final result = await _repository.getUserGiftCards();
-      if (isClosed) return;
+      final cacheKey = 'my_gift_cards${status != null ? '_$status' : ''}${brandId != null ? '_$brandId' : ''}';
 
-      result.fold(
-        (failure) => emit(GiftCardNetworkError(
-          message: failure.message,
-          canRetry: true,
-          operation: 'Loading your gift cards',
-        )),
-        (giftCards) {
+      await for (final result in _cacheManager.get<List<GiftCard>>(
+        key: cacheKey,
+        fetcher: () async {
+          final r = await _repository.getUserGiftCards(
+            status: status,
+            brandId: brandId,
+          );
+          return r.fold(
+            (failure) => throw Exception(failure.message),
+            (cards) => cards,
+          );
+        },
+        config: CacheConfig.giftCards,
+        serializer: (cards) => jsonEncode(cards.map((c) => c.toJson()).toList()),
+        deserializer: (json) {
+          final list = jsonDecode(json) as List;
+          return list.map((j) => GiftCard.fromJson(j as Map<String, dynamic>)).toList();
+        },
+      )) {
+        if (isClosed) return;
+        if (result.data != null) {
+          final giftCards = result.data!;
           if (giftCards.isEmpty) {
             emit(const UserGiftCardsEmpty());
           } else {
             emit(MyGiftCardsLoaded(giftCards));
           }
-        },
-      );
+        }
+      }
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardNetworkError(
@@ -505,267 +473,273 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
-  Future<void> sellGiftCardToContact({
-    required String giftCardId,
-    required String contactName,
-    required String contactEmail,
-    required double price,
-  }) async {
+  Future<void> loadGiftCardDetails(String giftCardId) async {
     try {
-      // Validate recipient email
-      final emailValidation = GiftCardValidation.validateEmail(contactEmail);
-      if (emailValidation.isLeft()) {
-        if (isClosed) return;
-        final error = emailValidation.fold(
-          (l) => l,
-          (r) => const EmailValidationError('Invalid email'),
-        );
-        emit(GiftCardValidationError(
-          message: GiftCardValidation.getErrorMessage(error),
-          field: error.field ?? 'unknown',
-        ));
-        return;
-      }
-
-      // Validate recipient name
-      final nameValidation = GiftCardValidation.validateRecipientName(contactName);
-      if (nameValidation.isLeft()) {
-        if (isClosed) return;
-        final error = nameValidation.fold(
-          (l) => l,
-          (r) => const GeneralValidationError('Invalid name'),
-        );
-        emit(GiftCardValidationError(
-          message: GiftCardValidation.getErrorMessage(error),
-          field: error.field ?? 'unknown',
-        ));
-        return;
-      }
-
-      // Validate selling price (must be positive and reasonable)
-      if (price <= 0) {
+      if (giftCardId.trim().isEmpty) {
         if (isClosed) return;
         emit(const GiftCardValidationError(
-          message: 'Selling price must be greater than zero',
-          field: 'price',
+          message: 'Gift card ID cannot be empty',
+          field: 'giftCardId',
         ));
         return;
       }
 
       if (isClosed) return;
-      emit(GiftCardSelling());
+      emit(GiftCardLoading());
 
-      // Simulate selling gift card - in production, call repository
-      await Future.delayed(const Duration(seconds: 2));
+      final result = await _repository.getGiftCardById(giftCardId);
       if (isClosed) return;
-      final giftCard = GiftCard(
-        id: giftCardId,
-        brandId: '1',
-        brandName: 'Amazon',
-        logoUrl: 'https://example.com/amazon-logo.png',
-        amount: 100.0,
-        discountPercentage: 5.0,
-        finalPrice: 95.0,
-        currency: 'USD',
-        status: GiftCardStatus.used,
-        type: GiftCardType.digital,
-        category: GiftCardCategory.shopping,
-        description: 'Amazon Gift Card',
-        termsAndConditions: 'Terms and conditions apply',
-        expiryDate: DateTime.now().add(const Duration(days: 365)),
-        purchaseDate: DateTime.now().subtract(const Duration(days: 30)),
-        recipientEmail: contactEmail,
-        recipientName: contactName,
-        isRedeemed: false,
-        availableDenominations: ['25', '50', '100'],
+
+      result.fold(
+        (failure) {
+          if (failure.message.contains('not found')) {
+            emit(GiftCardNotFound(identifier: giftCardId, type: 'card'));
+          } else {
+            emit(GiftCardNetworkError(
+              message: failure.message,
+              canRetry: true,
+              operation: 'Loading gift card details',
+            ));
+          }
+        },
+        (giftCard) => emit(GiftCardDetailsLoaded(giftCard)),
       );
-      emit(GiftCardSold(giftCard));
     } catch (e) {
       if (isClosed) return;
-      emit(GiftCardSellError(e.toString()));
+      emit(GiftCardNetworkError(
+        message: e.toString(),
+        canRetry: true,
+        operation: 'Loading gift card details',
+      ));
     }
   }
 
-  Future<void> sendGiftCardToContact({
-    required String giftCardId,
-    required String contactName,
-    required String contactEmail,
-    String? message,
+  // ============================================
+  // SELL FLOW METHODS
+  // ============================================
+
+  Future<void> loadSellableCards() async {
+    try {
+      if (isClosed) return;
+      emit(SellableCardsLoading());
+
+      final result = await _repository.getSellableCards();
+      if (isClosed) return;
+
+      result.fold(
+        (failure) => emit(GiftCardNetworkError(
+          message: failure.message,
+          canRetry: true,
+          operation: 'Loading sellable cards',
+        )),
+        (cards) {
+          if (cards.isEmpty) {
+            emit(const SellableCardsEmpty());
+          } else {
+            emit(SellableCardsLoaded(cards));
+          }
+        },
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(GiftCardNetworkError(
+        message: e.toString(),
+        canRetry: true,
+        operation: 'Loading sellable cards',
+      ));
+    }
+  }
+
+  Future<void> getSellRate({
+    required String cardType,
+    required double denomination,
+    String? currency,
   }) async {
     try {
-      // Validate recipient email
-      final emailValidation = GiftCardValidation.validateEmail(contactEmail);
-      if (emailValidation.isLeft()) {
-        if (isClosed) return;
-        final error = emailValidation.fold(
-          (l) => l,
-          (r) => const EmailValidationError('Invalid email'),
-        );
-        emit(GiftCardValidationError(
-          message: GiftCardValidation.getErrorMessage(error),
-          field: error.field ?? 'unknown',
-        ));
-        return;
-      }
+      if (isClosed) return;
+      emit(SellRateLoading());
 
-      // Validate recipient name
-      final nameValidation = GiftCardValidation.validateRecipientName(contactName);
-      if (nameValidation.isLeft()) {
-        if (isClosed) return;
-        final error = nameValidation.fold(
-          (l) => l,
-          (r) => const GeneralValidationError('Invalid name'),
-        );
-        emit(GiftCardValidationError(
-          message: GiftCardValidation.getErrorMessage(error),
-          field: error.field ?? 'unknown',
-        ));
-        return;
-      }
+      final result = await _repository.getSellRate(
+        cardType: cardType,
+        denomination: denomination,
+        currency: currency,
+      );
+      if (isClosed) return;
 
-      // Validate message if provided
-      if (message != null && message.isNotEmpty) {
-        final messageValidation = GiftCardValidation.validateMessage(message);
-        if (messageValidation.isLeft()) {
-          if (isClosed) return;
-          final error = messageValidation.fold(
-            (l) => l,
-            (r) => const GeneralValidationError('Invalid message'),
-          );
-          emit(GiftCardValidationError(
-            message: GiftCardValidation.getErrorMessage(error),
-            field: error.field ?? 'unknown',
+      result.fold(
+        (failure) => emit(SellError(failure.message)),
+        (rate) => emit(SellRateLoaded(rate)),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(SellError(e.toString()));
+    }
+  }
+
+  Future<void> sellGiftCard({
+    required String cardType,
+    required String cardNumber,
+    required String cardPin,
+    required double denomination,
+    required String transactionId,
+    required String verificationToken,
+    String? currency,
+    List<String>? images,
+    String? idempotencyKey,
+  }) async {
+    try {
+      // Generate idempotency key if not provided
+      final effectiveIdempotencyKey = idempotencyKey ?? generateSellIdempotencyKey(cardType);
+
+      if (isClosed) return;
+      emit(SellProcessing(
+        cardType: cardType,
+        denomination: denomination,
+        currentStep: 'Validating card details...',
+        progress: 0.2,
+      ));
+
+      if (isClosed) return;
+      emit(SellProcessing(
+        cardType: cardType,
+        denomination: denomination,
+        currentStep: 'Submitting card for review...',
+        progress: 0.5,
+      ));
+
+      final result = await _repository.sellGiftCard(
+        cardType: cardType,
+        cardNumber: cardNumber,
+        cardPin: cardPin,
+        denomination: denomination,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
+        currency: currency,
+        images: images,
+        idempotencyKey: effectiveIdempotencyKey,
+      );
+      if (isClosed) return;
+
+      result.fold(
+        (failure) {
+          if (failure.message.contains('Invalid transaction PIN')) {
+            emit(const SellError('Invalid transaction PIN'));
+          } else if (failure.message.contains('unavailable')) {
+            emit(const SellError('Sell service temporarily unavailable. Please try again later.'));
+          } else {
+            emit(SellError(failure.message));
+          }
+        },
+        (sale) {
+          emit(SellProcessing(
+            cardType: cardType,
+            denomination: denomination,
+            currentStep: 'Card submitted successfully!',
+            progress: 1.0,
           ));
-          return;
+
+          // Invalidate sales cache
+          _cacheManager.invalidate('my_sales');
+
+          emit(SellSubmitted(sale: sale));
+        },
+      );
+    } on GrpcError catch (e) {
+      if (isClosed) return;
+      // Queue sell submission for retry when offline
+      if (e.code == StatusCode.unavailable || e.code == StatusCode.deadlineExceeded) {
+        await _mutationQueue.enqueueGiftCardSell(
+          cardType: cardType,
+          cardNumber: cardNumber,
+          cardPin: cardPin,
+          denomination: denomination,
+          currency: currency,
+          images: images,
+          idempotencyKey: idempotencyKey,
+        );
+        emit(const SellQueued(message: 'Sell queued. Will submit when back online.'));
+      } else {
+        emit(SellError(e.message ?? e.toString()));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      emit(SellError(e.toString()));
+    }
+  }
+
+  Future<void> getSellStatus(String saleId) async {
+    try {
+      if (isClosed) return;
+      emit(GiftCardLoading());
+
+      final result = await _repository.getSellStatus(saleId);
+      if (isClosed) return;
+
+      result.fold(
+        (failure) => emit(SellError(failure.message)),
+        (sale) => emit(SellStatusLoaded(sale)),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(SellError(e.toString()));
+    }
+  }
+
+  Future<void> loadMySales({String? status}) async {
+    try {
+      if (isClosed) return;
+      emit(GiftCardLoading());
+
+      final cacheKey = 'my_sales${status != null ? '_$status' : ''}';
+
+      await for (final result in _cacheManager.get<List<GiftCardSale>>(
+        key: cacheKey,
+        fetcher: () async {
+          final r = await _repository.getMySales(status: status);
+          return r.fold(
+            (failure) => throw Exception(failure.message),
+            (sales) => sales,
+          );
+        },
+        config: CacheConfig.giftCardSales,
+        serializer: (sales) => jsonEncode(sales.map((s) => s.toJson()).toList()),
+        deserializer: (json) {
+          final list = jsonDecode(json) as List;
+          return list.map((j) => GiftCardSale.fromJson(j as Map<String, dynamic>)).toList();
+        },
+      )) {
+        if (isClosed) return;
+        if (result.data != null) {
+          final sales = result.data!;
+          if (sales.isEmpty) {
+            emit(const MySalesEmpty());
+          } else {
+            emit(MySalesLoaded(sales));
+          }
         }
       }
-
+    } catch (e) {
       if (isClosed) return;
-      emit(GiftCardSending());
+      emit(GiftCardNetworkError(
+        message: e.toString(),
+        canRetry: true,
+        operation: 'Loading your sales',
+      ));
+    }
+  }
 
-      // Simulate sending gift card - in production, call repository
-      await Future.delayed(const Duration(seconds: 2));
+  Future<void> loadGiftCardHistory({
+    String? giftCardId,
+    String? transactionType,
+  }) async {
+    try {
       if (isClosed) return;
+      emit(GiftCardLoading());
 
-      final giftCard = GiftCard(
-        id: giftCardId,
-        brandId: '1',
-        brandName: 'Amazon',
-        logoUrl: 'https://example.com/amazon-logo.png',
-        amount: 100.0,
-        discountPercentage: 5.0,
-        finalPrice: 95.0,
-        currency: 'USD',
-        status: GiftCardStatus.active,
-        type: GiftCardType.digital,
-        category: GiftCardCategory.shopping,
-        description: 'Amazon Gift Card',
-        termsAndConditions: 'Terms and conditions apply',
-        expiryDate: DateTime.now().add(const Duration(days: 365)),
-        purchaseDate: DateTime.now(),
-        recipientEmail: contactEmail,
-        recipientName: contactName,
-        message: message,
-        isRedeemed: false,
-        availableDenominations: ['25', '50', '100'],
+      final result = await _repository.getGiftCardHistory(
+        giftCardId: giftCardId,
+        transactionType: transactionType,
       );
-
-      emit(GiftCardSent(giftCard));
-    } catch (e) {
-      if (isClosed) return;
-      emit(GiftCardSendError(e.toString()));
-    }
-  }
-
-  Future<void> validateGiftCardCode(String code) async {
-    try {
-      if (isClosed) return;
-      emit(GiftCardLoading());
-
-      // Use validation layer for code format validation
-      final codeValidation = GiftCardValidation.validateGiftCardCode(code);
-
-      if (codeValidation.isLeft()) {
-        if (isClosed) return;
-        final error = codeValidation.fold(
-          (l) => l,
-          (r) => const CodeValidationError('Invalid code'),
-        );
-        emit(GiftCardValidationError(
-          message: GiftCardValidation.getErrorMessage(error),
-          field: error.field ?? 'unknown',
-        ));
-        return;
-      }
-
-      // Simulate server-side code validation
-      await Future.delayed(const Duration(seconds: 1));
-      if (isClosed) return;
-
-      // In production, this would call an API to verify if the code exists
-      // and is valid in the system
-      final isValid = true; // Mock result
-
-      emit(GiftCardCodeValidated(isValid));
-    } catch (e) {
-      if (isClosed) return;
-      emit(GiftCardNetworkError(
-        message: e.toString(),
-        canRetry: true,
-        operation: 'Validating gift card code',
-      ));
-    }
-  }
-
-  Future<void> checkGiftCardBalance(String giftCardId) async {
-    try {
-      // Validate gift card ID format
-      if (giftCardId.trim().isEmpty) {
-        if (isClosed) return;
-        emit(const GiftCardValidationError(
-          message: 'Gift card ID cannot be empty',
-          field: 'giftCardId',
-        ));
-        return;
-      }
-
-      if (isClosed) return;
-      emit(GiftCardLoading());
-
-      // Simulate balance check - in production, call repository
-      await Future.delayed(const Duration(seconds: 1));
-      if (isClosed) return;
-
-      // Mock balance - in real app, this would fetch from API
-      final balance = 75.50; // Example remaining balance
-
-      emit(GiftCardBalanceLoaded(balance, giftCardId));
-    } catch (e) {
-      if (isClosed) return;
-      emit(GiftCardNetworkError(
-        message: e.toString(),
-        canRetry: true,
-        operation: 'Checking gift card balance',
-      ));
-    }
-  }
-
-  Future<void> loadGiftCardTransactions(String giftCardId) async {
-    try {
-      // Validate gift card ID
-      if (giftCardId.trim().isEmpty) {
-        if (isClosed) return;
-        emit(const GiftCardValidationError(
-          message: 'Gift card ID cannot be empty',
-          field: 'giftCardId',
-        ));
-        return;
-      }
-
-      if (isClosed) return;
-      emit(GiftCardLoading());
-
-      final result = await _repository.getGiftCardTransactions();
       if (isClosed) return;
 
       result.fold(
@@ -792,62 +766,9 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
-  Future<void> quickSellGiftCard({
-    required String giftCardId,
-    required double askingPrice,
-  }) async {
-    try {
-      // Validate asking price
-      if (askingPrice <= 0) {
-        if (isClosed) return;
-        emit(const GiftCardValidationError(
-          message: 'Asking price must be greater than zero',
-          field: 'askingPrice',
-        ));
-        return;
-      }
-
-      // In production, we would fetch the actual gift card to validate
-      // that asking price is reasonable (e.g., not > original amount)
-      // For now, we'll add a simple upper limit check
-      if (askingPrice > 10000) {
-        if (isClosed) return;
-        emit(const GiftCardValidationError(
-          message: 'Asking price is unreasonably high. Please contact support.',
-          field: 'askingPrice',
-        ));
-        return;
-      }
-
-      if (isClosed) return;
-      emit(GiftCardSelling());
-
-      // Simulate quick sell - in production, call repository
-      await Future.delayed(const Duration(seconds: 2));
-      if (isClosed) return;
-      final giftCard = GiftCard(
-        id: giftCardId,
-        brandId: '1',
-        brandName: 'Amazon',
-        logoUrl: 'https://example.com/amazon-logo.png',
-        amount: 100.0,
-        discountPercentage: 5.0,
-        finalPrice: askingPrice,
-        currency: 'USD',
-        status: GiftCardStatus.pending,
-        type: GiftCardType.digital,
-        category: GiftCardCategory.shopping,
-        description: 'Amazon Gift Card - Quick Sell',
-        termsAndConditions: 'Terms and conditions apply',
-        expiryDate: DateTime.now().add(const Duration(days: 365)),
-        purchaseDate: DateTime.now().subtract(const Duration(days: 30)),
-        isRedeemed: false,
-        availableDenominations: ['25', '50', '100'],
-      );
-      emit(GiftCardSold(giftCard));
-    } catch (e) {
-      if (isClosed) return;
-      emit(GiftCardSellError(e.toString()));
-    }
+  @override
+  Future<void> close() {
+    _searchDebouncer.dispose();
+    return super.close();
   }
-} 
+}

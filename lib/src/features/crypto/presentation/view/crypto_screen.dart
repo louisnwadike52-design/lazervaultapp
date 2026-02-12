@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
@@ -39,44 +40,7 @@ class _CryptoScreenState extends State<CryptoScreen>
   final TextEditingController _searchController = TextEditingController();
   bool _showGainers = true;
 
-  // Mock recent transactions for dashboard
-  final List<CryptoTransactionHistory> _recentTransactions = [
-    CryptoTransactionHistory(
-      id: 'TXN001',
-      type: CryptoTransactionType.buy,
-      cryptoName: 'Bitcoin',
-      cryptoSymbol: 'BTC',
-      amount: '0.005432',
-      gbpAmount: 350.00,
-      status: CryptoTransactionStatus.completed,
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      fee: 5.25,
-    ),
-    CryptoTransactionHistory(
-      id: 'TXN002',
-      type: CryptoTransactionType.sell,
-      cryptoName: 'Ethereum',
-      cryptoSymbol: 'ETH',
-      amount: '0.2145',
-      gbpAmount: 331.25,
-      status: CryptoTransactionStatus.completed,
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      fee: 4.97,
-    ),
-    CryptoTransactionHistory(
-      id: 'TXN003',
-      type: CryptoTransactionType.swap,
-      cryptoName: 'Solana',
-      cryptoSymbol: 'SOL',
-      amount: '2.5',
-      gbpAmount: 392.50,
-      status: CryptoTransactionStatus.pending,
-      timestamp: DateTime.now().subtract(const Duration(days: 2)),
-      fee: 3.92,
-      fromCrypto: 'ETH',
-      toCrypto: 'SOL',
-    ),
-  ];
+  // Transactions are loaded from the backend via CryptosCubit state
 
   @override
   void initState() {
@@ -97,7 +61,7 @@ class _CryptoScreenState extends State<CryptoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: BlocBuilder<CryptoCubit, CryptoState>(
           builder: (context, state) {
@@ -112,7 +76,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     _buildWarningMessage(),
                     _buildMarketOverview(state),
                     _buildWatchlistSection(state),
-                    _buildRecentTransactionsSection(),
+                    _buildRecentTransactionsSection(state.transactions),
                     _buildLazerVaultServices(),
                     _buildPriceAlertsSection(),
                     _buildLazerVaultCard(),
@@ -169,7 +133,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             height: 40.h,
             width: 40.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: IconButton(
@@ -197,7 +161,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 height: 40.h,
                 width: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E2746),
+                  color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: IconButton(
@@ -211,7 +175,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 height: 40.h,
                 width: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E2746),
+                  color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: IconButton(
@@ -232,7 +196,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 height: 40.h,
                 width: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E2746),
+                  color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Stack(
@@ -270,7 +234,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 height: 40.h,
                 width: 40.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF1E2746),
+                color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: IconButton(
@@ -326,7 +290,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           Row(
             children: [
               Text(
-                '£${totalValue.toStringAsFixed(2)}',
+                '${CurrencySymbols.currentSymbol}${totalValue.toStringAsFixed(2)}',
                 style: TextStyle(
                 color: Colors.white,
                   fontSize: 32.sp,
@@ -371,7 +335,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildPortfolioStat('Assets', '${state.holdings.length}'),
-              _buildPortfolioStat('24h Change', '${isPositive ? '+' : ''}£${totalGainLoss.abs().toStringAsFixed(2)}'),
+              _buildPortfolioStat('24h Change', '${isPositive ? '+' : ''}${CurrencySymbols.currentSymbol}${totalGainLoss.abs().toStringAsFixed(2)}'),
               _buildPortfolioStat('Best Asset', state.holdings.isNotEmpty ? 
                 '${state.holdings.first.cryptoSymbol} ${state.holdings.first.totalGainLossPercentage >= 0 ? '+' : ''}${state.holdings.first.totalGainLossPercentage.toStringAsFixed(1)}%' : 
                 'None'),
@@ -460,7 +424,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Text(
@@ -504,7 +468,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(24.r),
       ),
       child: Column(
@@ -528,9 +492,9 @@ class _CryptoScreenState extends State<CryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          _buildPriceAlert('BTC', 'Above', '£70,000', true),
+          _buildPriceAlert('BTC', 'Above', '${CurrencySymbols.currentSymbol}70,000', true),
           SizedBox(height: 12.h),
-          _buildPriceAlert('ETH', 'Below', '£1,400', false),
+          _buildPriceAlert('ETH', 'Below', '${CurrencySymbols.currentSymbol}1,400', false),
         ],
             ),
           );
@@ -596,7 +560,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(24.r),
       ),
                     child: Column(
@@ -633,7 +597,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 child: _buildWatchlistItem(
                   state.cryptos[i].name,
                   state.cryptos[i].symbol,
-                  '£${state.cryptos[i].currentPrice.toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${state.cryptos[i].currentPrice.toStringAsFixed(2)}',
                   state.cryptos[i].priceChangePercentage24h,
                   Icons.star_rounded,
                 ),
@@ -666,7 +630,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           name: name,
           symbol: symbol.toLowerCase(),
           image: 'default.png',
-          currentPrice: double.tryParse(price.replaceAll('£', '').replaceAll(',', '')) ?? 0.0,
+          currentPrice: double.tryParse(price.replaceAll(CurrencySymbols.currentSymbol, '').replaceAll(',', '')) ?? 0.0,
           marketCap: 0.0,
           marketCapRank: 0,
           totalVolume: 0.0,
@@ -747,12 +711,49 @@ class _CryptoScreenState extends State<CryptoScreen>
     );
   }
 
-  Widget _buildRecentTransactionsSection() {
+  CryptoTransactionHistory _convertToHistory(CryptoTransaction txn) {
+    CryptoTransactionType historyType;
+    switch (txn.type) {
+      case TransactionType.buy:
+        historyType = CryptoTransactionType.buy;
+      case TransactionType.sell:
+        historyType = CryptoTransactionType.sell;
+      case TransactionType.swap:
+        historyType = CryptoTransactionType.swap;
+    }
+
+    CryptoTransactionStatus historyStatus;
+    switch (txn.status.toLowerCase()) {
+      case 'completed':
+      case 'success':
+        historyStatus = CryptoTransactionStatus.completed;
+      case 'pending':
+      case 'processing':
+        historyStatus = CryptoTransactionStatus.pending;
+      default:
+        historyStatus = CryptoTransactionStatus.failed;
+    }
+
+    return CryptoTransactionHistory(
+      id: txn.id,
+      type: historyType,
+      cryptoName: txn.cryptoName,
+      cryptoSymbol: txn.cryptoSymbol,
+      amount: txn.quantity.toStringAsFixed(6),
+      gbpAmount: txn.totalAmount,
+      status: historyStatus,
+      timestamp: txn.timestamp,
+      fee: txn.fees,
+    );
+  }
+
+  Widget _buildRecentTransactionsSection(List<CryptoTransaction> transactions) {
+    final recentTransactions = transactions.map(_convertToHistory).toList();
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(24.r),
       ),
             child: Column(
@@ -793,11 +794,11 @@ class _CryptoScreenState extends State<CryptoScreen>
             ],
                 ),
                 SizedBox(height: 16.h),
-          if (_recentTransactions.isNotEmpty) ...[
-            for (int i = 0; i < (_recentTransactions.length > 3 ? 3 : _recentTransactions.length); i++)
+          if (recentTransactions.isNotEmpty) ...[
+            for (int i = 0; i < (recentTransactions.length > 3 ? 3 : recentTransactions.length); i++)
               Padding(
                 padding: EdgeInsets.only(bottom: i < 2 ? 12.h : 0),
-                child: _buildRecentTransactionItem(_recentTransactions[i]),
+                child: _buildRecentTransactionItem(recentTransactions[i]),
               ),
           ] else ...[
             Container(
@@ -831,7 +832,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             ),
           ],
           SizedBox(height: 12.h),
-          _buildTransactionSummaryStats(),
+          _buildTransactionSummaryStats(recentTransactions),
               ],
             ),
           );
@@ -927,10 +928,10 @@ class _CryptoScreenState extends State<CryptoScreen>
     );
   }
 
-  Widget _buildTransactionSummaryStats() {
-    final totalTransactions = _recentTransactions.length;
-    final totalValue = _recentTransactions.fold(0.0, (sum, txn) => sum + txn.gbpAmount);
-    final completedTransactions = _recentTransactions.where((txn) => txn.status == CryptoTransactionStatus.completed).length;
+  Widget _buildTransactionSummaryStats(List<CryptoTransactionHistory> recentTransactions) {
+    final totalTransactions = recentTransactions.length;
+    final totalValue = recentTransactions.fold(0.0, (sum, txn) => sum + txn.gbpAmount);
+    final completedTransactions = recentTransactions.where((txn) => txn.status == CryptoTransactionStatus.completed).length;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -957,7 +958,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildSummaryStatItem('Transactions', '$totalTransactions'),
-          _buildSummaryStatItem('Total Value', '£${totalValue.toStringAsFixed(0)}'),
+          _buildSummaryStatItem('Total Value', '${CurrencySymbols.currentSymbol}${totalValue.toStringAsFixed(0)}'),
           _buildSummaryStatItem('Completed', '$completedTransactions'),
         ],
       ),
@@ -992,7 +993,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       Container(
         height: Get.height * 0.6,
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A3E),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.r),
             topRight: Radius.circular(24.r),
@@ -1036,8 +1037,8 @@ class _CryptoScreenState extends State<CryptoScreen>
                     _buildDetailItem('Transaction ID', transaction.id),
                     _buildDetailItem('Type', _getTransactionTitleForHistory(transaction)),
                     _buildDetailItem('Amount', '${transaction.amount} ${transaction.cryptoSymbol}'),
-                    _buildDetailItem('Value', '£${transaction.gbpAmount.toStringAsFixed(2)}'),
-                    _buildDetailItem('Fee', '£${transaction.fee.toStringAsFixed(2)}'),
+                    _buildDetailItem('Value', '${CurrencySymbols.currentSymbol}${transaction.gbpAmount.toStringAsFixed(2)}'),
+                    _buildDetailItem('Fee', '${CurrencySymbols.currentSymbol}${transaction.fee.toStringAsFixed(2)}'),
                     _buildDetailItem('Status', transaction.status.name.toUpperCase()),
                     _buildDetailItem('Date', _formatTransactionDateTime(transaction.timestamp)),
                     if (transaction.type == CryptoTransactionType.swap) ...[
@@ -1114,7 +1115,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       cryptoSymbol: transaction.cryptoSymbol,
       cryptoAmount: transaction.amount,
       pricePerUnit: transaction.gbpAmount / double.parse(transaction.amount),
-      gbpAmount: transaction.gbpAmount,
+      fiatAmount: transaction.gbpAmount,
       networkFee: transaction.fee * 0.3,
       tradingFee: transaction.fee * 0.7,
       totalAmount: transaction.gbpAmount + transaction.fee,
@@ -1244,7 +1245,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2746),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: Column(
@@ -1312,8 +1313,8 @@ class _CryptoScreenState extends State<CryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1376,8 +1377,8 @@ class _CryptoScreenState extends State<CryptoScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildMarketStat('Market Cap', '£2.89T', '+2.4%'),
-              _buildMarketStat('24h Volume', '£82.1B', '+5.1%'),
+              _buildMarketStat('Market Cap', '${CurrencySymbols.currentSymbol}2.89T', '+2.4%'),
+              _buildMarketStat('24h Volume', '${CurrencySymbols.currentSymbol}82.1B', '+5.1%'),
               _buildMarketStat('BTC Dom.', '48.2%', '-0.8%'),
             ],
           ),
@@ -1398,17 +1399,17 @@ class _CryptoScreenState extends State<CryptoScreen>
                 child: _buildTrendingCoin(
                   state.trendingCryptos[i].name,
                   state.trendingCryptos[i].symbol,
-                  '£${state.trendingCryptos[i].currentPrice.toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${state.trendingCryptos[i].currentPrice.toStringAsFixed(2)}',
                   state.trendingCryptos[i].priceChangePercentage24h,
                   Colors.orange,
                 ),
               ),
           ] else ...[
-            _buildTrendingCoin('Bitcoin', 'BTC', '£66,175', 1.93, Colors.orange),
+            _buildTrendingCoin('Bitcoin', 'BTC', '${CurrencySymbols.currentSymbol}66,175', 1.93, Colors.orange),
             SizedBox(height: 12.h),
-            _buildTrendingCoin('Ethereum', 'ETH', '£1,544', 0.67, const Color(0xFF6C5CE7)),
+            _buildTrendingCoin('Ethereum', 'ETH', '${CurrencySymbols.currentSymbol}1,544', 0.67, const Color(0xFF6C5CE7)),
             SizedBox(height: 12.h),
-            _buildTrendingCoin('Solana', 'SOL', '£156.78', 2.45, Colors.purple),
+            _buildTrendingCoin('Solana', 'SOL', '${CurrencySymbols.currentSymbol}156.78', 2.45, Colors.purple),
           ],
         ],
       ),
@@ -1544,7 +1545,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           Expanded(
             child: _buildCryptoCard(
               'BTC',
-              state.cryptos.isNotEmpty ? '£${state.cryptos[0].currentPrice.toStringAsFixed(2)}' : '£66,175',
+              state.cryptos.isNotEmpty ? '${CurrencySymbols.currentSymbol}${state.cryptos[0].currentPrice.toStringAsFixed(2)}' : '${CurrencySymbols.currentSymbol}66,175',
               state.cryptos.isNotEmpty ? state.cryptos[0].priceChangePercentage24h : 1.93,
               [0.2, 0.3, 0.5, 0.4, 0.6, 0.5, 0.7],
               Colors.orange,
@@ -1553,7 +1554,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           Expanded(
             child: _buildCryptoCard(
               'ETH',
-              state.cryptos.length > 1 ? '£${state.cryptos[1].currentPrice.toStringAsFixed(2)}' : '£1,544.43',
+              state.cryptos.length > 1 ? '${CurrencySymbols.currentSymbol}${state.cryptos[1].currentPrice.toStringAsFixed(2)}' : '${CurrencySymbols.currentSymbol}1,544.43',
               state.cryptos.length > 1 ? state.cryptos[1].priceChangePercentage24h : 0.67,
               [0.4, 0.5, 0.3, 0.6, 0.4, 0.5, 0.3],
               const Color(0xFF6C5CE7),
@@ -1593,7 +1594,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 12.h),
       decoration: BoxDecoration(
-                      color: _showGainers ? const Color(0xFF1E2746) : Colors.transparent,
+                      color: _showGainers ? const Color(0xFF1F1F1F) : Colors.transparent,
                       borderRadius: BorderRadius.circular(24.r),
                     ),
                     child: Center(
@@ -1616,7 +1617,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     decoration: BoxDecoration(
-                      color: !_showGainers ? const Color(0xFF1E2746) : Colors.transparent,
+                      color: !_showGainers ? const Color(0xFF1F1F1F) : Colors.transparent,
                       borderRadius: BorderRadius.circular(24.r),
                     ),
                     child: Center(
@@ -1706,7 +1707,7 @@ class _CryptoScreenState extends State<CryptoScreen>
   void _showSearchBottomSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
@@ -1797,7 +1798,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               name: name,
               symbol: symbol.toLowerCase(),
               image: 'default.png',
-              currentPrice: double.tryParse(price.replaceAll('£', '').replaceAll(',', '')) ?? 0.0,
+              currentPrice: double.tryParse(price.replaceAll(CurrencySymbols.currentSymbol, '').replaceAll(',', '')) ?? 0.0,
               marketCap: 0.0,
               marketCapRank: 0,
               totalVolume: 0.0,
@@ -1910,7 +1911,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               name: symbol,
               symbol: symbol.toLowerCase(),
               image: 'default.png',
-              currentPrice: double.tryParse(price.replaceAll('£', '').replaceAll(',', '')) ?? 0.0,
+              currentPrice: double.tryParse(price.replaceAll(CurrencySymbols.currentSymbol, '').replaceAll(',', '')) ?? 0.0,
               marketCap: 0.0,
               marketCapRank: 0,
               totalVolume: 0.0,
@@ -1929,7 +1930,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         margin: EdgeInsets.all(8.w),
         padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2746),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         ),
         child: Column(
@@ -2018,16 +2019,16 @@ class _CryptoScreenState extends State<CryptoScreen>
     
     if (gainers.isEmpty) {
       return [
-        _buildMoverItem('XRP', 'XRP', '£1.87', 2.13, Icons.currency_exchange),
-        _buildMoverItem('SOL', 'Solana', '£156.78', 1.95, Icons.solar_power),
-        _buildMoverItem('MATIC', 'Polygon', '£0.98', 1.45, Icons.hexagon),
+        _buildMoverItem('XRP', 'XRP', '${CurrencySymbols.currentSymbol}1.87', 2.13, Icons.currency_exchange),
+        _buildMoverItem('SOL', 'Solana', '${CurrencySymbols.currentSymbol}156.78', 1.95, Icons.solar_power),
+        _buildMoverItem('MATIC', 'Polygon', '${CurrencySymbols.currentSymbol}0.98', 1.45, Icons.hexagon),
       ];
     }
-    
+
     return gainers.map((crypto) => _buildMoverItem(
       crypto.symbol,
       crypto.name,
-      '£${crypto.currentPrice.toStringAsFixed(2)}',
+      '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
       crypto.priceChangePercentage24h,
       Icons.currency_exchange,
     )).toList();
@@ -2038,16 +2039,16 @@ class _CryptoScreenState extends State<CryptoScreen>
     
     if (losers.isEmpty) {
       return [
-        _buildMoverItem('BNB', 'BNB', '£481.15', -0.83, Icons.attach_money),
-        _buildMoverItem('DOGE', 'Dogecoin', '£0.15', -1.2, Icons.pets),
-        _buildMoverItem('DOT', 'Polkadot', '£7.25', -1.5, Icons.radio_button_unchecked),
+        _buildMoverItem('BNB', 'BNB', '${CurrencySymbols.currentSymbol}481.15', -0.83, Icons.attach_money),
+        _buildMoverItem('DOGE', 'Dogecoin', '${CurrencySymbols.currentSymbol}0.15', -1.2, Icons.pets),
+        _buildMoverItem('DOT', 'Polkadot', '${CurrencySymbols.currentSymbol}7.25', -1.5, Icons.radio_button_unchecked),
       ];
     }
-    
+
     return losers.map((crypto) => _buildMoverItem(
       crypto.symbol,
       crypto.name,
-      '£${crypto.currentPrice.toStringAsFixed(2)}',
+      '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
       crypto.priceChangePercentage24h,
       Icons.currency_exchange,
     )).toList();
@@ -2068,7 +2069,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           name: name,
           symbol: symbol.toLowerCase(),
           image: 'default.png',
-          currentPrice: double.tryParse(price.replaceAll('£', '').replaceAll(',', '')) ?? 0.0,
+          currentPrice: double.tryParse(price.replaceAll(CurrencySymbols.currentSymbol, '').replaceAll(',', '')) ?? 0.0,
           marketCap: 0.0,
           marketCapRank: 0,
           totalVolume: 0.0,
@@ -2085,7 +2086,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2746),
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(16.r),
         ),
         child: Row(
@@ -2161,7 +2162,7 @@ class _CryptoScreenState extends State<CryptoScreen>
     Get.bottomSheet(
       Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A3E),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.r),
             topRight: Radius.circular(24.r),
@@ -2271,7 +2272,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         margin: EdgeInsets.only(bottom: 16.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2746),
+          color: const Color(0xFF1F1F1F),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
         child: Row(

@@ -1,5 +1,5 @@
-import 'dart:math';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grpc/grpc.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
@@ -25,22 +25,32 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     }
   }
 
-  /// Get the current user ID, return guest if not set
-  String get currentUserId => _currentUserId ?? 'guest_user';
+  /// Get the current user ID
+  String get currentUserId => _currentUserId ?? '';
+
+  /// Check if user is authenticated
+  bool get _isAuthenticated => _currentUserId != null && _currentUserId!.isNotEmpty;
 
   /// Load all insurances for the current user
   Future<void> loadInsurances() async {
     try {
       if (isClosed) return;
+      if (!_isAuthenticated) {
+        emit(const InsuranceError('Please log in to view insurance'));
+        return;
+      }
+      if (state is InsuranceLoading) return;
       emit(InsuranceLoading());
 
       final insurances = await repository.getUserInsurances(currentUserId);
       if (isClosed) return;
-      final recentPayments = await repository.getUserPayments(currentUserId);
+
+      // These RPCs may not be implemented yet - provide empty defaults
+      final recentPayments = await _safeCall(() => repository.getUserPayments(currentUserId), <InsurancePayment>[]);
       if (isClosed) return;
-      final overduePayments = await repository.getOverduePayments(currentUserId);
+      final overduePayments = await _safeCall(() => repository.getOverduePayments(currentUserId), <InsurancePayment>[]);
       if (isClosed) return;
-      final statistics = await repository.getInsuranceStatistics(currentUserId);
+      final statistics = await _safeCall(() => repository.getInsuranceStatistics(currentUserId), <String, dynamic>{});
       if (isClosed) return;
 
       emit(InsurancesLoaded(
@@ -55,10 +65,31 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     }
   }
 
+  /// Safely call an RPC, returning a default value if the RPC is unimplemented
+  Future<T> _safeCall<T>(Future<T> Function() call, T defaultValue) async {
+    try {
+      return await call();
+    } on GrpcError catch (e) {
+      if (e.code == StatusCode.unimplemented) {
+        return defaultValue;
+      }
+      rethrow;
+    } on Exception catch (e) {
+      if (e.toString().contains('Unimplemented') || e.toString().contains('not yet available')) {
+        return defaultValue;
+      }
+      rethrow;
+    }
+  }
+
   /// Load details for a specific insurance policy
   Future<void> loadInsuranceDetails(String insuranceId) async {
     try {
       if (isClosed) return;
+      if (!_isAuthenticated) {
+        emit(const InsuranceError('Please log in to view insurance'));
+        return;
+      }
       emit(InsuranceLoading());
 
       final insurance = await repository.getInsuranceById(insuranceId);
@@ -68,9 +99,9 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         return;
       }
 
-      final payments = await repository.getInsurancePayments(insuranceId);
+      final payments = await _safeCall(() => repository.getInsurancePayments(insuranceId), <InsurancePayment>[]);
       if (isClosed) return;
-      final claims = await repository.getInsuranceClaims(insuranceId);
+      final claims = await _safeCall(() => repository.getInsuranceClaims(insuranceId), <InsuranceClaim>[]);
       if (isClosed) return;
 
       emit(InsuranceDetailsLoaded(
@@ -96,10 +127,10 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         claims: [],
       ));
 
-      // Then load payments and claims in the background
-      final payments = await repository.getInsurancePayments(insurance.id);
+      // Then load payments and claims in the background (may be unimplemented)
+      final payments = await _safeCall(() => repository.getInsurancePayments(insurance.id), <InsurancePayment>[]);
       if (isClosed) return;
-      final claims = await repository.getInsuranceClaims(insurance.id);
+      final claims = await _safeCall(() => repository.getInsuranceClaims(insurance.id), <InsuranceClaim>[]);
       if (isClosed) return;
 
       // Update the state with loaded payments and claims
@@ -168,77 +199,39 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     }
   }
 
-  /// Process a premium payment
+  /// Process a premium payment via the backend
   Future<void> processPayment(InsurancePayment payment) async {
     try {
       if (isClosed) return;
       emit(PaymentProcessing(
         payment: payment,
-        step: 'Initializing payment...',
-        progress: 0.1,
-      ));
-
-      // Simulate payment processing steps
-      await Future.delayed(const Duration(seconds: 1));
-      if (isClosed) return;
-      emit(PaymentProcessing(
-        payment: payment,
-        step: 'Verifying payment method...',
-        progress: 0.3,
-      ));
-
-      await Future.delayed(const Duration(seconds: 1));
-      if (isClosed) return;
-      emit(PaymentProcessing(
-        payment: payment,
         step: 'Processing payment...',
-        progress: 0.6,
+        progress: 0.5,
       ));
 
-      await Future.delayed(const Duration(seconds: 1));
-      if (isClosed) return;
-      emit(PaymentProcessing(
-        payment: payment,
-        step: 'Confirming transaction...',
-        progress: 0.8,
-      ));
-
-      await Future.delayed(const Duration(seconds: 1));
+      // Submit payment to backend - backend handles actual processing
+      final createdPayment = await repository.createPayment(payment);
       if (isClosed) return;
 
-      // Simulate payment success/failure (90% success rate)
-      final random = Random();
-      final isSuccess = random.nextDouble() > 0.1;
-
-      if (isSuccess) {
-        final completedPayment = payment.copyWith(
-          status: PaymentStatus.completed,
-          processedAt: DateTime.now(),
-          transactionId: 'TXN${random.nextInt(999999).toString().padLeft(6, '0')}',
-          referenceNumber: 'REF${random.nextInt(999999).toString().padLeft(6, '0')}',
-        );
-
-        await repository.updatePayment(completedPayment);
-        if (isClosed) return;
-        final receiptUrl = await repository.generatePaymentReceipt(completedPayment.id);
+      // Check payment result status
+      if (createdPayment.status == PaymentStatus.completed) {
+        final receiptUrl = await repository.generatePaymentReceipt(createdPayment.id);
         if (isClosed) return;
 
         emit(PaymentCompleted(
-          payment: completedPayment,
+          payment: createdPayment,
           receiptUrl: receiptUrl,
         ));
-      } else {
-        final failedPayment = payment.copyWith(
-          status: PaymentStatus.failed,
-          failureReason: 'Payment processing failed. Please try again.',
-        );
-
-        await repository.updatePayment(failedPayment);
-        if (isClosed) return;
-
+      } else if (createdPayment.status == PaymentStatus.failed) {
         emit(PaymentFailed(
-          payment: failedPayment,
-          error: 'Payment processing failed. Please try again.',
+          payment: createdPayment,
+          error: createdPayment.failureReason ?? 'Payment processing failed. Please try again.',
+        ));
+      } else {
+        // Payment is pending - emit completed with the pending payment
+        emit(PaymentCompleted(
+          payment: createdPayment,
+          receiptUrl: '',
         ));
       }
     } catch (e) {
@@ -258,7 +251,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     required PaymentMethod paymentMethod,
   }) async {
     final payment = InsurancePayment(
-      id: 'PAY${Random().nextInt(999999).toString().padLeft(6, '0')}',
+      id: '',
       insuranceId: insuranceId,
       policyNumber: policyNumber,
       amount: amount,
@@ -294,6 +287,10 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   Future<void> loadUserClaims() async {
     try {
       if (isClosed) return;
+      if (!_isAuthenticated) {
+        emit(const InsuranceError('Please log in to view claims'));
+        return;
+      }
       emit(InsuranceLoading());
 
       final claims = await repository.getUserClaims(currentUserId);
@@ -302,6 +299,32 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     } catch (e) {
       if (isClosed) return;
       emit(InsuranceError('Failed to load claims: ${e.toString()}'));
+    }
+  }
+
+  /// Update a claim (e.g. cancel it)
+  Future<void> updateClaim(InsuranceClaim claim) async {
+    try {
+      if (isClosed) return;
+      emit(InsuranceLoading());
+
+      final updatedClaim = await repository.updateClaim(claim);
+      if (isClosed) return;
+      emit(ClaimUpdated(updatedClaim));
+    } catch (e) {
+      if (isClosed) return;
+      emit(InsuranceError('Failed to update claim: ${e.toString()}'));
+    }
+  }
+
+  /// Get a single claim by ID
+  Future<InsuranceClaim?> getClaimById(String claimId) async {
+    try {
+      return await repository.getClaimById(claimId);
+    } catch (e) {
+      if (isClosed) return null;
+      emit(InsuranceError('Failed to load claim: ${e.toString()}'));
+      return null;
     }
   }
 
@@ -314,6 +337,10 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       }
 
       if (isClosed) return;
+      if (!_isAuthenticated) {
+        emit(const InsuranceError('Please log in to search insurance'));
+        return;
+      }
       emit(InsuranceLoading());
 
       final results = await repository.searchInsurances(query, currentUserId);
@@ -325,42 +352,4 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     }
   }
 
-  /// Get sample insurance data for demo
-  Insurance getSampleInsurance() {
-    final random = Random();
-    final types = InsuranceType.values;
-    final statuses = [InsuranceStatus.active, InsuranceStatus.pending];
-    final providers = ['SafeGuard Insurance', 'ProtectPlus', 'SecureLife', 'TrustCover'];
-    
-    final type = types[random.nextInt(types.length)];
-    final provider = providers[random.nextInt(providers.length)];
-    
-    return Insurance(
-      id: 'INS${random.nextInt(999999).toString().padLeft(6, '0')}',
-      policyNumber: 'POL${random.nextInt(9999999).toString().padLeft(7, '0')}',
-      policyHolderName: 'John Doe',
-      policyHolderEmail: 'john.doe@example.com',
-      policyHolderPhone: '+1234567890',
-      type: type,
-      provider: provider,
-      providerLogo: 'https://via.placeholder.com/100x100?text=${provider[0]}',
-      premiumAmount: 100.0 + random.nextDouble() * 500.0,
-      coverageAmount: 10000.0 + random.nextDouble() * 90000.0,
-      currency: 'USD',
-      startDate: DateTime.now().subtract(Duration(days: random.nextInt(365))),
-      endDate: DateTime.now().add(Duration(days: 365 + random.nextInt(365))),
-      nextPaymentDate: DateTime.now().add(Duration(days: random.nextInt(30))),
-      status: statuses[random.nextInt(statuses.length)],
-      beneficiaries: ['Jane Doe', 'John Doe Jr.'],
-      coverageDetails: {
-        'deductible': 500.0 + random.nextDouble() * 1500.0,
-        'coverage_limit': 50000.0 + random.nextDouble() * 50000.0,
-        'features': ['24/7 Support', 'Online Claims', 'Mobile App'],
-      },
-      description: 'Comprehensive ${type.displayName.toLowerCase()} coverage',
-      createdAt: DateTime.now().subtract(Duration(days: random.nextInt(365))),
-      updatedAt: DateTime.now(),
-      userId: currentUserId,
-    );
-  }
 } 

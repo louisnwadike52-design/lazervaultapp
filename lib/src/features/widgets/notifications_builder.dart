@@ -98,7 +98,7 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.receipt_long_rounded;
       case AppServiceName.payInvoice:
         return Icons.payment;
-      case AppServiceName.payElectricityBill:
+      case AppServiceName.payBills:
         return Icons.receipt_rounded;
       case AppServiceName.invest:
         return Icons.trending_up_rounded;
@@ -116,10 +116,18 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.shield_outlined;
       case AppServiceName.airtime:
         return Icons.phone_android;
-      case AppServiceName.barcodeQuickPay:
+      case AppServiceName.qrPay:
         return Icons.qr_code_2;
       case AppServiceName.crowdfund:
         return Icons.volunteer_activism;
+      case AppServiceName.businessDashboard:
+        return Icons.business_rounded;
+      case AppServiceName.businessAnalytics:
+        return Icons.analytics_rounded;
+      case AppServiceName.customers:
+        return Icons.people_rounded;
+      case AppServiceName.expenses:
+        return Icons.receipt_long_rounded;
       default:
         return Icons.help_outline;
     }
@@ -135,7 +143,7 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color(0xFF6366F1);
       case AppServiceName.payInvoice:
         return const Color(0xFFEAB308);
-      case AppServiceName.payElectricityBill:
+      case AppServiceName.payBills:
         return Colors.green;
       case AppServiceName.invest:
         return Colors.purple;
@@ -159,7 +167,7 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color(0xFF3B82F6);
       case AppServiceName.autoSave:
         return const Color(0xFF10B981);
-      case AppServiceName.barcodeQuickPay:
+      case AppServiceName.qrPay:
         return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.crowdfund:
         return const Color.fromARGB(255, 78, 3, 208);
@@ -169,6 +177,16 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Colors.green;
       case AppServiceName.contactlessPay:
         return const Color(0xFF3B82F6);
+      case AppServiceName.payroll:
+        return const Color(0xFF1E3A8A);
+      case AppServiceName.businessDashboard:
+        return const Color(0xFF3B82F6);
+      case AppServiceName.businessAnalytics:
+        return const Color(0xFF8B5CF6);
+      case AppServiceName.customers:
+        return const Color(0xFF10B981);
+      case AppServiceName.expenses:
+        return const Color(0xFFEF4444);
     }
   }
 

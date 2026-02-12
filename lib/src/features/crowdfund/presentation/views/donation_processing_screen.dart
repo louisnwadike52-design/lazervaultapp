@@ -57,18 +57,17 @@ class _DonationProcessingScreenState extends State<DonationProcessingScreen>
             if (state is DonationCompleted) {
               // Wait a moment before navigating
               Future.delayed(const Duration(seconds: 2), () {
-                if (mounted) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DonationReceiptScreen(
-                        donation: state.donation,
-                        receipt: state.receipt,
-                        crowdfund: widget.crowdfund,
-                      ),
+                if (!context.mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DonationReceiptScreen(
+                      donation: state.donation,
+                      receipt: state.receipt,
+                      crowdfund: widget.crowdfund,
                     ),
-                  );
-                }
+                  ),
+                );
               });
             } else if (state is CrowdfundError) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -79,9 +78,8 @@ class _DonationProcessingScreenState extends State<DonationProcessingScreen>
               );
               // Navigate back after error
               Future.delayed(const Duration(seconds: 2), () {
-                if (mounted) {
-                  Navigator.pop(context);
-                }
+                if (!context.mounted) return;
+                Navigator.pop(context);
               });
             }
           },

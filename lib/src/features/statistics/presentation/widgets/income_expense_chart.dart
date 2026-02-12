@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Income vs Expense Chart Widget
 /// Displays a visual comparison of income and expenses
@@ -197,7 +198,7 @@ class _BarRow extends StatelessWidget {
               ),
             ),
             Text(
-              '\$${value.toStringAsFixed(2)}',
+              CurrencySymbols.formatAmount(value),
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -265,7 +266,7 @@ class _BreakdownItem extends StatelessWidget {
             ),
           ),
           Text(
-            '\$${value.toStringAsFixed(2)}',
+            CurrencySymbols.formatAmount(value),
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,

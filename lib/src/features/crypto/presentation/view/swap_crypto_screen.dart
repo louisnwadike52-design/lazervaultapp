@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/crypto_entity.dart';
 import 'crypto_confirmation_screen.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class SwapCryptoScreen extends StatefulWidget {
   final CryptoHolding? fromHolding;
@@ -262,16 +263,16 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -324,7 +325,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: GestureDetector(
@@ -385,8 +386,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -481,7 +482,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0E27),
+        color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -629,7 +630,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '£${price.toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${price.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     color: Colors.white.withValues(alpha: 0.6),
@@ -637,7 +638,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 ),
                 if (controller.text.isNotEmpty)
                   Text(
-                    '≈ £${(price * (double.tryParse(controller.text) ?? 0.0)).toStringAsFixed(2)}',
+                    '≈ ${CurrencySymbols.currentSymbol}${(price * (double.tryParse(controller.text) ?? 0.0)).toStringAsFixed(2)}',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       color: Colors.white.withValues(alpha: 0.6),
@@ -675,7 +676,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
         gradient: LinearGradient(
           colors: [
             const Color(0xFF6C5CE7).withValues(alpha: 0.1),
-            const Color(0xFF1E2746),
+            const Color(0xFF1F1F1F),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -785,7 +786,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
         gradient: LinearGradient(
           colors: [
             const Color(0xFF6C5CE7).withValues(alpha: 0.1),
-            const Color(0xFF1E2746),
+            const Color(0xFF1F1F1F),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -822,9 +823,9 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           SizedBox(height: 16.h),
           _buildSummaryRow('You swap', '${_fromAmount.toStringAsFixed(6)} ${_fromHolding!.cryptoSymbol.toUpperCase()}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Network fee', '£${networkFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Network fee', '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Trading fee', '£${tradingFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Trading fee', '${CurrencySymbols.currentSymbol}${tradingFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
           _buildSummaryRow('Effective rate', '1 ${_fromHolding!.cryptoSymbol.toUpperCase()} = ${effectiveRate.toStringAsFixed(6)} ${_toCrypto!.symbol.toUpperCase()}'),
           SizedBox(height: 12.h),
@@ -877,8 +878,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E2746),
-            const Color(0xFF2A3A5C),
+            const Color(0xFF1F1F1F),
+            const Color(0xFF2D2D2D),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1134,8 +1135,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
+              const Color(0xFF1F1F1F),
+              const Color(0xFF0A0A0A),
             ],
           ),
           borderRadius: BorderRadius.only(
@@ -1185,7 +1186,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                   hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
                   prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
                   filled: true,
-                  fillColor: const Color(0xFF1E2746),
+                  fillColor: const Color(0xFF1F1F1F),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide.none,
@@ -1230,7 +1231,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2746),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
@@ -1278,7 +1279,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '£${holding.totalValue.toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${holding.totalValue.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -1330,7 +1331,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2746),
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
@@ -1378,7 +1379,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '£${crypto.currentPrice.toStringAsFixed(2)}',
+                  '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -1438,7 +1439,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
         cryptoSymbol: _toCrypto!.symbol,
         cryptoAmount: _toAmount.toStringAsFixed(6),
         pricePerUnit: _toCrypto!.currentPrice,
-        gbpAmount: totalGbpValue,
+        fiatAmount: totalGbpValue,
         networkFee: fee * 0.3, // 30% of total fee for network
         tradingFee: fee * 0.7, // 70% of total fee for LazerVault
         totalAmount: totalGbpValue,

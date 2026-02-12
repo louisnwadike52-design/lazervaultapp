@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../../domain/entities/gift_card_entity.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../cubit/gift_card_cubit.dart';
+import '../../cubit/gift_card_state.dart';
+import '../../domain/entities/gift_card_entity.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../../../core/types/app_routes.dart';
 
 class GiftCardDetailsScreen extends StatefulWidget {
   final GiftCard giftCard;
-  
+
   const GiftCardDetailsScreen({
     super.key,
     required this.giftCard,
@@ -21,317 +28,255 @@ class GiftCardDetailsScreen extends StatefulWidget {
 }
 
 class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
-
+    with TransactionPinMixin {
   @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
-    );
-    
-    _animationController.forward();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
-    // Set status bar style for dark theme
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Color(0xFF1A1A3E),
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-    );
-  }
+  final _recipientEmailController = TextEditingController();
+  final _recipientNameController = TextEditingController();
+  final _messageController = TextEditingController();
+  bool _isTransferring = false;
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _recipientEmailController.dispose();
+    _recipientNameController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1A1A3E),
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF2C3E50),
-              const Color(0xFF34495E),
-            ],
-          ),
-        ),
-        child: Column(
-          children: [
-            _buildModernHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildGiftCardVisual(),
-                        SizedBox(height: 32.h),
-                        _buildGiftCardInfo(),
-                        SizedBox(height: 24.h),
-                        _buildGiftCardCode(),
-                        SizedBox(height: 24.h),
-                        _buildQRCode(),
-                        SizedBox(height: 24.h),
-                        _buildTransactionDetails(),
-                        SizedBox(height: 40.h),
-                        _buildActionButtons(),
-                        SizedBox(height: 40.h),
-                      ],
-                    ),
+    return BlocListener<GiftCardCubit, GiftCardState>(
+      listener: (context, state) {
+        if (state is GiftCardTransferred) {
+          setState(() => _isTransferring = false);
+          Get.snackbar(
+            'Transferred',
+            'Gift card transferred successfully',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
+            colorText: Colors.white,
+            borderRadius: 12.r,
+            margin: EdgeInsets.all(16.w),
+          );
+          Get.back();
+        } else if (state is GiftCardTransferError) {
+          setState(() => _isTransferring = false);
+          Get.snackbar(
+            'Transfer Failed',
+            state.message,
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+            colorText: Colors.white,
+            borderRadius: 12.r,
+            margin: EdgeInsets.all(16.w),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 16.h),
+                      _buildGiftCardVisual(),
+                      SizedBox(height: 24.h),
+                      _buildGiftCardInfo(),
+                      SizedBox(height: 20.h),
+                      _buildGiftCardCode(),
+                      SizedBox(height: 20.h),
+                      _buildQRCode(),
+                      SizedBox(height: 20.h),
+                      _buildTransactionDetails(),
+                      SizedBox(height: 28.h),
+                      _buildActionButtons(),
+                      SizedBox(height: 40.h),
+                    ],
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildModernHeader() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(24.w, 60.h, 24.w, 20.h),
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Row(
-          children: [
-            Container(
+  Widget _buildHeader() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              width: 44.w,
+              height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12.r),
-                boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 18.sp),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              'Gift Card Details',
+              style: GoogleFonts.inter(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          GestureDetector(
+            onTap: () => _shareGiftCard(),
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child:
+                  Icon(Icons.share_rounded, color: Colors.white, size: 18.sp),
+            ),
           ),
         ],
-        
-              ),
-              child: IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(
-                  Icons.arrow_back_ios,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                'Gift Card Details',
-                style: GoogleFonts.inter(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12.r),
-                boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-              ),
-              child: IconButton(
-                onPressed: () => _shareGiftCard(),
-                icon: Icon(
-                  Icons.share_rounded,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
   Widget _buildGiftCardVisual() {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(28.w),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              _getStatusColor(widget.giftCard.status),
-              _getStatusColor(widget.giftCard.status).withValues(alpha: 0.8),
-              _getStatusColor(widget.giftCard.status).withValues(alpha: 0.6),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(24.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                height: 48.h,
+                width: 48.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: CachedNetworkImage(
+                    imageUrl: widget.giftCard.logoUrl,
+                    fit: BoxFit.contain,
+                    placeholder: (context, url) => Icon(
+                      Icons.card_giftcard_rounded,
+                      color: Colors.grey.shade400,
+                      size: 24.sp,
+                    ),
+                    errorWidget: (context, url, error) => Icon(
+                      Icons.card_giftcard_rounded,
+                      color: Colors.grey.shade400,
+                      size: 24.sp,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(widget.giftCard.status)
+                      .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  _getStatusText(widget.giftCard.status),
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: _getStatusColor(widget.giftCard.status),
+                  ),
+                ),
+              ),
             ],
           ),
-          borderRadius: BorderRadius.circular(28.r),          boxShadow: [
-            BoxShadow(
-              color: _getStatusColor(widget.giftCard.status).withValues(alpha: 0.4),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
+          SizedBox(height: 20.h),
+          Text(
+            widget.giftCard.brandName,
+            style: GoogleFonts.inter(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '${widget.giftCard.currency} ${widget.giftCard.originalAmount.toStringAsFixed(2)}',
+            style: GoogleFonts.inter(
+              fontSize: 32.sp,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+          if (widget.giftCard.currentBalance != widget.giftCard.originalAmount &&
+              widget.giftCard.currentBalance > 0) ...[
+            SizedBox(height: 4.h),
+            Text(
+              'Balance: ${widget.giftCard.currency} ${widget.giftCard.currentBalance.toStringAsFixed(2)}',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFFFB923C),
+              ),
             ),
           ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  height: 48.h,
-                  width: 48.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: CachedNetworkImage(
-                      imageUrl: widget.giftCard.logoUrl,
-                      fit: BoxFit.contain,
-                      color: Colors.white,
-                      placeholder: (context, url) => Icon(
-                        Icons.card_giftcard_rounded,
-                        color: Colors.white,
-                        size: 24.sp,
-                      ),
-                      errorWidget: (context, url, error) => Icon(
-                        Icons.card_giftcard_rounded,
-                        color: Colors.white,
-                        size: 24.sp,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: Text(
-                    _getStatusText(widget.giftCard.status),
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              widget.giftCard.brandName,
-              style: GoogleFonts.inter(
-                fontSize: 28.sp,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                letterSpacing: -0.5,
+          if (widget.giftCard.discountPercentage > 0) ...[
+            SizedBox(height: 8.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8.r),
               ),
-            ),
-            SizedBox(height: 12.h),
-            Text(
-              '\$${widget.giftCard.amount.toStringAsFixed(2)}',
-              style: GoogleFonts.inter(
-                fontSize: 42.sp,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                letterSpacing: -1,
-              ),
-            ),
-            if (widget.giftCard.discountPercentage > 0) ...[
-              SizedBox(height: 8.h),
-              Text(
-                'You saved \$${(widget.giftCard.amount - widget.giftCard.finalPrice).toStringAsFixed(2)}',
+              child: Text(
+                'You saved ${widget.giftCard.currency} ${(widget.giftCard.originalAmount * widget.giftCard.discountPercentage / 100).toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
+                  color: const Color(0xFF10B981),
                 ),
               ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildGiftCardInfo() {
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.12),
-            Colors.white.withValues(alpha: 0.06),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,51 +284,36 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           Text(
             'Gift Card Information',
             style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 20.h),
-          _buildInfoRow('Description', widget.giftCard.description),
-          _buildInfoRow('Purchase Date', _formatDate(widget.giftCard.purchaseDate)),
+          SizedBox(height: 16.h),
+          _buildInfoRow(
+              'Purchase Date', _formatDate(widget.giftCard.purchaseDate)),
           _buildInfoRow('Expiry Date', _formatDate(widget.giftCard.expiryDate)),
           _buildInfoRow('Currency', widget.giftCard.currency),
-          if (widget.giftCard.recipientEmail != null) ...[
+          if (widget.giftCard.recipientEmail != null)
             _buildInfoRow('Recipient', widget.giftCard.recipientEmail!),
-          ],
-          if (widget.giftCard.recipientName != null) ...[
+          if (widget.giftCard.recipientName != null)
             _buildInfoRow('Recipient Name', widget.giftCard.recipientName!),
-          ],
-          if (widget.giftCard.message != null) ...[
+          if (widget.giftCard.message != null)
             _buildInfoRow('Message', widget.giftCard.message!),
-          ],
         ],
       ),
     );
   }
 
   Widget _buildGiftCardCode() {
-    if (widget.giftCard.code == null) return const SizedBox.shrink();
-    
+    if (widget.giftCard.redemptionCode == null) return const SizedBox.shrink();
+
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.12),
-            Colors.white.withValues(alpha: 0.06),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,56 +321,46 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           Text(
             'Gift Card Code',
             style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 16.h),
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              color: const Color(0xFF0A0A0A),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
-                    widget.giftCard.code!,
+                    widget.giftCard.redemptionCode!,
                     style: GoogleFonts.robotoMono(
-                      fontSize: 18.sp,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                       letterSpacing: 2,
                     ),
                   ),
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blue[700]!,
-                        Colors.blue[500]!,
-                      ],
+                GestureDetector(
+                  onTap: () =>
+                      _copyToClipboard(widget.giftCard.redemptionCode!),
+                  child: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: IconButton(
-                    onPressed: () => _copyToClipboard(widget.giftCard.code!),
-                    icon: Icon(
+                    child: Icon(
                       Icons.copy_rounded,
                       color: Colors.white,
-                      size: 20.sp,
+                      size: 18.sp,
                     ),
                   ),
                 ),
@@ -448,30 +368,23 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ),
           ),
           if (widget.giftCard.pin != null) ...[
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
             Text(
               'PIN',
               style: GoogleFonts.inter(
-                fontSize: 16.sp,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withValues(alpha: 0.9),
+                color: const Color(0xFF9CA3AF),
               ),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 10.h),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(20.w),
+              padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                color: const Color(0xFF0A0A0A),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFF2D2D2D)),
               ),
               child: Row(
                 children: [
@@ -479,29 +392,25 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                     child: Text(
                       widget.giftCard.pin!,
                       style: GoogleFonts.robotoMono(
-                        fontSize: 18.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                         letterSpacing: 2,
                       ),
                     ),
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue[700]!,
-                          Colors.blue[500]!,
-                        ],
+                  GestureDetector(
+                    onTap: () => _copyToClipboard(widget.giftCard.pin!),
+                    child: Container(
+                      padding: EdgeInsets.all(8.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: IconButton(
-                      onPressed: () => _copyToClipboard(widget.giftCard.pin!),
-                      icon: Icon(
+                      child: Icon(
                         Icons.copy_rounded,
                         color: Colors.white,
-                        size: 20.sp,
+                        size: 18.sp,
                       ),
                     ),
                   ),
@@ -515,65 +424,45 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   }
 
   Widget _buildQRCode() {
-    if (widget.giftCard.code == null) return const SizedBox.shrink();
-    
+    if (widget.giftCard.redemptionCode == null) return const SizedBox.shrink();
+
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.12),
-            Colors.white.withValues(alpha: 0.06),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         children: [
           Text(
             'QR Code',
             style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
               color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 20.h),
-          Container(
-            padding: EdgeInsets.all(24.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: QrImageView(
-              data: widget.giftCard.code!,
-              version: QrVersions.auto,
-              size: 180.w,
-              backgroundColor: Colors.white,
             ),
           ),
           SizedBox(height: 16.h),
+          Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: QrImageView(
+              data: widget.giftCard.redemptionCode!,
+              version: QrVersions.auto,
+              size: 160.w,
+              backgroundColor: Colors.white,
+            ),
+          ),
+          SizedBox(height: 12.h),
           Text(
             'Scan this QR code to redeem',
             style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.white.withValues(alpha: 0.8),
-              fontWeight: FontWeight.w500,
+              fontSize: 13.sp,
+              color: const Color(0xFF9CA3AF),
             ),
           ),
         ],
@@ -582,240 +471,169 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   }
 
   Widget _buildTransactionDetails() {
+    final currency = widget.giftCard.currency;
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.12),
-            Colors.white.withValues(alpha: 0.06),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Transaction Details',
-            style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Transaction Details',
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Get.toNamed(AppRoutes.giftCardTransactions),
+                child: Text(
+                  'View History',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF3B82F6),
+                  ),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 20.h),
-          _buildInfoRow('Gift Card Value', '\$${widget.giftCard.amount.toStringAsFixed(2)}'),
-          if (widget.giftCard.discountPercentage > 0) ...[
+          SizedBox(height: 16.h),
+          _buildInfoRow('Gift Card Value',
+              '$currency ${widget.giftCard.originalAmount.toStringAsFixed(2)}'),
+          if (widget.giftCard.discountPercentage > 0)
             _buildInfoRow(
               'Discount (${widget.giftCard.discountPercentage.toStringAsFixed(0)}%)',
-              '-\$${(widget.giftCard.amount - widget.giftCard.finalPrice).toStringAsFixed(2)}',
+              '-$currency ${(widget.giftCard.originalAmount * widget.giftCard.discountPercentage / 100).toStringAsFixed(2)}',
             ),
-          ],
-          _buildInfoRow('Amount Paid', '\$${widget.giftCard.finalPrice.toStringAsFixed(2)}'),
-          if (widget.giftCard.transactionId != null) ...[
-            _buildInfoRow('Transaction ID', widget.giftCard.transactionId!),
-          ],
+          _buildInfoRow(
+            'Amount Paid',
+            '$currency ${(widget.giftCard.originalAmount * (1 - widget.giftCard.discountPercentage / 100)).toStringAsFixed(2)}',
+          ),
+          if (widget.giftCard.providerTransactionId != null)
+            _buildInfoRow(
+                'Transaction ID', widget.giftCard.providerTransactionId!),
         ],
       ),
     );
   }
 
   Widget _buildActionButtons() {
+    final isActive = widget.giftCard.status == 'active';
+    final isTransferred = widget.giftCard.status == 'transferred';
+    final isExpired = widget.giftCard.status == 'expired';
+
     return Column(
       children: [
-        if (!widget.giftCard.isRedeemed && widget.giftCard.status == GiftCardStatus.active) ...[
-          Container(
+        // Primary actions for active cards
+        if (isActive) ...[
+          SizedBox(
             width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.blue[700]!,
-                  Colors.blue[500]!,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withValues(alpha: 0.4),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
+            height: 52.h,
             child: ElevatedButton.icon(
-              onPressed: () => _redeemGiftCard(),
-              icon: Icon(Icons.redeem_rounded, size: 20.sp),
+              onPressed: _isTransferring ? null : _showTransferSheet,
+              icon: _isTransferring
+                  ? SizedBox(
+                      width: 18.sp,
+                      height: 18.sp,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(Icons.send_rounded, size: 18.sp),
               label: Text(
-                'Redeem Gift Card',
+                _isTransferring ? 'Transferring...' : 'Transfer Gift Card',
                 style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
+                backgroundColor: const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 18.h),
+                disabledBackgroundColor:
+                    const Color(0xFF3B82F6).withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
+                elevation: 0,
               ),
             ),
           ),
-          SizedBox(height: 16.h),
-          // Sell options for active gift cards
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16.r),                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: () => Get.toNamed(AppRoutes.sellToContact, arguments: widget.giftCard),
-                    icon: Icon(Icons.sell_rounded, size: 18.sp),
-                    label: Text(
-                      'Sell to Contact',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      foregroundColor: Colors.orange,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.purple.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
+          SizedBox(height: 12.h),
         ],
-        
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: () => Get.toNamed(AppRoutes.quickSell, arguments: widget.giftCard),
-                    icon: Icon(Icons.flash_on_rounded, size: 18.sp),
-                    label: Text(
-                      'Quick Sell',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      foregroundColor: Colors.purple,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+
+        // Status banners for non-active cards
+        if (isTransferred)
+          _buildStatusBanner(
+            'This gift card has been transferred',
+            Icons.swap_horiz_rounded,
+            const Color(0xFF9CA3AF),
           ),
-          SizedBox(height: 20.h),
-        ],
+        if (isExpired)
+          _buildStatusBanner(
+            'This gift card has expired',
+            Icons.timer_off_rounded,
+            const Color(0xFFEF4444),
+          ),
+
+        // Secondary actions (always visible)
         Row(
           children: [
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              child: ElevatedButton.icon(
+                onPressed: () => _shareGiftCard(),
+                icon: Icon(Icons.share_rounded, size: 18.sp),
+                label: Text(
+                  'Share',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                child: OutlinedButton.icon(
-                  onPressed: () => _shareGiftCard(),
-                  icon: Icon(Icons.share_rounded, size: 18.sp),
-                  label: Text(
-                    'Share',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    side: const BorderSide(color: Color(0xFF2D2D2D)),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    side: BorderSide.none,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                  ),
+                  elevation: 0,
                 ),
               ),
             ),
-            SizedBox(width: 16.w),
+            SizedBox(width: 12.w),
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              child: ElevatedButton.icon(
+                onPressed: () =>
+                    Get.toNamed(AppRoutes.giftCardTransactions),
+                icon: Icon(Icons.receipt_long_rounded, size: 18.sp),
+                label: Text(
+                  'History',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                child: OutlinedButton.icon(
-                  onPressed: () => _downloadGiftCard(),
-                  icon: Icon(Icons.download_rounded, size: 18.sp),
-                  label: Text(
-                    'Download',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    side: const BorderSide(color: Color(0xFF2D2D2D)),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    side: BorderSide.none,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                  ),
+                  elevation: 0,
                 ),
               ),
             ),
@@ -825,9 +643,38 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     );
   }
 
+  Widget _buildStatusBanner(String message, IconData icon, Color color) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -836,9 +683,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             child: Text(
               label,
               style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                color: Colors.white.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w500,
+                fontSize: 13.sp,
+                color: const Color(0xFF9CA3AF),
               ),
             ),
           ),
@@ -847,10 +693,11 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             child: Text(
               value,
               style: GoogleFonts.inter(
-                fontSize: 14.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
+              textAlign: TextAlign.right,
             ),
           ),
         ],
@@ -864,7 +711,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
       'Copied',
       'Copied to clipboard',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF10B981),
+      backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
       borderRadius: 12.r,
@@ -873,68 +720,286 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   }
 
   void _shareGiftCard() {
-    Get.snackbar(
-      'Share',
-      'Share functionality will be implemented',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF3B82F6),
-      colorText: Colors.white,
-      borderRadius: 12.r,
-      margin: EdgeInsets.all(16.w),
+    final card = widget.giftCard;
+    final buffer = StringBuffer();
+    buffer.writeln('${card.brandName} Gift Card');
+    buffer.writeln('Amount: ${card.currency} ${card.originalAmount.toStringAsFixed(2)}');
+    if (card.redemptionCode != null) {
+      buffer.writeln('Code: ${card.redemptionCode}');
+    }
+    if (card.pin != null) {
+      buffer.writeln('PIN: ${card.pin}');
+    }
+    buffer.writeln('Expires: ${_formatDate(card.expiryDate)}');
+
+    SharePlus.instance.share(ShareParams(text: buffer.toString(), subject: '${card.brandName} Gift Card'));
+  }
+
+  void _showTransferSheet() {
+    _recipientEmailController.clear();
+    _recipientNameController.clear();
+    _messageController.clear();
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 20.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              Text(
+                'Transfer Gift Card',
+                style: GoogleFonts.inter(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                '${widget.giftCard.brandName} - ${widget.giftCard.currency} ${widget.giftCard.originalAmount.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF9CA3AF),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              _buildSheetTextField(
+                controller: _recipientEmailController,
+                label: 'Recipient Email',
+                hint: 'Enter recipient email',
+                keyboardType: TextInputType.emailAddress,
+              ),
+              SizedBox(height: 16.h),
+              _buildSheetTextField(
+                controller: _recipientNameController,
+                label: 'Recipient Name',
+                hint: 'Enter recipient name',
+              ),
+              SizedBox(height: 16.h),
+              _buildSheetTextField(
+                controller: _messageController,
+                label: 'Message (optional)',
+                hint: 'Add a personal message',
+                maxLines: 3,
+              ),
+              SizedBox(height: 24.h),
+              SizedBox(
+                width: double.infinity,
+                height: 52.h,
+                child: ElevatedButton(
+                  onPressed: _onTransferSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Transfer',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
     );
   }
 
-  void _downloadGiftCard() {
-    Get.snackbar(
-      'Download',
-      'Download functionality will be implemented',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF3B82F6),
-      colorText: Colors.white,
-      borderRadius: 12.r,
-      margin: EdgeInsets.all(16.w),
+  Widget _buildSheetTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF9CA3AF),
+          ),
+        ),
+        SizedBox(height: 8.h),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(
+              color: const Color(0xFF6B7280),
+              fontSize: 14.sp,
+            ),
+            filled: true,
+            fillColor: const Color(0xFF0A0A0A),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+            ),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          ),
+        ),
+      ],
     );
   }
 
-  void _redeemGiftCard() {
-    Get.toNamed(AppRoutes.redeemGiftCard, arguments: widget.giftCard);
+  void _onTransferSubmit() {
+    final email = _recipientEmailController.text.trim();
+    final name = _recipientNameController.text.trim();
+
+    if (email.isEmpty || !email.contains('@')) {
+      Get.snackbar(
+        'Invalid Email',
+        'Please enter a valid email address',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (name.isEmpty) {
+      Get.snackbar(
+        'Missing Name',
+        'Please enter the recipient name',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    Get.back(); // Close bottom sheet
+
+    final transactionId =
+        'TRANSFER-${DateTime.now().millisecondsSinceEpoch}_${widget.giftCard.id}';
+
+    validateTransactionPin(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'gift_card_transfer',
+      amount: widget.giftCard.originalAmount,
+      currency: widget.giftCard.currency.isNotEmpty ? widget.giftCard.currency : 'NGN',
+      title: 'Transfer Gift Card',
+      message:
+          'Transfer ${widget.giftCard.brandName} (${widget.giftCard.currency} ${widget.giftCard.originalAmount.toStringAsFixed(2)}) to $name',
+      onPinValidated: (verificationToken) async {
+        _executeTransfer(
+          transactionId: transactionId,
+          verificationToken: verificationToken,
+          email: email,
+          name: name,
+        );
+      },
+    );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+  void _executeTransfer({
+    required String transactionId,
+    required String verificationToken,
+    required String email,
+    required String name,
+  }) {
+    setState(() => _isTransferring = true);
+    context.read<GiftCardCubit>().transferGiftCard(
+          giftCardId: widget.giftCard.id,
+          recipientEmail: email,
+          recipientName: name,
+          message: _messageController.text.trim(),
+          transactionId: transactionId,
+          verificationToken: verificationToken,
+        );
   }
 
-  Color _getStatusColor(GiftCardStatus status) {
+  String _formatDate(String date) {
+    if (date.isEmpty) return 'N/A';
+    try {
+      final parsed = DateTime.parse(date);
+      return '${parsed.day}/${parsed.month}/${parsed.year}';
+    } catch (_) {
+      return date;
+    }
+  }
+
+  Color _getStatusColor(String status) {
     switch (status) {
-      case GiftCardStatus.active:
+      case 'active':
         return const Color(0xFF10B981);
-      case GiftCardStatus.used:
-        return Colors.grey.shade500;
-      case GiftCardStatus.expired:
+      case 'used':
+      case 'redeemed':
+        return const Color(0xFF9CA3AF);
+      case 'expired':
         return const Color(0xFFEF4444);
-      case GiftCardStatus.pending:
-        return const Color(0xFFF59E0B);
-      case GiftCardStatus.cancelled:
-        return const Color(0xFFEF4444);
-      case GiftCardStatus.partiallyRedeemed:
+      case 'pending':
+        return const Color(0xFFFB923C);
+      case 'transferred':
         return const Color(0xFF3B82F6);
+      case 'cancelled':
+        return const Color(0xFFEF4444);
+      default:
+        return const Color(0xFF9CA3AF);
     }
   }
 
-  String _getStatusText(GiftCardStatus status) {
+  String _getStatusText(String status) {
     switch (status) {
-      case GiftCardStatus.active:
+      case 'active':
         return 'ACTIVE';
-      case GiftCardStatus.used:
+      case 'used':
         return 'USED';
-      case GiftCardStatus.expired:
+      case 'redeemed':
+        return 'REDEEMED';
+      case 'expired':
         return 'EXPIRED';
-      case GiftCardStatus.pending:
+      case 'pending':
         return 'PENDING';
-      case GiftCardStatus.cancelled:
+      case 'transferred':
+        return 'TRANSFERRED';
+      case 'cancelled':
         return 'CANCELLED';
-      case GiftCardStatus.partiallyRedeemed:
-        return 'PARTIALLY REDEEMED';
+      default:
+        return status.toUpperCase();
     }
   }
-} 
+}

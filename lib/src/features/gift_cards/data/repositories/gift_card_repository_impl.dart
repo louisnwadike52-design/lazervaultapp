@@ -13,13 +13,16 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }) : _remoteDataSource = remoteDataSource;
 
   @override
-  Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrands() async {
+  Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrands({
+    String? category,
+    String? countryCode,
+  }) async {
     try {
       final brands = await RetryPolicy.standard.execute(
-        () => _remoteDataSource.getGiftCardBrands(),
-        onRetry: (attempt, error) {
-          print('Retrying fetch brands (attempt $attempt) due to: $error');
-        },
+        () => _remoteDataSource.getGiftCardBrands(
+          category: category,
+          countryCode: countryCode,
+        ),
       );
 
       return Right(brands);
@@ -29,58 +32,38 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }
 
   @override
-  Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrandsByCategory(
-      GiftCardCategory category) async {
-    try {
-      final brands = await _remoteDataSource.getGiftCardBrandsByCategory(category);
-      return Right(brands);
-    } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<GiftCardBrand>>> searchGiftCardBrands(String query) async {
-    try {
-      final brands = await _remoteDataSource.searchGiftCardBrands(query);
-      return Right(brands);
-    } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
-    }
-  }
-
-  @override
-  Future<Either<Failure, GiftCardBrand>> getGiftCardBrandById(String brandId) async {
-    try {
-      final brand = await _remoteDataSource.getGiftCardBrandById(brandId);
-      return Right(brand);
-    } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
-    }
-  }
-
-  @override
-  Future<Either<Failure, GiftCard>> purchaseGiftCard({
+  Future<Either<Failure, GiftCard>> buyGiftCard({
     required String brandId,
     required double amount,
-    required String currency,
+    required String transactionId,
+    required String verificationToken,
+    int? productId,
     String? recipientEmail,
     String? recipientName,
-    String? message,
+    String? giftMessage,
+    String? senderName,
+    String? recipientPhone,
+    String? countryCode,
+    String? idempotencyKey,
+    int quantity = 1,
   }) async {
     try {
       final giftCard = await RetryPolicy.critical.execute(
-        () => _remoteDataSource.purchaseGiftCard(
+        () => _remoteDataSource.buyGiftCard(
           brandId: brandId,
           amount: amount,
-          currency: currency,
+          transactionId: transactionId,
+          verificationToken: verificationToken,
+          productId: productId,
           recipientEmail: recipientEmail,
           recipientName: recipientName,
-          message: message,
+          giftMessage: giftMessage,
+          senderName: senderName,
+          recipientPhone: recipientPhone,
+          countryCode: countryCode,
+          idempotencyKey: idempotencyKey,
+          quantity: quantity,
         ),
-        onRetry: (attempt, error) {
-          print('Retrying purchase (attempt $attempt) due to: $error');
-        },
       );
 
       return Right(giftCard);
@@ -90,13 +73,20 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }
 
   @override
-  Future<Either<Failure, List<GiftCard>>> getUserGiftCards() async {
+  Future<Either<Failure, List<GiftCard>>> getUserGiftCards({
+    String? status,
+    String? brandId,
+    int limit = 50,
+    int offset = 0,
+  }) async {
     try {
       final giftCards = await RetryPolicy.standard.execute(
-        () => _remoteDataSource.getUserGiftCards(),
-        onRetry: (attempt, error) {
-          print('Retrying fetch user cards (attempt $attempt) due to: $error');
-        },
+        () => _remoteDataSource.getUserGiftCards(
+          status: status,
+          brandId: brandId,
+          limit: limit,
+          offset: offset,
+        ),
       );
 
       return Right(giftCards);
@@ -116,29 +106,20 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }
 
   @override
-  Future<Either<Failure, GiftCard>> redeemGiftCard(String giftCardId, String code) async {
-    try {
-      final giftCard = await RetryPolicy.critical.execute(
-        () => _remoteDataSource.redeemGiftCard(giftCardId, code),
-        onRetry: (attempt, error) {
-          print('Retrying redemption (attempt $attempt) due to: $error');
-        },
-      );
-
-      return Right(giftCard);
-    } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<GiftCardTransaction>>> getGiftCardTransactions() async {
+  Future<Either<Failure, List<GiftCardTransaction>>> getGiftCardHistory({
+    String? giftCardId,
+    String? transactionType,
+    int limit = 50,
+    int offset = 0,
+  }) async {
     try {
       final transactions = await RetryPolicy.standard.execute(
-        () => _remoteDataSource.getGiftCardTransactions(),
-        onRetry: (attempt, error) {
-          print('Retrying fetch transactions (attempt $attempt) due to: $error');
-        },
+        () => _remoteDataSource.getGiftCardHistory(
+          giftCardId: giftCardId,
+          transactionType: transactionType,
+          limit: limit,
+          offset: offset,
+        ),
       );
 
       return Right(transactions);
@@ -148,26 +129,18 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }
 
   @override
-  Future<Either<Failure, GiftCardTransaction>> getTransactionById(String transactionId) async {
-    try {
-      final transaction = await _remoteDataSource.getTransactionById(transactionId);
-      return Right(transaction);
-    } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
-    }
-  }
-
-  @override
-  Future<Either<Failure, GiftCard>> sendGiftCard({
-    required String giftCardId,
-    required String recipientEmail,
-    String? message,
+  Future<Either<Failure, GiftCard>> redeemGiftCard({
+    required String accountId,
+    required String cardNumber,
+    required String cardPin,
   }) async {
     try {
-      final giftCard = await _remoteDataSource.sendGiftCard(
-        giftCardId: giftCardId,
-        recipientEmail: recipientEmail,
-        message: message,
+      final giftCard = await RetryPolicy.critical.execute(
+        () => _remoteDataSource.redeemGiftCard(
+          accountId: accountId,
+          cardNumber: cardNumber,
+          cardPin: cardPin,
+        ),
       );
       return Right(giftCard);
     } catch (e) {
@@ -176,54 +149,138 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> validateGiftCardCode(String code) async {
+  Future<Either<Failure, GiftCard>> transferGiftCard({
+    required String giftCardId,
+    required String recipientEmail,
+    required String recipientName,
+    required String message,
+    required String transactionId,
+    required String verificationToken,
+  }) async {
     try {
-      final isValid = await _remoteDataSource.validateGiftCardCode(code);
-      return Right(isValid);
+      final giftCard = await RetryPolicy.critical.execute(
+        () => _remoteDataSource.transferGiftCard(
+          giftCardId: giftCardId,
+          recipientEmail: recipientEmail,
+          recipientName: recipientName,
+          message: message,
+          transactionId: transactionId,
+          verificationToken: verificationToken,
+        ),
+      );
+      return Right(giftCard);
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
     }
   }
 
   @override
-  Future<Either<Failure, double>> getGiftCardBalance(String giftCardId) async {
+  Future<Either<Failure, GiftCardBalance>> getGiftCardBalance({
+    required String cardNumber,
+    required String cardPin,
+  }) async {
     try {
-      final balance = await _remoteDataSource.getGiftCardBalance(giftCardId);
+      final balance = await _remoteDataSource.getGiftCardBalance(
+        cardNumber: cardNumber,
+        cardPin: cardPin,
+      );
       return Right(balance);
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
     }
   }
 
+  // Sell flow methods
+
   @override
-  Future<Either<Failure, GiftCard>> sellGiftCard({
-    required String giftCardId,
-    required double sellingPrice,
-  }) async {
+  Future<Either<Failure, List<SellableCard>>> getSellableCards() async {
     try {
-      // Critical operation - use retry with extended attempts
-      final giftCard = await RetryPolicy.critical.execute(
-        () => _remoteDataSource.sellGiftCard(
-          giftCardId: giftCardId,
-          sellingPrice: sellingPrice,
-        ),
-        onRetry: (attempt, error) {
-          print('Retrying sell gift card (attempt $attempt) due to: $error');
-        },
+      final cards = await RetryPolicy.standard.execute(
+        () => _remoteDataSource.getSellableCards(),
       );
-      return Right(giftCard);
+      return Right(cards);
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
     }
   }
 
   @override
-  Future<Either<Failure, List<GiftCard>>> getResellableGiftCards() async {
+  Future<Either<Failure, SellRate>> getSellRate({
+    required String cardType,
+    required double denomination,
+    String? currency,
+  }) async {
     try {
-      final giftCards = await _remoteDataSource.getResellableGiftCards();
-      return Right(giftCards);
+      final rate = await _remoteDataSource.getSellRate(
+        cardType: cardType,
+        denomination: denomination,
+        currency: currency,
+      );
+      return Right(rate);
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
     }
   }
-} 
+
+  @override
+  Future<Either<Failure, GiftCardSale>> sellGiftCard({
+    required String cardType,
+    required String cardNumber,
+    required String cardPin,
+    required double denomination,
+    required String transactionId,
+    required String verificationToken,
+    String? currency,
+    List<String>? images,
+    String? idempotencyKey,
+  }) async {
+    try {
+      final sale = await RetryPolicy.critical.execute(
+        () => _remoteDataSource.sellGiftCard(
+          cardType: cardType,
+          cardNumber: cardNumber,
+          cardPin: cardPin,
+          denomination: denomination,
+          transactionId: transactionId,
+          verificationToken: verificationToken,
+          currency: currency,
+          images: images,
+          idempotencyKey: idempotencyKey,
+        ),
+      );
+      return Right(sale);
+    } catch (e) {
+      return Left(APIFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, GiftCardSale>> getSellStatus(String saleId) async {
+    try {
+      final sale = await _remoteDataSource.getSellStatus(saleId);
+      return Right(sale);
+    } catch (e) {
+      return Left(APIFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<GiftCardSale>>> getMySales({
+    String? status,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final sales = await RetryPolicy.standard.execute(
+        () => _remoteDataSource.getMySales(
+          status: status,
+          limit: limit,
+          offset: offset,
+        ),
+      );
+      return Right(sales);
+    } catch (e) {
+      return Left(APIFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+}

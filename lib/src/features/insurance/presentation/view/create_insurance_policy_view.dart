@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math';
 
 import '../../domain/entities/insurance_entity.dart';
 import '../cubit/insurance_cubit.dart';
@@ -134,11 +133,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
   }
 
   void _initializeDefaultValues() {
-    _providerController.text = 'SafeGuard Insurance';
-    _premiumAmountController.text = '250.00';
-    _coverageAmountController.text = '50000.00';
-    // Optional fields are not pre-filled - users add them dynamically
-    _features.addAll(['24/7 Customer Support', 'Online Claims Processing', 'Mobile App Access']);
+    // Leave fields empty for user input - no hardcoded demo values
   }
 
   @override
@@ -896,10 +891,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
     });
   }
 
-  void _createPolicy() {
+  Future<void> _createPolicy() async {
     if (_formKey.currentState!.validate()) {
-      final random = Random();
-
       // Build coverage details with only visible optional fields
       final coverageDetails = <String, dynamic>{
         'features': List.from(_features),
@@ -929,15 +922,17 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
         }
       }
 
+      final providerText = _providerController.text;
+
       final insurance = Insurance(
-        id: 'INS${random.nextInt(999999).toString().padLeft(6, '0')}',
-        policyNumber: 'POL${random.nextInt(9999999).toString().padLeft(7, '0')}',
+        id: '',
+        policyNumber: '',
         policyHolderName: _policyHolderNameController.text,
         policyHolderEmail: _policyHolderEmailController.text,
         policyHolderPhone: _policyHolderPhoneController.text,
         type: _selectedType,
-        provider: _providerController.text,
-        providerLogo: 'https://via.placeholder.com/100x100?text=${_providerController.text[0]}',
+        provider: providerText,
+        providerLogo: '',
         premiumAmount: double.parse(_premiumAmountController.text),
         coverageAmount: double.parse(_coverageAmountController.text),
         currency: 'USD',
@@ -953,8 +948,10 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
         userId: context.read<InsuranceCubit>().currentUserId,
       );
 
-      context.read<InsuranceCubit>().createInsurance(insurance);
-      widget.onPolicyCreated();
+      await context.read<InsuranceCubit>().createInsurance(insurance);
+      if (mounted) {
+        widget.onPolicyCreated();
+      }
     }
   }
 

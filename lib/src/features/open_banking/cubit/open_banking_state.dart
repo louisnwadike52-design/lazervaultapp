@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import '../domain/entities/linked_bank_account.dart';
 import '../domain/entities/deposit.dart';
 import '../domain/entities/withdrawal.dart';
+import '../domain/entities/credit_score.dart';
+import '../domain/entities/credit_score_ai_insights.dart';
 import '../data/errors/banking_errors.dart';
 
 /// Error type classification for UI handling
@@ -348,4 +350,54 @@ class WithdrawalFeeCalculated extends OpenBankingState {
 
   @override
   List<Object?> get props => [calculation];
+}
+
+// ===== Credit Score States =====
+
+/// Credit score loaded successfully
+class CreditScoreLoaded extends OpenBankingState {
+  final CreditScoreEntity creditScore;
+
+  const CreditScoreLoaded({required this.creditScore});
+
+  @override
+  List<Object?> get props => [creditScore];
+}
+
+/// Credit score history loaded
+class CreditScoreHistoryLoaded extends OpenBankingState {
+  final CreditScoreHistoryEntity history;
+
+  const CreditScoreHistoryLoaded({required this.history});
+
+  @override
+  List<Object?> get props => [history];
+}
+
+/// Credit score is being refreshed
+class CreditScoreRefreshing extends OpenBankingState {}
+
+// ===== Credit Score AI Insights States =====
+
+/// AI insights are being generated
+class CreditScoreAIInsightsLoading extends OpenBankingState {}
+
+/// AI insights loaded successfully
+class CreditScoreAIInsightsLoaded extends OpenBankingState {
+  final CreditScoreAIInsights insights;
+
+  const CreditScoreAIInsightsLoaded({required this.insights});
+
+  @override
+  List<Object?> get props => [insights];
+}
+
+/// AI insights generation failed
+class CreditScoreAIInsightsError extends OpenBankingState {
+  final String message;
+
+  const CreditScoreAIInsightsError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
 }

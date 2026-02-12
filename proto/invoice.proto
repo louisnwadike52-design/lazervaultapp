@@ -126,6 +126,14 @@ service InvoiceService {
       body: "*"
     };
   }
+
+  // Send invoice to email
+  rpc SendInvoiceToEmail(SendInvoiceToEmailRequest) returns (SendInvoiceToEmailResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/sendinvoiceemail"
+      body: "*"
+    };
+  }
 }
 
 // ===== MODELS =====
@@ -198,11 +206,11 @@ message InvoiceStatistics {
 // Inline pagination info for invoice responses
 message InvoicePaginationInfo {
   int32 current_page = 1;
-  int32 total_pages = 2;
-  int32 total_items = 3;
-  int32 items_per_page = 4;
+  int32 page_size = 2;
+  int32 total_count = 3;
+  int32 total_pages = 4;
   bool has_next = 5;
-  bool has_prev = 6;
+  bool has_previous = 6;
 }
 
 // ===== CREATE INVOICE =====
@@ -427,4 +435,17 @@ message UploadInvoiceImageRequest {
 
 message UploadInvoiceImageResponse {
   string image_url = 1;
+}
+
+// ===== SEND INVOICE TO EMAIL =====
+// NOTE: user_id extracted from JWT token, not from request
+message SendInvoiceToEmailRequest {
+  string invoice_id = 1;
+  string email = 2;
+  string locale = 3;
+}
+
+message SendInvoiceToEmailResponse {
+  bool sent = 1;
+  string message = 2;
 }

@@ -536,8 +536,8 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
 
   void _skipForNow(BuildContext context) {
     final cubit = context.read<KYCCubit>();
-    // Use a dummy user ID for now - in real app, get from auth state
-    cubit.skipKYCUpgrade(userId: 'current_user_id', skipTier2: true);
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    cubit.skipKYCUpgrade(userId: userId, skipTier2: true);
   }
 
   void _showUpgradeDialog(BuildContext context, UserKYCProfile profile) {

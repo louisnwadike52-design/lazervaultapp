@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
+import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_progress_indicator.dart';
 
 class AutoSaveSwipeableCard extends StatelessWidget {
   final AutoSaveRuleEntity rule;
@@ -120,7 +122,7 @@ class AutoSaveSwipeableCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 rule.name,
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.w600,
@@ -240,32 +242,27 @@ class AutoSaveSwipeableCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Progress',
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
+              rule.formattedProgress,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF4E03D0),
                 fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
             Text(
-              '\$${rule.totalSaved.toStringAsFixed(2)} / \$${rule.targetAmount!.toStringAsFixed(2)}',
-              style: TextStyle(
-                color: Colors.white,
+              '${rule.progressPercentage.toStringAsFixed(0)}%',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
                 fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
         ),
         SizedBox(height: 6.h),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4.r),
-          child: LinearProgressIndicator(
-            value: rule.progressPercentage / 100,
-            backgroundColor: const Color(0xFF2D2D2D),
-            valueColor: const AlwaysStoppedAnimation<Color>(
-                Color.fromARGB(255, 78, 3, 208)),
-            minHeight: 4.h,
-          ),
+        AutoSaveProgressIndicator(
+          progressPercentage: rule.progressPercentage,
+          height: 4,
         ),
       ],
     );

@@ -481,7 +481,6 @@ class AirtimeProvider extends $pb.GeneratedMessage {
 }
 
 /// ===== SEND FUNDS (Transfer) =====
-/// NOTE: user_id extracted from JWT token, not from request
 class SendFundsRequest extends $pb.GeneratedMessage {
   factory SendFundsRequest({
     $core.String? fromAccountId,
@@ -593,7 +592,6 @@ class SendFundsRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearDescription() => clearField(4);
 
-  /// Transaction PIN verification (replaces direct PIN field)
   @$pb.TagNumber(5)
   $core.String get transactionId => $_getSZ(4);
   @$pb.TagNumber(5)
@@ -612,7 +610,6 @@ class SendFundsRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   void clearVerificationToken() => clearField(6);
 
-  /// External transfer fields
   @$pb.TagNumber(7)
   $core.String get destinationBankCode => $_getSZ(6);
   @$pb.TagNumber(7)
@@ -731,6 +728,8 @@ class BatchTransferItem extends $pb.GeneratedMessage {
     $core.String? toAccountNumber,
     $core.double? amount,
     $core.String? description,
+    $core.String? reference,
+    $core.String? category,
   }) {
     final $result = create();
     if (toAccountNumber != null) {
@@ -742,6 +741,12 @@ class BatchTransferItem extends $pb.GeneratedMessage {
     if (description != null) {
       $result.description = description;
     }
+    if (reference != null) {
+      $result.reference = reference;
+    }
+    if (category != null) {
+      $result.category = category;
+    }
     return $result;
   }
   BatchTransferItem._() : super();
@@ -752,6 +757,8 @@ class BatchTransferItem extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'toAccountNumber')
     ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(3, _omitFieldNames ? '' : 'description')
+    ..aOS(4, _omitFieldNames ? '' : 'reference')
+    ..aOS(5, _omitFieldNames ? '' : 'category')
     ..hasRequiredFields = false
   ;
 
@@ -802,9 +809,26 @@ class BatchTransferItem extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(2);
   @$pb.TagNumber(3)
   void clearDescription() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get reference => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set reference($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasReference() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReference() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get category => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set category($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCategory() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCategory() => clearField(5);
 }
 
-/// NOTE: user_id extracted from JWT token, not from request
 class BatchTransferRequest extends $pb.GeneratedMessage {
   factory BatchTransferRequest({
     $core.String? fromAccountId,
@@ -872,7 +896,6 @@ class BatchTransferRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.List<BatchTransferItem> get transfers => $_getList(1);
 
-  /// Transaction PIN verification (replaces direct PIN field)
   @$pb.TagNumber(3)
   $core.String get transactionId => $_getSZ(2);
   @$pb.TagNumber(3)
@@ -894,14 +917,23 @@ class BatchTransferRequest extends $pb.GeneratedMessage {
 
 class BatchTransferResponse extends $pb.GeneratedMessage {
   factory BatchTransferResponse({
+    $core.String? batchId,
     $core.int? totalTransfers,
     $core.int? successfulTransfers,
     $core.int? failedTransfers,
-    $core.Iterable<Payment>? payments,
+    $core.Iterable<BatchTransferResultItem>? results,
     $core.double? newBalance,
     $core.String? message,
+    $core.String? status,
+    $core.double? totalAmount,
+    $core.double? totalFee,
+    $core.String? createdAt,
+    $core.String? completedAt,
   }) {
     final $result = create();
+    if (batchId != null) {
+      $result.batchId = batchId;
+    }
     if (totalTransfers != null) {
       $result.totalTransfers = totalTransfers;
     }
@@ -911,14 +943,29 @@ class BatchTransferResponse extends $pb.GeneratedMessage {
     if (failedTransfers != null) {
       $result.failedTransfers = failedTransfers;
     }
-    if (payments != null) {
-      $result.payments.addAll(payments);
+    if (results != null) {
+      $result.results.addAll(results);
     }
     if (newBalance != null) {
       $result.newBalance = newBalance;
     }
     if (message != null) {
       $result.message = message;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (totalAmount != null) {
+      $result.totalAmount = totalAmount;
+    }
+    if (totalFee != null) {
+      $result.totalFee = totalFee;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    if (completedAt != null) {
+      $result.completedAt = completedAt;
     }
     return $result;
   }
@@ -927,12 +974,18 @@ class BatchTransferResponse extends $pb.GeneratedMessage {
   factory BatchTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchTransferResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'payments'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'totalTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'failedTransfers', $pb.PbFieldType.O3)
-    ..pc<Payment>(4, _omitFieldNames ? '' : 'payments', $pb.PbFieldType.PM, subBuilder: Payment.create)
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
-    ..aOS(6, _omitFieldNames ? '' : 'message')
+    ..aOS(1, _omitFieldNames ? '' : 'batchId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'failedTransfers', $pb.PbFieldType.O3)
+    ..pc<BatchTransferResultItem>(5, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResultItem.create)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'message')
+    ..aOS(8, _omitFieldNames ? '' : 'status')
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'totalFee', $pb.PbFieldType.OD)
+    ..aOS(11, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(12, _omitFieldNames ? '' : 'completedAt')
     ..hasRequiredFields = false
   ;
 
@@ -958,56 +1011,257 @@ class BatchTransferResponse extends $pb.GeneratedMessage {
   static BatchTransferResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.int get totalTransfers => $_getIZ(0);
+  $core.String get batchId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set totalTransfers($core.int v) { $_setSignedInt32(0, v); }
+  set batchId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasTotalTransfers() => $_has(0);
+  $core.bool hasBatchId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTotalTransfers() => clearField(1);
+  void clearBatchId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.int get successfulTransfers => $_getIZ(1);
+  $core.int get totalTransfers => $_getIZ(1);
   @$pb.TagNumber(2)
-  set successfulTransfers($core.int v) { $_setSignedInt32(1, v); }
+  set totalTransfers($core.int v) { $_setSignedInt32(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasSuccessfulTransfers() => $_has(1);
+  $core.bool hasTotalTransfers() => $_has(1);
   @$pb.TagNumber(2)
-  void clearSuccessfulTransfers() => clearField(2);
+  void clearTotalTransfers() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.int get failedTransfers => $_getIZ(2);
+  $core.int get successfulTransfers => $_getIZ(2);
   @$pb.TagNumber(3)
-  set failedTransfers($core.int v) { $_setSignedInt32(2, v); }
+  set successfulTransfers($core.int v) { $_setSignedInt32(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasFailedTransfers() => $_has(2);
+  $core.bool hasSuccessfulTransfers() => $_has(2);
   @$pb.TagNumber(3)
-  void clearFailedTransfers() => clearField(3);
+  void clearSuccessfulTransfers() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.List<Payment> get payments => $_getList(3);
+  $core.int get failedTransfers => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set failedTransfers($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFailedTransfers() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFailedTransfers() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.double get newBalance => $_getN(4);
-  @$pb.TagNumber(5)
-  set newBalance($core.double v) { $_setDouble(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasNewBalance() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearNewBalance() => clearField(5);
+  $core.List<BatchTransferResultItem> get results => $_getList(4);
 
   @$pb.TagNumber(6)
-  $core.String get message => $_getSZ(5);
+  $core.double get newBalance => $_getN(5);
   @$pb.TagNumber(6)
-  set message($core.String v) { $_setString(5, v); }
+  set newBalance($core.double v) { $_setDouble(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasMessage() => $_has(5);
+  $core.bool hasNewBalance() => $_has(5);
   @$pb.TagNumber(6)
-  void clearMessage() => clearField(6);
+  void clearNewBalance() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get message => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set message($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasMessage() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMessage() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get status => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set status($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasStatus() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearStatus() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.double get totalAmount => $_getN(8);
+  @$pb.TagNumber(9)
+  set totalAmount($core.double v) { $_setDouble(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTotalAmount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTotalAmount() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get totalFee => $_getN(9);
+  @$pb.TagNumber(10)
+  set totalFee($core.double v) { $_setDouble(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasTotalFee() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearTotalFee() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get createdAt => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set createdAt($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCreatedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCreatedAt() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get completedAt => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set completedAt($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasCompletedAt() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearCompletedAt() => clearField(12);
+}
+
+class BatchTransferResultItem extends $pb.GeneratedMessage {
+  factory BatchTransferResultItem({
+    $core.String? transferId,
+    $core.String? status,
+    $core.double? amount,
+    $core.double? fee,
+    $core.String? recipientName,
+    $core.String? recipientAccount,
+    $core.String? failureReason,
+    $core.String? reference,
+  }) {
+    final $result = create();
+    if (transferId != null) {
+      $result.transferId = transferId;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (fee != null) {
+      $result.fee = fee;
+    }
+    if (recipientName != null) {
+      $result.recipientName = recipientName;
+    }
+    if (recipientAccount != null) {
+      $result.recipientAccount = recipientAccount;
+    }
+    if (failureReason != null) {
+      $result.failureReason = failureReason;
+    }
+    if (reference != null) {
+      $result.reference = reference;
+    }
+    return $result;
+  }
+  BatchTransferResultItem._() : super();
+  factory BatchTransferResultItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BatchTransferResultItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchTransferResultItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'transferId')
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'recipientName')
+    ..aOS(6, _omitFieldNames ? '' : 'recipientAccount')
+    ..aOS(7, _omitFieldNames ? '' : 'failureReason')
+    ..aOS(8, _omitFieldNames ? '' : 'reference')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BatchTransferResultItem clone() => BatchTransferResultItem()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BatchTransferResultItem copyWith(void Function(BatchTransferResultItem) updates) => super.copyWith((message) => updates(message as BatchTransferResultItem)) as BatchTransferResultItem;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BatchTransferResultItem create() => BatchTransferResultItem._();
+  BatchTransferResultItem createEmptyInstance() => create();
+  static $pb.PbList<BatchTransferResultItem> createRepeated() => $pb.PbList<BatchTransferResultItem>();
+  @$core.pragma('dart2js:noInline')
+  static BatchTransferResultItem getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchTransferResultItem>(create);
+  static BatchTransferResultItem? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get transferId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set transferId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransferId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransferId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get fee => $_getN(3);
+  @$pb.TagNumber(4)
+  set fee($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFee() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFee() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get recipientName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set recipientName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasRecipientName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearRecipientName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get recipientAccount => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set recipientAccount($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasRecipientAccount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRecipientAccount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get failureReason => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set failureReason($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFailureReason() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFailureReason() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get reference => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set reference($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasReference() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearReference() => clearField(8);
 }
 
 /// ===== WITHDRAW =====
-/// NOTE: user_id extracted from JWT token, not from request
 class WithdrawRequest extends $pb.GeneratedMessage {
   factory WithdrawRequest({
     $core.String? accountId,
@@ -1109,7 +1363,6 @@ class WithdrawRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearLocation() => clearField(4);
 
-  /// Transaction PIN verification (replaces direct PIN field)
   @$pb.TagNumber(5)
   $core.String get transactionId => $_getSZ(4);
   @$pb.TagNumber(5)
@@ -1224,7 +1477,6 @@ class WithdrawResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== DEPOSIT =====
-/// NOTE: user_id extracted from JWT token, not from request
 class DepositRequest extends $pb.GeneratedMessage {
   factory DepositRequest({
     $core.String? accountId,
@@ -1426,7 +1678,6 @@ class DepositResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== TAG PAY =====
-/// NOTE: user_id extracted from JWT token, not from request
 class PayWithTagRequest extends $pb.GeneratedMessage {
   factory PayWithTagRequest({
     $core.String? fromAccountId,
@@ -1528,7 +1779,6 @@ class PayWithTagRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearDescription() => clearField(4);
 
-  /// Transaction PIN verification (replaces direct PIN field)
   @$pb.TagNumber(5)
   $core.String get transactionId => $_getSZ(4);
   @$pb.TagNumber(5)
@@ -1657,7 +1907,6 @@ class PayWithTagResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== ELECTRICITY BILL =====
-/// NOTE: user_id extracted from JWT token, not from request
 class PayElectricityBillRequest extends $pb.GeneratedMessage {
   factory PayElectricityBillRequest({
     $core.String? accountId,
@@ -1773,7 +2022,6 @@ class PayElectricityBillRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearMeterType() => clearField(5);
 
-  /// Transaction PIN verification (replaces direct PIN field)
   @$pb.TagNumber(6)
   $core.String get transactionId => $_getSZ(5);
   @$pb.TagNumber(6)
@@ -1902,7 +2150,6 @@ class PayElectricityBillResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== AIRTIME =====
-/// NOTE: user_id extracted from JWT token, not from request
 class BuyAirtimeRequest extends $pb.GeneratedMessage {
   factory BuyAirtimeRequest({
     $core.String? accountId,
@@ -2018,7 +2265,6 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearAirtimeType() => clearField(5);
 
-  /// Transaction PIN verification (replaces direct PIN field)
   @$pb.TagNumber(6)
   $core.String get transactionId => $_getSZ(5);
   @$pb.TagNumber(6)
@@ -2133,7 +2379,6 @@ class BuyAirtimeResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== BARCODE PAY =====
-/// NOTE: user_id extracted from JWT token, not from request
 class BarcodePayRequest extends $pb.GeneratedMessage {
   factory BarcodePayRequest({
     $core.String? accountId,
@@ -2221,7 +2466,6 @@ class BarcodePayRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearAmount() => clearField(3);
 
-  /// Transaction PIN verification (replaces direct PIN field)
   @$pb.TagNumber(4)
   $core.String get transactionId => $_getSZ(3);
   @$pb.TagNumber(4)
@@ -2336,7 +2580,6 @@ class BarcodePayResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== SCAN TO PAY (AI) =====
-/// NOTE: user_id extracted from JWT token, not from request
 class ScanToPayRequest extends $pb.GeneratedMessage {
   factory ScanToPayRequest({
     $core.String? accountId,
@@ -2424,7 +2667,6 @@ class ScanToPayRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearAmount() => clearField(3);
 
-  /// Transaction PIN verification (replaces direct PIN field)
   @$pb.TagNumber(4)
   $core.String get transactionId => $_getSZ(3);
   @$pb.TagNumber(4)
@@ -2567,7 +2809,6 @@ class ScanToPayResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== PAYMENT HISTORY =====
-/// NOTE: user_id extracted from JWT token, not from request
 class GetPaymentHistoryRequest extends $pb.GeneratedMessage {
   factory GetPaymentHistoryRequest({
     $core.String? accountId,
@@ -3294,7 +3535,6 @@ class BankDetails extends $pb.GeneratedMessage {
   void clearBalance() => clearField(9);
 }
 
-/// NOTE: user_id extracted from JWT token, not from request
 class PayWithBankDetailsRequest extends $pb.GeneratedMessage {
   factory PayWithBankDetailsRequest({
     $core.String? fromAccountId,
@@ -3412,7 +3652,6 @@ class PayWithBankDetailsRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearDescription() => clearField(5);
 
-  /// Transaction PIN verification
   @$pb.TagNumber(6)
   $core.String get transactionId => $_getSZ(5);
   @$pb.TagNumber(6)

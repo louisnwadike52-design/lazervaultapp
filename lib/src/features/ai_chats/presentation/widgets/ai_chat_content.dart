@@ -12,27 +12,32 @@ import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
 
-// Define the local UI ChatMessage model 
+// Local UI ChatMessage model wrapping the domain entity
 class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
-  final File? image; // Kept for UI-specific image handling (File vs bytes)
+  final ChatMessageType type;
+  final List<ActionButtonEntity>? actionButtons;
+  final ConfirmationDataEntity? confirmationData;
 
   ChatMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,
-    this.image,
+    this.type = ChatMessageType.text,
+    this.actionButtons,
+    this.confirmationData,
   });
 
-  // Factory constructor to map from ChatMessageEntity
   factory ChatMessage.fromEntity(ChatMessageEntity entity) {
     return ChatMessage(
       text: entity.text,
       isUser: entity.isUser,
       timestamp: entity.timestamp,
-      // image: entity.image // TODO: Map image data if needed
+      type: entity.type,
+      actionButtons: entity.actionButtons,
+      confirmationData: entity.confirmationData,
     );
   }
 }
@@ -81,10 +86,6 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
       context.read<AIChatCubit>().loadChatHistory(accessToken: authState.profile.session.accessToken);
-    } else {
-      // No history to load, Cubit remains in initial state
-      print("AiChatContent: User not logged in, cannot load history.");
-      // UI will show initial message based on empty state.messages in builder
     }
   }
 
@@ -136,7 +137,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     final accessToken = authState.profile.session.accessToken;
 
     // Call cubit method
-    context.read<AIChatCubit>().sendMessage(messageText, accessToken: accessToken, image: image);
+    context.read<AIChatCubit>().sendMessage(messageText, accessToken: accessToken);
 
     // Set attaching state back to false if an image was sent
     if (image != null && mounted) {
@@ -421,8 +422,15 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   }
 
   Widget _buildMessageBubble(ChatMessage message) {
-    // Determine if the message is from the user or AI
     final bool isUser = message.isUser;
+
+    // Render rich message types for AI responses
+    if (!isUser && message.type == ChatMessageType.confirmation && message.confirmationData != null) {
+      return _buildConfirmationCard(message);
+    }
+    if (!isUser && message.type == ChatMessageType.actionCard && message.actionButtons != null) {
+      return _buildActionCard(message);
+    }
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -435,15 +443,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         child: Column(
           crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            // TODO: Handle image display from entity if needed
-            if (message.image != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16.r),
-                child: Image.file(message.image!, width: 200.w, height: 200.w, fit: BoxFit.cover),
-              ),
             if (message.text.isNotEmpty)
               Container(
-                margin: EdgeInsets.only(top: message.image != null ? 8.h : 0),
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
                   color: isUser ? Colors.blue.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.1),
@@ -457,34 +458,205 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Use MarkdownBody instead of Text for message content
                     MarkdownBody(
                       data: message.text,
-                      selectable: true, // Allow text selection
+                      selectable: true,
                       styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                        // Customize styles as needed
                         p: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white, fontSize: 14.sp),
-                        // Add styles for other markdown elements (h1, code, etc.) if needed
                         code: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'monospace', 
+                          fontFamily: 'monospace',
                           backgroundColor: Colors.black.withValues(alpha: 0.2),
-                          color: Colors.lightBlueAccent, 
-                          fontSize: 13.sp
+                          color: Colors.lightBlueAccent,
+                          fontSize: 13.sp,
                         ),
-                        // Ensure block spacing is reasonable
                         blockSpacing: 8.0,
                       ),
-                      // Optional: Handle link taps
-                      onTapLink: (text, href, title) {
-                        // TODO: Implement link handling (e.g., open in browser)
-                        print('Tapped link: $href');
-                      },
                     ),
                     SizedBox(height: 4.h),
                     Text(_formatTime(message.timestamp), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
                   ],
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmationCard(ChatMessage message) {
+    final cd = message.confirmationData!;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.h, right: 32.w),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (message.text.isNotEmpty) ...[
+              MarkdownBody(
+                data: message.text,
+                styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                  p: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white, fontSize: 14.sp),
+                ),
+              ),
+              SizedBox(height: 12.h),
+            ],
+            // Confirmation details card
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Column(
+                children: [
+                  _buildConfirmRow('Action', cd.actionType.replaceAll('_', ' ').toUpperCase()),
+                  if (cd.amount.isNotEmpty) _buildConfirmRow('Amount', '${cd.currency} ${cd.amount}'),
+                  if (cd.recipientName.isNotEmpty) _buildConfirmRow('To', cd.recipientName),
+                  if (cd.description != null && cd.description!.isNotEmpty)
+                    _buildConfirmRow('Note', cd.description!),
+                ],
+              ),
+            ),
+            SizedBox(height: 12.h),
+            // Confirm / Cancel buttons
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _handleSubmitted('Cancel'),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 10.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Text('Cancel', style: TextStyle(color: Colors.white70, fontSize: 14.sp)),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _handleSubmitted('Yes, confirm'),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 10.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Text('Confirm', style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 4.h),
+            Text(_formatTime(message.timestamp), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+          Flexible(
+            child: Text(value, style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard(ChatMessage message) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.h, right: 32.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (message.text.isNotEmpty)
+              Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16.r),
+                    topRight: Radius.circular(16.r),
+                    bottomLeft: Radius.circular(4.r),
+                    bottomRight: Radius.circular(16.r),
+                  ),
+                ),
+                child: MarkdownBody(
+                  data: message.text,
+                  styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                    p: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white, fontSize: 14.sp),
+                  ),
+                ),
+              ),
+            SizedBox(height: 8.h),
+            // Action buttons as horizontal scrollable chips
+            SizedBox(
+              height: 40.h,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: message.actionButtons!.length,
+                itemBuilder: (context, index) {
+                  final btn = message.actionButtons![index];
+                  return GestureDetector(
+                    onTap: () {
+                      if (btn.actionType == 'quick_reply') {
+                        _handleSubmitted(btn.payload);
+                      } else if (btn.actionType == 'navigate') {
+                        Get.toNamed(btn.payload);
+                      } else {
+                        _handleSubmitted(btn.label);
+                      }
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(right: 8.w),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (btn.icon != null && btn.icon!.isNotEmpty) ...[
+                            Icon(Icons.arrow_forward_rounded, color: const Color(0xFF3B82F6), size: 14.sp),
+                            SizedBox(width: 4.w),
+                          ],
+                          Text(btn.label, style: TextStyle(color: const Color(0xFF3B82F6), fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(_formatTime(message.timestamp), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
           ],
         ),
       ),
@@ -662,10 +834,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
         // Handle errors with Snackbars
         if (state is AIChatHistoryError) {
-          print("History Error: ${state.message}");
           Get.snackbar('Error Loading History', state.message);
         } else if (state is AIChatMessageError) {
-          print("Message Error: ${state.errorMessage}");
           Get.snackbar(
             'Error', state.errorMessage,
             snackPosition: SnackPosition.BOTTOM,

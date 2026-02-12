@@ -84,35 +84,41 @@ class _AutoSaveTransactionsScreenState extends State<AutoSaveTransactionsScreen>
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 64.sp,
-            color: const Color(0xFF6B7280),
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: 120.h),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 64.sp,
+                color: const Color(0xFF6B7280),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'No Transactions Yet',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Your auto-save transactions will appear here',
+                style: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14.sp,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          SizedBox(height: 16.h),
-          Text(
-            'No Transactions Yet',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Your auto-save transactions will appear here',
-            style: TextStyle(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -180,7 +186,7 @@ class _AutoSaveTransactionsScreenState extends State<AutoSaveTransactionsScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '\$${transaction.amount.toStringAsFixed(2)}',
+                        transaction.formattedAmount,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18.sp,

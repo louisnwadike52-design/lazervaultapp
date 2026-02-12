@@ -96,21 +96,51 @@ class CryptoDetailsLoaded extends CryptoState {
   }
 }
 
+enum CryptoProcessingStep {
+  validatingPin,
+  checkingBalance,
+  fetchingRate,
+  executingOrder,
+  confirmingTransaction,
+  complete,
+}
+
 class CryptoTransactionProcessing extends CryptoState {
   final String cryptoId;
   final TransactionType type;
   final double quantity;
   final double price;
+  final CryptoProcessingStep step;
+  final double progress; // 0.0 to 1.0
 
   const CryptoTransactionProcessing({
     required this.cryptoId,
     required this.type,
     required this.quantity,
     required this.price,
+    this.step = CryptoProcessingStep.validatingPin,
+    this.progress = 0.0,
   });
 
   @override
-  List<Object> get props => [cryptoId, type, quantity, price];
+  List<Object> get props => [cryptoId, type, quantity, price, step, progress];
+
+  String get stepMessage {
+    switch (step) {
+      case CryptoProcessingStep.validatingPin:
+        return 'Validating transaction PIN...';
+      case CryptoProcessingStep.checkingBalance:
+        return 'Checking available balance...';
+      case CryptoProcessingStep.fetchingRate:
+        return 'Getting latest exchange rate...';
+      case CryptoProcessingStep.executingOrder:
+        return 'Executing order...';
+      case CryptoProcessingStep.confirmingTransaction:
+        return 'Confirming transaction...';
+      case CryptoProcessingStep.complete:
+        return 'Transaction complete!';
+    }
+  }
 }
 
 class CryptoTransactionSuccess extends CryptoState {

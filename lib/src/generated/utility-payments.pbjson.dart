@@ -78,6 +78,11 @@ const AirtimeProvider$json = {
     {'1': 'is_active', '3': 5, '4': 1, '5': 8, '10': 'isActive'},
     {'1': 'denominations', '3': 6, '4': 3, '5': 9, '10': 'denominations'},
     {'1': 'data_plans', '3': 7, '4': 3, '5': 9, '10': 'dataPlans'},
+    {'1': 'country_code', '3': 8, '4': 1, '5': 9, '10': 'countryCode'},
+    {'1': 'min_amount', '3': 9, '4': 1, '5': 1, '10': 'minAmount'},
+    {'1': 'max_amount', '3': 10, '4': 1, '5': 1, '10': 'maxAmount'},
+    {'1': 'commission_rate', '3': 11, '4': 1, '5': 1, '10': 'commissionRate'},
+    {'1': 'operator_id', '3': 12, '4': 1, '5': 9, '10': 'operatorId'},
   ],
 };
 
@@ -86,7 +91,10 @@ final $typed_data.Uint8List airtimeProviderDescriptor = $convert.base64Decode(
     'Cg9BaXJ0aW1lUHJvdmlkZXISDgoCaWQYASABKAlSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSGA'
     'oHbmV0d29yaxgDIAEoCVIHbmV0d29yaxIZCghsb2dvX3VybBgEIAEoCVIHbG9nb1VybBIbCglp'
     'c19hY3RpdmUYBSABKAhSCGlzQWN0aXZlEiQKDWRlbm9taW5hdGlvbnMYBiADKAlSDWRlbm9taW'
-    '5hdGlvbnMSHQoKZGF0YV9wbGFucxgHIAMoCVIJZGF0YVBsYW5z');
+    '5hdGlvbnMSHQoKZGF0YV9wbGFucxgHIAMoCVIJZGF0YVBsYW5zEiEKDGNvdW50cnlfY29kZRgI'
+    'IAEoCVILY291bnRyeUNvZGUSHQoKbWluX2Ftb3VudBgJIAEoAVIJbWluQW1vdW50Eh0KCm1heF'
+    '9hbW91bnQYCiABKAFSCW1heEFtb3VudBInCg9jb21taXNzaW9uX3JhdGUYCyABKAFSDmNvbW1p'
+    'c3Npb25SYXRlEh8KC29wZXJhdG9yX2lkGAwgASgJUgpvcGVyYXRvcklk');
 
 @$core.Deprecated('Use payElectricityBillRequestDescriptor instead')
 const PayElectricityBillRequest$json = {
@@ -223,6 +231,8 @@ const BuyAirtimeRequest$json = {
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
     {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'country_code', '3': 9, '4': 1, '5': 9, '10': 'countryCode'},
+    {'1': 'operator_id', '3': 10, '4': 1, '5': 9, '10': 'operatorId'},
   ],
 };
 
@@ -233,7 +243,8 @@ final $typed_data.Uint8List buyAirtimeRequestDescriptor = $convert.base64Decode(
     'EiEKDGFpcnRpbWVfdHlwZRgEIAEoCVILYWlydGltZVR5cGUSIAoMZGF0YV9wbGFuX2lkGAUgAS'
     'gJUgpkYXRhUGxhbklkEiUKDnRyYW5zYWN0aW9uX2lkGAYgASgJUg10cmFuc2FjdGlvbklkEi0K'
     'EnZlcmlmaWNhdGlvbl90b2tlbhgHIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW4SJwoPaWRlbXBvdG'
-    'VuY3lfa2V5GAggASgJUg5pZGVtcG90ZW5jeUtleQ==');
+    'VuY3lfa2V5GAggASgJUg5pZGVtcG90ZW5jeUtleRIhCgxjb3VudHJ5X2NvZGUYCSABKAlSC2Nv'
+    'dW50cnlDb2RlEh8KC29wZXJhdG9yX2lkGAogASgJUgpvcGVyYXRvcklk');
 
 @$core.Deprecated('Use buyAirtimeResponseDescriptor instead')
 const BuyAirtimeResponse$json = {
@@ -244,6 +255,8 @@ const BuyAirtimeResponse$json = {
     {'1': 'phone_number', '3': 3, '4': 1, '5': 9, '10': 'phoneNumber'},
     {'1': 'data_info', '3': 4, '4': 1, '5': 9, '10': 'dataInfo'},
     {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'commission_earned', '3': 6, '4': 1, '5': 1, '10': 'commissionEarned'},
+    {'1': 'provider_reference', '3': 7, '4': 1, '5': 9, '10': 'providerReference'},
   ],
 };
 
@@ -252,7 +265,100 @@ final $typed_data.Uint8List buyAirtimeResponseDescriptor = $convert.base64Decode
     'ChJCdXlBaXJ0aW1lUmVzcG9uc2USNgoHcGF5bWVudBgBIAEoCzIcLnV0aWxpdHlwYXltZW50cy'
     '5CaWxsUGF5bWVudFIHcGF5bWVudBIfCgtuZXdfYmFsYW5jZRgCIAEoAVIKbmV3QmFsYW5jZRIh'
     'CgxwaG9uZV9udW1iZXIYAyABKAlSC3Bob25lTnVtYmVyEhsKCWRhdGFfaW5mbxgEIAEoCVIIZG'
-    'F0YUluZm8SGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZQ==');
+    'F0YUluZm8SGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZRIrChFjb21taXNzaW9uX2Vhcm5lZBgG'
+    'IAEoAVIQY29tbWlzc2lvbkVhcm5lZBItChJwcm92aWRlcl9yZWZlcmVuY2UYByABKAlSEXByb3'
+    'ZpZGVyUmVmZXJlbmNl');
+
+@$core.Deprecated('Use dataPlanDescriptor instead')
+const DataPlan$json = {
+  '1': 'DataPlan',
+  '2': [
+    {'1': 'variation_id', '3': 1, '4': 1, '5': 9, '10': 'variationId'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'price', '3': 3, '4': 1, '5': 1, '10': 'price'},
+    {'1': 'network', '3': 4, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'availability', '3': 5, '4': 1, '5': 9, '10': 'availability'},
+  ],
+};
+
+/// Descriptor for `DataPlan`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List dataPlanDescriptor = $convert.base64Decode(
+    'CghEYXRhUGxhbhIhCgx2YXJpYXRpb25faWQYASABKAlSC3ZhcmlhdGlvbklkEhIKBG5hbWUYAi'
+    'ABKAlSBG5hbWUSFAoFcHJpY2UYAyABKAFSBXByaWNlEhgKB25ldHdvcmsYBCABKAlSB25ldHdv'
+    'cmsSIgoMYXZhaWxhYmlsaXR5GAUgASgJUgxhdmFpbGFiaWxpdHk=');
+
+@$core.Deprecated('Use getDataPlansRequestDescriptor instead')
+const GetDataPlansRequest$json = {
+  '1': 'GetDataPlansRequest',
+  '2': [
+    {'1': 'network', '3': 1, '4': 1, '5': 9, '10': 'network'},
+  ],
+};
+
+/// Descriptor for `GetDataPlansRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDataPlansRequestDescriptor = $convert.base64Decode(
+    'ChNHZXREYXRhUGxhbnNSZXF1ZXN0EhgKB25ldHdvcmsYASABKAlSB25ldHdvcms=');
+
+@$core.Deprecated('Use getDataPlansResponseDescriptor instead')
+const GetDataPlansResponse$json = {
+  '1': 'GetDataPlansResponse',
+  '2': [
+    {'1': 'plans', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.DataPlan', '10': 'plans'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetDataPlansResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDataPlansResponseDescriptor = $convert.base64Decode(
+    'ChRHZXREYXRhUGxhbnNSZXNwb25zZRIvCgVwbGFucxgBIAMoCzIZLnV0aWxpdHlwYXltZW50cy'
+    '5EYXRhUGxhblIFcGxhbnMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
+
+@$core.Deprecated('Use buyDataRequestDescriptor instead')
+const BuyDataRequest$json = {
+  '1': 'BuyDataRequest',
+  '2': [
+    {'1': 'phone_number', '3': 1, '4': 1, '5': 9, '10': 'phoneNumber'},
+    {'1': 'network', '3': 2, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'variation_id', '3': 3, '4': 1, '5': 9, '10': 'variationId'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
+    {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
+    {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'country_code', '3': 8, '4': 1, '5': 9, '10': 'countryCode'},
+  ],
+};
+
+/// Descriptor for `BuyDataRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List buyDataRequestDescriptor = $convert.base64Decode(
+    'Cg5CdXlEYXRhUmVxdWVzdBIhCgxwaG9uZV9udW1iZXIYASABKAlSC3Bob25lTnVtYmVyEhgKB2'
+    '5ldHdvcmsYAiABKAlSB25ldHdvcmsSIQoMdmFyaWF0aW9uX2lkGAMgASgJUgt2YXJpYXRpb25J'
+    'ZBIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIlCg50cmFuc2FjdGlvbl9pZBgFIAEoCVINdHJhbn'
+    'NhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YBiABKAlSEXZlcmlmaWNhdGlvblRva2Vu'
+    'EicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZXkSIQoMY291bnRyeV9jb2'
+    'RlGAggASgJUgtjb3VudHJ5Q29kZQ==');
+
+@$core.Deprecated('Use buyDataResponseDescriptor instead')
+const BuyDataResponse$json = {
+  '1': 'BuyDataResponse',
+  '2': [
+    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
+    {'1': 'phone_number', '3': 3, '4': 1, '5': 9, '10': 'phoneNumber'},
+    {'1': 'data_plan', '3': 4, '4': 1, '5': 9, '10': 'dataPlan'},
+    {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'commission_earned', '3': 6, '4': 1, '5': 1, '10': 'commissionEarned'},
+    {'1': 'provider_reference', '3': 7, '4': 1, '5': 9, '10': 'providerReference'},
+  ],
+};
+
+/// Descriptor for `BuyDataResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List buyDataResponseDescriptor = $convert.base64Decode(
+    'Cg9CdXlEYXRhUmVzcG9uc2USNgoHcGF5bWVudBgBIAEoCzIcLnV0aWxpdHlwYXltZW50cy5CaW'
+    'xsUGF5bWVudFIHcGF5bWVudBIfCgtuZXdfYmFsYW5jZRgCIAEoAVIKbmV3QmFsYW5jZRIhCgxw'
+    'aG9uZV9udW1iZXIYAyABKAlSC3Bob25lTnVtYmVyEhsKCWRhdGFfcGxhbhgEIAEoCVIIZGF0YV'
+    'BsYW4SGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZRIrChFjb21taXNzaW9uX2Vhcm5lZBgGIAEo'
+    'AVIQY29tbWlzc2lvbkVhcm5lZBItChJwcm92aWRlcl9yZWZlcmVuY2UYByABKAlSEXByb3ZpZG'
+    'VyUmVmZXJlbmNl');
 
 @$core.Deprecated('Use barcodePayRequestDescriptor instead')
 const BarcodePayRequest$json = {
@@ -405,13 +511,14 @@ const GetAirtimeProvidersRequest$json = {
   '1': 'GetAirtimeProvidersRequest',
   '2': [
     {'1': 'active_only', '3': 1, '4': 1, '5': 8, '10': 'activeOnly'},
+    {'1': 'country_code', '3': 2, '4': 1, '5': 9, '10': 'countryCode'},
   ],
 };
 
 /// Descriptor for `GetAirtimeProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getAirtimeProvidersRequestDescriptor = $convert.base64Decode(
     'ChpHZXRBaXJ0aW1lUHJvdmlkZXJzUmVxdWVzdBIfCgthY3RpdmVfb25seRgBIAEoCFIKYWN0aX'
-    'ZlT25seQ==');
+    'ZlT25seRIhCgxjb3VudHJ5X2NvZGUYAiABKAlSC2NvdW50cnlDb2Rl');
 
 @$core.Deprecated('Use getAirtimeProvidersResponseDescriptor instead')
 const GetAirtimeProvidersResponse$json = {
@@ -462,4 +569,295 @@ final $typed_data.Uint8List verifyBillResponseDescriptor = $convert.base64Decode
     '9tZXJfbmFtZRgCIAEoCVIMY3VzdG9tZXJOYW1lEi0KEm91dHN0YW5kaW5nX2Ftb3VudBgDIAEo'
     'AVIRb3V0c3RhbmRpbmdBbW91bnQSJQoOYWNjb3VudF9zdGF0dXMYBCABKAlSDWFjY291bnRTdG'
     'F0dXMSGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use cableTVProviderDescriptor instead')
+const CableTVProvider$json = {
+  '1': 'CableTVProvider',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'service_id', '3': 3, '4': 1, '5': 9, '10': 'serviceId'},
+    {'1': 'logo_url', '3': 4, '4': 1, '5': 9, '10': 'logoUrl'},
+    {'1': 'is_active', '3': 5, '4': 1, '5': 8, '10': 'isActive'},
+    {'1': 'commission_rate', '3': 6, '4': 1, '5': 1, '10': 'commissionRate'},
+  ],
+};
+
+/// Descriptor for `CableTVProvider`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cableTVProviderDescriptor = $convert.base64Decode(
+    'Cg9DYWJsZVRWUHJvdmlkZXISDgoCaWQYASABKAlSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSHQ'
+    'oKc2VydmljZV9pZBgDIAEoCVIJc2VydmljZUlkEhkKCGxvZ29fdXJsGAQgASgJUgdsb2dvVXJs'
+    'EhsKCWlzX2FjdGl2ZRgFIAEoCFIIaXNBY3RpdmUSJwoPY29tbWlzc2lvbl9yYXRlGAYgASgBUg'
+    '5jb21taXNzaW9uUmF0ZQ==');
+
+@$core.Deprecated('Use tVPackageDescriptor instead')
+const TVPackage$json = {
+  '1': 'TVPackage',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'variation_code', '3': 3, '4': 1, '5': 9, '10': 'variationCode'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'provider_id', '3': 5, '4': 1, '5': 9, '10': 'providerId'},
+    {'1': 'validity', '3': 6, '4': 1, '5': 9, '10': 'validity'},
+  ],
+};
+
+/// Descriptor for `TVPackage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List tVPackageDescriptor = $convert.base64Decode(
+    'CglUVlBhY2thZ2USDgoCaWQYASABKAlSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSJQoOdmFyaW'
+    'F0aW9uX2NvZGUYAyABKAlSDXZhcmlhdGlvbkNvZGUSFgoGYW1vdW50GAQgASgBUgZhbW91bnQS'
+    'HwoLcHJvdmlkZXJfaWQYBSABKAlSCnByb3ZpZGVySWQSGgoIdmFsaWRpdHkYBiABKAlSCHZhbG'
+    'lkaXR5');
+
+@$core.Deprecated('Use smartCardValidationDescriptor instead')
+const SmartCardValidation$json = {
+  '1': 'SmartCardValidation',
+  '2': [
+    {'1': 'is_valid', '3': 1, '4': 1, '5': 8, '10': 'isValid'},
+    {'1': 'customer_name', '3': 2, '4': 1, '5': 9, '10': 'customerName'},
+    {'1': 'smart_card_number', '3': 3, '4': 1, '5': 9, '10': 'smartCardNumber'},
+    {'1': 'current_package', '3': 4, '4': 1, '5': 9, '10': 'currentPackage'},
+    {'1': 'renewal_date', '3': 5, '4': 1, '5': 9, '10': 'renewalDate'},
+    {'1': 'due_date', '3': 6, '4': 1, '5': 9, '10': 'dueDate'},
+  ],
+};
+
+/// Descriptor for `SmartCardValidation`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List smartCardValidationDescriptor = $convert.base64Decode(
+    'ChNTbWFydENhcmRWYWxpZGF0aW9uEhkKCGlzX3ZhbGlkGAEgASgIUgdpc1ZhbGlkEiMKDWN1c3'
+    'RvbWVyX25hbWUYAiABKAlSDGN1c3RvbWVyTmFtZRIqChFzbWFydF9jYXJkX251bWJlchgDIAEo'
+    'CVIPc21hcnRDYXJkTnVtYmVyEicKD2N1cnJlbnRfcGFja2FnZRgEIAEoCVIOY3VycmVudFBhY2'
+    'thZ2USIQoMcmVuZXdhbF9kYXRlGAUgASgJUgtyZW5ld2FsRGF0ZRIZCghkdWVfZGF0ZRgGIAEo'
+    'CVIHZHVlRGF0ZQ==');
+
+@$core.Deprecated('Use validateSmartCardRequestDescriptor instead')
+const ValidateSmartCardRequest$json = {
+  '1': 'ValidateSmartCardRequest',
+  '2': [
+    {'1': 'provider_id', '3': 1, '4': 1, '5': 9, '10': 'providerId'},
+    {'1': 'smart_card_number', '3': 2, '4': 1, '5': 9, '10': 'smartCardNumber'},
+  ],
+};
+
+/// Descriptor for `ValidateSmartCardRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List validateSmartCardRequestDescriptor = $convert.base64Decode(
+    'ChhWYWxpZGF0ZVNtYXJ0Q2FyZFJlcXVlc3QSHwoLcHJvdmlkZXJfaWQYASABKAlSCnByb3ZpZG'
+    'VySWQSKgoRc21hcnRfY2FyZF9udW1iZXIYAiABKAlSD3NtYXJ0Q2FyZE51bWJlcg==');
+
+@$core.Deprecated('Use validateSmartCardResponseDescriptor instead')
+const ValidateSmartCardResponse$json = {
+  '1': 'ValidateSmartCardResponse',
+  '2': [
+    {'1': 'validation', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.SmartCardValidation', '10': 'validation'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ValidateSmartCardResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List validateSmartCardResponseDescriptor = $convert.base64Decode(
+    'ChlWYWxpZGF0ZVNtYXJ0Q2FyZFJlc3BvbnNlEkQKCnZhbGlkYXRpb24YASABKAsyJC51dGlsaX'
+    'R5cGF5bWVudHMuU21hcnRDYXJkVmFsaWRhdGlvblIKdmFsaWRhdGlvbhIYCgdtZXNzYWdlGAIg'
+    'ASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use getTVPackagesRequestDescriptor instead')
+const GetTVPackagesRequest$json = {
+  '1': 'GetTVPackagesRequest',
+  '2': [
+    {'1': 'provider_id', '3': 1, '4': 1, '5': 9, '10': 'providerId'},
+  ],
+};
+
+/// Descriptor for `GetTVPackagesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTVPackagesRequestDescriptor = $convert.base64Decode(
+    'ChRHZXRUVlBhY2thZ2VzUmVxdWVzdBIfCgtwcm92aWRlcl9pZBgBIAEoCVIKcHJvdmlkZXJJZA'
+    '==');
+
+@$core.Deprecated('Use getTVPackagesResponseDescriptor instead')
+const GetTVPackagesResponse$json = {
+  '1': 'GetTVPackagesResponse',
+  '2': [
+    {'1': 'packages', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.TVPackage', '10': 'packages'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetTVPackagesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTVPackagesResponseDescriptor = $convert.base64Decode(
+    'ChVHZXRUVlBhY2thZ2VzUmVzcG9uc2USNgoIcGFja2FnZXMYASADKAsyGi51dGlsaXR5cGF5bW'
+    'VudHMuVFZQYWNrYWdlUghwYWNrYWdlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');
+
+@$core.Deprecated('Use payCableTVBillRequestDescriptor instead')
+const PayCableTVBillRequest$json = {
+  '1': 'PayCableTVBillRequest',
+  '2': [
+    {'1': 'provider_id', '3': 1, '4': 1, '5': 9, '10': 'providerId'},
+    {'1': 'smart_card_number', '3': 2, '4': 1, '5': 9, '10': 'smartCardNumber'},
+    {'1': 'variation_code', '3': 3, '4': 1, '5': 9, '10': 'variationCode'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'phone', '3': 5, '4': 1, '5': 9, '10': 'phone'},
+    {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
+    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `PayCableTVBillRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List payCableTVBillRequestDescriptor = $convert.base64Decode(
+    'ChVQYXlDYWJsZVRWQmlsbFJlcXVlc3QSHwoLcHJvdmlkZXJfaWQYASABKAlSCnByb3ZpZGVySW'
+    'QSKgoRc21hcnRfY2FyZF9udW1iZXIYAiABKAlSD3NtYXJ0Q2FyZE51bWJlchIlCg52YXJpYXRp'
+    'b25fY29kZRgDIAEoCVINdmFyaWF0aW9uQ29kZRIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIUCg'
+    'VwaG9uZRgFIAEoCVIFcGhvbmUSJQoOdHJhbnNhY3Rpb25faWQYBiABKAlSDXRyYW5zYWN0aW9u'
+    'SWQSLQoSdmVyaWZpY2F0aW9uX3Rva2VuGAcgASgJUhF2ZXJpZmljYXRpb25Ub2tlbhInCg9pZG'
+    'VtcG90ZW5jeV9rZXkYCCABKAlSDmlkZW1wb3RlbmN5S2V5');
+
+@$core.Deprecated('Use payCableTVBillResponseDescriptor instead')
+const PayCableTVBillResponse$json = {
+  '1': 'PayCableTVBillResponse',
+  '2': [
+    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
+    {'1': 'renewal_date', '3': 3, '4': 1, '5': 9, '10': 'renewalDate'},
+    {'1': 'customer_name', '3': 4, '4': 1, '5': 9, '10': 'customerName'},
+    {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `PayCableTVBillResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List payCableTVBillResponseDescriptor = $convert.base64Decode(
+    'ChZQYXlDYWJsZVRWQmlsbFJlc3BvbnNlEjYKB3BheW1lbnQYASABKAsyHC51dGlsaXR5cGF5bW'
+    'VudHMuQmlsbFBheW1lbnRSB3BheW1lbnQSHwoLbmV3X2JhbGFuY2UYAiABKAFSCm5ld0JhbGFu'
+    'Y2USIQoMcmVuZXdhbF9kYXRlGAMgASgJUgtyZW5ld2FsRGF0ZRIjCg1jdXN0b21lcl9uYW1lGA'
+    'QgASgJUgxjdXN0b21lck5hbWUSGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use getCableTVProvidersRequestDescriptor instead')
+const GetCableTVProvidersRequest$json = {
+  '1': 'GetCableTVProvidersRequest',
+  '2': [
+    {'1': 'active_only', '3': 1, '4': 1, '5': 8, '10': 'activeOnly'},
+  ],
+};
+
+/// Descriptor for `GetCableTVProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCableTVProvidersRequestDescriptor = $convert.base64Decode(
+    'ChpHZXRDYWJsZVRWUHJvdmlkZXJzUmVxdWVzdBIfCgthY3RpdmVfb25seRgBIAEoCFIKYWN0aX'
+    'ZlT25seQ==');
+
+@$core.Deprecated('Use getCableTVProvidersResponseDescriptor instead')
+const GetCableTVProvidersResponse$json = {
+  '1': 'GetCableTVProvidersResponse',
+  '2': [
+    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.CableTVProvider', '10': 'providers'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetCableTVProvidersResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCableTVProvidersResponseDescriptor = $convert.base64Decode(
+    'ChtHZXRDYWJsZVRWUHJvdmlkZXJzUmVzcG9uc2USPgoJcHJvdmlkZXJzGAEgAygLMiAudXRpbG'
+    'l0eXBheW1lbnRzLkNhYmxlVFZQcm92aWRlclIJcHJvdmlkZXJzEhQKBXRvdGFsGAIgASgFUgV0'
+    'b3RhbA==');
+
+@$core.Deprecated('Use educationProviderDescriptor instead')
+const EducationProvider$json = {
+  '1': 'EducationProvider',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'service_id', '3': 3, '4': 1, '5': 9, '10': 'serviceId'},
+    {'1': 'logo_url', '3': 4, '4': 1, '5': 9, '10': 'logoUrl'},
+    {'1': 'is_active', '3': 5, '4': 1, '5': 8, '10': 'isActive'},
+    {'1': 'amount', '3': 6, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'description', '3': 7, '4': 1, '5': 9, '10': 'description'},
+  ],
+};
+
+/// Descriptor for `EducationProvider`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List educationProviderDescriptor = $convert.base64Decode(
+    'ChFFZHVjYXRpb25Qcm92aWRlchIOCgJpZBgBIAEoCVICaWQSEgoEbmFtZRgCIAEoCVIEbmFtZR'
+    'IdCgpzZXJ2aWNlX2lkGAMgASgJUglzZXJ2aWNlSWQSGQoIbG9nb191cmwYBCABKAlSB2xvZ29V'
+    'cmwSGwoJaXNfYWN0aXZlGAUgASgIUghpc0FjdGl2ZRIWCgZhbW91bnQYBiABKAFSBmFtb3VudB'
+    'IgCgtkZXNjcmlwdGlvbhgHIAEoCVILZGVzY3JpcHRpb24=');
+
+@$core.Deprecated('Use educationPinResultDescriptor instead')
+const EducationPinResult$json = {
+  '1': 'EducationPinResult',
+  '2': [
+    {'1': 'pin', '3': 1, '4': 1, '5': 9, '10': 'pin'},
+    {'1': 'serial', '3': 2, '4': 1, '5': 9, '10': 'serial'},
+    {'1': 'expires_at', '3': 3, '4': 1, '5': 9, '10': 'expiresAt'},
+  ],
+};
+
+/// Descriptor for `EducationPinResult`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List educationPinResultDescriptor = $convert.base64Decode(
+    'ChJFZHVjYXRpb25QaW5SZXN1bHQSEAoDcGluGAEgASgJUgNwaW4SFgoGc2VyaWFsGAIgASgJUg'
+    'ZzZXJpYWwSHQoKZXhwaXJlc19hdBgDIAEoCVIJZXhwaXJlc0F0');
+
+@$core.Deprecated('Use purchaseEducationPinRequestDescriptor instead')
+const PurchaseEducationPinRequest$json = {
+  '1': 'PurchaseEducationPinRequest',
+  '2': [
+    {'1': 'service_id', '3': 1, '4': 1, '5': 9, '10': 'serviceId'},
+    {'1': 'quantity', '3': 2, '4': 1, '5': 5, '10': 'quantity'},
+    {'1': 'phone', '3': 3, '4': 1, '5': 9, '10': 'phone'},
+    {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
+    {'1': 'verification_token', '3': 5, '4': 1, '5': 9, '10': 'verificationToken'},
+    {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `PurchaseEducationPinRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List purchaseEducationPinRequestDescriptor = $convert.base64Decode(
+    'ChtQdXJjaGFzZUVkdWNhdGlvblBpblJlcXVlc3QSHQoKc2VydmljZV9pZBgBIAEoCVIJc2Vydm'
+    'ljZUlkEhoKCHF1YW50aXR5GAIgASgFUghxdWFudGl0eRIUCgVwaG9uZRgDIAEoCVIFcGhvbmUS'
+    'JQoOdHJhbnNhY3Rpb25faWQYBCABKAlSDXRyYW5zYWN0aW9uSWQSLQoSdmVyaWZpY2F0aW9uX3'
+    'Rva2VuGAUgASgJUhF2ZXJpZmljYXRpb25Ub2tlbhInCg9pZGVtcG90ZW5jeV9rZXkYBiABKAlS'
+    'DmlkZW1wb3RlbmN5S2V5');
+
+@$core.Deprecated('Use purchaseEducationPinResponseDescriptor instead')
+const PurchaseEducationPinResponse$json = {
+  '1': 'PurchaseEducationPinResponse',
+  '2': [
+    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
+    {'1': 'pins', '3': 3, '4': 3, '5': 11, '6': '.utilitypayments.EducationPinResult', '10': 'pins'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `PurchaseEducationPinResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List purchaseEducationPinResponseDescriptor = $convert.base64Decode(
+    'ChxQdXJjaGFzZUVkdWNhdGlvblBpblJlc3BvbnNlEjYKB3BheW1lbnQYASABKAsyHC51dGlsaX'
+    'R5cGF5bWVudHMuQmlsbFBheW1lbnRSB3BheW1lbnQSHwoLbmV3X2JhbGFuY2UYAiABKAFSCm5l'
+    'd0JhbGFuY2USNwoEcGlucxgDIAMoCzIjLnV0aWxpdHlwYXltZW50cy5FZHVjYXRpb25QaW5SZX'
+    'N1bHRSBHBpbnMSGAoHbWVzc2FnZRgEIAEoCVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use getEducationProvidersRequestDescriptor instead')
+const GetEducationProvidersRequest$json = {
+  '1': 'GetEducationProvidersRequest',
+  '2': [
+    {'1': 'active_only', '3': 1, '4': 1, '5': 8, '10': 'activeOnly'},
+  ],
+};
+
+/// Descriptor for `GetEducationProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getEducationProvidersRequestDescriptor = $convert.base64Decode(
+    'ChxHZXRFZHVjYXRpb25Qcm92aWRlcnNSZXF1ZXN0Eh8KC2FjdGl2ZV9vbmx5GAEgASgIUgphY3'
+    'RpdmVPbmx5');
+
+@$core.Deprecated('Use getEducationProvidersResponseDescriptor instead')
+const GetEducationProvidersResponse$json = {
+  '1': 'GetEducationProvidersResponse',
+  '2': [
+    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.EducationProvider', '10': 'providers'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetEducationProvidersResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getEducationProvidersResponseDescriptor = $convert.base64Decode(
+    'Ch1HZXRFZHVjYXRpb25Qcm92aWRlcnNSZXNwb25zZRJACglwcm92aWRlcnMYASADKAsyIi51dG'
+    'lsaXR5cGF5bWVudHMuRWR1Y2F0aW9uUHJvdmlkZXJSCXByb3ZpZGVycxIUCgV0b3RhbBgCIAEo'
+    'BVIFdG90YWw=');
 

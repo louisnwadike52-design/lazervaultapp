@@ -88,7 +88,7 @@ class RecentTransactionsCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.toNamed(
         AppRoutes.airtimeDetails,
-        arguments: transaction.id,
+        arguments: {'transaction': transaction},
       ),
       child: Container(
         padding: EdgeInsets.all(16.w),
@@ -111,7 +111,7 @@ class RecentTransactionsCard extends StatelessWidget {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: _getProviderColor(transaction.networkProvider),
+                color: transaction.networkProvider.color,
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Center(
@@ -172,7 +172,7 @@ class RecentTransactionsCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '₦${transaction.amount.toStringAsFixed(0)}',
+                  '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -185,7 +185,7 @@ class RecentTransactionsCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
+                    color: transaction.status.color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
@@ -193,7 +193,7 @@ class RecentTransactionsCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
-                      color: _getStatusColor(transaction.status),
+                      color: transaction.status.color,
                     ),
                   ),
                 ),
@@ -264,34 +264,4 @@ class RecentTransactionsCard extends StatelessWidget {
     );
   }
 
-  Color _getProviderColor(NetworkProviderType type) {
-    switch (type) {
-      case NetworkProviderType.mtn:
-        return Color(0xFFFFCC00);
-      case NetworkProviderType.airtel:
-        return Color(0xFFFF0000);
-      case NetworkProviderType.glo:
-        return Color(0xFF00B04F);
-      case NetworkProviderType.etisalat:
-      case NetworkProviderType.ninemobile:
-        return Color(0xFF00AA4F);
-      default:
-        return Color(0xFF3B82F6); // Default blue color
-    }
-  }
-
-  Color _getStatusColor(AirtimeTransactionStatus status) {
-    switch (status) {
-      case AirtimeTransactionStatus.pending:
-        return Color(0xFFFFA500);
-      case AirtimeTransactionStatus.processing:
-        return Color(0xFF0066CC);
-      case AirtimeTransactionStatus.completed:
-        return Color(0xFF00AA4F);
-      case AirtimeTransactionStatus.failed:
-        return Color(0xFFFF0000);
-      case AirtimeTransactionStatus.refunded:
-        return Color(0xFF6B46C1);
-    }
-  }
 } 

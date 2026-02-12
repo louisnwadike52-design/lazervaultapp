@@ -15,19 +15,17 @@ class GiftCardInitial extends GiftCardState {}
 class GiftCardLoading extends GiftCardState {}
 class GiftCardBrandsLoading extends GiftCardState {}
 class GiftCardPurchasing extends GiftCardState {}
-class GiftCardRedeeming extends GiftCardState {}
-class GiftCardSending extends GiftCardState {}
-class GiftCardSelling extends GiftCardState {}
 
 // Success States
 class GiftCardBrandsLoaded extends GiftCardState {
   final List<GiftCardBrand> brands;
-  final GiftCardCategory? selectedCategory;
+  final String? selectedCategory;
+  final bool isStale;
 
-  const GiftCardBrandsLoaded(this.brands, {this.selectedCategory});
+  const GiftCardBrandsLoaded(this.brands, {this.selectedCategory, this.isStale = false});
 
   @override
-  List<Object> get props => [brands, if (selectedCategory != null) selectedCategory!];
+  List<Object> get props => [brands, if (selectedCategory != null) selectedCategory!, isStale];
 }
 
 class GiftCardBrandsSearched extends GiftCardState {
@@ -61,47 +59,11 @@ class GiftCardPurchased extends GiftCardState {
   List<Object> get props => [giftCard];
 }
 
-class GiftCardRedeemed extends GiftCardState {
-  final GiftCard giftCard;
-  const GiftCardRedeemed(this.giftCard);
-  @override
-  List<Object> get props => [giftCard];
-}
-
-class GiftCardSent extends GiftCardState {
-  final GiftCard giftCard;
-  const GiftCardSent(this.giftCard);
-  @override
-  List<Object> get props => [giftCard];
-}
-
-class GiftCardSold extends GiftCardState {
-  final GiftCard giftCard;
-  const GiftCardSold(this.giftCard);
-  @override
-  List<Object> get props => [giftCard];
-}
-
 class GiftCardTransactionsLoaded extends GiftCardState {
   final List<GiftCardTransaction> transactions;
   const GiftCardTransactionsLoaded(this.transactions);
   @override
   List<Object> get props => [transactions];
-}
-
-class GiftCardCodeValidated extends GiftCardState {
-  final bool isValid;
-  const GiftCardCodeValidated(this.isValid);
-  @override
-  List<Object> get props => [isValid];
-}
-
-class GiftCardBalanceLoaded extends GiftCardState {
-  final double balance;
-  final String giftCardId;
-  const GiftCardBalanceLoaded(this.balance, this.giftCardId);
-  @override
-  List<Object> get props => [balance, giftCardId];
 }
 
 // Error States
@@ -122,27 +84,6 @@ class GiftCardPurchaseError extends GiftCardState {
   List<Object> get props => [message];
 }
 
-class GiftCardRedeemError extends GiftCardState {
-  final String message;
-  const GiftCardRedeemError(this.message);
-  @override
-  List<Object> get props => [message];
-}
-
-class GiftCardSendError extends GiftCardState {
-  final String message;
-  const GiftCardSendError(this.message);
-  @override
-  List<Object> get props => [message];
-}
-
-class GiftCardSellError extends GiftCardState {
-  final String message;
-  const GiftCardSellError(this.message);
-  @override
-  List<Object> get props => [message];
-}
-
 class MyGiftCardsLoaded extends GiftCardState {
   final List<GiftCard> giftCards;
 
@@ -153,7 +94,7 @@ class MyGiftCardsLoaded extends GiftCardState {
 }
 
 // ============================================
-// NEW PRODUCTION-READY STATES (Insurance Pattern)
+// PRODUCTION-READY STATES
 // ============================================
 
 // Multi-step Purchase Processing States
@@ -193,114 +134,9 @@ class GiftCardPurchaseCompleted extends GiftCardState {
       ];
 }
 
-// Redemption Processing States
-class GiftCardRedemptionProcessing extends GiftCardState {
-  final String giftCardId;
-  final String currentStep;
-  final double progress;
-
-  const GiftCardRedemptionProcessing({
-    required this.giftCardId,
-    required this.currentStep,
-    required this.progress,
-  });
-
-  @override
-  List<Object> get props => [giftCardId, currentStep, progress];
-}
-
-class GiftCardRedemptionCompleted extends GiftCardState {
-  final GiftCard giftCard;
-  final double redeemedAmount;
-  final double remainingBalance;
-  final String? receiptUrl;
-
-  const GiftCardRedemptionCompleted({
-    required this.giftCard,
-    required this.redeemedAmount,
-    required this.remainingBalance,
-    this.receiptUrl,
-  });
-
-  @override
-  List<Object> get props => [
-        giftCard,
-        redeemedAmount,
-        remainingBalance,
-        if (receiptUrl != null) receiptUrl!,
-      ];
-}
-
-// Statistics with Dashboard Data
-class GiftCardStatisticsLoaded extends GiftCardState {
-  final int totalCards;
-  final int activeCards;
-  final int usedCards;
-  final int pendingCards;
-  final int expiredCards;
-  final double totalValue;
-  final double totalSpent;
-  final double totalSaved;
-  final List<GiftCard> recentCards;
-  final List<GiftCardTransaction> recentTransactions;
-
-  const GiftCardStatisticsLoaded({
-    required this.totalCards,
-    required this.activeCards,
-    required this.usedCards,
-    required this.pendingCards,
-    required this.expiredCards,
-    required this.totalValue,
-    required this.totalSpent,
-    required this.totalSaved,
-    required this.recentCards,
-    required this.recentTransactions,
-  });
-
-  @override
-  List<Object> get props => [
-        totalCards,
-        activeCards,
-        usedCards,
-        pendingCards,
-        expiredCards,
-        totalValue,
-        totalSpent,
-        totalSaved,
-        recentCards,
-        recentTransactions,
-      ];
-}
-
-// Balance Check Result
-class GiftCardBalanceChecked extends GiftCardState {
-  final String giftCardId;
-  final double remainingBalance;
-  final double originalAmount;
-  final double redeemedAmount;
-  final GiftCard? giftCard;
-
-  const GiftCardBalanceChecked({
-    required this.giftCardId,
-    required this.remainingBalance,
-    required this.originalAmount,
-    required this.redeemedAmount,
-    this.giftCard,
-  });
-
-  @override
-  List<Object> get props => [
-        giftCardId,
-        remainingBalance,
-        originalAmount,
-        redeemedAmount,
-        if (giftCard != null) giftCard!,
-      ];
-}
-
 // Empty States
 class GiftCardBrandsEmpty extends GiftCardState {
-  final GiftCardCategory? category;
+  final String? category;
   final String? searchQuery;
 
   const GiftCardBrandsEmpty({this.category, this.searchQuery});
@@ -318,10 +154,6 @@ class UserGiftCardsEmpty extends GiftCardState {
 
 class TransactionsEmpty extends GiftCardState {
   const TransactionsEmpty();
-}
-
-class ResellableCardsEmpty extends GiftCardState {
-  const ResellableCardsEmpty();
 }
 
 // Specific Error States (Production Edge Cases)
@@ -342,7 +174,7 @@ class GiftCardInsufficientFunds extends GiftCardState {
 
 class GiftCardExpired extends GiftCardState {
   final GiftCard giftCard;
-  final DateTime expiryDate;
+  final String expiryDate;
 
   const GiftCardExpired({
     required this.giftCard,
@@ -351,35 +183,6 @@ class GiftCardExpired extends GiftCardState {
 
   @override
   List<Object> get props => [giftCard, expiryDate];
-}
-
-class GiftCardAlreadyRedeemed extends GiftCardState {
-  final GiftCard giftCard;
-  final DateTime? redeemedAt;
-
-  const GiftCardAlreadyRedeemed({
-    required this.giftCard,
-    this.redeemedAt,
-  });
-
-  @override
-  List<Object> get props => [
-        giftCard,
-        if (redeemedAt != null) redeemedAt!,
-      ];
-}
-
-class GiftCardInvalidCode extends GiftCardState {
-  final String code;
-  final String message;
-
-  const GiftCardInvalidCode({
-    required this.code,
-    required this.message,
-  });
-
-  @override
-  List<Object> get props => [code, message];
 }
 
 class GiftCardSoldOut extends GiftCardState {
@@ -415,7 +218,7 @@ class GiftCardNetworkError extends GiftCardState {
 }
 
 class GiftCardNotFound extends GiftCardState {
-  final String identifier; // ID or code
+  final String identifier;
   final String type; // 'card' or 'brand'
 
   const GiftCardNotFound({
@@ -425,21 +228,6 @@ class GiftCardNotFound extends GiftCardState {
 
   @override
   List<Object> get props => [identifier, type];
-}
-
-class GiftCardTransferError extends GiftCardState {
-  final String message;
-  final String giftCardId;
-  final String recipientEmail;
-
-  const GiftCardTransferError({
-    required this.message,
-    required this.giftCardId,
-    required this.recipientEmail,
-  });
-
-  @override
-  List<Object> get props => [message, giftCardId, recipientEmail];
 }
 
 class GiftCardValidationError extends GiftCardState {
@@ -455,75 +243,194 @@ class GiftCardValidationError extends GiftCardState {
   List<Object> get props => [field, message];
 }
 
-// Transfer/Send States
-class GiftCardTransferProcessing extends GiftCardState {
-  final String giftCardId;
-  final String recipientEmail;
+// ============================================
+// REDEEM FLOW STATES
+// ============================================
+
+class GiftCardRedeeming extends GiftCardState {}
+
+class GiftCardRedeemed extends GiftCardState {
+  final GiftCard giftCard;
+  final double amountRedeemed;
+
+  const GiftCardRedeemed({
+    required this.giftCard,
+    required this.amountRedeemed,
+  });
+
+  @override
+  List<Object> get props => [giftCard, amountRedeemed];
+}
+
+class GiftCardRedeemError extends GiftCardState {
+  final String message;
+  const GiftCardRedeemError(this.message);
+  @override
+  List<Object> get props => [message];
+}
+
+// ============================================
+// TRANSFER FLOW STATES
+// ============================================
+
+class GiftCardTransferring extends GiftCardState {}
+
+class GiftCardTransferred extends GiftCardState {
+  final GiftCard giftCard;
+
+  const GiftCardTransferred({required this.giftCard});
+
+  @override
+  List<Object> get props => [giftCard];
+}
+
+class GiftCardTransferError extends GiftCardState {
+  final String message;
+  const GiftCardTransferError(this.message);
+  @override
+  List<Object> get props => [message];
+}
+
+// ============================================
+// BALANCE CHECK STATES
+// ============================================
+
+class GiftCardBalanceLoading extends GiftCardState {}
+
+class GiftCardBalanceLoaded extends GiftCardState {
+  final double balance;
+  final String brandName;
+  final String expiryDate;
+  final String status;
+
+  const GiftCardBalanceLoaded({
+    required this.balance,
+    required this.brandName,
+    required this.expiryDate,
+    required this.status,
+  });
+
+  @override
+  List<Object> get props => [balance, brandName, expiryDate, status];
+}
+
+class GiftCardBalanceError extends GiftCardState {
+  final String message;
+  const GiftCardBalanceError(this.message);
+  @override
+  List<Object> get props => [message];
+}
+
+// ============================================
+// SELL FLOW STATES
+// ============================================
+
+class SellableCardsLoading extends GiftCardState {}
+
+class SellableCardsLoaded extends GiftCardState {
+  final List<SellableCard> cards;
+
+  const SellableCardsLoaded(this.cards);
+
+  @override
+  List<Object> get props => [cards];
+}
+
+class SellableCardsEmpty extends GiftCardState {
+  const SellableCardsEmpty();
+}
+
+class SellRateLoading extends GiftCardState {}
+
+class SellRateLoaded extends GiftCardState {
+  final SellRate rate;
+
+  const SellRateLoaded(this.rate);
+
+  @override
+  List<Object> get props => [rate];
+}
+
+class SellRateExpired extends GiftCardState {
+  final String cardType;
+  final double denomination;
+
+  const SellRateExpired({
+    required this.cardType,
+    required this.denomination,
+  });
+
+  @override
+  List<Object> get props => [cardType, denomination];
+}
+
+class SellProcessing extends GiftCardState {
+  final String cardType;
+  final double denomination;
   final String currentStep;
   final double progress;
 
-  const GiftCardTransferProcessing({
-    required this.giftCardId,
-    required this.recipientEmail,
+  const SellProcessing({
+    required this.cardType,
+    required this.denomination,
     required this.currentStep,
     required this.progress,
   });
 
   @override
-  List<Object> get props => [giftCardId, recipientEmail, currentStep, progress];
+  List<Object> get props => [cardType, denomination, currentStep, progress];
 }
 
-class GiftCardTransferCompleted extends GiftCardState {
-  final GiftCard giftCard;
-  final String recipientEmail;
+class SellSubmitted extends GiftCardState {
+  final GiftCardSale sale;
+  final String message;
 
-  const GiftCardTransferCompleted({
-    required this.giftCard,
-    required this.recipientEmail,
+  const SellSubmitted({
+    required this.sale,
+    this.message = 'Your card has been submitted for review',
   });
 
   @override
-  List<Object> get props => [giftCard, recipientEmail];
+  List<Object> get props => [sale, message];
 }
 
-// Sell/Resale States
-class GiftCardSellProcessing extends GiftCardState {
-  final String giftCardId;
-  final double askingPrice;
-  final String currentStep;
-  final double progress;
+class SellStatusLoaded extends GiftCardState {
+  final GiftCardSale sale;
 
-  const GiftCardSellProcessing({
-    required this.giftCardId,
-    required this.askingPrice,
-    required this.currentStep,
-    required this.progress,
-  });
+  const SellStatusLoaded(this.sale);
 
   @override
-  List<Object> get props => [giftCardId, askingPrice, currentStep, progress];
+  List<Object> get props => [sale];
 }
 
-class GiftCardSellCompleted extends GiftCardState {
-  final GiftCard giftCard;
-  final String listingId;
-  final double askingPrice;
+class MySalesLoaded extends GiftCardState {
+  final List<GiftCardSale> sales;
 
-  const GiftCardSellCompleted({
-    required this.giftCard,
-    required this.listingId,
-    required this.askingPrice,
-  });
+  const MySalesLoaded(this.sales);
 
   @override
-  List<Object> get props => [giftCard, listingId, askingPrice];
+  List<Object> get props => [sales];
 }
 
-class ResellableGiftCardsLoaded extends GiftCardState {
-  final List<GiftCard> giftCards;
+class MySalesEmpty extends GiftCardState {
+  const MySalesEmpty();
+}
 
-  const ResellableGiftCardsLoaded(this.giftCards);
+class SellError extends GiftCardState {
+  final String message;
+
+  const SellError(this.message);
 
   @override
-  List<Object> get props => [giftCards];
-} 
+  List<Object> get props => [message];
+}
+
+class SellQueued extends GiftCardState {
+  final String message;
+
+  const SellQueued({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+

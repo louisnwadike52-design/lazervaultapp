@@ -9,7 +9,7 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.airtime;
       case AppServiceName.giftCards:
         return TransactionServiceType.giftCard;
-      case AppServiceName.payElectricityBill:
+      case AppServiceName.payBills:
         return TransactionServiceType.electricity;
       case AppServiceName.crypto:
         return TransactionServiceType.crypto;
@@ -23,8 +23,8 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.autosave;
       case AppServiceName.crowdfund:
         return TransactionServiceType.crowdfund;
-      case AppServiceName.barcodeQuickPay:
-        return TransactionServiceType.barcodePayment;
+      case AppServiceName.qrPay:
+        return TransactionServiceType.qrPayment;
       case AppServiceName.sendFunds:
       case AppServiceName.batchTransfer:
         return TransactionServiceType.transfer;
@@ -45,6 +45,16 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.unknown;
       case AppServiceName.contactlessPay:
         return TransactionServiceType.unknown;
+      case AppServiceName.payroll:
+        return TransactionServiceType.unknown;
+      case AppServiceName.businessDashboard:
+        return TransactionServiceType.unknown;
+      case AppServiceName.businessAnalytics:
+        return TransactionServiceType.unknown;
+      case AppServiceName.customers:
+        return TransactionServiceType.unknown;
+      case AppServiceName.expenses:
+        return TransactionServiceType.unknown;
     }
   }
 }
@@ -58,7 +68,7 @@ extension TransactionServiceTypeMapper on TransactionServiceType {
       case TransactionServiceType.giftCard:
         return AppServiceName.giftCards;
       case TransactionServiceType.electricity:
-        return AppServiceName.payElectricityBill;
+        return AppServiceName.payBills;
       case TransactionServiceType.water:
         return null; // No direct mapping
       case TransactionServiceType.tvSubscription:
@@ -73,8 +83,8 @@ extension TransactionServiceTypeMapper on TransactionServiceType {
         return AppServiceName.insurance;
       case TransactionServiceType.invoice:
         return AppServiceName.invoice;
-      case TransactionServiceType.barcodePayment:
-        return AppServiceName.barcodeQuickPay;
+      case TransactionServiceType.qrPayment:
+        return AppServiceName.qrPay;
       case TransactionServiceType.tagPay:
         return AppServiceName.tagPay;
       case TransactionServiceType.crowdfund:

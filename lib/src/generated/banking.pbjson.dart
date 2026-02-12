@@ -2436,3 +2436,152 @@ final $typed_data.Uint8List feeItemDescriptor = $convert.base64Decode(
     'CgdGZWVJdGVtEhQKBWxhYmVsGAEgASgJUgVsYWJlbBIWCgZhbW91bnQYAiABKANSBmFtb3VudA'
     '==');
 
+@$core.Deprecated('Use getCreditScoreRequestDescriptor instead')
+const GetCreditScoreRequest$json = {
+  '1': 'GetCreditScoreRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetCreditScoreRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCreditScoreRequestDescriptor = $convert.base64Decode(
+    'ChVHZXRDcmVkaXRTY29yZVJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklk');
+
+@$core.Deprecated('Use creditScoreResponseDescriptor instead')
+const CreditScoreResponse$json = {
+  '1': 'CreditScoreResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'credit_score', '3': 4, '4': 1, '5': 11, '6': '.banking.CreditScore', '10': 'creditScore'},
+  ],
+};
+
+/// Descriptor for `CreditScoreResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditScoreResponseDescriptor = $convert.base64Decode(
+    'ChNDcmVkaXRTY29yZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3'
+    'JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVz'
+    'c2FnZRI3CgxjcmVkaXRfc2NvcmUYBCABKAsyFC5iYW5raW5nLkNyZWRpdFNjb3JlUgtjcmVkaX'
+    'RTY29yZQ==');
+
+@$core.Deprecated('Use creditScoreDescriptor instead')
+const CreditScore$json = {
+  '1': 'CreditScore',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'score', '3': 3, '4': 1, '5': 5, '10': 'score'},
+    {'1': 'rating', '3': 4, '4': 1, '5': 9, '10': 'rating'},
+    {'1': 'linked_account_id', '3': 5, '4': 1, '5': 9, '10': 'linkedAccountId'},
+    {'1': 'bank_name', '3': 6, '4': 1, '5': 9, '10': 'bankName'},
+    {'1': 'payment_history_score', '3': 7, '4': 1, '5': 1, '10': 'paymentHistoryScore'},
+    {'1': 'income_stability_score', '3': 8, '4': 1, '5': 1, '10': 'incomeStabilityScore'},
+    {'1': 'spending_discipline_score', '3': 9, '4': 1, '5': 1, '10': 'spendingDisciplineScore'},
+    {'1': 'account_age_score', '3': 10, '4': 1, '5': 1, '10': 'accountAgeScore'},
+    {'1': 'balance_consistency_score', '3': 11, '4': 1, '5': 1, '10': 'balanceConsistencyScore'},
+    {'1': 'transactions_analyzed', '3': 12, '4': 1, '5': 5, '10': 'transactionsAnalyzed'},
+    {'1': 'months_of_data', '3': 13, '4': 1, '5': 5, '10': 'monthsOfData'},
+    {'1': 'calculated_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'calculatedAt'},
+    {'1': 'next_refresh_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'nextRefreshAt'},
+    {'1': 'tips', '3': 16, '4': 3, '5': 11, '6': '.banking.CreditScoreTip', '10': 'tips'},
+  ],
+};
+
+/// Descriptor for `CreditScore`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditScoreDescriptor = $convert.base64Decode(
+    'CgtDcmVkaXRTY29yZRIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEh'
+    'QKBXNjb3JlGAMgASgFUgVzY29yZRIWCgZyYXRpbmcYBCABKAlSBnJhdGluZxIqChFsaW5rZWRf'
+    'YWNjb3VudF9pZBgFIAEoCVIPbGlua2VkQWNjb3VudElkEhsKCWJhbmtfbmFtZRgGIAEoCVIIYm'
+    'Fua05hbWUSMgoVcGF5bWVudF9oaXN0b3J5X3Njb3JlGAcgASgBUhNwYXltZW50SGlzdG9yeVNj'
+    'b3JlEjQKFmluY29tZV9zdGFiaWxpdHlfc2NvcmUYCCABKAFSFGluY29tZVN0YWJpbGl0eVNjb3'
+    'JlEjoKGXNwZW5kaW5nX2Rpc2NpcGxpbmVfc2NvcmUYCSABKAFSF3NwZW5kaW5nRGlzY2lwbGlu'
+    'ZVNjb3JlEioKEWFjY291bnRfYWdlX3Njb3JlGAogASgBUg9hY2NvdW50QWdlU2NvcmUSOgoZYm'
+    'FsYW5jZV9jb25zaXN0ZW5jeV9zY29yZRgLIAEoAVIXYmFsYW5jZUNvbnNpc3RlbmN5U2NvcmUS'
+    'MwoVdHJhbnNhY3Rpb25zX2FuYWx5emVkGAwgASgFUhR0cmFuc2FjdGlvbnNBbmFseXplZBIkCg'
+    '5tb250aHNfb2ZfZGF0YRgNIAEoBVIMbW9udGhzT2ZEYXRhEj8KDWNhbGN1bGF0ZWRfYXQYDiAB'
+    'KAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgxjYWxjdWxhdGVkQXQSQgoPbmV4dF9yZW'
+    'ZyZXNoX2F0GA8gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFINbmV4dFJlZnJlc2hB'
+    'dBIrCgR0aXBzGBAgAygLMhcuYmFua2luZy5DcmVkaXRTY29yZVRpcFIEdGlwcw==');
+
+@$core.Deprecated('Use creditScoreTipDescriptor instead')
+const CreditScoreTip$json = {
+  '1': 'CreditScoreTip',
+  '2': [
+    {'1': 'title', '3': 1, '4': 1, '5': 9, '10': 'title'},
+    {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'category', '3': 3, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'potential_impact', '3': 4, '4': 1, '5': 5, '10': 'potentialImpact'},
+  ],
+};
+
+/// Descriptor for `CreditScoreTip`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditScoreTipDescriptor = $convert.base64Decode(
+    'Cg5DcmVkaXRTY29yZVRpcBIUCgV0aXRsZRgBIAEoCVIFdGl0bGUSIAoLZGVzY3JpcHRpb24YAi'
+    'ABKAlSC2Rlc2NyaXB0aW9uEhoKCGNhdGVnb3J5GAMgASgJUghjYXRlZ29yeRIpChBwb3RlbnRp'
+    'YWxfaW1wYWN0GAQgASgFUg9wb3RlbnRpYWxJbXBhY3Q=');
+
+@$core.Deprecated('Use getCreditScoreHistoryRequestDescriptor instead')
+const GetCreditScoreHistoryRequest$json = {
+  '1': 'GetCreditScoreHistoryRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'months', '3': 2, '4': 1, '5': 5, '10': 'months'},
+  ],
+};
+
+/// Descriptor for `GetCreditScoreHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCreditScoreHistoryRequestDescriptor = $convert.base64Decode(
+    'ChxHZXRDcmVkaXRTY29yZUhpc3RvcnlSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZB'
+    'IWCgZtb250aHMYAiABKAVSBm1vbnRocw==');
+
+@$core.Deprecated('Use creditScoreHistoryResponseDescriptor instead')
+const CreditScoreHistoryResponse$json = {
+  '1': 'CreditScoreHistoryResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'history', '3': 4, '4': 3, '5': 11, '6': '.banking.CreditScoreHistoryPoint', '10': 'history'},
+    {'1': 'score_change', '3': 5, '4': 1, '5': 5, '10': 'scoreChange'},
+  ],
+};
+
+/// Descriptor for `CreditScoreHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditScoreHistoryResponseDescriptor = $convert.base64Decode(
+    'ChpDcmVkaXRTY29yZUhpc3RvcnlSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+    '0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxl'
+    'cnJvck1lc3NhZ2USOgoHaGlzdG9yeRgEIAMoCzIgLmJhbmtpbmcuQ3JlZGl0U2NvcmVIaXN0b3'
+    'J5UG9pbnRSB2hpc3RvcnkSIQoMc2NvcmVfY2hhbmdlGAUgASgFUgtzY29yZUNoYW5nZQ==');
+
+@$core.Deprecated('Use creditScoreHistoryPointDescriptor instead')
+const CreditScoreHistoryPoint$json = {
+  '1': 'CreditScoreHistoryPoint',
+  '2': [
+    {'1': 'score', '3': 1, '4': 1, '5': 5, '10': 'score'},
+    {'1': 'rating', '3': 2, '4': 1, '5': 9, '10': 'rating'},
+    {'1': 'date', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'date'},
+  ],
+};
+
+/// Descriptor for `CreditScoreHistoryPoint`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditScoreHistoryPointDescriptor = $convert.base64Decode(
+    'ChdDcmVkaXRTY29yZUhpc3RvcnlQb2ludBIUCgVzY29yZRgBIAEoBVIFc2NvcmUSFgoGcmF0aW'
+    '5nGAIgASgJUgZyYXRpbmcSLgoEZGF0ZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3Rh'
+    'bXBSBGRhdGU=');
+
+@$core.Deprecated('Use refreshCreditScoreRequestDescriptor instead')
+const RefreshCreditScoreRequest$json = {
+  '1': 'RefreshCreditScoreRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'linked_account_id', '3': 2, '4': 1, '5': 9, '10': 'linkedAccountId'},
+  ],
+};
+
+/// Descriptor for `RefreshCreditScoreRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List refreshCreditScoreRequestDescriptor = $convert.base64Decode(
+    'ChlSZWZyZXNoQ3JlZGl0U2NvcmVSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqCh'
+    'FsaW5rZWRfYWNjb3VudF9pZBgCIAEoCVIPbGlua2VkQWNjb3VudElk');
+

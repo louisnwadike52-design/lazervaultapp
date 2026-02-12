@@ -437,6 +437,7 @@ const TriggerAutoSaveRequest$json = {
   '2': [
     {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
     {'1': 'custom_amount', '3': 2, '4': 1, '5': 1, '10': 'customAmount'},
+    {'1': 'transaction_pin_token', '3': 15, '4': 1, '5': 9, '10': 'transactionPinToken'},
   ],
   '7': {},
 };
@@ -444,7 +445,8 @@ const TriggerAutoSaveRequest$json = {
 /// Descriptor for `TriggerAutoSaveRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List triggerAutoSaveRequestDescriptor = $convert.base64Decode(
     'ChZUcmlnZ2VyQXV0b1NhdmVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZBIjCg1jdX'
-    'N0b21fYW1vdW50GAIgASgBUgxjdXN0b21BbW91bnQ6D5JBDAoK0gEHcnVsZV9pZA==');
+    'N0b21fYW1vdW50GAIgASgBUgxjdXN0b21BbW91bnQSMgoVdHJhbnNhY3Rpb25fcGluX3Rva2Vu'
+    'GA8gASgJUhN0cmFuc2FjdGlvblBpblRva2VuOg+SQQwKCtIBB3J1bGVfaWQ=');
 
 @$core.Deprecated('Use triggerAutoSaveResponseDescriptor instead')
 const TriggerAutoSaveResponse$json = {

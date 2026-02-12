@@ -246,6 +246,25 @@ final $typed_data.Uint8List transactionPinDetailsDescriptor = $convert.base64Dec
     'Ughpc0xvY2tlZBI9Cgxsb2NrZWRfdW50aWwYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZX'
     'N0YW1wUgtsb2NrZWRVbnRpbA==');
 
+@$core.Deprecated('Use pinConfigDescriptor instead')
+const PinConfig$json = {
+  '1': 'PinConfig',
+  '2': [
+    {'1': 'min_length', '3': 1, '4': 1, '5': 5, '10': 'minLength'},
+    {'1': 'max_length', '3': 2, '4': 1, '5': 5, '10': 'maxLength'},
+    {'1': 'max_attempts', '3': 3, '4': 1, '5': 5, '10': 'maxAttempts'},
+    {'1': 'lockout_duration_minutes', '3': 4, '4': 1, '5': 5, '10': 'lockoutDurationMinutes'},
+    {'1': 'token_expiry_minutes', '3': 5, '4': 1, '5': 5, '10': 'tokenExpiryMinutes'},
+  ],
+};
+
+/// Descriptor for `PinConfig`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List pinConfigDescriptor = $convert.base64Decode(
+    'CglQaW5Db25maWcSHQoKbWluX2xlbmd0aBgBIAEoBVIJbWluTGVuZ3RoEh0KCm1heF9sZW5ndG'
+    'gYAiABKAVSCW1heExlbmd0aBIhCgxtYXhfYXR0ZW1wdHMYAyABKAVSC21heEF0dGVtcHRzEjgK'
+    'GGxvY2tvdXRfZHVyYXRpb25fbWludXRlcxgEIAEoBVIWbG9ja291dER1cmF0aW9uTWludXRlcx'
+    'IwChR0b2tlbl9leHBpcnlfbWludXRlcxgFIAEoBVISdG9rZW5FeHBpcnlNaW51dGVz');
+
 @$core.Deprecated('Use initiatePinOTPRequestDescriptor instead')
 const InitiatePinOTPRequest$json = {
   '1': 'InitiatePinOTPRequest',
@@ -401,23 +420,4 @@ final $typed_data.Uint8List completeForgotPinResponseDescriptor = $convert.base6
     'ChlDb21wbGV0ZUZvcmdvdFBpblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
     'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRItChJyZW1haW5pbmdfYXR0ZW1wdHMYAyABKAVSEXJl'
     'bWFpbmluZ0F0dGVtcHRz');
-
-@$core.Deprecated('Use pinConfigDescriptor instead')
-const PinConfig$json = {
-  '1': 'PinConfig',
-  '2': [
-    {'1': 'min_length', '3': 1, '4': 1, '5': 5, '10': 'minLength'},
-    {'1': 'max_length', '3': 2, '4': 1, '5': 5, '10': 'maxLength'},
-    {'1': 'max_attempts', '3': 3, '4': 1, '5': 5, '10': 'maxAttempts'},
-    {'1': 'lockout_duration_minutes', '3': 4, '4': 1, '5': 5, '10': 'lockoutDurationMinutes'},
-    {'1': 'token_expiry_minutes', '3': 5, '4': 1, '5': 5, '10': 'tokenExpiryMinutes'},
-  ],
-};
-
-/// Descriptor for `PinConfig`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List pinConfigDescriptor = $convert.base64Decode(
-    'CglQaW5Db25maWcSHQoKbWluX2xlbmd0aBgBIAEoBVIJbWluTGVuZ3RoEh0KCm1heF9sZW5ndG'
-    'gYAiABKAVSCW1heExlbmd0aBIhCgxtYXhfYXR0ZW1wdHMYAyABKAVSC21heEF0dGVtcHRzEjgK'
-    'GGxvY2tvdXRfZHVyYXRpb25fbWludXRlcxgEIAEoBVIWbG9ja291dER1cmF0aW9uTWludXRlcx'
-    'IwChR0b2tlbl9leHBpcnlfbWludXRlcxgFIAEoBVISdG9rZW5FeHBpcnlNaW51dGVz');
 

@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 import 'statistics.pbenum.dart';
 
 export 'statistics.pbenum.dart';
@@ -31,15 +31,15 @@ class ExpenseMessage extends $pb.GeneratedMessage {
     $core.String? subcategory,
     $core.String? description,
     $core.String? merchant,
-    $42.Timestamp? transactionDate,
+    $1.Timestamp? transactionDate,
     $core.String? paymentMethod,
     $core.String? receiptUrl,
     $core.Iterable<$core.String>? tags,
     $core.String? notes,
     $core.bool? isRecurring,
     $core.String? recurrencePattern,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -112,15 +112,15 @@ class ExpenseMessage extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'subcategory')
     ..aOS(8, _omitFieldNames ? '' : 'description')
     ..aOS(9, _omitFieldNames ? '' : 'merchant')
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
     ..aOS(11, _omitFieldNames ? '' : 'paymentMethod')
     ..aOS(12, _omitFieldNames ? '' : 'receiptUrl')
     ..pPS(13, _omitFieldNames ? '' : 'tags')
     ..aOS(14, _omitFieldNames ? '' : 'notes')
     ..aOB(15, _omitFieldNames ? '' : 'isRecurring')
     ..aOS(16, _omitFieldNames ? '' : 'recurrencePattern')
-    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -227,15 +227,15 @@ class ExpenseMessage extends $pb.GeneratedMessage {
   void clearMerchant() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get transactionDate => $_getN(9);
+  $1.Timestamp get transactionDate => $_getN(9);
   @$pb.TagNumber(10)
-  set transactionDate($42.Timestamp v) { setField(10, v); }
+  set transactionDate($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasTransactionDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearTransactionDate() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureTransactionDate() => $_ensure(9);
+  $1.Timestamp ensureTransactionDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get paymentMethod => $_getSZ(10);
@@ -286,26 +286,26 @@ class ExpenseMessage extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(16);
 
   @$pb.TagNumber(17)
-  $42.Timestamp get createdAt => $_getN(16);
+  $1.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(17)
-  set createdAt($42.Timestamp v) { setField(17, v); }
+  set createdAt($1.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearCreatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $42.Timestamp ensureCreatedAt() => $_ensure(16);
+  $1.Timestamp ensureCreatedAt() => $_ensure(16);
 
   @$pb.TagNumber(18)
-  $42.Timestamp get updatedAt => $_getN(17);
+  $1.Timestamp get updatedAt => $_getN(17);
   @$pb.TagNumber(18)
-  set updatedAt($42.Timestamp v) { setField(18, v); }
+  set updatedAt($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasUpdatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearUpdatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(17);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(17);
 }
 
 /// Budget Messages
@@ -318,16 +318,16 @@ class BudgetMessage extends $pb.GeneratedMessage {
     $core.String? currency,
     ExpenseCategory? category,
     BudgetPeriod? period,
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
     $core.double? spentAmount,
     $core.double? remainingAmount,
     $core.double? percentageUsed,
     BudgetStatus? status,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -395,16 +395,16 @@ class BudgetMessage extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'currency')
     ..e<ExpenseCategory>(6, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
     ..e<BudgetPeriod>(7, _omitFieldNames ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(10, _omitFieldNames ? '' : 'spentAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(11, _omitFieldNames ? '' : 'remainingAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(12, _omitFieldNames ? '' : 'percentageUsed', $pb.PbFieldType.OD)
     ..e<BudgetStatus>(13, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BudgetStatus.BUDGET_STATUS_UNSPECIFIED, valueOf: BudgetStatus.valueOf, enumValues: BudgetStatus.values)
     ..aOB(14, _omitFieldNames ? '' : 'enableAlerts')
     ..a<$core.double>(15, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
-    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -493,26 +493,26 @@ class BudgetMessage extends $pb.GeneratedMessage {
   void clearPeriod() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get startDate => $_getN(7);
+  $1.Timestamp get startDate => $_getN(7);
   @$pb.TagNumber(8)
-  set startDate($42.Timestamp v) { setField(8, v); }
+  set startDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasStartDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearStartDate() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureStartDate() => $_ensure(7);
+  $1.Timestamp ensureStartDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get endDate => $_getN(8);
+  $1.Timestamp get endDate => $_getN(8);
   @$pb.TagNumber(9)
-  set endDate($42.Timestamp v) { setField(9, v); }
+  set endDate($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasEndDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearEndDate() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureEndDate() => $_ensure(8);
+  $1.Timestamp ensureEndDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.double get spentAmount => $_getN(9);
@@ -569,26 +569,26 @@ class BudgetMessage extends $pb.GeneratedMessage {
   void clearAlertThreshold() => clearField(15);
 
   @$pb.TagNumber(16)
-  $42.Timestamp get createdAt => $_getN(15);
+  $1.Timestamp get createdAt => $_getN(15);
   @$pb.TagNumber(16)
-  set createdAt($42.Timestamp v) { setField(16, v); }
+  set createdAt($1.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasCreatedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearCreatedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $42.Timestamp ensureCreatedAt() => $_ensure(15);
+  $1.Timestamp ensureCreatedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
-  $42.Timestamp get updatedAt => $_getN(16);
+  $1.Timestamp get updatedAt => $_getN(16);
   @$pb.TagNumber(17)
-  set updatedAt($42.Timestamp v) { setField(17, v); }
+  set updatedAt($1.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasUpdatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearUpdatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(16);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(16);
 }
 
 /// Alert Messages
@@ -604,7 +604,7 @@ class BudgetAlertMessage extends $pb.GeneratedMessage {
     $core.double? budgetLimit,
     $core.double? percentageUsed,
     $core.bool? isRead,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -657,7 +657,7 @@ class BudgetAlertMessage extends $pb.GeneratedMessage {
     ..a<$core.double>(8, _omitFieldNames ? '' : 'budgetLimit', $pb.PbFieldType.OD)
     ..a<$core.double>(9, _omitFieldNames ? '' : 'percentageUsed', $pb.PbFieldType.OD)
     ..aOB(10, _omitFieldNames ? '' : 'isRead')
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -773,15 +773,15 @@ class BudgetAlertMessage extends $pb.GeneratedMessage {
   void clearIsRead() => clearField(10);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get createdAt => $_getN(10);
+  $1.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($42.Timestamp v) { setField(11, v); }
+  set createdAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureCreatedAt() => $_ensure(10);
+  $1.Timestamp ensureCreatedAt() => $_ensure(10);
 }
 
 /// Analytics Messages
@@ -1099,7 +1099,7 @@ class CategorySpending extends $pb.GeneratedMessage {
 
 class DailySpending extends $pb.GeneratedMessage {
   factory DailySpending({
-    $42.Timestamp? date,
+    $1.Timestamp? date,
     $core.double? amount,
     $core.int? transactionCount,
   }) {
@@ -1120,7 +1120,7 @@ class DailySpending extends $pb.GeneratedMessage {
   factory DailySpending.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DailySpending', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'date', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'date', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'transactionCount', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -1148,15 +1148,15 @@ class DailySpending extends $pb.GeneratedMessage {
   static DailySpending? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get date => $_getN(0);
+  $1.Timestamp get date => $_getN(0);
   @$pb.TagNumber(1)
-  set date($42.Timestamp v) { setField(1, v); }
+  set date($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureDate() => $_ensure(0);
+  $1.Timestamp ensureDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get amount => $_getN(1);
@@ -1384,8 +1384,8 @@ class BudgetProgressItem extends $pb.GeneratedMessage {
 class SpendingTrend extends $pb.GeneratedMessage {
   factory SpendingTrend({
     $core.String? periodLabel,
-    $42.Timestamp? periodStart,
-    $42.Timestamp? periodEnd,
+    $1.Timestamp? periodStart,
+    $1.Timestamp? periodEnd,
     $core.double? totalSpent,
     $core.double? budgetAmount,
     $core.double? variance,
@@ -1425,8 +1425,8 @@ class SpendingTrend extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SpendingTrend', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'periodLabel')
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'periodStart', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'periodEnd', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'periodStart', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'periodEnd', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'totalSpent', $pb.PbFieldType.OD)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'budgetAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(6, _omitFieldNames ? '' : 'variance', $pb.PbFieldType.OD)
@@ -1466,26 +1466,26 @@ class SpendingTrend extends $pb.GeneratedMessage {
   void clearPeriodLabel() => clearField(1);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get periodStart => $_getN(1);
+  $1.Timestamp get periodStart => $_getN(1);
   @$pb.TagNumber(2)
-  set periodStart($42.Timestamp v) { setField(2, v); }
+  set periodStart($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasPeriodStart() => $_has(1);
   @$pb.TagNumber(2)
   void clearPeriodStart() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensurePeriodStart() => $_ensure(1);
+  $1.Timestamp ensurePeriodStart() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get periodEnd => $_getN(2);
+  $1.Timestamp get periodEnd => $_getN(2);
   @$pb.TagNumber(3)
-  set periodEnd($42.Timestamp v) { setField(3, v); }
+  set periodEnd($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasPeriodEnd() => $_has(2);
   @$pb.TagNumber(3)
   void clearPeriodEnd() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensurePeriodEnd() => $_ensure(2);
+  $1.Timestamp ensurePeriodEnd() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.double get totalSpent => $_getN(3);
@@ -1537,7 +1537,7 @@ class CreateExpenseRequest extends $pb.GeneratedMessage {
     $core.String? subcategory,
     $core.String? description,
     $core.String? merchant,
-    $42.Timestamp? transactionDate,
+    $1.Timestamp? transactionDate,
     $core.String? paymentMethod,
     $core.String? receiptUrl,
     $core.Iterable<$core.String>? tags,
@@ -1602,7 +1602,7 @@ class CreateExpenseRequest extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'subcategory')
     ..aOS(6, _omitFieldNames ? '' : 'description')
     ..aOS(7, _omitFieldNames ? '' : 'merchant')
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
     ..aOS(9, _omitFieldNames ? '' : 'paymentMethod')
     ..aOS(10, _omitFieldNames ? '' : 'receiptUrl')
     ..pPS(11, _omitFieldNames ? '' : 'tags')
@@ -1697,15 +1697,15 @@ class CreateExpenseRequest extends $pb.GeneratedMessage {
   void clearMerchant() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get transactionDate => $_getN(7);
+  $1.Timestamp get transactionDate => $_getN(7);
   @$pb.TagNumber(8)
-  set transactionDate($42.Timestamp v) { setField(8, v); }
+  set transactionDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasTransactionDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearTransactionDate() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureTransactionDate() => $_ensure(7);
+  $1.Timestamp ensureTransactionDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get paymentMethod => $_getSZ(8);
@@ -1840,8 +1840,8 @@ class GetExpensesRequest extends $pb.GeneratedMessage {
   factory GetExpensesRequest({
     $core.int? page,
     $core.int? perPage,
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
     ExpenseCategory? category,
     $core.double? minAmount,
     $core.double? maxAmount,
@@ -1885,8 +1885,8 @@ class GetExpensesRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExpensesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..e<ExpenseCategory>(5, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
     ..a<$core.double>(6, _omitFieldNames ? '' : 'minAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(7, _omitFieldNames ? '' : 'maxAmount', $pb.PbFieldType.OD)
@@ -1935,26 +1935,26 @@ class GetExpensesRequest extends $pb.GeneratedMessage {
   void clearPerPage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get startDate => $_getN(2);
+  $1.Timestamp get startDate => $_getN(2);
   @$pb.TagNumber(3)
-  set startDate($42.Timestamp v) { setField(3, v); }
+  set startDate($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasStartDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearStartDate() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureStartDate() => $_ensure(2);
+  $1.Timestamp ensureStartDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get endDate => $_getN(3);
+  $1.Timestamp get endDate => $_getN(3);
   @$pb.TagNumber(4)
-  set endDate($42.Timestamp v) { setField(4, v); }
+  set endDate($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasEndDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearEndDate() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureEndDate() => $_ensure(3);
+  $1.Timestamp ensureEndDate() => $_ensure(3);
 
   @$pb.TagNumber(5)
   ExpenseCategory get category => $_getN(4);
@@ -2194,7 +2194,7 @@ class UpdateExpenseRequest extends $pb.GeneratedMessage {
     $core.String? subcategory,
     $core.String? description,
     $core.String? merchant,
-    $42.Timestamp? transactionDate,
+    $1.Timestamp? transactionDate,
     $core.String? paymentMethod,
     $core.Iterable<$core.String>? tags,
     $core.String? notes,
@@ -2243,7 +2243,7 @@ class UpdateExpenseRequest extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'subcategory')
     ..aOS(5, _omitFieldNames ? '' : 'description')
     ..aOS(6, _omitFieldNames ? '' : 'merchant')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
     ..aOS(8, _omitFieldNames ? '' : 'paymentMethod')
     ..pPS(9, _omitFieldNames ? '' : 'tags')
     ..aOS(10, _omitFieldNames ? '' : 'notes')
@@ -2326,15 +2326,15 @@ class UpdateExpenseRequest extends $pb.GeneratedMessage {
   void clearMerchant() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get transactionDate => $_getN(6);
+  $1.Timestamp get transactionDate => $_getN(6);
   @$pb.TagNumber(7)
-  set transactionDate($42.Timestamp v) { setField(7, v); }
+  set transactionDate($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasTransactionDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearTransactionDate() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureTransactionDate() => $_ensure(6);
+  $1.Timestamp ensureTransactionDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.String get paymentMethod => $_getSZ(7);
@@ -2560,8 +2560,8 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
     $core.String? currency,
     ExpenseCategory? category,
     BudgetPeriod? period,
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
   }) {
@@ -2605,8 +2605,8 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'currency')
     ..e<ExpenseCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
     ..e<BudgetPeriod>(5, _omitFieldNames ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..aOB(8, _omitFieldNames ? '' : 'enableAlerts')
     ..a<$core.double>(9, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
@@ -2679,26 +2679,26 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
   void clearPeriod() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get startDate => $_getN(5);
+  $1.Timestamp get startDate => $_getN(5);
   @$pb.TagNumber(6)
-  set startDate($42.Timestamp v) { setField(6, v); }
+  set startDate($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasStartDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearStartDate() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureStartDate() => $_ensure(5);
+  $1.Timestamp ensureStartDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get endDate => $_getN(6);
+  $1.Timestamp get endDate => $_getN(6);
   @$pb.TagNumber(7)
-  set endDate($42.Timestamp v) { setField(7, v); }
+  set endDate($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasEndDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearEndDate() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureEndDate() => $_ensure(6);
+  $1.Timestamp ensureEndDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.bool get enableAlerts => $_getBF(7);
@@ -3095,8 +3095,8 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
     $core.String? name,
     $core.double? amount,
     BudgetPeriod? period,
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
   }) {
@@ -3136,8 +3136,8 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..e<BudgetPeriod>(4, _omitFieldNames ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..aOB(7, _omitFieldNames ? '' : 'enableAlerts')
     ..a<$core.double>(8, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
@@ -3201,26 +3201,26 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
   void clearPeriod() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get startDate => $_getN(4);
+  $1.Timestamp get startDate => $_getN(4);
   @$pb.TagNumber(5)
-  set startDate($42.Timestamp v) { setField(5, v); }
+  set startDate($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasStartDate() => $_has(4);
   @$pb.TagNumber(5)
   void clearStartDate() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureStartDate() => $_ensure(4);
+  $1.Timestamp ensureStartDate() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get endDate => $_getN(5);
+  $1.Timestamp get endDate => $_getN(5);
   @$pb.TagNumber(6)
-  set endDate($42.Timestamp v) { setField(6, v); }
+  set endDate($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasEndDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearEndDate() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureEndDate() => $_ensure(5);
+  $1.Timestamp ensureEndDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.bool get enableAlerts => $_getBF(6);
@@ -3439,8 +3439,8 @@ class DeleteBudgetResponse extends $pb.GeneratedMessage {
 class GetSpendingAnalyticsRequest extends $pb.GeneratedMessage {
   factory GetSpendingAnalyticsRequest({
     $core.String? period,
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
     ExpenseCategory? category,
   }) {
     final $result = create();
@@ -3464,8 +3464,8 @@ class GetSpendingAnalyticsRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSpendingAnalyticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'period')
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..e<ExpenseCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
     ..hasRequiredFields = false
   ;
@@ -3501,26 +3501,26 @@ class GetSpendingAnalyticsRequest extends $pb.GeneratedMessage {
   void clearPeriod() => clearField(1);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get startDate => $_getN(1);
+  $1.Timestamp get startDate => $_getN(1);
   @$pb.TagNumber(2)
-  set startDate($42.Timestamp v) { setField(2, v); }
+  set startDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasStartDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearStartDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureStartDate() => $_ensure(1);
+  $1.Timestamp ensureStartDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get endDate => $_getN(2);
+  $1.Timestamp get endDate => $_getN(2);
   @$pb.TagNumber(3)
-  set endDate($42.Timestamp v) { setField(3, v); }
+  set endDate($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasEndDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndDate() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureEndDate() => $_ensure(2);
+  $1.Timestamp ensureEndDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
   ExpenseCategory get category => $_getN(3);
@@ -3586,8 +3586,8 @@ class GetSpendingAnalyticsResponse extends $pb.GeneratedMessage {
 
 class GetCategoryBreakdownRequest extends $pb.GeneratedMessage {
   factory GetCategoryBreakdownRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -3603,8 +3603,8 @@ class GetCategoryBreakdownRequest extends $pb.GeneratedMessage {
   factory GetCategoryBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCategoryBreakdownRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -3630,26 +3630,26 @@ class GetCategoryBreakdownRequest extends $pb.GeneratedMessage {
   static GetCategoryBreakdownRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetCategoryBreakdownResponse extends $pb.GeneratedMessage {
@@ -3850,7 +3850,7 @@ class GetSpendingTrendsRequest extends $pb.GeneratedMessage {
   factory GetSpendingTrendsRequest({
     $core.String? periodType,
     $core.int? periodsCount,
-    $42.Timestamp? endDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (periodType != null) {
@@ -3871,7 +3871,7 @@ class GetSpendingTrendsRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSpendingTrendsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'periodType')
     ..a<$core.int>(2, _omitFieldNames ? '' : 'periodsCount', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -3915,15 +3915,15 @@ class GetSpendingTrendsRequest extends $pb.GeneratedMessage {
   void clearPeriodsCount() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get endDate => $_getN(2);
+  $1.Timestamp get endDate => $_getN(2);
   @$pb.TagNumber(3)
-  set endDate($42.Timestamp v) { setField(3, v); }
+  set endDate($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasEndDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndDate() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureEndDate() => $_ensure(2);
+  $1.Timestamp ensureEndDate() => $_ensure(2);
 }
 
 class GetSpendingTrendsResponse extends $pb.GeneratedMessage {
@@ -4317,8 +4317,8 @@ class PaginationMetadata extends $pb.GeneratedMessage {
 /// AI Spending Insights Request
 class GetAISpendingInsightsRequest extends $pb.GeneratedMessage {
   factory GetAISpendingInsightsRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
     $core.String? focusArea,
   }) {
     final $result = create();
@@ -4338,8 +4338,8 @@ class GetAISpendingInsightsRequest extends $pb.GeneratedMessage {
   factory GetAISpendingInsightsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAISpendingInsightsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..aOS(3, _omitFieldNames ? '' : 'focusArea')
     ..hasRequiredFields = false
   ;
@@ -4366,26 +4366,26 @@ class GetAISpendingInsightsRequest extends $pb.GeneratedMessage {
   static GetAISpendingInsightsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.String get focusArea => $_getSZ(2);
@@ -4713,7 +4713,7 @@ class AnomalyDetection extends $pb.GeneratedMessage {
   factory AnomalyDetection({
     $core.String? anomalyType,
     $core.String? description,
-    $42.Timestamp? detectedDate,
+    $1.Timestamp? detectedDate,
     $core.double? amount,
     ExpenseCategory? category,
     $core.String? severity,
@@ -4746,7 +4746,7 @@ class AnomalyDetection extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AnomalyDetection', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'anomalyType')
     ..aOS(2, _omitFieldNames ? '' : 'description')
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'detectedDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'detectedDate', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..e<ExpenseCategory>(5, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
     ..aOS(6, _omitFieldNames ? '' : 'severity')
@@ -4793,15 +4793,15 @@ class AnomalyDetection extends $pb.GeneratedMessage {
   void clearDescription() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get detectedDate => $_getN(2);
+  $1.Timestamp get detectedDate => $_getN(2);
   @$pb.TagNumber(3)
-  set detectedDate($42.Timestamp v) { setField(3, v); }
+  set detectedDate($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasDetectedDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearDetectedDate() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureDetectedDate() => $_ensure(2);
+  $1.Timestamp ensureDetectedDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.double get amount => $_getN(3);
@@ -5712,11 +5712,11 @@ class IncomeSource extends $pb.GeneratedMessage {
     IncomeCategory? category,
     $core.bool? isRecurring,
     $core.String? recurrencePattern,
-    $42.Timestamp? lastReceived,
-    $42.Timestamp? nextExpected,
+    $1.Timestamp? lastReceived,
+    $1.Timestamp? nextExpected,
     $core.bool? isActive,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -5773,11 +5773,11 @@ class IncomeSource extends $pb.GeneratedMessage {
     ..e<IncomeCategory>(6, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: IncomeCategory.INCOME_CATEGORY_UNSPECIFIED, valueOf: IncomeCategory.valueOf, enumValues: IncomeCategory.values)
     ..aOB(7, _omitFieldNames ? '' : 'isRecurring')
     ..aOS(8, _omitFieldNames ? '' : 'recurrencePattern')
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'lastReceived', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'nextExpected', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'lastReceived', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'nextExpected', subBuilder: $1.Timestamp.create)
     ..aOB(11, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -5875,26 +5875,26 @@ class IncomeSource extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get lastReceived => $_getN(8);
+  $1.Timestamp get lastReceived => $_getN(8);
   @$pb.TagNumber(9)
-  set lastReceived($42.Timestamp v) { setField(9, v); }
+  set lastReceived($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasLastReceived() => $_has(8);
   @$pb.TagNumber(9)
   void clearLastReceived() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureLastReceived() => $_ensure(8);
+  $1.Timestamp ensureLastReceived() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get nextExpected => $_getN(9);
+  $1.Timestamp get nextExpected => $_getN(9);
   @$pb.TagNumber(10)
-  set nextExpected($42.Timestamp v) { setField(10, v); }
+  set nextExpected($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasNextExpected() => $_has(9);
   @$pb.TagNumber(10)
   void clearNextExpected() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureNextExpected() => $_ensure(9);
+  $1.Timestamp ensureNextExpected() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.bool get isActive => $_getBF(10);
@@ -5906,26 +5906,26 @@ class IncomeSource extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(11);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get createdAt => $_getN(11);
+  $1.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($42.Timestamp v) { setField(12, v); }
+  set createdAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureCreatedAt() => $_ensure(11);
+  $1.Timestamp ensureCreatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
-  $42.Timestamp get updatedAt => $_getN(12);
+  $1.Timestamp get updatedAt => $_getN(12);
   @$pb.TagNumber(13)
-  set updatedAt($42.Timestamp v) { setField(13, v); }
+  set updatedAt($1.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasUpdatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearUpdatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(12);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(12);
 }
 
 class IncomeBreakdown extends $pb.GeneratedMessage {
@@ -6117,8 +6117,8 @@ class Investment extends $pb.GeneratedMessage {
     $core.double? gainLoss,
     $core.double? gainLossPercentage,
     $core.String? currency,
-    $42.Timestamp? purchaseDate,
-    $42.Timestamp? lastUpdated,
+    $1.Timestamp? purchaseDate,
+    $1.Timestamp? lastUpdated,
     $core.String? tickerSymbol,
     $core.int? quantity,
     $core.double? currentPrice,
@@ -6182,8 +6182,8 @@ class Investment extends $pb.GeneratedMessage {
     ..a<$core.double>(7, _omitFieldNames ? '' : 'gainLoss', $pb.PbFieldType.OD)
     ..a<$core.double>(8, _omitFieldNames ? '' : 'gainLossPercentage', $pb.PbFieldType.OD)
     ..aOS(9, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'purchaseDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'purchaseDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
     ..aOS(12, _omitFieldNames ? '' : 'tickerSymbol')
     ..a<$core.int>(13, _omitFieldNames ? '' : 'quantity', $pb.PbFieldType.O3)
     ..a<$core.double>(14, _omitFieldNames ? '' : 'currentPrice', $pb.PbFieldType.OD)
@@ -6293,26 +6293,26 @@ class Investment extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get purchaseDate => $_getN(9);
+  $1.Timestamp get purchaseDate => $_getN(9);
   @$pb.TagNumber(10)
-  set purchaseDate($42.Timestamp v) { setField(10, v); }
+  set purchaseDate($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasPurchaseDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearPurchaseDate() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensurePurchaseDate() => $_ensure(9);
+  $1.Timestamp ensurePurchaseDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get lastUpdated => $_getN(10);
+  $1.Timestamp get lastUpdated => $_getN(10);
   @$pb.TagNumber(11)
-  set lastUpdated($42.Timestamp v) { setField(11, v); }
+  set lastUpdated($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLastUpdated() => $_has(10);
   @$pb.TagNumber(11)
   void clearLastUpdated() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureLastUpdated() => $_ensure(10);
+  $1.Timestamp ensureLastUpdated() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get tickerSymbol => $_getSZ(11);
@@ -6572,14 +6572,14 @@ class FinancialGoal extends $pb.GeneratedMessage {
     $core.double? currentAmount,
     $core.double? monthlyContribution,
     $core.String? currency,
-    $42.Timestamp? targetDate,
+    $1.Timestamp? targetDate,
     GoalStatus? status,
     $core.double? percentageComplete,
     $core.int? monthsRemaining,
     $core.String? icon,
     $core.String? color,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -6645,14 +6645,14 @@ class FinancialGoal extends $pb.GeneratedMessage {
     ..a<$core.double>(6, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(7, _omitFieldNames ? '' : 'monthlyContribution', $pb.PbFieldType.OD)
     ..aOS(8, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'targetDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'targetDate', subBuilder: $1.Timestamp.create)
     ..e<GoalStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GoalStatus.GOAL_STATUS_UNSPECIFIED, valueOf: GoalStatus.valueOf, enumValues: GoalStatus.values)
     ..a<$core.double>(11, _omitFieldNames ? '' : 'percentageComplete', $pb.PbFieldType.OD)
     ..a<$core.int>(12, _omitFieldNames ? '' : 'monthsRemaining', $pb.PbFieldType.O3)
     ..aOS(13, _omitFieldNames ? '' : 'icon')
     ..aOS(14, _omitFieldNames ? '' : 'color')
-    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -6750,15 +6750,15 @@ class FinancialGoal extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get targetDate => $_getN(8);
+  $1.Timestamp get targetDate => $_getN(8);
   @$pb.TagNumber(9)
-  set targetDate($42.Timestamp v) { setField(9, v); }
+  set targetDate($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasTargetDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearTargetDate() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureTargetDate() => $_ensure(8);
+  $1.Timestamp ensureTargetDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   GoalStatus get status => $_getN(9);
@@ -6806,26 +6806,26 @@ class FinancialGoal extends $pb.GeneratedMessage {
   void clearColor() => clearField(14);
 
   @$pb.TagNumber(15)
-  $42.Timestamp get createdAt => $_getN(14);
+  $1.Timestamp get createdAt => $_getN(14);
   @$pb.TagNumber(15)
-  set createdAt($42.Timestamp v) { setField(15, v); }
+  set createdAt($1.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCreatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCreatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $42.Timestamp ensureCreatedAt() => $_ensure(14);
+  $1.Timestamp ensureCreatedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $42.Timestamp get updatedAt => $_getN(15);
+  $1.Timestamp get updatedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set updatedAt($42.Timestamp v) { setField(16, v); }
+  set updatedAt($1.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasUpdatedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearUpdatedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(15);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(15);
 }
 
 class FinancialGoalsList extends $pb.GeneratedMessage {
@@ -6923,9 +6923,9 @@ class SavingsGoal extends $pb.GeneratedMessage {
     $core.double? targetAmount,
     $core.double? currentAmount,
     $core.double? percentageComplete,
-    $42.Timestamp? targetDate,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? targetDate,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -6968,9 +6968,9 @@ class SavingsGoal extends $pb.GeneratedMessage {
     ..a<$core.double>(4, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(6, _omitFieldNames ? '' : 'percentageComplete', $pb.PbFieldType.OD)
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'targetDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'targetDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -7050,37 +7050,37 @@ class SavingsGoal extends $pb.GeneratedMessage {
   void clearPercentageComplete() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get targetDate => $_getN(6);
+  $1.Timestamp get targetDate => $_getN(6);
   @$pb.TagNumber(7)
-  set targetDate($42.Timestamp v) { setField(7, v); }
+  set targetDate($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasTargetDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearTargetDate() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureTargetDate() => $_ensure(6);
+  $1.Timestamp ensureTargetDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get createdAt => $_getN(7);
+  $1.Timestamp get createdAt => $_getN(7);
   @$pb.TagNumber(8)
-  set createdAt($42.Timestamp v) { setField(8, v); }
+  set createdAt($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasCreatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearCreatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureCreatedAt() => $_ensure(7);
+  $1.Timestamp ensureCreatedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get updatedAt => $_getN(8);
+  $1.Timestamp get updatedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set updatedAt($42.Timestamp v) { setField(9, v); }
+  set updatedAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasUpdatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearUpdatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(8);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(8);
 }
 
 class RecurringBill extends $pb.GeneratedMessage {
@@ -7092,15 +7092,15 @@ class RecurringBill extends $pb.GeneratedMessage {
     $core.String? currency,
     ExpenseCategory? category,
     $core.String? recurrencePattern,
-    $42.Timestamp? nextDueDate,
-    $42.Timestamp? lastPaidDate,
+    $1.Timestamp? nextDueDate,
+    $1.Timestamp? lastPaidDate,
     BillStatus? status,
     $core.int? daysUntilDue,
     $core.String? merchant,
     $core.String? icon,
     $core.bool? autoPayEnabled,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -7165,15 +7165,15 @@ class RecurringBill extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'currency')
     ..e<ExpenseCategory>(6, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
     ..aOS(7, _omitFieldNames ? '' : 'recurrencePattern')
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'nextDueDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'lastPaidDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'nextDueDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'lastPaidDate', subBuilder: $1.Timestamp.create)
     ..e<BillStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BillStatus.BILL_STATUS_UNSPECIFIED, valueOf: BillStatus.valueOf, enumValues: BillStatus.values)
     ..a<$core.int>(11, _omitFieldNames ? '' : 'daysUntilDue', $pb.PbFieldType.O3)
     ..aOS(12, _omitFieldNames ? '' : 'merchant')
     ..aOS(13, _omitFieldNames ? '' : 'icon')
     ..aOB(14, _omitFieldNames ? '' : 'autoPayEnabled')
-    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -7262,26 +7262,26 @@ class RecurringBill extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get nextDueDate => $_getN(7);
+  $1.Timestamp get nextDueDate => $_getN(7);
   @$pb.TagNumber(8)
-  set nextDueDate($42.Timestamp v) { setField(8, v); }
+  set nextDueDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasNextDueDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearNextDueDate() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureNextDueDate() => $_ensure(7);
+  $1.Timestamp ensureNextDueDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get lastPaidDate => $_getN(8);
+  $1.Timestamp get lastPaidDate => $_getN(8);
   @$pb.TagNumber(9)
-  set lastPaidDate($42.Timestamp v) { setField(9, v); }
+  set lastPaidDate($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasLastPaidDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearLastPaidDate() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureLastPaidDate() => $_ensure(8);
+  $1.Timestamp ensureLastPaidDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   BillStatus get status => $_getN(9);
@@ -7329,26 +7329,26 @@ class RecurringBill extends $pb.GeneratedMessage {
   void clearAutoPayEnabled() => clearField(14);
 
   @$pb.TagNumber(15)
-  $42.Timestamp get createdAt => $_getN(14);
+  $1.Timestamp get createdAt => $_getN(14);
   @$pb.TagNumber(15)
-  set createdAt($42.Timestamp v) { setField(15, v); }
+  set createdAt($1.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCreatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCreatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $42.Timestamp ensureCreatedAt() => $_ensure(14);
+  $1.Timestamp ensureCreatedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $42.Timestamp get updatedAt => $_getN(15);
+  $1.Timestamp get updatedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set updatedAt($42.Timestamp v) { setField(16, v); }
+  set updatedAt($1.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasUpdatedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearUpdatedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(15);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(15);
 }
 
 class UpcomingBillsList extends $pb.GeneratedMessage {
@@ -7433,8 +7433,8 @@ class CreateIncomeSourceRequest extends $pb.GeneratedMessage {
     IncomeCategory? category,
     $core.bool? isRecurring,
     $core.String? recurrencePattern,
-    $42.Timestamp? lastReceived,
-    $42.Timestamp? nextExpected,
+    $1.Timestamp? lastReceived,
+    $1.Timestamp? nextExpected,
   }) {
     final $result = create();
     if (name != null) {
@@ -7474,8 +7474,8 @@ class CreateIncomeSourceRequest extends $pb.GeneratedMessage {
     ..e<IncomeCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: IncomeCategory.INCOME_CATEGORY_UNSPECIFIED, valueOf: IncomeCategory.valueOf, enumValues: IncomeCategory.values)
     ..aOB(5, _omitFieldNames ? '' : 'isRecurring')
     ..aOS(6, _omitFieldNames ? '' : 'recurrencePattern')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'lastReceived', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'nextExpected', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'lastReceived', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'nextExpected', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -7555,26 +7555,26 @@ class CreateIncomeSourceRequest extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get lastReceived => $_getN(6);
+  $1.Timestamp get lastReceived => $_getN(6);
   @$pb.TagNumber(7)
-  set lastReceived($42.Timestamp v) { setField(7, v); }
+  set lastReceived($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasLastReceived() => $_has(6);
   @$pb.TagNumber(7)
   void clearLastReceived() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureLastReceived() => $_ensure(6);
+  $1.Timestamp ensureLastReceived() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get nextExpected => $_getN(7);
+  $1.Timestamp get nextExpected => $_getN(7);
   @$pb.TagNumber(8)
-  set nextExpected($42.Timestamp v) { setField(8, v); }
+  set nextExpected($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasNextExpected() => $_has(7);
   @$pb.TagNumber(8)
   void clearNextExpected() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureNextExpected() => $_ensure(7);
+  $1.Timestamp ensureNextExpected() => $_ensure(7);
 }
 
 class CreateIncomeSourceResponse extends $pb.GeneratedMessage {
@@ -7767,8 +7767,8 @@ class GetIncomeSourcesResponse extends $pb.GeneratedMessage {
 
 class GetIncomeBreakdownRequest extends $pb.GeneratedMessage {
   factory GetIncomeBreakdownRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -7784,8 +7784,8 @@ class GetIncomeBreakdownRequest extends $pb.GeneratedMessage {
   factory GetIncomeBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetIncomeBreakdownRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -7811,26 +7811,26 @@ class GetIncomeBreakdownRequest extends $pb.GeneratedMessage {
   static GetIncomeBreakdownRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetIncomeBreakdownResponse extends $pb.GeneratedMessage {
@@ -7984,7 +7984,7 @@ class CreateInvestmentRequest extends $pb.GeneratedMessage {
     InvestmentType? investmentType,
     $core.double? initialInvestment,
     $core.String? currency,
-    $42.Timestamp? purchaseDate,
+    $1.Timestamp? purchaseDate,
     $core.String? tickerSymbol,
     $core.int? quantity,
   }) {
@@ -8021,7 +8021,7 @@ class CreateInvestmentRequest extends $pb.GeneratedMessage {
     ..e<InvestmentType>(2, _omitFieldNames ? '' : 'investmentType', $pb.PbFieldType.OE, defaultOrMaker: InvestmentType.INVESTMENT_TYPE_UNSPECIFIED, valueOf: InvestmentType.valueOf, enumValues: InvestmentType.values)
     ..a<$core.double>(3, _omitFieldNames ? '' : 'initialInvestment', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'purchaseDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'purchaseDate', subBuilder: $1.Timestamp.create)
     ..aOS(6, _omitFieldNames ? '' : 'tickerSymbol')
     ..a<$core.int>(7, _omitFieldNames ? '' : 'quantity', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -8085,15 +8085,15 @@ class CreateInvestmentRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get purchaseDate => $_getN(4);
+  $1.Timestamp get purchaseDate => $_getN(4);
   @$pb.TagNumber(5)
-  set purchaseDate($42.Timestamp v) { setField(5, v); }
+  set purchaseDate($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasPurchaseDate() => $_has(4);
   @$pb.TagNumber(5)
   void clearPurchaseDate() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensurePurchaseDate() => $_ensure(4);
+  $1.Timestamp ensurePurchaseDate() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get tickerSymbol => $_getSZ(5);
@@ -8203,7 +8203,7 @@ class CreateFinancialGoalRequest extends $pb.GeneratedMessage {
     $core.double? currentAmount,
     $core.double? monthlyContribution,
     $core.String? currency,
-    $42.Timestamp? targetDate,
+    $1.Timestamp? targetDate,
     $core.String? icon,
     $core.String? color,
   }) {
@@ -8248,7 +8248,7 @@ class CreateFinancialGoalRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(4, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'monthlyContribution', $pb.PbFieldType.OD)
     ..aOS(6, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'targetDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'targetDate', subBuilder: $1.Timestamp.create)
     ..aOS(8, _omitFieldNames ? '' : 'icon')
     ..aOS(9, _omitFieldNames ? '' : 'color')
     ..hasRequiredFields = false
@@ -8330,15 +8330,15 @@ class CreateFinancialGoalRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get targetDate => $_getN(6);
+  $1.Timestamp get targetDate => $_getN(6);
   @$pb.TagNumber(7)
-  set targetDate($42.Timestamp v) { setField(7, v); }
+  set targetDate($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasTargetDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearTargetDate() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureTargetDate() => $_ensure(6);
+  $1.Timestamp ensureTargetDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.String get icon => $_getSZ(7);
@@ -8789,7 +8789,7 @@ class CreateOrUpdateSavingsGoalRequest extends $pb.GeneratedMessage {
     $core.String? name,
     $core.double? targetAmount,
     $core.double? currentAmount,
-    $42.Timestamp? targetDate,
+    $1.Timestamp? targetDate,
   }) {
     final $result = create();
     if (name != null) {
@@ -8814,7 +8814,7 @@ class CreateOrUpdateSavingsGoalRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'name')
     ..a<$core.double>(2, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(3, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'targetDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'targetDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -8867,15 +8867,15 @@ class CreateOrUpdateSavingsGoalRequest extends $pb.GeneratedMessage {
   void clearCurrentAmount() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get targetDate => $_getN(3);
+  $1.Timestamp get targetDate => $_getN(3);
   @$pb.TagNumber(4)
-  set targetDate($42.Timestamp v) { setField(4, v); }
+  set targetDate($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasTargetDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearTargetDate() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureTargetDate() => $_ensure(3);
+  $1.Timestamp ensureTargetDate() => $_ensure(3);
 }
 
 class CreateOrUpdateSavingsGoalResponse extends $pb.GeneratedMessage {
@@ -8966,7 +8966,7 @@ class CreateRecurringBillRequest extends $pb.GeneratedMessage {
     $core.String? currency,
     ExpenseCategory? category,
     $core.String? recurrencePattern,
-    $42.Timestamp? nextDueDate,
+    $1.Timestamp? nextDueDate,
     $core.String? merchant,
     $core.String? icon,
     $core.bool? autoPayEnabled,
@@ -9011,7 +9011,7 @@ class CreateRecurringBillRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'currency')
     ..e<ExpenseCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
     ..aOS(5, _omitFieldNames ? '' : 'recurrencePattern')
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'nextDueDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'nextDueDate', subBuilder: $1.Timestamp.create)
     ..aOS(7, _omitFieldNames ? '' : 'merchant')
     ..aOS(8, _omitFieldNames ? '' : 'icon')
     ..aOB(9, _omitFieldNames ? '' : 'autoPayEnabled')
@@ -9085,15 +9085,15 @@ class CreateRecurringBillRequest extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get nextDueDate => $_getN(5);
+  $1.Timestamp get nextDueDate => $_getN(5);
   @$pb.TagNumber(6)
-  set nextDueDate($42.Timestamp v) { setField(6, v); }
+  set nextDueDate($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasNextDueDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearNextDueDate() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureNextDueDate() => $_ensure(5);
+  $1.Timestamp ensureNextDueDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.String get merchant => $_getSZ(6);
@@ -9319,9 +9319,9 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
     $core.String? description,
     $fixnum.Int64? senderId,
     $core.String? senderName,
-    $42.Timestamp? transactionDate,
+    $1.Timestamp? transactionDate,
     $core.String? metadata,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -9384,9 +9384,9 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
     ..aOS(9, _omitFieldNames ? '' : 'description')
     ..a<$fixnum.Int64>(10, _omitFieldNames ? '' : 'senderId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(11, _omitFieldNames ? '' : 'senderName')
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
     ..aOS(13, _omitFieldNames ? '' : 'metadata')
-    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -9511,15 +9511,15 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
   void clearSenderName() => clearField(11);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get transactionDate => $_getN(11);
+  $1.Timestamp get transactionDate => $_getN(11);
   @$pb.TagNumber(12)
-  set transactionDate($42.Timestamp v) { setField(12, v); }
+  set transactionDate($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasTransactionDate() => $_has(11);
   @$pb.TagNumber(12)
   void clearTransactionDate() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureTransactionDate() => $_ensure(11);
+  $1.Timestamp ensureTransactionDate() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get metadata => $_getSZ(12);
@@ -9531,15 +9531,15 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
   void clearMetadata() => clearField(13);
 
   @$pb.TagNumber(14)
-  $42.Timestamp get createdAt => $_getN(13);
+  $1.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($42.Timestamp v) { setField(14, v); }
+  set createdAt($1.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $42.Timestamp ensureCreatedAt() => $_ensure(13);
+  $1.Timestamp ensureCreatedAt() => $_ensure(13);
 }
 
 class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
@@ -9556,9 +9556,9 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
     $core.String? recipientName,
     $core.String? merchant,
     $core.String? description,
-    $42.Timestamp? transactionDate,
+    $1.Timestamp? transactionDate,
     $core.String? metadata,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -9625,9 +9625,9 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'recipientName')
     ..aOS(11, _omitFieldNames ? '' : 'merchant')
     ..aOS(12, _omitFieldNames ? '' : 'description')
-    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
     ..aOS(14, _omitFieldNames ? '' : 'metadata')
-    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -9761,15 +9761,15 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(12);
 
   @$pb.TagNumber(13)
-  $42.Timestamp get transactionDate => $_getN(12);
+  $1.Timestamp get transactionDate => $_getN(12);
   @$pb.TagNumber(13)
-  set transactionDate($42.Timestamp v) { setField(13, v); }
+  set transactionDate($1.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasTransactionDate() => $_has(12);
   @$pb.TagNumber(13)
   void clearTransactionDate() => clearField(13);
   @$pb.TagNumber(13)
-  $42.Timestamp ensureTransactionDate() => $_ensure(12);
+  $1.Timestamp ensureTransactionDate() => $_ensure(12);
 
   @$pb.TagNumber(14)
   $core.String get metadata => $_getSZ(13);
@@ -9781,22 +9781,22 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
   void clearMetadata() => clearField(14);
 
   @$pb.TagNumber(15)
-  $42.Timestamp get createdAt => $_getN(14);
+  $1.Timestamp get createdAt => $_getN(14);
   @$pb.TagNumber(15)
-  set createdAt($42.Timestamp v) { setField(15, v); }
+  set createdAt($1.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCreatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCreatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $42.Timestamp ensureCreatedAt() => $_ensure(14);
+  $1.Timestamp ensureCreatedAt() => $_ensure(14);
 }
 
 /// Tracked Income Request/Response
 class GetTrackedIncomeRequest extends $pb.GeneratedMessage {
   factory GetTrackedIncomeRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -9812,8 +9812,8 @@ class GetTrackedIncomeRequest extends $pb.GeneratedMessage {
   factory GetTrackedIncomeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -9839,26 +9839,26 @@ class GetTrackedIncomeRequest extends $pb.GeneratedMessage {
   static GetTrackedIncomeRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetTrackedIncomeResponse extends $pb.GeneratedMessage {
@@ -9928,8 +9928,8 @@ class GetTrackedIncomeResponse extends $pb.GeneratedMessage {
 /// Tracked Expenditure Request/Response
 class GetTrackedExpenditureRequest extends $pb.GeneratedMessage {
   factory GetTrackedExpenditureRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -9945,8 +9945,8 @@ class GetTrackedExpenditureRequest extends $pb.GeneratedMessage {
   factory GetTrackedExpenditureRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -9972,26 +9972,26 @@ class GetTrackedExpenditureRequest extends $pb.GeneratedMessage {
   static GetTrackedExpenditureRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetTrackedExpenditureResponse extends $pb.GeneratedMessage {
@@ -10061,8 +10061,8 @@ class GetTrackedExpenditureResponse extends $pb.GeneratedMessage {
 /// Tracked Income Breakdown Request/Response
 class GetTrackedIncomeBreakdownRequest extends $pb.GeneratedMessage {
   factory GetTrackedIncomeBreakdownRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -10078,8 +10078,8 @@ class GetTrackedIncomeBreakdownRequest extends $pb.GeneratedMessage {
   factory GetTrackedIncomeBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeBreakdownRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -10105,26 +10105,26 @@ class GetTrackedIncomeBreakdownRequest extends $pb.GeneratedMessage {
   static GetTrackedIncomeBreakdownRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetTrackedIncomeBreakdownResponse extends $pb.GeneratedMessage {
@@ -10202,8 +10202,8 @@ class GetTrackedIncomeBreakdownResponse extends $pb.GeneratedMessage {
 /// Tracked Expenditure Breakdown Request/Response
 class GetTrackedExpenditureBreakdownRequest extends $pb.GeneratedMessage {
   factory GetTrackedExpenditureBreakdownRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -10219,8 +10219,8 @@ class GetTrackedExpenditureBreakdownRequest extends $pb.GeneratedMessage {
   factory GetTrackedExpenditureBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureBreakdownRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -10246,26 +10246,26 @@ class GetTrackedExpenditureBreakdownRequest extends $pb.GeneratedMessage {
   static GetTrackedExpenditureBreakdownRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetTrackedExpenditureBreakdownResponse extends $pb.GeneratedMessage {
@@ -10343,8 +10343,8 @@ class GetTrackedExpenditureBreakdownResponse extends $pb.GeneratedMessage {
 /// Tracked Income Transactions Request/Response
 class GetTrackedIncomeTransactionsRequest extends $pb.GeneratedMessage {
   factory GetTrackedIncomeTransactionsRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
     $core.int? limit,
   }) {
     final $result = create();
@@ -10364,8 +10364,8 @@ class GetTrackedIncomeTransactionsRequest extends $pb.GeneratedMessage {
   factory GetTrackedIncomeTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
@@ -10392,26 +10392,26 @@ class GetTrackedIncomeTransactionsRequest extends $pb.GeneratedMessage {
   static GetTrackedIncomeTransactionsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.int get limit => $_getIZ(2);
@@ -10498,8 +10498,8 @@ class GetTrackedIncomeTransactionsResponse extends $pb.GeneratedMessage {
 /// Tracked Expenditure Transactions Request/Response
 class GetTrackedExpenditureTransactionsRequest extends $pb.GeneratedMessage {
   factory GetTrackedExpenditureTransactionsRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
     $core.int? limit,
   }) {
     final $result = create();
@@ -10519,8 +10519,8 @@ class GetTrackedExpenditureTransactionsRequest extends $pb.GeneratedMessage {
   factory GetTrackedExpenditureTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
@@ -10547,26 +10547,26 @@ class GetTrackedExpenditureTransactionsRequest extends $pb.GeneratedMessage {
   static GetTrackedExpenditureTransactionsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.int get limit => $_getIZ(2);
@@ -10653,8 +10653,8 @@ class GetTrackedExpenditureTransactionsResponse extends $pb.GeneratedMessage {
 /// Comprehensive Financial Summary Request/Response
 class GetComprehensiveFinancialSummaryRequest extends $pb.GeneratedMessage {
   factory GetComprehensiveFinancialSummaryRequest({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -10670,8 +10670,8 @@ class GetComprehensiveFinancialSummaryRequest extends $pb.GeneratedMessage {
   factory GetComprehensiveFinancialSummaryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetComprehensiveFinancialSummaryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -10697,26 +10697,26 @@ class GetComprehensiveFinancialSummaryRequest extends $pb.GeneratedMessage {
   static GetComprehensiveFinancialSummaryRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetComprehensiveFinancialSummaryResponse extends $pb.GeneratedMessage {
@@ -10899,8 +10899,8 @@ class ComprehensiveFinancialSummary extends $pb.GeneratedMessage {
 
 class ComprehensivePeriod extends $pb.GeneratedMessage {
   factory ComprehensivePeriod({
-    $42.Timestamp? startDate,
-    $42.Timestamp? endDate,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
   }) {
     final $result = create();
     if (startDate != null) {
@@ -10916,8 +10916,8 @@ class ComprehensivePeriod extends $pb.GeneratedMessage {
   factory ComprehensivePeriod.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ComprehensivePeriod', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -10943,26 +10943,26 @@ class ComprehensivePeriod extends $pb.GeneratedMessage {
   static ComprehensivePeriod? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $42.Timestamp get startDate => $_getN(0);
+  $1.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($42.Timestamp v) { setField(1, v); }
+  set startDate($1.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $42.Timestamp ensureStartDate() => $_ensure(0);
+  $1.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get endDate => $_getN(1);
+  $1.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($42.Timestamp v) { setField(2, v); }
+  set endDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureEndDate() => $_ensure(1);
+  $1.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class ComprehensiveIncomeData extends $pb.GeneratedMessage {

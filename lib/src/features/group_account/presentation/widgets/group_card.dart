@@ -104,20 +104,52 @@ class GroupCard extends StatelessWidget {
                   ),
                 ),
                 
-                // Status Badge
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(group.status).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8.r),                  ),
-                  child: Text(
-                    group.status.displayName,
-                    style: GoogleFonts.inter(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                      color: _getStatusColor(group.status),
+                // Visibility + Status Badges
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(group.status).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        group.status.displayName,
+                        style: GoogleFonts.inter(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600,
+                          color: _getStatusColor(group.status),
+                        ),
+                      ),
                     ),
-                  ),
+                    SizedBox(height: 4.h),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          group.visibility == GroupVisibility.public
+                              ? Icons.public
+                              : Icons.lock,
+                          size: 12.sp,
+                          color: group.visibility == GroupVisibility.public
+                              ? const Color(0xFF3B82F6)
+                              : const Color(0xFF9CA3AF),
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          group.visibility.displayName,
+                          style: GoogleFonts.inter(
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w500,
+                            color: group.visibility == GroupVisibility.public
+                                ? const Color(0xFF3B82F6)
+                                : const Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),

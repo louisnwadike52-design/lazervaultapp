@@ -3,11 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
-import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
+import 'package:lazervault/src/features/send_funds/presentation/chatbot_transfer_screen.dart';
+import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_verification_screen.dart';
@@ -23,17 +24,13 @@ import 'package:lazervault/src/features/funds/presentation/view/send_funds/trans
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_details_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_payment_method_selection_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_purchase_processing_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_purchase_confirmation_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_transactions_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/redeem_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_gift_cards_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/sell_to_contact_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/saved_recipients_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/quick_sell_screen.dart';
 import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_entity.dart';
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/sell_gift_card_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/my_sales_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_start_screen.dart';
@@ -60,12 +57,10 @@ import 'package:lazervault/src/features/presentation/views/otp_verification_scre
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/password_recovery_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
-import 'package:lazervault/src/features/presentation/views/review_electricity_bills_screen.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
-import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
 import 'package:lazervault/src/features/presentation/views/select_country_screen.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
@@ -146,6 +141,8 @@ import 'package:lazervault/src/features/group_account/presentation/views/group_a
 import 'package:lazervault/src/features/group_account/presentation/views/group_details_screen.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/contribution_details_screen.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/make_payment_screen.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/public_groups_screen.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/group_leaderboard_screen.dart';
 import 'package:lazervault/src/features/group_account/domain/entities/group_entities.dart';
 
 // Insurance imports
@@ -159,11 +156,19 @@ import 'package:lazervault/src/features/insurance/presentation/view/insurance_pa
 import 'package:lazervault/src/features/insurance/presentation/view/create_claim_screen.dart';
 import 'package:lazervault/src/features/insurance/domain/entities/insurance_entity.dart';
 import 'package:lazervault/src/features/insurance/domain/entities/insurance_payment_entity.dart';
+import 'package:lazervault/src/features/insurance/domain/entities/insurance_product_entity.dart';
+import 'package:lazervault/src/features/insurance/domain/entities/insurance_claim_entity.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_terms_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_guide_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_faq_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_contact_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_documents_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_claim_tracking_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_how_it_works_screen.dart';
 
 // Airtime imports
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/country_selection_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/network_selection_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/recipient_input_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/amount_selection_screen.dart';
@@ -193,9 +198,22 @@ import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/b
 
 // Statistics imports
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
-import 'package:lazervault/src/features/statistics/presentation/screens/statistics_screen.dart';
-import 'package:lazervault/src/features/statistics/presentation/screens/add_expense_screen.dart';
-import 'package:lazervault/src/features/statistics/presentation/screens/add_budget_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/spending_detail_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/monthly_trends_detail_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/category_analysis_detail_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/comparison_detail_screen.dart';
+
+// Budget imports
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/budget_list_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/create_budget_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/budget_detail_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/budget_ai_insights_screen.dart';
+
+// Credit Score & Open Banking imports
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/open_banking/presentation/screens/credit_score_screen.dart';
+import 'package:lazervault/src/features/open_banking/presentation/screens/linked_accounts_screen.dart' as open_banking;
 
 // Tag Pay imports
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
@@ -210,17 +228,17 @@ import 'package:lazervault/src/features/tag_pay/presentation/view/tag_creation_r
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_tag_entity.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 
-// Barcode QuickPay imports
-import 'package:lazervault/src/features/barcode_payment/presentation/cubit/barcode_payment_cubit.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_quick_pay_home_screen.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/generate_barcode_screen.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_display_screen.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/scan_barcode_screen.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_payment_confirmation_screen.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_payment_processing_screen.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_payment_receipt_screen.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/generated_barcodes_history_screen.dart';
-import 'package:lazervault/src/features/barcode_payment/presentation/view/scanned_barcodes_history_screen.dart';
+// QR Pay imports
+import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/qr_pay_home_screen.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/generate_qr_screen.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/qr_display_screen.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/scan_qr_screen.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/qr_payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/qr_payment_processing_screen.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/qr_payment_receipt_screen.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/generated_qr_history_screen.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/view/qr_payments_history_screen.dart';
 
 // Contactless Payment imports
 import 'package:lazervault/src/features/contactless_payment/presentation/cubit/contactless_payment_cubit.dart';
@@ -241,6 +259,8 @@ import 'package:lazervault/src/features/crowdfund/presentation/views/donation_pa
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_processing_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_receipt_screen.dart';
 import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_entities.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_leaderboard_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_cubit.dart';
 
 // Electricity Bill imports
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/electricity_bill_cubit.dart';
@@ -260,6 +280,26 @@ import 'package:lazervault/src/features/electricity_bill/presentation/view/creat
 import 'package:lazervault/src/features/electricity_bill/presentation/view/edit_auto_recharge_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/reminders_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/create_reminder_screen.dart';
+
+// Bills Hub import
+import 'package:lazervault/src/features/bills/presentation/view/bills_hub_screen.dart';
+
+// Cable TV imports
+import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_cubit.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_home_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/smart_card_input_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/package_selection_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_payment_processing_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_payment_receipt_screen.dart';
+
+// Education imports
+import 'package:lazervault/src/features/education/presentation/cubit/education_cubit.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_home_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_purchase_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_payment_processing_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_pin_result_screen.dart';
 
 // Currency Exchange imports
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_screen.dart';
@@ -283,6 +323,22 @@ import 'package:lazervault/src/features/kyc/presentation/views/progressive_kyc_s
 import 'package:lazervault/src/features/kyc/presentation/views/id_verification_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
+// Payroll imports (Business)
+import 'package:lazervault/src/features/payroll/presentation/cubit/payroll_cubit.dart';
+import 'package:lazervault/src/features/payroll/presentation/views/payroll_home_screen.dart';
+import 'package:lazervault/src/features/payroll/presentation/views/employee_list_screen.dart';
+import 'package:lazervault/src/features/payroll/presentation/views/add_employee_screen.dart';
+import 'package:lazervault/src/features/payroll/presentation/views/pay_run_list_screen.dart';
+import 'package:lazervault/src/features/payroll/presentation/views/create_pay_run_screen.dart';
+import 'package:lazervault/src/features/payroll/presentation/views/pay_run_details_screen.dart';
+import 'package:lazervault/src/features/payroll/presentation/views/pay_slip_details_screen.dart';
+
+// Business Dashboard
+import 'package:lazervault/src/features/business_dashboard/presentation/cubit/business_dashboard_cubit.dart';
+import 'package:lazervault/src/features/business_dashboard/presentation/views/business_dashboard_screen.dart';
+import 'package:lazervault/src/features/business_analytics/presentation/cubit/business_analytics_cubit.dart';
+import 'package:lazervault/src/features/business_analytics/presentation/views/analytics_screen.dart';
+
 import 'package:lazervault/src/features/presentation/views/debug_settings_screen.dart';
 
 // Social Linking imports
@@ -581,11 +637,6 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.payElectricityBill,
-      page: () => serviceLocator<PayElectricityBillScreen>(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.profileSettings,
       page: () => serviceLocator<ProfileSettingsScreen>(),
       transition: Transition.rightToLeft,
@@ -804,21 +855,16 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.reviewElectricityBillDetails,
-      page: () {
-        final electricityBillDetails = Get.arguments as ElectricityBillDetails;
-        return serviceLocator<ReviewElectricityBillsScreen>(
-          param1: electricityBillDetails,
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.sendFunds,
       page: () {
         final recipient = Get.arguments as User;
         return serviceLocator<SendFundScreen>(param1: recipient);
       },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.chatbotTransfer,
+      page: () => const ChatbotTransferScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -966,25 +1012,9 @@ class AppRouter {
       name: AppRoutes.giftCardDetails,
       page: () {
         final giftCard = Get.arguments as GiftCard;
-        return GiftCardDetailsScreen(giftCard: giftCard);
-      },
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.giftCardPaymentMethod,
-      page: () {
-        final args = Get.arguments as Map<String, dynamic>;
-        return GiftCardPaymentMethodSelectionScreen(
-          brandId: args['brandId'],
-          brandName: args['brandName'],
-          brandLogoUrl: args['brandLogoUrl'],
-          amount: args['amount'],
-          discountPercentage: args['discountPercentage'],
-          finalPrice: args['finalPrice'],
-          currency: args['currency'],
-          recipientEmail: args['recipientEmail'],
-          recipientName: args['recipientName'],
-          message: args['message'],
+        return BlocProvider(
+          create: (_) => serviceLocator<GiftCardCubit>(),
+          child: GiftCardDetailsScreen(giftCard: giftCard),
         );
       },
       transition: Transition.rightToLeft,
@@ -998,27 +1028,11 @@ class AppRouter {
       transition: Transition.fade,
     ),
     GetPage(
-      name: AppRoutes.giftCardPurchaseConfirmation,
-      page: () => const GiftCardPurchaseConfirmationScreen(),
-      transition: Transition.zoom,
-    ),
-    GetPage(
       name: AppRoutes.giftCardTransactions,
       page: () => BlocProvider(
         create: (_) => serviceLocator<GiftCardCubit>(),
         child: const GiftCardTransactionsScreen(),
       ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.redeemGiftCard,
-      page: () {
-        final giftCard = Get.arguments as GiftCard?;
-        return BlocProvider(
-          create: (_) => serviceLocator<GiftCardCubit>(),
-          child: RedeemGiftCardScreen(giftCard: giftCard),
-        );
-      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1030,26 +1044,18 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.sellToContact,
+      name: AppRoutes.sellGiftCard,
       page: () => BlocProvider(
         create: (_) => serviceLocator<GiftCardCubit>(),
-        child: serviceLocator<SellToContactScreen>(),
+        child: const SellGiftCardScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.savedRecipients,
+      name: AppRoutes.mySales,
       page: () => BlocProvider(
         create: (_) => serviceLocator<GiftCardCubit>(),
-        child: serviceLocator<SavedRecipientsScreen>(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.quickSell,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<GiftCardCubit>(),
-        child: serviceLocator<QuickSellScreen>(),
+        child: const MySalesScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1373,10 +1379,9 @@ class AppRouter {
     GetPage(
       name: AppRoutes.insurancePaymentProcessing,
       page: () {
-        final payment = Get.arguments as InsurancePayment;
         return BlocProvider(
           create: (_) => serviceLocator<InsuranceCubit>(),
-          child: InsurancePaymentProcessingScreen(payment: payment),
+          child: const InsurancePaymentProcessingScreen(),
         );
       },
       transition: Transition.rightToLeft,
@@ -1408,7 +1413,73 @@ class AppRouter {
       },
       transition: Transition.rightToLeft,
     ),
-    
+    GetPage(
+      name: AppRoutes.insuranceTerms,
+      page: () {
+        final arg = Get.arguments;
+        if (arg is InsuranceProduct) {
+          return InsuranceTermsScreen(product: arg);
+        }
+        final insurance = arg as Insurance;
+        return InsuranceTermsScreen(
+          product: InsuranceProduct(
+            id: insurance.id,
+            name: insurance.type.displayName,
+            description: insurance.description ?? '',
+            category: InsuranceProductCategory.fromString(insurance.type.name),
+            providerName: insurance.provider,
+            providerLogo: insurance.providerLogo,
+            minPremium: insurance.premiumAmount,
+            maxPremium: insurance.premiumAmount,
+            currency: insurance.currency,
+            benefits: insurance.coverageDetails.entries
+                .map((e) => '${e.key}: ${e.value}')
+                .toList(),
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceGuide,
+      page: () => const InsuranceGuideScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceFaq,
+      page: () => const InsuranceFaqScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceContact,
+      page: () {
+        final insurance = Get.arguments as Insurance;
+        return InsuranceContactScreen(insurance: insurance);
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceDocuments,
+      page: () {
+        final insurance = Get.arguments as Insurance;
+        return InsuranceDocumentsScreen(insurance: insurance);
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceClaimTracking,
+      page: () {
+        final claim = Get.arguments as InsuranceClaim;
+        return InsuranceClaimTrackingScreen(claim: claim);
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceHowItWorks,
+      page: () => const InsuranceHowItWorksScreen(),
+      transition: Transition.rightToLeft,
+    ),
+
     // Airtime routes
     GetPage(
       name: AppRoutes.airtime,
@@ -1418,15 +1489,7 @@ class AppRouter {
       ),
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.airtimeCountrySelection,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const CountrySelectionScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
+GetPage(
       name: AppRoutes.airtimeNetworkSelection,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeCubit>(),
@@ -1452,8 +1515,11 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.airtimeReview,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<AirtimeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+        ],
         child: const AirtimeReviewScreen(),
       ),
       transition: Transition.rightToLeft,
@@ -1554,18 +1620,12 @@ class AppRouter {
     // Batch Transfer routes
     GetPage(
       name: AppRoutes.batchTransfer,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<BatchTransferCubit>(),
-        child: const BatchTransferScreen(),
-      ),
+      page: () => const BatchTransferScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.batchTransferReview,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<BatchTransferCubit>(),
-        child: const BatchTransferReviewScreen(),
-      ),
+      page: () => const BatchTransferReviewScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1584,30 +1644,98 @@ class AppRouter {
 
     // Statistics routes
     GetPage(
-      name: AppRoutes.statistics,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<StatisticsCubit>()..loadStatistics(),
-        child: serviceLocator<StatisticsScreen>(),
+      name: AppRoutes.statisticsSpendingDetail,
+      page: () => BlocProvider.value(
+        value: serviceLocator<StatisticsCubit>(),
+        child: const SpendingDetailScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.addExpense,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<StatisticsCubit>(),
-        child: serviceLocator<AddExpenseScreen>(),
+      name: AppRoutes.statisticsMonthlyTrends,
+      page: () => BlocProvider.value(
+        value: serviceLocator<StatisticsCubit>(),
+        child: const MonthlyTrendsDetailScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.addBudget,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<StatisticsCubit>(),
-        child: serviceLocator<AddBudgetScreen>(),
+      name: AppRoutes.statisticsCategoryAnalysis,
+      page: () => BlocProvider.value(
+        value: serviceLocator<StatisticsCubit>(),
+        child: CategoryAnalysisDetailScreen(
+          analysisType: (Get.arguments as Map<String, dynamic>?)?['type'] as String? ?? 'expense',
+        ),
       ),
       transition: Transition.rightToLeft,
     ),
-
+    GetPage(
+      name: AppRoutes.statisticsComparison,
+      page: () => BlocProvider.value(
+        value: serviceLocator<StatisticsCubit>(),
+        child: const ComparisonDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Budget routes
+    GetPage(
+      name: AppRoutes.budgetList,
+      page: () => BlocProvider.value(
+        value: serviceLocator<BudgetCubit>(),
+        child: const BudgetListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createBudget,
+      page: () => BlocProvider.value(
+        value: serviceLocator<BudgetCubit>(),
+        child: const CreateBudgetScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.budgetDetail,
+      page: () => BlocProvider.value(
+        value: serviceLocator<BudgetCubit>(),
+        child: const BudgetDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.budgetAIInsights,
+      page: () => BlocProvider.value(
+        value: serviceLocator<BudgetCubit>(),
+        child: const BudgetAIInsightsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Credit Score route
+    GetPage(
+      name: AppRoutes.creditScore,
+      page: () => BlocProvider.value(
+        value: serviceLocator<OpenBankingCubit>(),
+        child: CreditScoreScreen(
+          userId: (Get.arguments as Map<String, dynamic>?)?['userId'] as String? ?? '',
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Open Banking routes
+    GetPage(
+      name: AppRoutes.openBankingConnect,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        return BlocProvider.value(
+          value: serviceLocator<OpenBankingCubit>(),
+          child: open_banking.LinkedAccountsScreen(
+            userId: args?['userId'] as String? ?? '',
+            accessToken: args?['accessToken'] as String? ?? '',
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
     // Tag Pay routes
     GetPage(
       name: AppRoutes.tagPay,
@@ -1676,83 +1804,86 @@ class AppRouter {
       transition: Transition.zoom,
     ),
 
-    // Barcode QuickPay routes
+    // QR Pay routes
     GetPage(
-      name: AppRoutes.barcodeQuickPayHome,
+      name: AppRoutes.qrPayHome,
       page: () {
         return BlocProvider(
-          create: (context) => serviceLocator<BarcodePaymentCubit>(),
-          child: const BarcodeQuickPayHomeScreen(),
+          create: (context) => serviceLocator<QRPaymentCubit>(),
+          child: const QRPayHomeScreen(),
         );
       },
       transition: Transition.fadeIn,
     ),
     GetPage(
-      name: AppRoutes.generateBarcode,
+      name: AppRoutes.generateQR,
       page: () {
         return BlocProvider.value(
-          value: serviceLocator<BarcodePaymentCubit>(),
-          child: const GenerateBarcodeScreen(),
+          value: serviceLocator<QRPaymentCubit>(),
+          child: const GenerateQRScreen(),
         );
       },
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.barcodeDisplay,
-      page: () => const BarcodeDisplayScreen(),
+      name: AppRoutes.qrDisplay,
+      page: () => const QRDisplayScreen(),
       transition: Transition.zoom,
     ),
     GetPage(
-      name: AppRoutes.scanBarcode,
+      name: AppRoutes.scanQR,
       page: () {
         return BlocProvider.value(
-          value: serviceLocator<BarcodePaymentCubit>(),
-          child: const ScanBarcodeScreen(),
+          value: serviceLocator<QRPaymentCubit>(),
+          child: const ScanQRScreen(),
         );
       },
       transition: Transition.fadeIn,
     ),
     GetPage(
-      name: AppRoutes.barcodePaymentConfirmation,
+      name: AppRoutes.qrPaymentConfirmation,
       page: () {
-        return BlocProvider.value(
-          value: serviceLocator<BarcodePaymentCubit>(),
-          child: const BarcodePaymentConfirmationScreen(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<QRPaymentCubit>()),
+            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          ],
+          child: const QRPaymentConfirmationScreen(),
         );
       },
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.barcodePaymentProcessing,
+      name: AppRoutes.qrPaymentProcessing,
       page: () {
         return BlocProvider.value(
-          value: serviceLocator<BarcodePaymentCubit>(),
-          child: const BarcodePaymentProcessingScreen(),
+          value: serviceLocator<QRPaymentCubit>(),
+          child: const QRPaymentProcessingScreen(),
         );
       },
       transition: Transition.fadeIn,
     ),
     GetPage(
-      name: AppRoutes.barcodePaymentReceipt,
-      page: () => const BarcodePaymentReceiptScreen(),
+      name: AppRoutes.qrPaymentReceipt,
+      page: () => const QRPaymentReceiptScreen(),
       transition: Transition.zoom,
     ),
     GetPage(
-      name: AppRoutes.generatedBarcodesHistory,
+      name: AppRoutes.generatedQRHistory,
       page: () {
         return BlocProvider(
-          create: (_) => serviceLocator<BarcodePaymentCubit>(),
-          child: const GeneratedBarcodesHistoryScreen(),
+          create: (_) => serviceLocator<QRPaymentCubit>(),
+          child: const GeneratedQRHistoryScreen(),
         );
       },
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.scannedBarcodesHistory,
+      name: AppRoutes.qrPaymentsHistory,
       page: () {
         return BlocProvider(
-          create: (_) => serviceLocator<BarcodePaymentCubit>(),
-          child: const ScannedBarcodesHistoryScreen(),
+          create: (_) => serviceLocator<QRPaymentCubit>(),
+          child: const QRPaymentsHistoryScreen(),
         );
       },
       transition: Transition.rightToLeft,
@@ -1792,6 +1923,13 @@ class AppRouter {
         ),
         child: const contactless_history.PaymentHistoryScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Bills Hub route
+    GetPage(
+      name: AppRoutes.billsHub,
+      page: () => const BillsHubScreen(),
       transition: Transition.rightToLeft,
     ),
 
@@ -2024,6 +2162,32 @@ class AppRouter {
       },
       transition: Transition.zoom,
     ),
+    GetPage(
+      name: AppRoutes.crowdfundLeaderboard,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<LeaderboardCubit>(),
+        child: const CrowdfundLeaderboardScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Public Groups & Group Leaderboard Routes
+    GetPage(
+      name: AppRoutes.publicGroups,
+      page: () => BlocProvider.value(
+        value: serviceLocator<GroupAccountCubit>(),
+        child: const PublicGroupsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.groupLeaderboard,
+      page: () => BlocProvider.value(
+        value: serviceLocator<GroupAccountCubit>(),
+        child: const GroupLeaderboardScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
 
     // Card Management Routes
     GetPage(
@@ -2222,6 +2386,170 @@ class AppRouter {
           ),
         );
       },
+      transition: Transition.rightToLeft,
+    ),
+
+    // Cable TV routes
+    GetPage(
+      name: AppRoutes.cableTVHome,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CableTVCubit>(),
+        child: const CableTVHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVSmartCardInput,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CableTVCubit>(),
+        child: const SmartCardInputScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVPackageSelection,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CableTVCubit>(),
+        child: const PackageSelectionScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVPaymentConfirmation,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CableTVCubit>(),
+        child: const CableTVPaymentConfirmationScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVPaymentProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CableTVCubit>(),
+        child: const CableTVPaymentProcessingScreen(),
+      ),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVPaymentReceipt,
+      page: () => const CableTVPaymentReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+
+    // Education routes
+    GetPage(
+      name: AppRoutes.educationHome,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EducationCubit>(),
+        child: const EducationHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.educationPurchase,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EducationCubit>(),
+        child: const EducationPurchaseScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.educationPaymentConfirmation,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EducationCubit>(),
+        child: const EducationPaymentConfirmationScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.educationPaymentProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EducationCubit>(),
+        child: const EducationPaymentProcessingScreen(),
+      ),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.educationPinResult,
+      page: () => const EducationPinResultScreen(),
+      transition: Transition.zoom,
+    ),
+
+    // ================== Business Dashboard Routes ==================
+    GetPage(
+      name: AppRoutes.businessDashboard,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BusinessDashboardCubit>(),
+        child: const BusinessDashboardScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ================== Business Analytics Routes ==================
+    GetPage(
+      name: AppRoutes.businessAnalytics,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BusinessAnalyticsCubit>(),
+        child: const AnalyticsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ================== Payroll Routes (Business) ==================
+    GetPage(
+      name: AppRoutes.payroll,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PayrollCubit>(),
+        child: const PayrollHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.payrollEmployees,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PayrollCubit>(),
+        child: const EmployeeListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.addEmployee,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PayrollCubit>(),
+        child: const AddEmployeeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.payRuns,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PayrollCubit>(),
+        child: const PayRunListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createPayRun,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PayrollCubit>(),
+        child: const CreatePayRunScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.payRunDetails,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PayrollCubit>(),
+        child: PayRunDetailsScreen(payRunId: Get.parameters['id'] ?? ''),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.paySlipDetails,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PayrollCubit>(),
+        child: PaySlipDetailsScreen(paySlipId: Get.parameters['id'] ?? ''),
+      ),
       transition: Transition.rightToLeft,
     ),
 

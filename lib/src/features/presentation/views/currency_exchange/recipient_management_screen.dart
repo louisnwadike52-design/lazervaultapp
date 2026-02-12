@@ -965,58 +965,8 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
   }
 
   void _loadMockRecipients() {
-    // TODO: Replace with actual API call to load recipients
-    _allRecipients = [
-      Recipient(
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        accountNumber: '1234567890',
-        bankName: 'Chase Bank',
-        swiftCode: 'CHASUS33',
-        currency: 'USD',
-        countryCode: 'US',
-        type: RecipientType.saved,
-        isFavorite: true,
-        lastUsed: DateTime.now().subtract(const Duration(days: 2)),
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        address: '123 Main St',
-        city: 'New York',
-      ),
-      Recipient(
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane.smith@example.com',
-        accountNumber: '0987654321',
-        bankName: 'Barclays',
-        swiftCode: 'BARCGB22',
-        currency: 'GBP',
-        countryCode: 'GB',
-        type: RecipientType.contact,
-        isFavorite: false,
-        lastUsed: DateTime.now().subtract(const Duration(days: 5)),
-        createdAt: DateTime.now().subtract(const Duration(days: 60)),
-        address: '456 High Street',
-        city: 'London',
-      ),
-      Recipient(
-        id: '3',
-        name: 'Alice Johnson',
-        email: 'alice.johnson@example.com',
-        accountNumber: '1122334455',
-        bankName: 'HSBC',
-        swiftCode: 'HSBCUS33',
-        currency: 'EUR',
-        countryCode: 'FR',
-        type: RecipientType.frequent,
-        isFavorite: true,
-        lastUsed: DateTime.now().subtract(const Duration(hours: 12)),
-        createdAt: DateTime.now().subtract(const Duration(days: 15)),
-        address: '789 Rue de la Paix',
-        city: 'Paris',
-      ),
-    ];
-
+    // TODO: Wire to saved recipients API
+    _allRecipients = [];
     _filteredRecipients = List.from(_allRecipients);
   }
 }

@@ -250,6 +250,45 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                   ],
                 ),
               ),
+              PopupMenuItem(
+                value: 'documents',
+                child: Row(
+                  children: [
+                    Icon(Icons.description, color: Colors.white, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Text(
+                      'View Documents',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'contact',
+                child: Row(
+                  children: [
+                    Icon(Icons.support_agent, color: Colors.white, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Text(
+                      'Contact Provider',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'terms',
+                child: Row(
+                  children: [
+                    Icon(Icons.gavel, color: Colors.white, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Text(
+                      'Terms & Conditions',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
             ],
             onSelected: (value) => _handleMenuAction(value, insurance),
           ),
@@ -890,7 +929,9 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
   }
 
   Widget _buildClaimCard(InsuranceClaim claim) {
-    return Container(
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.insuranceClaimTracking, arguments: claim),
+      child: Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
@@ -982,6 +1023,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -1177,6 +1219,15 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         break;
       case 'claim':
         Get.toNamed(AppRoutes.createClaim, arguments: insurance.id);
+        break;
+      case 'documents':
+        Get.toNamed(AppRoutes.insuranceDocuments, arguments: insurance);
+        break;
+      case 'contact':
+        Get.toNamed(AppRoutes.insuranceContact, arguments: insurance);
+        break;
+      case 'terms':
+        Get.toNamed(AppRoutes.insuranceTerms, arguments: insurance);
         break;
     }
   }

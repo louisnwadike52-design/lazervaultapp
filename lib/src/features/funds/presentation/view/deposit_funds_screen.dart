@@ -253,7 +253,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => serviceLocator<DepositCubit>()),
-        BlocProvider(create: (_) => serviceLocator<OpenBankingCubit>()),
+        BlocProvider.value(value: serviceLocator<OpenBankingCubit>()),
       ],
       child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
         listener: (context, authState) {

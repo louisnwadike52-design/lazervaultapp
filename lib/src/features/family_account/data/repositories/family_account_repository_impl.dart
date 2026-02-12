@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/src/core/errors/grpc_exceptions.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/family_account/data/datasources/family_account_remote_data_source.dart';
 import 'package:lazervault/src/features/family_account/data/models/family_account_models.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
@@ -8,10 +9,12 @@ import 'package:lazervault/src/features/family_account/domain/repositories/famil
 
 class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
   final FamilyAccountRemoteDataSource remoteDataSource;
+  final SecureStorageService _secureStorage;
 
   FamilyAccountRepositoryImpl({
     required this.remoteDataSource,
-  });
+    required SecureStorageService secureStorage,
+  }) : _secureStorage = secureStorage;
 
   @override
   Future<Either<Failure, List<FamilyAccount>>> getFamilyAccounts({
@@ -54,15 +57,19 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     required bool allowMemberContributions,
   }) async {
     try {
+      final creatorId = await _secureStorage.getUserId() ?? '';
+      final creatorName = await _secureStorage.getUserFullName() ?? '';
+      final creatorEmail = await _secureStorage.getUserEmail();
+
       final request = CreateFamilyAccountRequest(
         name: name,
         description: description,
         initialCurrency: initialCurrency,
         initialFunding: initialFunding,
         allowMemberContributions: allowMemberContributions,
-        creatorId: 'current_user_id', // TODO: Get from auth service
-        creatorName: 'Current User', // TODO: Get from auth service
-        creatorEmail: null, // TODO: Get from auth service
+        creatorId: creatorId,
+        creatorName: creatorName,
+        creatorEmail: creatorEmail,
       );
 
       final account = await remoteDataSource.createFamilyAccount(request);

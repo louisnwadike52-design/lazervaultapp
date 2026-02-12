@@ -47,12 +47,12 @@ class QuickActionsCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  onTap: () => Get.toNamed(AppRoutes.airtimeCountrySelection),
+                  onTap: () => Get.toNamed(AppRoutes.airtimeNetworkSelection),
                 ),
               ),
-              
+
               SizedBox(width: 12.w),
-              
+
               Expanded(
                 child: _buildActionButton(
                   icon: Icons.send,
@@ -63,7 +63,7 @@ class QuickActionsCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  onTap: () => Get.toNamed(AppRoutes.airtimeCountrySelection),
+                  onTap: () => Get.toNamed(AppRoutes.airtimeNetworkSelection),
                 ),
               ),
             ],

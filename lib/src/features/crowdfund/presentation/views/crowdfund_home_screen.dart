@@ -5,8 +5,13 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
+import '../cubit/leaderboard_cubit.dart';
+import '../cubit/leaderboard_state.dart';
+import '../widgets/leaderboard_preview_card.dart';
+import '../widgets/campaign_quick_view_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class CrowdfundHomeScreen extends StatefulWidget {
@@ -43,6 +48,8 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                     _buildMetricsCard(context),
                     SizedBox(height: 24.h),
                     _buildActionButtons(context),
+                    SizedBox(height: 32.h),
+                    _buildLeaderboardPreview(context),
                     SizedBox(height: 32.h),
                     _buildRecentActivity(context),
                   ],
@@ -400,6 +407,98 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
     );
   }
 
+  Widget _buildLeaderboardPreview(BuildContext context) {
+    return BlocProvider(
+      create: (_) => serviceLocator<LeaderboardCubit>()..loadLeaderboard(limit: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.local_fire_department,
+                    color: const Color(0xFFFFD700),
+                    size: 20.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'Leaderboard',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              TextButton(
+                onPressed: () => Get.toNamed(AppRoutes.crowdfundLeaderboard),
+                child: Text(
+                  'View All',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6366F1),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          SizedBox(
+            height: 210.h,
+            child: BlocBuilder<LeaderboardCubit, LeaderboardState>(
+              builder: (context, state) {
+                if (state is LeaderboardLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF6366F1),
+                    ),
+                  );
+                }
+
+                if (state is LeaderboardLoaded && state.entries.isNotEmpty) {
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: state.entries.length,
+                    itemBuilder: (context, index) {
+                      return LeaderboardPreviewCard(
+                        entry: state.entries[index],
+                        onTap: () {
+                          CampaignQuickViewBottomSheet.show(
+                            context,
+                            state.entries[index].crowdfund,
+                          );
+                        },
+                      );
+                    },
+                  );
+                }
+
+                if (state is LeaderboardError) {
+                  return Center(
+                    child: Text(
+                      'Could not load leaderboard',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRecentActivity(BuildContext context) {
     return BlocBuilder<CrowdfundCubit, CrowdfundState>(
       builder: (context, state) {
@@ -619,7 +718,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${CurrencySymbols.getSymbol(crowdfund.currency)}${(crowdfund.currentAmount / 100).toStringAsFixed(0)} raised',
+                  '${CurrencySymbols.getSymbol(crowdfund.currency)}${crowdfund.currentAmount.toStringAsFixed(0)} raised',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF6366F1),
                     fontSize: 14.sp,
@@ -627,7 +726,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                   ),
                 ),
                 Text(
-                  'of ${CurrencySymbols.getSymbol(crowdfund.currency)}${(crowdfund.targetAmount / 100).toStringAsFixed(0)}',
+                  'of ${CurrencySymbols.getSymbol(crowdfund.currency)}${crowdfund.targetAmount.toStringAsFixed(0)}',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 12.sp,

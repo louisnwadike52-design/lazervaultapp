@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 import 'referral.pbenum.dart';
 
 export 'referral.pbenum.dart';
@@ -26,8 +26,8 @@ class ReferralCode extends $pb.GeneratedMessage {
     $fixnum.Int64? userId,
     $core.String? code,
     $core.bool? isActive,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -59,8 +59,8 @@ class ReferralCode extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, _omitFieldNames ? '' : 'code')
     ..aOB(4, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -122,26 +122,26 @@ class ReferralCode extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get createdAt => $_getN(4);
+  $1.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($42.Timestamp v) { setField(5, v); }
+  set createdAt($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearCreatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureCreatedAt() => $_ensure(4);
+  $1.Timestamp ensureCreatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get updatedAt => $_getN(5);
+  $1.Timestamp get updatedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set updatedAt($42.Timestamp v) { setField(6, v); }
+  set updatedAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasUpdatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearUpdatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(5);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(5);
 }
 
 /// ReferralTransaction message represents a referral event
@@ -155,8 +155,8 @@ class ReferralTransaction extends $pb.GeneratedMessage {
     $core.int? referrerRewardAmount,
     $core.int? refereeRewardAmount,
     $core.String? currency,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? completedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? completedAt,
     $core.String? failureReason,
   }) {
     final $result = create();
@@ -208,8 +208,8 @@ class ReferralTransaction extends $pb.GeneratedMessage {
     ..a<$core.int>(6, _omitFieldNames ? '' : 'referrerRewardAmount', $pb.PbFieldType.O3)
     ..a<$core.int>(7, _omitFieldNames ? '' : 'refereeRewardAmount', $pb.PbFieldType.O3)
     ..aOS(8, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
     ..aOS(11, _omitFieldNames ? '' : 'failureReason')
     ..hasRequiredFields = false
   ;
@@ -308,26 +308,26 @@ class ReferralTransaction extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get createdAt => $_getN(8);
+  $1.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($42.Timestamp v) { setField(9, v); }
+  set createdAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureCreatedAt() => $_ensure(8);
+  $1.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get completedAt => $_getN(9);
+  $1.Timestamp get completedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set completedAt($42.Timestamp v) { setField(10, v); }
+  set completedAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCompletedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCompletedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureCompletedAt() => $_ensure(9);
+  $1.Timestamp ensureCompletedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get failureReason => $_getSZ(10);
@@ -348,8 +348,8 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
     $core.int? referrerReward,
     $core.int? refereeReward,
     $core.bool? isActive,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -389,8 +389,8 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
     ..a<$core.int>(4, _omitFieldNames ? '' : 'referrerReward', $pb.PbFieldType.O3)
     ..a<$core.int>(5, _omitFieldNames ? '' : 'refereeReward', $pb.PbFieldType.O3)
     ..aOB(6, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -470,26 +470,26 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get createdAt => $_getN(6);
+  $1.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($42.Timestamp v) { setField(7, v); }
+  set createdAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureCreatedAt() => $_ensure(6);
+  $1.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get updatedAt => $_getN(7);
+  $1.Timestamp get updatedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set updatedAt($42.Timestamp v) { setField(8, v); }
+  set updatedAt($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasUpdatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearUpdatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(7);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(7);
 }
 
 /// ReferralStats message represents aggregated referral statistics

@@ -8,14 +8,15 @@ import '../../generated/statistics.pbgrpc.dart';
 import '../../generated/ai_scan.pbgrpc.dart';
 import '../../generated/tag_pay.pbgrpc.dart';
 import '../../generated/exchange.pbgrpc.dart';
-import '../../generated/barcode_payment.pbgrpc.dart';
+import '../../generated/qr_pay.pbgrpc.dart';
 import '../../generated/portfolio.pbgrpc.dart';
 import '../../generated/account_card.pbgrpc.dart';
 import '../../generated/electricity_bill.pbgrpc.dart';
-import '../../generated/giftcard.pbgrpc.dart';
+import '../../generated/giftcards.pbgrpc.dart';
 import '../../generated/lock_funds.pbgrpc.dart';
 import '../../generated/insurance.pbgrpc.dart';
 import '../../generated/contactless_payment.pbgrpc.dart';
+import '../../generated/utility-payments.pbgrpc.dart';
 
 class GrpcClient {
   final ClientChannel _channel;
@@ -26,14 +27,15 @@ class GrpcClient {
   late AiScanServiceClient _aiScanClient;
   late TagPayServiceClient _tagPayClient;
   late ExchangeServiceClient _exchangeClient;
-  late BarcodePaymentServiceClient _barcodePaymentClient;
+  late QRPayServiceClient _qrPayClient;
   late PortfolioServiceClient _portfolioClient;
   late AccountCardServiceClient _accountCardClient;
   late ElectricityBillServiceClient _electricityBillClient;
-  late GiftCardServiceClient _giftCardClient;
+  late GiftCardsServiceClient _giftCardClient;
   late LockFundsServiceClient _lockFundsClient;
   late InsuranceServiceClient _insuranceClient;
   late ContactlessPaymentServiceClient _contactlessPaymentClient;
+  late UtilityPaymentsServiceClient _utilityPaymentsClient;
 
   final FlutterSecureStorage _secureStorage;
   final GrpcCallOptionsHelper? _callOptionsHelper;
@@ -57,14 +59,15 @@ class GrpcClient {
     _aiScanClient = AiScanServiceClient(_channel);
     _tagPayClient = TagPayServiceClient(_channel);
     _exchangeClient = ExchangeServiceClient(_channel);
-    _barcodePaymentClient = BarcodePaymentServiceClient(_channel);
+    _qrPayClient = QRPayServiceClient(_channel);
     _portfolioClient = PortfolioServiceClient(_channel);
     _accountCardClient = AccountCardServiceClient(_channel);
     _electricityBillClient = ElectricityBillServiceClient(_channel);
-    _giftCardClient = GiftCardServiceClient(_channel);
+    _giftCardClient = GiftCardsServiceClient(_channel);
     _lockFundsClient = LockFundsServiceClient(_channel);
     _insuranceClient = InsuranceServiceClient(_channel);
     _contactlessPaymentClient = ContactlessPaymentServiceClient(_channel);
+    _utilityPaymentsClient = UtilityPaymentsServiceClient(_channel);
   }
 
   InvoiceServiceClient get invoiceClient => _invoiceClient;
@@ -75,14 +78,15 @@ class GrpcClient {
   AiScanServiceClient get aiScanClient => _aiScanClient;
   TagPayServiceClient get tagPayClient => _tagPayClient;
   ExchangeServiceClient get exchangeClient => _exchangeClient;
-  BarcodePaymentServiceClient get barcodePaymentClient => _barcodePaymentClient;
+  QRPayServiceClient get qrPayClient => _qrPayClient;
   PortfolioServiceClient get portfolioClient => _portfolioClient;
   AccountCardServiceClient get accountCardClient => _accountCardClient;
   ElectricityBillServiceClient get electricityBillClient => _electricityBillClient;
-  GiftCardServiceClient get giftCardClient => _giftCardClient;
+  GiftCardsServiceClient get giftCardClient => _giftCardClient;
   LockFundsServiceClient get lockFundsClient => _lockFundsClient;
   InsuranceServiceClient get insuranceClient => _insuranceClient;
   ContactlessPaymentServiceClient get contactlessPaymentClient => _contactlessPaymentClient;
+  UtilityPaymentsServiceClient get utilityPaymentsClient => _utilityPaymentsClient;
 
   /// Get call options with authentication token
   /// If callOptionsHelper is available, use it for automatic token rotation
@@ -95,17 +99,8 @@ class GrpcClient {
     // Fallback to manual token retrieval (legacy mode, no auto-rotation)
     final accessToken = await _secureStorage.read(key: _accessTokenKey);
 
-    print('=== GrpcClient.callOptions (legacy mode) ===');
-    print('Access token present: ${accessToken != null && accessToken.isNotEmpty}');
-
     if (accessToken == null || accessToken.isEmpty) {
-      print('ERROR: No access token in secure storage');
       throw GrpcError.unauthenticated('No authentication token available. Please log in again.');
-    }
-
-    print('Access token length: ${accessToken.length}');
-    if (accessToken.isNotEmpty && accessToken.length > 20) {
-      print('Access token prefix: ${accessToken.substring(0, 20)}...');
     }
 
     final metadata = <String, String>{

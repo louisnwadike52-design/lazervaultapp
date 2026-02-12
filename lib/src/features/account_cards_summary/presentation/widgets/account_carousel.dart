@@ -234,10 +234,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
   Widget _buildAccountCard(BuildContext context, AccountSummaryEntity account) {
     // Check if this is a family account
     if (account.isFamilyAccount) {
-      // For family accounts, we would need the full FamilyAccount and FamilyMember data
-      // For now, show the standard card but indicate it's a family account
-      // TODO: Integrate with FamilyAccountCubit to get full data
       return _buildFamilyAccountCard(context, account);
+    }
+
+    // Check if this is a business account
+    if (account.accountTypeEnum == VirtualAccountType.business) {
+      return _buildBusinessAccountCard(context, account);
     }
 
     // Standard account card
@@ -669,6 +671,156 @@ class _AccountCarouselState extends State<AccountCarousel> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBusinessAccountCard(BuildContext context, AccountSummaryEntity account) {
+    final currencySymbol = _getCurrencySymbol(account.currency);
+
+    return StreamBuilder<String?>(
+      stream: _accountManager.accountIdStream,
+      initialData: _accountManager.activeAccountId,
+      builder: (context, snapshot) {
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF0F2647),
+                Color(0xFF1B3A6B),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F2647).withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.r),
+            child: Stack(
+              children: [
+                // Background decorative circles
+                Positioned(
+                  right: -30,
+                  top: -30,
+                  child: Container(
+                    width: 120.w,
+                    height: 120.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -20,
+                  bottom: -40,
+                  child: Container(
+                    width: 100.w,
+                    height: 100.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.04),
+                    ),
+                  ),
+                ),
+                // Main content
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.business_center,
+                                color: Colors.white,
+                                size: 18.sp,
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                'LazerVault Business',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Text(
+                              'PRO',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      // Animated balance counter for business accounts
+                      CompactAnimatedBalance(
+                        balance: _getAccountBalance(account),
+                        currencySymbol: currencySymbol,
+                        fontSize: 26,
+                        color: Colors.white,
+                        duration: const Duration(seconds: 3),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        'Business Balance',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '•••• ${account.accountNumberLast4}',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                          _buildActionButton(
+                            "Dashboard",
+                            Icons.dashboard_rounded,
+                            onTap: () {
+                              Get.toNamed(AppRoutes.businessDashboard);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

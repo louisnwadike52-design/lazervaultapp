@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../../../../../core/types/app_routes.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/network_provider.dart';
-import '../../domain/entities/country.dart';
+import '../../services/airtime_pdf_service.dart';
+import '../utils/airtime_navigation_utils.dart';
 
 class AirtimeDetailsScreen extends StatefulWidget {
   const AirtimeDetailsScreen({super.key});
@@ -18,7 +18,9 @@ class AirtimeDetailsScreen extends StatefulWidget {
 }
 
 class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
-  String? transactionId;
+  AirtimeTransaction? _transaction;
+  bool _isDownloading = false;
+  bool _isSharing = false;
 
   @override
   void initState() {
@@ -27,9 +29,12 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
   }
 
   void _loadArguments() {
-    transactionId = Get.arguments as String?;
-    if (transactionId != null) {
-      context.read<AirtimeCubit>().loadTransactionDetails(transactionId!);
+    final args = Get.arguments;
+    if (args is Map<String, dynamic> && args.containsKey('transaction')) {
+      _transaction = args['transaction'] as AirtimeTransaction;
+    } else if (args is String) {
+      // Deep-link fallback: fetch by ID
+      context.read<AirtimeCubit>().loadTransactionDetails(args);
     }
   }
 
@@ -54,19 +59,21 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             children: [
               // Header
               _buildHeader(),
-              
+
               // Content
               Expanded(
-                child: BlocBuilder<AirtimeCubit, AirtimeState>(
-                  builder: (context, state) {
-                    if (state is AirtimeTransactionDetailsLoaded) {
-                      return _buildTransactionDetails(state.transaction);
-                    } else if (state is AirtimeError) {
-                      return _buildErrorState(state.message);
-                    }
-                    return _buildLoadingState();
-                  },
-                ),
+                child: _transaction != null
+                    ? _buildTransactionDetails(_transaction!)
+                    : BlocBuilder<AirtimeCubit, AirtimeState>(
+                        builder: (context, state) {
+                          if (state is AirtimeTransactionDetailsLoaded) {
+                            return _buildTransactionDetails(state.transaction);
+                          } else if (state is AirtimeError) {
+                            return _buildErrorState(state.message);
+                          }
+                          return _buildLoadingState();
+                        },
+                      ),
               ),
             ],
           ),
@@ -96,7 +103,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -105,9 +112,9 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               ),
             ),
           ),
-          
+
           SizedBox(width: 16.w),
-          
+
           // Title
           Expanded(
             child: Text(
@@ -120,7 +127,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               ),
             ),
           ),
-          
+
           // Share button
           GestureDetector(
             onTap: () => _shareTransaction(),
@@ -137,13 +144,21 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
               ),
-              child: Icon(
-                Icons.share,
-                color: Colors.white,
-                size: 20.sp,
-              ),
+              child: _isSharing
+                  ? Padding(
+                      padding: EdgeInsets.all(10.w),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Icon(
+                      Icons.share,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
             ),
           ),
         ],
@@ -163,36 +178,36 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
       prefixes: transaction.networkProvider.prefixes,
       countryCode: 'NG', // Default to Nigeria
     );
-    
+
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         children: [
           SizedBox(height: 20.h),
-          
+
           // Status card
           _buildStatusCard(transaction),
-          
+
           SizedBox(height: 24.h),
-          
+
           // Transaction summary
           _buildTransactionSummary(transaction, networkProvider),
-          
+
           SizedBox(height: 24.h),
-          
+
           // Transaction details
           _buildTransactionDetailsCard(transaction, networkProvider),
-          
+
           SizedBox(height: 24.h),
-          
+
           // Payment breakdown
           _buildPaymentBreakdown(transaction),
-          
+
           SizedBox(height: 32.h),
-          
+
           // Action buttons
           _buildActionButtons(transaction),
-          
+
           SizedBox(height: 40.h),
         ],
       ),
@@ -201,14 +216,14 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
 
   Widget _buildStatusCard(AirtimeTransaction transaction) {
     final isSuccess = transaction.status == AirtimeTransactionStatus.completed;
-    final isPending = transaction.status == AirtimeTransactionStatus.pending || 
+    final isPending = transaction.status == AirtimeTransactionStatus.pending ||
                      transaction.status == AirtimeTransactionStatus.processing;
     final isFailed = transaction.status == AirtimeTransactionStatus.failed;
-    
+
     Color statusColor;
     IconData statusIcon;
     String statusMessage;
-    
+
     if (isSuccess) {
       statusColor = Color(0xFF10B981);
       statusIcon = Icons.check_circle;
@@ -239,7 +254,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
       ),
       child: Row(
         children: [
@@ -256,9 +271,9 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               size: 24.sp,
             ),
           ),
-          
+
           SizedBox(width: 16.w),
-          
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +316,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
       ),
       child: Column(
         children: [
@@ -312,11 +327,11 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                 width: 60.w,
                 height: 60.w,
                 decoration: BoxDecoration(
-                  color: _getProviderColor(networkProvider.type),
+                  color: networkProvider.type.color,
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: _getProviderColor(networkProvider.type).withValues(alpha: 0.3),
+                      color: networkProvider.type.color.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: Offset(0, 4),
                     ),
@@ -333,9 +348,9 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                   ),
                 ),
               ),
-              
+
               SizedBox(width: 16.w),
-              
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,9 +377,9 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               ),
             ],
           ),
-          
+
           SizedBox(height: 20.h),
-          
+
           // Amount display
           Container(
             width: double.infinity,
@@ -385,7 +400,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  '₦${transaction.amount.toStringAsFixed(0)}',
+                  '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontSize: 32.sp,
                     fontWeight: FontWeight.w700,
@@ -413,7 +428,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,31 +441,31 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               color: Colors.white,
             ),
           ),
-          
+
           SizedBox(height: 16.h),
-          
+
           _buildDetailRow('Transaction ID', transaction.transactionReference),
           _buildDivider(),
           _buildDetailRow('Phone Number', transaction.formattedRecipientNumber),
-          
+
           if (transaction.recipientName != null && transaction.recipientName!.isNotEmpty) ...[
             _buildDivider(),
             _buildDetailRow('Recipient Name', transaction.recipientName!),
           ],
-          
+
           _buildDivider(),
           _buildDetailRow('Network Provider', networkProvider.name),
           _buildDivider(),
-          _buildDetailRow('Date & Time', DateFormat('MMMM dd, yyyy • hh:mm a').format(transaction.createdAt)),
-          
+          _buildDetailRow('Date & Time', DateFormat('MMMM dd, yyyy \u2022 hh:mm a').format(transaction.createdAt)),
+
           if (transaction.completedAt != null) ...[
             _buildDivider(),
-            _buildDetailRow('Completed At', DateFormat('MMMM dd, yyyy • hh:mm a').format(transaction.completedAt!)),
+            _buildDetailRow('Completed At', DateFormat('MMMM dd, yyyy \u2022 hh:mm a').format(transaction.completedAt!)),
           ],
-          
+
           _buildDivider(),
-          _buildDetailRow('Status', transaction.status.displayName, 
-            valueColor: _getStatusColor(transaction.status)),
+          _buildDetailRow('Status', transaction.status.displayName,
+            valueColor: transaction.status.color),
         ],
       ),
     );
@@ -469,7 +484,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,26 +497,26 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               color: Colors.white,
             ),
           ),
-          
+
           SizedBox(height: 16.h),
-          
-          _buildBreakdownRow('Airtime Amount', '₦${transaction.amount.toStringAsFixed(0)}'),
-          
+
+          _buildBreakdownRow('Airtime Amount', '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}'),
+
           if (transaction.discount != null && transaction.discount! > 0) ...[
             SizedBox(height: 8.h),
-            _buildBreakdownRow('Discount', '-₦${transaction.discount!.toStringAsFixed(0)}', isDiscount: true),
+            _buildBreakdownRow('Discount', '-${transaction.currencySymbol}${transaction.discount!.toStringAsFixed(0)}', isDiscount: true),
           ],
-          
+
           if (transaction.fee != null) ...[
             SizedBox(height: 8.h),
-            _buildBreakdownRow('Service Fee', '₦${transaction.fee!.toStringAsFixed(0)}'),
+            _buildBreakdownRow('Service Fee', '${transaction.currencySymbol}${transaction.fee!.toStringAsFixed(0)}'),
           ],
-          
+
           SizedBox(height: 12.h),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
-          
-          _buildBreakdownRow('Total Amount', '₦${transaction.totalAmount.toStringAsFixed(0)}', isTotal: true),
+
+          _buildBreakdownRow('Total Amount', '${transaction.currencySymbol}${transaction.totalAmount.toStringAsFixed(0)}', isTotal: true),
         ],
       ),
     );
@@ -554,10 +569,10 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isDiscount 
-              ? Color(0xFF10B981) 
-              : isTotal 
-                ? Colors.white 
+            color: isDiscount
+              ? Color(0xFF10B981)
+              : isTotal
+                ? Colors.white
                 : Colors.white.withValues(alpha: 0.8),
           ),
         ),
@@ -572,7 +587,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: () => _repeatTransaction(transaction),
+            onPressed: () => repeatAirtimeTransaction(context, transaction),
             icon: Icon(
               Icons.repeat,
               color: Colors.white,
@@ -596,21 +611,30 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             ),
           ),
         ),
-        
+
         SizedBox(height: 12.h),
-        
+
         // Download Receipt Button
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: () => _downloadReceipt(transaction),
-            icon: Icon(
-              Icons.download,
-              color: Colors.white.withValues(alpha: 0.8),
-              size: 20.sp,
-            ),
+            onPressed: _isDownloading ? null : () => _downloadReceipt(transaction),
+            icon: _isDownloading
+                ? SizedBox(
+                    width: 16.w,
+                    height: 16.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.8)),
+                    ),
+                  )
+                : Icon(
+                    Icons.download,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    size: 20.sp,
+                  ),
             label: Text(
-              'Download Receipt',
+              _isDownloading ? 'Downloading...' : 'Download Receipt',
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
@@ -714,151 +738,58 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     );
   }
 
-  void _shareTransaction() {
-    // Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Share functionality coming soon'),
-        backgroundColor: Color(0xFF3B82F6),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(16.w),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-      ),
-    );
-  }
+  Future<void> _shareTransaction() async {
+    final transaction = _transaction;
+    if (transaction == null || _isSharing) return;
 
-  void _repeatTransaction(AirtimeTransaction transaction) {
-    // Extract transaction details to recreate the flow
+    setState(() => _isSharing = true);
     try {
-      // Create country object (default to Nigeria)
-      final country = Country(
-        id: 'ng',
-        code: 'NG',
-        name: 'Nigeria',
-        currency: 'NGN',
-        dialCode: '+234',
-        flag: '🇳🇬',
-        currencySymbol: '₦',
-      );
-
-      // Create network provider object from transaction
-      final networkProvider = NetworkProvider(
-        id: transaction.networkProvider.name.toLowerCase(),
-        type: transaction.networkProvider,
-        name: transaction.networkProvider.displayName,
-        shortName: transaction.networkProvider.shortName,
-        logo: transaction.networkProvider.logo,
-        primaryColor: transaction.networkProvider.primaryColor,
-        prefixes: transaction.networkProvider.prefixes,
-        countryCode: 'NG',
-      );
-
-      // Navigate to recipient input screen with pre-filled data
-      Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {
-        'country': country,
-        'networkProvider': networkProvider,
-        'prefillPhone': transaction.recipientPhoneNumber,
-        'prefillName': transaction.recipientName,
-        'prefillAmount': transaction.amount,
-        'isRepeatTransaction': true,
-      });
-
-      // Show success feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.repeat, color: Colors.white, size: 20.sp),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Text(
-                  'Repeating transaction...',
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(16.w),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      await AirtimePdfService.shareReceipt(transaction: transaction);
     } catch (e) {
-      // Show error feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to repeat transaction. Please try again.'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(16.w),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-        ),
+      if (mounted) {
+        Get.snackbar(
+          'Share Failed',
+          'Could not share receipt. Please try again.',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  Future<void> _downloadReceipt(AirtimeTransaction transaction) async {
+    if (_isDownloading) return;
+
+    setState(() => _isDownloading = true);
+    try {
+      final filePath = await AirtimePdfService.downloadReceipt(
+        transaction: transaction,
       );
+      if (mounted) {
+        Get.snackbar(
+          'Receipt Downloaded',
+          'Saved to: $filePath',
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar(
+          'Download Failed',
+          'Could not download receipt. Please try again.',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
     }
   }
-
-  void _downloadReceipt(AirtimeTransaction transaction) {
-    // Implement download receipt functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.download, color: Colors.white, size: 20.sp),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Text(
-                'Receipt download coming soon',
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Color(0xFF3B82F6),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(16.w),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-      ),
-    );
-  }
-
-  Color _getProviderColor(NetworkProviderType type) {
-    switch (type) {
-      case NetworkProviderType.mtn:
-        return Color(0xFFFFCC00);
-      case NetworkProviderType.airtel:
-        return Color(0xFFFF0000);
-      case NetworkProviderType.glo:
-        return Color(0xFF00B04F);
-      case NetworkProviderType.etisalat:
-      case NetworkProviderType.ninemobile:
-        return Color(0xFF00AA4F);
-      default:
-        return Color(0xFF3B82F6); // Default blue color
-    }
-  }
-
-  Color _getStatusColor(AirtimeTransactionStatus status) {
-    switch (status) {
-      case AirtimeTransactionStatus.pending:
-        return Color(0xFFFFA500);
-      case AirtimeTransactionStatus.processing:
-        return Color(0xFF0066CC);
-      case AirtimeTransactionStatus.completed:
-        return Color(0xFF00AA4F);
-      case AirtimeTransactionStatus.failed:
-        return Color(0xFFFF0000);
-      case AirtimeTransactionStatus.refunded:
-        return Color(0xFF6B46C1);
-    }
-  }
-} 
+}

@@ -4,12 +4,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// Factory for creating gRPC channels for different API gateways
 ///
 /// LazerVault uses independent API gateways with dual servers (HTTP + gRPC):
-/// 1. Core Gateway - gRPC: 50070, HTTP: 7878 (Auth, Accounts, Users, Support, Referrals)
+/// 1. Core Gateway - gRPC: 50070, HTTP: 7878 (Auth, Accounts, Users, Support, Referrals, Notifications)
 /// 2. Commerce Gateway - gRPC: 50071, HTTP: 8080 (Utility Payments, GiftCards, Group Accounts, TagPay, Invoices)
 /// 3. Investment Gateway - gRPC: 50072, HTTP: 9090 (Stocks, Crypto, Portfolio, Analytics)
-/// 4. Transfer Gateway - gRPC: 50076 (Payments, Transfers)
-/// 5. Banking Gateway - gRPC: 50077 (Banking, Virtual Accounts, Bank Verification)
-/// 6. Products Gateway - gRPC: 50078 (AutoSave, Crowdfund, Insurance)
+/// 4. Transfer Gateway - gRPC: 50076, HTTP: 8084 (Payments, Transfers)
+/// 5. Banking Gateway - gRPC: 50077, HTTP: 8082 (Banking, Virtual Accounts, Bank Verification)
+/// 6. Products Gateway - gRPC: 50078, HTTP: 8083 (AutoSave, Crowdfund, Insurance)
+/// 7. Contactless Payment Gateway - gRPC: 50075, HTTP: 8086 (NFC Payments, Payment Sessions)
+/// 8. Business Gateway - gRPC: 50079, HTTP: 8085 (Payroll, Business Services)
 class GrpcChannelFactory {
   /// Creates Core Gateway gRPC channel (Auth, Accounts, Users, Deposits, Withdrawals, etc.)
   /// gRPC Port: 50070
@@ -92,6 +94,16 @@ class GrpcChannelFactory {
 
     print("📡 Creating Contactless Payment Gateway Channel → $host:$port");
     return _createChannel(host, port, 'Contactless Payment Gateway');
+  }
+
+  /// Creates Business Gateway gRPC channel (Payroll, Business Services)
+  /// gRPC Port: 50079
+  static ClientChannel createBusinessChannel() {
+    final host = dotenv.env['BUSINESS_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['BUSINESS_GRPC_PORT'] ?? '50079');
+
+    print("💼 Creating Business Gateway Channel → $host:$port");
+    return _createChannel(host, port, 'Business Gateway');
   }
 
   /// Creates Banking Service gRPC channel (Transfers, Virtual Accounts, Bank Verification)

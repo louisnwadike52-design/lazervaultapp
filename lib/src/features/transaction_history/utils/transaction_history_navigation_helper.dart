@@ -119,9 +119,9 @@ class TransactionHistoryNavigationHelper {
     await navigateToServiceHistory(TransactionServiceType.withdrawal);
   }
 
-  /// Navigate to Barcode Payment Transaction History
-  static Future<void> navigateToBarcodePaymentHistory() async {
-    await navigateToServiceHistory(TransactionServiceType.barcodePayment);
+  /// Navigate to QR Payment Transaction History
+  static Future<void> navigateToQRPaymentHistory() async {
+    await navigateToServiceHistory(TransactionServiceType.qrPayment);
   }
 
   /// Replace current screen with Dashboard Transaction History

@@ -13,7 +13,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 /// Register Face Request
 class RegisterFaceRequest extends $pb.GeneratedMessage {
@@ -885,7 +885,7 @@ class HealthCheckResponse extends $pb.GeneratedMessage {
     $core.bool? healthy,
     $core.String? message,
     $core.String? serviceVersion,
-    $42.Timestamp? timestamp,
+    $1.Timestamp? timestamp,
   }) {
     final $result = create();
     if (healthy != null) {
@@ -910,7 +910,7 @@ class HealthCheckResponse extends $pb.GeneratedMessage {
     ..aOB(1, _omitFieldNames ? '' : 'healthy')
     ..aOS(2, _omitFieldNames ? '' : 'message')
     ..aOS(3, _omitFieldNames ? '' : 'service_version')
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'timestamp', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -963,15 +963,15 @@ class HealthCheckResponse extends $pb.GeneratedMessage {
   void clearServiceVersion() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get timestamp => $_getN(3);
+  $1.Timestamp get timestamp => $_getN(3);
   @$pb.TagNumber(4)
-  set timestamp($42.Timestamp v) { setField(4, v); }
+  set timestamp($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasTimestamp() => $_has(3);
   @$pb.TagNumber(4)
   void clearTimestamp() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureTimestamp() => $_ensure(3);
+  $1.Timestamp ensureTimestamp() => $_ensure(3);
 }
 
 

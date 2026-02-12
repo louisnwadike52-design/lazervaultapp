@@ -58,6 +58,8 @@ class ListCrowdfundsUseCase {
     String? statusFilter,
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
+    String? sortBy,
+    CrowdfundVisibility? visibility,
   }) {
     return repository.listCrowdfunds(
       page: page,
@@ -65,6 +67,8 @@ class ListCrowdfundsUseCase {
       statusFilter: statusFilter,
       categoryFilter: categoryFilter,
       myCrowdfundsOnly: myCrowdfundsOnly,
+      sortBy: sortBy,
+      visibility: visibility,
     );
   }
 }
@@ -224,5 +228,29 @@ class GetCrowdfundStatisticsUseCase {
 
   Future<CrowdfundStatistics> call(String crowdfundId) {
     return repository.getCrowdfundStatistics(crowdfundId);
+  }
+}
+
+// ============================================================================
+// LEADERBOARD USE CASES
+// ============================================================================
+
+class GetCrowdfundLeaderboardUseCase {
+  final CrowdfundRepository repository;
+
+  GetCrowdfundLeaderboardUseCase(this.repository);
+
+  Future<List<LeaderboardEntry>> call({
+    LeaderboardSortBy sortBy = LeaderboardSortBy.mostFunded,
+    String? category,
+    int limit = 20,
+    int offset = 0,
+  }) {
+    return repository.getCrowdfundLeaderboard(
+      sortBy: sortBy,
+      category: category,
+      limit: limit,
+      offset: offset,
+    );
   }
 }

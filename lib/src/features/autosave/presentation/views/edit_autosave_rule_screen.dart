@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 
 class EditAutoSaveRuleScreen extends StatefulWidget {
   const EditAutoSaveRuleScreen({super.key});
@@ -237,26 +238,30 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                       _selectedAmountType != originalRule.amountType)
                     _buildChangeItem(
                       'Amount',
-                      '${originalRule.amountType == AmountType.fixed ? '\$' : ''}${originalRule.amountValue}${originalRule.amountType == AmountType.percentage ? '%' : ''}',
-                      '${_selectedAmountType == AmountType.fixed ? '\$' : ''}${_amountController.text}${_selectedAmountType == AmountType.percentage ? '%' : ''}',
+                      originalRule.amountType == AmountType.fixed
+                          ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(originalRule.amountValue, originalRule.currency)
+                          : '${originalRule.amountValue}%',
+                      _selectedAmountType == AmountType.fixed
+                          ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(double.tryParse(_amountController.text) ?? 0, originalRule.currency)
+                          : '${_amountController.text}%',
                     ),
                   if (_targetAmountController.text != (originalRule.targetAmount?.toString() ?? ''))
                     _buildChangeItem(
                       'Target Amount',
-                      originalRule.targetAmount != null ? '\$${originalRule.targetAmount}' : 'Not Set',
-                      _targetAmountController.text.isEmpty ? 'Not Set' : '\$${_targetAmountController.text}',
+                      originalRule.targetAmount != null ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(originalRule.targetAmount!, originalRule.currency) : 'Not Set',
+                      _targetAmountController.text.isEmpty ? 'Not Set' : currency_formatter.CurrencySymbols.formatAmountWithCurrency(double.tryParse(_targetAmountController.text) ?? 0, originalRule.currency),
                     ),
                   if (_minimumBalanceController.text != (originalRule.minimumBalance?.toString() ?? ''))
                     _buildChangeItem(
                       'Minimum Balance',
-                      originalRule.minimumBalance != null ? '\$${originalRule.minimumBalance}' : 'Not Set',
-                      _minimumBalanceController.text.isEmpty ? 'Not Set' : '\$${_minimumBalanceController.text}',
+                      originalRule.minimumBalance != null ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(originalRule.minimumBalance!, originalRule.currency) : 'Not Set',
+                      _minimumBalanceController.text.isEmpty ? 'Not Set' : currency_formatter.CurrencySymbols.formatAmountWithCurrency(double.tryParse(_minimumBalanceController.text) ?? 0, originalRule.currency),
                     ),
                   if (_maximumPerSaveController.text != (originalRule.maximumPerSave?.toString() ?? ''))
                     _buildChangeItem(
                       'Maximum Per Save',
-                      originalRule.maximumPerSave != null ? '\$${originalRule.maximumPerSave}' : 'Not Set',
-                      _maximumPerSaveController.text.isEmpty ? 'Not Set' : '\$${_maximumPerSaveController.text}',
+                      originalRule.maximumPerSave != null ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(originalRule.maximumPerSave!, originalRule.currency) : 'Not Set',
+                      _maximumPerSaveController.text.isEmpty ? 'Not Set' : currency_formatter.CurrencySymbols.formatAmountWithCurrency(double.tryParse(_maximumPerSaveController.text) ?? 0, originalRule.currency),
                     ),
                 ],
               ),

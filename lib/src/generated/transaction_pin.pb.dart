@@ -13,7 +13,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $2;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 /// CreateTransactionPinRequest creates a new PIN
 class CreateTransactionPinRequest extends $pb.GeneratedMessage {
@@ -342,7 +342,7 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
     $core.bool? success,
     $core.String? message,
     $core.String? verificationToken,
-    $2.Timestamp? expiresAt,
+    $1.Timestamp? expiresAt,
     $core.int? remainingAttempts,
     $core.bool? isLocked,
   }) {
@@ -375,7 +375,7 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
     ..aOS(3, _omitFieldNames ? '' : 'verificationToken')
-    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(5, _omitFieldNames ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
     ..aOB(6, _omitFieldNames ? '' : 'isLocked')
     ..hasRequiredFields = false
@@ -430,15 +430,15 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
   void clearVerificationToken() => clearField(3);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get expiresAt => $_getN(3);
+  $1.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($2.Timestamp v) { setField(4, v); }
+  set expiresAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureExpiresAt() => $_ensure(3);
+  $1.Timestamp ensureExpiresAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.int get remainingAttempts => $_getIZ(4);
@@ -842,8 +842,8 @@ class CheckUserHasPinResponse extends $pb.GeneratedMessage {
   factory CheckUserHasPinResponse({
     $core.bool? hasPin,
     $core.bool? isActive,
-    $2.Timestamp? createdAt,
-    $2.Timestamp? lastChangedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? lastChangedAt,
   }) {
     final $result = create();
     if (hasPin != null) {
@@ -867,8 +867,8 @@ class CheckUserHasPinResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckUserHasPinResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'hasPin')
     ..aOB(2, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'lastChangedAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'lastChangedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -912,26 +912,26 @@ class CheckUserHasPinResponse extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(2);
 
   @$pb.TagNumber(3)
-  $2.Timestamp get createdAt => $_getN(2);
+  $1.Timestamp get createdAt => $_getN(2);
   @$pb.TagNumber(3)
-  set createdAt($2.Timestamp v) { setField(3, v); }
+  set createdAt($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasCreatedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearCreatedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $2.Timestamp ensureCreatedAt() => $_ensure(2);
+  $1.Timestamp ensureCreatedAt() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get lastChangedAt => $_getN(3);
+  $1.Timestamp get lastChangedAt => $_getN(3);
   @$pb.TagNumber(4)
-  set lastChangedAt($2.Timestamp v) { setField(4, v); }
+  set lastChangedAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasLastChangedAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearLastChangedAt() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureLastChangedAt() => $_ensure(3);
+  $1.Timestamp ensureLastChangedAt() => $_ensure(3);
 }
 
 /// ValidateTransactionPinTokenRequest validates a verification token
@@ -1018,7 +1018,7 @@ class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
     $core.bool? valid,
     $core.String? userId,
     $core.String? transactionId,
-    $2.Timestamp? expiresAt,
+    $1.Timestamp? expiresAt,
   }) {
     final $result = create();
     if (valid != null) {
@@ -1043,7 +1043,7 @@ class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
     ..aOB(1, _omitFieldNames ? '' : 'valid')
     ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'transactionId')
-    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1096,15 +1096,15 @@ class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
   void clearTransactionId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get expiresAt => $_getN(3);
+  $1.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($2.Timestamp v) { setField(4, v); }
+  set expiresAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureExpiresAt() => $_ensure(3);
+  $1.Timestamp ensureExpiresAt() => $_ensure(3);
 }
 
 /// TransactionPinDetails contains PIN metadata
@@ -1113,12 +1113,12 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? userId,
     $core.bool? isActive,
-    $2.Timestamp? createdAt,
-    $2.Timestamp? updatedAt,
-    $2.Timestamp? lastUsedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
+    $1.Timestamp? lastUsedAt,
     $core.int? failedAttempts,
     $core.bool? isLocked,
-    $2.Timestamp? lockedUntil,
+    $1.Timestamp? lockedUntil,
   }) {
     final $result = create();
     if (id != null) {
@@ -1158,12 +1158,12 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOB(3, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(5, _omitFieldNames ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(6, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(7, _omitFieldNames ? '' : 'failedAttempts', $pb.PbFieldType.O3)
     ..aOB(8, _omitFieldNames ? '' : 'isLocked')
-    ..aOM<$2.Timestamp>(9, _omitFieldNames ? '' : 'lockedUntil', subBuilder: $2.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'lockedUntil', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1216,37 +1216,37 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(3);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get createdAt => $_getN(3);
+  $1.Timestamp get createdAt => $_getN(3);
   @$pb.TagNumber(4)
-  set createdAt($2.Timestamp v) { setField(4, v); }
+  set createdAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasCreatedAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearCreatedAt() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureCreatedAt() => $_ensure(3);
+  $1.Timestamp ensureCreatedAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $2.Timestamp get updatedAt => $_getN(4);
+  $1.Timestamp get updatedAt => $_getN(4);
   @$pb.TagNumber(5)
-  set updatedAt($2.Timestamp v) { setField(5, v); }
+  set updatedAt($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasUpdatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearUpdatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $2.Timestamp ensureUpdatedAt() => $_ensure(4);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $2.Timestamp get lastUsedAt => $_getN(5);
+  $1.Timestamp get lastUsedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set lastUsedAt($2.Timestamp v) { setField(6, v); }
+  set lastUsedAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLastUsedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearLastUsedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $2.Timestamp ensureLastUsedAt() => $_ensure(5);
+  $1.Timestamp ensureLastUsedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.int get failedAttempts => $_getIZ(6);
@@ -1267,18 +1267,124 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   void clearIsLocked() => clearField(8);
 
   @$pb.TagNumber(9)
-  $2.Timestamp get lockedUntil => $_getN(8);
+  $1.Timestamp get lockedUntil => $_getN(8);
   @$pb.TagNumber(9)
-  set lockedUntil($2.Timestamp v) { setField(9, v); }
+  set lockedUntil($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasLockedUntil() => $_has(8);
   @$pb.TagNumber(9)
   void clearLockedUntil() => clearField(9);
   @$pb.TagNumber(9)
-  $2.Timestamp ensureLockedUntil() => $_ensure(8);
+  $1.Timestamp ensureLockedUntil() => $_ensure(8);
 }
 
-/// InitiatePinOTP request - sends OTP for PIN create/change/reset
+/// PIN configuration constants
+class PinConfig extends $pb.GeneratedMessage {
+  factory PinConfig({
+    $core.int? minLength,
+    $core.int? maxLength,
+    $core.int? maxAttempts,
+    $core.int? lockoutDurationMinutes,
+    $core.int? tokenExpiryMinutes,
+  }) {
+    final $result = create();
+    if (minLength != null) {
+      $result.minLength = minLength;
+    }
+    if (maxLength != null) {
+      $result.maxLength = maxLength;
+    }
+    if (maxAttempts != null) {
+      $result.maxAttempts = maxAttempts;
+    }
+    if (lockoutDurationMinutes != null) {
+      $result.lockoutDurationMinutes = lockoutDurationMinutes;
+    }
+    if (tokenExpiryMinutes != null) {
+      $result.tokenExpiryMinutes = tokenExpiryMinutes;
+    }
+    return $result;
+  }
+  PinConfig._() : super();
+  factory PinConfig.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PinConfig.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PinConfig', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'minLength', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'maxLength', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'maxAttempts', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'lockoutDurationMinutes', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'tokenExpiryMinutes', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PinConfig clone() => PinConfig()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PinConfig copyWith(void Function(PinConfig) updates) => super.copyWith((message) => updates(message as PinConfig)) as PinConfig;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PinConfig create() => PinConfig._();
+  PinConfig createEmptyInstance() => create();
+  static $pb.PbList<PinConfig> createRepeated() => $pb.PbList<PinConfig>();
+  @$core.pragma('dart2js:noInline')
+  static PinConfig getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PinConfig>(create);
+  static PinConfig? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get minLength => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set minLength($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMinLength() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMinLength() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get maxLength => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set maxLength($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMaxLength() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMaxLength() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get maxAttempts => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set maxAttempts($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMaxAttempts() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMaxAttempts() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get lockoutDurationMinutes => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set lockoutDurationMinutes($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasLockoutDurationMinutes() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLockoutDurationMinutes() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get tokenExpiryMinutes => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set tokenExpiryMinutes($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTokenExpiryMinutes() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTokenExpiryMinutes() => clearField(5);
+}
+
 class InitiatePinOTPRequest extends $pb.GeneratedMessage {
   factory InitiatePinOTPRequest({
     $core.String? userId,
@@ -1491,7 +1597,6 @@ class InitiatePinOTPResponse extends $pb.GeneratedMessage {
   void clearCooldownSeconds() => clearField(6);
 }
 
-/// VerifyPinOTP request - verifies OTP and executes PIN operation
 class VerifyPinOTPRequest extends $pb.GeneratedMessage {
   factory VerifyPinOTPRequest({
     $core.String? userId,
@@ -1718,7 +1823,6 @@ class VerifyPinOTPResponse extends $pb.GeneratedMessage {
   void clearRemainingAttempts() => clearField(3);
 }
 
-/// GetPinOTPChannels - returns available OTP channels
 class GetPinOTPChannelsRequest extends $pb.GeneratedMessage {
   factory GetPinOTPChannelsRequest({
     $core.String? userId,
@@ -1919,7 +2023,6 @@ class OTPChannel extends $pb.GeneratedMessage {
   void clearIsAvailable() => clearField(4);
 }
 
-/// CompleteForgotPin - verifies OTP and resets PIN
 class CompleteForgotPinRequest extends $pb.GeneratedMessage {
   factory CompleteForgotPinRequest({
     $core.String? userId,
@@ -2102,113 +2205,6 @@ class CompleteForgotPinResponse extends $pb.GeneratedMessage {
   $core.bool hasRemainingAttempts() => $_has(2);
   @$pb.TagNumber(3)
   void clearRemainingAttempts() => clearField(3);
-}
-
-/// PIN configuration constants
-class PinConfig extends $pb.GeneratedMessage {
-  factory PinConfig({
-    $core.int? minLength,
-    $core.int? maxLength,
-    $core.int? maxAttempts,
-    $core.int? lockoutDurationMinutes,
-    $core.int? tokenExpiryMinutes,
-  }) {
-    final $result = create();
-    if (minLength != null) {
-      $result.minLength = minLength;
-    }
-    if (maxLength != null) {
-      $result.maxLength = maxLength;
-    }
-    if (maxAttempts != null) {
-      $result.maxAttempts = maxAttempts;
-    }
-    if (lockoutDurationMinutes != null) {
-      $result.lockoutDurationMinutes = lockoutDurationMinutes;
-    }
-    if (tokenExpiryMinutes != null) {
-      $result.tokenExpiryMinutes = tokenExpiryMinutes;
-    }
-    return $result;
-  }
-  PinConfig._() : super();
-  factory PinConfig.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PinConfig.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PinConfig', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'minLength', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'maxLength', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'maxAttempts', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'lockoutDurationMinutes', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'tokenExpiryMinutes', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  PinConfig clone() => PinConfig()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  PinConfig copyWith(void Function(PinConfig) updates) => super.copyWith((message) => updates(message as PinConfig)) as PinConfig;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static PinConfig create() => PinConfig._();
-  PinConfig createEmptyInstance() => create();
-  static $pb.PbList<PinConfig> createRepeated() => $pb.PbList<PinConfig>();
-  @$core.pragma('dart2js:noInline')
-  static PinConfig getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PinConfig>(create);
-  static PinConfig? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.int get minLength => $_getIZ(0);
-  @$pb.TagNumber(1)
-  set minLength($core.int v) { $_setSignedInt32(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasMinLength() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearMinLength() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.int get maxLength => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set maxLength($core.int v) { $_setSignedInt32(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasMaxLength() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearMaxLength() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.int get maxAttempts => $_getIZ(2);
-  @$pb.TagNumber(3)
-  set maxAttempts($core.int v) { $_setSignedInt32(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasMaxAttempts() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearMaxAttempts() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.int get lockoutDurationMinutes => $_getIZ(3);
-  @$pb.TagNumber(4)
-  set lockoutDurationMinutes($core.int v) { $_setSignedInt32(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasLockoutDurationMinutes() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearLockoutDurationMinutes() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.int get tokenExpiryMinutes => $_getIZ(4);
-  @$pb.TagNumber(5)
-  set tokenExpiryMinutes($core.int v) { $_setSignedInt32(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasTokenExpiryMinutes() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearTokenExpiryMinutes() => clearField(5);
 }
 
 

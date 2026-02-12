@@ -1,3 +1,5 @@
+import 'package:lazervault/core/services/locale_manager.dart';
+
 import '../../domain/entities/crypto_entity.dart';
 import '../../domain/entities/price_point.dart';
 import '../../domain/repositories/crypto_repository.dart';
@@ -7,10 +9,12 @@ import '../../../../core/grpc/crypto_grpc_client.dart';
 class CryptoRepositoryImpl implements CryptoRepository {
   final CryptoRemoteDataSource remoteDataSource;
   final CryptoGrpcClient grpcClient;
+  final LocaleManager localeManager;
 
   CryptoRepositoryImpl({
     required this.remoteDataSource,
     required this.grpcClient,
+    required this.localeManager,
   });
 
   @override
@@ -45,30 +49,57 @@ class CryptoRepositoryImpl implements CryptoRepository {
 
   @override
   Future<List<CryptoWatchlist>> getWatchlists() async {
-    // TODO: Implement watchlist feature when backend gRPC methods are available
-    // For now, return empty list to prevent compilation errors
-    return [];
+    try {
+      final response = await grpcClient.getWatchlists();
+      return response.watchlists.map((wl) => CryptoWatchlist(
+        id: wl.id,
+        name: wl.name,
+        description: wl.description,
+        cryptoIds: wl.cryptoIds.toList(),
+        createdAt: wl.hasCreatedAt() ? wl.createdAt.toDateTime() : DateTime.now(),
+        updatedAt: wl.hasUpdatedAt() ? wl.updatedAt.toDateTime() : DateTime.now(),
+      )).toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   @override
   Future<CryptoWatchlist> createWatchlist(String name, String description) async {
-    // TODO: Implement watchlist feature when backend gRPC methods are available
-    throw UnimplementedError('Watchlist feature not yet implemented');
+    final response = await grpcClient.createWatchlist(
+      name: name,
+      description: description,
+    );
+    final wl = response.watchlist;
+    return CryptoWatchlist(
+      id: wl.id,
+      name: wl.name,
+      description: wl.description,
+      cryptoIds: wl.cryptoIds.toList(),
+      createdAt: wl.hasCreatedAt() ? wl.createdAt.toDateTime() : DateTime.now(),
+      updatedAt: wl.hasUpdatedAt() ? wl.updatedAt.toDateTime() : DateTime.now(),
+    );
   }
 
   @override
   Future<void> addToWatchlist(String watchlistId, String cryptoId) async {
-    // TODO: Implement watchlist feature when backend gRPC methods are available
+    await grpcClient.addToWatchlist(
+      watchlistId: watchlistId,
+      cryptoId: cryptoId,
+    );
   }
 
   @override
   Future<void> removeFromWatchlist(String watchlistId, String cryptoId) async {
-    // TODO: Implement watchlist feature when backend gRPC methods are available
+    await grpcClient.removeFromWatchlist(
+      watchlistId: watchlistId,
+      cryptoId: cryptoId,
+    );
   }
 
   @override
   Future<void> deleteWatchlist(String watchlistId) async {
-    // TODO: Implement watchlist feature when backend gRPC methods are available
+    await grpcClient.deleteWatchlist(watchlistId: watchlistId);
   }
 
   @override
@@ -101,15 +132,18 @@ class CryptoRepositoryImpl implements CryptoRepository {
     required String cryptoId,
     required double quantity,
     required double price,
+    required String transactionPin,
+    String? fiatCurrency,
   }) async {
-    // Execute buy via backend gRPC service
+    final currency = fiatCurrency ?? localeManager.currentCurrency;
+
     final response = await grpcClient.buyCrypto(
       cryptoId: cryptoId,
       fiatAmount: quantity * price,
-      fiatCurrency: 'GBP', // TODO: Use user's preferred currency
+      fiatCurrency: currency,
+      transactionPin: transactionPin,
     );
 
-    // Get crypto details for the response
     final crypto = await getCryptoById(cryptoId);
 
     return CryptoTransaction(
@@ -119,9 +153,9 @@ class CryptoRepositoryImpl implements CryptoRepository {
       cryptoName: crypto.name,
       type: TransactionType.buy,
       quantity: response.cryptoAmount,
-      price: response.fiatAmount / response.cryptoAmount,
+      price: response.exchangeRate > 0 ? response.exchangeRate : (response.fiatAmount / (response.cryptoAmount > 0 ? response.cryptoAmount : 1)),
       totalAmount: response.fiatAmount,
-      fees: 0.0, // Fee not returned by proto response
+      fees: response.fee,
       timestamp: DateTime.now(),
       status: response.status,
     );
@@ -132,15 +166,18 @@ class CryptoRepositoryImpl implements CryptoRepository {
     required String cryptoId,
     required double quantity,
     required double price,
+    required String transactionPin,
+    String? fiatCurrency,
   }) async {
-    // Execute sell via backend gRPC service
+    final currency = fiatCurrency ?? localeManager.currentCurrency;
+
     final response = await grpcClient.sellCrypto(
       cryptoId: cryptoId,
-      quantity: quantity, // grpc client expects 'quantity' parameter name
-      fiatCurrency: 'GBP', // TODO: Use user's preferred currency
+      quantity: quantity,
+      fiatCurrency: currency,
+      transactionPin: transactionPin,
     );
 
-    // Get crypto details for the response
     final crypto = await getCryptoById(cryptoId);
 
     return CryptoTransaction(
@@ -150,9 +187,9 @@ class CryptoRepositoryImpl implements CryptoRepository {
       cryptoName: crypto.name,
       type: TransactionType.sell,
       quantity: response.cryptoAmount,
-      price: response.fiatAmount / response.cryptoAmount,
+      price: response.exchangeRate > 0 ? response.exchangeRate : (response.fiatAmount / (response.cryptoAmount > 0 ? response.cryptoAmount : 1)),
       totalAmount: response.fiatAmount,
-      fees: 0.0, // Fee not returned by proto response
+      fees: response.fee,
       timestamp: DateTime.now(),
       status: response.status,
     );
@@ -168,11 +205,11 @@ class CryptoRepositoryImpl implements CryptoRepository {
         cryptoId: t.cryptoId,
         cryptoSymbol: t.cryptoSymbol,
         cryptoName: '', // cryptoName not in proto, would need separate fetch
-        type: t.type == 'buy' ? TransactionType.buy : TransactionType.sell,
+        type: t.type == 'buy' ? TransactionType.buy : t.type == 'swap' ? TransactionType.swap : TransactionType.sell,
         quantity: t.amount, // proto uses 'amount' not 'quantity'
         price: t.fiatValue > 0 && t.amount > 0 ? t.fiatValue / t.amount : 0, // calculate price
         totalAmount: t.fiatValue, // proto uses 'fiatValue' not 'totalAmount'
-        fees: 0.0, // fees not in proto
+        fees: t.fee,
         timestamp: t.timestamp.toDateTime(), // proto uses Timestamp type
         status: t.status,
       )).toList();

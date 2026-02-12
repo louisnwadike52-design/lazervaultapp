@@ -1,11 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 import '../data/datasources/open_banking_remote_datasource.dart';
 import '../data/datasources/open_banking_grpc_datasource.dart';
+import '../data/datasources/credit_score_ai_service.dart';
 import '../data/errors/banking_errors.dart';
 import '../domain/entities/linked_bank_account.dart';
 import '../domain/entities/deposit.dart';
 import '../domain/entities/withdrawal.dart';
+import '../domain/entities/credit_score.dart';
+import '../domain/entities/credit_score_ai_insights.dart';
 import 'open_banking_state.dart';
 
 /// Cubit for managing open banking operations
@@ -18,6 +22,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   // Cached data
   List<LinkedBankAccount> _linkedAccounts = [];
   LinkedBankAccount? _defaultAccount;
+  CreditScoreAIInsights? _cachedAIInsights;
 
   /// Create cubit with REST data source (legacy)
   OpenBankingCubit(OpenBankingRemoteDataSource dataSource)
@@ -632,17 +637,147 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   }
 
   // =====================================================
+  // CREDIT SCORE OPERATIONS
+  // =====================================================
+
+  /// Fetch the user's credit score
+  Future<void> fetchCreditScore({required String userId}) async {
+    if (isClosed) return;
+    emit(OpenBankingLoading());
+
+    try {
+      final CreditScoreEntity creditScore;
+      if (useGrpc && _grpcDataSource != null) {
+        creditScore = await _grpcDataSource!.getCreditScore(userId: userId);
+      } else {
+        throw UnimplementedError('Credit score is only available via gRPC');
+      }
+
+      if (isClosed) return;
+      emit(CreditScoreLoaded(creditScore: creditScore));
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'fetchCreditScore');
+    }
+  }
+
+  /// Fetch credit score history
+  Future<void> fetchCreditScoreHistory({
+    required String userId,
+    int months = 12,
+  }) async {
+    if (isClosed) return;
+    emit(OpenBankingLoading());
+
+    try {
+      final CreditScoreHistoryEntity history;
+      if (useGrpc && _grpcDataSource != null) {
+        history = await _grpcDataSource!.getCreditScoreHistory(
+          userId: userId,
+          months: months,
+        );
+      } else {
+        throw UnimplementedError('Credit score history is only available via gRPC');
+      }
+
+      if (isClosed) return;
+      emit(CreditScoreHistoryLoaded(history: history));
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'fetchCreditScoreHistory');
+    }
+  }
+
+  /// Refresh credit score by re-analyzing linked account transactions
+  Future<void> refreshCreditScore({
+    required String userId,
+    required String linkedAccountId,
+  }) async {
+    if (isClosed) return;
+    emit(CreditScoreRefreshing());
+
+    try {
+      final CreditScoreEntity creditScore;
+      if (useGrpc && _grpcDataSource != null) {
+        creditScore = await _grpcDataSource!.refreshCreditScore(
+          userId: userId,
+          linkedAccountId: linkedAccountId,
+        );
+      } else {
+        throw UnimplementedError('Credit score refresh is only available via gRPC');
+      }
+
+      if (isClosed) return;
+      emit(CreditScoreLoaded(creditScore: creditScore));
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'refreshCreditScore');
+    }
+  }
+
+  // =====================================================
+  // AI CREDIT SCORE INSIGHTS
+  // =====================================================
+
+  /// Get cached AI insights
+  CreditScoreAIInsights? get cachedAIInsights => _cachedAIInsights;
+
+  /// Fetch AI-generated credit score insights
+  Future<void> fetchAICreditInsights(CreditScoreEntity score) async {
+    if (isClosed) return;
+
+    // Return cached insights if available
+    if (_cachedAIInsights != null) {
+      emit(CreditScoreAIInsightsLoaded(insights: _cachedAIInsights!));
+      return;
+    }
+
+    emit(CreditScoreAIInsightsLoading());
+
+    try {
+      // Resolve AI service from DI (avoid constructor dependency for backward compat)
+      final aiService = _resolveAIService();
+      if (aiService == null) {
+        emit(const CreditScoreAIInsightsError(
+          message: 'AI insights service not available',
+        ));
+        return;
+      }
+
+      final insights = await aiService.getAIInsights(score);
+      _cachedAIInsights = insights;
+
+      if (isClosed) return;
+      emit(CreditScoreAIInsightsLoaded(insights: insights));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CreditScoreAIInsightsError(message: e.toString()));
+    }
+  }
+
+  CreditScoreAIService? _resolveAIService() {
+    try {
+      // Use GetIt to resolve without adding constructor dependency
+      // This import is already available in injection_container
+      return GetIt.instance<CreditScoreAIService>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // =====================================================
   // HELPER METHODS
   // =====================================================
 
   /// Check if the service is available (circuit breaker not open)
-  bool get isServiceAvailable => _restDataSource!.isServiceAvailable;
+  bool get isServiceAvailable => _restDataSource?.isServiceAvailable ?? true;
 
   /// Check network connectivity
-  Future<bool> hasConnectivity() => _restDataSource!.hasConnectivity();
+  Future<bool> hasConnectivity() =>
+      _restDataSource?.hasConnectivity() ?? Future.value(true);
 
   /// Reset circuit breaker manually (e.g., user requested retry)
-  void resetCircuitBreaker() => _restDataSource!.resetCircuitBreaker();
+  void resetCircuitBreaker() => _restDataSource?.resetCircuitBreaker();
 
   /// Emit appropriate error state based on exception type
   void _emitError(Object error, {String? operation}) {
@@ -657,7 +792,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         emit(ServiceUnavailable(
           message: error.userMessage,
           retryAfter: error.retryAfter,
-          circuitBreakerOpen: !_restDataSource!.isServiceAvailable,
+          circuitBreakerOpen: !(_restDataSource?.isServiceAvailable ?? true),
         ));
         return;
       }

@@ -121,6 +121,22 @@ class AccountsServiceClient extends $grpc.Client {
       '/accounts.AccountsService/GetTransactionStatistics',
       ($0.GetTransactionStatisticsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetTransactionStatisticsResponse.fromBuffer(value));
+  static final _$getFinancialAnalytics = $grpc.ClientMethod<$0.GetFinancialAnalyticsRequest, $0.GetFinancialAnalyticsResponse>(
+      '/accounts.AccountsService/GetFinancialAnalytics',
+      ($0.GetFinancialAnalyticsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetFinancialAnalyticsResponse.fromBuffer(value));
+  static final _$getCategoryAnalytics = $grpc.ClientMethod<$0.GetCategoryAnalyticsRequest, $0.GetCategoryAnalyticsResponse>(
+      '/accounts.AccountsService/GetCategoryAnalytics',
+      ($0.GetCategoryAnalyticsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetCategoryAnalyticsResponse.fromBuffer(value));
+  static final _$getMonthlyTrends = $grpc.ClientMethod<$0.GetMonthlyTrendsRequest, $0.GetMonthlyTrendsResponse>(
+      '/accounts.AccountsService/GetMonthlyTrends',
+      ($0.GetMonthlyTrendsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetMonthlyTrendsResponse.fromBuffer(value));
+  static final _$getExpenseTimeSeries = $grpc.ClientMethod<$0.GetExpenseTimeSeriesRequest, $0.GetExpenseTimeSeriesResponse>(
+      '/accounts.AccountsService/GetExpenseTimeSeries',
+      ($0.GetExpenseTimeSeriesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetExpenseTimeSeriesResponse.fromBuffer(value));
   static final _$updateTransactionStatus = $grpc.ClientMethod<$0.UpdateTransactionStatusRequest, $0.UpdateTransactionStatusResponse>(
       '/accounts.AccountsService/UpdateTransactionStatus',
       ($0.UpdateTransactionStatusRequest value) => value.writeToBuffer(),
@@ -270,6 +286,22 @@ class AccountsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetTransactionStatisticsResponse> getTransactionStatistics($0.GetTransactionStatisticsRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTransactionStatistics, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetFinancialAnalyticsResponse> getFinancialAnalytics($0.GetFinancialAnalyticsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getFinancialAnalytics, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetCategoryAnalyticsResponse> getCategoryAnalytics($0.GetCategoryAnalyticsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCategoryAnalytics, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetMonthlyTrendsResponse> getMonthlyTrends($0.GetMonthlyTrendsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMonthlyTrends, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetExpenseTimeSeriesResponse> getExpenseTimeSeries($0.GetExpenseTimeSeriesRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getExpenseTimeSeries, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.UpdateTransactionStatusResponse> updateTransactionStatus($0.UpdateTransactionStatusRequest request, {$grpc.CallOptions? options}) {
@@ -497,6 +529,34 @@ abstract class AccountsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetTransactionStatisticsRequest.fromBuffer(value),
         ($0.GetTransactionStatisticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetFinancialAnalyticsRequest, $0.GetFinancialAnalyticsResponse>(
+        'GetFinancialAnalytics',
+        getFinancialAnalytics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetFinancialAnalyticsRequest.fromBuffer(value),
+        ($0.GetFinancialAnalyticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCategoryAnalyticsRequest, $0.GetCategoryAnalyticsResponse>(
+        'GetCategoryAnalytics',
+        getCategoryAnalytics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetCategoryAnalyticsRequest.fromBuffer(value),
+        ($0.GetCategoryAnalyticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMonthlyTrendsRequest, $0.GetMonthlyTrendsResponse>(
+        'GetMonthlyTrends',
+        getMonthlyTrends_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMonthlyTrendsRequest.fromBuffer(value),
+        ($0.GetMonthlyTrendsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetExpenseTimeSeriesRequest, $0.GetExpenseTimeSeriesResponse>(
+        'GetExpenseTimeSeries',
+        getExpenseTimeSeries_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetExpenseTimeSeriesRequest.fromBuffer(value),
+        ($0.GetExpenseTimeSeriesResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.UpdateTransactionStatusRequest, $0.UpdateTransactionStatusResponse>(
         'UpdateTransactionStatus',
         updateTransactionStatus_Pre,
@@ -676,6 +736,22 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return getTransactionStatistics(call, await request);
   }
 
+  $async.Future<$0.GetFinancialAnalyticsResponse> getFinancialAnalytics_Pre($grpc.ServiceCall call, $async.Future<$0.GetFinancialAnalyticsRequest> request) async {
+    return getFinancialAnalytics(call, await request);
+  }
+
+  $async.Future<$0.GetCategoryAnalyticsResponse> getCategoryAnalytics_Pre($grpc.ServiceCall call, $async.Future<$0.GetCategoryAnalyticsRequest> request) async {
+    return getCategoryAnalytics(call, await request);
+  }
+
+  $async.Future<$0.GetMonthlyTrendsResponse> getMonthlyTrends_Pre($grpc.ServiceCall call, $async.Future<$0.GetMonthlyTrendsRequest> request) async {
+    return getMonthlyTrends(call, await request);
+  }
+
+  $async.Future<$0.GetExpenseTimeSeriesResponse> getExpenseTimeSeries_Pre($grpc.ServiceCall call, $async.Future<$0.GetExpenseTimeSeriesRequest> request) async {
+    return getExpenseTimeSeries(call, await request);
+  }
+
   $async.Future<$0.UpdateTransactionStatusResponse> updateTransactionStatus_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateTransactionStatusRequest> request) async {
     return updateTransactionStatus(call, await request);
   }
@@ -745,6 +821,10 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.CreateTransactionResponse> createTransaction($grpc.ServiceCall call, $0.CreateTransactionRequest request);
   $async.Future<$0.GetTransactionHistoryResponse> getTransactionHistory($grpc.ServiceCall call, $0.GetTransactionHistoryRequest request);
   $async.Future<$0.GetTransactionStatisticsResponse> getTransactionStatistics($grpc.ServiceCall call, $0.GetTransactionStatisticsRequest request);
+  $async.Future<$0.GetFinancialAnalyticsResponse> getFinancialAnalytics($grpc.ServiceCall call, $0.GetFinancialAnalyticsRequest request);
+  $async.Future<$0.GetCategoryAnalyticsResponse> getCategoryAnalytics($grpc.ServiceCall call, $0.GetCategoryAnalyticsRequest request);
+  $async.Future<$0.GetMonthlyTrendsResponse> getMonthlyTrends($grpc.ServiceCall call, $0.GetMonthlyTrendsRequest request);
+  $async.Future<$0.GetExpenseTimeSeriesResponse> getExpenseTimeSeries($grpc.ServiceCall call, $0.GetExpenseTimeSeriesRequest request);
   $async.Future<$0.UpdateTransactionStatusResponse> updateTransactionStatus($grpc.ServiceCall call, $0.UpdateTransactionStatusRequest request);
   $async.Future<$0.CreateAutoSaveResponse> createAutoSave($grpc.ServiceCall call, $0.CreateAutoSaveRequest request);
   $async.Future<$0.GetAutoSavesResponse> getAutoSaves($grpc.ServiceCall call, $0.GetAutoSavesRequest request);

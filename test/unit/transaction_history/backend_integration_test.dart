@@ -83,8 +83,8 @@ void main() {
       expect(backendName, equals('transfer-service'));
     });
 
-    test('AppServiceName.payElectricityBill maps to utility-payments-service', () {
-      const electricityService = AppServiceName.payElectricityBill;
+    test('AppServiceName.payBills maps to utility-payments-service', () {
+      const electricityService = AppServiceName.payBills;
       final backendName = electricityService.backendServiceName;
 
       expect(backendName, equals('utility-payments-service'));

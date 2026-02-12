@@ -54,6 +54,32 @@ class CrowdfundCreator extends Equatable {
   String get fullName => '$firstName $lastName';
   String get displayName => username.isNotEmpty ? username : fullName;
 
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'username': username,
+        'firstName': firstName,
+        'lastName': lastName,
+        'profilePicture': profilePicture,
+        'verified': verified,
+        'verifiedAt': verifiedAt?.toIso8601String(),
+        'facialRecognitionEnabled': facialRecognitionEnabled,
+      };
+
+  factory CrowdfundCreator.fromJson(Map<String, dynamic> json) {
+    return CrowdfundCreator(
+      userId: json['userId'] as int,
+      username: json['username'] as String,
+      firstName: json['firstName'] as String,
+      lastName: json['lastName'] as String,
+      profilePicture: json['profilePicture'] as String?,
+      verified: json['verified'] as bool,
+      verifiedAt: json['verifiedAt'] != null
+          ? DateTime.parse(json['verifiedAt'] as String)
+          : null,
+      facialRecognitionEnabled: json['facialRecognitionEnabled'] as bool,
+    );
+  }
+
   @override
   List<Object?> get props => [
         userId,
@@ -127,6 +153,60 @@ class Crowdfund extends Equatable {
       : 0;
   double get amountRemaining => targetAmount - currentAmount;
   bool get isTargetReached => currentAmount >= targetAmount;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'creatorUserId': creatorUserId,
+        'creator': creator.toJson(),
+        'title': title,
+        'description': description,
+        'story': story,
+        'crowdfundCode': crowdfundCode,
+        'targetAmount': targetAmount,
+        'currentAmount': currentAmount,
+        'currency': currency,
+        'deadline': deadline?.toIso8601String(),
+        'category': category,
+        'status': status.name,
+        'imageUrl': imageUrl,
+        'visibility': visibility.name,
+        'donorCount': donorCount,
+        'progressPercentage': progressPercentage,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+      };
+
+  factory Crowdfund.fromJson(Map<String, dynamic> json) {
+    return Crowdfund(
+      id: json['id'] as String,
+      creatorUserId: json['creatorUserId'] as int,
+      creator: CrowdfundCreator.fromJson(json['creator'] as Map<String, dynamic>),
+      title: json['title'] as String,
+      description: json['description'] as String,
+      story: json['story'] as String? ?? '',
+      crowdfundCode: json['crowdfundCode'] as String? ?? '',
+      targetAmount: (json['targetAmount'] as num).toDouble(),
+      currentAmount: (json['currentAmount'] as num).toDouble(),
+      currency: json['currency'] as String,
+      deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'] as String)
+          : null,
+      category: json['category'] as String,
+      status: CrowdfundStatus.values.firstWhere(
+        (s) => s.name == json['status'],
+        orElse: () => CrowdfundStatus.active,
+      ),
+      imageUrl: json['imageUrl'] as String?,
+      visibility: CrowdfundVisibility.values.firstWhere(
+        (v) => v.name == json['visibility'],
+        orElse: () => CrowdfundVisibility.public,
+      ),
+      donorCount: json['donorCount'] as int,
+      progressPercentage: (json['progressPercentage'] as num).toDouble(),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -490,6 +570,34 @@ class CrowdfundSharingText extends Equatable {
 
   @override
   List<Object?> get props => [whatsapp, facebook, telegram, twitter, general];
+}
+
+// ============================================================================
+// LEADERBOARD ENTITIES
+// ============================================================================
+
+enum LeaderboardSortBy { mostFunded, mostDonors, trending, nearlyComplete, newest }
+
+class LeaderboardEntry extends Equatable {
+  final int rank;
+  final Crowdfund crowdfund;
+
+  const LeaderboardEntry({required this.rank, required this.crowdfund});
+
+  Map<String, dynamic> toJson() => {
+        'rank': rank,
+        'crowdfund': crowdfund.toJson(),
+      };
+
+  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) {
+    return LeaderboardEntry(
+      rank: json['rank'] as int,
+      crowdfund: Crowdfund.fromJson(json['crowdfund'] as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  List<Object?> get props => [rank, crowdfund];
 }
 
 // ============================================================================

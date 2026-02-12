@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 
 class AutoSaveRuleReviewScreen extends StatefulWidget {
@@ -87,7 +88,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
         return '$freqText${time != null ? ' at $time' : ''}';
       case TriggerType.roundUp:
         final roundUpTo = ruleData['roundUpTo'] as int?;
-        return 'Round up to nearest \$${roundUpTo ?? 10}';
+        return 'Round up to nearest ${currency_formatter.CurrencySymbols.formatAmountWithCurrency((roundUpTo ?? 10).toDouble(), 'NGN')}';
       default:
         return 'Unknown trigger';
     }
@@ -98,7 +99,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
     final amountValue = ruleData['amountValue'] as double;
 
     if (amountType == AmountType.fixed) {
-      return '\$${amountValue.toStringAsFixed(2)}';
+      return currency_formatter.CurrencySymbols.formatAmountWithCurrency(amountValue, 'NGN');
     } else {
       return '${amountValue.toStringAsFixed(0)}% of transaction';
     }
@@ -253,15 +254,15 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
               icon: Icons.flag,
               children: [
                 if (ruleData['targetAmount'] != null) ...[
-                  _buildDetailRow('Target Amount', '\$${(ruleData['targetAmount'] as double).toStringAsFixed(2)}'),
+                  _buildDetailRow('Target Amount', currency_formatter.CurrencySymbols.formatAmountWithCurrency(ruleData['targetAmount'] as double, 'NGN')),
                   SizedBox(height: 12.h),
                 ],
                 if (ruleData['minimumBalance'] != null) ...[
-                  _buildDetailRow('Minimum Balance', '\$${(ruleData['minimumBalance'] as double).toStringAsFixed(2)}'),
+                  _buildDetailRow('Minimum Balance', currency_formatter.CurrencySymbols.formatAmountWithCurrency(ruleData['minimumBalance'] as double, 'NGN')),
                   SizedBox(height: 12.h),
                 ],
                 if (ruleData['maximumPerSave'] != null)
-                  _buildDetailRow('Maximum Per Save', '\$${(ruleData['maximumPerSave'] as double).toStringAsFixed(2)}'),
+                  _buildDetailRow('Maximum Per Save', currency_formatter.CurrencySymbols.formatAmountWithCurrency(ruleData['maximumPerSave'] as double, 'NGN')),
               ],
             ),
           ],

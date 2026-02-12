@@ -17,11 +17,12 @@ class StockLoading extends StockState {}
 class StockLoaded extends StockState {
   final List<Stock> stocks;
   final String? sector;
+  final bool isStale;
 
-  const StockLoaded(this.stocks, {this.sector});
+  const StockLoaded(this.stocks, {this.sector, this.isStale = false});
 
   @override
-  List<Object?> get props => [stocks, sector];
+  List<Object?> get props => [stocks, sector, isStale];
 }
 
 class StockError extends StockState {
@@ -38,11 +39,12 @@ class PortfolioLoading extends StockState {}
 
 class PortfolioLoaded extends StockState {
   final Portfolio portfolio;
+  final bool isStale;
 
-  const PortfolioLoaded(this.portfolio);
+  const PortfolioLoaded(this.portfolio, {this.isStale = false});
 
   @override
-  List<Object?> get props => [portfolio];
+  List<Object?> get props => [portfolio, isStale];
 }
 
 class PortfolioError extends StockState {
@@ -59,11 +61,12 @@ class HoldingsLoading extends StockState {}
 
 class HoldingsLoaded extends StockState {
   final List<StockHolding> holdings;
+  final bool isStale;
 
-  const HoldingsLoaded(this.holdings);
+  const HoldingsLoaded(this.holdings, {this.isStale = false});
 
   @override
-  List<Object?> get props => [holdings];
+  List<Object?> get props => [holdings, isStale];
 }
 
 class HoldingsError extends StockState {
@@ -125,6 +128,16 @@ class StockDetailsError extends StockState {
 // Trading States
 class OrderPlacing extends StockState {}
 
+class OrderProcessing extends StockState {
+  final String step;
+  final double progress;
+
+  const OrderProcessing({required this.step, required this.progress});
+
+  @override
+  List<Object?> get props => [step, progress];
+}
+
 class OrderPlaced extends StockState {
   final StockOrder order;
 
@@ -134,6 +147,26 @@ class OrderPlaced extends StockState {
   List<Object?> get props => [order];
 }
 
+class OrderSuccess extends StockState {
+  final StockOrder order;
+  final String message;
+
+  const OrderSuccess({required this.order, required this.message});
+
+  @override
+  List<Object?> get props => [order, message];
+}
+
+class OrderFailed extends StockState {
+  final String message;
+  final String? orderId;
+
+  const OrderFailed({required this.message, this.orderId});
+
+  @override
+  List<Object?> get props => [message, orderId];
+}
+
 class OrderError extends StockState {
   final String message;
 
@@ -141,6 +174,22 @@ class OrderError extends StockState {
 
   @override
   List<Object?> get props => [message];
+}
+
+// Market Status State
+class MarketStatusLoaded extends StockState {
+  final bool isOpen;
+  final String? nextOpen;
+  final String? nextClose;
+
+  const MarketStatusLoaded({
+    required this.isOpen,
+    this.nextOpen,
+    this.nextClose,
+  });
+
+  @override
+  List<Object?> get props => [isOpen, nextOpen, nextClose];
 }
 
 class OrdersLoading extends StockState {}

@@ -114,6 +114,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     required String cryptoId,
     required double quantity,
     required double price,
+    required String transactionPin,
+    String? fiatCurrency,
   }) async {
     try {
       if (isClosed) return;
@@ -122,13 +124,50 @@ class CryptoCubit extends Cubit<CryptoState> {
         type: TransactionType.buy,
         quantity: quantity,
         price: price,
+        step: CryptoProcessingStep.validatingPin,
+        progress: 0.2,
+      ));
+
+      // Step 2: Fetching rate
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: cryptoId,
+        type: TransactionType.buy,
+        quantity: quantity,
+        price: price,
+        step: CryptoProcessingStep.fetchingRate,
+        progress: 0.4,
+      ));
+
+      // Step 3: Executing order
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: cryptoId,
+        type: TransactionType.buy,
+        quantity: quantity,
+        price: price,
+        step: CryptoProcessingStep.executingOrder,
+        progress: 0.6,
       ));
 
       final transaction = await repository.buyCrypto(
         cryptoId: cryptoId,
         quantity: quantity,
         price: price,
+        transactionPin: transactionPin,
+        fiatCurrency: fiatCurrency,
       );
+
+      // Step 4: Confirming
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: cryptoId,
+        type: TransactionType.buy,
+        quantity: quantity,
+        price: price,
+        step: CryptoProcessingStep.confirmingTransaction,
+        progress: 0.8,
+      ));
 
       if (isClosed) return;
       emit(CryptoTransactionSuccess(transaction: transaction));
@@ -145,6 +184,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     required String cryptoId,
     required double quantity,
     required double price,
+    required String transactionPin,
+    String? fiatCurrency,
   }) async {
     try {
       if (isClosed) return;
@@ -153,13 +194,50 @@ class CryptoCubit extends Cubit<CryptoState> {
         type: TransactionType.sell,
         quantity: quantity,
         price: price,
+        step: CryptoProcessingStep.validatingPin,
+        progress: 0.2,
+      ));
+
+      // Step 2: Checking balance
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: cryptoId,
+        type: TransactionType.sell,
+        quantity: quantity,
+        price: price,
+        step: CryptoProcessingStep.checkingBalance,
+        progress: 0.4,
+      ));
+
+      // Step 3: Executing order
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: cryptoId,
+        type: TransactionType.sell,
+        quantity: quantity,
+        price: price,
+        step: CryptoProcessingStep.executingOrder,
+        progress: 0.6,
       ));
 
       final transaction = await repository.sellCrypto(
         cryptoId: cryptoId,
         quantity: quantity,
         price: price,
+        transactionPin: transactionPin,
+        fiatCurrency: fiatCurrency,
       );
+
+      // Step 4: Confirming
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: cryptoId,
+        type: TransactionType.sell,
+        quantity: quantity,
+        price: price,
+        step: CryptoProcessingStep.confirmingTransaction,
+        progress: 0.8,
+      ));
 
       if (isClosed) return;
       emit(CryptoTransactionSuccess(transaction: transaction));

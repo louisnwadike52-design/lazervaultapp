@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 import 'group_account.pbenum.dart';
 
 export 'group_account.pbenum.dart';
@@ -26,11 +26,15 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? adminId,
     GroupAccountStatus? status,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
     $core.String? metadata,
     $core.Iterable<GroupMemberMessage>? members,
     $core.Iterable<ContributionMessage>? contributions,
+    GroupVisibility? visibility,
+    $core.int? memberCount,
+    $fixnum.Int64? totalRaised,
+    $core.String? imageUrl,
   }) {
     final $result = create();
     if (id != null) {
@@ -63,6 +67,18 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     if (contributions != null) {
       $result.contributions.addAll(contributions);
     }
+    if (visibility != null) {
+      $result.visibility = visibility;
+    }
+    if (memberCount != null) {
+      $result.memberCount = memberCount;
+    }
+    if (totalRaised != null) {
+      $result.totalRaised = totalRaised;
+    }
+    if (imageUrl != null) {
+      $result.imageUrl = imageUrl;
+    }
     return $result;
   }
   GroupAccountMessage._() : super();
@@ -75,11 +91,15 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'description')
     ..aOS(4, _omitFieldNames ? '' : 'adminId')
     ..e<GroupAccountStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GroupAccountStatus.GROUP_ACCOUNT_STATUS_UNSPECIFIED, valueOf: GroupAccountStatus.valueOf, enumValues: GroupAccountStatus.values)
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(8, _omitFieldNames ? '' : 'metadata')
     ..pc<GroupMemberMessage>(9, _omitFieldNames ? '' : 'members', $pb.PbFieldType.PM, subBuilder: GroupMemberMessage.create)
     ..pc<ContributionMessage>(10, _omitFieldNames ? '' : 'contributions', $pb.PbFieldType.PM, subBuilder: ContributionMessage.create)
+    ..e<GroupVisibility>(11, _omitFieldNames ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: GroupVisibility.GROUP_VISIBILITY_UNSPECIFIED, valueOf: GroupVisibility.valueOf, enumValues: GroupVisibility.values)
+    ..a<$core.int>(12, _omitFieldNames ? '' : 'memberCount', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(13, _omitFieldNames ? '' : 'totalRaised', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(14, _omitFieldNames ? '' : 'imageUrl')
     ..hasRequiredFields = false
   ;
 
@@ -150,26 +170,26 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
   void clearStatus() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get createdAt => $_getN(5);
+  $1.Timestamp get createdAt => $_getN(5);
   @$pb.TagNumber(6)
-  set createdAt($42.Timestamp v) { setField(6, v); }
+  set createdAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasCreatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearCreatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureCreatedAt() => $_ensure(5);
+  $1.Timestamp ensureCreatedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get updatedAt => $_getN(6);
+  $1.Timestamp get updatedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set updatedAt($42.Timestamp v) { setField(7, v); }
+  set updatedAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasUpdatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearUpdatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(6);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.String get metadata => $_getSZ(7);
@@ -185,6 +205,42 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(10)
   $core.List<ContributionMessage> get contributions => $_getList(9);
+
+  @$pb.TagNumber(11)
+  GroupVisibility get visibility => $_getN(10);
+  @$pb.TagNumber(11)
+  set visibility(GroupVisibility v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasVisibility() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearVisibility() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.int get memberCount => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set memberCount($core.int v) { $_setSignedInt32(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasMemberCount() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearMemberCount() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $fixnum.Int64 get totalRaised => $_getI64(12);
+  @$pb.TagNumber(13)
+  set totalRaised($fixnum.Int64 v) { $_setInt64(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasTotalRaised() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearTotalRaised() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get imageUrl => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set imageUrl($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasImageUrl() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearImageUrl() => clearField(14);
 }
 
 class GroupMemberMessage extends $pb.GeneratedMessage {
@@ -197,7 +253,7 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
     $core.String? profileImage,
     GroupMemberRole? role,
     GroupMemberStatus? status,
-    $42.Timestamp? joinedAt,
+    $1.Timestamp? joinedAt,
     $core.String? permissions,
     $core.String? phoneNumber,
     $core.bool? isPartial,
@@ -258,7 +314,7 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'profileImage')
     ..e<GroupMemberRole>(7, _omitFieldNames ? '' : 'role', $pb.PbFieldType.OE, defaultOrMaker: GroupMemberRole.GROUP_MEMBER_ROLE_UNSPECIFIED, valueOf: GroupMemberRole.valueOf, enumValues: GroupMemberRole.values)
     ..e<GroupMemberStatus>(8, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GroupMemberStatus.GROUP_MEMBER_STATUS_UNSPECIFIED, valueOf: GroupMemberStatus.valueOf, enumValues: GroupMemberStatus.values)
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'joinedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'joinedAt', subBuilder: $1.Timestamp.create)
     ..aOS(10, _omitFieldNames ? '' : 'permissions')
     ..aOS(11, _omitFieldNames ? '' : 'phoneNumber')
     ..aOB(12, _omitFieldNames ? '' : 'isPartial')
@@ -360,15 +416,15 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
   void clearStatus() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get joinedAt => $_getN(8);
+  $1.Timestamp get joinedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set joinedAt($42.Timestamp v) { setField(9, v); }
+  set joinedAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasJoinedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearJoinedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensureJoinedAt() => $_ensure(8);
+  $1.Timestamp ensureJoinedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.String get permissions => $_getSZ(9);
@@ -416,21 +472,21 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $fixnum.Int64? targetAmount,
     $fixnum.Int64? currentAmount,
     $core.String? currency,
-    $42.Timestamp? deadline,
+    $1.Timestamp? deadline,
     ContributionStatus? status,
     $core.String? createdBy,
-    $42.Timestamp? createdAt,
-    $42.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
     $core.String? metadata,
     ContributionType? type,
     ContributionFrequency? frequency,
     $fixnum.Int64? regularAmount,
-    $42.Timestamp? nextPaymentDate,
-    $42.Timestamp? startDate,
+    $1.Timestamp? nextPaymentDate,
+    $1.Timestamp? startDate,
     $core.int? totalCycles,
     $core.int? currentCycle,
     $core.String? currentPayoutRecipient,
-    $42.Timestamp? nextPayoutDate,
+    $1.Timestamp? nextPayoutDate,
     $core.bool? autoPayEnabled,
     $fixnum.Int64? penaltyAmount,
     $core.int? gracePeriodDays,
@@ -549,21 +605,21 @@ class ContributionMessage extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(7, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'deadline', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..e<ContributionStatus>(9, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ContributionStatus.CONTRIBUTION_STATUS_UNSPECIFIED, valueOf: ContributionStatus.valueOf, enumValues: ContributionStatus.values)
     ..aOS(10, _omitFieldNames ? '' : 'createdBy')
-    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(13, _omitFieldNames ? '' : 'metadata')
     ..e<ContributionType>(14, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: ContributionType.CONTRIBUTION_TYPE_UNSPECIFIED, valueOf: ContributionType.valueOf, enumValues: ContributionType.values)
     ..e<ContributionFrequency>(15, _omitFieldNames ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ContributionFrequency.CONTRIBUTION_FREQUENCY_UNSPECIFIED, valueOf: ContributionFrequency.valueOf, enumValues: ContributionFrequency.values)
     ..a<$fixnum.Int64>(16, _omitFieldNames ? '' : 'regularAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'nextPaymentDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'nextPaymentDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(19, _omitFieldNames ? '' : 'totalCycles', $pb.PbFieldType.O3)
     ..a<$core.int>(20, _omitFieldNames ? '' : 'currentCycle', $pb.PbFieldType.O3)
     ..aOS(21, _omitFieldNames ? '' : 'currentPayoutRecipient')
-    ..aOM<$42.Timestamp>(22, _omitFieldNames ? '' : 'nextPayoutDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(22, _omitFieldNames ? '' : 'nextPayoutDate', subBuilder: $1.Timestamp.create)
     ..aOB(23, _omitFieldNames ? '' : 'autoPayEnabled')
     ..a<$fixnum.Int64>(24, _omitFieldNames ? '' : 'penaltyAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$core.int>(25, _omitFieldNames ? '' : 'gracePeriodDays', $pb.PbFieldType.O3)
@@ -661,15 +717,15 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get deadline => $_getN(7);
+  $1.Timestamp get deadline => $_getN(7);
   @$pb.TagNumber(8)
-  set deadline($42.Timestamp v) { setField(8, v); }
+  set deadline($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasDeadline() => $_has(7);
   @$pb.TagNumber(8)
   void clearDeadline() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureDeadline() => $_ensure(7);
+  $1.Timestamp ensureDeadline() => $_ensure(7);
 
   @$pb.TagNumber(9)
   ContributionStatus get status => $_getN(8);
@@ -690,26 +746,26 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearCreatedBy() => clearField(10);
 
   @$pb.TagNumber(11)
-  $42.Timestamp get createdAt => $_getN(10);
+  $1.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($42.Timestamp v) { setField(11, v); }
+  set createdAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $42.Timestamp ensureCreatedAt() => $_ensure(10);
+  $1.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $42.Timestamp get updatedAt => $_getN(11);
+  $1.Timestamp get updatedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set updatedAt($42.Timestamp v) { setField(12, v); }
+  set updatedAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasUpdatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearUpdatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $42.Timestamp ensureUpdatedAt() => $_ensure(11);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get metadata => $_getSZ(12);
@@ -748,26 +804,26 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearRegularAmount() => clearField(16);
 
   @$pb.TagNumber(17)
-  $42.Timestamp get nextPaymentDate => $_getN(16);
+  $1.Timestamp get nextPaymentDate => $_getN(16);
   @$pb.TagNumber(17)
-  set nextPaymentDate($42.Timestamp v) { setField(17, v); }
+  set nextPaymentDate($1.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasNextPaymentDate() => $_has(16);
   @$pb.TagNumber(17)
   void clearNextPaymentDate() => clearField(17);
   @$pb.TagNumber(17)
-  $42.Timestamp ensureNextPaymentDate() => $_ensure(16);
+  $1.Timestamp ensureNextPaymentDate() => $_ensure(16);
 
   @$pb.TagNumber(18)
-  $42.Timestamp get startDate => $_getN(17);
+  $1.Timestamp get startDate => $_getN(17);
   @$pb.TagNumber(18)
-  set startDate($42.Timestamp v) { setField(18, v); }
+  set startDate($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasStartDate() => $_has(17);
   @$pb.TagNumber(18)
   void clearStartDate() => clearField(18);
   @$pb.TagNumber(18)
-  $42.Timestamp ensureStartDate() => $_ensure(17);
+  $1.Timestamp ensureStartDate() => $_ensure(17);
 
   @$pb.TagNumber(19)
   $core.int get totalCycles => $_getIZ(18);
@@ -797,15 +853,15 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearCurrentPayoutRecipient() => clearField(21);
 
   @$pb.TagNumber(22)
-  $42.Timestamp get nextPayoutDate => $_getN(21);
+  $1.Timestamp get nextPayoutDate => $_getN(21);
   @$pb.TagNumber(22)
-  set nextPayoutDate($42.Timestamp v) { setField(22, v); }
+  set nextPayoutDate($1.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasNextPayoutDate() => $_has(21);
   @$pb.TagNumber(22)
   void clearNextPayoutDate() => clearField(22);
   @$pb.TagNumber(22)
-  $42.Timestamp ensureNextPayoutDate() => $_ensure(21);
+  $1.Timestamp ensureNextPayoutDate() => $_ensure(21);
 
   @$pb.TagNumber(23)
   $core.bool get autoPayEnabled => $_getBF(22);
@@ -874,7 +930,7 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     $core.String? userName,
     $core.String? email,
     $core.String? profileImage,
-    $42.Timestamp? joinedAt,
+    $1.Timestamp? joinedAt,
     $fixnum.Int64? totalPaid,
     $fixnum.Int64? expectedAmount,
     $core.bool? hasPaidCurrentCycle,
@@ -923,7 +979,7 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'userName')
     ..aOS(5, _omitFieldNames ? '' : 'email')
     ..aOS(6, _omitFieldNames ? '' : 'profileImage')
-    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'joinedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'joinedAt', subBuilder: $1.Timestamp.create)
     ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'totalPaid', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'expectedAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOB(10, _omitFieldNames ? '' : 'hasPaidCurrentCycle')
@@ -1006,15 +1062,15 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
   void clearProfileImage() => clearField(6);
 
   @$pb.TagNumber(7)
-  $42.Timestamp get joinedAt => $_getN(6);
+  $1.Timestamp get joinedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set joinedAt($42.Timestamp v) { setField(7, v); }
+  set joinedAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasJoinedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearJoinedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $42.Timestamp ensureJoinedAt() => $_ensure(6);
+  $1.Timestamp ensureJoinedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $fixnum.Int64 get totalPaid => $_getI64(7);
@@ -1053,7 +1109,7 @@ class ContributionPaymentMessage extends $pb.GeneratedMessage {
     $core.String? userName,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $42.Timestamp? paymentDate,
+    $1.Timestamp? paymentDate,
     PaymentStatus? status,
     $core.String? transactionId,
     $core.String? receiptId,
@@ -1114,7 +1170,7 @@ class ContributionPaymentMessage extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'userName')
     ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(7, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'paymentDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'paymentDate', subBuilder: $1.Timestamp.create)
     ..e<PaymentStatus>(9, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: PaymentStatus.PAYMENT_STATUS_UNSPECIFIED, valueOf: PaymentStatus.valueOf, enumValues: PaymentStatus.values)
     ..aOS(10, _omitFieldNames ? '' : 'transactionId')
     ..aOS(11, _omitFieldNames ? '' : 'receiptId')
@@ -1208,15 +1264,15 @@ class ContributionPaymentMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get paymentDate => $_getN(7);
+  $1.Timestamp get paymentDate => $_getN(7);
   @$pb.TagNumber(8)
-  set paymentDate($42.Timestamp v) { setField(8, v); }
+  set paymentDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasPaymentDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearPaymentDate() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensurePaymentDate() => $_ensure(7);
+  $1.Timestamp ensurePaymentDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
   PaymentStatus get status => $_getN(8);
@@ -1270,10 +1326,10 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
     $core.String? userId,
     $core.String? userName,
     $core.int? position,
-    $42.Timestamp? scheduledDate,
+    $1.Timestamp? scheduledDate,
     $fixnum.Int64? expectedAmount,
     PayoutStatus? status,
-    $42.Timestamp? receivedDate,
+    $1.Timestamp? receivedDate,
     $fixnum.Int64? actualAmount,
     $core.String? notes,
   }) {
@@ -1319,10 +1375,10 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'userName')
     ..a<$core.int>(4, _omitFieldNames ? '' : 'position', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'scheduledDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'scheduledDate', subBuilder: $1.Timestamp.create)
     ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'expectedAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..e<PayoutStatus>(7, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: PayoutStatus.PAYOUT_STATUS_UNSPECIFIED, valueOf: PayoutStatus.valueOf, enumValues: PayoutStatus.values)
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'receivedDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'receivedDate', subBuilder: $1.Timestamp.create)
     ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'actualAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(10, _omitFieldNames ? '' : 'notes')
     ..hasRequiredFields = false
@@ -1386,15 +1442,15 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
   void clearPosition() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get scheduledDate => $_getN(4);
+  $1.Timestamp get scheduledDate => $_getN(4);
   @$pb.TagNumber(5)
-  set scheduledDate($42.Timestamp v) { setField(5, v); }
+  set scheduledDate($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasScheduledDate() => $_has(4);
   @$pb.TagNumber(5)
   void clearScheduledDate() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureScheduledDate() => $_ensure(4);
+  $1.Timestamp ensureScheduledDate() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $fixnum.Int64 get expectedAmount => $_getI64(5);
@@ -1415,15 +1471,15 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
   void clearStatus() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get receivedDate => $_getN(7);
+  $1.Timestamp get receivedDate => $_getN(7);
   @$pb.TagNumber(8)
-  set receivedDate($42.Timestamp v) { setField(8, v); }
+  set receivedDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasReceivedDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearReceivedDate() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensureReceivedDate() => $_ensure(7);
+  $1.Timestamp ensureReceivedDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $fixnum.Int64 get actualAmount => $_getI64(8);
@@ -1453,7 +1509,7 @@ class PayoutTransactionMessage extends $pb.GeneratedMessage {
     $core.String? recipientUserName,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $42.Timestamp? payoutDate,
+    $1.Timestamp? payoutDate,
     PayoutTransactionStatus? status,
     $core.String? transactionId,
     $core.String? paymentMethod,
@@ -1514,7 +1570,7 @@ class PayoutTransactionMessage extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'recipientUserName')
     ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(7, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'payoutDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'payoutDate', subBuilder: $1.Timestamp.create)
     ..e<PayoutTransactionStatus>(9, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_UNSPECIFIED, valueOf: PayoutTransactionStatus.valueOf, enumValues: PayoutTransactionStatus.values)
     ..aOS(10, _omitFieldNames ? '' : 'transactionId')
     ..aOS(11, _omitFieldNames ? '' : 'paymentMethod')
@@ -1608,15 +1664,15 @@ class PayoutTransactionMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(7);
 
   @$pb.TagNumber(8)
-  $42.Timestamp get payoutDate => $_getN(7);
+  $1.Timestamp get payoutDate => $_getN(7);
   @$pb.TagNumber(8)
-  set payoutDate($42.Timestamp v) { setField(8, v); }
+  set payoutDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasPayoutDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearPayoutDate() => clearField(8);
   @$pb.TagNumber(8)
-  $42.Timestamp ensurePayoutDate() => $_ensure(7);
+  $1.Timestamp ensurePayoutDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
   PayoutTransactionStatus get status => $_getN(8);
@@ -1674,8 +1730,8 @@ class ContributionReceiptMessage extends $pb.GeneratedMessage {
     $core.String? userName,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $42.Timestamp? paymentDate,
-    $42.Timestamp? generatedAt,
+    $1.Timestamp? paymentDate,
+    $1.Timestamp? generatedAt,
     $core.String? receiptNumber,
     $core.String? receiptData,
   }) {
@@ -1731,8 +1787,8 @@ class ContributionReceiptMessage extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'userName')
     ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(8, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'paymentDate', subBuilder: $42.Timestamp.create)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'generatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'paymentDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'generatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(11, _omitFieldNames ? '' : 'receiptNumber')
     ..aOS(12, _omitFieldNames ? '' : 'receiptData')
     ..hasRequiredFields = false
@@ -1832,26 +1888,26 @@ class ContributionReceiptMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $42.Timestamp get paymentDate => $_getN(8);
+  $1.Timestamp get paymentDate => $_getN(8);
   @$pb.TagNumber(9)
-  set paymentDate($42.Timestamp v) { setField(9, v); }
+  set paymentDate($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasPaymentDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearPaymentDate() => clearField(9);
   @$pb.TagNumber(9)
-  $42.Timestamp ensurePaymentDate() => $_ensure(8);
+  $1.Timestamp ensurePaymentDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get generatedAt => $_getN(9);
+  $1.Timestamp get generatedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set generatedAt($42.Timestamp v) { setField(10, v); }
+  set generatedAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasGeneratedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearGeneratedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureGeneratedAt() => $_ensure(9);
+  $1.Timestamp ensureGeneratedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get receiptNumber => $_getSZ(10);
@@ -1877,7 +1933,7 @@ class ContributionTranscriptMessage extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? contributionId,
     $core.String? groupId,
-    $42.Timestamp? generatedAt,
+    $1.Timestamp? generatedAt,
     $core.Iterable<ContributionPaymentMessage>? payments,
     $fixnum.Int64? totalAmount,
     $core.String? currency,
@@ -1918,7 +1974,7 @@ class ContributionTranscriptMessage extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'contributionId')
     ..aOS(3, _omitFieldNames ? '' : 'groupId')
-    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'generatedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'generatedAt', subBuilder: $1.Timestamp.create)
     ..pc<ContributionPaymentMessage>(5, _omitFieldNames ? '' : 'payments', $pb.PbFieldType.PM, subBuilder: ContributionPaymentMessage.create)
     ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(7, _omitFieldNames ? '' : 'currency')
@@ -1975,15 +2031,15 @@ class ContributionTranscriptMessage extends $pb.GeneratedMessage {
   void clearGroupId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $42.Timestamp get generatedAt => $_getN(3);
+  $1.Timestamp get generatedAt => $_getN(3);
   @$pb.TagNumber(4)
-  set generatedAt($42.Timestamp v) { setField(4, v); }
+  set generatedAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasGeneratedAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearGeneratedAt() => clearField(4);
   @$pb.TagNumber(4)
-  $42.Timestamp ensureGeneratedAt() => $_ensure(3);
+  $1.Timestamp ensureGeneratedAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.List<ContributionPaymentMessage> get payments => $_getList(4);
@@ -2021,6 +2077,8 @@ class CreateGroupRequest extends $pb.GeneratedMessage {
     $core.String? name,
     $core.String? description,
     $core.String? metadata,
+    GroupVisibility? visibility,
+    $core.String? imageUrl,
   }) {
     final $result = create();
     if (name != null) {
@@ -2032,6 +2090,12 @@ class CreateGroupRequest extends $pb.GeneratedMessage {
     if (metadata != null) {
       $result.metadata = metadata;
     }
+    if (visibility != null) {
+      $result.visibility = visibility;
+    }
+    if (imageUrl != null) {
+      $result.imageUrl = imageUrl;
+    }
     return $result;
   }
   CreateGroupRequest._() : super();
@@ -2042,6 +2106,8 @@ class CreateGroupRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'name')
     ..aOS(2, _omitFieldNames ? '' : 'description')
     ..aOS(3, _omitFieldNames ? '' : 'metadata')
+    ..e<GroupVisibility>(4, _omitFieldNames ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: GroupVisibility.GROUP_VISIBILITY_UNSPECIFIED, valueOf: GroupVisibility.valueOf, enumValues: GroupVisibility.values)
+    ..aOS(5, _omitFieldNames ? '' : 'imageUrl')
     ..hasRequiredFields = false
   ;
 
@@ -2092,6 +2158,24 @@ class CreateGroupRequest extends $pb.GeneratedMessage {
   $core.bool hasMetadata() => $_has(2);
   @$pb.TagNumber(3)
   void clearMetadata() => clearField(3);
+
+  @$pb.TagNumber(4)
+  GroupVisibility get visibility => $_getN(3);
+  @$pb.TagNumber(4)
+  set visibility(GroupVisibility v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasVisibility() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVisibility() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get imageUrl => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set imageUrl($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasImageUrl() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearImageUrl() => clearField(5);
 }
 
 class CreateGroupResponse extends $pb.GeneratedMessage {
@@ -2393,6 +2477,8 @@ class UpdateGroupRequest extends $pb.GeneratedMessage {
     $core.String? description,
     GroupAccountStatus? status,
     $core.String? metadata,
+    GroupVisibility? visibility,
+    $core.String? imageUrl,
   }) {
     final $result = create();
     if (groupId != null) {
@@ -2410,6 +2496,12 @@ class UpdateGroupRequest extends $pb.GeneratedMessage {
     if (metadata != null) {
       $result.metadata = metadata;
     }
+    if (visibility != null) {
+      $result.visibility = visibility;
+    }
+    if (imageUrl != null) {
+      $result.imageUrl = imageUrl;
+    }
     return $result;
   }
   UpdateGroupRequest._() : super();
@@ -2422,6 +2514,8 @@ class UpdateGroupRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'description')
     ..e<GroupAccountStatus>(4, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GroupAccountStatus.GROUP_ACCOUNT_STATUS_UNSPECIFIED, valueOf: GroupAccountStatus.valueOf, enumValues: GroupAccountStatus.values)
     ..aOS(5, _omitFieldNames ? '' : 'metadata')
+    ..e<GroupVisibility>(6, _omitFieldNames ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: GroupVisibility.GROUP_VISIBILITY_UNSPECIFIED, valueOf: GroupVisibility.valueOf, enumValues: GroupVisibility.values)
+    ..aOS(7, _omitFieldNames ? '' : 'imageUrl')
     ..hasRequiredFields = false
   ;
 
@@ -2490,6 +2584,24 @@ class UpdateGroupRequest extends $pb.GeneratedMessage {
   $core.bool hasMetadata() => $_has(4);
   @$pb.TagNumber(5)
   void clearMetadata() => clearField(5);
+
+  @$pb.TagNumber(6)
+  GroupVisibility get visibility => $_getN(5);
+  @$pb.TagNumber(6)
+  set visibility(GroupVisibility v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasVisibility() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearVisibility() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get imageUrl => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set imageUrl($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasImageUrl() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearImageUrl() => clearField(7);
 }
 
 class UpdateGroupResponse extends $pb.GeneratedMessage {
@@ -3269,11 +3381,11 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     $core.String? description,
     $fixnum.Int64? targetAmount,
     $core.String? currency,
-    $42.Timestamp? deadline,
+    $1.Timestamp? deadline,
     ContributionType? type,
     ContributionFrequency? frequency,
     $fixnum.Int64? regularAmount,
-    $42.Timestamp? startDate,
+    $1.Timestamp? startDate,
     $core.int? totalCycles,
     $core.Iterable<$core.String>? memberRotationOrder,
     $core.bool? autoPayEnabled,
@@ -3350,11 +3462,11 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'description')
     ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(5, _omitFieldNames ? '' : 'currency')
-    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'deadline', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..e<ContributionType>(7, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: ContributionType.CONTRIBUTION_TYPE_UNSPECIFIED, valueOf: ContributionType.valueOf, enumValues: ContributionType.values)
     ..e<ContributionFrequency>(8, _omitFieldNames ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ContributionFrequency.CONTRIBUTION_FREQUENCY_UNSPECIFIED, valueOf: ContributionFrequency.valueOf, enumValues: ContributionFrequency.values)
     ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'regularAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(11, _omitFieldNames ? '' : 'totalCycles', $pb.PbFieldType.O3)
     ..pPS(12, _omitFieldNames ? '' : 'memberRotationOrder')
     ..aOB(13, _omitFieldNames ? '' : 'autoPayEnabled')
@@ -3433,15 +3545,15 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(5);
 
   @$pb.TagNumber(6)
-  $42.Timestamp get deadline => $_getN(5);
+  $1.Timestamp get deadline => $_getN(5);
   @$pb.TagNumber(6)
-  set deadline($42.Timestamp v) { setField(6, v); }
+  set deadline($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasDeadline() => $_has(5);
   @$pb.TagNumber(6)
   void clearDeadline() => clearField(6);
   @$pb.TagNumber(6)
-  $42.Timestamp ensureDeadline() => $_ensure(5);
+  $1.Timestamp ensureDeadline() => $_ensure(5);
 
   @$pb.TagNumber(7)
   ContributionType get type => $_getN(6);
@@ -3471,15 +3583,15 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   void clearRegularAmount() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get startDate => $_getN(9);
+  $1.Timestamp get startDate => $_getN(9);
   @$pb.TagNumber(10)
-  set startDate($42.Timestamp v) { setField(10, v); }
+  set startDate($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasStartDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearStartDate() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureStartDate() => $_ensure(9);
+  $1.Timestamp ensureStartDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.int get totalCycles => $_getIZ(10);
@@ -3860,7 +3972,7 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? description,
     $fixnum.Int64? targetAmount,
-    $42.Timestamp? deadline,
+    $1.Timestamp? deadline,
     ContributionStatus? status,
     $core.String? metadata,
   }) {
@@ -3897,7 +4009,7 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'title')
     ..aOS(3, _omitFieldNames ? '' : 'description')
     ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'deadline', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..e<ContributionStatus>(6, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ContributionStatus.CONTRIBUTION_STATUS_UNSPECIFIED, valueOf: ContributionStatus.valueOf, enumValues: ContributionStatus.values)
     ..aOS(7, _omitFieldNames ? '' : 'metadata')
     ..hasRequiredFields = false
@@ -3961,15 +4073,15 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
   void clearTargetAmount() => clearField(4);
 
   @$pb.TagNumber(5)
-  $42.Timestamp get deadline => $_getN(4);
+  $1.Timestamp get deadline => $_getN(4);
   @$pb.TagNumber(5)
-  set deadline($42.Timestamp v) { setField(5, v); }
+  set deadline($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasDeadline() => $_has(4);
   @$pb.TagNumber(5)
   void clearDeadline() => clearField(5);
   @$pb.TagNumber(5)
-  $42.Timestamp ensureDeadline() => $_ensure(4);
+  $1.Timestamp ensureDeadline() => $_ensure(4);
 
   @$pb.TagNumber(6)
   ContributionStatus get status => $_getN(5);
@@ -6304,7 +6416,7 @@ class GetContributionAnalyticsResponse_Schedule extends $pb.GeneratedMessage {
   factory GetContributionAnalyticsResponse_Schedule({
     $core.bool? isOnSchedule,
     $core.int? daysBehindSchedule,
-    $42.Timestamp? nextPaymentDate,
+    $1.Timestamp? nextPaymentDate,
     $core.int? currentCycle,
     $core.int? totalCycles,
   }) {
@@ -6333,7 +6445,7 @@ class GetContributionAnalyticsResponse_Schedule extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetContributionAnalyticsResponse.Schedule', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'isOnSchedule')
     ..a<$core.int>(2, _omitFieldNames ? '' : 'daysBehindSchedule', $pb.PbFieldType.O3)
-    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'nextPaymentDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'nextPaymentDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'currentCycle', $pb.PbFieldType.O3)
     ..a<$core.int>(5, _omitFieldNames ? '' : 'totalCycles', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -6379,15 +6491,15 @@ class GetContributionAnalyticsResponse_Schedule extends $pb.GeneratedMessage {
   void clearDaysBehindSchedule() => clearField(2);
 
   @$pb.TagNumber(3)
-  $42.Timestamp get nextPaymentDate => $_getN(2);
+  $1.Timestamp get nextPaymentDate => $_getN(2);
   @$pb.TagNumber(3)
-  set nextPaymentDate($42.Timestamp v) { setField(3, v); }
+  set nextPaymentDate($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasNextPaymentDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearNextPaymentDate() => clearField(3);
   @$pb.TagNumber(3)
-  $42.Timestamp ensureNextPaymentDate() => $_ensure(2);
+  $1.Timestamp ensureNextPaymentDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.int get currentCycle => $_getIZ(3);
@@ -6411,7 +6523,7 @@ class GetContributionAnalyticsResponse_Schedule extends $pb.GeneratedMessage {
 class GetContributionAnalyticsResponse_Payout extends $pb.GeneratedMessage {
   factory GetContributionAnalyticsResponse_Payout({
     $core.String? currentRecipient,
-    $42.Timestamp? nextPayoutDate,
+    $1.Timestamp? nextPayoutDate,
     $core.int? completedPayouts,
     $core.int? pendingPayouts,
   }) {
@@ -6436,7 +6548,7 @@ class GetContributionAnalyticsResponse_Payout extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetContributionAnalyticsResponse.Payout', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'currentRecipient')
-    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'nextPayoutDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'nextPayoutDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'completedPayouts', $pb.PbFieldType.O3)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'pendingPayouts', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -6473,15 +6585,15 @@ class GetContributionAnalyticsResponse_Payout extends $pb.GeneratedMessage {
   void clearCurrentRecipient() => clearField(1);
 
   @$pb.TagNumber(2)
-  $42.Timestamp get nextPayoutDate => $_getN(1);
+  $1.Timestamp get nextPayoutDate => $_getN(1);
   @$pb.TagNumber(2)
-  set nextPayoutDate($42.Timestamp v) { setField(2, v); }
+  set nextPayoutDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasNextPayoutDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearNextPayoutDate() => clearField(2);
   @$pb.TagNumber(2)
-  $42.Timestamp ensureNextPayoutDate() => $_ensure(1);
+  $1.Timestamp ensureNextPayoutDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.int get completedPayouts => $_getIZ(2);
@@ -6696,6 +6808,536 @@ class GetContributionAnalyticsResponse extends $pb.GeneratedMessage {
   $core.bool hasMemberStats() => $_has(10);
   @$pb.TagNumber(11)
   void clearMemberStats() => clearField(11);
+}
+
+class ListPublicGroupsRequest extends $pb.GeneratedMessage {
+  factory ListPublicGroupsRequest({
+    $core.int? page,
+    $core.int? pageSize,
+    $core.String? sortBy,
+    $core.String? searchQuery,
+  }) {
+    final $result = create();
+    if (page != null) {
+      $result.page = page;
+    }
+    if (pageSize != null) {
+      $result.pageSize = pageSize;
+    }
+    if (sortBy != null) {
+      $result.sortBy = sortBy;
+    }
+    if (searchQuery != null) {
+      $result.searchQuery = searchQuery;
+    }
+    return $result;
+  }
+  ListPublicGroupsRequest._() : super();
+  factory ListPublicGroupsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListPublicGroupsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListPublicGroupsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'sortBy')
+    ..aOS(4, _omitFieldNames ? '' : 'searchQuery')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListPublicGroupsRequest clone() => ListPublicGroupsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListPublicGroupsRequest copyWith(void Function(ListPublicGroupsRequest) updates) => super.copyWith((message) => updates(message as ListPublicGroupsRequest)) as ListPublicGroupsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListPublicGroupsRequest create() => ListPublicGroupsRequest._();
+  ListPublicGroupsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListPublicGroupsRequest> createRepeated() => $pb.PbList<ListPublicGroupsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListPublicGroupsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListPublicGroupsRequest>(create);
+  static ListPublicGroupsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get sortBy => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set sortBy($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSortBy() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSortBy() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get searchQuery => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set searchQuery($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSearchQuery() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSearchQuery() => clearField(4);
+}
+
+class ListPublicGroupsResponse extends $pb.GeneratedMessage {
+  factory ListPublicGroupsResponse({
+    $core.Iterable<GroupAccountMessage>? groups,
+    GroupPaginationInfo? pagination,
+  }) {
+    final $result = create();
+    if (groups != null) {
+      $result.groups.addAll(groups);
+    }
+    if (pagination != null) {
+      $result.pagination = pagination;
+    }
+    return $result;
+  }
+  ListPublicGroupsResponse._() : super();
+  factory ListPublicGroupsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListPublicGroupsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListPublicGroupsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<GroupAccountMessage>(1, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: GroupAccountMessage.create)
+    ..aOM<GroupPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: GroupPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListPublicGroupsResponse clone() => ListPublicGroupsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListPublicGroupsResponse copyWith(void Function(ListPublicGroupsResponse) updates) => super.copyWith((message) => updates(message as ListPublicGroupsResponse)) as ListPublicGroupsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListPublicGroupsResponse create() => ListPublicGroupsResponse._();
+  ListPublicGroupsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListPublicGroupsResponse> createRepeated() => $pb.PbList<ListPublicGroupsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListPublicGroupsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListPublicGroupsResponse>(create);
+  static ListPublicGroupsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<GroupAccountMessage> get groups => $_getList(0);
+
+  @$pb.TagNumber(2)
+  GroupPaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination(GroupPaginationInfo v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => clearField(2);
+  @$pb.TagNumber(2)
+  GroupPaginationInfo ensurePagination() => $_ensure(1);
+}
+
+class GetPublicGroupRequest extends $pb.GeneratedMessage {
+  factory GetPublicGroupRequest({
+    $core.String? groupId,
+  }) {
+    final $result = create();
+    if (groupId != null) {
+      $result.groupId = groupId;
+    }
+    return $result;
+  }
+  GetPublicGroupRequest._() : super();
+  factory GetPublicGroupRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPublicGroupRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPublicGroupRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'groupId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetPublicGroupRequest clone() => GetPublicGroupRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetPublicGroupRequest copyWith(void Function(GetPublicGroupRequest) updates) => super.copyWith((message) => updates(message as GetPublicGroupRequest)) as GetPublicGroupRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetPublicGroupRequest create() => GetPublicGroupRequest._();
+  GetPublicGroupRequest createEmptyInstance() => create();
+  static $pb.PbList<GetPublicGroupRequest> createRepeated() => $pb.PbList<GetPublicGroupRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetPublicGroupRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPublicGroupRequest>(create);
+  static GetPublicGroupRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get groupId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set groupId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGroupId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroupId() => clearField(1);
+}
+
+class PublicGroupContributor extends $pb.GeneratedMessage {
+  factory PublicGroupContributor({
+    $core.String? userId,
+    $core.String? displayName,
+    $core.String? profileImage,
+    $fixnum.Int64? totalContributed,
+    $core.int? contributionCount,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (displayName != null) {
+      $result.displayName = displayName;
+    }
+    if (profileImage != null) {
+      $result.profileImage = profileImage;
+    }
+    if (totalContributed != null) {
+      $result.totalContributed = totalContributed;
+    }
+    if (contributionCount != null) {
+      $result.contributionCount = contributionCount;
+    }
+    return $result;
+  }
+  PublicGroupContributor._() : super();
+  factory PublicGroupContributor.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PublicGroupContributor.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PublicGroupContributor', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'displayName')
+    ..aOS(3, _omitFieldNames ? '' : 'profileImage')
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'totalContributed', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'contributionCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PublicGroupContributor clone() => PublicGroupContributor()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PublicGroupContributor copyWith(void Function(PublicGroupContributor) updates) => super.copyWith((message) => updates(message as PublicGroupContributor)) as PublicGroupContributor;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PublicGroupContributor create() => PublicGroupContributor._();
+  PublicGroupContributor createEmptyInstance() => create();
+  static $pb.PbList<PublicGroupContributor> createRepeated() => $pb.PbList<PublicGroupContributor>();
+  @$core.pragma('dart2js:noInline')
+  static PublicGroupContributor getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PublicGroupContributor>(create);
+  static PublicGroupContributor? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get displayName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set displayName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDisplayName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDisplayName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get profileImage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set profileImage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProfileImage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProfileImage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get totalContributed => $_getI64(3);
+  @$pb.TagNumber(4)
+  set totalContributed($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTotalContributed() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalContributed() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get contributionCount => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set contributionCount($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasContributionCount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearContributionCount() => clearField(5);
+}
+
+class GetPublicGroupResponse extends $pb.GeneratedMessage {
+  factory GetPublicGroupResponse({
+    GroupAccountMessage? group,
+    GetGroupStatisticsResponse? statistics,
+    $core.Iterable<PublicGroupContributor>? topContributors,
+    $core.bool? isMember,
+  }) {
+    final $result = create();
+    if (group != null) {
+      $result.group = group;
+    }
+    if (statistics != null) {
+      $result.statistics = statistics;
+    }
+    if (topContributors != null) {
+      $result.topContributors.addAll(topContributors);
+    }
+    if (isMember != null) {
+      $result.isMember = isMember;
+    }
+    return $result;
+  }
+  GetPublicGroupResponse._() : super();
+  factory GetPublicGroupResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPublicGroupResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPublicGroupResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<GroupAccountMessage>(1, _omitFieldNames ? '' : 'group', subBuilder: GroupAccountMessage.create)
+    ..aOM<GetGroupStatisticsResponse>(2, _omitFieldNames ? '' : 'statistics', subBuilder: GetGroupStatisticsResponse.create)
+    ..pc<PublicGroupContributor>(3, _omitFieldNames ? '' : 'topContributors', $pb.PbFieldType.PM, subBuilder: PublicGroupContributor.create)
+    ..aOB(4, _omitFieldNames ? '' : 'isMember')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetPublicGroupResponse clone() => GetPublicGroupResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetPublicGroupResponse copyWith(void Function(GetPublicGroupResponse) updates) => super.copyWith((message) => updates(message as GetPublicGroupResponse)) as GetPublicGroupResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetPublicGroupResponse create() => GetPublicGroupResponse._();
+  GetPublicGroupResponse createEmptyInstance() => create();
+  static $pb.PbList<GetPublicGroupResponse> createRepeated() => $pb.PbList<GetPublicGroupResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetPublicGroupResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPublicGroupResponse>(create);
+  static GetPublicGroupResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  GroupAccountMessage get group => $_getN(0);
+  @$pb.TagNumber(1)
+  set group(GroupAccountMessage v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGroup() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroup() => clearField(1);
+  @$pb.TagNumber(1)
+  GroupAccountMessage ensureGroup() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  GetGroupStatisticsResponse get statistics => $_getN(1);
+  @$pb.TagNumber(2)
+  set statistics(GetGroupStatisticsResponse v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatistics() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatistics() => clearField(2);
+  @$pb.TagNumber(2)
+  GetGroupStatisticsResponse ensureStatistics() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.List<PublicGroupContributor> get topContributors => $_getList(2);
+
+  @$pb.TagNumber(4)
+  $core.bool get isMember => $_getBF(3);
+  @$pb.TagNumber(4)
+  set isMember($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIsMember() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIsMember() => clearField(4);
+}
+
+class JoinPublicGroupRequest extends $pb.GeneratedMessage {
+  factory JoinPublicGroupRequest({
+    $core.String? groupId,
+  }) {
+    final $result = create();
+    if (groupId != null) {
+      $result.groupId = groupId;
+    }
+    return $result;
+  }
+  JoinPublicGroupRequest._() : super();
+  factory JoinPublicGroupRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory JoinPublicGroupRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'JoinPublicGroupRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'groupId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  JoinPublicGroupRequest clone() => JoinPublicGroupRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  JoinPublicGroupRequest copyWith(void Function(JoinPublicGroupRequest) updates) => super.copyWith((message) => updates(message as JoinPublicGroupRequest)) as JoinPublicGroupRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static JoinPublicGroupRequest create() => JoinPublicGroupRequest._();
+  JoinPublicGroupRequest createEmptyInstance() => create();
+  static $pb.PbList<JoinPublicGroupRequest> createRepeated() => $pb.PbList<JoinPublicGroupRequest>();
+  @$core.pragma('dart2js:noInline')
+  static JoinPublicGroupRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<JoinPublicGroupRequest>(create);
+  static JoinPublicGroupRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get groupId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set groupId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGroupId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroupId() => clearField(1);
+}
+
+class JoinPublicGroupResponse extends $pb.GeneratedMessage {
+  factory JoinPublicGroupResponse({
+    GroupMemberMessage? member,
+    GroupAccountMessage? group,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (member != null) {
+      $result.member = member;
+    }
+    if (group != null) {
+      $result.group = group;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  JoinPublicGroupResponse._() : super();
+  factory JoinPublicGroupResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory JoinPublicGroupResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'JoinPublicGroupResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<GroupMemberMessage>(1, _omitFieldNames ? '' : 'member', subBuilder: GroupMemberMessage.create)
+    ..aOM<GroupAccountMessage>(2, _omitFieldNames ? '' : 'group', subBuilder: GroupAccountMessage.create)
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  JoinPublicGroupResponse clone() => JoinPublicGroupResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  JoinPublicGroupResponse copyWith(void Function(JoinPublicGroupResponse) updates) => super.copyWith((message) => updates(message as JoinPublicGroupResponse)) as JoinPublicGroupResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static JoinPublicGroupResponse create() => JoinPublicGroupResponse._();
+  JoinPublicGroupResponse createEmptyInstance() => create();
+  static $pb.PbList<JoinPublicGroupResponse> createRepeated() => $pb.PbList<JoinPublicGroupResponse>();
+  @$core.pragma('dart2js:noInline')
+  static JoinPublicGroupResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<JoinPublicGroupResponse>(create);
+  static JoinPublicGroupResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  GroupMemberMessage get member => $_getN(0);
+  @$pb.TagNumber(1)
+  set member(GroupMemberMessage v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMember() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMember() => clearField(1);
+  @$pb.TagNumber(1)
+  GroupMemberMessage ensureMember() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  GroupAccountMessage get group => $_getN(1);
+  @$pb.TagNumber(2)
+  set group(GroupAccountMessage v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasGroup() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGroup() => clearField(2);
+  @$pb.TagNumber(2)
+  GroupAccountMessage ensureGroup() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
 }
 
 class GroupPaginationInfo extends $pb.GeneratedMessage {
@@ -7281,7 +7923,7 @@ class GroupActivityLogMessage extends $pb.GeneratedMessage {
     $core.String? targetType,
     $core.String? targetId,
     $core.String? details,
-    $42.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -7330,7 +7972,7 @@ class GroupActivityLogMessage extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'targetType')
     ..aOS(8, _omitFieldNames ? '' : 'targetId')
     ..aOS(9, _omitFieldNames ? '' : 'details')
-    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -7437,15 +8079,15 @@ class GroupActivityLogMessage extends $pb.GeneratedMessage {
   void clearDetails() => clearField(9);
 
   @$pb.TagNumber(10)
-  $42.Timestamp get createdAt => $_getN(9);
+  $1.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($42.Timestamp v) { setField(10, v); }
+  set createdAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $42.Timestamp ensureCreatedAt() => $_ensure(9);
+  $1.Timestamp ensureCreatedAt() => $_ensure(9);
 }
 
 class GetGroupActivityLogsRequest extends $pb.GeneratedMessage {

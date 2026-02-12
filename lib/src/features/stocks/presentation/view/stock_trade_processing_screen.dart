@@ -40,14 +40,13 @@ class _StockTradeProcessingScreenState extends State<StockTradeProcessingScreen>
   late Animation<double> _rotationAnimation;
 
   double _progress = 0.0;
-  int _currentStepIndex = 0;
+  String _currentStep = 'Validating order...';
 
   final List<String> _processingSteps = [
-    'Validating order details...',
-    'Checking account balance...',
-    'Placing order with exchange...',
-    'Confirming execution...',
-    'Updating portfolio...',
+    'Validating order...',
+    'Checking balance...',
+    'Placing order...',
+    'Confirming...',
   ];
 
   @override
@@ -87,38 +86,16 @@ class _StockTradeProcessingScreenState extends State<StockTradeProcessingScreen>
   }
 
   Future<void> _placeOrder() async {
-    try {
-      // Simulate step-by-step progress
-      for (int i = 0; i < _processingSteps.length; i++) {
-        if (!mounted) return;
-
-        setState(() {
-          _currentStepIndex = i;
-          _progress = (i + 1) / _processingSteps.length;
-        });
-
-        // Wait before next step (except for the last one)
-        if (i < _processingSteps.length - 1) {
-          await Future.delayed(const Duration(milliseconds: 800));
-        }
-      }
-
-      // Place the actual order
-      if (!mounted) return;
-
-      final cubit = context.read<StockCubit>();
-      await cubit.placeOrder(
-        symbol: widget.stock.symbol,
-        type: widget.orderType,
-        side: widget.orderSide,
-        quantity: widget.quantity,
-        price: widget.orderType == OrderType.limit || widget.orderType == OrderType.stopLimit
-            ? widget.limitPrice
-            : null,
-      );
-    } catch (e) {
-      // Error handling is done in the BlocListener
-    }
+    final cubit = context.read<StockCubit>();
+    await cubit.placeOrder(
+      symbol: widget.stock.symbol,
+      type: widget.orderType,
+      side: widget.orderSide,
+      quantity: widget.quantity,
+      price: widget.orderType == OrderType.limit || widget.orderType == OrderType.stopLimit
+          ? widget.limitPrice
+          : null,
+    );
   }
 
   void _showErrorDialog(String error) {
@@ -175,15 +152,29 @@ class _StockTradeProcessingScreenState extends State<StockTradeProcessingScreen>
   Widget build(BuildContext context) {
     return BlocListener<StockCubit, StockState>(
       listener: (context, state) {
-        if (state is OrderPlaced) {
-          // Navigate to confirmation screen
+        if (state is OrderProcessing) {
+          if (!mounted) return;
+          setState(() {
+            _currentStep = state.step;
+            _progress = state.progress;
+          });
+        } else if (state is OrderSuccess) {
           Get.off(
             () => StockTradeConfirmationScreen(
               order: state.order,
               stock: widget.stock,
             ),
           );
-        } else if (state is StockError) {
+        } else if (state is OrderPlaced) {
+          Get.off(
+            () => StockTradeConfirmationScreen(
+              order: state.order,
+              stock: widget.stock,
+            ),
+          );
+        } else if (state is OrderFailed) {
+          _showErrorDialog(state.message);
+        } else if (state is OrderError) {
           _showErrorDialog(state.message);
         }
       },
@@ -333,8 +324,8 @@ class _StockTradeProcessingScreenState extends State<StockTradeProcessingScreen>
         final index = entry.key;
         final step = entry.value;
         final stepProgress = (index + 1) / _processingSteps.length;
-        final isCompleted = _progress >= stepProgress;
-        final isActive = index == _currentStepIndex;
+        final isCompleted = _progress > stepProgress;
+        final isActive = _currentStep == step;
 
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 8.h),

@@ -110,7 +110,7 @@ class ViewTransactionHistoryButton extends StatelessWidget {
   }) {
     return ViewTransactionHistoryButton(
       key: key,
-      serviceName: AppServiceName.payElectricityBill,
+      serviceName: AppServiceName.payBills,
       customLabel: customLabel,
       icon: Icons.bolt,
       isFullWidth: isFullWidth,

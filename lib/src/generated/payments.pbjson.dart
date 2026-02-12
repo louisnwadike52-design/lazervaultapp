@@ -133,6 +133,8 @@ const BatchTransferItem$json = {
     {'1': 'to_account_number', '3': 1, '4': 1, '5': 9, '10': 'toAccountNumber'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'reference', '3': 4, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'category', '3': 5, '4': 1, '5': 9, '10': 'category'},
   ],
 };
 
@@ -140,7 +142,8 @@ const BatchTransferItem$json = {
 final $typed_data.Uint8List batchTransferItemDescriptor = $convert.base64Decode(
     'ChFCYXRjaFRyYW5zZmVySXRlbRIqChF0b19hY2NvdW50X251bWJlchgBIAEoCVIPdG9BY2NvdW'
     '50TnVtYmVyEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EiAKC2Rlc2NyaXB0aW9uGAMgASgJUgtk'
-    'ZXNjcmlwdGlvbg==');
+    'ZXNjcmlwdGlvbhIcCglyZWZlcmVuY2UYBCABKAlSCXJlZmVyZW5jZRIaCghjYXRlZ29yeRgFIA'
+    'EoCVIIY2F0ZWdvcnk=');
 
 @$core.Deprecated('Use batchTransferRequestDescriptor instead')
 const BatchTransferRequest$json = {
@@ -164,22 +167,56 @@ final $typed_data.Uint8List batchTransferRequestDescriptor = $convert.base64Deco
 const BatchTransferResponse$json = {
   '1': 'BatchTransferResponse',
   '2': [
-    {'1': 'total_transfers', '3': 1, '4': 1, '5': 5, '10': 'totalTransfers'},
-    {'1': 'successful_transfers', '3': 2, '4': 1, '5': 5, '10': 'successfulTransfers'},
-    {'1': 'failed_transfers', '3': 3, '4': 1, '5': 5, '10': 'failedTransfers'},
-    {'1': 'payments', '3': 4, '4': 3, '5': 11, '6': '.payments.Payment', '10': 'payments'},
-    {'1': 'new_balance', '3': 5, '4': 1, '5': 1, '10': 'newBalance'},
-    {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'batch_id', '3': 1, '4': 1, '5': 9, '10': 'batchId'},
+    {'1': 'total_transfers', '3': 2, '4': 1, '5': 5, '10': 'totalTransfers'},
+    {'1': 'successful_transfers', '3': 3, '4': 1, '5': 5, '10': 'successfulTransfers'},
+    {'1': 'failed_transfers', '3': 4, '4': 1, '5': 5, '10': 'failedTransfers'},
+    {'1': 'results', '3': 5, '4': 3, '5': 11, '6': '.payments.BatchTransferResultItem', '10': 'results'},
+    {'1': 'new_balance', '3': 6, '4': 1, '5': 1, '10': 'newBalance'},
+    {'1': 'message', '3': 7, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'status', '3': 8, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'total_amount', '3': 9, '4': 1, '5': 1, '10': 'totalAmount'},
+    {'1': 'total_fee', '3': 10, '4': 1, '5': 1, '10': 'totalFee'},
+    {'1': 'created_at', '3': 11, '4': 1, '5': 9, '10': 'createdAt'},
+    {'1': 'completed_at', '3': 12, '4': 1, '5': 9, '10': 'completedAt'},
   ],
 };
 
 /// Descriptor for `BatchTransferResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List batchTransferResponseDescriptor = $convert.base64Decode(
-    'ChVCYXRjaFRyYW5zZmVyUmVzcG9uc2USJwoPdG90YWxfdHJhbnNmZXJzGAEgASgFUg50b3RhbF'
-    'RyYW5zZmVycxIxChRzdWNjZXNzZnVsX3RyYW5zZmVycxgCIAEoBVITc3VjY2Vzc2Z1bFRyYW5z'
-    'ZmVycxIpChBmYWlsZWRfdHJhbnNmZXJzGAMgASgFUg9mYWlsZWRUcmFuc2ZlcnMSLQoIcGF5bW'
-    'VudHMYBCADKAsyES5wYXltZW50cy5QYXltZW50UghwYXltZW50cxIfCgtuZXdfYmFsYW5jZRgF'
-    'IAEoAVIKbmV3QmFsYW5jZRIYCgdtZXNzYWdlGAYgASgJUgdtZXNzYWdl');
+    'ChVCYXRjaFRyYW5zZmVyUmVzcG9uc2USGQoIYmF0Y2hfaWQYASABKAlSB2JhdGNoSWQSJwoPdG'
+    '90YWxfdHJhbnNmZXJzGAIgASgFUg50b3RhbFRyYW5zZmVycxIxChRzdWNjZXNzZnVsX3RyYW5z'
+    'ZmVycxgDIAEoBVITc3VjY2Vzc2Z1bFRyYW5zZmVycxIpChBmYWlsZWRfdHJhbnNmZXJzGAQgAS'
+    'gFUg9mYWlsZWRUcmFuc2ZlcnMSOwoHcmVzdWx0cxgFIAMoCzIhLnBheW1lbnRzLkJhdGNoVHJh'
+    'bnNmZXJSZXN1bHRJdGVtUgdyZXN1bHRzEh8KC25ld19iYWxhbmNlGAYgASgBUgpuZXdCYWxhbm'
+    'NlEhgKB21lc3NhZ2UYByABKAlSB21lc3NhZ2USFgoGc3RhdHVzGAggASgJUgZzdGF0dXMSIQoM'
+    'dG90YWxfYW1vdW50GAkgASgBUgt0b3RhbEFtb3VudBIbCgl0b3RhbF9mZWUYCiABKAFSCHRvdG'
+    'FsRmVlEh0KCmNyZWF0ZWRfYXQYCyABKAlSCWNyZWF0ZWRBdBIhCgxjb21wbGV0ZWRfYXQYDCAB'
+    'KAlSC2NvbXBsZXRlZEF0');
+
+@$core.Deprecated('Use batchTransferResultItemDescriptor instead')
+const BatchTransferResultItem$json = {
+  '1': 'BatchTransferResultItem',
+  '2': [
+    {'1': 'transfer_id', '3': 1, '4': 1, '5': 9, '10': 'transferId'},
+    {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'fee', '3': 4, '4': 1, '5': 1, '10': 'fee'},
+    {'1': 'recipient_name', '3': 5, '4': 1, '5': 9, '10': 'recipientName'},
+    {'1': 'recipient_account', '3': 6, '4': 1, '5': 9, '10': 'recipientAccount'},
+    {'1': 'failure_reason', '3': 7, '4': 1, '5': 9, '10': 'failureReason'},
+    {'1': 'reference', '3': 8, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `BatchTransferResultItem`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchTransferResultItemDescriptor = $convert.base64Decode(
+    'ChdCYXRjaFRyYW5zZmVyUmVzdWx0SXRlbRIfCgt0cmFuc2Zlcl9pZBgBIAEoCVIKdHJhbnNmZX'
+    'JJZBIWCgZzdGF0dXMYAiABKAlSBnN0YXR1cxIWCgZhbW91bnQYAyABKAFSBmFtb3VudBIQCgNm'
+    'ZWUYBCABKAFSA2ZlZRIlCg5yZWNpcGllbnRfbmFtZRgFIAEoCVINcmVjaXBpZW50TmFtZRIrCh'
+    'FyZWNpcGllbnRfYWNjb3VudBgGIAEoCVIQcmVjaXBpZW50QWNjb3VudBIlCg5mYWlsdXJlX3Jl'
+    'YXNvbhgHIAEoCVINZmFpbHVyZVJlYXNvbhIcCglyZWZlcmVuY2UYCCABKAlSCXJlZmVyZW5jZQ'
+    '==');
 
 @$core.Deprecated('Use withdrawRequestDescriptor instead')
 const WithdrawRequest$json = {

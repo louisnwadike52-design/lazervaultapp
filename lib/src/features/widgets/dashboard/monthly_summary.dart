@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../statistics/cubit/statistics_cubit.dart';
 import '../../statistics/cubit/statistics_state.dart';
-import '../../../generated/statistics.pb.dart';
+import '../../../generated/accounts.pb.dart';
 
 enum TimePeriod { day, week, month }
 
@@ -42,7 +42,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         break;
     }
 
-    context.read<StatisticsCubit>().loadAnalytics(
+    context.read<StatisticsCubit>().loadStatistics(
           startDate: startDate,
           endDate: endDate,
         );
@@ -219,16 +219,16 @@ class _MonthlySummaryState extends State<MonthlySummary> {
   }
 
   Widget _buildLoadedState(StatisticsLoaded state) {
-    final analytics = state.analytics;
+    final timeSeries = state.expenseTimeSeries;
 
     // If no analytics data, show empty state
-    if (analytics == null) {
+    if (timeSeries == null) {
       return _buildEmptyState();
     }
 
-    final dailyTrend = analytics.dailyTrend;
-    final totalSpent = analytics.totalSpent;
-    final transactionCount = analytics.transactionCount;
+    final dailyTrend = timeSeries.dataPoints;
+    final totalSpent = timeSeries.totalExpenses;
+    final transactionCount = state.financialAnalytics?.currentPeriod.transactionCount ?? 0;
 
     // If no daily trend data, show empty state
     if (dailyTrend.isEmpty) {
@@ -325,7 +325,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           SizedBox(height: 24.h),
 
           // Statistics Section
-          _buildStatisticsRow(totalSpent, transactionCount, state.categoryBreakdown),
+          _buildStatisticsRow(totalSpent, transactionCount, state.categoryAnalytics?.expenseCategories ?? []),
         ],
       ),
     );
@@ -445,7 +445,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
     );
   }
 
-  Widget _buildExpenditureChart(List<DailySpending> dailyTrend) {
+  Widget _buildExpenditureChart(List<DailyExpensePoint> dailyTrend) {
     final spots = _createSpotsFromDailyTrend(dailyTrend);
 
     if (spots.isEmpty) {
@@ -488,7 +488,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                 return Padding(
                   padding: EdgeInsets.only(top: 8.h),
                   child: Text(
-                    _formatBottomLabel(dailyTrend[index].date.toDateTime()),
+                    _formatBottomLabel(DateTime.tryParse(dailyTrend[index].date) ?? DateTime.now()),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 10.sp,
@@ -588,7 +588,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
   Widget _buildStatisticsRow(
     double totalSpent,
     int transactionCount,
-    List<CategorySpending> categoryBreakdown,
+    List<CategoryBreakdownItem> categoryBreakdown,
   ) {
     final topCategory = categoryBreakdown.isNotEmpty ? categoryBreakdown.first : null;
     final avgTransaction = transactionCount > 0 ? totalSpent / transactionCount : 0.0;
@@ -710,13 +710,13 @@ class _MonthlySummaryState extends State<MonthlySummary> {
     );
   }
 
-  List<FlSpot> _createSpotsFromDailyTrend(List<DailySpending> dailyTrend) {
+  List<FlSpot> _createSpotsFromDailyTrend(List<DailyExpensePoint> dailyTrend) {
     return List.generate(dailyTrend.length, (index) {
       return FlSpot(index.toDouble(), dailyTrend[index].amount);
     });
   }
 
-  double _getMaxAmountFromTrend(List<DailySpending> dailyTrend) {
+  double _getMaxAmountFromTrend(List<DailyExpensePoint> dailyTrend) {
     if (dailyTrend.isEmpty) return 0;
     return dailyTrend
         .map((e) => e.amount)

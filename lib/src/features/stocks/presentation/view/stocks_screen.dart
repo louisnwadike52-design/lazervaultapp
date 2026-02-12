@@ -33,20 +33,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   
   final TextEditingController _searchController = TextEditingController();
   final List<String> _sectors = ['All', 'Technology', 'Healthcare', 'Finance', 'Energy', 'Consumer'];
-  final List<Map<String, String>> _countries = [
-    {'code': 'ALL', 'name': 'All Markets', 'flag': '🌍'},
-    {'code': 'US', 'name': 'United States', 'flag': '🇺🇸'},
-    {'code': 'UK', 'name': 'United Kingdom', 'flag': '🇬🇧'},
-    {'code': 'CA', 'name': 'Canada', 'flag': '🇨🇦'},
-    {'code': 'DE', 'name': 'Germany', 'flag': '🇩🇪'},
-    {'code': 'JP', 'name': 'Japan', 'flag': '🇯🇵'},
-    {'code': 'CN', 'name': 'China', 'flag': '🇨🇳'},
-    {'code': 'IN', 'name': 'India', 'flag': '🇮🇳'},
-    {'code': 'AU', 'name': 'Australia', 'flag': '🇦🇺'},
-    {'code': 'BR', 'name': 'Brazil', 'flag': '🇧🇷'},
-  ];
   String _selectedSector = 'All';
-  String _selectedCountry = 'ALL';
   int _selectedTab = 0;
   bool _showGainers = true;
 
@@ -812,101 +799,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Column(
         children: [
-          _buildCountryFilter(),
-          SizedBox(height: 12.h),
           _buildSectorFilter(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCountryFilter() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-            const Color(0xFF1F1F35).withValues(alpha: 0.9),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.public,
-            color: const Color(0xFF4A90E2),
-            size: 20.sp,
-          ),
-          SizedBox(width: 12.w),
-          Text(
-            'Market:',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedCountry,
-                dropdownColor: const Color(0xFF2A2A3E),
-                icon: Icon(
-                  Icons.keyboard_arrow_down,
-                  color: const Color(0xFF4A90E2),
-                  size: 20.sp,
-                ),
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-                items: _countries.map((country) {
-                  return DropdownMenuItem<String>(
-                    value: country['code'],
-                    child: Row(
-                      children: [
-                        Text(
-                          country['flag']!,
-                          style: TextStyle(fontSize: 16.sp),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          country['name']!,
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectedCountry = newValue;
-                    });
-                    context.read<StockCubit>().loadStocks(
-                      sector: _selectedSector == 'All' ? null : _selectedSector,
-                    );
-                  }
-                },
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -1693,33 +1586,34 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   }
 
   Widget _buildHoldingItem(StockHolding holding) {
-    // Helper method to create Stock from holding
+    // Helper method to create Stock from holding data
     Stock createStockFromHolding() {
+      final pricePerShare = holding.shares > 0 ? holding.totalValue / holding.shares : holding.currentPrice;
       return Stock(
         symbol: holding.symbol,
-        name: '${holding.symbol} Inc.',
-        currentPrice: holding.totalValue / holding.shares,
-        previousClose: (holding.totalValue / holding.shares) - 1.0,
-        change: 1.0,
-        changePercent: holding.totalReturnPercent,
-        dayHigh: (holding.totalValue / holding.shares) + 5.0,
-        dayLow: (holding.totalValue / holding.shares) - 5.0,
-        volume: 1000000,
-        marketCap: 1000000000,
-        peRatio: 25.0,
-        dividendYield: 2.5,
-        sector: 'Technology',
-        industry: 'Software',
-        logoUrl: 'https://via.placeholder.com/64x64/4A90E2/FFFFFF?text=${holding.symbol[0]}',
+        name: holding.name,
+        currentPrice: pricePerShare,
+        previousClose: pricePerShare - holding.dayChange,
+        change: holding.dayChange,
+        changePercent: holding.dayChangePercent,
+        dayHigh: pricePerShare,
+        dayLow: pricePerShare,
+        volume: 0,
+        marketCap: 0,
+        peRatio: 0,
+        dividendYield: 0,
+        sector: '',
+        industry: '',
+        logoUrl: holding.logoUrl.isNotEmpty ? holding.logoUrl : _getCompanyLogoUrl(holding.symbol),
         priceHistory: [],
         lastUpdated: DateTime.now(),
-        weekHigh52: (holding.totalValue / holding.shares) + 50.0,
-        weekLow52: (holding.totalValue / holding.shares) - 50.0,
-        avgVolume: 1500000,
-        beta: 1.2,
-        eps: 5.0,
-        description: 'A leading technology company',
-        exchange: 'NASDAQ',
+        weekHigh52: 0,
+        weekLow52: 0,
+        avgVolume: 0,
+        beta: 0,
+        eps: 0,
+        description: '',
+        exchange: '',
         currency: 'USD',
       );
     }
@@ -1987,14 +1881,35 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   }
 
   Widget _buildPortfolioPerformanceCards(Portfolio portfolio) {
+    // Derive best and worst performers from portfolio holdings
+    String bestSymbol = '--';
+    String bestChange = '--';
+    String bestValue = '--';
+    String worstSymbol = '--';
+    String worstChange = '--';
+    String worstValue = '--';
+
+    if (portfolio.holdings.isNotEmpty) {
+      final sorted = List<StockHolding>.from(portfolio.holdings)
+        ..sort((a, b) => b.totalReturnPercent.compareTo(a.totalReturnPercent));
+      final best = sorted.first;
+      final worst = sorted.last;
+      bestSymbol = best.symbol;
+      bestChange = '${best.totalReturnPercent >= 0 ? '+' : ''}${best.totalReturnPercent.toStringAsFixed(1)}%';
+      bestValue = '\$${best.totalValue.toStringAsFixed(0)}';
+      worstSymbol = worst.symbol;
+      worstChange = '${worst.totalReturnPercent >= 0 ? '+' : ''}${worst.totalReturnPercent.toStringAsFixed(1)}%';
+      worstValue = '\$${worst.totalValue.toStringAsFixed(0)}';
+    }
+
     return Row(
       children: [
         Expanded(
           child: _buildPerformanceCard(
             'Best Performer',
-            'AAPL',
-            '+12.5%',
-            '\$2,450',
+            bestSymbol,
+            bestChange,
+            bestValue,
             Colors.green,
             Icons.trending_up,
           ),
@@ -2003,9 +1918,9 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
         Expanded(
           child: _buildPerformanceCard(
             'Worst Performer',
-            'NFLX',
-            '-3.2%',
-            '\$890',
+            worstSymbol,
+            worstChange,
+            worstValue,
             Colors.red,
             Icons.trending_down,
           ),
@@ -2960,35 +2875,9 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12.r),
                     onTap: () {
-                      // Create a stock from symbol for quick trade
-                      final stock = Stock(
-                        symbol: symbol,
-                        name: '$symbol Inc.',
-                        currentPrice: 100.0,
-                        previousClose: 99.0,
-                        change: 1.0,
-                        changePercent: 1.0,
-                        dayHigh: 105.0,
-                        dayLow: 95.0,
-                        volume: 1000000,
-                        marketCap: 1000000000,
-                        peRatio: 25.0,
-                        dividendYield: 2.5,
-                        sector: 'Technology',
-                        industry: 'Software',
-                        logoUrl: 'https://via.placeholder.com/64x64/4A90E2/FFFFFF?text=${symbol[0]}',
-                        priceHistory: [],
-                        lastUpdated: DateTime.now(),
-                        weekHigh52: 150.0,
-                        weekLow52: 50.0,
-                        avgVolume: 1500000,
-                        beta: 1.2,
-                        eps: 5.0,
-                        description: 'A leading company',
-                        exchange: 'NASDAQ',
-                        currency: 'USD',
-                      );
-                      Get.to(() => CreateStockTradeCarousel(stock: stock));
+                      // Load stock details from API and navigate to trade
+                      context.read<StockCubit>().loadStockDetails(symbol);
+                      Get.toNamed(AppRoutes.stockDetails, arguments: {'symbol': symbol});
                     },
                     child: Container(
                                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -4501,14 +4390,6 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                             'Hello! I\'m your AI stock assistant. I can help you with market analysis, stock recommendations, and trading insights. What would you like to know?',
                             isBot: true,
                           ),
-                          _buildChatMessage(
-                            'What are the top performing stocks today?',
-                            isBot: false,
-                          ),
-                          _buildChatMessage(
-                            'Based on current market data, here are today\'s top performers:\n\n• AAPL: +2.5%\n• MSFT: +1.8%\n• GOOGL: +1.2%\n\nWould you like detailed analysis on any of these?',
-                            isBot: true,
-                          ),
                         ],
                       ),
                     ),
@@ -4676,11 +4557,32 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
             ],
           ),
           SizedBox(height: 16.h),
-          _buildTrendingStock('Apple Inc.', 'AAPL', '\$175.43', 2.34, Colors.blue),
-          SizedBox(height: 12.h),
-          _buildTrendingStock('Microsoft Corp.', 'MSFT', '\$378.85', 1.87, Colors.green),
-          SizedBox(height: 12.h),
-          _buildTrendingStock('Tesla Inc.', 'TSLA', '\$248.50', 3.21, Colors.red),
+          BlocBuilder<StockCubit, StockState>(
+            builder: (context, state) {
+              if (state is StockLoaded && state.stocks.isNotEmpty) {
+                // Sort by absolute change percent descending to get trending stocks
+                final trendingStocks = List<Stock>.from(state.stocks)
+                  ..sort((a, b) => b.changePercent.abs().compareTo(a.changePercent.abs()));
+                final top3 = trendingStocks.take(3).toList();
+                final trendingColors = [Colors.blue, Colors.green, Colors.red];
+                return Column(
+                  children: [
+                    for (int i = 0; i < top3.length; i++) ...[
+                      _buildTrendingStock(
+                        top3[i].name,
+                        top3[i].symbol,
+                        '\$${top3[i].currentPrice.toStringAsFixed(2)}',
+                        top3[i].changePercent,
+                        trendingColors[i % trendingColors.length],
+                      ),
+                      if (i < top3.length - 1) SizedBox(height: 12.h),
+                    ],
+                  ],
+                );
+              }
+              return SizedBox.shrink();
+            },
+          ),
         ],
       ),
     );
@@ -5151,20 +5053,60 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   }
 
   List<Widget> _buildTopGainers() {
+    final state = context.read<StockCubit>().state;
+    if (state is StockLoaded && state.stocks.isNotEmpty) {
+      final gainers = state.stocks
+          .where((s) => s.changePercent > 0)
+          .toList()
+        ..sort((a, b) => b.changePercent.compareTo(a.changePercent));
+      final top4 = gainers.take(4).toList();
+      return top4.map((stock) => _buildMoverCard(
+        stock.symbol,
+        stock.name,
+        '\$${stock.currentPrice.toStringAsFixed(2)}',
+        stock.changePercent,
+        Icons.trending_up,
+      )).toList();
+    }
     return [
-      _buildMoverCard('NVDA', 'NVIDIA Corp.', '\$875.28', 4.23, Icons.memory),
-      _buildMoverCard('AMD', 'Advanced Micro Devices', '\$142.33', 3.87, Icons.developer_board),
-      _buildMoverCard('GOOGL', 'Alphabet Inc.', '\$2,847.63', 2.95, Icons.search),
-      _buildMoverCard('META', 'Meta Platforms', '\$485.75', 2.14, Icons.facebook),
+      Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Text(
+            'Loading gainers...',
+            style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp),
+          ),
+        ),
+      ),
     ];
   }
 
   List<Widget> _buildTopLosers() {
+    final state = context.read<StockCubit>().state;
+    if (state is StockLoaded && state.stocks.isNotEmpty) {
+      final losers = state.stocks
+          .where((s) => s.changePercent < 0)
+          .toList()
+        ..sort((a, b) => a.changePercent.compareTo(b.changePercent));
+      final top4 = losers.take(4).toList();
+      return top4.map((stock) => _buildMoverCard(
+        stock.symbol,
+        stock.name,
+        '\$${stock.currentPrice.toStringAsFixed(2)}',
+        stock.changePercent,
+        Icons.trending_down,
+      )).toList();
+    }
     return [
-      _buildMoverCard('NFLX', 'Netflix Inc.', '\$398.42', -2.83, Icons.play_circle),
-      _buildMoverCard('UBER', 'Uber Technologies', '\$58.73', -1.95, Icons.local_taxi),
-      _buildMoverCard('SNAP', 'Snap Inc.', '\$12.45', -3.21, Icons.camera_alt),
-      _buildMoverCard('TWTR', 'Twitter Inc.', '\$45.67', -1.67, Icons.alternate_email),
+      Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Text(
+            'Loading losers...',
+            style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp),
+          ),
+        ),
+      ),
     ];
   }
 
@@ -5406,23 +5348,8 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   }
 
   String _getCompanyLogoUrl(String symbol) {
-    // Return company logo URLs based on symbol
-    final logoUrls = {
-      'AAPL': 'https://logo.clearbit.com/apple.com',
-      'MSFT': 'https://logo.clearbit.com/microsoft.com',
-      'GOOGL': 'https://logo.clearbit.com/google.com',
-      'TSLA': 'https://logo.clearbit.com/tesla.com',
-      'AMZN': 'https://logo.clearbit.com/amazon.com',
-      'META': 'https://logo.clearbit.com/meta.com',
-      'NVDA': 'https://logo.clearbit.com/nvidia.com',
-      'AMD': 'https://logo.clearbit.com/amd.com',
-      'NFLX': 'https://logo.clearbit.com/netflix.com',
-      'UBER': 'https://logo.clearbit.com/uber.com',
-      'SNAP': 'https://logo.clearbit.com/snap.com',
-      'TWTR': 'https://logo.clearbit.com/twitter.com',
-    };
-    
-    return logoUrls[symbol] ?? 'https://via.placeholder.com/64x64/4A90E2/FFFFFF?text=${symbol[0]}';
+    // Dynamically construct logo URL using Clearbit Logo API
+    return 'https://logo.clearbit.com/${symbol.toLowerCase()}.com';
   }
 
   void _showTrendingStockDetails(String symbol, String name, String price, double change, String logoUrl) {
@@ -5862,36 +5789,9 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  // Create a mock Stock object for navigation
-                  final currentPrice = double.tryParse(price.replaceAll('\$', '').replaceAll(',', '')) ?? 0.0;
-                  final stock = Stock(
-                    symbol: symbol,
-                    name: name,
-                    currentPrice: currentPrice,
-                    previousClose: currentPrice - change,
-                    change: change,
-                    changePercent: change,
-                    dayHigh: currentPrice + 5.0,
-                    dayLow: currentPrice - 5.0,
-                    volume: 1000000,
-                    marketCap: 1000000000,
-                    peRatio: 25.0,
-                    dividendYield: 2.5,
-                    sector: 'Technology',
-                    industry: 'Software',
-                    logoUrl: logoUrl,
-                    priceHistory: [],
-                    lastUpdated: DateTime.now(),
-                    weekHigh52: currentPrice + 50.0,
-                    weekLow52: currentPrice - 50.0,
-                    avgVolume: 1500000,
-                    beta: 1.2,
-                    eps: 5.0,
-                    description: 'A leading technology company',
-                    exchange: 'NASDAQ',
-                    currency: 'USD',
-                  );
-                  Get.toNamed(AppRoutes.stockDetails, arguments: stock);
+                  // Load full stock details from API and navigate
+                  context.read<StockCubit>().loadStockDetails(symbol);
+                  Get.toNamed(AppRoutes.stockDetails, arguments: {'symbol': symbol});
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,

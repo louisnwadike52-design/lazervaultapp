@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,12 +11,12 @@ import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/contact_service.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
-import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
@@ -32,6 +34,7 @@ import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/config/country_config.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 enum AddRecipientMethod { bankDetails, username, contacts }
 
@@ -1167,29 +1170,575 @@ class _AddRecipientState extends State<AddRecipient> {
   }
 
   void _showContactSelection() {
+    final contactService = serviceLocator<ContactService>();
+    Timer? searchDebounce;
+
+    // State variables hoisted outside StatefulBuilder so they persist across rebuilds
+    List<DeviceContact> allContacts = [];
+    List<DeviceContact> filteredContacts = [];
+    String searchQuery = '';
+    bool isLoading = true;
+    bool permissionDenied = false;
+    bool permissionPermanentlyDenied = false;
+    String? errorMessage;
+    bool initialLoadTriggered = false;
+    final searchController = TextEditingController();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (bottomSheetContext) => BlocProvider.value(
-        value: context.read<RecipientCubit>(),
-        child: EnhancedRecipientSelectionBottomSheet(
-          onRecipientSelected: (recipient) {
-            // Handle existing recipient selection if needed
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            void loadContacts() {
+              setSheetState(() {
+                isLoading = true;
+                permissionDenied = false;
+                permissionPermanentlyDenied = false;
+                errorMessage = null;
+              });
+
+              _loadContactsForSheet(
+                contactService: contactService,
+                onContactsLoaded: (contacts) {
+                  if (bottomSheetContext.mounted) {
+                    setSheetState(() {
+                      allContacts = contacts;
+                      filteredContacts = contacts;
+                      searchQuery = '';
+                      searchController.clear();
+                      isLoading = false;
+                    });
+                  }
+                },
+                onPermissionDenied: () {
+                  if (bottomSheetContext.mounted) {
+                    setSheetState(() {
+                      isLoading = false;
+                      permissionDenied = true;
+                    });
+                  }
+                },
+                onPermissionPermanentlyDenied: () {
+                  if (bottomSheetContext.mounted) {
+                    setSheetState(() {
+                      isLoading = false;
+                      permissionPermanentlyDenied = true;
+                    });
+                  }
+                },
+                onError: (message) {
+                  if (bottomSheetContext.mounted) {
+                    setSheetState(() {
+                      isLoading = false;
+                      errorMessage = message;
+                    });
+                  }
+                },
+              );
+            }
+
+            // Trigger initial load once
+            if (!initialLoadTriggered) {
+              initialLoadTriggered = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                loadContacts();
+              });
+            }
+
+            return _buildContactSheetContent(
+              allContacts: allContacts,
+              filteredContacts: filteredContacts,
+              searchQuery: searchQuery,
+              isLoading: isLoading,
+              permissionDenied: permissionDenied,
+              permissionPermanentlyDenied: permissionPermanentlyDenied,
+              errorMessage: errorMessage,
+              contactService: contactService,
+              searchController: searchController,
+              onRetry: loadContacts,
+              onSearchChanged: (query) {
+                searchDebounce?.cancel();
+                searchDebounce = Timer(const Duration(milliseconds: 300), () {
+                  final filtered = query.isEmpty
+                      ? allContacts
+                      : allContacts.where((c) => c.matchesQuery(query)).toList();
+                  if (bottomSheetContext.mounted) {
+                    setSheetState(() {
+                      searchQuery = query;
+                      filteredContacts = filtered;
+                    });
+                  }
+                });
+              },
+              onContactTap: (contact) {
+                searchDebounce?.cancel();
+                Navigator.pop(bottomSheetContext);
+                _showAddContactAsRecipientDialog(contact);
+              },
+            );
           },
-          onLazertagUserSelected: (user) {
-            // Handle lazertag user selection if needed
-          },
-          onContactSelected: (contact) {
-            Navigator.pop(bottomSheetContext);
-            _showAddContactAsRecipientDialog(contact);
-          },
-          allowLazertagUsers: false, // Only show contacts
-          allowContacts: true,
+        );
+      },
+    ).whenComplete(() {
+      searchDebounce?.cancel();
+      searchController.dispose();
+    });
+  }
+
+  Future<void> _loadContactsForSheet({
+    required ContactService contactService,
+    required void Function(List<DeviceContact>) onContactsLoaded,
+    required VoidCallback onPermissionDenied,
+    required VoidCallback onPermissionPermanentlyDenied,
+    required void Function(String) onError,
+  }) async {
+    try {
+      final status = await contactService.getPermissionStatus();
+
+      if (status.isPermanentlyDenied) {
+        onPermissionPermanentlyDenied();
+        return;
+      }
+
+      if (!status.isGranted) {
+        final granted = await contactService.requestPermission();
+        if (!granted) {
+          // Check again to distinguish permanent denial
+          final newStatus = await contactService.getPermissionStatus();
+          if (newStatus.isPermanentlyDenied) {
+            onPermissionPermanentlyDenied();
+          } else {
+            onPermissionDenied();
+          }
+          return;
+        }
+      }
+
+      final contacts = await contactService.getContactsWithPhone();
+      onContactsLoaded(contacts);
+    } catch (e) {
+      debugPrint('Error loading contacts: $e');
+      onError('Failed to load contacts. Please try again.');
+    }
+  }
+
+  Widget _buildContactSheetContent({
+    required List<DeviceContact> allContacts,
+    required List<DeviceContact> filteredContacts,
+    required String searchQuery,
+    required bool isLoading,
+    required bool permissionDenied,
+    required bool permissionPermanentlyDenied,
+    required String? errorMessage,
+    required ContactService contactService,
+    required TextEditingController searchController,
+    required VoidCallback onRetry,
+    required void Function(String) onSearchChanged,
+    required void Function(DeviceContact) onContactTap,
+  }) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+      ),
+      child: Column(
+        children: [
+          // Handle bar
+          Container(
+            margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+
+          // Title
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+            child: Row(
+              children: [
+                Text(
+                  'Device Contacts',
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const Spacer(),
+                if (!isLoading && !permissionDenied && !permissionPermanentlyDenied && errorMessage == null)
+                  Text(
+                    searchQuery.isEmpty
+                        ? '${allContacts.length} contacts'
+                        : '${filteredContacts.length} results',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Search bar (only when contacts loaded)
+          if (!isLoading && !permissionDenied && !permissionPermanentlyDenied && errorMessage == null && allContacts.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+              child: TextField(
+                controller: searchController,
+                onChanged: onSearchChanged,
+                style: TextStyle(fontSize: 14.sp, color: Colors.black87),
+                decoration: InputDecoration(
+                  hintText: 'Search by name or phone number',
+                  hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20.sp),
+                  suffixIcon: searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey[400], size: 18.sp),
+                          onPressed: () {
+                            searchController.clear();
+                            onSearchChanged('');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                ),
+              ),
+            ),
+
+          Divider(height: 1, color: Colors.grey[200]),
+
+          // Content area
+          Expanded(
+            child: _buildContactSheetBody(
+              filteredContacts: filteredContacts,
+              searchQuery: searchQuery,
+              isLoading: isLoading,
+              permissionDenied: permissionDenied,
+              permissionPermanentlyDenied: permissionPermanentlyDenied,
+              errorMessage: errorMessage,
+              contactService: contactService,
+              allContactsEmpty: allContacts.isEmpty,
+              onRetry: onRetry,
+              onContactTap: onContactTap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactSheetBody({
+    required List<DeviceContact> filteredContacts,
+    required String searchQuery,
+    required bool isLoading,
+    required bool permissionDenied,
+    required bool permissionPermanentlyDenied,
+    required String? errorMessage,
+    required ContactService contactService,
+    required bool allContactsEmpty,
+    required VoidCallback onRetry,
+    required void Function(DeviceContact) onContactTap,
+  }) {
+    // Loading state
+    if (isLoading) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(
+              color: Color.fromARGB(255, 78, 3, 208),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Loading contacts...',
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+            ),
+          ],
         ),
-                          ),
-                        );
-                      }
+      );
+    }
+
+    // Permission denied
+    if (permissionDenied) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.contacts, size: 48.sp, color: Colors.grey[400]),
+              SizedBox(height: 16.h),
+              Text(
+                'Contacts Access Required',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'LazerVault needs access to your contacts to find people you can send money to.',
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24.h),
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: Icon(Icons.lock_open, size: 18.sp),
+                label: const Text('Grant Permission'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Permission permanently denied
+    if (permissionPermanentlyDenied) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.settings, size: 48.sp, color: Colors.grey[400]),
+              SizedBox(height: 16.h),
+              Text(
+                'Permission Required',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Contacts permission was denied. Please enable it in your device settings to browse contacts.',
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24.h),
+              ElevatedButton.icon(
+                onPressed: () => contactService.openSettings(),
+                icon: Icon(Icons.settings, size: 18.sp),
+                label: const Text('Open Settings'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Error state
+    if (errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline, size: 48.sp, color: Colors.red[300]),
+              SizedBox(height: 16.h),
+              Text(
+                errorMessage,
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24.h),
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: Icon(Icons.refresh, size: 18.sp),
+                label: const Text('Try Again'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Empty contacts
+    if (allContactsEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.person_off, size: 48.sp, color: Colors.grey[400]),
+              SizedBox(height: 16.h),
+              Text(
+                'No Contacts Found',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'No contacts with phone numbers were found on your device.',
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Search no results
+    if (filteredContacts.isEmpty && searchQuery.isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.search_off, size: 48.sp, color: Colors.grey[400]),
+              SizedBox(height: 16.h),
+              Text(
+                'No Results',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'No contacts match "$searchQuery"',
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Contact list
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      itemCount: filteredContacts.length,
+      itemBuilder: (context, index) {
+        final contact = filteredContacts[index];
+        return _buildContactListItem(contact: contact, onTap: onContactTap);
+      },
+    );
+  }
+
+  Widget _buildContactListItem({
+    required DeviceContact contact,
+    required void Function(DeviceContact) onTap,
+  }) {
+    return InkWell(
+      onTap: () => onTap(contact),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+        child: Row(
+          children: [
+            // Avatar with initials
+            Container(
+              width: 44.w,
+              height: 44.h,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color.fromARGB(255, 78, 3, 208),
+                    Color.fromARGB(255, 120, 40, 240),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Center(
+                child: Text(
+                  contact.initials,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 14.w),
+            // Name and phone
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    contact.name,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (contact.phoneNumber != null) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      contact.phoneNumber!,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: Colors.grey[500],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey[400], size: 20.sp),
+          ],
+        ),
+      ),
+    );
+  }
 
   // Contact bank verification state
   String? _contactSelectedBankCode;

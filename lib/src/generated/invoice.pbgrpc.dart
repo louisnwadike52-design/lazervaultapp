@@ -45,10 +45,6 @@ class InvoiceServiceClient extends $grpc.Client {
       '/invoice.InvoiceService/SendInvoiceReminder',
       ($0.SendInvoiceReminderRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.SendInvoiceReminderResponse.fromBuffer(value));
-  static final _$sendInvoiceToEmail = $grpc.ClientMethod<$0.SendInvoiceToEmailRequest, $0.SendInvoiceToEmailResponse>(
-      '/invoice.InvoiceService/SendInvoiceToEmail',
-      ($0.SendInvoiceToEmailRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.SendInvoiceToEmailResponse.fromBuffer(value));
   static final _$updateInvoiceStatus = $grpc.ClientMethod<$0.UpdateInvoiceStatusRequest, $0.UpdateInvoiceStatusResponse>(
       '/invoice.InvoiceService/UpdateInvoiceStatus',
       ($0.UpdateInvoiceStatusRequest value) => value.writeToBuffer(),
@@ -85,6 +81,10 @@ class InvoiceServiceClient extends $grpc.Client {
       '/invoice.InvoiceService/UploadInvoiceImage',
       ($0.UploadInvoiceImageRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.UploadInvoiceImageResponse.fromBuffer(value));
+  static final _$sendInvoiceToEmail = $grpc.ClientMethod<$0.SendInvoiceToEmailRequest, $0.SendInvoiceToEmailResponse>(
+      '/invoice.InvoiceService/SendInvoiceToEmail',
+      ($0.SendInvoiceToEmailRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.SendInvoiceToEmailResponse.fromBuffer(value));
 
   InvoiceServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -114,10 +114,6 @@ class InvoiceServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.SendInvoiceReminderResponse> sendInvoiceReminder($0.SendInvoiceReminderRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$sendInvoiceReminder, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail($0.SendInvoiceToEmailRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$sendInvoiceToEmail, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.UpdateInvoiceStatusResponse> updateInvoiceStatus($0.UpdateInvoiceStatusRequest request, {$grpc.CallOptions? options}) {
@@ -154,6 +150,10 @@ class InvoiceServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.UploadInvoiceImageResponse> uploadInvoiceImage($0.UploadInvoiceImageRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$uploadInvoiceImage, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail($0.SendInvoiceToEmailRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$sendInvoiceToEmail, request, options: options);
   }
 }
 
@@ -204,13 +204,6 @@ abstract class InvoiceServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.SendInvoiceReminderRequest.fromBuffer(value),
         ($0.SendInvoiceReminderResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.SendInvoiceToEmailRequest, $0.SendInvoiceToEmailResponse>(
-        'SendInvoiceToEmail',
-        sendInvoiceToEmail_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.SendInvoiceToEmailRequest.fromBuffer(value),
-        ($0.SendInvoiceToEmailResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.UpdateInvoiceStatusRequest, $0.UpdateInvoiceStatusResponse>(
         'UpdateInvoiceStatus',
         updateInvoiceStatus_Pre,
@@ -274,6 +267,13 @@ abstract class InvoiceServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.UploadInvoiceImageRequest.fromBuffer(value),
         ($0.UploadInvoiceImageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SendInvoiceToEmailRequest, $0.SendInvoiceToEmailResponse>(
+        'SendInvoiceToEmail',
+        sendInvoiceToEmail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.SendInvoiceToEmailRequest.fromBuffer(value),
+        ($0.SendInvoiceToEmailResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateInvoiceResponse> createInvoice_Pre($grpc.ServiceCall call, $async.Future<$0.CreateInvoiceRequest> request) async {
@@ -298,10 +298,6 @@ abstract class InvoiceServiceBase extends $grpc.Service {
 
   $async.Future<$0.SendInvoiceReminderResponse> sendInvoiceReminder_Pre($grpc.ServiceCall call, $async.Future<$0.SendInvoiceReminderRequest> request) async {
     return sendInvoiceReminder(call, await request);
-  }
-
-  $async.Future<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail_Pre($grpc.ServiceCall call, $async.Future<$0.SendInvoiceToEmailRequest> request) async {
-    return sendInvoiceToEmail(call, await request);
   }
 
   $async.Future<$0.UpdateInvoiceStatusResponse> updateInvoiceStatus_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateInvoiceStatusRequest> request) async {
@@ -340,13 +336,16 @@ abstract class InvoiceServiceBase extends $grpc.Service {
     return uploadInvoiceImage(call, await request);
   }
 
+  $async.Future<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail_Pre($grpc.ServiceCall call, $async.Future<$0.SendInvoiceToEmailRequest> request) async {
+    return sendInvoiceToEmail(call, await request);
+  }
+
   $async.Future<$0.CreateInvoiceResponse> createInvoice($grpc.ServiceCall call, $0.CreateInvoiceRequest request);
   $async.Future<$0.GetInvoicesResponse> getInvoices($grpc.ServiceCall call, $0.GetInvoicesRequest request);
   $async.Future<$0.GetInvoiceResponse> getInvoice($grpc.ServiceCall call, $0.GetInvoiceRequest request);
   $async.Future<$0.PayInvoiceResponse> payInvoice($grpc.ServiceCall call, $0.PayInvoiceRequest request);
   $async.Future<$0.CancelInvoiceResponse> cancelInvoice($grpc.ServiceCall call, $0.CancelInvoiceRequest request);
   $async.Future<$0.SendInvoiceReminderResponse> sendInvoiceReminder($grpc.ServiceCall call, $0.SendInvoiceReminderRequest request);
-  $async.Future<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail($grpc.ServiceCall call, $0.SendInvoiceToEmailRequest request);
   $async.Future<$0.UpdateInvoiceStatusResponse> updateInvoiceStatus($grpc.ServiceCall call, $0.UpdateInvoiceStatusRequest request);
   $async.Future<$0.TagUsersToInvoiceResponse> tagUsersToInvoice($grpc.ServiceCall call, $0.TagUsersToInvoiceRequest request);
   $async.Future<$0.GetInvoicesTaggedToUserResponse> getInvoicesTaggedToUser($grpc.ServiceCall call, $0.GetInvoicesTaggedToUserRequest request);
@@ -356,4 +355,5 @@ abstract class InvoiceServiceBase extends $grpc.Service {
   $async.Future<$0.GetInvoiceStatisticsResponse> getInvoiceStatistics($grpc.ServiceCall call, $0.GetInvoiceStatisticsRequest request);
   $async.Future<$0.UnlockInvoiceResponse> unlockInvoice($grpc.ServiceCall call, $0.UnlockInvoiceRequest request);
   $async.Future<$0.UploadInvoiceImageResponse> uploadInvoiceImage($grpc.ServiceCall call, $0.UploadInvoiceImageRequest request);
+  $async.Future<$0.SendInvoiceToEmailResponse> sendInvoiceToEmail($grpc.ServiceCall call, $0.SendInvoiceToEmailRequest request);
 }

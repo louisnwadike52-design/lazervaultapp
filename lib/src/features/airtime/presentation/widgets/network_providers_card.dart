@@ -47,15 +47,7 @@ class NetworkProvidersCard extends StatelessWidget {
                       // Pass available providers or trigger loading in the next screen
                       if (state is AirtimeNetworkProvidersLoaded) {
                         Get.toNamed(AppRoutes.airtimeNetworkSelection, arguments: {
-                          'country': Country(
-                            id: 'ng',
-                            code: 'NG',
-                            name: 'Nigeria',
-                            currency: 'NGN',
-                            dialCode: '+234',
-                            flag: '🇳🇬',
-                            currencySymbol: '₦',
-                          ),
+                          'country': DefaultCountries.nigeria,
                           'networkProviders': state.providers,
                         });
                       } else {
@@ -127,27 +119,11 @@ class NetworkProvidersCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Get.find<AirtimeCubit>().selectNetworkProvider(
-          Country(
-            id: 'ng',
-            code: 'NG',
-            name: 'Nigeria',
-            currency: '₦',
-            dialCode: '+234',
-            flag: '🇳🇬',
-            currencySymbol: '₦',
-          ),
+          DefaultCountries.nigeria,
           provider,
         );
         Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {
-          'country': Country(
-            id: 'ng',
-            code: 'NG',
-            name: 'Nigeria',
-            currency: '₦',
-            dialCode: '+234',
-            flag: '🇳🇬',
-            currencySymbol: '₦',
-          ),
+          'country': DefaultCountries.nigeria,
           'networkProvider': provider,
         });
       },
@@ -172,7 +148,7 @@ class NetworkProvidersCard extends StatelessWidget {
               width: 32.w,
               height: 32.w,
               decoration: BoxDecoration(
-                color: _getProviderColor(provider.type),
+                color: provider.type.color,
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Center(
@@ -311,19 +287,4 @@ class NetworkProvidersCard extends StatelessWidget {
     );
   }
 
-  Color _getProviderColor(NetworkProviderType type) {
-    switch (type) {
-      case NetworkProviderType.mtn:
-        return Color(0xFFFFCC00);
-      case NetworkProviderType.airtel:
-        return Color(0xFFFF0000);
-      case NetworkProviderType.glo:
-        return Color(0xFF00B04F);
-      case NetworkProviderType.etisalat:
-      case NetworkProviderType.ninemobile:
-        return Color(0xFF00AA4F);
-      default:
-        return Color(0xFF3B82F6); // Default blue color
-    }
-  }
 } 

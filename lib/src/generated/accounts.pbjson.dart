@@ -1595,3 +1595,201 @@ final $typed_data.Uint8List getPlatformWalletTransactionsResponseDescriptor = $c
     'gBIAMoCzImLmFjY291bnRzLlBsYXRmb3JtV2FsbGV0VHJhbnNhY3Rpb25Nc2dSDHRyYW5zYWN0'
     'aW9ucxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');
 
+@$core.Deprecated('Use periodTotalsDescriptor instead')
+const PeriodTotals$json = {
+  '1': 'PeriodTotals',
+  '2': [
+    {'1': 'total_income', '3': 1, '4': 1, '5': 1, '10': 'totalIncome'},
+    {'1': 'total_expenses', '3': 2, '4': 1, '5': 1, '10': 'totalExpenses'},
+    {'1': 'net', '3': 3, '4': 1, '5': 1, '10': 'net'},
+    {'1': 'transaction_count', '3': 4, '4': 1, '5': 5, '10': 'transactionCount'},
+  ],
+};
+
+/// Descriptor for `PeriodTotals`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List periodTotalsDescriptor = $convert.base64Decode(
+    'CgxQZXJpb2RUb3RhbHMSIQoMdG90YWxfaW5jb21lGAEgASgBUgt0b3RhbEluY29tZRIlCg50b3'
+    'RhbF9leHBlbnNlcxgCIAEoAVINdG90YWxFeHBlbnNlcxIQCgNuZXQYAyABKAFSA25ldBIrChF0'
+    'cmFuc2FjdGlvbl9jb3VudBgEIAEoBVIQdHJhbnNhY3Rpb25Db3VudA==');
+
+@$core.Deprecated('Use getFinancialAnalyticsRequestDescriptor instead')
+const GetFinancialAnalyticsRequest$json = {
+  '1': 'GetFinancialAnalyticsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'period', '3': 2, '4': 1, '5': 9, '10': 'period'},
+    {'1': 'start_date', '3': 3, '4': 1, '5': 9, '10': 'startDate'},
+    {'1': 'end_date', '3': 4, '4': 1, '5': 9, '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetFinancialAnalyticsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getFinancialAnalyticsRequestDescriptor = $convert.base64Decode(
+    'ChxHZXRGaW5hbmNpYWxBbmFseXRpY3NSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY2'
+    '91bnRJZBIWCgZwZXJpb2QYAiABKAlSBnBlcmlvZBIdCgpzdGFydF9kYXRlGAMgASgJUglzdGFy'
+    'dERhdGUSGQoIZW5kX2RhdGUYBCABKAlSB2VuZERhdGU=');
+
+@$core.Deprecated('Use getFinancialAnalyticsResponseDescriptor instead')
+const GetFinancialAnalyticsResponse$json = {
+  '1': 'GetFinancialAnalyticsResponse',
+  '2': [
+    {'1': 'current_period', '3': 1, '4': 1, '5': 11, '6': '.accounts.PeriodTotals', '10': 'currentPeriod'},
+    {'1': 'previous_period', '3': 2, '4': 1, '5': 11, '6': '.accounts.PeriodTotals', '10': 'previousPeriod'},
+    {'1': 'income_change_percent', '3': 3, '4': 1, '5': 1, '10': 'incomeChangePercent'},
+    {'1': 'expense_change_percent', '3': 4, '4': 1, '5': 1, '10': 'expenseChangePercent'},
+    {'1': 'period_label', '3': 5, '4': 1, '5': 9, '10': 'periodLabel'},
+  ],
+};
+
+/// Descriptor for `GetFinancialAnalyticsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getFinancialAnalyticsResponseDescriptor = $convert.base64Decode(
+    'Ch1HZXRGaW5hbmNpYWxBbmFseXRpY3NSZXNwb25zZRI9Cg5jdXJyZW50X3BlcmlvZBgBIAEoCz'
+    'IWLmFjY291bnRzLlBlcmlvZFRvdGFsc1INY3VycmVudFBlcmlvZBI/Cg9wcmV2aW91c19wZXJp'
+    'b2QYAiABKAsyFi5hY2NvdW50cy5QZXJpb2RUb3RhbHNSDnByZXZpb3VzUGVyaW9kEjIKFWluY2'
+    '9tZV9jaGFuZ2VfcGVyY2VudBgDIAEoAVITaW5jb21lQ2hhbmdlUGVyY2VudBI0ChZleHBlbnNl'
+    'X2NoYW5nZV9wZXJjZW50GAQgASgBUhRleHBlbnNlQ2hhbmdlUGVyY2VudBIhCgxwZXJpb2RfbG'
+    'FiZWwYBSABKAlSC3BlcmlvZExhYmVs');
+
+@$core.Deprecated('Use categoryBreakdownItemDescriptor instead')
+const CategoryBreakdownItem$json = {
+  '1': 'CategoryBreakdownItem',
+  '2': [
+    {'1': 'category_name', '3': 1, '4': 1, '5': 9, '10': 'categoryName'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'transaction_count', '3': 3, '4': 1, '5': 5, '10': 'transactionCount'},
+    {'1': 'percentage', '3': 4, '4': 1, '5': 1, '10': 'percentage'},
+  ],
+};
+
+/// Descriptor for `CategoryBreakdownItem`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List categoryBreakdownItemDescriptor = $convert.base64Decode(
+    'ChVDYXRlZ29yeUJyZWFrZG93bkl0ZW0SIwoNY2F0ZWdvcnlfbmFtZRgBIAEoCVIMY2F0ZWdvcn'
+    'lOYW1lEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EisKEXRyYW5zYWN0aW9uX2NvdW50GAMgASgF'
+    'UhB0cmFuc2FjdGlvbkNvdW50Eh4KCnBlcmNlbnRhZ2UYBCABKAFSCnBlcmNlbnRhZ2U=');
+
+@$core.Deprecated('Use getCategoryAnalyticsRequestDescriptor instead')
+const GetCategoryAnalyticsRequest$json = {
+  '1': 'GetCategoryAnalyticsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'start_date', '3': 2, '4': 1, '5': 9, '10': 'startDate'},
+    {'1': 'end_date', '3': 3, '4': 1, '5': 9, '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetCategoryAnalyticsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCategoryAnalyticsRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRDYXRlZ29yeUFuYWx5dGljc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
+    'VudElkEh0KCnN0YXJ0X2RhdGUYAiABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgDIAEoCVIH'
+    'ZW5kRGF0ZQ==');
+
+@$core.Deprecated('Use getCategoryAnalyticsResponseDescriptor instead')
+const GetCategoryAnalyticsResponse$json = {
+  '1': 'GetCategoryAnalyticsResponse',
+  '2': [
+    {'1': 'expense_categories', '3': 1, '4': 3, '5': 11, '6': '.accounts.CategoryBreakdownItem', '10': 'expenseCategories'},
+    {'1': 'income_categories', '3': 2, '4': 3, '5': 11, '6': '.accounts.CategoryBreakdownItem', '10': 'incomeCategories'},
+    {'1': 'total_expenses', '3': 3, '4': 1, '5': 1, '10': 'totalExpenses'},
+    {'1': 'total_income', '3': 4, '4': 1, '5': 1, '10': 'totalIncome'},
+  ],
+};
+
+/// Descriptor for `GetCategoryAnalyticsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCategoryAnalyticsResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRDYXRlZ29yeUFuYWx5dGljc1Jlc3BvbnNlEk4KEmV4cGVuc2VfY2F0ZWdvcmllcxgBIA'
+    'MoCzIfLmFjY291bnRzLkNhdGVnb3J5QnJlYWtkb3duSXRlbVIRZXhwZW5zZUNhdGVnb3JpZXMS'
+    'TAoRaW5jb21lX2NhdGVnb3JpZXMYAiADKAsyHy5hY2NvdW50cy5DYXRlZ29yeUJyZWFrZG93bk'
+    'l0ZW1SEGluY29tZUNhdGVnb3JpZXMSJQoOdG90YWxfZXhwZW5zZXMYAyABKAFSDXRvdGFsRXhw'
+    'ZW5zZXMSIQoMdG90YWxfaW5jb21lGAQgASgBUgt0b3RhbEluY29tZQ==');
+
+@$core.Deprecated('Use monthlyDataPointDescriptor instead')
+const MonthlyDataPoint$json = {
+  '1': 'MonthlyDataPoint',
+  '2': [
+    {'1': 'month', '3': 1, '4': 1, '5': 9, '10': 'month'},
+    {'1': 'month_label', '3': 2, '4': 1, '5': 9, '10': 'monthLabel'},
+    {'1': 'income', '3': 3, '4': 1, '5': 1, '10': 'income'},
+    {'1': 'expenses', '3': 4, '4': 1, '5': 1, '10': 'expenses'},
+  ],
+};
+
+/// Descriptor for `MonthlyDataPoint`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List monthlyDataPointDescriptor = $convert.base64Decode(
+    'ChBNb250aGx5RGF0YVBvaW50EhQKBW1vbnRoGAEgASgJUgVtb250aBIfCgttb250aF9sYWJlbB'
+    'gCIAEoCVIKbW9udGhMYWJlbBIWCgZpbmNvbWUYAyABKAFSBmluY29tZRIaCghleHBlbnNlcxgE'
+    'IAEoAVIIZXhwZW5zZXM=');
+
+@$core.Deprecated('Use getMonthlyTrendsRequestDescriptor instead')
+const GetMonthlyTrendsRequest$json = {
+  '1': 'GetMonthlyTrendsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'months', '3': 2, '4': 1, '5': 5, '10': 'months'},
+  ],
+};
+
+/// Descriptor for `GetMonthlyTrendsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMonthlyTrendsRequestDescriptor = $convert.base64Decode(
+    'ChdHZXRNb250aGx5VHJlbmRzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SW'
+    'QSFgoGbW9udGhzGAIgASgFUgZtb250aHM=');
+
+@$core.Deprecated('Use getMonthlyTrendsResponseDescriptor instead')
+const GetMonthlyTrendsResponse$json = {
+  '1': 'GetMonthlyTrendsResponse',
+  '2': [
+    {'1': 'months', '3': 1, '4': 3, '5': 11, '6': '.accounts.MonthlyDataPoint', '10': 'months'},
+  ],
+};
+
+/// Descriptor for `GetMonthlyTrendsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMonthlyTrendsResponseDescriptor = $convert.base64Decode(
+    'ChhHZXRNb250aGx5VHJlbmRzUmVzcG9uc2USMgoGbW9udGhzGAEgAygLMhouYWNjb3VudHMuTW'
+    '9udGhseURhdGFQb2ludFIGbW9udGhz');
+
+@$core.Deprecated('Use dailyExpensePointDescriptor instead')
+const DailyExpensePoint$json = {
+  '1': 'DailyExpensePoint',
+  '2': [
+    {'1': 'date', '3': 1, '4': 1, '5': 9, '10': 'date'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `DailyExpensePoint`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List dailyExpensePointDescriptor = $convert.base64Decode(
+    'ChFEYWlseUV4cGVuc2VQb2ludBISCgRkYXRlGAEgASgJUgRkYXRlEhYKBmFtb3VudBgCIAEoAV'
+    'IGYW1vdW50');
+
+@$core.Deprecated('Use getExpenseTimeSeriesRequestDescriptor instead')
+const GetExpenseTimeSeriesRequest$json = {
+  '1': 'GetExpenseTimeSeriesRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'start_date', '3': 2, '4': 1, '5': 9, '10': 'startDate'},
+    {'1': 'end_date', '3': 3, '4': 1, '5': 9, '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetExpenseTimeSeriesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExpenseTimeSeriesRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRFeHBlbnNlVGltZVNlcmllc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
+    'VudElkEh0KCnN0YXJ0X2RhdGUYAiABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgDIAEoCVIH'
+    'ZW5kRGF0ZQ==');
+
+@$core.Deprecated('Use getExpenseTimeSeriesResponseDescriptor instead')
+const GetExpenseTimeSeriesResponse$json = {
+  '1': 'GetExpenseTimeSeriesResponse',
+  '2': [
+    {'1': 'data_points', '3': 1, '4': 3, '5': 11, '6': '.accounts.DailyExpensePoint', '10': 'dataPoints'},
+    {'1': 'total_expenses', '3': 2, '4': 1, '5': 1, '10': 'totalExpenses'},
+    {'1': 'daily_average', '3': 3, '4': 1, '5': 1, '10': 'dailyAverage'},
+  ],
+};
+
+/// Descriptor for `GetExpenseTimeSeriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExpenseTimeSeriesResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRFeHBlbnNlVGltZVNlcmllc1Jlc3BvbnNlEjwKC2RhdGFfcG9pbnRzGAEgAygLMhsuYW'
+    'Njb3VudHMuRGFpbHlFeHBlbnNlUG9pbnRSCmRhdGFQb2ludHMSJQoOdG90YWxfZXhwZW5zZXMY'
+    'AiABKAFSDXRvdGFsRXhwZW5zZXMSIwoNZGFpbHlfYXZlcmFnZRgDIAEoAVIMZGFpbHlBdmVyYW'
+    'dl');
+

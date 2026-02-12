@@ -3,8 +3,33 @@ syntax = "proto3";
 package accounts;
 
 import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "accounts-service/proto";
+
+// OpenAPI v2 documentation
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "LazerVault Accounts Service";
+    version: "1.0";
+    description: "Account management and operations service for LazerVault";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+  security_definitions: {
+    security: {
+      key: "bearer";
+      value: {
+        type: TYPE_API_KEY;
+        in: IN_HEADER;
+        name: "Authorization";
+        description: "Bearer token authentication";
+      }
+    }
+  };
+};
 
 // Accounts Service - Account management and operations
 service AccountsService {
@@ -14,12 +39,24 @@ service AccountsService {
       post: "/api/v1/accounts"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create Account";
+      description: "Create a new account for user";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Get all accounts for a user (full account details)
   rpc GetAccounts(GetAccountsRequest) returns (GetAccountsResponse) {
     option (google.api.http) = {
       get: "/api/v1/accounts"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Accounts";
+      description: "Get all accounts for a user";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -28,12 +65,24 @@ service AccountsService {
     option (google.api.http) = {
       get: "/api/v1/accounts/summary"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get User Accounts Summary";
+      description: "Get a summary list of all accounts for the authenticated user (lightweight for UI)";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Get single account by ID
   rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {
     option (google.api.http) = {
       get: "/api/v1/accounts/{account_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Account";
+      description: "Get single account by ID";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -43,12 +92,24 @@ service AccountsService {
       put: "/api/v1/accounts/{account_id}"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Account";
+      description: "Update account details";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Delete account (soft delete)
   rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse) {
     option (google.api.http) = {
       delete: "/api/v1/accounts/{account_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete Account";
+      description: "Soft delete account";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -57,12 +118,24 @@ service AccountsService {
     option (google.api.http) = {
       get: "/api/v1/accounts/{account_id}/balance"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Balance";
+      description: "Get account balance";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Get account transactions
   rpc GetTransactions(GetTransactionsRequest) returns (GetTransactionsResponse) {
     option (google.api.http) = {
       get: "/api/v1/accounts/{account_id}/transactions"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Transactions";
+      description: "Get account transactions";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -72,6 +145,12 @@ service AccountsService {
       post: "/api/v1/accounts/{account_id}/freeze"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Freeze Account";
+      description: "Freeze account";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Unfreeze account
@@ -79,6 +158,12 @@ service AccountsService {
     option (google.api.http) = {
       post: "/api/v1/accounts/{account_id}/unfreeze"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Unfreeze Account";
+      description: "Unfreeze account";
+      tags: ["Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -88,13 +173,29 @@ service AccountsService {
       post: "/api/v1/accounts/{account_id}/balance"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Balance";
+      description: "Update account balance (internal use) - DEPRECATED";
+      tags: ["Internal"];
+    };
   }
+
+  // =========================================================================
+  // BALANCE OPERATIONS - Single Source of Truth (Revolut/Monzo Pattern)
+  // These are the ONLY APIs that can modify account balances.
+  // Called by banking-service, payments-service, etc. via direct gRPC (NOT gateway).
+  // =========================================================================
 
   // CreditBalance - Add funds to an account (for deposits, refunds, reversals)
   rpc CreditBalance(CreditBalanceRequest) returns (CreditBalanceResponse) {
     option (google.api.http) = {
       post: "/api/v1/internal/accounts/{account_id}/credit"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Credit Balance";
+      description: "Add funds to an account (deposits, refunds). Service-to-service only.";
+      tags: ["Balance Operations"];
     };
   }
 
@@ -104,6 +205,11 @@ service AccountsService {
       post: "/api/v1/internal/accounts/{account_id}/debit"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Debit Balance";
+      description: "Remove funds from an account (withdrawals, payments). Service-to-service only.";
+      tags: ["Balance Operations"];
+    };
   }
 
   // TransferBalance - Atomic transfer between two accounts
@@ -111,6 +217,11 @@ service AccountsService {
     option (google.api.http) = {
       post: "/api/v1/internal/transfers"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Transfer Balance";
+      description: "Atomic transfer between two accounts. Service-to-service only.";
+      tags: ["Balance Operations"];
     };
   }
 
@@ -120,6 +231,11 @@ service AccountsService {
       post: "/api/v1/internal/accounts/{account_id}/hold"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Hold Funds";
+      description: "Create temporary hold on funds. Service-to-service only.";
+      tags: ["Balance Operations"];
+    };
   }
 
   // CaptureHold - Convert a hold to an actual debit
@@ -127,6 +243,11 @@ service AccountsService {
     option (google.api.http) = {
       post: "/api/v1/internal/holds/{hold_id}/capture"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Capture Hold";
+      description: "Convert hold to actual debit. Service-to-service only.";
+      tags: ["Balance Operations"];
     };
   }
 
@@ -136,13 +257,27 @@ service AccountsService {
       post: "/api/v1/internal/holds/{hold_id}/release"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Release Hold";
+      description: "Release hold without debiting. Service-to-service only.";
+      tags: ["Balance Operations"];
+    };
   }
+
+  // =========================================================================
+  // PLATFORM WALLET OPERATIONS - Separate from user accounts
+  // =========================================================================
 
   // TransferToPlatformWallet - Debit user account, credit platform wallet (atomic)
   rpc TransferToPlatformWallet(TransferToPlatformWalletRequest) returns (TransferToPlatformWalletResponse) {
     option (google.api.http) = {
       post: "/api/v1/internal/platform-wallets/transfer-to"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Transfer To Platform Wallet";
+      description: "Debit user account and credit platform wallet atomically. Service-to-service only.";
+      tags: ["Platform Wallet Operations"];
     };
   }
 
@@ -152,12 +287,22 @@ service AccountsService {
       post: "/api/v1/internal/platform-wallets/transfer-from"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Transfer From Platform Wallet";
+      description: "Debit platform wallet and credit user account (refunds). Service-to-service only.";
+      tags: ["Platform Wallet Operations"];
+    };
   }
 
   // GetPlatformWallet - Get platform wallet by ID or code
   rpc GetPlatformWallet(GetPlatformWalletRequest) returns (GetPlatformWalletResponse) {
     option (google.api.http) = {
       get: "/api/v1/internal/platform-wallets/{wallet_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Platform Wallet";
+      description: "Get platform wallet by ID or wallet code. Service-to-service only.";
+      tags: ["Platform Wallet Operations"];
     };
   }
 
@@ -166,6 +311,11 @@ service AccountsService {
     option (google.api.http) = {
       get: "/api/v1/internal/platform-wallets/{wallet_id}/transactions"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Platform Wallet Transactions";
+      description: "Get paginated transactions for a platform wallet. Service-to-service only.";
+      tags: ["Platform Wallet Operations"];
+    };
   }
 
   // Get account by number
@@ -173,13 +323,26 @@ service AccountsService {
     option (google.api.http) = {
       get: "/api/v1/accounts/number/{account_number}"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Account By Number";
+      description: "Get account by account number";
+      tags: ["Accounts"];
+    };
   }
+
+  // === TRANSACTION HISTORY MANAGEMENT ===
 
   // Create transaction (called by other services via mTLS in production)
   rpc CreateTransaction(CreateTransactionRequest) returns (CreateTransactionResponse) {
     option (google.api.http) = {
       post: "/api/v1/transactions"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create Transaction";
+      description: "Create a transaction (called by other services)";
+      tags: ["Transactions"];
+      security: {} // No auth required for inter-service calls (mTLS used in production)
     };
   }
 
@@ -188,12 +351,76 @@ service AccountsService {
     option (google.api.http) = {
       get: "/api/v1/transactions/history"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Transaction History";
+      description: "Get transaction history with locale and service filters";
+      tags: ["Transactions"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Get transaction statistics
   rpc GetTransactionStatistics(GetTransactionStatisticsRequest) returns (GetTransactionStatisticsResponse) {
     option (google.api.http) = {
       get: "/api/v1/transactions/statistics"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Transaction Statistics";
+      description: "Get transaction statistics grouped by service";
+      tags: ["Transactions"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get financial analytics (income/expense totals with period comparison)
+  rpc GetFinancialAnalytics(GetFinancialAnalyticsRequest) returns (GetFinancialAnalyticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transactions/analytics/financial"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Financial Analytics";
+      description: "Get income/expense totals with period-over-period comparison";
+      tags: ["Analytics"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get category analytics (income/expense breakdown by category)
+  rpc GetCategoryAnalytics(GetCategoryAnalyticsRequest) returns (GetCategoryAnalyticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transactions/analytics/categories"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Category Analytics";
+      description: "Get income/expense breakdown by service/category";
+      tags: ["Analytics"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get monthly trends (income/expense per month)
+  rpc GetMonthlyTrends(GetMonthlyTrendsRequest) returns (GetMonthlyTrendsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transactions/analytics/monthly-trends"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Monthly Trends";
+      description: "Get monthly income/expense trends for the last N months";
+      tags: ["Analytics"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get expense time series (daily expense totals)
+  rpc GetExpenseTimeSeries(GetExpenseTimeSeriesRequest) returns (GetExpenseTimeSeriesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transactions/analytics/expense-timeseries"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Expense Time Series";
+      description: "Get daily expense totals for a date range";
+      tags: ["Analytics"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -203,7 +430,15 @@ service AccountsService {
       put: "/api/v1/transactions/status"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Transaction Status";
+      description: "Update transaction status by reference (called by other services)";
+      tags: ["Transactions"];
+      security: {} // No auth required for inter-service calls (mTLS used in production)
+    };
   }
+
+  // === ACCOUNT-SPECIFIC FEATURES ===
 
   // Auto-save management
   rpc CreateAutoSave(CreateAutoSaveRequest) returns (CreateAutoSaveResponse) {
@@ -211,11 +446,23 @@ service AccountsService {
       post: "/api/v1/accounts/{account_id}/autosave"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create AutoSave";
+      description: "Create automatic savings configuration";
+      tags: ["AutoSave"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   rpc GetAutoSaves(GetAutoSavesRequest) returns (GetAutoSavesResponse) {
     option (google.api.http) = {
       get: "/api/v1/accounts/autosave"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get AutoSaves";
+      description: "Get all autosave configurations";
+      tags: ["AutoSave"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -224,11 +471,23 @@ service AccountsService {
       put: "/api/v1/accounts/autosave/{autosave_id}"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update AutoSave";
+      description: "Update autosave configuration";
+      tags: ["AutoSave"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   rpc DeleteAutoSave(DeleteAutoSaveRequest) returns (DeleteAutoSaveResponse) {
     option (google.api.http) = {
       delete: "/api/v1/accounts/autosave/{autosave_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete AutoSave";
+      description: "Delete autosave configuration";
+      tags: ["AutoSave"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -238,11 +497,23 @@ service AccountsService {
       post: "/api/v1/accounts/{account_id}/lockfunds"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create LockFunds";
+      description: "Lock funds in account";
+      tags: ["LockFunds"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   rpc GetLockFunds(GetLockFundsRequest) returns (GetLockFundsResponse) {
     option (google.api.http) = {
       get: "/api/v1/accounts/lockfunds"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get LockFunds";
+      description: "Get all locked funds";
+      tags: ["LockFunds"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -251,6 +522,12 @@ service AccountsService {
       post: "/api/v1/accounts/lockfunds/{lockfunds_id}/unlock"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Unlock Funds";
+      description: "Unlock locked funds";
+      tags: ["LockFunds"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   rpc CreateTransfer(CreateTransferRequest) returns (CreateTransferResponse) {
@@ -258,7 +535,15 @@ service AccountsService {
       post: "/api/v1/accounts/transfers"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create Transfer";
+      description: "Create a new transfer between accounts";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
+
+  // ===== VIRTUAL ACCOUNT MANAGEMENT =====
 
   // Create virtual account (with provider integration)
   rpc CreateVirtualAccount(CreateVirtualAccountRequest) returns (CreateVirtualAccountResponse) {
@@ -266,11 +551,23 @@ service AccountsService {
       post: "/api/v1/accounts/virtual"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create Virtual Account";
+      description: "Create a real virtual NUBAN account via Flutterwave or VFD provider";
+      tags: ["Virtual Accounts"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   rpc GetTransfer(GetTransferRequest) returns (GetTransferResponse) {
     option (google.api.http) = {
       get: "/api/v1/accounts/transfers/{transfer_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Transfer";
+      description: "Get transfer details by ID";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 }
@@ -1019,4 +1316,91 @@ message GetPlatformWalletTransactionsRequest {
 message GetPlatformWalletTransactionsResponse {
   repeated PlatformWalletTransactionMsg transactions = 1;
   int32 total = 2;
+}
+
+// =============================================================================
+// FINANCIAL ANALYTICS Messages
+// =============================================================================
+
+// Period totals for income and expenses
+message PeriodTotals {
+  double total_income = 1;
+  double total_expenses = 2;
+  double net = 3;
+  int32 transaction_count = 4;
+}
+
+// GetFinancialAnalytics - Compare current vs previous period
+message GetFinancialAnalyticsRequest {
+  string account_id = 1;
+  string period = 2;                   // "week", "month", "quarter", "year"
+  string start_date = 3;               // Optional: override period with custom dates
+  string end_date = 4;                 // Optional: override period with custom dates
+}
+
+message GetFinancialAnalyticsResponse {
+  PeriodTotals current_period = 1;
+  PeriodTotals previous_period = 2;
+  double income_change_percent = 3;
+  double expense_change_percent = 4;
+  string period_label = 5;             // e.g., "This Month", "This Week"
+}
+
+// Category breakdown item
+message CategoryBreakdownItem {
+  string category_name = 1;            // service_name or category
+  double amount = 2;
+  int32 transaction_count = 3;
+  double percentage = 4;               // percentage of total
+}
+
+// GetCategoryAnalytics - Breakdown by category for income and expenses
+message GetCategoryAnalyticsRequest {
+  string account_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message GetCategoryAnalyticsResponse {
+  repeated CategoryBreakdownItem expense_categories = 1;
+  repeated CategoryBreakdownItem income_categories = 2;
+  double total_expenses = 3;
+  double total_income = 4;
+}
+
+// Monthly data point for trends
+message MonthlyDataPoint {
+  string month = 1;                    // "YYYY-MM" format
+  string month_label = 2;             // "Jan", "Feb", etc.
+  double income = 3;
+  double expenses = 4;
+}
+
+// GetMonthlyTrends - Monthly income/expense for last N months
+message GetMonthlyTrendsRequest {
+  string account_id = 1;
+  int32 months = 2;                    // Number of months to return (default: 6)
+}
+
+message GetMonthlyTrendsResponse {
+  repeated MonthlyDataPoint months = 1;
+}
+
+// Daily expense point for time series
+message DailyExpensePoint {
+  string date = 1;                     // "YYYY-MM-DD" format
+  double amount = 2;
+}
+
+// GetExpenseTimeSeries - Daily expense totals
+message GetExpenseTimeSeriesRequest {
+  string account_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message GetExpenseTimeSeriesResponse {
+  repeated DailyExpensePoint data_points = 1;
+  double total_expenses = 2;
+  double daily_average = 3;
 }

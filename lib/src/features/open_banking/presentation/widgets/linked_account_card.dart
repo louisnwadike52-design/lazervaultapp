@@ -22,17 +22,17 @@ class LinkedAccountCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: account.isDefault
-              ? const Color(0xFF6C5CE7)
-              : Colors.grey[200]!,
+              ? const Color(0xFF3B82F6)
+              : Colors.white.withValues(alpha: 0.1),
           width: account.isDefault ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -74,7 +74,7 @@ class LinkedAccountCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -85,7 +85,7 @@ class LinkedAccountCard extends StatelessWidget {
                                 vertical: 4.h,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+                                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -93,7 +93,7 @@ class LinkedAccountCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF6C5CE7),
+                                  color: const Color(0xFF3B82F6),
                                 ),
                               ),
                             ),
@@ -104,7 +104,7 @@ class LinkedAccountCard extends StatelessWidget {
                         '${account.accountName} • ${account.displayAccountNumber}',
                         style: TextStyle(
                           fontSize: 13.sp,
-                          color: Colors.grey[600],
+                          color: const Color(0xFF9CA3AF),
                         ),
                       ),
                     ],
@@ -174,7 +174,7 @@ class LinkedAccountCard extends StatelessWidget {
                 vertical: 12.h,
               ),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(16.r),
                   bottomRight: Radius.circular(16.r),
@@ -190,7 +190,7 @@ class LinkedAccountCard extends StatelessWidget {
                         'Available Balance',
                         style: TextStyle(
                           fontSize: 11.sp,
-                          color: Colors.grey[500],
+                          color: const Color(0xFF9CA3AF),
                         ),
                       ),
                       SizedBox(height: 2.h),
@@ -199,7 +199,7 @@ class LinkedAccountCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -211,7 +211,7 @@ class LinkedAccountCard extends StatelessWidget {
                           onPressed: onSetDefault,
                           icon: Icon(
                             Icons.star_outline,
-                            color: Colors.grey[400],
+                            color: const Color(0xFF9CA3AF),
                             size: 20.sp,
                           ),
                           tooltip: 'Set as default',
@@ -220,15 +220,16 @@ class LinkedAccountCard extends StatelessWidget {
                         onPressed: onRefreshBalance,
                         icon: Icon(
                           Icons.refresh,
-                          color: Colors.grey[400],
+                          color: const Color(0xFF9CA3AF),
                           size: 20.sp,
                         ),
                         tooltip: 'Refresh balance',
                       ),
                       PopupMenuButton<String>(
+                        color: const Color(0xFF1F1F1F),
                         icon: Icon(
                           Icons.more_vert,
-                          color: Colors.grey[400],
+                          color: const Color(0xFF9CA3AF),
                           size: 20.sp,
                         ),
                         onSelected: (value) {
@@ -247,9 +248,9 @@ class LinkedAccountCard extends StatelessWidget {
                               value: 'default',
                               child: Row(
                                 children: [
-                                  Icon(Icons.star_outline, size: 20),
+                                  Icon(Icons.star_outline, size: 20, color: Color(0xFF9CA3AF)),
                                   SizedBox(width: 8),
-                                  Text('Set as Default'),
+                                  Text('Set as Default', style: TextStyle(color: Colors.white)),
                                 ],
                               ),
                             ),
@@ -303,6 +304,6 @@ class LinkedAccountCard extends StatelessWidget {
     if (name.contains('opay')) return const Color(0xFF1BB066);
     if (name.contains('palmpay')) return const Color(0xFF6F42C1);
     if (name.contains('moniepoint')) return const Color(0xFF2F3292);
-    return const Color(0xFF6C5CE7); // Default color
+    return const Color(0xFF3B82F6); // Default color
   }
 }

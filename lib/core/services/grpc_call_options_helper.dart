@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -15,6 +16,9 @@ class GrpcCallOptionsHelper {
 
   // Track if we're currently refreshing to avoid multiple concurrent refreshes
   bool _isRefreshing = false;
+
+  // Completer to allow multiple calls to wait for the same refresh operation
+  Completer<bool>? _refreshCompleter;
 
   GrpcCallOptionsHelper(
     this.storage, {
@@ -64,6 +68,14 @@ class GrpcCallOptionsHelper {
         print('Account metadata added: $accountMetadata');
       } else {
         print('WARNING: AccountManager exists but no active account is set');
+      }
+    }
+
+    // Add user country metadata for provider routing (e.g., Bamboo for NG, IBKR for others)
+    if (localeManager != null) {
+      final country = localeManager!.currentCountry;
+      if (country.isNotEmpty) {
+        metadata['x-user-country'] = country;
       }
     }
 
@@ -126,22 +138,41 @@ class GrpcCallOptionsHelper {
   }
 
   /// Attempt to refresh the access token using the refresh token
+  ///
+  /// This method handles concurrent refresh attempts properly:
+  /// - If a refresh is already in progress, wait for it to complete
+  /// - Returns true if refresh succeeded, false otherwise
+  /// - Multiple simultaneous calls will wait for the same refresh operation
   Future<bool> _attemptTokenRefresh() async {
-    // Prevent concurrent refresh attempts
-    if (_isRefreshing) {
-      print('Token refresh already in progress, waiting...');
-      // Wait a bit for the other refresh to complete
-      await Future.delayed(const Duration(milliseconds: 500));
-      return false;
+    // If a refresh is already in progress, wait for it to complete
+    if (_isRefreshing && _refreshCompleter != null) {
+      print('Token refresh already in progress, waiting for completion...');
+      try {
+        return await _refreshCompleter!.future.timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            print('Waiting for token refresh timed out');
+            return false;
+          },
+        );
+      } catch (e) {
+        print('Error waiting for token refresh: $e');
+        return false;
+      }
     }
 
+    // Start a new refresh operation
+    _refreshCompleter = Completer<bool>();
+    _isRefreshing = true;
+
     try {
-      _isRefreshing = true;
+      print('Starting token refresh...');
 
       // Get refresh token from storage
       final refreshToken = await storage.read(key: _refreshTokenKey);
       if (refreshToken == null || refreshToken.isEmpty) {
         print('No refresh token available');
+        _refreshCompleter!.complete(false);
         return false;
       }
 
@@ -159,18 +190,25 @@ class GrpcCallOptionsHelper {
           await storage.write(key: _refreshTokenKey, value: newTokens['refreshToken']!);
 
           print('New tokens saved to storage');
+          _refreshCompleter!.complete(true);
           return true;
         }
       }
 
       print('Token refresh callback not available or returned null');
+      _refreshCompleter!.complete(false);
       return false;
 
     } catch (e) {
       print('Error during token refresh: $e');
+      _refreshCompleter!.completeError(e);
       return false;
     } finally {
       _isRefreshing = false;
+      // Don't null out _refreshCompleter immediately - let waiting calls complete
+      Future.delayed(const Duration(seconds: 1), () {
+        _refreshCompleter = null;
+      });
     }
   }
 

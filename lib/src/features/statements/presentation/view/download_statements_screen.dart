@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/statements/domain/entities/statement_entity.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_state.dart';
 
@@ -26,10 +27,9 @@ class _DownloadStatementsScreenState extends State<DownloadStatementsScreen> {
   @override
   void initState() {
     super.initState();
-    // Load accounts on init - Note: userId will be fetched from secure storage in real implementation
-    // For now, using a placeholder userId
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
     context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-      userId: 'current_user',
+      userId: userId,
       accessToken: null,
     );
   }

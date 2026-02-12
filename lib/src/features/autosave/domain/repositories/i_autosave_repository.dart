@@ -69,5 +69,6 @@ abstract class IAutoSaveRepository {
   Future<Either<Failure, AutoSaveTransactionEntity>> triggerAutoSave({
     required String ruleId,
     double? customAmount,
+    required String transactionPinToken,
   });
 }
