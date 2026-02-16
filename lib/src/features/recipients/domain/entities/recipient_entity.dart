@@ -5,6 +5,7 @@ class RecipientEntity {
   final String bankName;
   final String? profileImageUrl;
   final bool isFavorite;
+  final bool isSaved;
   final String? sortCode;
   final String? countryCode;
   final String? email;
@@ -22,6 +23,7 @@ class RecipientEntity {
     required this.bankName,
     this.profileImageUrl,
     this.isFavorite = false,
+    this.isSaved = true,
     this.sortCode,
     this.countryCode,
     this.email,
@@ -40,6 +42,7 @@ class RecipientEntity {
     String? bankName,
     String? profileImageUrl,
     bool? isFavorite,
+    bool? isSaved,
     String? sortCode,
     String? countryCode,
     String? email,
@@ -57,6 +60,7 @@ class RecipientEntity {
       bankName: bankName ?? this.bankName,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       isFavorite: isFavorite ?? this.isFavorite,
+      isSaved: isSaved ?? this.isSaved,
       sortCode: sortCode ?? this.sortCode,
       countryCode: countryCode ?? this.countryCode,
       email: email ?? this.email,
@@ -77,6 +81,7 @@ class RecipientEntity {
       'bankName': bankName,
       'profileImageUrl': profileImageUrl,
       'isFavorite': isFavorite,
+      'isSaved': isSaved,
       'sortCode': sortCode,
       'countryCode': countryCode,
       'email': email,
@@ -97,6 +102,7 @@ class RecipientEntity {
       bankName: json['bankName'] as String,
       profileImageUrl: json['profileImageUrl'] as String?,
       isFavorite: json['isFavorite'] as bool? ?? false,
+      isSaved: json['isSaved'] as bool? ?? true,
       sortCode: json['sortCode'] as String?,
       countryCode: json['countryCode'] as String?,
       email: json['email'] as String?,
@@ -119,6 +125,7 @@ class RecipientEntity {
         other.bankName == bankName &&
         other.profileImageUrl == profileImageUrl &&
         other.isFavorite == isFavorite &&
+        other.isSaved == isSaved &&
         other.sortCode == sortCode &&
         other.countryCode == countryCode &&
         other.email == email &&
@@ -138,6 +145,7 @@ class RecipientEntity {
         bankName.hashCode ^
         profileImageUrl.hashCode ^
         isFavorite.hashCode ^
+        isSaved.hashCode ^
         sortCode.hashCode ^
         countryCode.hashCode ^
         email.hashCode ^

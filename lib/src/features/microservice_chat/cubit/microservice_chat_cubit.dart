@@ -1,13 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
 import '../domain/entities/microservice_chat_message_entity.dart';
 import '../domain/usecases/send_microservice_chat_message_usecase.dart';
+import '../domain/usecases/load_microservice_chat_history_usecase.dart';
 import 'microservice_chat_state.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
   final SendMicroserviceChatMessageUseCase sendMessageUseCase;
+  final LoadMicroserviceChatHistoryUseCase? loadHistoryUseCase;
   final AuthenticationCubit authCubit;
   final String sourceContext;
 
@@ -16,16 +17,55 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
 
   MicroserviceChatCubit({
     required this.sendMessageUseCase,
+    this.loadHistoryUseCase,
     required this.authCubit,
     required this.sourceContext,
-  }) : super(const MicroserviceChatInitial()) {
-    _sessionId = const Uuid().v4();
-  }
+  }) : super(const MicroserviceChatInitial());
 
-  void initializeChat() {
-    _sessionId = const Uuid().v4();
+  /// Initialize chat with a deterministic or provided session ID.
+  void initializeChat({String? persistentSessionId}) {
+    if (persistentSessionId != null) {
+      _sessionId = persistentSessionId;
+    } else {
+      // Deterministic ID from user + context
+      final authState = authCubit.state;
+      if (authState is AuthenticationSuccess) {
+        _sessionId = 'svc_${authState.profile.user.id}_$sourceContext';
+      } else {
+        _sessionId = 'svc_unknown_$sourceContext';
+      }
+    }
     _currentMessages = [];
     emit(MicroserviceChatInitial(messages: _currentMessages));
+  }
+
+  /// Load chat history from backend.
+  Future<void> loadHistory() async {
+    if (loadHistoryUseCase == null) return;
+
+    emit(MicroserviceChatHistoryLoading(messages: _currentMessages));
+
+    final result = await loadHistoryUseCase!(
+      sourceContext: sourceContext,
+      sessionId: _sessionId,
+      accessToken: '', // Token injected by interceptor
+    );
+
+    if (isClosed) return;
+    result.fold(
+      (failure) {
+        // History load failed — start fresh
+        emit(MicroserviceChatInitial(messages: _currentMessages));
+      },
+      (history) {
+        _currentMessages = history;
+        if (_currentMessages.isEmpty) {
+          emit(MicroserviceChatInitial(messages: _currentMessages));
+        } else {
+          emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));
+        }
+      },
+    );
   }
 
   Future<void> sendMessage(String text) async {
@@ -56,9 +96,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
       userId: authState.profile.user.id,
       accessToken: '', // Access token is managed by GrpcCallOptionsHelper
       sourceContext: sourceContext,
-      language: 'en', // Can be made dynamic
+      language: 'en',
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         emit(MicroserviceChatMessageError(
@@ -81,7 +122,6 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
 
   void clearChat() {
     _currentMessages = [];
-    _sessionId = const Uuid().v4();
     emit(MicroserviceChatInitial(messages: _currentMessages));
   }
 }

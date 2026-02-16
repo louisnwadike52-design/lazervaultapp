@@ -193,10 +193,10 @@ class AuthServiceClient extends $grpc.Client {
       '/auth.AuthService/LookupUserByPhone',
       ($0.LookupUserByPhoneRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.UserLookupResponse.fromBuffer(value));
-  static final _$searchUsersByUsername = $grpc.ClientMethod<$0.SearchUsersByUsernameRequest, $0.SearchUsersByUsernameResponse>(
-      '/auth.AuthService/SearchUsersByUsername',
-      ($0.SearchUsersByUsernameRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.SearchUsersByUsernameResponse.fromBuffer(value));
+  static final _$searchUsers = $grpc.ClientMethod<$0.UserSearchRequest, $0.UserSearchResponse>(
+      '/auth.AuthService/SearchUsers',
+      ($0.UserSearchRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UserSearchResponse.fromBuffer(value));
   static final _$getLinkedSocialAccounts = $grpc.ClientMethod<$0.GetLinkedSocialAccountsRequest, $0.GetLinkedSocialAccountsResponse>(
       '/auth.AuthService/GetLinkedSocialAccounts',
       ($0.GetLinkedSocialAccountsRequest value) => value.writeToBuffer(),
@@ -396,8 +396,8 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$lookupUserByPhone, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.SearchUsersByUsernameResponse> searchUsersByUsername($0.SearchUsersByUsernameRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$searchUsersByUsername, request, options: options);
+  $grpc.ResponseFuture<$0.UserSearchResponse> searchUsers($0.UserSearchRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$searchUsers, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GetLinkedSocialAccountsResponse> getLinkedSocialAccounts($0.GetLinkedSocialAccountsRequest request, {$grpc.CallOptions? options}) {
@@ -727,13 +727,13 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.LookupUserByPhoneRequest.fromBuffer(value),
         ($0.UserLookupResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.SearchUsersByUsernameRequest, $0.SearchUsersByUsernameResponse>(
-        'SearchUsersByUsername',
-        searchUsersByUsername_Pre,
+    $addMethod($grpc.ServiceMethod<$0.UserSearchRequest, $0.UserSearchResponse>(
+        'SearchUsers',
+        searchUsers_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.SearchUsersByUsernameRequest.fromBuffer(value),
-        ($0.SearchUsersByUsernameResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $0.UserSearchRequest.fromBuffer(value),
+        ($0.UserSearchResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetLinkedSocialAccountsRequest, $0.GetLinkedSocialAccountsResponse>(
         'GetLinkedSocialAccounts',
         getLinkedSocialAccounts_Pre,
@@ -943,8 +943,8 @@ abstract class AuthServiceBase extends $grpc.Service {
     return lookupUserByPhone(call, await request);
   }
 
-  $async.Future<$0.SearchUsersByUsernameResponse> searchUsersByUsername_Pre($grpc.ServiceCall call, $async.Future<$0.SearchUsersByUsernameRequest> request) async {
-    return searchUsersByUsername(call, await request);
+  $async.Future<$0.UserSearchResponse> searchUsers_Pre($grpc.ServiceCall call, $async.Future<$0.UserSearchRequest> request) async {
+    return searchUsers(call, await request);
   }
 
   $async.Future<$0.GetLinkedSocialAccountsResponse> getLinkedSocialAccounts_Pre($grpc.ServiceCall call, $async.Future<$0.GetLinkedSocialAccountsRequest> request) async {
@@ -1010,7 +1010,7 @@ abstract class AuthServiceBase extends $grpc.Service {
   $async.Future<$0.GetUserDocumentsResponse> getUserDocuments($grpc.ServiceCall call, $0.GetUserDocumentsRequest request);
   $async.Future<$0.UserLookupResponse> lookupUserByUsername($grpc.ServiceCall call, $0.LookupUserByUsernameRequest request);
   $async.Future<$0.UserLookupResponse> lookupUserByPhone($grpc.ServiceCall call, $0.LookupUserByPhoneRequest request);
-  $async.Future<$0.SearchUsersByUsernameResponse> searchUsersByUsername($grpc.ServiceCall call, $0.SearchUsersByUsernameRequest request);
+  $async.Future<$0.UserSearchResponse> searchUsers($grpc.ServiceCall call, $0.UserSearchRequest request);
   $async.Future<$0.GetLinkedSocialAccountsResponse> getLinkedSocialAccounts($grpc.ServiceCall call, $0.GetLinkedSocialAccountsRequest request);
   $async.Future<$0.LinkSocialAccountResponse> linkSocialAccount($grpc.ServiceCall call, $0.LinkSocialAccountRequest request);
   $async.Future<$0.UnlinkSocialAccountResponse> unlinkSocialAccount($grpc.ServiceCall call, $0.UnlinkSocialAccountRequest request);

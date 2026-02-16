@@ -59,65 +59,62 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
       final nameLower = recipientName.toLowerCase().trim();
       final nameWords = nameLower.split(' ').where((w) => w.isNotEmpty).toList();
 
-      // For outgoing transfers/payments, match by recipient name
+      // Filter to outgoing transactions matching this recipient
       final filtered = response.transactions.where((tx) {
         // Only include outgoing transactions (money sent to this recipient)
         if (tx.flow != TransactionFlow.outgoing) return false;
 
-        // Match by title containing recipient name (most reliable)
+        // 1. Direct account number match (most reliable)
+        if (recipientAccountNumber.isNotEmpty &&
+            tx.counterpartyAccount != null &&
+            tx.counterpartyAccount!.isNotEmpty &&
+            tx.counterpartyAccount == recipientAccountNumber) {
+          return true;
+        }
+
+        // 2. Account number in description or metadata
+        if (recipientAccountNumber.isNotEmpty) {
+          final accountDigits = recipientAccountNumber.replaceAll(RegExp(r'[^\d]'), '');
+          if (accountDigits.length >= 6) {
+            final desc = tx.description ?? '';
+            if (desc.contains(accountDigits)) return true;
+            final meta = tx.metadata;
+            if (meta != null) {
+              for (final value in meta.values) {
+                if (value?.toString().contains(accountDigits) == true) {
+                  return true;
+                }
+              }
+            }
+          }
+        }
+
+        // 3. Counterparty name exact match
+        if (tx.counterpartyName != null &&
+            tx.counterpartyName!.toLowerCase().trim() == nameLower) {
+          return true;
+        }
+
+        // 4. Title contains recipient full name (e.g. "Transfer to Grace")
         if (tx.title.toLowerCase().contains(nameLower)) {
           return true;
         }
 
-        // Match by any word of recipient name in title (handles name variations)
+        // 5. Counterparty name contains recipient name or vice versa
+        if (tx.counterpartyName != null) {
+          final cpLower = tx.counterpartyName!.toLowerCase().trim();
+          if (cpLower.contains(nameLower) || nameLower.contains(cpLower)) {
+            return true;
+          }
+        }
+
+        // 6. Match by any significant word of recipient name in counterparty or title
         if (nameWords.isNotEmpty) {
           for (final word in nameWords) {
-            if (word.length > 2 && tx.title.toLowerCase().contains(word)) {
-              return true;
-            }
-          }
-        }
-
-        // Match by counterparty name
-        if (tx.counterpartyName?.toLowerCase().contains(nameLower) == true) {
-          return true;
-        }
-
-        // Match by counterparty name containing any word of recipient name
-        if (tx.counterpartyName != null && nameWords.isNotEmpty) {
-          for (final word in nameWords) {
-            if (word.length > 2 && tx.counterpartyName!.toLowerCase().contains(word)) {
-              return true;
-            }
-          }
-        }
-
-        // Match by description containing recipient name
-        final desc = tx.description?.toLowerCase() ?? '';
-        if (desc.contains(nameLower)) {
-          return true;
-        }
-
-        // Match by metadata - check all metadata values for recipient name
-        final meta = tx.metadata;
-        if (meta != null) {
-          for (final value in meta.values) {
-            if (value?.toString().toLowerCase().contains(nameLower) == true) {
-              return true;
-            }
-          }
-        }
-
-        // Match transfers by checking title keywords
-        if (tx.title.toLowerCase().contains('transfer') ||
-            tx.title.toLowerCase().contains('sent')) {
-          // Check if account number matches
-          if (recipientAccountNumber.isNotEmpty) {
-            final accountDigits = recipientAccountNumber.replaceAll(RegExp(r'[^\d]'), '');
-            final txDesc = (tx.description ?? '').toLowerCase();
-            final txMeta = tx.metadata.toString().toLowerCase();
-            if (txDesc.contains(accountDigits) || txMeta.contains(accountDigits)) {
-              return true;
+            if (word.length > 2) {
+              if (tx.counterpartyName?.toLowerCase().contains(word) == true) {
+                return true;
+              }
             }
           }
         }

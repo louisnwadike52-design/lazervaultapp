@@ -219,13 +219,142 @@ class BudgetCubit extends Cubit<BudgetState> {
         savingsOpportunities: aiResponse.savingsOpportunities,
         spendingPatterns: aiResponse.spendingPatterns,
         recommendedSavingsRate: aiResponse.recommendedSavingsRate,
-        monthlyProjection: aiResponse.monthlyProjection,
-        rationale: aiResponse.rationale,
+        riskLevel: aiResponse.riskLevel,
       );
 
       emit(BudgetAIInsightsLoaded(insights: insights));
     } catch (e) {
       emit(BudgetAIInsightsError(message: 'Failed to load AI insights: ${e.toString()}'));
+    }
+  }
+
+  /// Load financial goals
+  Future<void> loadFinancialGoals({pb.GoalStatus? status}) async {
+    emit(const BudgetLoading(message: 'Loading goals...'));
+    try {
+      final response = await _budgetRepository.getFinancialGoals(status: status);
+      final goalsList = response.goalsList;
+
+      emit(FinancialGoalsLoaded(
+        goals: goalsList.goals.toList(),
+        totalTarget: goalsList.totalTarget,
+        totalSaved: goalsList.totalSaved,
+      ));
+    } catch (e) {
+      emit(BudgetError(message: 'Failed to load goals: ${e.toString()}'));
+    }
+  }
+
+  /// Create a financial goal
+  Future<void> createFinancialGoal({
+    required String name,
+    required pb.GoalType goalType,
+    required double targetAmount,
+    double currentAmount = 0,
+    double monthlyContribution = 0,
+    String currency = 'NGN',
+    DateTime? targetDate,
+    String? icon,
+    String? color,
+  }) async {
+    emit(const BudgetLoading(message: 'Creating goal...'));
+    try {
+      final response = await _budgetRepository.createFinancialGoal(
+        name: name,
+        goalType: goalType,
+        targetAmount: targetAmount,
+        currentAmount: currentAmount,
+        monthlyContribution: monthlyContribution,
+        currency: currency,
+        targetDate: targetDate,
+        icon: icon,
+        color: color,
+      );
+
+      if (response.success) {
+        emit(BudgetCreated(message: response.message));
+        await loadFinancialGoals();
+      } else {
+        emit(BudgetError(message: response.message));
+      }
+    } catch (e) {
+      emit(BudgetError(message: 'Failed to create goal: ${e.toString()}'));
+    }
+  }
+
+  /// Contribute to a financial goal
+  Future<void> contributeToGoal({
+    required String goalId,
+    required double amount,
+  }) async {
+    emit(const BudgetLoading(message: 'Adding contribution...'));
+    try {
+      final response = await _budgetRepository.updateFinancialGoalProgress(
+        goalId: goalId,
+        amountToAdd: amount,
+      );
+
+      if (response.success) {
+        emit(BudgetCreated(message: response.message));
+        await loadFinancialGoals();
+      } else {
+        emit(BudgetError(message: response.message));
+      }
+    } catch (e) {
+      emit(BudgetError(message: 'Failed to add contribution: ${e.toString()}'));
+    }
+  }
+
+  /// Load recurring bills
+  Future<void> loadRecurringBills({int daysAhead = 30}) async {
+    emit(const BudgetLoading(message: 'Loading bills...'));
+    try {
+      final response = await _budgetRepository.getUpcomingBills(daysAhead: daysAhead);
+      final billsList = response.billsList;
+
+      emit(RecurringBillsLoaded(
+        bills: billsList.bills.toList(),
+        totalUpcoming: billsList.totalUpcoming,
+      ));
+    } catch (e) {
+      emit(BudgetError(message: 'Failed to load bills: ${e.toString()}'));
+    }
+  }
+
+  /// Create a recurring bill
+  Future<void> createRecurringBill({
+    required String name,
+    required double amount,
+    required String currency,
+    required pb.ExpenseCategory category,
+    required String recurrencePattern,
+    DateTime? nextDueDate,
+    String? merchant,
+    String? icon,
+    bool autoPayEnabled = false,
+  }) async {
+    emit(const BudgetLoading(message: 'Creating bill...'));
+    try {
+      final response = await _budgetRepository.createRecurringBill(
+        name: name,
+        amount: amount,
+        currency: currency,
+        category: category,
+        recurrencePattern: recurrencePattern,
+        nextDueDate: nextDueDate,
+        merchant: merchant,
+        icon: icon,
+        autoPayEnabled: autoPayEnabled,
+      );
+
+      if (response.success) {
+        emit(BudgetCreated(message: response.message));
+        await loadRecurringBills();
+      } else {
+        emit(BudgetError(message: response.message));
+      }
+    } catch (e) {
+      emit(BudgetError(message: 'Failed to create bill: ${e.toString()}'));
     }
   }
 
@@ -238,6 +367,10 @@ class BudgetCubit extends Cubit<BudgetState> {
       await loadBudgetAlerts();
     } else if (currentState is BudgetProgressLoaded) {
       await loadBudgetProgress();
+    } else if (currentState is FinancialGoalsLoaded) {
+      await loadFinancialGoals();
+    } else if (currentState is RecurringBillsLoaded) {
+      await loadRecurringBills();
     } else {
       await loadBudgets();
     }

@@ -1,10 +1,12 @@
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart' as pb;
+import 'package:lazervault/src/generated/crowdfund.pb.dart' as pb_msg;
 import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as pb_timestamp;
 import 'package:fixnum/fixnum.dart' as fixnum;
 import '../models/crowdfund_models.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import '../../domain/entities/notification_channel_entities.dart';
 
 class CrowdfundGrpcDataSource {
   final pb.CrowdfundServiceClient _client;
@@ -235,7 +237,7 @@ class CrowdfundGrpcDataSource {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    int? sourceAccountId,
+    String? sourceAccountId,
   }) async {
     try {
       final request = pb.MakeDonationRequest()
@@ -248,7 +250,7 @@ class CrowdfundGrpcDataSource {
       }
 
       if (sourceAccountId != null) {
-        request.sourceAccountId = fixnum.Int64(sourceAccountId);
+        request.sourceAccountId = sourceAccountId;
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
@@ -505,6 +507,200 @@ class CrowdfundGrpcDataSource {
     } on GrpcError catch (e) {
       throw Exception(
           'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get campaign wallet balance'}');
+    }
+  }
+
+  // ============================================================================
+  // NOTIFICATION CHANNEL OPERATIONS
+  // ============================================================================
+
+  Future<NotificationChannelModel> connectNotificationChannel({
+    required String crowdfundId,
+    required NotificationChannelType channelType,
+    required String channelName,
+    String? telegramChatId,
+    String? discordWebhookUrl,
+    String? discordServerName,
+    String? discordChannelName,
+    String? slackWebhookUrl,
+    String? slackWorkspaceName,
+    String? slackChannelName,
+    List<NotificationEventType>? enabledEvents,
+  }) async {
+    try {
+      final request = pb.ConnectNotificationChannelRequest()
+        ..crowdfundId = crowdfundId
+        ..channelType = _notificationChannelTypeToProto(channelType)
+        ..channelName = channelName;
+
+      if (channelType == NotificationChannelType.telegram && telegramChatId != null) {
+        request.telegram = pb_msg.TelegramConnectionDataMessage()
+          ..chatId = telegramChatId;
+      } else if (channelType == NotificationChannelType.discord && discordWebhookUrl != null) {
+        request.discord = pb_msg.DiscordConnectionDataMessage()
+          ..webhookUrl = discordWebhookUrl;
+        if (discordServerName != null) request.discord.serverName = discordServerName;
+        if (discordChannelName != null) request.discord.channelName = discordChannelName;
+      } else if (channelType == NotificationChannelType.slack && slackWebhookUrl != null) {
+        request.slack = pb_msg.SlackConnectionDataMessage()
+          ..webhookUrl = slackWebhookUrl;
+        if (slackWorkspaceName != null) request.slack.workspaceName = slackWorkspaceName;
+        if (slackChannelName != null) request.slack.channelName = slackChannelName;
+      }
+
+      if (enabledEvents != null) {
+        request.enabledEvents.addAll(
+          enabledEvents.map((e) => _notificationEventTypeToProto(e)),
+        );
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.connectNotificationChannel(request, options: callOptions);
+
+      return NotificationChannelModel.fromProto(response.channel);
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to connect notification channel'}');
+    }
+  }
+
+  Future<void> disconnectNotificationChannel(String channelId) async {
+    try {
+      final request = pb.DisconnectNotificationChannelRequest()
+        ..channelId = channelId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      await _client.disconnectNotificationChannel(request, options: callOptions);
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to disconnect notification channel'}');
+    }
+  }
+
+  Future<List<NotificationChannelModel>> getNotificationChannels(
+      String crowdfundId) async {
+    try {
+      final request = pb.GetNotificationChannelsRequest()
+        ..crowdfundId = crowdfundId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.getNotificationChannels(request, options: callOptions);
+
+      return response.channels
+          .map((ch) => NotificationChannelModel.fromProto(ch))
+          .toList();
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get notification channels'}');
+    }
+  }
+
+  Future<NotificationChannelModel> updateNotificationChannel({
+    required String channelId,
+    String? channelName,
+    List<NotificationEventType>? enabledEvents,
+    NotificationChannelStatus? status,
+  }) async {
+    try {
+      final request = pb.UpdateNotificationChannelRequest()
+        ..channelId = channelId;
+
+      if (channelName != null) request.channelName = channelName;
+      if (status != null) request.status = _notificationChannelStatusToProto(status);
+      if (enabledEvents != null) {
+        request.enabledEvents.addAll(
+          enabledEvents.map((e) => _notificationEventTypeToProto(e)),
+        );
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.updateNotificationChannel(request, options: callOptions);
+
+      return NotificationChannelModel.fromProto(response.channel);
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update notification channel'}');
+    }
+  }
+
+  Future<bool> testNotificationChannel(String channelId) async {
+    try {
+      final request = pb.TestNotificationChannelRequest()
+        ..channelId = channelId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.testNotificationChannel(request, options: callOptions);
+
+      return response.success;
+    } on GrpcError catch (e) {
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to test notification channel'}');
+    }
+  }
+
+  // ============================================================================
+  // NOTIFICATION ENUM CONVERTERS
+  // ============================================================================
+
+  pb_msg.NotificationChannelType _notificationChannelTypeToProto(
+      NotificationChannelType type) {
+    switch (type) {
+      case NotificationChannelType.telegram:
+        return pb_msg.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_TELEGRAM;
+      case NotificationChannelType.discord:
+        return pb_msg.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_DISCORD;
+      case NotificationChannelType.whatsappBusiness:
+        return pb_msg.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS;
+      case NotificationChannelType.slack:
+        return pb_msg.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_SLACK;
+      default:
+        return pb_msg.NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED;
+    }
+  }
+
+  pb_msg.NotificationChannelStatus _notificationChannelStatusToProto(
+      NotificationChannelStatus status) {
+    switch (status) {
+      case NotificationChannelStatus.active:
+        return pb_msg.NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_ACTIVE;
+      case NotificationChannelStatus.paused:
+        return pb_msg.NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_PAUSED;
+      case NotificationChannelStatus.error:
+        return pb_msg.NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_ERROR;
+      case NotificationChannelStatus.disconnected:
+        return pb_msg.NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_DISCONNECTED;
+      default:
+        return pb_msg.NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED;
+    }
+  }
+
+  pb_msg.NotificationEventType _notificationEventTypeToProto(
+      NotificationEventType type) {
+    switch (type) {
+      case NotificationEventType.newDonation:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_NEW_DONATION;
+      case NotificationEventType.milestoneReached:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED;
+      case NotificationEventType.goalReached:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_GOAL_REACHED;
+      case NotificationEventType.newContributor:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR;
+      case NotificationEventType.largeDonation:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_LARGE_DONATION;
+      case NotificationEventType.dailySummary:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY;
+      case NotificationEventType.campaignEnding:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING;
+      case NotificationEventType.campaignEnded:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED;
+      case NotificationEventType.withdrawal:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_WITHDRAWAL;
+      default:
+        return pb_msg.NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED;
     }
   }
 }

@@ -89,24 +89,29 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
 
     final userId = authState.profile.user.id;
     final accessToken = authState.profile.session.accessToken;
+    final cubit = context.read<AccountCardsSummaryCubit>();
 
-    // Always fetch fresh data on dashboard init to ensure balance is current
-    // (e.g., after invoice payment, transfer, etc.)
-      // Get active country from ProfileCubit
-      final profileState = context.read<ProfileCubit>().state;
-      String? activeCountry;
-      if (profileState is ProfileLoaded) {
-        activeCountry = profileState.preferences.activeCountry.isNotEmpty
-            ? profileState.preferences.activeCountry
-            : null;
-      }
+    // Skip gRPC call if the cubit already holds data for this user.
+    // WebSocket keeps balances current — no need to re-fetch on every navigation.
+    if (cubit.hasDataForUser(userId)) {
+      print("_DashboardCardSummaryView: Cubit already has data for user $userId, skipping fetch.");
+      return;
+    }
 
-    // Use context.read to get the cubit provided in main.dart
-    context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-          userId: userId,
-          accessToken: accessToken,
-          country: activeCountry,
-        );
+    // First load or user changed — fetch from server
+    final profileState = context.read<ProfileCubit>().state;
+    String? activeCountry;
+    if (profileState is ProfileLoaded) {
+      activeCountry = profileState.preferences.activeCountry.isNotEmpty
+          ? profileState.preferences.activeCountry
+          : null;
+    }
+
+    cubit.fetchAccountSummaries(
+      userId: userId,
+      accessToken: accessToken,
+      country: activeCountry,
+    );
   }
 
   void _setupWebSocketConnection() {

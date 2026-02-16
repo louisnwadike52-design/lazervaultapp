@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
-import 'package:lazervault/src/features/funds/services/transfer_pdf_service.dart';
+import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
@@ -725,7 +725,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         return;
       }
 
-      final filePath = await TransferPdfService.downloadReceipt(
+      final filePath = await TagPayPdfService.downloadUnifiedTransferReceipt(
         transaction: tx,
       );
 
@@ -742,7 +742,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     if (_isSharing) return;
     setState(() => _isSharing = true);
     try {
-      await TransferPdfService.shareReceipt(
+      await TagPayPdfService.shareUnifiedTransferReceipt(
         transaction: tx,
       );
     } catch (e) {

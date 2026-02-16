@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
+import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 
 /// Budget Reminders Screen
-/// Allows users to set up push, email, and SMS notifications for budget alerts
+/// Displays budget alerts from the backend (threshold reached, budget exceeded, etc.)
 class BudgetRemindersScreen extends StatefulWidget {
   const BudgetRemindersScreen({super.key});
 
@@ -13,35 +17,11 @@ class BudgetRemindersScreen extends StatefulWidget {
 }
 
 class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
-  final List<BudgetReminder> _reminders = [];
-
   @override
   void initState() {
     super.initState();
-    _loadReminders();
-  }
-
-  void _loadReminders() {
-    // TODO: Load from backend
-    setState(() {
-      _reminders.addAll([
-        BudgetReminder(
-          id: '1',
-          budgetName: 'Food & Dining',
-          reminderType: 'Threshold Reached',
-          threshold: 80,
-          channels: ['push', 'email'],
-          isActive: true,
-        ),
-        BudgetReminder(
-          id: '2',
-          budgetName: 'Transportation',
-          reminderType: 'Weekly Summary',
-          threshold: null,
-          channels: ['push'],
-          isActive: true,
-        ),
-      ]);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BudgetCubit>().loadBudgetAlerts();
     });
   }
 
@@ -57,636 +37,364 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: const Text(
-          'Budget Reminders',
+          'Budget Alerts',
           style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            onPressed: () => Get.toNamed('/statistics/budgets/reminders/create'),
-            icon: const Icon(Icons.add, color: Colors.white),
+          BlocBuilder<BudgetCubit, BudgetState>(
+            builder: (context, state) {
+              if (state is BudgetAlertsLoaded && state.unreadCount > 0) {
+                return TextButton(
+                  onPressed: () => context.read<BudgetCubit>().loadBudgetAlerts(unreadOnly: true),
+                  child: Text(
+                    'Unread (${state.unreadCount})',
+                    style: const TextStyle(color: Color(0xFF10B981), fontSize: 14),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
           ),
         ],
       ),
-      body: _reminders.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              padding: EdgeInsets.all(16.w),
-              itemCount: _reminders.length,
-              itemBuilder: (context, index) {
-                return _ReminderCard(
-                  reminder: _reminders[index],
-                  onToggle: () => _toggleReminder(_reminders[index].id),
-                  onEdit: () => _editReminder(_reminders[index].id),
-                  onDelete: () => _deleteReminder(_reminders[index].id),
-                );
-              },
-            ),
+      body: BlocConsumer<BudgetCubit, BudgetState>(
+        listener: (context, state) {
+          if (state is BudgetError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFFEF4444),
+              ),
+            );
+          }
+          if (state is AlertMarkedRead) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is BudgetLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF10B981)),
+            );
+          }
+
+          if (state is BudgetAlertsLoaded) {
+            if (state.alerts.isEmpty) {
+              return _buildEmptyState();
+            }
+            return RefreshIndicator(
+              onRefresh: () => context.read<BudgetCubit>().loadBudgetAlerts(),
+              color: const Color(0xFF10B981),
+              backgroundColor: const Color(0xFF1F1F1F),
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.all(16.w),
+                itemCount: state.alerts.length,
+                itemBuilder: (context, index) {
+                  return _AlertCard(
+                    alert: state.alerts[index],
+                    onMarkRead: () {
+                      context.read<BudgetCubit>().markAlertAsRead(state.alerts[index].id);
+                    },
+                  );
+                },
+              ),
+            );
+          }
+
+          if (state is BudgetError) {
+            return _buildErrorState(state.message);
+          }
+
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF10B981)),
+          );
+        },
+      ),
     );
   }
 
   Widget _buildEmptyState() {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: 200.h),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80.r,
+                height: 80.r,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.notifications_none, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 40.r),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'No alerts',
+                style: TextStyle(color: Colors.grey[400], fontSize: 16.sp),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Budget alerts will appear here when\nyou approach or exceed your limits',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(String message) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.notifications_none, color: Colors.grey[600], size: 64.r),
+          const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
           SizedBox(height: 16.h),
-          Text(
-            'No reminders set',
-            style: TextStyle(color: Colors.grey[400], fontSize: 16.sp),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Get notified when you approach your budget limits',
-            style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
-            textAlign: TextAlign.center,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Text(
+              message,
+              style: const TextStyle(color: Color(0xFF9CA3AF)),
+              textAlign: TextAlign.center,
+            ),
           ),
           SizedBox(height: 24.h),
-          ElevatedButton.icon(
-            onPressed: () => Get.toNamed('/statistics/budgets/reminders/create'),
-            icon: const Icon(Icons.add),
-            label: const Text('Create Reminder'),
+          ElevatedButton(
+            onPressed: () => context.read<BudgetCubit>().loadBudgetAlerts(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF10B981),
               foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
             ),
+            child: const Text('Retry'),
           ),
         ],
       ),
     );
   }
-
-  void _toggleReminder(String id) {
-    setState(() {
-      final index = _reminders.indexWhere((r) => r.id == id);
-      if (index != -1) {
-        _reminders[index] = _reminders[index].copyWith(isActive: !_reminders[index].isActive);
-      }
-    });
-    // TODO: Update backend
-  }
-
-  void _editReminder(String id) {
-    Get.toNamed('/statistics/budgets/reminders/create', arguments: {'reminderId': id});
-  }
-
-  void _deleteReminder(String id) {
-    Get.defaultDialog(
-      title: 'Delete Reminder',
-      middleText: 'Are you sure you want to delete this reminder?',
-      textConfirm: 'Delete',
-      textCancel: 'Cancel',
-      confirmTextColor: Colors.white,
-      cancelTextColor: const Color(0xFF9CA3AF),
-      buttonColor: const Color(0xFFEF4444),
-      onConfirm: () {
-        setState(() {
-          _reminders.removeWhere((r) => r.id == id);
-        });
-        Get.back();
-        // TODO: Delete from backend
-        Get.snackbar('Deleted', 'Reminder deleted successfully', backgroundColor: const Color(0xFF10B981));
-      },
-    );
-  }
 }
 
-class _ReminderCard extends StatelessWidget {
-  final BudgetReminder reminder;
-  final VoidCallback onToggle;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+class _AlertCard extends StatelessWidget {
+  final pb.BudgetAlertMessage alert;
+  final VoidCallback onMarkRead;
 
-  const _ReminderCard({
-    required this.reminder,
-    required this.onToggle,
-    required this.onEdit,
-    required this.onDelete,
+  const _AlertCard({
+    required this.alert,
+    required this.onMarkRead,
   });
 
   @override
   Widget build(BuildContext context) {
+    final alertColor = _getAlertColor(alert.alertType);
+    final alertIcon = _getAlertIcon(alert.alertType);
+    final alertLabel = _getAlertLabel(alert.alertType);
+
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        border: Border.all(
+          color: alert.isRead ? const Color(0xFF2D2D2D) : alertColor.withValues(alpha: 0.3),
+          width: alert.isRead ? 1 : 2,
+        ),
+        boxShadow: alert.isRead ? null : [
+          BoxShadow(
+            color: alertColor.withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                width: 40.r,
+                height: 40.r,
+                decoration: BoxDecoration(
+                  color: alertColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(alertIcon, color: alertColor, size: 20.r),
+              ),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      reminder.budgetName,
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      reminder.reminderType,
-                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
-                    ),
-                    if (reminder.threshold != null) ...[
-                      SizedBox(height: 4.h),
-                      Text(
-                        'At ${reminder.threshold}% of budget',
-                        style: TextStyle(color: const Color(0xFF3B82F6), fontSize: 12),
+                      alert.budgetName,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: alert.isRead ? FontWeight.normal : FontWeight.bold,
                       ),
-                    ],
+                    ),
+                    SizedBox(height: 2.h),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: alertColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        alertLabel,
+                        style: TextStyle(color: alertColor, fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Switch(
-                value: reminder.isActive,
-                onChanged: (_) => onToggle(),
-                activeColor: const Color(0xFF3B82F6),
-              ),
+              if (!alert.isRead)
+                Container(
+                  width: 8.r,
+                  height: 8.r,
+                  decoration: BoxDecoration(
+                    color: alertColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
             ],
           ),
           SizedBox(height: 12.h),
-          Wrap(
-            spacing: 8.w,
-            children: reminder.channels.map((channel) {
-              return _buildChannelChip(channel);
-            }).toList(),
+          Text(
+            alert.message,
+            style: TextStyle(color: Colors.grey[400], fontSize: 14),
           ),
           SizedBox(height: 12.h),
           Row(
             children: [
-              TextButton.icon(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit, size: 16),
-                label: const Text('Edit'),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF3B82F6),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              TextButton.icon(
-                onPressed: onDelete,
-                icon: const Icon(Icons.delete, size: 16),
-                label: const Text('Delete'),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFEF4444),
+              Expanded(
+                child: Row(
+                  children: [
+                    _MiniStat(
+                      label: 'Spent',
+                      value: CurrencySymbols.formatAmount(alert.currentSpent),
+                    ),
+                    SizedBox(width: 16.w),
+                    _MiniStat(
+                      label: 'Budget',
+                      value: CurrencySymbols.formatAmount(alert.budgetLimit),
+                    ),
+                    SizedBox(width: 16.w),
+                    _MiniStat(
+                      label: 'Used',
+                      value: '${alert.percentageUsed.toStringAsFixed(0)}%',
+                      valueColor: alertColor,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
+          if (!alert.isRead) ...[
+            SizedBox(height: 12.h),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onMarkRead,
+                icon: const Icon(Icons.check, size: 16),
+                label: const Text('Mark as read'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF10B981),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildChannelChip(String channel) {
-    IconData icon;
-    String label;
-
-    switch (channel.toLowerCase()) {
-      case 'push':
-        icon = Icons.notifications;
-        label = 'Push';
-        break;
-      case 'email':
-        icon = Icons.email;
-        label = 'Email';
-        break;
-      case 'sms':
-        icon = Icons.sms;
-        label = 'SMS';
-        break;
+  Color _getAlertColor(pb.AlertType type) {
+    switch (type) {
+      case pb.AlertType.ALERT_TYPE_BUDGET_EXCEEDED:
+        return const Color(0xFFEF4444);
+      case pb.AlertType.ALERT_TYPE_THRESHOLD_REACHED:
+        return const Color(0xFFF59E0B);
+      case pb.AlertType.ALERT_TYPE_APPROACHING_LIMIT:
+        return const Color(0xFFFB923C);
+      case pb.AlertType.ALERT_TYPE_RECURRING_EXPENSE_DUE:
+        return const Color(0xFF10B981);
       default:
-        icon = Icons.notifications;
-        label = channel;
+        return const Color(0xFF9CA3AF);
     }
+  }
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14.r, color: Colors.grey[400]),
-          SizedBox(width: 4.w),
-          Text(label, style: TextStyle(color: Colors.grey[400], fontSize: 12.sp)),
-        ],
-      ),
-    );
+  IconData _getAlertIcon(pb.AlertType type) {
+    switch (type) {
+      case pb.AlertType.ALERT_TYPE_BUDGET_EXCEEDED:
+        return Icons.error;
+      case pb.AlertType.ALERT_TYPE_THRESHOLD_REACHED:
+        return Icons.warning;
+      case pb.AlertType.ALERT_TYPE_APPROACHING_LIMIT:
+        return Icons.trending_up;
+      case pb.AlertType.ALERT_TYPE_RECURRING_EXPENSE_DUE:
+        return Icons.schedule;
+      default:
+        return Icons.notifications;
+    }
+  }
+
+  String _getAlertLabel(pb.AlertType type) {
+    switch (type) {
+      case pb.AlertType.ALERT_TYPE_BUDGET_EXCEEDED:
+        return 'Budget Exceeded';
+      case pb.AlertType.ALERT_TYPE_THRESHOLD_REACHED:
+        return 'Threshold Reached';
+      case pb.AlertType.ALERT_TYPE_APPROACHING_LIMIT:
+        return 'Approaching Limit';
+      case pb.AlertType.ALERT_TYPE_RECURRING_EXPENSE_DUE:
+        return 'Expense Due';
+      default:
+        return 'Alert';
+    }
   }
 }
 
-/// Create/Edit Budget Reminder Screen
-class CreateBudgetReminderScreen extends StatefulWidget {
-  const CreateBudgetReminderScreen({super.key});
+class _MiniStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? valueColor;
 
-  @override
-  State<CreateBudgetReminderScreen> createState() => _CreateBudgetReminderScreenState();
-}
-
-class _CreateBudgetReminderScreenState extends State<CreateBudgetReminderScreen> {
-  String? _selectedBudget;
-  String _selectedType = 'threshold';
-  int _thresholdValue = 80;
-  bool _isRecurring = false;
-  String _recurrencePattern = 'weekly';
-  final List<String> _selectedChannels = ['push'];
-
-  final List<Map<String, dynamic>> _budgets = [
-    {'id': '1', 'name': 'Food & Dining', 'amount': 50000},
-    {'id': '2', 'name': 'Transportation', 'amount': 30000},
-    {'id': '3', 'name': 'Shopping', 'amount': 40000},
-    {'id': '4', 'name': 'Bills & Utilities', 'amount': 60000},
-  ];
-
-  final List<String> _reminderTypes = [
-    'threshold',
-    'exceeded',
-    'weekly_summary',
-    'monthly_summary',
-  ];
-
-  final List<Map<String, dynamic>> _channels = [
-    {'value': 'push', 'label': 'Push Notification', 'icon': Icons.notifications},
-    {'value': 'email', 'label': 'Email', 'icon': Icons.email},
-    {'value': 'sms', 'label': 'SMS', 'icon': Icons.sms},
-  ];
+  const _MiniStat({required this.label, required this.value, this.valueColor});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: const Text(
-          'Create Reminder',
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: _saveReminder,
-            child: const Text(
-              'Save',
-              style: TextStyle(color: Color(0xFF3B82F6), fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(16.w),
-        children: [
-          _buildSectionTitle('Select Budget'),
-          SizedBox(height: 8.h),
-          _buildBudgetDropdown(),
-          SizedBox(height: 24.h),
-
-          _buildSectionTitle('Reminder Type'),
-          SizedBox(height: 8.h),
-          _buildReminderTypeChips(),
-          SizedBox(height: 24.h),
-
-          if (_selectedType == 'threshold') ...[
-            _buildSectionTitle('Alert Threshold'),
-            SizedBox(height: 8.h),
-            _buildThresholdSlider(),
-            SizedBox(height: 24.h),
-          ],
-
-          _buildSectionTitle('Notification Channels'),
-          SizedBox(height: 8.h),
-          ..._channels.map((channel) => _buildChannelCheckbox(channel)),
-          SizedBox(height: 24.h),
-
-          _buildRecurringSection(),
-          SizedBox(height: 32.h),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-    );
-  }
-
-  Widget _buildBudgetDropdown() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedBudget,
-          dropdownColor: const Color(0xFF1F1F1F),
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
-          isExpanded: true,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
-          hint: Text('Select a budget', style: TextStyle(color: Colors.grey[400], fontSize: 14.sp)),
-          items: _budgets.map((budget) {
-            return DropdownMenuItem<String>(
-              value: budget['id'] as String,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(budget['name'] as String, style: const TextStyle(color: Colors.white)),
-                  Text(
-                    CurrencySymbols.formatAmount((budget['amount'] as num).toDouble()),
-                    style: TextStyle(color: Colors.grey[400], fontSize: 12.sp),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() => _selectedBudget = value);
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildReminderTypeChips() {
-    return Wrap(
-      spacing: 8.w,
-      runSpacing: 8.h,
-      children: _reminderTypes.map((type) {
-        final isSelected = _selectedType == type;
-        final label = type.replaceAll('_', ' ').split(' ').map((word) =>
-          word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}'
-        ).join(' ');
-
-        return GestureDetector(
-          onTap: () => setState(() => _selectedType = type),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
-              ),
-            ),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[400],
-                fontSize: 13.sp,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildThresholdSlider() {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Alert me at', style: TextStyle(color: Colors.grey[400], fontSize: 14.sp)),
-                  Text(
-                    '$_thresholdValue%',
-                    style: const TextStyle(color: Color(0xFF3B82F6), fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              SliderTheme(
-                data: SliderThemeData(
-                  activeTrackColor: const Color(0xFF3B82F6),
-                  inactiveTrackColor: const Color(0xFF2D2D2D),
-                  thumbColor: const Color(0xFF3B82F6),
-                  overlayColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                  trackHeight: 4,
-                ),
-                child: Slider(
-                  value: _thresholdValue.toDouble(),
-                  min: 50,
-                  max: 100,
-                  divisions: 10,
-                  onChanged: (value) {
-                    setState(() => _thresholdValue = value.toInt());
-                  },
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('50%', style: TextStyle(color: Colors.grey[500], fontSize: 12.sp)),
-                  Text('100%', style: TextStyle(color: Colors.grey[500], fontSize: 12.sp)),
-                ],
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          'You\'ll receive a notification when you reach $_thresholdValue% of this budget.',
-          style: TextStyle(color: Colors.grey[500], fontSize: 12.sp),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChannelCheckbox(Map<String, dynamic> channel) {
-    final value = channel['value'] as String;
-    final isSelected = _selectedChannels.contains(value);
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            _selectedChannels.remove(value);
-          } else {
-            _selectedChannels.add(value);
-          }
-        });
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              channel['icon'] as IconData,
-              color: isSelected ? const Color(0xFF3B82F6) : Colors.grey[400],
-              size: 20.r,
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Text(
-                channel['label'] as String,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[400],
-                  fontSize: 14.sp,
-                ),
-              ),
-            ),
-            Container(
-              width: 20.r,
-              height: 20.r,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? const Color(0xFF3B82F6) : Colors.grey.shade600,
-                  width: 2,
-                ),
-              ),
-              child: isSelected
-                  ? Center(
-                      child: Icon(Icons.check, color: const Color(0xFF3B82F6), size: 14.r),
-                    )
-                  : null,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecurringSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildSectionTitle('Recurring Reminder'),
-            Switch(
-              value: _isRecurring,
-              onChanged: (value) => setState(() => _isRecurring = value),
-              activeColor: const Color(0xFF3B82F6),
-            ),
-          ],
-        ),
-        if (_isRecurring) ...[
-          SizedBox(height: 16.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _recurrencePattern,
-                dropdownColor: const Color(0xFF1F1F1F),
-                icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
-                isExpanded: true,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                items: const [
-                  DropdownMenuItem(value: 'daily', child: Text('Daily')),
-                  DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
-                  DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _recurrencePattern = value);
-                  }
-                },
-              ),
-            ),
+        Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 11.sp)),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor ?? Colors.white,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
           ),
-        ],
+        ),
       ],
-    );
-  }
-
-  void _saveReminder() {
-    if (_selectedBudget == null) {
-      Get.snackbar('Error', 'Please select a budget', backgroundColor: const Color(0xFFEF4444));
-      return;
-    }
-
-    if (_selectedChannels.isEmpty) {
-      Get.snackbar('Error', 'Please select at least one notification channel', backgroundColor: const Color(0xFFEF4444));
-      return;
-    }
-
-    // TODO: Save to backend
-    Get.back();
-    Get.snackbar(
-      'Success',
-      'Reminder created successfully',
-      backgroundColor: const Color(0xFF10B981),
-    );
-  }
-}
-
-/// Budget Reminder Model
-class BudgetReminder {
-  final String id;
-  final String budgetName;
-  final String reminderType;
-  final int? threshold;
-  final List<String> channels;
-  final bool isActive;
-
-  BudgetReminder({
-    required this.id,
-    required this.budgetName,
-    required this.reminderType,
-    this.threshold,
-    required this.channels,
-    required this.isActive,
-  });
-
-  BudgetReminder copyWith({
-    String? id,
-    String? budgetName,
-    String? reminderType,
-    int? threshold,
-    List<String>? channels,
-    bool? isActive,
-  }) {
-    return BudgetReminder(
-      id: id ?? this.id,
-      budgetName: budgetName ?? this.budgetName,
-      reminderType: reminderType ?? this.reminderType,
-      threshold: threshold ?? this.threshold,
-      channels: channels ?? this.channels,
-      isActive: isActive ?? this.isActive,
     );
   }
 }

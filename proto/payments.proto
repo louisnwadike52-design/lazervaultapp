@@ -4,8 +4,33 @@ package payments;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "core-payments-service/proto";
+
+// OpenAPI v2 documentation
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "LazerVault Payments Service";
+    version: "1.0";
+    description: "Core payment and transfer operations service for LazerVault";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+  security_definitions: {
+    security: {
+      key: "bearer";
+      value: {
+        type: TYPE_API_KEY;
+        in: IN_HEADER;
+        name: "Authorization";
+        description: "Bearer token authentication";
+      }
+    }
+  };
+};
 
 // Payments Service - All payment and transfer operations
 service PaymentsService {
@@ -17,6 +42,12 @@ service PaymentsService {
       post: "/api/v1/payments/transfer"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Send Funds";
+      description: "Transfer funds to another account";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Batch transfer to multiple recipients (batchTransfer from AppServiceName)
@@ -24,6 +55,12 @@ service PaymentsService {
     option (google.api.http) = {
       post: "/api/v1/payments/batch-transfer"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Batch Transfer";
+      description: "Transfer funds to multiple recipients";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -33,6 +70,12 @@ service PaymentsService {
       post: "/api/v1/payments/withdraw"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Withdraw";
+      description: "Withdraw cash from account";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Deposit cash to account
@@ -40,6 +83,12 @@ service PaymentsService {
     option (google.api.http) = {
       post: "/api/v1/payments/deposit"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Deposit";
+      description: "Deposit cash to account";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -51,6 +100,12 @@ service PaymentsService {
       post: "/api/v1/payments/tag-pay"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Pay With Tag";
+      description: "Pay using tag/username";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Pay electricity bill (payElectricityBill from AppServiceName)
@@ -58,6 +113,12 @@ service PaymentsService {
     option (google.api.http) = {
       post: "/api/v1/payments/electricity"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Pay Electricity Bill";
+      description: "Pay electricity bill";
+      tags: ["Bills"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -67,6 +128,12 @@ service PaymentsService {
       post: "/api/v1/payments/airtime"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Buy Airtime";
+      description: "Purchase airtime/data";
+      tags: ["Bills"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Pay by scanning barcode (barcodeQuickPay from AppServiceName)
@@ -75,6 +142,12 @@ service PaymentsService {
       post: "/api/v1/payments/barcode"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Barcode Pay";
+      description: "Pay by scanning barcode";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // AI-powered scan to pay (aiScanToPay from AppServiceName)
@@ -82,6 +155,12 @@ service PaymentsService {
     option (google.api.http) = {
       post: "/api/v1/payments/scan"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Scan To Pay";
+      description: "AI-powered scan to pay";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -92,6 +171,12 @@ service PaymentsService {
     option (google.api.http) = {
       get: "/api/v1/payments/history"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Payment History";
+      description: "Get payment history for user";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Get bill providers
@@ -99,12 +184,22 @@ service PaymentsService {
     option (google.api.http) = {
       get: "/api/v1/payments/providers/bills"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Bill Providers";
+      description: "Get list of bill providers";
+      tags: ["Bills"];
+    };
   }
 
   // Get airtime providers
   rpc GetAirtimeProviders(GetAirtimeProvidersRequest) returns (GetAirtimeProvidersResponse) {
     option (google.api.http) = {
       get: "/api/v1/payments/providers/airtime"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Airtime Providers";
+      description: "Get list of airtime providers";
+      tags: ["Bills"];
     };
   }
 
@@ -114,12 +209,23 @@ service PaymentsService {
       post: "/api/v1/payments/bank-details"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Pay With Bank Details";
+      description: "Pay using scanned bank account details (internal or external transfer)";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Resolve tag to account
   rpc ResolveTag(ResolveTagRequest) returns (ResolveTagResponse) {
     option (google.api.http) = {
       get: "/api/v1/payments/resolve/{tag}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Resolve Tag";
+      description: "Resolve tag/username to account";
+      tags: ["Payments"];
     };
   }
 
@@ -128,6 +234,12 @@ service PaymentsService {
     option (google.api.http) = {
       post: "/api/v1/recipients/verify-account"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Bank Account";
+      description: "Verify bank account and retrieve account holder name using Paystack";
+      tags: ["Recipients"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -138,12 +250,24 @@ service PaymentsService {
       post: "/api/v1/transfers/domestic"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Initiate Domestic Transfer";
+      description: "Initiate a domestic bank transfer";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   rpc InitiateInternalTransfer(InitiateInternalTransferRequest) returns (InitiateTransferResponse) {
     option (google.api.http) = {
       post: "/api/v1/transfers/internal"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Initiate Internal Transfer";
+      description: "Transfer funds between LazerVault accounts";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -152,12 +276,24 @@ service PaymentsService {
       post: "/api/v1/transfers/international"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Initiate International Transfer";
+      description: "Initiate an international money transfer";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
-  rpc InitiateUsernameTransfer(InitiateUsernameTransferRequest) returns (InitiateTransferResponse) {
+  rpc InitiateUserTransfer(InitiateUserTransferRequest) returns (InitiateTransferResponse) {
     option (google.api.http) = {
-      post: "/api/v1/transfers/username"
+      post: "/api/v1/transfers/user"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Transfer to User";
+      description: "Transfer funds to a LazerVault user by userId";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -166,11 +302,23 @@ service PaymentsService {
       post: "/api/v1/transfers/phone"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Transfer by Phone";
+      description: "Transfer funds to a user by phone number";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   rpc GetTransferStatus(GetTransferStatusRequest) returns (GetTransferStatusResponse) {
     option (google.api.http) = {
       get: "/api/v1/transfers/{reference}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Transfer Status";
+      description: "Get the status of a transfer by reference";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -178,13 +326,27 @@ service PaymentsService {
     option (google.api.http) = {
       get: "/api/v1/transfers"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get User Transfers";
+      description: "Get transfer history for the authenticated user";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
-  rpc GetTransferFee(GetTransferFeeRequest) returns (GetTransferFeeResponse) {}
+  rpc GetTransferFee(GetTransferFeeRequest) returns (GetTransferFeeResponse) {
+    // GetTransferFee already has its messages defined in the existing proto
+  }
 
   rpc GetDailyUsage(GetDailyUsageRequest) returns (GetDailyUsageResponse) {
     option (google.api.http) = {
       get: "/api/v1/transfers/daily-usage"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Daily Usage";
+      description: "Get daily transfer usage and remaining limits";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 
@@ -192,12 +354,22 @@ service PaymentsService {
     option (google.api.http) = {
       get: "/api/v1/transfers/exchange-rate"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Exchange Rate";
+      description: "Get exchange rate for international transfers";
+      tags: ["Transfers"];
+    };
   }
 
   rpc HandleTransferWebhook(HandleTransferWebhookRequest) returns (HandleTransferWebhookResponse) {
     option (google.api.http) = {
       post: "/api/v1/webhooks/transfer"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Handle Transfer Webhook";
+      description: "Process provider webhook for transfer status updates";
+      tags: ["Webhooks"];
     };
   }
 
@@ -209,6 +381,11 @@ service PaymentsService {
       post: "/api/v1/payments/platform-fee"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Pay Platform Fee";
+      description: "Debit user and credit platform revenue wallet. Service-to-service only.";
+      tags: ["Platform"];
+    };
   }
 
   // RefundFromPlatformWallet - Refund from platform wallet to user account
@@ -216,6 +393,11 @@ service PaymentsService {
     option (google.api.http) = {
       post: "/api/v1/payments/platform-refund"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Refund From Platform Wallet";
+      description: "Refund from platform wallet to user account. Service-to-service only.";
+      tags: ["Platform"];
     };
   }
 
@@ -227,6 +409,12 @@ service PaymentsService {
       post: "/api/v1/payments/qr/generate"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Generate QR Payment Token";
+      description: "Generate an HMAC-signed QR token for receiving payments";
+      tags: ["QR Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
   }
 
   // Validate a QR payment token before initiating transfer
@@ -234,6 +422,40 @@ service PaymentsService {
     option (google.api.http) = {
       post: "/api/v1/payments/qr/validate"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Validate QR Payment Token";
+      description: "Validate and decode a QR payment token";
+      tags: ["QR Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // === BATCH TRANSFER HISTORY ===
+
+  // Get paginated list of user's batch transfers
+  rpc GetBatchTransfers(GetBatchTransfersRequest) returns (GetBatchTransfersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payments/batch-transfers"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Batch Transfers";
+      description: "Get paginated list of batch transfers for the authenticated user";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get detail of a specific batch transfer
+  rpc GetBatchTransferDetail(GetBatchTransferDetailRequest) returns (GetBatchTransferDetailResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payments/batch-transfers/{batch_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Batch Transfer Detail";
+      description: "Get detailed information about a specific batch transfer";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
     };
   }
 }
@@ -244,14 +466,14 @@ message Payment {
   string id = 1;
   string user_id = 2;
   string account_id = 3;
-  string payment_type = 4;
+  string payment_type = 4;              // "transfer", "withdraw", "deposit", "bill", "airtime"
   string reference = 5;
   double amount = 6;
   string currency = 7;
-  string status = 8;
-  string recipient = 9;
+  string status = 8;                    // "pending", "completed", "failed", "reversed"
+  string recipient = 9;                 // Account number, tag, or provider
   string description = 10;
-  string metadata = 11;
+  string metadata = 11;                 // JSON metadata
   string created_at = 12;
   string updated_at = 13;
 }
@@ -259,7 +481,7 @@ message Payment {
 message BillProvider {
   string id = 1;
   string name = 2;
-  string type = 3;
+  string type = 3;                      // "electricity", "water", "internet", "cable"
   string logo_url = 4;
   bool is_active = 5;
   double min_amount = 6;
@@ -269,22 +491,28 @@ message BillProvider {
 message AirtimeProvider {
   string id = 1;
   string name = 2;
-  string network = 3;
+  string network = 3;                   // "MTN", "Airtel", "Glo", "9mobile"
   string logo_url = 4;
   bool is_active = 5;
-  repeated string denominations = 6;
+  repeated string denominations = 6;    // ["100", "200", "500", "1000"]
 }
 
 // ===== SEND FUNDS (Transfer) =====
+// NOTE: user_id extracted from JWT token, not from request
 message SendFundsRequest {
   string from_account_id = 1;
   string to_account_number = 2;
   double amount = 3;
   string description = 4;
-  string transaction_id = 5;
-  string verification_token = 6;
-  string destination_bank_code = 7;
-  string beneficiary_name = 8;
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 5;           // Unique transaction identifier
+  string verification_token = 6;        // Token from TransactionPinService validation
+
+  // External transfer fields
+  string destination_bank_code = 7;    // Bank code for external transfers (e.g., Flutterwave bank code)
+  string beneficiary_name = 8;         // Recipient name for external transfers
+
 }
 
 message SendFundsResponse {
@@ -302,13 +530,19 @@ message BatchTransferItem {
   string description = 3;
   string reference = 4;
   string category = 5;
+  string destination_bank_code = 6;   // Bank code for external transfers (empty = internal)
+  string beneficiary_name = 7;        // Verified beneficiary name
+  string destination_bank_name = 8;   // Human-readable bank name
 }
 
+// NOTE: user_id extracted from JWT token, not from request
 message BatchTransferRequest {
   string from_account_id = 1;
   repeated BatchTransferItem transfers = 2;
-  string transaction_id = 3;
-  string verification_token = 4;
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 3;           // Unique transaction identifier
+  string verification_token = 4;        // Token from TransactionPinService validation
 }
 
 message BatchTransferResponse {
@@ -335,16 +569,23 @@ message BatchTransferResultItem {
   string recipient_account = 6;
   string failure_reason = 7;
   string reference = 8;
+  string destination_bank_code = 9;   // Bank code (populated for external)
+  string destination_bank_name = 10;  // Bank name (populated for external)
+  string transfer_type = 11;          // "internal" or "external"
+  string beneficiary_name = 12;       // Verified beneficiary name
 }
 
 // ===== WITHDRAW =====
+// NOTE: user_id extracted from JWT token, not from request
 message WithdrawRequest {
   string account_id = 1;
   double amount = 2;
   string description = 3;
-  string location = 4;
-  string transaction_id = 5;
-  string verification_token = 6;
+  string location = 4;                  // ATM location or branch
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 5;           // Unique transaction identifier
+  string verification_token = 6;        // Token from TransactionPinService validation
 }
 
 message WithdrawResponse {
@@ -355,12 +596,13 @@ message WithdrawResponse {
 }
 
 // ===== DEPOSIT =====
+// NOTE: user_id extracted from JWT token, not from request
 message DepositRequest {
   string account_id = 1;
   double amount = 2;
   string description = 3;
-  string location = 4;
-  string deposit_type = 5;
+  string location = 4;                  // Deposit location or branch
+  string deposit_type = 5;              // "cash", "check", "transfer"
 }
 
 message DepositResponse {
@@ -371,13 +613,16 @@ message DepositResponse {
 }
 
 // ===== TAG PAY =====
+// NOTE: user_id extracted from JWT token, not from request
 message PayWithTagRequest {
   string from_account_id = 1;
-  string recipient_tag = 2;
+  string recipient_tag = 2;             // @username or tag
   double amount = 3;
   string description = 4;
-  string transaction_id = 5;
-  string verification_token = 6;
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 5;           // Unique transaction identifier
+  string verification_token = 6;        // Token from TransactionPinService validation
 }
 
 message PayWithTagResponse {
@@ -389,33 +634,39 @@ message PayWithTagResponse {
 }
 
 // ===== ELECTRICITY BILL =====
+// NOTE: user_id extracted from JWT token, not from request
 message PayElectricityBillRequest {
   string account_id = 1;
   string provider_id = 2;
   string meter_number = 3;
   double amount = 4;
-  string meter_type = 5;
-  string transaction_id = 6;
-  string verification_token = 7;
+  string meter_type = 5;                // "prepaid", "postpaid"
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 6;           // Unique transaction identifier
+  string verification_token = 7;        // Token from TransactionPinService validation
 }
 
 message PayElectricityBillResponse {
   Payment payment = 1;
   double new_balance = 2;
-  string token = 3;
-  string units = 4;
+  string token = 3;                     // Electricity token (for prepaid)
+  string units = 4;                     // Units purchased
   string message = 5;
 }
 
 // ===== AIRTIME =====
+// NOTE: user_id extracted from JWT token, not from request
 message BuyAirtimeRequest {
   string account_id = 1;
   string provider_id = 2;
   string phone_number = 3;
   double amount = 4;
-  string airtime_type = 5;
-  string transaction_id = 6;
-  string verification_token = 7;
+  string airtime_type = 5;              // "airtime", "data"
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 6;           // Unique transaction identifier
+  string verification_token = 7;        // Token from TransactionPinService validation
 }
 
 message BuyAirtimeResponse {
@@ -426,12 +677,15 @@ message BuyAirtimeResponse {
 }
 
 // ===== BARCODE PAY =====
+// NOTE: user_id extracted from JWT token, not from request
 message BarcodePayRequest {
   string account_id = 1;
-  string barcode_data = 2;
+  string barcode_data = 2;              // Scanned barcode data
   double amount = 3;
-  string transaction_id = 4;
-  string verification_token = 5;
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 4;           // Unique transaction identifier
+  string verification_token = 5;        // Token from TransactionPinService validation
 }
 
 message BarcodePayResponse {
@@ -442,43 +696,83 @@ message BarcodePayResponse {
 }
 
 // ===== SCAN TO PAY (AI) =====
+// NOTE: user_id extracted from JWT token, not from request
 message ScanToPayRequest {
   string account_id = 1;
-  bytes image_data = 2;
-  double amount = 3;
-  string transaction_id = 4;
-  string verification_token = 5;
+  bytes image_data = 2;                 // Scanned receipt/bill image
+  double amount = 3;                    // Optional: can be extracted from image
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 4;           // Unique transaction identifier
+  string verification_token = 5;        // Token from TransactionPinService validation
 }
 
 message ScanToPayResponse {
   Payment payment = 1;
   double new_balance = 2;
   string merchant_name = 3;
-  double extracted_amount = 4;
-  string bill_details = 5;
+  double extracted_amount = 4;          // Amount extracted by AI
+  string bill_details = 5;              // JSON of extracted details
   string message = 6;
 }
 
 // ===== PAYMENT HISTORY =====
+// NOTE: user_id extracted from JWT token, not from request
 message GetPaymentHistoryRequest {
-  string account_id = 1;
-  string payment_type = 2;
-  string status = 3;
+  string account_id = 1;                // Optional filter
+  string payment_type = 2;              // Optional filter
+  string status = 3;                    // Optional filter
   string start_date = 4;
   string end_date = 5;
   int32 limit = 6;
   int32 offset = 7;
 }
 
+// TransactionItem represents a unified transaction that can be either a Payment or a Transfer
+// This allows the payment history endpoint to return both types in a single response
+message TransactionItem {
+  string id = 1;                          // UUID of the transaction (Payment or Transfer ID)
+  string type = 2;                        // "payment" or "transfer" - distinguishes the source table
+  string user_id = 3;                      // User who initiated the transaction
+  int64 created_at = 4;                   // Unix timestamp of creation
+  string amount = 5;                      // Amount as string (preserves decimal precision)
+  string currency = 6;                    // Currency code (NGN, USD, etc.)
+  string status = 7;                       // Transaction status
+  string description = 8;                   // Transaction description/narration
+  string reference = 9;                     // Transaction reference
+  double fee = 10;                         // Transaction fee (0 for internal transfers)
+  string total_amount = 11;                 // Total amount including fee
+
+  // Source information (where funds came from)
+  string source_account_id = 12;           // For payments: account_id, for transfers: source_account_id
+  string source_account_number = 13;        // Virtual account number (for display)
+
+  // Destination information (where funds went to)
+  string destination_account_id = 14;         // For internal transfers: destination account ID
+  string destination_account_number = 15;       // Virtual account number (for display)
+  string destination_name = 16;               // For external transfers: bank account name
+  string destination_bank_code = 17;           // For external transfers: bank code
+  string destination_bank_name = 18;           // For external transfers: bank name
+
+  // Metadata
+  string payment_type = 19;                 // For payments: payment_type (transfer, withdraw, deposit, etc.)
+  string transfer_type = 20;                // For transfers: transfer_type (domestic, international)
+  string metadata = 21;                     // Additional metadata as JSON string
+
+  // Timestamps
+  int64 completed_at = 22;                 // Unix timestamp (optional, for completed transactions)
+  int64 failed_at = 23;                     // Unix timestamp (optional, for failed transactions)
+}
+
 message GetPaymentHistoryResponse {
-  repeated Payment payments = 1;
+  repeated TransactionItem transactions = 1;
   int32 total = 2;
 }
 
 // ===== BILL PROVIDERS =====
 
 message GetBillProvidersRequest {
-  string type = 1;
+  string type = 1;                      // Optional filter: "electricity", "water", etc.
   bool active_only = 2;
 }
 
@@ -501,7 +795,7 @@ message GetAirtimeProvidersResponse {
 // ===== RESOLVE TAG =====
 
 message ResolveTagRequest {
-  string tag = 1;
+  string tag = 1;                       // @username or tag
 }
 
 message ResolveTagResponse {
@@ -517,50 +811,53 @@ message BankDetails {
   string account_number = 1;
   string account_name = 2;
   string bank_name = 3;
-  string bank_code = 4;
-  string routing_number = 5;
-  string account_type = 6;
-  double confidence_score = 7;
-  string mono_account_id = 8;
-  double balance = 9;
+  string bank_code = 4;                // Nigerian bank code (for display purposes)
+  string routing_number = 5;           // US routing number (optional)
+  string account_type = 6;             // "internal" or "external"
+  double confidence_score = 7;         // OCR confidence (0-1)
+  string mono_account_id = 8;          // Mono account ID (required for external transfers via Mono)
+  double balance = 9;                  // Account balance (from Mono, optional)
 }
 
+// NOTE: user_id extracted from JWT token, not from request
 message PayWithBankDetailsRequest {
   string from_account_id = 1;
   BankDetails bank_details = 2;
   double amount = 3;
   string currency = 4;
   string description = 5;
-  string transaction_id = 6;
-  string verification_token = 7;
+
+  // Transaction PIN verification
+  string transaction_id = 6;           // Unique transaction identifier (idempotency key)
+  string verification_token = 7;        // Token from TransactionPinService validation
 }
 
 message PayWithBankDetailsResponse {
   Payment payment = 1;
   double new_balance = 2;
   string recipient_name = 3;
-  string transfer_reference = 4;
+  string transfer_reference = 4;       // Paystack transfer reference (for external)
   string message = 5;
 }
 
 // ===== VERIFY BANK ACCOUNT (Lemfi-style) =====
 
 message VerifyBankAccountRequest {
-  string bank_code = 1;
-  string account_number = 2;
-  string country = 3;
+  string bank_code = 1;                // Nigerian bank code (e.g., "044" for Access Bank)
+  string account_number = 2;           // 10-digit account number
+  string country = 3;                  // Country code (default: "NG")
 }
 
 message VerifyBankAccountResponse {
   bool success = 1;
   string account_number = 2;
-  string account_name = 3;
-  string bank_name = 4;
-  string bank_code = 5;
-  string verification_status = 6;
-  string error_code = 7;
-  string error_message = 8;
-  string user_message = 9;
+  string account_name = 3;             // Account holder name from Paystack
+  string bank_name = 4;                // Bank name
+  string bank_code = 5;                // Bank code
+  string verification_status = 6;      // "verified", "unverified", "pending"
+  string error_code = 7;               // Error code if verification failed
+  string error_message = 8;            // Error message if verification failed
+  string user_message = 9;             // User-friendly error message
 }
 
 // ===== TRANSFER CONSOLIDATION MESSAGES =====
@@ -620,8 +917,10 @@ message InitiateInternationalTransferRequest {
   string transaction_id = 12;
 }
 
-message InitiateUsernameTransferRequest {
-  string to_username = 1;
+// InitiateUserTransferRequest initiates a transfer to a LazerVault user
+// Uses userId (UUID) as the stable identifier for the recipient
+message InitiateUserTransferRequest {
+  string recipient = 1; // Recipient User ID (UUID) - stable identifier
   int64 amount = 2;
   string currency = 3;
   string narration = 4;
@@ -754,17 +1053,17 @@ message HandleTransferWebhookResponse {
 // === PLATFORM FEE MESSAGES ===
 
 message PayPlatformFeeRequest {
-  string user_account_id = 1;
-  string user_id = 2;
-  int64 amount = 3;
-  string currency = 4;
-  string category = 5;
-  string description = 6;
-  string reference = 7;
-  string idempotency_key = 8;
-  string verification_token = 9;
-  string transaction_id = 10;
-  string wallet_code = 11;
+  string user_account_id = 1;           // User account to debit
+  string user_id = 2;                   // Account owner
+  int64 amount = 3;                     // Amount in minor units (kobo/cents)
+  string currency = 4;                  // Currency code
+  string category = 5;                  // e.g., "service_fee", "invoice_unlock"
+  string description = 6;               // Human-readable description
+  string reference = 7;                 // Unique reference
+  string idempotency_key = 8;           // Idempotency key
+  string verification_token = 9;        // PIN verification token
+  string transaction_id = 10;           // Transaction ID for PIN verification
+  string wallet_code = 11;              // Platform wallet code (default: "REVENUE")
 }
 
 message PayPlatformFeeResponse {
@@ -778,15 +1077,15 @@ message PayPlatformFeeResponse {
 }
 
 message RefundFromPlatformWalletRequest {
-  string user_account_id = 1;
-  string user_id = 2;
-  int64 amount = 3;
+  string user_account_id = 1;           // User account to credit
+  string user_id = 2;                   // Account owner
+  int64 amount = 3;                     // Amount in minor units
   string currency = 4;
-  string category = 5;
+  string category = 5;                  // e.g., "refund"
   string description = 6;
   string reference = 7;
   string idempotency_key = 8;
-  string wallet_code = 9;
+  string wallet_code = 9;               // Platform wallet code (default: "REVENUE")
 }
 
 message RefundFromPlatformWalletResponse {
@@ -801,19 +1100,19 @@ message RefundFromPlatformWalletResponse {
 // ===== QR PAYMENT TOKEN =====
 
 message GenerateQRTokenRequest {
-  int64 amount = 1;
+  int64 amount = 1;          // 0 = static QR (no amount), >0 = dynamic QR with amount in minor units
   string currency = 2;
   string description = 3;
-  int32 expiry_minutes = 4;
+  int32 expiry_minutes = 4;  // 0 = no expiry (static), >0 = minutes until expiry
 }
 
 message GenerateQRTokenResponse {
   bool success = 1;
   string error_code = 2;
   string error_message = 3;
-  string qr_token = 4;
-  string qr_data = 5;
-  string expires_at = 6;
+  string qr_token = 4;       // HMAC-signed token
+  string qr_data = 5;        // JSON string for QR encoding
+  string expires_at = 6;     // ISO timestamp, empty for static
 }
 
 message ValidateQRTokenRequest {
@@ -828,7 +1127,44 @@ message ValidateQRTokenResponse {
   string recipient_username = 5;
   string recipient_name = 6;
   string recipient_account_id = 7;
-  int64 amount = 8;
+  int64 amount = 8;           // 0 = static (scanner enters amount)
   string currency = 9;
   bool is_expired = 10;
+}
+
+// ===== BATCH TRANSFER HISTORY =====
+
+message GetBatchTransfersRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message BatchTransferSummary {
+  string batch_id = 1;
+  int32 total_recipients = 2;
+  int32 successful = 3;
+  int32 failed = 4;
+  double total_amount = 5;
+  double total_fees = 6;
+  string status = 7;          // "completed", "partial", "failed"
+  string created_at = 8;
+  string currency = 9;
+}
+
+message GetBatchTransfersResponse {
+  repeated BatchTransferSummary batches = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetBatchTransferDetailRequest {
+  string batch_id = 1;
+}
+
+message GetBatchTransferDetailResponse {
+  BatchTransferSummary summary = 1;
+  repeated BatchTransferResultItem items = 2;
+  string source_account_number = 3;
+  string source_account_name = 4;
 }

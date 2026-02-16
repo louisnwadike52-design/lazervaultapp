@@ -11,4 +11,13 @@ abstract class IBatchTransferRepository {
     required String verificationToken,
     DateTime? scheduledAt,
   });
+
+  Future<Either<Failure, (List<BatchTransferHistoryEntity>, int)>> getBatchTransfers({
+    required int page,
+    required int pageSize,
+  });
+
+  Future<Either<Failure, BatchTransferDetailEntity>> getBatchTransferDetail({
+    required String batchId,
+  });
 }

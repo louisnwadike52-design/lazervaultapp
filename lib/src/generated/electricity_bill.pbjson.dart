@@ -113,6 +113,7 @@ const BillBeneficiary$json = {
     {'1': 'provider_id', '3': 12, '4': 1, '5': 9, '10': 'providerId'},
     {'1': 'customer_address', '3': 13, '4': 1, '5': 9, '10': 'customerAddress'},
     {'1': 'updated_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {'1': 'phone_number', '3': 15, '4': 1, '5': 9, '10': 'phoneNumber'},
   ],
 };
 
@@ -127,7 +128,8 @@ final $typed_data.Uint8List billBeneficiaryDescriptor = $convert.base64Decode(
     'VGltZXN0YW1wUgljcmVhdGVkQXQSPAoMbGFzdF91c2VkX2F0GAsgASgLMhouZ29vZ2xlLnByb3'
     'RvYnVmLlRpbWVzdGFtcFIKbGFzdFVzZWRBdBIfCgtwcm92aWRlcl9pZBgMIAEoCVIKcHJvdmlk'
     'ZXJJZBIpChBjdXN0b21lcl9hZGRyZXNzGA0gASgJUg9jdXN0b21lckFkZHJlc3MSOQoKdXBkYX'
-    'RlZF9hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdA==');
+    'RlZF9hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdBIhCgxw'
+    'aG9uZV9udW1iZXIYDyABKAlSC3Bob25lTnVtYmVy');
 
 @$core.Deprecated('Use autoRechargeDescriptor instead')
 const AutoRecharge$json = {
@@ -556,6 +558,7 @@ const SaveBeneficiaryRequest$json = {
     {'1': 'provider_id', '3': 7, '4': 1, '5': 9, '10': 'providerId'},
     {'1': 'provider_name', '3': 8, '4': 1, '5': 9, '10': 'providerName'},
     {'1': 'customer_address', '3': 9, '4': 1, '5': 9, '10': 'customerAddress'},
+    {'1': 'phone_number', '3': 10, '4': 1, '5': 9, '10': 'phoneNumber'},
   ],
 };
 
@@ -567,7 +570,7 @@ final $typed_data.Uint8List saveBeneficiaryRequestDescriptor = $convert.base64De
     'V0ZXJfdHlwZRgFIAEoCVIJbWV0ZXJUeXBlEh0KCmlzX2RlZmF1bHQYBiABKAhSCWlzRGVmYXVs'
     'dBIfCgtwcm92aWRlcl9pZBgHIAEoCVIKcHJvdmlkZXJJZBIjCg1wcm92aWRlcl9uYW1lGAggAS'
     'gJUgxwcm92aWRlck5hbWUSKQoQY3VzdG9tZXJfYWRkcmVzcxgJIAEoCVIPY3VzdG9tZXJBZGRy'
-    'ZXNz');
+    'ZXNzEiEKDHBob25lX251bWJlchgKIAEoCVILcGhvbmVOdW1iZXI=');
 
 @$core.Deprecated('Use saveBeneficiaryResponseDescriptor instead')
 const SaveBeneficiaryResponse$json = {

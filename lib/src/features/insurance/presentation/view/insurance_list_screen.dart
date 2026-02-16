@@ -16,6 +16,7 @@ import '../cubit/insurance_state.dart';
 import '../cubit/create_policy_cubit.dart';
 import '../widgets/insurance_voice_agent_button.dart';
 import 'create_insurance_policy_carousel.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class InsuranceListScreen extends StatefulWidget {
   const InsuranceListScreen({super.key});
@@ -231,6 +232,11 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
               ],
             ),
           ),
+          MicroserviceChatIcon(
+            serviceName: 'Insurance',
+            sourceContext: 'financial_products',
+          ),
+          SizedBox(width: 8.w),
           GestureDetector(
             onTap: () => Get.toNamed(AppRoutes.insuranceFaq),
             child: Container(

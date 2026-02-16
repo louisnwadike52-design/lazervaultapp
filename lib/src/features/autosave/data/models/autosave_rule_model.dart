@@ -28,14 +28,20 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
   });
 
   factory AutoSaveRuleModel.fromProto(autosave_pb.AutoSaveRule proto) {
+    // Gateway sends amounts in kobo (minor units), convert to Naira (major) for display
+    final amountType = _amountTypeFromProto(proto.amountType);
+    final amountValue = amountType == AmountType.percentage
+        ? proto.amountValue  // Percentages stay as-is
+        : proto.amountValue / 100; // kobo -> Naira
+
     return AutoSaveRuleModel(
       id: proto.id,
       userId: proto.userId,
       name: proto.name,
       description: proto.description,
       triggerType: _triggerTypeFromProto(proto.triggerType),
-      amountType: _amountTypeFromProto(proto.amountType),
-      amountValue: proto.amountValue,
+      amountType: amountType,
+      amountValue: amountValue,
       sourceAccountId: proto.sourceAccountId,
       destinationAccountId: proto.destinationAccountId,
       status: _statusFromProto(proto.status),
@@ -43,14 +49,14 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
       scheduleTime: proto.scheduleTime.isEmpty ? null : proto.scheduleTime,
       scheduleDay: proto.scheduleDay == 0 ? null : proto.scheduleDay,
       roundUpTo: proto.roundUpTo == 0 ? null : proto.roundUpTo,
-      targetAmount: proto.targetAmount == 0 ? null : proto.targetAmount,
-      minimumBalance: proto.minimumBalance == 0 ? null : proto.minimumBalance,
-      maximumPerSave: proto.maximumPerSave == 0 ? null : proto.maximumPerSave,
+      targetAmount: proto.targetAmount == 0 ? null : proto.targetAmount / 100, // kobo -> Naira
+      minimumBalance: proto.minimumBalance == 0 ? null : proto.minimumBalance / 100, // kobo -> Naira
+      maximumPerSave: proto.maximumPerSave == 0 ? null : proto.maximumPerSave / 100, // kobo -> Naira
       createdAt: proto.createdAt.toDateTime(),
       updatedAt: proto.updatedAt.toDateTime(),
       lastTriggeredAt: proto.hasLastTriggeredAt() ? proto.lastTriggeredAt.toDateTime() : null,
       triggerCount: proto.triggerCount,
-      totalSaved: proto.totalSaved,
+      totalSaved: proto.totalSaved / 100, // kobo -> Naira
     );
   }
 
@@ -132,7 +138,7 @@ class AutoSaveTransactionModel extends AutoSaveTransactionEntity {
       userId: proto.userId,
       sourceAccountId: proto.sourceAccountId,
       destinationAccountId: proto.destinationAccountId,
-      amount: proto.amount,
+      amount: proto.amount / 100, // kobo -> Naira
       triggerType: AutoSaveRuleModel._triggerTypeFromProto(proto.triggerType),
       triggerReason: proto.triggerReason,
       success: proto.success,
@@ -158,11 +164,11 @@ class AutoSaveStatisticsModel extends AutoSaveStatisticsEntity {
     return AutoSaveStatisticsModel(
       userId: proto.userId,
       activeRulesCount: proto.activeRulesCount,
-      totalSavedAllTime: proto.totalSavedAllTime,
-      totalSavedThisMonth: proto.totalSavedThisMonth,
-      totalSavedThisWeek: proto.totalSavedThisWeek,
+      totalSavedAllTime: proto.totalSavedAllTime / 100, // kobo -> Naira
+      totalSavedThisMonth: proto.totalSavedThisMonth / 100, // kobo -> Naira
+      totalSavedThisWeek: proto.totalSavedThisWeek / 100, // kobo -> Naira
       totalTransactions: proto.totalTransactions,
-      averageSaveAmount: proto.averageSaveAmount,
+      averageSaveAmount: proto.averageSaveAmount / 100, // kobo -> Naira
       mostActiveRule: proto.hasMostActiveRule()
           ? AutoSaveRuleModel.fromProto(proto.mostActiveRule)
           : null,

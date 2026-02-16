@@ -1286,9 +1286,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           pinModalKey.currentState?.setSuccess();
 
           // --- Save Recipient After Successful Transfer ---
-          if (_recipient != null) {
+          // Only save if the recipient is marked for saving (isSaved=true)
+          // and is not already persisted in the backend.
+          // Backend handles dedup via unique constraint on (user_id, account_number, bank_name),
+          // so even if this fires for an existing recipient, it will update rather than duplicate.
+          if (_recipient != null && _recipient!.isSaved) {
             final recipientId = _recipient!.id;
             final parsedId = int.tryParse(recipientId);
+            // Backend IDs are small auto-increment integers.
+            // Temporary IDs use DateTime.now().millisecondsSinceEpoch (very large).
+            // UUIDs won't parse as int (parsedId == null).
             final isAlreadySaved = parsedId != null && parsedId < 1000000000;
             if (!isAlreadySaved) {
               print("Listener: Saving new recipient to database (id: $recipientId)...");
@@ -1297,6 +1304,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 final accessToken = authStateForSave.profile.session.accessToken;
                 final recipientToSave = _recipient!.copyWith(
                   id: '0',
+                  isSaved: true,
                   countryCode: _recipient!.countryCode ?? 'NG',
                   currency: _recipient!.currency ?? 'NGN',
                 );
@@ -1307,7 +1315,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 ).then((result) {
                   result.fold(
                     (failure) => print("Warning: Failed to save recipient: ${failure.message}"),
-                    (saved) => print("Listener: Recipient saved with id: ${saved.id}"),
+                    (saved) {
+                      print("Listener: Recipient saved with id: ${saved.id}");
+                      // Update local reference so subsequent transfers
+                      // recognize this recipient as already saved.
+                      _recipient = saved;
+                    },
                   );
                 });
               }

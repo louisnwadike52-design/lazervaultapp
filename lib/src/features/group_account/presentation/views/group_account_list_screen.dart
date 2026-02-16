@@ -14,6 +14,7 @@ import '../widgets/public_group_detail_bottom_sheet.dart';
 import '../../../presentation/views/dashboard/dashboard_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class GroupAccountListScreen extends StatefulWidget {
   const GroupAccountListScreen({super.key});
@@ -37,6 +38,11 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   // Leaderboard tab state
   Timer? _leaderboardDebounceTimer;
   int _leaderboardTabIndex = 0;
+
+  // My Groups tab state
+  int _myGroupsTabIndex = 0; // 0 = Private, 1 = Public
+  final TextEditingController _myGroupsSearchController = TextEditingController();
+  String _myGroupsSearchQuery = '';
 
   static const _sortOptions = {
     'most_members': 'Most Members',
@@ -71,6 +77,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _searchController.dispose();
+    _myGroupsSearchController.dispose();
     _debouncer.dispose();
     _leaderboardDebounceTimer?.cancel();
     super.dispose();
@@ -100,7 +107,11 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess && !_userIdSet) {
       _userIdSet = true;
-      context.read<GroupAccountCubit>().setUserId(authState.profile.user.id);
+      final user = authState.profile.user;
+      context.read<GroupAccountCubit>().setUserId(
+        user.id,
+        userName: '${user.firstName} ${user.lastName}'.trim(),
+      );
     }
   }
 
@@ -110,7 +121,11 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       listener: (context, authState) {
         if (authState is AuthenticationSuccess && !_userIdSet) {
           _userIdSet = true;
-          context.read<GroupAccountCubit>().setUserId(authState.profile.user.id);
+          final user = authState.profile.user;
+          context.read<GroupAccountCubit>().setUserId(
+            user.id,
+            userName: '${user.firstName} ${user.lastName}'.trim(),
+          );
         }
       },
       builder: (context, authState) {
@@ -216,6 +231,10 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                 ),
               ],
             ),
+          ),
+          MicroserviceChatIcon(
+            serviceName: 'Joint Funds',
+            sourceContext: 'group_accounts',
           ),
         ],
       ),
@@ -372,15 +391,9 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       child: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
             sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildStatsCard(null),
-                  SizedBox(height: 24.h),
-                ],
-              ),
+              child: _buildStatsCard(null),
             ),
           ),
           SliverFillRemaining(
@@ -421,6 +434,17 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     final publicGroups =
         groups.where((g) => g.visibility == GroupVisibility.public).toList();
 
+    // Filter by search query
+    final query = _myGroupsSearchQuery.toLowerCase();
+    final filteredGroups = _myGroupsTabIndex == 0 ? privateGroups : publicGroups;
+    final displayGroups = query.isEmpty
+        ? filteredGroups
+        : filteredGroups
+            .where((g) =>
+                g.name.toLowerCase().contains(query) ||
+                g.description.toLowerCase().contains(query))
+            .toList();
+
     return RefreshIndicator(
       onRefresh: () async {
         context.read<GroupAccountCubit>().loadUserGroups();
@@ -430,133 +454,204 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       child: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
             sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: _buildStatsCard(groups),
+            ),
+          ),
+          // Private / Public tabs (bottom-line style like leaderboard)
+          SliverToBoxAdapter(
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Row(
                 children: [
-                  _buildStatsCard(groups),
-                  SizedBox(height: 24.h),
+                  _buildMyGroupsSubTab(
+                    label: 'Private (${privateGroups.length})',
+                    icon: Icons.lock_outline,
+                    index: 0,
+                  ),
+                  SizedBox(width: 4.w),
+                  _buildMyGroupsSubTab(
+                    label: 'Public (${publicGroups.length})',
+                    icon: Icons.public,
+                    index: 1,
+                  ),
                 ],
               ),
             ),
           ),
-          // Private groups section
-          if (privateGroups.isNotEmpty) ...[
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              sliver: SliverToBoxAdapter(
-                child: Row(
-                  children: [
-                    Icon(Icons.lock, color: const Color(0xFF9CA3AF), size: 16.sp),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Private Groups (${privateGroups.length})',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final group = privateGroups[index];
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 12.h),
-                      child: GroupCard(
-                        group: group,
-                        onTap: () => _navigateToGroupDetails(group),
-                      ),
-                    );
+          // Search bar
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 6.h),
+              child: SizedBox(
+                height: 40.h,
+                child: TextField(
+                  controller: _myGroupsSearchController,
+                  onChanged: (value) {
+                    setState(() => _myGroupsSearchQuery = value.trim());
                   },
-                  childCount: privateGroups.length,
-                ),
-              ),
-            ),
-          ],
-          // Public groups section
-          if (publicGroups.isNotEmpty) ...[
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              sliver: SliverToBoxAdapter(
-                child: Row(
-                  children: [
-                    Icon(Icons.public, color: const Color(0xFF3B82F6), size: 16.sp),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Public Groups (${publicGroups.length})',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final group = publicGroups[index];
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 12.h),
-                      child: GroupCard(
-                        group: group,
-                        onTap: () => _navigateToGroupDetails(group),
-                      ),
-                    );
-                  },
-                  childCount: publicGroups.length,
-                ),
-              ),
-            ),
-          ],
-          // Show all groups unsorted if none match visibility filter
-          if (privateGroups.isEmpty && publicGroups.isEmpty) ...[
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              sliver: SliverToBoxAdapter(
-                child: Text(
-                  'Your Groups (${groups.length})',
                   style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
                     color: Colors.white,
+                    fontSize: 13.sp,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search ${_myGroupsTabIndex == 0 ? 'private' : 'public'} groups...',
+                    hintStyle: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 13.sp,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: const Color(0xFF9CA3AF),
+                      size: 18.sp,
+                    ),
+                    suffixIcon: _myGroupsSearchController.text.isNotEmpty
+                        ? IconButton(
+                            onPressed: () {
+                              _myGroupsSearchController.clear();
+                              setState(() => _myGroupsSearchQuery = '');
+                            },
+                            icon: Icon(
+                              Icons.close,
+                              color: const Color(0xFF9CA3AF),
+                              size: 16.sp,
+                            ),
+                            padding: EdgeInsets.zero,
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: const Color(0xFF1F1F1F),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2D2D2D),
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide: const BorderSide(
+                        color: Color.fromARGB(255, 78, 3, 208),
+                        width: 1,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
+          ),
+          // Groups list
+          if (displayGroups.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      query.isNotEmpty ? Icons.search_off : (_myGroupsTabIndex == 0 ? Icons.lock_outline : Icons.public),
+                      size: 40.sp,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                    SizedBox(height: 12.h),
+                    Text(
+                      query.isNotEmpty
+                          ? 'No groups match "$_myGroupsSearchQuery"'
+                          : 'No ${_myGroupsTabIndex == 0 ? 'private' : 'public'} groups yet',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
             SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final group = groups[index];
+                    final group = displayGroups[index];
                     return Padding(
-                      padding: EdgeInsets.only(bottom: 12.h),
+                      padding: EdgeInsets.only(bottom: 10.h),
                       child: GroupCard(
                         group: group,
                         onTap: () => _navigateToGroupDetails(group),
                       ),
                     );
                   },
-                  childCount: groups.length,
+                  childCount: displayGroups.length,
                 ),
               ),
             ),
-          ],
           SliverPadding(padding: EdgeInsets.only(bottom: 80.h)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMyGroupsSubTab({
+    required String label,
+    required IconData icon,
+    required int index,
+  }) {
+    final isSelected = _myGroupsTabIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _myGroupsTabIndex = index;
+            _myGroupsSearchController.clear();
+            _myGroupsSearchQuery = '';
+          });
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected
+                    ? const Color.fromARGB(255, 78, 3, 208)
+                    : Colors.transparent,
+                width: 2.5,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 14.sp,
+                color: isSelected
+                    ? const Color.fromARGB(255, 78, 3, 208)
+                    : const Color(0xFF9CA3AF),
+              ),
+              SizedBox(width: 6.w),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: isSelected
+                      ? const Color.fromARGB(255, 78, 3, 208)
+                      : const Color(0xFF9CA3AF),
+                  fontSize: 13.sp,
+                  fontWeight:
+                      isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -569,7 +664,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         groups?.fold<int>(0, (sum, g) => sum + g.contributions.length) ?? 0;
 
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -579,64 +674,48 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
             const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color:
                 const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Your Overview',
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              Icon(
-                Icons.groups,
-                color: Colors.white,
-                size: 24.sp,
-              ),
-            ],
+          Expanded(
+            child: _buildStatItem(
+              title: 'Groups',
+              value: totalGroups.toString(),
+              icon: Icons.group,
+            ),
           ),
-          SizedBox(height: 20.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  title: 'Total Groups',
-                  value: totalGroups.toString(),
-                  icon: Icons.group,
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: _buildStatItem(
-                  title: 'Active',
-                  value: activeGroups.toString(),
-                  icon: Icons.check_circle_outline,
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: _buildStatItem(
-                  title: 'Contributions',
-                  value: totalContributions.toString(),
-                  icon: Icons.account_balance_wallet,
-                ),
-              ),
-            ],
+          Container(
+            width: 1,
+            height: 36.h,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          Expanded(
+            child: _buildStatItem(
+              title: 'Active',
+              value: activeGroups.toString(),
+              icon: Icons.check_circle_outline,
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 36.h,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          Expanded(
+            child: _buildStatItem(
+              title: 'Goals',
+              value: totalContributions.toString(),
+              icon: Icons.account_balance_wallet,
+            ),
           ),
         ],
       ),
@@ -649,26 +728,32 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     required IconData icon,
   }) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          color: Colors.white.withValues(alpha: 0.8),
-          size: 20.sp,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: Colors.white.withValues(alpha: 0.8),
+              size: 14.sp,
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 8.h),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 4.h),
+        SizedBox(height: 2.h),
         Text(
           title,
           style: GoogleFonts.inter(
-            fontSize: 11.sp,
+            fontSize: 10.sp,
             color: Colors.white.withValues(alpha: 0.8),
           ),
           textAlign: TextAlign.center,
@@ -687,15 +772,9 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       child: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
             sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildStatsCard(null),
-                  SizedBox(height: 24.h),
-                ],
-              ),
+              child: _buildStatsCard(null),
             ),
           ),
           SliverFillRemaining(
@@ -801,20 +880,20 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   }
 
   Widget _buildMyGroupsErrorView(String message) {
-    return CustomScrollView(
-      slivers: [
-        SliverPadding(
-          padding: EdgeInsets.all(20.w),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStatsCard(null),
-                SizedBox(height: 24.h),
-              ],
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<GroupAccountCubit>().loadUserGroups();
+      },
+      color: const Color.fromARGB(255, 78, 3, 208),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
+            sliver: SliverToBoxAdapter(
+              child: _buildStatsCard(null),
             ),
           ),
-        ),
         SliverFillRemaining(
           hasScrollBody: false,
           child: Center(
@@ -869,6 +948,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         ),
         SliverPadding(padding: EdgeInsets.only(bottom: 80.h)),
       ],
+      ),
     );
   }
 

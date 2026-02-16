@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_payment_entity.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_code_details_bottom_sheet.dart';
 
 class GeneratedQRHistoryScreen extends StatefulWidget {
   const GeneratedQRHistoryScreen({super.key});
@@ -130,14 +131,23 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
   }
 
   Widget _buildQRCodeTile(QRPaymentEntity qr) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (_) => QRCodeDetailsBottomSheet(qrCode: qr),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -203,6 +213,7 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
             ],
           ),
         ],
+      ),
       ),
     );
   }

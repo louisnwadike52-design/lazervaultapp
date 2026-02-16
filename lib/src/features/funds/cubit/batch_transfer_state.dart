@@ -51,3 +51,55 @@ final class BatchTransferNetworkError extends BatchTransferState {
   @override
   List<Object?> get props => [message];
 }
+
+// History states
+final class BatchTransferHistoryLoading extends BatchTransferState {
+  const BatchTransferHistoryLoading();
+}
+
+final class BatchTransferHistoryLoaded extends BatchTransferState {
+  final List<BatchTransferHistoryEntity> batches;
+  final int total;
+  final int page;
+
+  const BatchTransferHistoryLoaded({
+    required this.batches,
+    required this.total,
+    required this.page,
+  });
+
+  @override
+  List<Object?> get props => [batches, total, page];
+}
+
+final class BatchTransferHistoryError extends BatchTransferState {
+  final String message;
+
+  const BatchTransferHistoryError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// Detail states
+final class BatchTransferDetailLoading extends BatchTransferState {
+  const BatchTransferDetailLoading();
+}
+
+final class BatchTransferDetailLoaded extends BatchTransferState {
+  final BatchTransferDetailEntity detail;
+
+  const BatchTransferDetailLoaded({required this.detail});
+
+  @override
+  List<Object?> get props => [detail];
+}
+
+final class BatchTransferDetailError extends BatchTransferState {
+  final String message;
+
+  const BatchTransferDetailError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

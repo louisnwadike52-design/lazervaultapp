@@ -340,7 +340,11 @@ class BalanceWebSocketService {
           eventType == 'transfer_in' ||
           eventType == 'transfer_out' ||
           eventType == 'deposit' ||
-          eventType == 'withdrawal') {
+          eventType == 'withdrawal' ||
+          eventType == 'tagpay_tag_paid' ||
+          eventType == 'tagpay_tag_received' ||
+          eventType == 'tagpay_send' ||
+          eventType == 'tagpay_request_accepted') {
         final event = BalanceUpdateEvent.fromJson(data);
         print('BalanceWebSocketService: Received balance update (legacy) - $event');
         _eventController.add(event);

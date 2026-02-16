@@ -93,9 +93,9 @@ class PaymentsServiceClient extends $grpc.Client {
       '/payments.PaymentsService/InitiateInternationalTransfer',
       ($0.InitiateInternationalTransferRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.InitiateTransferResponse.fromBuffer(value));
-  static final _$initiateUsernameTransfer = $grpc.ClientMethod<$0.InitiateUsernameTransferRequest, $0.InitiateTransferResponse>(
-      '/payments.PaymentsService/InitiateUsernameTransfer',
-      ($0.InitiateUsernameTransferRequest value) => value.writeToBuffer(),
+  static final _$initiateUserTransfer = $grpc.ClientMethod<$0.InitiateUserTransferRequest, $0.InitiateTransferResponse>(
+      '/payments.PaymentsService/InitiateUserTransfer',
+      ($0.InitiateUserTransferRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.InitiateTransferResponse.fromBuffer(value));
   static final _$initiatePhoneTransfer = $grpc.ClientMethod<$0.InitiatePhoneTransferRequest, $0.InitiateTransferResponse>(
       '/payments.PaymentsService/InitiatePhoneTransfer',
@@ -141,6 +141,14 @@ class PaymentsServiceClient extends $grpc.Client {
       '/payments.PaymentsService/ValidateQRPaymentToken',
       ($0.ValidateQRTokenRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.ValidateQRTokenResponse.fromBuffer(value));
+  static final _$getBatchTransfers = $grpc.ClientMethod<$0.GetBatchTransfersRequest, $0.GetBatchTransfersResponse>(
+      '/payments.PaymentsService/GetBatchTransfers',
+      ($0.GetBatchTransfersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetBatchTransfersResponse.fromBuffer(value));
+  static final _$getBatchTransferDetail = $grpc.ClientMethod<$0.GetBatchTransferDetailRequest, $0.GetBatchTransferDetailResponse>(
+      '/payments.PaymentsService/GetBatchTransferDetail',
+      ($0.GetBatchTransferDetailRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetBatchTransferDetailResponse.fromBuffer(value));
 
   PaymentsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -220,8 +228,8 @@ class PaymentsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$initiateInternationalTransfer, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.InitiateTransferResponse> initiateUsernameTransfer($0.InitiateUsernameTransferRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$initiateUsernameTransfer, request, options: options);
+  $grpc.ResponseFuture<$0.InitiateTransferResponse> initiateUserTransfer($0.InitiateUserTransferRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$initiateUserTransfer, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.InitiateTransferResponse> initiatePhoneTransfer($0.InitiatePhoneTransferRequest request, {$grpc.CallOptions? options}) {
@@ -266,6 +274,14 @@ class PaymentsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.ValidateQRTokenResponse> validateQRPaymentToken($0.ValidateQRTokenRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$validateQRPaymentToken, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetBatchTransfersResponse> getBatchTransfers($0.GetBatchTransfersRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getBatchTransfers, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetBatchTransferDetailResponse> getBatchTransferDetail($0.GetBatchTransferDetailRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getBatchTransferDetail, request, options: options);
   }
 }
 
@@ -400,12 +416,12 @@ abstract class PaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.InitiateInternationalTransferRequest.fromBuffer(value),
         ($0.InitiateTransferResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.InitiateUsernameTransferRequest, $0.InitiateTransferResponse>(
-        'InitiateUsernameTransfer',
-        initiateUsernameTransfer_Pre,
+    $addMethod($grpc.ServiceMethod<$0.InitiateUserTransferRequest, $0.InitiateTransferResponse>(
+        'InitiateUserTransfer',
+        initiateUserTransfer_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.InitiateUsernameTransferRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.InitiateUserTransferRequest.fromBuffer(value),
         ($0.InitiateTransferResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.InitiatePhoneTransferRequest, $0.InitiateTransferResponse>(
         'InitiatePhoneTransfer',
@@ -484,6 +500,20 @@ abstract class PaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.ValidateQRTokenRequest.fromBuffer(value),
         ($0.ValidateQRTokenResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetBatchTransfersRequest, $0.GetBatchTransfersResponse>(
+        'GetBatchTransfers',
+        getBatchTransfers_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetBatchTransfersRequest.fromBuffer(value),
+        ($0.GetBatchTransfersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetBatchTransferDetailRequest, $0.GetBatchTransferDetailResponse>(
+        'GetBatchTransferDetail',
+        getBatchTransferDetail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetBatchTransferDetailRequest.fromBuffer(value),
+        ($0.GetBatchTransferDetailResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.SendFundsResponse> sendFunds_Pre($grpc.ServiceCall call, $async.Future<$0.SendFundsRequest> request) async {
@@ -558,8 +588,8 @@ abstract class PaymentsServiceBase extends $grpc.Service {
     return initiateInternationalTransfer(call, await request);
   }
 
-  $async.Future<$0.InitiateTransferResponse> initiateUsernameTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.InitiateUsernameTransferRequest> request) async {
-    return initiateUsernameTransfer(call, await request);
+  $async.Future<$0.InitiateTransferResponse> initiateUserTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.InitiateUserTransferRequest> request) async {
+    return initiateUserTransfer(call, await request);
   }
 
   $async.Future<$0.InitiateTransferResponse> initiatePhoneTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.InitiatePhoneTransferRequest> request) async {
@@ -606,6 +636,14 @@ abstract class PaymentsServiceBase extends $grpc.Service {
     return validateQRPaymentToken(call, await request);
   }
 
+  $async.Future<$0.GetBatchTransfersResponse> getBatchTransfers_Pre($grpc.ServiceCall call, $async.Future<$0.GetBatchTransfersRequest> request) async {
+    return getBatchTransfers(call, await request);
+  }
+
+  $async.Future<$0.GetBatchTransferDetailResponse> getBatchTransferDetail_Pre($grpc.ServiceCall call, $async.Future<$0.GetBatchTransferDetailRequest> request) async {
+    return getBatchTransferDetail(call, await request);
+  }
+
   $async.Future<$0.SendFundsResponse> sendFunds($grpc.ServiceCall call, $0.SendFundsRequest request);
   $async.Future<$0.BatchTransferResponse> batchTransfer($grpc.ServiceCall call, $0.BatchTransferRequest request);
   $async.Future<$0.WithdrawResponse> withdraw($grpc.ServiceCall call, $0.WithdrawRequest request);
@@ -624,7 +662,7 @@ abstract class PaymentsServiceBase extends $grpc.Service {
   $async.Future<$0.InitiateTransferResponse> initiateDomesticTransfer($grpc.ServiceCall call, $0.InitiateDomesticTransferRequest request);
   $async.Future<$0.InitiateTransferResponse> initiateInternalTransfer($grpc.ServiceCall call, $0.InitiateInternalTransferRequest request);
   $async.Future<$0.InitiateTransferResponse> initiateInternationalTransfer($grpc.ServiceCall call, $0.InitiateInternationalTransferRequest request);
-  $async.Future<$0.InitiateTransferResponse> initiateUsernameTransfer($grpc.ServiceCall call, $0.InitiateUsernameTransferRequest request);
+  $async.Future<$0.InitiateTransferResponse> initiateUserTransfer($grpc.ServiceCall call, $0.InitiateUserTransferRequest request);
   $async.Future<$0.InitiateTransferResponse> initiatePhoneTransfer($grpc.ServiceCall call, $0.InitiatePhoneTransferRequest request);
   $async.Future<$0.GetTransferStatusResponse> getTransferStatus($grpc.ServiceCall call, $0.GetTransferStatusRequest request);
   $async.Future<$0.GetUserTransfersResponse> getUserTransfers($grpc.ServiceCall call, $0.GetUserTransfersRequest request);
@@ -636,4 +674,6 @@ abstract class PaymentsServiceBase extends $grpc.Service {
   $async.Future<$0.RefundFromPlatformWalletResponse> refundFromPlatformWallet($grpc.ServiceCall call, $0.RefundFromPlatformWalletRequest request);
   $async.Future<$0.GenerateQRTokenResponse> generateQRPaymentToken($grpc.ServiceCall call, $0.GenerateQRTokenRequest request);
   $async.Future<$0.ValidateQRTokenResponse> validateQRPaymentToken($grpc.ServiceCall call, $0.ValidateQRTokenRequest request);
+  $async.Future<$0.GetBatchTransfersResponse> getBatchTransfers($grpc.ServiceCall call, $0.GetBatchTransfersRequest request);
+  $async.Future<$0.GetBatchTransferDetailResponse> getBatchTransferDetail($grpc.ServiceCall call, $0.GetBatchTransferDetailRequest request);
 }

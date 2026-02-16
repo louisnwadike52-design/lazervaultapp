@@ -78,6 +78,19 @@ class QRTransactionReceiptLoaded extends QRPaymentState {
   List<Object?> get props => [transaction];
 }
 
+class QRRecentActivityLoaded extends QRPaymentState {
+  final List<QRPaymentEntity> recentQRCodes;
+  final List<QRTransactionEntity> recentPayments;
+
+  QRRecentActivityLoaded({
+    required this.recentQRCodes,
+    required this.recentPayments,
+  });
+
+  @override
+  List<Object?> get props => [recentQRCodes, recentPayments];
+}
+
 class QRPaymentError extends QRPaymentState {
   final String message;
 

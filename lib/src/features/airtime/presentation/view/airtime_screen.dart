@@ -8,6 +8,7 @@ import '../cubit/airtime_cubit.dart';
 import '../widgets/network_providers_card.dart';
 import '../widgets/quick_actions_card.dart';
 import '../widgets/recent_transactions_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class AirtimeScreen extends StatefulWidget {
   const AirtimeScreen({super.key});
@@ -88,7 +89,7 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
         children: [
           // Back button
           GestureDetector(
-            onTap: () => Get.offAllNamed(AppRoutes.dashboard),
+            onTap: () => Get.offAllNamed(AppRoutes.billsHub),
             child: Container(
               width: 40.w,
               height: 40.w,
@@ -141,6 +142,11 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
             ),
           ),
           
+          MicroserviceChatIcon(
+            serviceName: 'Airtime',
+            sourceContext: 'bills',
+          ),
+          SizedBox(width: 8.w),
           // History button
           GestureDetector(
             onTap: () => Get.toNamed(AppRoutes.airtimeHistory),

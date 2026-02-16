@@ -223,6 +223,15 @@ import 'package:lazervault/src/features/microservice_chat/data/repositories/gene
 import 'package:lazervault/src/features/microservice_chat/data/datasources/http_general_chat_datasource.dart';
 // End General Chat Imports
 
+// Microservice Chat Imports (per-service bottom sheet chat)
+import 'package:lazervault/src/features/microservice_chat/data/datasources/http_microservice_chat_datasource.dart';
+import 'package:lazervault/src/features/microservice_chat/data/repositories/microservice_chat_repository_impl.dart';
+import 'package:lazervault/src/features/microservice_chat/domain/repositories/microservice_chat_repository.dart';
+import 'package:lazervault/src/features/microservice_chat/domain/usecases/send_microservice_chat_message_usecase.dart';
+import 'package:lazervault/src/features/microservice_chat/domain/usecases/load_microservice_chat_history_usecase.dart';
+import 'package:lazervault/core/services/chat_session_manager.dart';
+// End Microservice Chat Imports
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Gift Cards Imports
@@ -337,6 +346,13 @@ import 'package:lazervault/src/features/qr_payment/domain/repositories/qr_paymen
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 // End QR Payment Imports
 
+// IDPay Imports
+import 'package:lazervault/src/features/id_pay/data/datasources/id_pay_remote_datasource.dart';
+import 'package:lazervault/src/features/id_pay/data/repositories/id_pay_repository_impl.dart';
+import 'package:lazervault/src/features/id_pay/domain/repositories/id_pay_repository.dart';
+import 'package:lazervault/src/features/id_pay/presentation/cubit/id_pay_cubit.dart';
+// End IDPay Imports
+
 // Contactless Payment (NFC) Imports
 import 'package:lazervault/src/features/contactless_payment/data/repositories/contactless_payment_repository_impl.dart';
 import 'package:lazervault/src/features/contactless_payment/domain/repositories/contactless_payment_repository.dart';
@@ -366,6 +382,27 @@ import 'package:lazervault/src/features/education/data/repositories/education_re
 import 'package:lazervault/src/features/education/domain/repositories/education_repository.dart';
 import 'package:lazervault/src/features/education/presentation/cubit/education_cubit.dart';
 // End Education Imports
+
+// Water Bill Imports
+import 'package:lazervault/src/features/water_bill/data/datasources/water_bill_remote_datasource.dart';
+import 'package:lazervault/src/features/water_bill/data/repositories/water_bill_repository_impl.dart';
+import 'package:lazervault/src/features/water_bill/domain/repositories/water_bill_repository.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_bill_cubit.dart';
+// End Water Bill Imports
+
+// Internet Bill Imports
+import 'package:lazervault/src/features/internet_bill/data/datasources/internet_bill_remote_datasource.dart';
+import 'package:lazervault/src/features/internet_bill/data/repositories/internet_bill_repository_impl.dart';
+import 'package:lazervault/src/features/internet_bill/domain/repositories/internet_bill_repository.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_bill_cubit.dart';
+// End Internet Bill Imports
+
+// Data Bundles Imports
+import 'package:lazervault/src/features/data_bundles/data/datasources/data_bundles_remote_datasource.dart';
+import 'package:lazervault/src/features/data_bundles/data/repositories/data_bundles_repository_impl.dart';
+import 'package:lazervault/src/features/data_bundles/domain/repositories/data_bundles_repository.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_bundles_cubit.dart';
+// End Data Bundles Imports
 
 // Airtime Imports
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_local_datasource.dart';
@@ -705,11 +742,6 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<WithdrawServiceClient>(
     () => WithdrawServiceClient(serviceLocator<ClientChannel>(instanceName: 'bankingChannel')),
   );
-  // Transfer client - routes to Transfer Gateway (50076)
-  serviceLocator.registerLazySingleton<TransferServiceClient>(
-    () => TransferServiceClient(serviceLocator<ClientChannel>(instanceName: 'transferChannel')),
-  );
-
   // Banking Service Client - For production-grade transfers via banking-service
   serviceLocator.registerLazySingleton<banking_grpc.BankingServiceClient>(
     () => banking_grpc.BankingServiceClient(
@@ -1209,14 +1241,25 @@ Future<void> init() async {
 
   // Use Cases
   serviceLocator.registerLazySingleton(() => InitiateBatchTransferUseCase(serviceLocator<IBatchTransferRepository>()));
+  serviceLocator.registerLazySingleton(() => GetBatchTransfersUseCase(serviceLocator<IBatchTransferRepository>()));
+  serviceLocator.registerLazySingleton(() => GetBatchTransferDetailUseCase(serviceLocator<IBatchTransferRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => BatchTransferCubit(
     initiateBatchTransferUseCase: serviceLocator<InitiateBatchTransferUseCase>(),
+    getBatchTransfersUseCase: serviceLocator<GetBatchTransfersUseCase>(),
+    getBatchTransferDetailUseCase: serviceLocator<GetBatchTransferDetailUseCase>(),
   ));
 
 
   // ================== Feature: AI Chat ==================
+
+  // Chat Session Manager (shared by AI Chat and Microservice Chat)
+  serviceLocator.registerLazySingleton<ChatSessionManager>(
+    () => ChatSessionManager(
+      secureStorageService: serviceLocator<SecureStorageService>(),
+    ),
+  );
 
   // Data Sources - Use HTTP to call Chat Agent Gateway directly
   // Architecture: Flutter HTTP -> Chat Agent Gateway (port 3011)
@@ -1250,6 +1293,7 @@ Future<void> init() async {
   serviceLocator.registerFactory(() => AIChatCubit(
         processChatUseCase: serviceLocator<ProcessChatUseCase>(),
         getAIChatHistoryUseCase: serviceLocator<GetAIChatHistoryUseCase>(),
+        chatSessionManager: serviceLocator<ChatSessionManager>(),
       ));
 
 
@@ -1439,6 +1483,14 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetUserReceiptsUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetCrowdfundStatisticsUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetCrowdfundLeaderboardUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetMyCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => WithdrawFromCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetCampaignWalletBalanceUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => ConnectNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => DisconnectNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetNotificationChannelsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => TestNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => LeaderboardCubit(
@@ -1459,6 +1511,14 @@ Future<void> init() async {
     generateDonationReceiptUseCase: serviceLocator<GenerateDonationReceiptUseCase>(),
     getUserReceiptsUseCase: serviceLocator<GetUserReceiptsUseCase>(),
     getCrowdfundStatisticsUseCase: serviceLocator<GetCrowdfundStatisticsUseCase>(),
+    getMyCrowdfundsUseCase: serviceLocator<GetMyCrowdfundsUseCase>(),
+    withdrawFromCrowdfundUseCase: serviceLocator<WithdrawFromCrowdfundUseCase>(),
+    getCampaignWalletBalanceUseCase: serviceLocator<GetCampaignWalletBalanceUseCase>(),
+    connectNotificationChannelUseCase: serviceLocator<ConnectNotificationChannelUseCase>(),
+    disconnectNotificationChannelUseCase: serviceLocator<DisconnectNotificationChannelUseCase>(),
+    getNotificationChannelsUseCase: serviceLocator<GetNotificationChannelsUseCase>(),
+    updateNotificationChannelUseCase: serviceLocator<UpdateNotificationChannelUseCase>(),
+    testNotificationChannelUseCase: serviceLocator<TestNotificationChannelUseCase>(),
     reportService: serviceLocator<CrowdfundReportService>(),
     cacheManager: serviceLocator<SWRCacheManager>(),
   ));
@@ -1561,6 +1621,28 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => QRPaymentCubit(
     repository: serviceLocator<QRPaymentRepository>(),
+  ));
+
+  // ================== Feature: IDPay ==================
+  // Uses commerce-gateway channel (same as QR Pay)
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<IDPayRemoteDataSource>(
+    () => IDPayRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IDPayRepository>(
+    () => IDPayRepositoryImpl(
+      remoteDataSource: serviceLocator<IDPayRemoteDataSource>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => IDPayCubit(
+    repository: serviceLocator<IDPayRepository>(),
   ));
 
   // ================== Feature: Contactless Payment (NFC) ==================
@@ -1689,6 +1771,69 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => EducationCubit(
     repository: serviceLocator<EducationRepository>(),
+  ));
+
+  // ================== Feature: Water Bill ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<WaterBillRemoteDataSource>(
+    () => WaterBillRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<WaterBillRepository>(
+    () => WaterBillRepositoryImpl(
+      remoteDataSource: serviceLocator<WaterBillRemoteDataSource>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => WaterBillCubit(
+    repository: serviceLocator<WaterBillRepository>(),
+  ));
+
+  // ================== Feature: Internet Bill ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<InternetBillRemoteDataSource>(
+    () => InternetBillRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<InternetBillRepository>(
+    () => InternetBillRepositoryImpl(
+      remoteDataSource: serviceLocator<InternetBillRemoteDataSource>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => InternetBillCubit(
+    repository: serviceLocator<InternetBillRepository>(),
+  ));
+
+  // ================== Feature: Data Bundles ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<DataBundlesRemoteDataSource>(
+    () => DataBundlesRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<DataBundlesRepository>(
+    () => DataBundlesRepositoryImpl(
+      remoteDataSource: serviceLocator<DataBundlesRemoteDataSource>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => DataBundlesCubit(
+    repository: serviceLocator<DataBundlesRepository>(),
   ));
 
   // ================== Screens / Presentation ==================
@@ -2103,6 +2248,7 @@ Future<void> init() async {
     () => BudgetRepository(
       grpcClient: serviceLocator<statistics_grpc.StatisticsServiceClient>(),
       accountManager: serviceLocator<AccountManager>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
   serviceLocator.registerLazySingleton<BudgetAIService>(
@@ -2269,6 +2415,40 @@ Future<void> init() async {
 
   // Screens
   serviceLocator.registerFactory(() => GeneralChatScreen());
+
+
+  // ================== Feature: Microservice Chat (Per-Service Bottom Sheet) ==================
+
+  // ChatSessionManager is registered in the AI Chat section above (shared dependency)
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<MicroserviceChatDataSource>(
+    () => HttpMicroserviceChatDataSource(
+      dio: serviceLocator<Dio>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<MicroserviceChatRepository>(
+    () => MicroserviceChatRepositoryImpl(
+      dataSource: serviceLocator<MicroserviceChatDataSource>(),
+    ),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton<SendMicroserviceChatMessageUseCase>(
+    () => SendMicroserviceChatMessageUseCase(
+      repository: serviceLocator<MicroserviceChatRepository>(),
+    ),
+  );
+  serviceLocator.registerLazySingleton<LoadMicroserviceChatHistoryUseCase>(
+    () => LoadMicroserviceChatHistoryUseCase(
+      repository: serviceLocator<MicroserviceChatRepository>(),
+    ),
+  );
+
 
   // ================== Feature: Transaction History ==================
 

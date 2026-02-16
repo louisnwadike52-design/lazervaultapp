@@ -27,6 +27,8 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     required String currency,
   }) {
     final payment = response.payment;
+    // A successful gRPC response (no exception) with empty status means completed
+    final effectiveStatus = payment.status.isEmpty ? 'completed' : payment.status;
     return AirtimeTransactionModel(
       id: payment.id,
       transactionReference: payment.reference,
@@ -34,7 +36,7 @@ class AirtimeTransactionModel extends AirtimeTransaction {
       recipientPhoneNumber: response.phoneNumber,
       amount: payment.amount,
       currency: currency,
-      status: _statusFromString(payment.status),
+      status: _statusFromString(effectiveStatus),
       createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
       userId: payment.userId,
       totalAmount: payment.amount,

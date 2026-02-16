@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/water_provider_entity.dart';
 import '../../domain/entities/customer_validation_result.dart';
+import '../../../../../core/services/account_manager.dart';
 import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
 
@@ -56,8 +58,7 @@ class _WaterBillPaymentConfirmationScreenState extends State<WaterBillPaymentCon
       _isProcessing = true;
     });
 
-    // TODO: Get account ID from user state/auth
-    const accountId = 'demo-account-id';
+    final accountId = GetIt.instance<AccountManager>().activeAccountId ?? '';
 
     context.read<WaterBillCubit>().initiatePayment(
           providerCode: provider.providerCode,

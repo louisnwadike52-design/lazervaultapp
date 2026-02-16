@@ -15,6 +15,7 @@ import '../cubit/create_lock_cubit.dart';
 import 'create_lock_carousel.dart';
 import 'lock_fund_details_screen.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class LockFundsListScreen extends StatefulWidget {
   const LockFundsListScreen({super.key});
@@ -253,6 +254,11 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           ServiceVoiceButton(
             serviceName: 'lockfunds',
             iconColor: Colors.white,
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Lock Funds',
+            sourceContext: 'financial_products',
           ),
         ],
       ),

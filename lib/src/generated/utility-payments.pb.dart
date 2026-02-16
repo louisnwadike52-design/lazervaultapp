@@ -1591,508 +1591,6 @@ class BuyAirtimeResponse extends $pb.GeneratedMessage {
   void clearProviderReference() => clearField(7);
 }
 
-class DataPlan extends $pb.GeneratedMessage {
-  factory DataPlan({
-    $core.String? variationId,
-    $core.String? name,
-    $core.double? price,
-    $core.String? network,
-    $core.String? availability,
-  }) {
-    final $result = create();
-    if (variationId != null) {
-      $result.variationId = variationId;
-    }
-    if (name != null) {
-      $result.name = name;
-    }
-    if (price != null) {
-      $result.price = price;
-    }
-    if (network != null) {
-      $result.network = network;
-    }
-    if (availability != null) {
-      $result.availability = availability;
-    }
-    return $result;
-  }
-  DataPlan._() : super();
-  factory DataPlan.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DataPlan.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DataPlan', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'variationId')
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'price', $pb.PbFieldType.OD)
-    ..aOS(4, _omitFieldNames ? '' : 'network')
-    ..aOS(5, _omitFieldNames ? '' : 'availability')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  DataPlan clone() => DataPlan()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  DataPlan copyWith(void Function(DataPlan) updates) => super.copyWith((message) => updates(message as DataPlan)) as DataPlan;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static DataPlan create() => DataPlan._();
-  DataPlan createEmptyInstance() => create();
-  static $pb.PbList<DataPlan> createRepeated() => $pb.PbList<DataPlan>();
-  @$core.pragma('dart2js:noInline')
-  static DataPlan getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DataPlan>(create);
-  static DataPlan? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get variationId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set variationId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasVariationId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearVariationId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get name => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set name($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasName() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearName() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.double get price => $_getN(2);
-  @$pb.TagNumber(3)
-  set price($core.double v) { $_setDouble(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasPrice() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearPrice() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get network => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set network($core.String v) { $_setString(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasNetwork() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearNetwork() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get availability => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set availability($core.String v) { $_setString(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasAvailability() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearAvailability() => clearField(5);
-}
-
-class GetDataPlansRequest extends $pb.GeneratedMessage {
-  factory GetDataPlansRequest({
-    $core.String? network,
-  }) {
-    final $result = create();
-    if (network != null) {
-      $result.network = network;
-    }
-    return $result;
-  }
-  GetDataPlansRequest._() : super();
-  factory GetDataPlansRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetDataPlansRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDataPlansRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'network')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetDataPlansRequest clone() => GetDataPlansRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetDataPlansRequest copyWith(void Function(GetDataPlansRequest) updates) => super.copyWith((message) => updates(message as GetDataPlansRequest)) as GetDataPlansRequest;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetDataPlansRequest create() => GetDataPlansRequest._();
-  GetDataPlansRequest createEmptyInstance() => create();
-  static $pb.PbList<GetDataPlansRequest> createRepeated() => $pb.PbList<GetDataPlansRequest>();
-  @$core.pragma('dart2js:noInline')
-  static GetDataPlansRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetDataPlansRequest>(create);
-  static GetDataPlansRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get network => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set network($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasNetwork() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearNetwork() => clearField(1);
-}
-
-class GetDataPlansResponse extends $pb.GeneratedMessage {
-  factory GetDataPlansResponse({
-    $core.Iterable<DataPlan>? plans,
-    $core.int? total,
-  }) {
-    final $result = create();
-    if (plans != null) {
-      $result.plans.addAll(plans);
-    }
-    if (total != null) {
-      $result.total = total;
-    }
-    return $result;
-  }
-  GetDataPlansResponse._() : super();
-  factory GetDataPlansResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetDataPlansResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDataPlansResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
-    ..pc<DataPlan>(1, _omitFieldNames ? '' : 'plans', $pb.PbFieldType.PM, subBuilder: DataPlan.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetDataPlansResponse clone() => GetDataPlansResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetDataPlansResponse copyWith(void Function(GetDataPlansResponse) updates) => super.copyWith((message) => updates(message as GetDataPlansResponse)) as GetDataPlansResponse;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetDataPlansResponse create() => GetDataPlansResponse._();
-  GetDataPlansResponse createEmptyInstance() => create();
-  static $pb.PbList<GetDataPlansResponse> createRepeated() => $pb.PbList<GetDataPlansResponse>();
-  @$core.pragma('dart2js:noInline')
-  static GetDataPlansResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetDataPlansResponse>(create);
-  static GetDataPlansResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.List<DataPlan> get plans => $_getList(0);
-
-  @$pb.TagNumber(2)
-  $core.int get total => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set total($core.int v) { $_setSignedInt32(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasTotal() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearTotal() => clearField(2);
-}
-
-/// ===== BUY DATA =====
-/// NOTE: user_id extracted from JWT token, not from request
-class BuyDataRequest extends $pb.GeneratedMessage {
-  factory BuyDataRequest({
-    $core.String? phoneNumber,
-    $core.String? network,
-    $core.String? variationId,
-    $core.double? amount,
-    $core.String? transactionId,
-    $core.String? verificationToken,
-    $core.String? idempotencyKey,
-    $core.String? countryCode,
-  }) {
-    final $result = create();
-    if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
-    }
-    if (network != null) {
-      $result.network = network;
-    }
-    if (variationId != null) {
-      $result.variationId = variationId;
-    }
-    if (amount != null) {
-      $result.amount = amount;
-    }
-    if (transactionId != null) {
-      $result.transactionId = transactionId;
-    }
-    if (verificationToken != null) {
-      $result.verificationToken = verificationToken;
-    }
-    if (idempotencyKey != null) {
-      $result.idempotencyKey = idempotencyKey;
-    }
-    if (countryCode != null) {
-      $result.countryCode = countryCode;
-    }
-    return $result;
-  }
-  BuyDataRequest._() : super();
-  factory BuyDataRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory BuyDataRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BuyDataRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'network')
-    ..aOS(3, _omitFieldNames ? '' : 'variationId')
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(5, _omitFieldNames ? '' : 'transactionId')
-    ..aOS(6, _omitFieldNames ? '' : 'verificationToken')
-    ..aOS(7, _omitFieldNames ? '' : 'idempotencyKey')
-    ..aOS(8, _omitFieldNames ? '' : 'countryCode')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  BuyDataRequest clone() => BuyDataRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  BuyDataRequest copyWith(void Function(BuyDataRequest) updates) => super.copyWith((message) => updates(message as BuyDataRequest)) as BuyDataRequest;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static BuyDataRequest create() => BuyDataRequest._();
-  BuyDataRequest createEmptyInstance() => create();
-  static $pb.PbList<BuyDataRequest> createRepeated() => $pb.PbList<BuyDataRequest>();
-  @$core.pragma('dart2js:noInline')
-  static BuyDataRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BuyDataRequest>(create);
-  static BuyDataRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get phoneNumber => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set phoneNumber($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasPhoneNumber() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearPhoneNumber() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get network => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set network($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasNetwork() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearNetwork() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get variationId => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set variationId($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasVariationId() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearVariationId() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.double get amount => $_getN(3);
-  @$pb.TagNumber(4)
-  set amount($core.double v) { $_setDouble(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasAmount() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearAmount() => clearField(4);
-
-  /// Transaction PIN verification (replaces direct PIN field)
-  @$pb.TagNumber(5)
-  $core.String get transactionId => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set transactionId($core.String v) { $_setString(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasTransactionId() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearTransactionId() => clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.String get verificationToken => $_getSZ(5);
-  @$pb.TagNumber(6)
-  set verificationToken($core.String v) { $_setString(5, v); }
-  @$pb.TagNumber(6)
-  $core.bool hasVerificationToken() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearVerificationToken() => clearField(6);
-
-  /// Idempotency
-  @$pb.TagNumber(7)
-  $core.String get idempotencyKey => $_getSZ(6);
-  @$pb.TagNumber(7)
-  set idempotencyKey($core.String v) { $_setString(6, v); }
-  @$pb.TagNumber(7)
-  $core.bool hasIdempotencyKey() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearIdempotencyKey() => clearField(7);
-
-  @$pb.TagNumber(8)
-  $core.String get countryCode => $_getSZ(7);
-  @$pb.TagNumber(8)
-  set countryCode($core.String v) { $_setString(7, v); }
-  @$pb.TagNumber(8)
-  $core.bool hasCountryCode() => $_has(7);
-  @$pb.TagNumber(8)
-  void clearCountryCode() => clearField(8);
-}
-
-class BuyDataResponse extends $pb.GeneratedMessage {
-  factory BuyDataResponse({
-    BillPayment? payment,
-    $core.double? newBalance,
-    $core.String? phoneNumber,
-    $core.String? dataPlan,
-    $core.String? message,
-    $core.double? commissionEarned,
-    $core.String? providerReference,
-  }) {
-    final $result = create();
-    if (payment != null) {
-      $result.payment = payment;
-    }
-    if (newBalance != null) {
-      $result.newBalance = newBalance;
-    }
-    if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
-    }
-    if (dataPlan != null) {
-      $result.dataPlan = dataPlan;
-    }
-    if (message != null) {
-      $result.message = message;
-    }
-    if (commissionEarned != null) {
-      $result.commissionEarned = commissionEarned;
-    }
-    if (providerReference != null) {
-      $result.providerReference = providerReference;
-    }
-    return $result;
-  }
-  BuyDataResponse._() : super();
-  factory BuyDataResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory BuyDataResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BuyDataResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
-    ..aOM<BillPayment>(1, _omitFieldNames ? '' : 'payment', subBuilder: BillPayment.create)
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
-    ..aOS(3, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(4, _omitFieldNames ? '' : 'dataPlan')
-    ..aOS(5, _omitFieldNames ? '' : 'message')
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'commissionEarned', $pb.PbFieldType.OD)
-    ..aOS(7, _omitFieldNames ? '' : 'providerReference')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  BuyDataResponse clone() => BuyDataResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  BuyDataResponse copyWith(void Function(BuyDataResponse) updates) => super.copyWith((message) => updates(message as BuyDataResponse)) as BuyDataResponse;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static BuyDataResponse create() => BuyDataResponse._();
-  BuyDataResponse createEmptyInstance() => create();
-  static $pb.PbList<BuyDataResponse> createRepeated() => $pb.PbList<BuyDataResponse>();
-  @$core.pragma('dart2js:noInline')
-  static BuyDataResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BuyDataResponse>(create);
-  static BuyDataResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  BillPayment get payment => $_getN(0);
-  @$pb.TagNumber(1)
-  set payment(BillPayment v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasPayment() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearPayment() => clearField(1);
-  @$pb.TagNumber(1)
-  BillPayment ensurePayment() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  $core.double get newBalance => $_getN(1);
-  @$pb.TagNumber(2)
-  set newBalance($core.double v) { $_setDouble(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasNewBalance() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearNewBalance() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get phoneNumber => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set phoneNumber($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasPhoneNumber() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearPhoneNumber() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get dataPlan => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set dataPlan($core.String v) { $_setString(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasDataPlan() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearDataPlan() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get message => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set message($core.String v) { $_setString(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasMessage() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearMessage() => clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.double get commissionEarned => $_getN(5);
-  @$pb.TagNumber(6)
-  set commissionEarned($core.double v) { $_setDouble(5, v); }
-  @$pb.TagNumber(6)
-  $core.bool hasCommissionEarned() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearCommissionEarned() => clearField(6);
-
-  @$pb.TagNumber(7)
-  $core.String get providerReference => $_getSZ(6);
-  @$pb.TagNumber(7)
-  set providerReference($core.String v) { $_setString(6, v); }
-  @$pb.TagNumber(7)
-  $core.bool hasProviderReference() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearProviderReference() => clearField(7);
-}
-
 /// ===== BARCODE PAY =====
 /// NOTE: user_id extracted from JWT token, not from request
 class BarcodePayRequest extends $pb.GeneratedMessage {
@@ -4692,6 +4190,1199 @@ class GetEducationProvidersResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<EducationProvider> get providers => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+class DataPlan extends $pb.GeneratedMessage {
+  factory DataPlan({
+    $core.String? variationId,
+    $core.String? name,
+    $core.double? price,
+    $core.String? network,
+    $core.String? availability,
+  }) {
+    final $result = create();
+    if (variationId != null) {
+      $result.variationId = variationId;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    if (price != null) {
+      $result.price = price;
+    }
+    if (network != null) {
+      $result.network = network;
+    }
+    if (availability != null) {
+      $result.availability = availability;
+    }
+    return $result;
+  }
+  DataPlan._() : super();
+  factory DataPlan.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DataPlan.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DataPlan', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'variationId')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'price', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'network')
+    ..aOS(5, _omitFieldNames ? '' : 'availability')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DataPlan clone() => DataPlan()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DataPlan copyWith(void Function(DataPlan) updates) => super.copyWith((message) => updates(message as DataPlan)) as DataPlan;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DataPlan create() => DataPlan._();
+  DataPlan createEmptyInstance() => create();
+  static $pb.PbList<DataPlan> createRepeated() => $pb.PbList<DataPlan>();
+  @$core.pragma('dart2js:noInline')
+  static DataPlan getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DataPlan>(create);
+  static DataPlan? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get variationId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set variationId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasVariationId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearVariationId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get price => $_getN(2);
+  @$pb.TagNumber(3)
+  set price($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPrice() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPrice() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get network => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set network($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasNetwork() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNetwork() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get availability => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set availability($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasAvailability() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAvailability() => clearField(5);
+}
+
+class GetDataPlansRequest extends $pb.GeneratedMessage {
+  factory GetDataPlansRequest({
+    $core.String? network,
+  }) {
+    final $result = create();
+    if (network != null) {
+      $result.network = network;
+    }
+    return $result;
+  }
+  GetDataPlansRequest._() : super();
+  factory GetDataPlansRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetDataPlansRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDataPlansRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'network')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetDataPlansRequest clone() => GetDataPlansRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetDataPlansRequest copyWith(void Function(GetDataPlansRequest) updates) => super.copyWith((message) => updates(message as GetDataPlansRequest)) as GetDataPlansRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetDataPlansRequest create() => GetDataPlansRequest._();
+  GetDataPlansRequest createEmptyInstance() => create();
+  static $pb.PbList<GetDataPlansRequest> createRepeated() => $pb.PbList<GetDataPlansRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetDataPlansRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetDataPlansRequest>(create);
+  static GetDataPlansRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get network => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set network($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasNetwork() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNetwork() => clearField(1);
+}
+
+class GetDataPlansResponse extends $pb.GeneratedMessage {
+  factory GetDataPlansResponse({
+    $core.Iterable<DataPlan>? plans,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (plans != null) {
+      $result.plans.addAll(plans);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetDataPlansResponse._() : super();
+  factory GetDataPlansResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetDataPlansResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDataPlansResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..pc<DataPlan>(1, _omitFieldNames ? '' : 'plans', $pb.PbFieldType.PM, subBuilder: DataPlan.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetDataPlansResponse clone() => GetDataPlansResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetDataPlansResponse copyWith(void Function(GetDataPlansResponse) updates) => super.copyWith((message) => updates(message as GetDataPlansResponse)) as GetDataPlansResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetDataPlansResponse create() => GetDataPlansResponse._();
+  GetDataPlansResponse createEmptyInstance() => create();
+  static $pb.PbList<GetDataPlansResponse> createRepeated() => $pb.PbList<GetDataPlansResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetDataPlansResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetDataPlansResponse>(create);
+  static GetDataPlansResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<DataPlan> get plans => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+/// NOTE: user_id extracted from JWT token, not from request
+class BuyDataRequest extends $pb.GeneratedMessage {
+  factory BuyDataRequest({
+    $core.String? phoneNumber,
+    $core.String? network,
+    $core.String? variationId,
+    $core.double? amount,
+    $core.String? transactionId,
+    $core.String? verificationToken,
+    $core.String? idempotencyKey,
+    $core.String? countryCode,
+  }) {
+    final $result = create();
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
+    if (network != null) {
+      $result.network = network;
+    }
+    if (variationId != null) {
+      $result.variationId = variationId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (transactionId != null) {
+      $result.transactionId = transactionId;
+    }
+    if (verificationToken != null) {
+      $result.verificationToken = verificationToken;
+    }
+    if (idempotencyKey != null) {
+      $result.idempotencyKey = idempotencyKey;
+    }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
+    return $result;
+  }
+  BuyDataRequest._() : super();
+  factory BuyDataRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BuyDataRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BuyDataRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
+    ..aOS(2, _omitFieldNames ? '' : 'network')
+    ..aOS(3, _omitFieldNames ? '' : 'variationId')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'transactionId')
+    ..aOS(6, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(7, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(8, _omitFieldNames ? '' : 'countryCode')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BuyDataRequest clone() => BuyDataRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BuyDataRequest copyWith(void Function(BuyDataRequest) updates) => super.copyWith((message) => updates(message as BuyDataRequest)) as BuyDataRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BuyDataRequest create() => BuyDataRequest._();
+  BuyDataRequest createEmptyInstance() => create();
+  static $pb.PbList<BuyDataRequest> createRepeated() => $pb.PbList<BuyDataRequest>();
+  @$core.pragma('dart2js:noInline')
+  static BuyDataRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BuyDataRequest>(create);
+  static BuyDataRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get phoneNumber => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set phoneNumber($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPhoneNumber() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPhoneNumber() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get network => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set network($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasNetwork() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearNetwork() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get variationId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set variationId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasVariationId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearVariationId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get amount => $_getN(3);
+  @$pb.TagNumber(4)
+  set amount($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  /// Transaction PIN verification
+  @$pb.TagNumber(5)
+  $core.String get transactionId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set transactionId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTransactionId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTransactionId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get verificationToken => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set verificationToken($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasVerificationToken() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearVerificationToken() => clearField(6);
+
+  /// Idempotency
+  @$pb.TagNumber(7)
+  $core.String get idempotencyKey => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set idempotencyKey($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasIdempotencyKey() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIdempotencyKey() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get countryCode => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set countryCode($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCountryCode() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCountryCode() => clearField(8);
+}
+
+class BuyDataResponse extends $pb.GeneratedMessage {
+  factory BuyDataResponse({
+    BillPayment? payment,
+    $core.double? newBalance,
+    $core.String? phoneNumber,
+    $core.String? dataPlan,
+    $core.String? message,
+    $core.double? commissionEarned,
+    $core.String? providerReference,
+  }) {
+    final $result = create();
+    if (payment != null) {
+      $result.payment = payment;
+    }
+    if (newBalance != null) {
+      $result.newBalance = newBalance;
+    }
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
+    if (dataPlan != null) {
+      $result.dataPlan = dataPlan;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (commissionEarned != null) {
+      $result.commissionEarned = commissionEarned;
+    }
+    if (providerReference != null) {
+      $result.providerReference = providerReference;
+    }
+    return $result;
+  }
+  BuyDataResponse._() : super();
+  factory BuyDataResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BuyDataResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BuyDataResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOM<BillPayment>(1, _omitFieldNames ? '' : 'payment', subBuilder: BillPayment.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'phoneNumber')
+    ..aOS(4, _omitFieldNames ? '' : 'dataPlan')
+    ..aOS(5, _omitFieldNames ? '' : 'message')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'commissionEarned', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'providerReference')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BuyDataResponse clone() => BuyDataResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BuyDataResponse copyWith(void Function(BuyDataResponse) updates) => super.copyWith((message) => updates(message as BuyDataResponse)) as BuyDataResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BuyDataResponse create() => BuyDataResponse._();
+  BuyDataResponse createEmptyInstance() => create();
+  static $pb.PbList<BuyDataResponse> createRepeated() => $pb.PbList<BuyDataResponse>();
+  @$core.pragma('dart2js:noInline')
+  static BuyDataResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BuyDataResponse>(create);
+  static BuyDataResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  BillPayment get payment => $_getN(0);
+  @$pb.TagNumber(1)
+  set payment(BillPayment v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPayment() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayment() => clearField(1);
+  @$pb.TagNumber(1)
+  BillPayment ensurePayment() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.double get newBalance => $_getN(1);
+  @$pb.TagNumber(2)
+  set newBalance($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasNewBalance() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearNewBalance() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get phoneNumber => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set phoneNumber($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPhoneNumber() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPhoneNumber() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get dataPlan => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set dataPlan($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDataPlan() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDataPlan() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get message => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set message($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasMessage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMessage() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get commissionEarned => $_getN(5);
+  @$pb.TagNumber(6)
+  set commissionEarned($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasCommissionEarned() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCommissionEarned() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get providerReference => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set providerReference($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasProviderReference() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearProviderReference() => clearField(7);
+}
+
+class InternetProvider extends $pb.GeneratedMessage {
+  factory InternetProvider({
+    $core.String? id,
+    $core.String? name,
+    $core.String? serviceId,
+    $core.String? logoUrl,
+    $core.bool? isActive,
+    $core.double? commissionRate,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    if (serviceId != null) {
+      $result.serviceId = serviceId;
+    }
+    if (logoUrl != null) {
+      $result.logoUrl = logoUrl;
+    }
+    if (isActive != null) {
+      $result.isActive = isActive;
+    }
+    if (commissionRate != null) {
+      $result.commissionRate = commissionRate;
+    }
+    return $result;
+  }
+  InternetProvider._() : super();
+  factory InternetProvider.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InternetProvider.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InternetProvider', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..aOS(3, _omitFieldNames ? '' : 'serviceId')
+    ..aOS(4, _omitFieldNames ? '' : 'logoUrl')
+    ..aOB(5, _omitFieldNames ? '' : 'isActive')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'commissionRate', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InternetProvider clone() => InternetProvider()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InternetProvider copyWith(void Function(InternetProvider) updates) => super.copyWith((message) => updates(message as InternetProvider)) as InternetProvider;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InternetProvider create() => InternetProvider._();
+  InternetProvider createEmptyInstance() => create();
+  static $pb.PbList<InternetProvider> createRepeated() => $pb.PbList<InternetProvider>();
+  @$core.pragma('dart2js:noInline')
+  static InternetProvider getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InternetProvider>(create);
+  static InternetProvider? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get serviceId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set serviceId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasServiceId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearServiceId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get logoUrl => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set logoUrl($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasLogoUrl() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLogoUrl() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get isActive => $_getBF(4);
+  @$pb.TagNumber(5)
+  set isActive($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIsActive() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIsActive() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get commissionRate => $_getN(5);
+  @$pb.TagNumber(6)
+  set commissionRate($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasCommissionRate() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCommissionRate() => clearField(6);
+}
+
+class InternetPackage extends $pb.GeneratedMessage {
+  factory InternetPackage({
+    $core.String? id,
+    $core.String? name,
+    $core.String? variationCode,
+    $core.double? amount,
+    $core.String? providerId,
+    $core.String? validity,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    if (variationCode != null) {
+      $result.variationCode = variationCode;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (providerId != null) {
+      $result.providerId = providerId;
+    }
+    if (validity != null) {
+      $result.validity = validity;
+    }
+    return $result;
+  }
+  InternetPackage._() : super();
+  factory InternetPackage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InternetPackage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InternetPackage', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..aOS(3, _omitFieldNames ? '' : 'variationCode')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'providerId')
+    ..aOS(6, _omitFieldNames ? '' : 'validity')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InternetPackage clone() => InternetPackage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InternetPackage copyWith(void Function(InternetPackage) updates) => super.copyWith((message) => updates(message as InternetPackage)) as InternetPackage;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InternetPackage create() => InternetPackage._();
+  InternetPackage createEmptyInstance() => create();
+  static $pb.PbList<InternetPackage> createRepeated() => $pb.PbList<InternetPackage>();
+  @$core.pragma('dart2js:noInline')
+  static InternetPackage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InternetPackage>(create);
+  static InternetPackage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get variationCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set variationCode($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasVariationCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearVariationCode() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get amount => $_getN(3);
+  @$pb.TagNumber(4)
+  set amount($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get providerId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set providerId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasProviderId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearProviderId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get validity => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set validity($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasValidity() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearValidity() => clearField(6);
+}
+
+class InternetAccountValidation extends $pb.GeneratedMessage {
+  factory InternetAccountValidation({
+    $core.bool? isValid,
+    $core.String? customerName,
+    $core.String? accountNumber,
+    $core.String? status,
+    $core.double? dueAmount,
+  }) {
+    final $result = create();
+    if (isValid != null) {
+      $result.isValid = isValid;
+    }
+    if (customerName != null) {
+      $result.customerName = customerName;
+    }
+    if (accountNumber != null) {
+      $result.accountNumber = accountNumber;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (dueAmount != null) {
+      $result.dueAmount = dueAmount;
+    }
+    return $result;
+  }
+  InternetAccountValidation._() : super();
+  factory InternetAccountValidation.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InternetAccountValidation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InternetAccountValidation', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'isValid')
+    ..aOS(2, _omitFieldNames ? '' : 'customerName')
+    ..aOS(3, _omitFieldNames ? '' : 'accountNumber')
+    ..aOS(4, _omitFieldNames ? '' : 'status')
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'dueAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InternetAccountValidation clone() => InternetAccountValidation()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InternetAccountValidation copyWith(void Function(InternetAccountValidation) updates) => super.copyWith((message) => updates(message as InternetAccountValidation)) as InternetAccountValidation;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InternetAccountValidation create() => InternetAccountValidation._();
+  InternetAccountValidation createEmptyInstance() => create();
+  static $pb.PbList<InternetAccountValidation> createRepeated() => $pb.PbList<InternetAccountValidation>();
+  @$core.pragma('dart2js:noInline')
+  static InternetAccountValidation getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InternetAccountValidation>(create);
+  static InternetAccountValidation? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get isValid => $_getBF(0);
+  @$pb.TagNumber(1)
+  set isValid($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasIsValid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIsValid() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get customerName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set customerName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCustomerName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCustomerName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get accountNumber => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set accountNumber($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAccountNumber() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAccountNumber() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get status => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set status($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasStatus() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearStatus() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get dueAmount => $_getN(4);
+  @$pb.TagNumber(5)
+  set dueAmount($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDueAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDueAmount() => clearField(5);
+}
+
+class GetInternetProvidersRequest extends $pb.GeneratedMessage {
+  factory GetInternetProvidersRequest({
+    $core.bool? activeOnly,
+  }) {
+    final $result = create();
+    if (activeOnly != null) {
+      $result.activeOnly = activeOnly;
+    }
+    return $result;
+  }
+  GetInternetProvidersRequest._() : super();
+  factory GetInternetProvidersRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInternetProvidersRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInternetProvidersRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'activeOnly')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInternetProvidersRequest clone() => GetInternetProvidersRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInternetProvidersRequest copyWith(void Function(GetInternetProvidersRequest) updates) => super.copyWith((message) => updates(message as GetInternetProvidersRequest)) as GetInternetProvidersRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInternetProvidersRequest create() => GetInternetProvidersRequest._();
+  GetInternetProvidersRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInternetProvidersRequest> createRepeated() => $pb.PbList<GetInternetProvidersRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInternetProvidersRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInternetProvidersRequest>(create);
+  static GetInternetProvidersRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get activeOnly => $_getBF(0);
+  @$pb.TagNumber(1)
+  set activeOnly($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasActiveOnly() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearActiveOnly() => clearField(1);
+}
+
+class GetInternetProvidersResponse extends $pb.GeneratedMessage {
+  factory GetInternetProvidersResponse({
+    $core.Iterable<InternetProvider>? providers,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (providers != null) {
+      $result.providers.addAll(providers);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetInternetProvidersResponse._() : super();
+  factory GetInternetProvidersResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInternetProvidersResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInternetProvidersResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..pc<InternetProvider>(1, _omitFieldNames ? '' : 'providers', $pb.PbFieldType.PM, subBuilder: InternetProvider.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInternetProvidersResponse clone() => GetInternetProvidersResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInternetProvidersResponse copyWith(void Function(GetInternetProvidersResponse) updates) => super.copyWith((message) => updates(message as GetInternetProvidersResponse)) as GetInternetProvidersResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInternetProvidersResponse create() => GetInternetProvidersResponse._();
+  GetInternetProvidersResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInternetProvidersResponse> createRepeated() => $pb.PbList<GetInternetProvidersResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInternetProvidersResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInternetProvidersResponse>(create);
+  static GetInternetProvidersResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InternetProvider> get providers => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+class ValidateInternetAccountRequest extends $pb.GeneratedMessage {
+  factory ValidateInternetAccountRequest({
+    $core.String? providerId,
+    $core.String? accountNumber,
+  }) {
+    final $result = create();
+    if (providerId != null) {
+      $result.providerId = providerId;
+    }
+    if (accountNumber != null) {
+      $result.accountNumber = accountNumber;
+    }
+    return $result;
+  }
+  ValidateInternetAccountRequest._() : super();
+  factory ValidateInternetAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ValidateInternetAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateInternetAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'providerId')
+    ..aOS(2, _omitFieldNames ? '' : 'accountNumber')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ValidateInternetAccountRequest clone() => ValidateInternetAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ValidateInternetAccountRequest copyWith(void Function(ValidateInternetAccountRequest) updates) => super.copyWith((message) => updates(message as ValidateInternetAccountRequest)) as ValidateInternetAccountRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ValidateInternetAccountRequest create() => ValidateInternetAccountRequest._();
+  ValidateInternetAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<ValidateInternetAccountRequest> createRepeated() => $pb.PbList<ValidateInternetAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ValidateInternetAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ValidateInternetAccountRequest>(create);
+  static ValidateInternetAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get providerId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set providerId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProviderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProviderId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get accountNumber => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set accountNumber($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccountNumber() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccountNumber() => clearField(2);
+}
+
+class ValidateInternetAccountResponse extends $pb.GeneratedMessage {
+  factory ValidateInternetAccountResponse({
+    InternetAccountValidation? validation,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (validation != null) {
+      $result.validation = validation;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  ValidateInternetAccountResponse._() : super();
+  factory ValidateInternetAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ValidateInternetAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateInternetAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOM<InternetAccountValidation>(1, _omitFieldNames ? '' : 'validation', subBuilder: InternetAccountValidation.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ValidateInternetAccountResponse clone() => ValidateInternetAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ValidateInternetAccountResponse copyWith(void Function(ValidateInternetAccountResponse) updates) => super.copyWith((message) => updates(message as ValidateInternetAccountResponse)) as ValidateInternetAccountResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ValidateInternetAccountResponse create() => ValidateInternetAccountResponse._();
+  ValidateInternetAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<ValidateInternetAccountResponse> createRepeated() => $pb.PbList<ValidateInternetAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ValidateInternetAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ValidateInternetAccountResponse>(create);
+  static ValidateInternetAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  InternetAccountValidation get validation => $_getN(0);
+  @$pb.TagNumber(1)
+  set validation(InternetAccountValidation v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasValidation() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearValidation() => clearField(1);
+  @$pb.TagNumber(1)
+  InternetAccountValidation ensureValidation() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class GetInternetPackagesRequest extends $pb.GeneratedMessage {
+  factory GetInternetPackagesRequest({
+    $core.String? providerId,
+  }) {
+    final $result = create();
+    if (providerId != null) {
+      $result.providerId = providerId;
+    }
+    return $result;
+  }
+  GetInternetPackagesRequest._() : super();
+  factory GetInternetPackagesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInternetPackagesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInternetPackagesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'providerId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInternetPackagesRequest clone() => GetInternetPackagesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInternetPackagesRequest copyWith(void Function(GetInternetPackagesRequest) updates) => super.copyWith((message) => updates(message as GetInternetPackagesRequest)) as GetInternetPackagesRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInternetPackagesRequest create() => GetInternetPackagesRequest._();
+  GetInternetPackagesRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInternetPackagesRequest> createRepeated() => $pb.PbList<GetInternetPackagesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInternetPackagesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInternetPackagesRequest>(create);
+  static GetInternetPackagesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get providerId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set providerId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProviderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProviderId() => clearField(1);
+}
+
+class GetInternetPackagesResponse extends $pb.GeneratedMessage {
+  factory GetInternetPackagesResponse({
+    $core.Iterable<InternetPackage>? packages,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (packages != null) {
+      $result.packages.addAll(packages);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetInternetPackagesResponse._() : super();
+  factory GetInternetPackagesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInternetPackagesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInternetPackagesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..pc<InternetPackage>(1, _omitFieldNames ? '' : 'packages', $pb.PbFieldType.PM, subBuilder: InternetPackage.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInternetPackagesResponse clone() => GetInternetPackagesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInternetPackagesResponse copyWith(void Function(GetInternetPackagesResponse) updates) => super.copyWith((message) => updates(message as GetInternetPackagesResponse)) as GetInternetPackagesResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInternetPackagesResponse create() => GetInternetPackagesResponse._();
+  GetInternetPackagesResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInternetPackagesResponse> createRepeated() => $pb.PbList<GetInternetPackagesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInternetPackagesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInternetPackagesResponse>(create);
+  static GetInternetPackagesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InternetPackage> get packages => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.int get total => $_getIZ(1);

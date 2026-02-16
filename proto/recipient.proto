@@ -44,6 +44,7 @@ message Recipient {
   string swift_code = 16; // SWIFT/BIC code for international transfers
   string iban = 17; // IBAN for European transfers
   string alias = 18; // Custom nickname/alias for the recipient
+  bool is_saved = 19; // true = visible in recipient list; false = stored for dedup only
 
   google.protobuf.Timestamp created_at = 11;
   google.protobuf.Timestamp updated_at = 12;
@@ -68,6 +69,7 @@ message CreateRecipientRequest {
   optional string swift_code = 12;
   optional string iban = 13;
   optional string alias = 14;
+  optional bool is_saved = 15; // Whether to save as visible recipient (default true)
 }
 
 message CreateRecipientResponse {
@@ -105,6 +107,7 @@ message UpdateRecipientRequest {
   optional google.protobuf.StringValue bank_name = 6;      // Only applicable for external recipients
   optional google.protobuf.StringValue country_code = 7;   // Only applicable for external recipients
   optional google.protobuf.StringValue alias = 8;          // Custom nickname/alias
+  optional google.protobuf.BoolValue is_saved = 9;         // Whether recipient is saved (visible in list)
 
   // Note: Updating 'type' or 'internal_account_id' might be complex
   // and is often handled via deletion and recreation, hence not included here.

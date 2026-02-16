@@ -4,6 +4,7 @@ import '../../../../../core/cache/cache_config.dart';
 import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../data/services/crowdfund_report_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import '../../domain/entities/notification_channel_entities.dart';
 import '../../domain/usecases/crowdfund_usecases.dart';
 import 'crowdfund_state.dart';
 
@@ -20,6 +21,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   final GenerateDonationReceiptUseCase generateDonationReceiptUseCase;
   final GetUserReceiptsUseCase getUserReceiptsUseCase;
   final GetCrowdfundStatisticsUseCase getCrowdfundStatisticsUseCase;
+  final GetMyCrowdfundsUseCase? getMyCrowdfundsUseCase;
+  final WithdrawFromCrowdfundUseCase? withdrawFromCrowdfundUseCase;
+  final GetCampaignWalletBalanceUseCase? getCampaignWalletBalanceUseCase;
+  final ConnectNotificationChannelUseCase? connectNotificationChannelUseCase;
+  final DisconnectNotificationChannelUseCase? disconnectNotificationChannelUseCase;
+  final GetNotificationChannelsUseCase? getNotificationChannelsUseCase;
+  final UpdateNotificationChannelUseCase? updateNotificationChannelUseCase;
+  final TestNotificationChannelUseCase? testNotificationChannelUseCase;
   final CrowdfundReportService? reportService;
   final SWRCacheManager? _cacheManager;
 
@@ -36,6 +45,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required this.generateDonationReceiptUseCase,
     required this.getUserReceiptsUseCase,
     required this.getCrowdfundStatisticsUseCase,
+    this.getMyCrowdfundsUseCase,
+    this.withdrawFromCrowdfundUseCase,
+    this.getCampaignWalletBalanceUseCase,
+    this.connectNotificationChannelUseCase,
+    this.disconnectNotificationChannelUseCase,
+    this.getNotificationChannelsUseCase,
+    this.updateNotificationChannelUseCase,
+    this.testNotificationChannelUseCase,
     this.reportService,
     SWRCacheManager? cacheManager,
   })  : _cacheManager = cacheManager,
@@ -373,7 +390,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    int? sourceAccountId,
+    String? sourceAccountId,
   }) async {
     try {
       // Step 1: Verifying donation
@@ -564,6 +581,201 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   void reset() {
     if (isClosed) return;
     emit(const CrowdfundInitial());
+  }
+
+  // ============================================================================
+  // CAMPAIGN WALLET METHODS
+  // ============================================================================
+
+  /// Load crowdfunds owned by the current user
+  Future<void> loadMyCrowdfunds({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+  }) async {
+    if (getMyCrowdfundsUseCase == null) return;
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Loading your campaigns...'));
+
+      final crowdfunds = await getMyCrowdfundsUseCase!(
+        page: page,
+        pageSize: pageSize,
+        statusFilter: statusFilter,
+      );
+
+      if (isClosed) return;
+      emit(MyCrowdfundsLoaded(crowdfunds));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: 'Failed to load your campaigns: $e'));
+    }
+  }
+
+  /// Withdraw funds from a campaign wallet
+  Future<void> withdrawFromCrowdfund({
+    required String crowdfundId,
+    required double amount,
+    required String transactionPin,
+    String? destinationAccountId,
+    String? destinationAccountType,
+  }) async {
+    if (withdrawFromCrowdfundUseCase == null) return;
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Processing withdrawal...'));
+
+      final result = await withdrawFromCrowdfundUseCase!(
+        crowdfundId: crowdfundId,
+        amount: amount,
+        transactionPin: transactionPin,
+        destinationAccountId: destinationAccountId,
+        destinationAccountType: destinationAccountType,
+      );
+
+      if (isClosed) return;
+      emit(WithdrawalCompleted(result));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: 'Withdrawal failed: $e'));
+    }
+  }
+
+  /// Load campaign wallet balance
+  Future<void> loadCampaignWalletBalance(String crowdfundId) async {
+    if (getCampaignWalletBalanceUseCase == null) return;
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Loading wallet balance...'));
+
+      final balance = await getCampaignWalletBalanceUseCase!(crowdfundId);
+
+      if (isClosed) return;
+      emit(CampaignWalletBalanceLoaded(balance));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: 'Failed to load wallet balance: $e'));
+    }
+  }
+
+  // ============================================================================
+  // NOTIFICATION CHANNEL METHODS
+  // ============================================================================
+
+  /// Load notification channels for a crowdfund
+  Future<void> loadNotificationChannels(String crowdfundId) async {
+    if (getNotificationChannelsUseCase == null) return;
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Loading notification channels...'));
+
+      final channels = await getNotificationChannelsUseCase!(crowdfundId);
+
+      if (isClosed) return;
+      emit(NotificationChannelsLoaded(channels));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: 'Failed to load notification channels: $e'));
+    }
+  }
+
+  /// Connect a new notification channel
+  Future<void> connectNotificationChannel({
+    required String crowdfundId,
+    required NotificationChannelType channelType,
+    required String channelName,
+    String? telegramChatId,
+    String? discordWebhookUrl,
+    String? discordServerName,
+    String? discordChannelName,
+    String? slackWebhookUrl,
+    String? slackWorkspaceName,
+    String? slackChannelName,
+    List<NotificationEventType>? enabledEvents,
+  }) async {
+    if (connectNotificationChannelUseCase == null) return;
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Connecting channel...'));
+
+      final channel = await connectNotificationChannelUseCase!(
+        crowdfundId: crowdfundId,
+        channelType: channelType,
+        channelName: channelName,
+        telegramChatId: telegramChatId,
+        discordWebhookUrl: discordWebhookUrl,
+        discordServerName: discordServerName,
+        discordChannelName: discordChannelName,
+        slackWebhookUrl: slackWebhookUrl,
+        slackWorkspaceName: slackWorkspaceName,
+        slackChannelName: slackChannelName,
+        enabledEvents: enabledEvents,
+      );
+
+      if (isClosed) return;
+      emit(NotificationChannelConnected(channel));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: 'Failed to connect channel: $e'));
+    }
+  }
+
+  /// Disconnect a notification channel
+  Future<void> disconnectNotificationChannel(String channelId) async {
+    if (disconnectNotificationChannelUseCase == null) return;
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Disconnecting channel...'));
+
+      await disconnectNotificationChannelUseCase!(channelId);
+
+      if (isClosed) return;
+      emit(NotificationChannelDisconnected(channelId));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: 'Failed to disconnect channel: $e'));
+    }
+  }
+
+  /// Update a notification channel
+  Future<void> updateNotificationChannel({
+    required String channelId,
+    String? channelName,
+    List<NotificationEventType>? enabledEvents,
+    NotificationChannelStatus? status,
+  }) async {
+    if (updateNotificationChannelUseCase == null) return;
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Updating channel...'));
+
+      final channel = await updateNotificationChannelUseCase!(
+        channelId: channelId,
+        channelName: channelName,
+        enabledEvents: enabledEvents,
+        status: status,
+      );
+
+      if (isClosed) return;
+      emit(NotificationChannelUpdated(channel));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: 'Failed to update channel: $e'));
+    }
+  }
+
+  /// Test a notification channel
+  Future<void> testNotificationChannel(String channelId) async {
+    if (testNotificationChannelUseCase == null) return;
+    try {
+      final success = await testNotificationChannelUseCase!(channelId);
+
+      if (isClosed) return;
+      emit(NotificationChannelTested(success: success, channelId: channelId));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: 'Failed to test channel: $e'));
+    }
   }
 
   // ============================================================================

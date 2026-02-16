@@ -6,6 +6,7 @@ import 'package:app_links/app_links.dart';
 enum DeepLinkType {
   depositCallback,
   paymentCallback,
+  quickAction,
   unknown,
 }
 
@@ -127,7 +128,9 @@ class DeepLinkService {
 
     // Determine link type based on path
     DeepLinkType type;
-    if (path.contains('deposit') || path.contains('deposit/callback')) {
+    if (path.contains('quick-action')) {
+      type = DeepLinkType.quickAction;
+    } else if (path.contains('deposit') || path.contains('deposit/callback')) {
       type = DeepLinkType.depositCallback;
     } else if (path.contains('payment') || path.contains('payment/callback')) {
       type = DeepLinkType.paymentCallback;

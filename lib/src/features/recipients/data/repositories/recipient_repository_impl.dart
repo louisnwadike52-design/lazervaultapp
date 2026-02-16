@@ -113,6 +113,7 @@ class RecipientRepositoryImpl implements IRecipientRepository {
           ..bankName = recipient.bankName
           ..sortCode = recipient.sortCode
           ..isFavorite = recipient.isFavorite
+          ..isSaved = recipient.isSaved
           ..type = 'external';
 
         if (recipient.countryCode != null) {

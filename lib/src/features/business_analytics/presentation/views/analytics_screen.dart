@@ -8,6 +8,7 @@ import '../widgets/analytics_summary_cards.dart';
 import '../widgets/category_pie_chart.dart';
 import '../widgets/monthly_trend_line_chart.dart';
 import '../widgets/revenue_expense_bar_chart.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -56,6 +57,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ),
         ),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 16.w),
+            child: MicroserviceChatIcon(
+              serviceName: 'Analytics',
+              sourceContext: 'statistics',
+            ),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: const Color(0xFF3B82F6),

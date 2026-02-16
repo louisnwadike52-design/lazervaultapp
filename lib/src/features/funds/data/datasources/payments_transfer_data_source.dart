@@ -1,5 +1,4 @@
 import 'package:grpc/grpc.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:lazervault/core/exceptions/server_exception.dart';
 import 'package:lazervault/core/network/retry_policy.dart';
@@ -216,16 +215,14 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
         );
       });
 
-      return response.payments.map((p) => PaymentsTransferResult(
+      return response.transactions.map((p) => PaymentsTransferResult(
         success: true,
         transferId: p.id.isNotEmpty ? p.id : null,
-        reference: p.hasReference() ? p.reference : null,
-        status: p.hasStatus() ? p.status : null,
-        amount: p.hasAmount() ? (p.amount * 100).toInt() : null,
-        fee: null,
-        createdAt: p.hasCreatedAt() && p.createdAt.isNotEmpty
-            ? DateTime.tryParse(p.createdAt)
-            : null,
+        reference: p.reference.isNotEmpty ? p.reference : null,
+        status: p.status.isNotEmpty ? p.status : null,
+        amount: p.amount.isNotEmpty ? (double.tryParse(p.amount) ?? 0.0 * 100).toInt() : null,
+        fee: p.hasFee() ? (p.fee! * 100).toInt() : null,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(p.createdAt.toInt()),
       )).toList();
     } on GrpcError catch (e) {
       print('gRPC Error getting payment history: ${e.code} - ${e.message}');

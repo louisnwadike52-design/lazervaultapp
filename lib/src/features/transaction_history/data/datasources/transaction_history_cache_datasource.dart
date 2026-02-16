@@ -14,7 +14,7 @@ class TransactionHistoryCacheDataSource {
 
   Database? _database;
   final String _databaseName = 'transaction_history.db';
-  final int _databaseVersion = 1;
+  final int _databaseVersion = 2;
 
   // Table name
   static const String _tableTransactions = 'cached_transactions';
@@ -55,6 +55,8 @@ class TransactionHistoryCacheDataSource {
         flow INTEGER NOT NULL,
         transaction_reference TEXT,
         metadata TEXT,
+        counterparty_name TEXT,
+        counterparty_account TEXT,
         user_id TEXT NOT NULL,
         cached_at INTEGER NOT NULL,
         expires_at INTEGER NOT NULL
@@ -82,9 +84,10 @@ class TransactionHistoryCacheDataSource {
     int oldVersion,
     int newVersion,
   ) async {
-    // Handle database upgrades
     if (oldVersion < 2) {
-      // Add new columns or tables
+      // Add counterparty columns for recipient transaction matching
+      await db.execute('ALTER TABLE $_tableTransactions ADD COLUMN counterparty_name TEXT');
+      await db.execute('ALTER TABLE $_tableTransactions ADD COLUMN counterparty_account TEXT');
     }
   }
 
@@ -233,6 +236,8 @@ class TransactionHistoryCacheDataSource {
       'flow': tx.flow.index,
       'transaction_reference': tx.transactionReference,
       'metadata': tx.metadata != null ? jsonEncode(tx.metadata) : null,
+      'counterparty_name': tx.counterpartyName,
+      'counterparty_account': tx.counterpartyAccount,
       'user_id': userId,
       'cached_at': cachedAt,
       'expires_at': expiresAt,
@@ -270,6 +275,8 @@ class TransactionHistoryCacheDataSource {
       flow: flow,
       transactionReference: map['transaction_reference'] as String?,
       metadata: metadata,
+      counterpartyName: map['counterparty_name'] as String?,
+      counterpartyAccount: map['counterparty_account'] as String?,
     );
   }
 

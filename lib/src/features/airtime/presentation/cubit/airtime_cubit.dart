@@ -206,15 +206,16 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       );
 
       if (isClosed) return;
-      if (transaction.status == AirtimeTransactionStatus.completed) {
-        // Invalidate provider cache on successful purchase (commission rates may update)
-        _cacheManager?.invalidatePattern('airtime_providers:');
-        emit(AirtimePaymentSuccess(transaction: transaction));
-      } else {
+      if (transaction.status == AirtimeTransactionStatus.failed) {
         emit(AirtimePaymentFailed(
           message: transaction.failureReason ?? 'Payment failed',
           transaction: transaction,
         ));
+      } else {
+        // completed, processing, or pending — a successful gRPC response
+        // without an exception means the payment was accepted
+        _cacheManager?.invalidatePattern('airtime_providers:');
+        emit(AirtimePaymentSuccess(transaction: transaction));
       }
     } catch (e) {
       if (isClosed) return;

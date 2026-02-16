@@ -8,6 +8,8 @@ import '../../domain/entities/auto_recharge_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/auto_recharge_cubit.dart';
 import '../cubit/auto_recharge_state.dart';
+import '../cubit/electricity_bill_cubit.dart';
+import '../cubit/electricity_bill_state.dart';
 
 class AutoRechargeListScreen extends StatefulWidget {
   const AutoRechargeListScreen({super.key});
@@ -92,6 +94,19 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
     );
   }
 
+  void _payNow(AutoRechargeEntity autoRecharge) {
+    // Validate meter first, then navigate to payment on success
+    context.read<ElectricityBillCubit>().validateMeter(
+          providerCode: autoRecharge.providerCode,
+          meterNumber: autoRecharge.meterNumber,
+          meterType: autoRecharge.meterType,
+        );
+    // Store the auto recharge we're paying for
+    _pendingPayAutoRecharge = autoRecharge;
+  }
+
+  AutoRechargeEntity? _pendingPayAutoRecharge;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,7 +128,43 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
             children: [
               _buildHeader(),
               Expanded(
-                child: BlocConsumer<AutoRechargeCubit, AutoRechargeState>(
+                child: MultiBlocListener(
+                  listeners: [
+                    BlocListener<ElectricityBillCubit, ElectricityBillState>(
+                      listener: (context, state) {
+                        if (state is MeterValidated && _pendingPayAutoRecharge != null) {
+                          final ar = _pendingPayAutoRecharge!;
+                          _pendingPayAutoRecharge = null;
+                          Get.toNamed(
+                            AppRoutes.electricityBillConfirmation,
+                            arguments: {
+                              'providerCode': ar.providerCode,
+                              'providerName': ar.providerName,
+                              'meterNumber': ar.meterNumber,
+                              'meterType': ar.meterType,
+                              'customerName': state.validationResult.customerName,
+                              'customerAddress': state.validationResult.customerAddress,
+                              'validationResult': state.validationResult,
+                              'amount': ar.amount,
+                            },
+                          );
+                        }
+                        if (state is MeterValidationFailed) {
+                          _pendingPayAutoRecharge = null;
+                          Get.snackbar('Error', state.message,
+                              backgroundColor: Colors.red.withValues(alpha: 0.9),
+                              colorText: Colors.white);
+                        }
+                        if (state is ElectricityBillError) {
+                          _pendingPayAutoRecharge = null;
+                          Get.snackbar('Error', state.message,
+                              backgroundColor: Colors.red.withValues(alpha: 0.9),
+                              colorText: Colors.white);
+                        }
+                      },
+                    ),
+                  ],
+                  child: BlocConsumer<AutoRechargeCubit, AutoRechargeState>(
                   listener: (context, state) {
                     if (state is AutoRechargeError) {
                       Get.snackbar(
@@ -230,6 +281,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
 
                     return _buildEmptyState();
                   },
+                ),
                 ),
               ),
             ],
@@ -498,6 +550,40 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+          if (autoRecharge.isActive) ...[
+            SizedBox(height: 12.h),
+            GestureDetector(
+              onTap: () => _payNow(autoRecharge),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [const Color(0xFF4E03D0), const Color(0xFF6B21E0)],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: BlocBuilder<ElectricityBillCubit, ElectricityBillState>(
+                  builder: (context, state) {
+                    final isValidating = state is MeterValidating &&
+                        _pendingPayAutoRecharge?.id == autoRecharge.id;
+                    return isValidating
+                        ? Center(child: SizedBox(width: 20.w, height: 20.w,
+                            child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.payment, color: Colors.white, size: 18.sp),
+                              SizedBox(width: 8.w),
+                              Text('Pay Now',
+                                style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                            ],
+                          );
+                  },
+                ),
               ),
             ),
           ],

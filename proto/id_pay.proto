@@ -1,0 +1,164 @@
+syntax = "proto3";
+
+package id_pay;
+option go_package = "lazervaultGo/pb";
+
+import "google/protobuf/timestamp.proto";
+
+service IDPayService {
+  // Create a new IDPay payment request
+  rpc CreateIDPay(CreateIDPayRequest) returns (CreateIDPayResponse);
+
+  // Lookup an IDPay by its short code (for payers)
+  rpc LookupIDPay(LookupIDPayRequest) returns (LookupIDPayResponse);
+
+  // Pay an IDPay
+  rpc PayIDPay(PayIDPayRequest) returns (PayIDPayResponse);
+
+  // Get user's created IDPays
+  rpc GetMyIDPays(GetMyIDPaysRequest) returns (GetMyIDPaysResponse);
+
+  // Get transactions for a specific IDPay
+  rpc GetIDPayTransactions(GetIDPayTransactionsRequest) returns (GetIDPayTransactionsResponse);
+
+  // Cancel an active IDPay
+  rpc CancelIDPay(CancelIDPayRequest) returns (CancelIDPayResponse);
+
+  // Get IDPay details by internal ID (for creator)
+  rpc GetIDPayDetails(GetIDPayDetailsRequest) returns (GetIDPayDetailsResponse);
+}
+
+// Enums
+enum IDPayType {
+  ID_PAY_TYPE_UNSPECIFIED = 0;
+  ID_PAY_ONE_TIME = 1;    // Single use, invalidated after payment
+  ID_PAY_RECURRING = 2;   // Reusable until expiry
+}
+
+enum IDPayAmountMode {
+  ID_PAY_AMOUNT_UNSPECIFIED = 0;
+  ID_PAY_FIXED = 1;       // Payer pays exact amount
+  ID_PAY_FLEXIBLE = 2;    // Payer chooses amount (optional min/max)
+}
+
+enum IDPayStatus {
+  ID_PAY_STATUS_UNSPECIFIED = 0;
+  ID_PAY_ACTIVE = 1;
+  ID_PAY_PAID = 2;        // One-time: fully paid
+  ID_PAY_EXPIRED = 3;
+  ID_PAY_CANCELLED = 4;
+}
+
+// Models
+message IDPay {
+  string id = 1;
+  string pay_id = 2;                // Short 6-char alphanumeric code
+  string creator_id = 3;
+  string creator_name = 4;
+  string creator_username = 5;
+  IDPayType type = 6;
+  IDPayAmountMode amount_mode = 7;
+  double amount = 8;                 // Fixed amount (0 for flexible)
+  double min_amount = 9;             // Minimum for flexible mode
+  double max_amount = 10;            // Maximum for flexible mode
+  string currency = 11;
+  string description = 12;
+  IDPayStatus status = 13;
+  google.protobuf.Timestamp expires_at = 14;
+  google.protobuf.Timestamp created_at = 15;
+  double total_received = 16;
+  int32 payment_count = 17;
+}
+
+message IDPayTransaction {
+  string id = 1;
+  string pay_id = 2;
+  string payer_id = 3;
+  string payer_name = 4;
+  string payer_username = 5;
+  string recipient_id = 6;
+  string recipient_name = 7;
+  double amount = 8;
+  string currency = 9;
+  string reference = 10;
+  string status = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+// Request/Response messages
+message CreateIDPayRequest {
+  IDPayType type = 1;
+  IDPayAmountMode amount_mode = 2;
+  double amount = 3;                 // Required for fixed, 0 for flexible
+  string currency = 4;
+  double min_amount = 5;             // Optional for flexible mode
+  double max_amount = 6;             // Optional for flexible mode
+  string description = 7;
+  int32 validity_minutes = 8;        // Expiry duration in minutes
+  string recipient_account_id = 9;   // Account to receive payment
+}
+
+message CreateIDPayResponse {
+  IDPay id_pay = 1;
+  string message = 2;
+}
+
+message LookupIDPayRequest {
+  string pay_id = 1;
+}
+
+message LookupIDPayResponse {
+  IDPay id_pay = 1;
+}
+
+message PayIDPayRequest {
+  string pay_id = 1;
+  double amount = 2;                 // Required for flexible, ignored for fixed
+  string transaction_pin = 3;
+  string source_account_id = 4;
+  string idempotency_key = 5;
+}
+
+message PayIDPayResponse {
+  IDPayTransaction transaction = 1;
+  double new_balance = 2;
+  string message = 3;
+}
+
+message GetMyIDPaysRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  IDPayStatus status_filter = 3;
+}
+
+message GetMyIDPaysResponse {
+  repeated IDPay id_pays = 1;
+  int32 total = 2;
+}
+
+message GetIDPayTransactionsRequest {
+  string pay_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetIDPayTransactionsResponse {
+  repeated IDPayTransaction transactions = 1;
+  int32 total = 2;
+}
+
+message CancelIDPayRequest {
+  string id = 1;
+}
+
+message CancelIDPayResponse {
+  string message = 1;
+}
+
+message GetIDPayDetailsRequest {
+  string id = 1;
+}
+
+message GetIDPayDetailsResponse {
+  IDPay id_pay = 1;
+}

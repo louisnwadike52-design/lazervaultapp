@@ -1,20 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/src/features/funds/services/transfer_pdf_service.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:async';
 
 class TransferReceiptScreen extends StatefulWidget {
   const TransferReceiptScreen({super.key});
@@ -67,11 +59,12 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     setState(() => _isDownloading = true);
 
     try {
-      // Generate clean Revolut-style receipt as image
-      final imageFile = await _generateReceiptImage();
+      final filePath = await TagPayPdfService.downloadTransferReceipt(
+        transferDetails: transferDetails,
+      );
       Get.snackbar(
-        'Saved to Photos',
-        'Receipt saved to your photos',
+        'Receipt Saved',
+        'PDF receipt saved to $filePath',
         backgroundColor: const Color(0xFF10B981),
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -96,17 +89,8 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     setState(() => _isSharing = true);
 
     try {
-      final imageFile = await _generateReceiptImage();
-      final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
-      final currency = transferDetails['currency'] as String? ?? 'NGN';
-      final currencySymbol = _currencySymbol(currency);
-      final recipientName = transferDetails['recipientName'] as String? ?? 'Recipient';
-
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(imageFile.path)],
-          text: '$currencySymbol${amount.toStringAsFixed(2)} sent to $recipientName',
-        ),
+      await TagPayPdfService.shareTransferReceipt(
+        transferDetails: transferDetails,
       );
     } catch (e) {
       Get.snackbar(
@@ -122,277 +106,32 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     }
   }
 
-  /// Generate a clean Revolut-style receipt image
-  Future<File> _generateReceiptImage() async {
-    final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
-    final currency = transferDetails['currency'] as String? ?? 'NGN';
-    final currencySymbol = _currencySymbol(currency);
-    final recipientName = transferDetails['recipientName'] as String? ?? 'Recipient';
-    final reference = transferDetails['reference'] as String? ??
-        transferDetails['transferId']?.toString() ??
-        transferDetails['transactionId']?.toString() ??
-        '---';
-    final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
-    final totalAmount = (transferDetails['totalAmount'] as num?)?.toDouble() ?? amount;
-    final status = transferDetails['status'] as String? ?? 'completed';
-
-    DateTime? timestamp;
-    if (transferDetails['timestamp'] != null) {
-      timestamp = transferDetails['timestamp'] as DateTime?;
-    } else if (transferDetails['createdAt'] != null) {
-      timestamp = transferDetails['createdAt'] as DateTime?;
-    }
-    timestamp ??= DateTime.now();
-
-    // Create a widget to capture
-    final receiptWidget = Container(
-      width: 350,
-      padding: const EdgeInsets.all(24),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'LazerVault',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF1A1A1A),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    'Transfer Receipt',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF8A8A8A),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                _formatStatus(status),
-                style: GoogleFonts.inter(
-                  color: _getStatusColor(status),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Amount - Large and prominent
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  amount.toStringAsFixed(2),
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF1A1A1A),
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  currency.toUpperCase(),
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF8A8A8A),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Details
-          _buildReceiptDetail('Reference', reference),
-          _buildReceiptDetail('Recipient', recipientName),
-          _buildReceiptDetail('Date', _formatDate(timestamp)),
-          _buildReceiptDetail('Time', _formatTime(timestamp)),
-          if (fee > 0) _buildReceiptDetail('Fee', '$currencySymbol${fee.toStringAsFixed(2)}'),
-
-          const SizedBox(height: 8),
-
-          // Divider
-          Container(
-            height: 1,
-            color: const Color(0xFFE5E5E5),
-          ),
-          const SizedBox(height: 16),
-
-          // Footer
-          Text(
-            'Powered by LazerVault',
-            style: GoogleFonts.inter(
-              color: const Color(0xFFBDBDBD),
-              fontSize: 10,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    // Render to image
-    final renderRepaintBoundary = RenderRepaintBoundary();
-
-    // Wait for the widget to be built
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    final image = await renderRepaintBoundary.toImage(pixelRatio: 3.0);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-
-    if (byteData == null) {
-      throw Exception('Failed to capture receipt image');
-    }
-
-    final pngBytes = byteData.buffer.asUint8List();
-
-    // Save to gallery (Photos on iOS, Downloads on Android)
-    final directory = Platform.isAndroid
-        ? Directory('/storage/emulated/0/Download')
-        : await getApplicationDocumentsDirectory();
-
-    final fileName = 'receipt_${reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}_${DateTime.now().millisecondsSinceEpoch}.png';
-    final file = File('${directory.path}/$fileName');
-    await file.writeAsBytes(pngBytes);
-
-    return file;
-  }
-
-  Widget _buildReceiptDetail(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF8A8A8A),
-              fontSize: 12,
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF1A1A1A),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-      case 'success':
-      case 'successful':
-        return const Color(0xFF10B981);
-      case 'pending':
-      case 'processing':
-        return const Color(0xFFFB923C);
-      case 'failed':
-        return const Color(0xFFEF4444);
-      case 'scheduled':
-        return const Color(0xFF3B82F6);
-      default:
-        return const Color(0xFF8A8A8A);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
     final currency = transferDetails['currency'] as String? ?? 'NGN';
-    final transferType = transferDetails['transferType'] as String? ?? 'Transfer';
     final isScheduled = transferDetails['scheduledAt'] != null;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-            size: 20.sp,
-          ),
-        ),
-        title: Text(
-          'Transfer Receipt',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: SafeArea(
         child: Column(
           children: [
+            _buildBackButton(),
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    SizedBox(height: 8.h),
+
+                    // Compact header: icon + amount + status
+                    _buildHeader(amount, currency, isScheduled),
                     SizedBox(height: 16.h),
 
-                    // QR Code - Prominent display
-                    _buildQrCodeCard(),
-
-                    SizedBox(height: 20.h),
-
-                    // Status icon with reduced text
-                    _buildSuccessIcon(),
-                    SizedBox(height: 16.h),
-
-                    Text(
-                      isScheduled ? 'Transfer Scheduled' : 'Transfer Successful',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 6.h),
-                    Text(
-                      isScheduled
-                          ? 'Your transfer has been scheduled'
-                          : 'Your transfer has been processed',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    SizedBox(height: 24.h),
-
-                    // Amount card - tighter spacing
-                    _buildAmountCard(amount, currency, transferType),
-                    SizedBox(height: 16.h),
-
-                    // Transaction details - more compact
+                    // Transaction details with QR at bottom
                     _buildTransactionDetails(),
                   ],
                 ),
@@ -405,188 +144,111 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     );
   }
 
-  Widget _buildQrCodeCard() {
-    final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
-    final currency = transferDetails['currency'] as String? ?? 'NGN';
-    final currencySymbol = _currencySymbol(currency);
-
-    return Container(
-      width: 180.w,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
+  Widget _buildBackButton() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12.w, 2.h, 12.w, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Scan to verify',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF8A8A8A),
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w500,
-            ),
+          IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
-          SizedBox(height: 12.h),
-          if (_qrData != null)
-            RepaintBoundary(
-              key: _qrKey,
-              child: QrImageView(
-                data: _qrData!,
-                version: QrVersions.auto,
-                size: 140.sp,
-                backgroundColor: Colors.white,
-                dataModuleStyle: QrDataModuleStyle(
-                  color: const Color(0xFF1A1A1A),
-                ),
-              ),
-            )
-          else
-            SizedBox(
-              width: 140.sp,
-              height: 140.sp,
-              child: Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: const Color(0xFF1A1A1A),
-                ),
-              ),
+          Image.asset(
+            'assets/images/logo.png',
+            width: 28.w,
+            height: 28.w,
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.shield_outlined,
+              color: const Color(0xFF3B82F6),
+              size: 24.sp,
             ),
-          SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                amount.toStringAsFixed(2),
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF1A1A1A),
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(width: 4.w),
-              Text(
-                currency.toUpperCase(),
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF8A8A8A),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSuccessIcon() {
-    return Container(
-      width: 70.w,
-      height: 70.w,
-      decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.15),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        Icons.check_circle,
-        color: const Color(0xFF10B981),
-        size: 40.sp,
-      ),
-    );
-  }
-
-  Widget _buildAmountCard(double amount, String currency, String transferType) {
+  Widget _buildHeader(double amount, String currency, bool isScheduled) {
     final currencySymbol = _currencySymbol(currency);
-    final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
-    final totalAmount = (transferDetails['totalAmount'] as num?)?.toDouble() ?? amount;
+    final status = transferDetails['status'] as String? ?? 'completed';
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+    DateTime? timestamp;
+    if (transferDetails['timestamp'] != null) {
+      timestamp = transferDetails['timestamp'] as DateTime?;
+    } else if (transferDetails['createdAt'] != null) {
+      timestamp = transferDetails['createdAt'] as DateTime?;
+    }
+    timestamp ??= DateTime.now();
+
+    return Column(
+      children: [
+        // Compact success icon
+        Container(
+          width: 48.w,
+          height: 48.w,
+          decoration: const BoxDecoration(
+            color: Color(0xFF10B981),
+            shape: BoxShape.circle,
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            transferDetails['scheduledAt'] != null ? 'Amount to Send' : 'Amount Sent',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Icon(
+            Icons.check,
+            color: Colors.white,
+            size: 26.sp,
           ),
-          SizedBox(height: 6.h),
-          Text(
-            '$currencySymbol${amount.toStringAsFixed(2)}',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 28.sp,
-              fontWeight: FontWeight.w700,
-            ),
+        ),
+        SizedBox(height: 10.h),
+        Text(
+          '$currencySymbol${amount.toStringAsFixed(2)}',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 28.sp,
+            fontWeight: FontWeight.w700,
           ),
-          if (fee > 0) ...[
-            SizedBox(height: 10.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Fee',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 11.sp,
-                  ),
-                ),
-                Text(
-                  '$currencySymbol${fee.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+        ),
+        SizedBox(height: 6.h),
+        Text(
+          isScheduled ? 'Transfer Scheduled' : 'Transfer Successful',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        // Status and timestamp row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _formatStatus(status),
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF8E8E93),
+              ),
             ),
-            SizedBox(height: 6.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 11.sp,
-                  ),
-                ),
-                Text(
-                  '$currencySymbol${totalAmount.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+            SizedBox(width: 8.w),
+            Text(
+              '\u00b7',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              '${_formatDate(timestamp)} ${_formatTime(timestamp)}',
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFF8E8E93),
+              ),
             ),
           ],
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -596,123 +258,134 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     final recipientAccount = transferDetails['recipientAccountMasked'] as String?;
     final reference = transferDetails['reference'] as String? ?? '';
     final narration = transferDetails['narration'] as String?;
-    final status = transferDetails['status'] as String? ?? 'completed';
     final transferType = transferDetails['transferType'] as String?;
     final network = transferDetails['network'] as String?;
-    final scheduledAt = transferDetails['scheduledAt'];
     final sourceAccountInfo = transferDetails['sourceAccountInfo'] as String?;
     final sourceAccountName = transferDetails['sourceAccountName'] as String?;
-
-    DateTime? timestamp;
-    if (transferDetails['timestamp'] != null) {
-      timestamp = transferDetails['timestamp'] as DateTime?;
-    } else if (transferDetails['createdAt'] != null) {
-      timestamp = transferDetails['createdAt'] as DateTime?;
-    } else if (scheduledAt != null) {
-      timestamp = scheduledAt is DateTime ? scheduledAt : DateTime.tryParse(scheduledAt.toString());
-    }
-    timestamp ??= DateTime.now();
+    final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
+    final currency = transferDetails['currency'] as String? ?? 'NGN';
+    final currencySymbol = _currencySymbol(currency);
 
     return Container(
-      padding: EdgeInsets.all(16.w),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Transaction Details',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 0),
+            child: Text(
+              'Details',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 14.h),
           _buildDetailRow('Recipient', recipientName),
-          SizedBox(height: 8.h),
-          if (recipientBank != null && recipientBank.isNotEmpty) ...[
+          if (recipientBank != null && recipientBank.isNotEmpty)
             _buildDetailRow('Bank', recipientBank),
-            SizedBox(height: 8.h),
-          ],
-          if (recipientAccount != null && recipientAccount.isNotEmpty) ...[
+          if (recipientAccount != null && recipientAccount.isNotEmpty)
             _buildDetailRow('Account', recipientAccount),
-            SizedBox(height: 8.h),
-          ],
-          if (sourceAccountInfo != null && sourceAccountInfo.isNotEmpty) ...[
-            if (sourceAccountName != null && sourceAccountName.isNotEmpty)
-              _buildDetailRow('From', '$sourceAccountName ($sourceAccountInfo)')
-            else
-              _buildDetailRow('From', sourceAccountInfo),
-            SizedBox(height: 8.h),
-          ],
-          if (reference.isNotEmpty) ...[
+          if (sourceAccountInfo != null && sourceAccountInfo.isNotEmpty)
+            _buildDetailRow(
+              'From',
+              sourceAccountName != null && sourceAccountName.isNotEmpty
+                  ? '$sourceAccountName ($sourceAccountInfo)'
+                  : sourceAccountInfo,
+            ),
+          if (reference.isNotEmpty)
             _buildDetailRow('Reference', reference),
-            SizedBox(height: 8.h),
-          ],
-          if (narration != null && narration.isNotEmpty) ...[
+          if (narration != null && narration.isNotEmpty)
             _buildDetailRow('Description', narration),
-            SizedBox(height: 8.h),
-          ],
-          if (transferType != null && transferType.isNotEmpty) ...[
+          if (transferType != null && transferType.isNotEmpty)
             _buildDetailRow('Type', transferType),
-            SizedBox(height: 8.h),
-          ],
-          if (network != null && network.isNotEmpty) ...[
+          if (network != null && network.isNotEmpty)
             _buildDetailRow('Network', network),
-            SizedBox(height: 8.h),
-          ],
-          _buildDetailRow('Status', _formatStatus(status)),
-          SizedBox(height: 8.h),
-          _buildDetailRow(
-            'Date',
-            _formatDate(timestamp),
+          if (fee > 0)
+            _buildDetailRow('Fee', '$currencySymbol${fee.toStringAsFixed(2)}'),
+          _buildDetailRow('Currency', currency.toUpperCase()),
+          // Divider before QR
+          Divider(
+            color: const Color(0xFF2D2D2D),
+            height: 1,
+            indent: 16.w,
+            endIndent: 16.w,
           ),
-          SizedBox(height: 8.h),
-          _buildDetailRow(
-            'Time',
-            _formatTime(timestamp),
-          ),
+          SizedBox(height: 14.h),
+          // QR Code at bottom of card
+          if (_qrData != null)
+            Center(
+              child: RepaintBoundary(
+                key: _qrKey,
+                child: QrImageView(
+                  data: _qrData!,
+                  version: QrVersions.auto,
+                  size: 80.w,
+                  backgroundColor: Colors.transparent,
+                  dataModuleStyle: const QrDataModuleStyle(
+                    color: Colors.white,
+                  ),
+                  eyeStyle: const QrEyeStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          SizedBox(height: 6.h),
+          if (reference.isNotEmpty)
+            Center(
+              child: Text(
+                reference,
+                style: GoogleFonts.robotoMono(
+                  fontSize: 10.sp,
+                  color: const Color(0xFF8E8E93),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          SizedBox(height: 14.h),
         ],
       ),
     );
   }
 
   Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110.w,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                color: const Color(0xFF8E8E93),
+              ),
             ),
           ),
-        ),
-      ],
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -776,79 +449,72 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   }
 
   Widget _buildActions(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16.r),
-          topRight: Radius.circular(16.r),
-        ),
-      ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _isSharing ? null : _shareReceipt,
-              icon: _isSharing
-                  ? SizedBox(
-                      width: 16.sp,
-                      height: 16.sp,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Icon(Icons.share, size: 16.sp),
-              label: Text(
-                _isSharing ? 'Sharing...' : 'Share',
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFF3B82F6)),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-              ),
+            child: _actionButton(
+              icon: _isDownloading ? null : Icons.download_outlined,
+              label: 'Download',
+              isLoading: _isDownloading,
+              onTap: _isDownloading ? () {} : _downloadReceipt,
             ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 12.w),
           Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _isDownloading ? null : _downloadReceipt,
-              icon: _isDownloading
-                  ? SizedBox(
-                      width: 16.sp,
-                      height: 16.sp,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Icon(Icons.save_alt, size: 16.sp),
-              label: Text(
-                _isDownloading ? 'Saving...' : 'Save',
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFF3B82F6)),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-              ),
+            child: _actionButton(
+              icon: _isSharing ? null : Icons.share_outlined,
+              label: 'Share',
+              isLoading: _isSharing,
+              onTap: _isSharing ? () {} : _shareReceipt,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _actionButton({
+    IconData? icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isLoading = false,
+  }) {
+    return Material(
+      color: const Color(0xFF1F1F1F),
+      borderRadius: BorderRadius.circular(12.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                SizedBox(
+                  width: 16.sp,
+                  height: 16.sp,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              else if (icon != null)
+                Icon(icon, color: Colors.white, size: 18.sp),
+              if (!isLoading && icon != null) SizedBox(width: 8.w),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

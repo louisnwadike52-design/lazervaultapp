@@ -26,6 +26,7 @@ class LazertagUser {
   final bool isOnline;
   final bool isVerified;
   final String? currency;  // User's account currency for internal transfers
+  final String searchType; // 'username', 'name', 'phone', 'email', or '' for unified
 
   const LazertagUser({
     required this.id,
@@ -37,16 +38,20 @@ class LazertagUser {
     this.isOnline = false,
     this.isVerified = false,
     this.currency,  // Default to null (will be fetched or default to NGN)
+    this.searchType = '', // Default to unified search
   });
 
   /// Returns display info for search results showing what matched
   String get searchMatchInfo {
     final parts = <String>[];
-    if (username.isNotEmpty) parts.add(username);
+    if (username.isNotEmpty) parts.add('@$username');
     if (email != null && email!.isNotEmpty) parts.add(email!);
     if (phoneNumber != null && phoneNumber!.isNotEmpty) parts.add(phoneNumber!);
     return parts.join(' • ');
   }
+
+  /// Returns display username with @ prefix for username searches
+  String get displayUsername => '@$username';
 }
 
 enum RecipientSelectionTab { saved, lazertag, contacts }
@@ -105,6 +110,12 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
         if (_currentTab == RecipientSelectionTab.contacts && _deviceContacts.isEmpty) {
           _loadDeviceContacts();
         }
+        // Trigger search when switching to lazertag tab with existing query
+        if (_currentTab == RecipientSelectionTab.lazertag &&
+            _searchQuery.isNotEmpty &&
+            _lazertagResults.isEmpty) {
+          _searchLazertagUsers(_searchQuery);
+        }
       });
     });
   }
@@ -124,17 +135,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
   }
 
   void _handleInitialSearch() {
-    final query = widget.initialSearch!;
-    if (query.startsWith('@')) {
-      // Switch to lazertag tab and search
-      if (widget.allowLazertagUsers) {
-        _tabController.animateTo(1);
-        _searchLazertagUsers(query);
-      }
-    } else {
-      // Search in saved recipients
-      _onSearchChanged();
-    }
+    _onSearchChanged();
   }
 
   @override
@@ -150,8 +151,10 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       _searchQuery = _searchController.text;
     });
 
-    // Handle lazertag search with debounce
-    if (_searchQuery.startsWith('@') && widget.allowLazertagUsers) {
+    // Trigger lazertag search when on that tab, or when query starts with @
+    if (widget.allowLazertagUsers &&
+        (_currentTab == RecipientSelectionTab.lazertag ||
+            _searchQuery.startsWith('@'))) {
       _searchDebounce?.cancel();
       _searchDebounce = Timer(const Duration(milliseconds: 300), () {
         _searchLazertagUsers(_searchQuery);
@@ -160,7 +163,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
   }
 
   Future<void> _searchLazertagUsers(String query) async {
-    final cleanQuery = query.replaceAll('@', '').trim();
+    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '').trim();
     if (cleanQuery.length < 2) {
       setState(() => _lazertagResults = []);
       return;
@@ -177,12 +180,13 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       setState(() {
         _lazertagResults = results.map((user) => LazertagUser(
           id: user.userId,
-          username: '@${user.username}',
+          username: user.username,
           name: '${user.firstName} ${user.lastName}'.trim(),
           email: user.email.isNotEmpty ? user.email : null,
           phoneNumber: user.phoneNumber.isNotEmpty ? user.phoneNumber : null,
           avatar: user.profilePicture.isNotEmpty ? user.profilePicture : null,
           isVerified: true,
+          searchType: user.searchType, // Track how user was found
         )).toList();
         _isLoadingLazertag = false;
       });
@@ -456,7 +460,11 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             fontSize: 14.sp,
           ),
           prefixIcon: Icon(
-            _searchQuery.startsWith('@') ? Icons.alternate_email : Icons.search,
+            _currentTab == RecipientSelectionTab.lazertag
+                ? Icons.person_search
+                : _searchQuery.startsWith('@')
+                    ? Icons.alternate_email
+                    : Icons.search,
             color: Colors.grey[500],
             size: 20.sp,
           ),
@@ -488,7 +496,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       case RecipientSelectionTab.saved:
         return 'Search recipients or type @username';
       case RecipientSelectionTab.lazertag:
-        return 'Search @username (e.g., @louis)';
+        return 'Search by username, email, phone, or name';
       case RecipientSelectionTab.contacts:
         return 'Search contacts by name or phone';
     }
@@ -665,20 +673,30 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       );
     }
 
-    if (_searchQuery.isEmpty || !_searchQuery.startsWith('@')) {
+    if (_searchQuery.isEmpty) {
       return _buildEmptyState(
-        icon: Icons.alternate_email,
-        title: 'Search LazerTag Users',
-        subtitle: 'Type @username to find LazerVault users\nExample: @louis, @sarah',
+        icon: Icons.search,
+        title: 'Find LazerVault Users',
+        subtitle: 'Search by username, email, phone, or name',
         showExamples: true,
       );
     }
 
-    if (_lazertagResults.isEmpty && _searchQuery.length > 1) {
+    final cleanQuery = _searchQuery.replaceAll('@', '').replaceAll('\$', '').trim();
+    if (_lazertagResults.isEmpty && cleanQuery.length >= 2) {
       return _buildEmptyState(
         icon: Icons.search_off,
         title: 'No users found',
         subtitle: 'No LazerVault users match "$_searchQuery"',
+      );
+    }
+
+    if (cleanQuery.length < 2) {
+      return _buildEmptyState(
+        icon: Icons.search,
+        title: 'Find LazerVault Users',
+        subtitle: 'Type at least 2 characters to search',
+        showExamples: true,
       );
     }
 
@@ -796,7 +814,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Text(
-        'Type @username to search for LazerVault users',
+        'Try: @louis, john@email.com, 08012345678, or John Doe',
         style: GoogleFonts.inter(
           color: const Color(0xFF4E03D0),
           fontSize: 13.sp,
@@ -1019,7 +1037,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             Row(
               children: [
                 Text(
-                  user.username,
+                  user.displayUsername,
                   style: GoogleFonts.inter(
                     color: Colors.purple[300],
                     fontSize: 14.sp,

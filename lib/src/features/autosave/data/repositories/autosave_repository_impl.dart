@@ -38,12 +38,18 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
     double? maximumPerSave,
   }) async {
     try {
+      // Convert amounts from major units (Naira) to minor units (kobo)
+      // The gateway proxy expects kobo and converts to major for the backend
+      final amountInKobo = amountType == entity.AmountType.percentage
+          ? amountValue  // Percentages are NOT converted
+          : amountValue * 100;
+
       final request = autosave_pb.CreateAutoSaveRuleRequest(
         name: name,
         description: description,
         triggerType: _triggerTypeToProto(triggerType),
         amountType: _amountTypeToProto(amountType),
-        amountValue: amountValue,
+        amountValue: amountInKobo,
         sourceAccountId: sourceAccountId,
         destinationAccountId: destinationAccountId,
       );
@@ -61,13 +67,13 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.roundUpTo = roundUpTo;
       }
       if (targetAmount != null) {
-        request.targetAmount = targetAmount;
+        request.targetAmount = targetAmount * 100; // Naira -> kobo
       }
       if (minimumBalance != null) {
-        request.minimumBalance = minimumBalance;
+        request.minimumBalance = minimumBalance * 100; // Naira -> kobo
       }
       if (maximumPerSave != null) {
-        request.maximumPerSave = maximumPerSave;
+        request.maximumPerSave = maximumPerSave * 100; // Naira -> kobo
       }
 
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
@@ -180,7 +186,9 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.amountType = _amountTypeToProto(amountType);
       }
       if (amountValue != null) {
-        request.amountValue = amountValue;
+        // Convert Naira to kobo for the gateway (percentages stay as-is)
+        final isPercentage = amountType == entity.AmountType.percentage;
+        request.amountValue = isPercentage ? amountValue : amountValue * 100;
       }
       if (frequency != null) {
         request.frequency = _frequencyToProto(frequency);
@@ -195,13 +203,13 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         request.roundUpTo = roundUpTo;
       }
       if (targetAmount != null) {
-        request.targetAmount = targetAmount;
+        request.targetAmount = targetAmount * 100; // Naira -> kobo
       }
       if (minimumBalance != null) {
-        request.minimumBalance = minimumBalance;
+        request.minimumBalance = minimumBalance * 100; // Naira -> kobo
       }
       if (maximumPerSave != null) {
-        request.maximumPerSave = maximumPerSave;
+        request.maximumPerSave = maximumPerSave * 100; // Naira -> kobo
       }
 
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
@@ -423,7 +431,7 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
       );
 
       if (customAmount != null) {
-        request.customAmount = customAmount;
+        request.customAmount = customAmount * 100; // Naira -> kobo
       }
 
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {

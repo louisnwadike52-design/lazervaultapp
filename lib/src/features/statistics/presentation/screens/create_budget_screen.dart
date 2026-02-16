@@ -269,7 +269,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+          borderSide: const BorderSide(color: Color(0xFF10B981)),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
@@ -307,7 +307,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+          borderSide: const BorderSide(color: Color(0xFF10B981)),
         ),
       ),
       validator: (value) {
@@ -395,10 +395,10 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
               }
             });
           },
-          selectedColor: const Color(0xFF3B82F6),
+          selectedColor: const Color(0xFF10B981),
           backgroundColor: const Color(0xFF1F1F1F),
           side: BorderSide(
-            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+            color: isSelected ? const Color(0xFF10B981) : const Color(0xFF2D2D2D),
           ),
         );
       }).toList(),
@@ -515,7 +515,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
             onChanged: (value) {
               setState(() => _enableAlerts = value);
             },
-            activeColor: const Color(0xFF3B82F6),
+            activeColor: const Color(0xFF10B981),
           ),
           if (_enableAlerts) ...[
             SizedBox(height: 16.h),
@@ -529,7 +529,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
               min: 50,
               max: 100,
               divisions: 10,
-              activeColor: const Color(0xFF3B82F6),
+              activeColor: const Color(0xFF10B981),
               onChanged: (value) {
                 setState(() => _alertThreshold = value);
               },
@@ -550,9 +550,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       child: ElevatedButton(
         onPressed: isLoading ? null : _saveBudget,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF3B82F6),
+          backgroundColor: const Color(0xFF10B981),
           foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.5),
+          disabledBackgroundColor: const Color(0xFF10B981).withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),

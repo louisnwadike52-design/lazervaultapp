@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_transaction_entity.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
+import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_transaction_details_bottom_sheet.dart';
 
 class QRPaymentsHistoryScreen extends StatefulWidget {
   const QRPaymentsHistoryScreen({super.key});
@@ -125,10 +125,15 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
     final isCompleted = txn.status == QRTransactionStatus.completed;
 
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        AppRoutes.qrPaymentReceipt,
-        arguments: {'transaction': txn},
-      ),
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (_) =>
+              QRTransactionDetailsBottomSheet(transaction: txn),
+        );
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),

@@ -5,10 +5,9 @@ class BudgetAIInsightsResponse {
   final String summary;
   final List<BudgetRecommendationItem> budgetRecommendations;
   final List<String> savingsOpportunities;
-  final List<String> spendingPatterns;
+  final Map<String, dynamic> spendingPatterns;
   final double recommendedSavingsRate;
-  final String monthlyProjection;
-  final String rationale;
+  final String riskLevel;
 
   BudgetAIInsightsResponse({
     required this.summary,
@@ -16,8 +15,7 @@ class BudgetAIInsightsResponse {
     required this.savingsOpportunities,
     required this.spendingPatterns,
     required this.recommendedSavingsRate,
-    required this.monthlyProjection,
-    required this.rationale,
+    required this.riskLevel,
   });
 
   factory BudgetAIInsightsResponse.fromJson(Map<String, dynamic> json) {
@@ -31,14 +29,10 @@ class BudgetAIInsightsResponse {
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      spendingPatterns: (json['spending_patterns'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
+      spendingPatterns: (json['spending_patterns'] as Map<String, dynamic>?) ?? {},
       recommendedSavingsRate:
           (json['recommended_savings_rate'] as num?)?.toDouble() ?? 0.0,
-      monthlyProjection: json['monthly_projection'] as String? ?? '',
-      rationale: json['rationale'] as String? ?? '',
+      riskLevel: json['risk_level'] as String? ?? 'moderate',
     );
   }
 
@@ -50,8 +44,7 @@ class BudgetAIInsightsResponse {
       'savings_opportunities': savingsOpportunities,
       'spending_patterns': spendingPatterns,
       'recommended_savings_rate': recommendedSavingsRate,
-      'monthly_projection': monthlyProjection,
-      'rationale': rationale,
+      'risk_level': riskLevel,
     };
   }
 }

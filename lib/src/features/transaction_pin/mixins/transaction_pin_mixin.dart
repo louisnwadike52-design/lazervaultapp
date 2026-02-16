@@ -40,6 +40,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     double? fee,
     double? totalAmount,
     int maxAttempts = 3,
+    bool showProcessingPhase = true,
   }) async {
     try {
       // Check if user has PIN set up
@@ -130,8 +131,10 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           );
 
           if (result.success) {
-            // PIN valid → transition to processing phase
-            _pinModalKey.currentState?.setProcessing();
+            // PIN valid → optionally show processing phase in modal
+            if (showProcessingPhase) {
+              _pinModalKey.currentState?.setProcessing();
+            }
 
             // Execute the payment callback
             try {

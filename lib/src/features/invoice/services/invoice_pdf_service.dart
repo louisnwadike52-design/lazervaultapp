@@ -117,8 +117,8 @@ class InvoicePdfService {
                     child: _buildReceiptParticipantCard(
                       'To',
                       invoice.recipientDetails,
-                      invoice.toName,
-                      invoice.toEmail,
+                      invoice.recipientDetails?.contactName,
+                      invoice.recipientDetails?.email,
                     ),
                   ),
                 ],
@@ -665,7 +665,7 @@ class InvoicePdfService {
         pw.Expanded(
           child: _buildParticipantCard(
             'From',
-            invoice.payerDetails,
+            invoice.recipientDetails,
             'Your Business',
             null,
           ),
@@ -673,8 +673,8 @@ class InvoicePdfService {
         pw.SizedBox(width: 24),
         pw.Expanded(
           child: _buildParticipantCard(
-            'To',
-            invoice.recipientDetails,
+            'Bill To',
+            invoice.payerDetails,
             invoice.toName ?? 'Client',
             invoice.toEmail,
           ),

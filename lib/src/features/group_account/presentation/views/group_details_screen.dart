@@ -579,13 +579,12 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     final totalTarget = contributions.fold<double>(0, (sum, c) => sum + c.targetAmount);
     final totalCurrent = contributions.fold<double>(0, (sum, c) => sum + c.currentAmount);
     final progressPercentage = totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
-    // Get the primary currency from contributions (use first contribution's currency)
     final primaryCurrency = contributions.isNotEmpty ? contributions.first.currency : 'NGN';
     final currencySymbol = _getCurrencySymbol(primaryCurrency);
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -595,12 +594,12 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -613,13 +612,21 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 value: members.length.toString(),
                 icon: Icons.people,
               ),
-              SizedBox(width: 20.w),
+              Container(
+                width: 1,
+                height: 32.h,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
               _buildOverviewStat(
-                title: 'Contributions',
+                title: 'Goals',
                 value: contributions.length.toString(),
                 icon: Icons.account_balance_wallet,
               ),
-              SizedBox(width: 20.w),
+              Container(
+                width: 1,
+                height: 32.h,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
               _buildOverviewStat(
                 title: 'Progress',
                 value: '${progressPercentage.toStringAsFixed(0)}%',
@@ -628,57 +635,54 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             ],
           ),
           if (contributions.isNotEmpty) ...[
-            SizedBox(height: 10.h),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            SizedBox(height: 8.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total Progress',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        color: Colors.white.withValues(alpha: 0.8),
-                      ),
-                    ),
-                    Text(
-                      '$currencySymbol${totalCurrent.toStringAsFixed(2)} / $currencySymbol${totalTarget.toStringAsFixed(2)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 6.h),
-                Container(
-                  height: 6.h,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(4.r),
+                Text(
+                  '$currencySymbol${totalCurrent.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
-                  child: Stack(
-                    children: [
-                      FractionallySizedBox(
-                        widthFactor: progressPercentage / 100,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                        ),
-                      ),
-                    ],
+                ),
+                Text(
+                  'of $currencySymbol${totalTarget.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
             ),
+            SizedBox(height: 4.h),
+            Container(
+              height: 5.h,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(3.r),
+              ),
+              child: Stack(
+                children: [
+                  FractionallySizedBox(
+                    widthFactor: (progressPercentage / 100).clamp(0.0, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(3.r),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-          SizedBox(height: 10.h),
           // External Social Media Links
-          if (group.hasExternalLinks) _buildExternalLinksSection(group),
+          if (group.hasExternalLinks) ...[
+            SizedBox(height: 8.h),
+            _buildExternalLinksSection(group),
+          ],
         ],
       ),
     );
@@ -823,20 +827,26 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   }) {
     return Expanded(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: Colors.white.withValues(alpha: 0.8),
-            size: 18.sp,
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: Colors.white.withValues(alpha: 0.8),
+                size: 14.sp,
+              ),
+              SizedBox(width: 4.w),
+              Text(
+                value,
+                style: GoogleFonts.inter(
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 2.h),
           Text(
@@ -1172,7 +1182,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
   void _showShareReportScreen(GroupAccount group) {
     // Get current state to access contributions and members
-    final state = context.read<GroupAccountCubit>().state;
+    final cubit = context.read<GroupAccountCubit>();
+    final state = cubit.state;
     List<Contribution> contributions = [];
     List<GroupMember> members = [];
 
@@ -1182,11 +1193,17 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     }
 
     Navigator.of(context).push(
-      GroupAccountReportScreen.route(
-        group: group,
-        contributions: contributions,
-        members: members,
-        groupUrl: 'https://lazervault.app/groups/${group.id}',
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: cubit,
+          child: GroupAccountReportScreen(
+            group: group,
+            contributions: contributions,
+            members: members,
+            groupUrl: 'https://lazervault.app/groups/${group.id}',
+          ),
+        ),
+        fullscreenDialog: true,
       ),
     );
   }
@@ -1264,11 +1281,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         value: cubit,
         child: EditGroupBottomSheet(group: group),
       ),
-    ).then((_) {
-      if (!mounted) return;
-      // Reload group details after edit to ensure UI is updated
-      context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
-    });
+    );
+    // No .then() reload needed - updateGroupDetails already does a silent background refresh
   }
 
   String _getCurrencySymbol(String currency) {

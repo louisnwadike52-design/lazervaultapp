@@ -109,7 +109,6 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
     // Pre-fill recipient with current user
     _recipientContact = '${user.firstName} ${user.lastName}'.trim();
     _recipientEmail = user.email;
-    _recipientPhone = user.phoneNumber ?? '';
     _isAutoFilled = true;
 
     _emitFormUpdated();
@@ -412,8 +411,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
       currency: effectiveCurrency,
       createdAt: DateTime.now(),
       dueDate: _dueDate,
-      toEmail: _recipientEmail.isNotEmpty ? _recipientEmail : null,
-      toName: _recipientContact.isNotEmpty ? _recipientContact : null,
+      toEmail: _payerEmail.isNotEmpty ? _payerEmail : null,
+      toName: _payerContact.isNotEmpty ? _payerContact : null,
       notes: _notes.isNotEmpty ? _notes : null,
       recipientDetails: AddressDetails(
         companyName: _recipientCompany.isNotEmpty ? _recipientCompany : null,
@@ -454,6 +453,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
       taxAmount: _taxAmount,
       discountAmount: _discountAmount,
       total: total,
+      payerImagePath: _payerImage?.path,
+      recipientImagePath: _recipientImage?.path,
     ));
   }
 

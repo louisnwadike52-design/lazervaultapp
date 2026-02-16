@@ -35,6 +35,12 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<GroupAccountCubit, GroupAccountState>(
+      listenWhen: (previous, current) {
+        // Only listen to states relevant to group creation
+        return current is GroupAccountLoading ||
+            current is GroupAccountGroupCreated ||
+            current is GroupAccountError;
+      },
       listener: (context, state) {
         if (state is GroupAccountLoading) {
           setState(() => _isLoading = true);
@@ -51,8 +57,6 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
               behavior: SnackBarBehavior.floating,
             ),
           );
-        } else {
-          setState(() => _isLoading = false);
         }
       },
       child: Container(
@@ -557,6 +561,9 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
 
   void _createGroup() {
     if (_formKey.currentState!.validate()) {
+      // Set loading immediately for responsive button state
+      setState(() => _isLoading = true);
+
       // Build metadata with external links
       final metadata = <String, dynamic>{};
 

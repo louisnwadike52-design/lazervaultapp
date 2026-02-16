@@ -41,4 +41,50 @@ class BatchTransferRepositoryImpl implements IBatchTransferRepository {
           message: 'Unexpected Error: ${e.toString()}', statusCode: 500));
     }
   }
+
+  @override
+  Future<Either<Failure, (List<BatchTransferHistoryEntity>, int)>> getBatchTransfers({
+    required int page,
+    required int pageSize,
+  }) async {
+    try {
+      final result = await remoteDataSource.getBatchTransfers(
+        page: page,
+        pageSize: pageSize,
+      );
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(
+          ServerFailure(message: e.message ?? 'Server Error', statusCode: 500));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: 'gRPC Error: ${e.message ?? e.codeName}',
+          statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(
+          message: 'Unexpected Error: ${e.toString()}', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, BatchTransferDetailEntity>> getBatchTransferDetail({
+    required String batchId,
+  }) async {
+    try {
+      final result = await remoteDataSource.getBatchTransferDetail(
+        batchId: batchId,
+      );
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(
+          ServerFailure(message: e.message ?? 'Server Error', statusCode: 500));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: 'gRPC Error: ${e.message ?? e.codeName}',
+          statusCode: e.code));
+    } catch (e) {
+      return Left(ServerFailure(
+          message: 'Unexpected Error: ${e.toString()}', statusCode: 500));
+    }
+  }
 }

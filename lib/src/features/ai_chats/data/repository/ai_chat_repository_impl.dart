@@ -58,9 +58,13 @@ class AiChatRepositoryImpl implements IAiChatRepository {
   Future<Either<Failure, List<ChatMessageEntity>>> getChatHistory({
     required String accessToken,
     String? sessionId,
+    String? sourceContext,
   }) async {
     try {
-      final response = await _dataSource.getChatHistory(sessionId: sessionId);
+      final response = await _dataSource.getChatHistory(
+        sessionId: sessionId,
+        sourceContext: sourceContext,
+      );
 
       // Handle both gRPC proto response and HTTP JSON response
       if (response is GetAIChatHistoryResponse) {

@@ -49,3 +49,50 @@ class InitiateBatchTransferParams extends Equatable {
         scheduledAt,
       ];
 }
+
+class GetBatchTransfersUseCase
+    extends UseCaseWithParams<(List<BatchTransferHistoryEntity>, int), GetBatchTransfersParams> {
+  final IBatchTransferRepository repository;
+
+  GetBatchTransfersUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, (List<BatchTransferHistoryEntity>, int)>> call(
+      GetBatchTransfersParams params) async {
+    return await repository.getBatchTransfers(
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}
+
+class GetBatchTransfersParams extends Equatable {
+  final int page;
+  final int pageSize;
+
+  const GetBatchTransfersParams({required this.page, this.pageSize = 20});
+
+  @override
+  List<Object?> get props => [page, pageSize];
+}
+
+class GetBatchTransferDetailParams extends Equatable {
+  final String batchId;
+
+  const GetBatchTransferDetailParams({required this.batchId});
+
+  @override
+  List<Object?> get props => [batchId];
+}
+
+class GetBatchTransferDetailUseCase
+    extends UseCaseWithParams<BatchTransferDetailEntity, GetBatchTransferDetailParams> {
+  final IBatchTransferRepository repository;
+
+  GetBatchTransferDetailUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, BatchTransferDetailEntity>> call(GetBatchTransferDetailParams params) async {
+    return await repository.getBatchTransferDetail(batchId: params.batchId);
+  }
+}

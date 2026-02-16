@@ -110,6 +110,36 @@ class AlertMarkedRead extends BudgetState {
   List<Object?> get props => [message];
 }
 
+/// Financial goals loaded
+class FinancialGoalsLoaded extends BudgetState {
+  final List<pb.FinancialGoal> goals;
+  final double totalTarget;
+  final double totalSaved;
+
+  const FinancialGoalsLoaded({
+    required this.goals,
+    required this.totalTarget,
+    required this.totalSaved,
+  });
+
+  @override
+  List<Object?> get props => [goals, totalTarget, totalSaved];
+}
+
+/// Recurring bills loaded
+class RecurringBillsLoaded extends BudgetState {
+  final List<pb.RecurringBill> bills;
+  final double totalUpcoming;
+
+  const RecurringBillsLoaded({
+    required this.bills,
+    required this.totalUpcoming,
+  });
+
+  @override
+  List<Object?> get props => [bills, totalUpcoming];
+}
+
 /// Error state
 class BudgetError extends BudgetState {
   final String message;
@@ -148,10 +178,9 @@ class BudgetAIInsightsData {
   final String summary;
   final List<BudgetRecommendationData> budgetRecommendations;
   final List<String> savingsOpportunities;
-  final List<String> spendingPatterns;
+  final Map<String, dynamic> spendingPatterns;
   final double recommendedSavingsRate;
-  final String monthlyProjection;
-  final String rationale;
+  final String riskLevel;
 
   BudgetAIInsightsData({
     required this.summary,
@@ -159,8 +188,7 @@ class BudgetAIInsightsData {
     required this.savingsOpportunities,
     required this.spendingPatterns,
     required this.recommendedSavingsRate,
-    required this.monthlyProjection,
-    required this.rationale,
+    required this.riskLevel,
   });
 }
 

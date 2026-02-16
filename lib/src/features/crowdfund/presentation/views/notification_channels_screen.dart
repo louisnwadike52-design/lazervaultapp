@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
 import '../../domain/entities/notification_channel_entities.dart';
+import '../cubit/crowdfund_cubit.dart';
+import '../cubit/crowdfund_state.dart';
 
 /// Screen for managing crowdfund notification channels
 class NotificationChannelsScreen extends StatefulWidget {
@@ -22,29 +25,11 @@ class NotificationChannelsScreen extends StatefulWidget {
 class _NotificationChannelsScreenState
     extends State<NotificationChannelsScreen> {
   List<NotificationChannel> _channels = [];
-  bool _isLoading = true;
-  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _loadChannels();
-  }
-
-  Future<void> _loadChannels() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    // TODO: Load channels from service
-    // For now, show empty state
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    setState(() {
-      _isLoading = false;
-      _channels = [];
-    });
+    context.read<CrowdfundCubit>().loadNotificationChannels(widget.crowdfundId);
   }
 
   @override
@@ -86,31 +71,86 @@ class _NotificationChannelsScreenState
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadChannels,
-        color: const Color(0xFF3B82F6),
-        backgroundColor: const Color(0xFF1F1F1F),
-        child: _buildBody(),
+      body: BlocConsumer<CrowdfundCubit, CrowdfundState>(
+        listener: (context, state) {
+          if (state is NotificationChannelConnected) {
+            setState(() {
+              _channels.add(state.channel);
+            });
+            Get.snackbar(
+              'Success',
+              '${state.channel.channelType.displayName} channel connected',
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
+          } else if (state is NotificationChannelDisconnected) {
+            setState(() {
+              _channels.removeWhere((ch) => ch.id == state.channelId);
+            });
+            Get.snackbar(
+              'Disconnected',
+              'Channel has been disconnected',
+              backgroundColor: const Color(0xFF6B7280),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
+          } else if (state is NotificationChannelTested) {
+            Get.snackbar(
+              state.success ? 'Test Sent' : 'Test Failed',
+              state.success
+                  ? 'Test notification sent successfully'
+                  : 'Failed to send test notification',
+              backgroundColor:
+                  state.success ? const Color(0xFF3B82F6) : const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
+          } else if (state is NotificationChannelUpdated) {
+            setState(() {
+              final index = _channels.indexWhere((ch) => ch.id == state.channel.id);
+              if (index >= 0) _channels[index] = state.channel;
+            });
+          } else if (state is CrowdfundError) {
+            Get.snackbar(
+              'Error',
+              state.message,
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
+          }
+        },
+        buildWhen: (previous, current) =>
+            current is NotificationChannelsLoaded ||
+            current is CrowdfundLoading ||
+            current is CrowdfundError,
+        builder: (context, state) {
+          if (state is CrowdfundLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+            );
+          }
+
+          if (state is NotificationChannelsLoaded) {
+            _channels = List.from(state.channels);
+          }
+
+          if (state is CrowdfundError && _channels.isEmpty) {
+            return _buildErrorState(state.message);
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<CrowdfundCubit>().loadNotificationChannels(widget.crowdfundId);
+            },
+            color: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF1F1F1F),
+            child: _channels.isEmpty ? _buildEmptyState() : _buildChannelsList(),
+          );
+        },
       ),
     );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
-      );
-    }
-
-    if (_error != null) {
-      return _buildErrorState();
-    }
-
-    if (_channels.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return _buildChannelsList();
   }
 
   Widget _buildEmptyState() {
@@ -302,9 +342,9 @@ class _NotificationChannelsScreenState
             ),
           ),
           if (available)
-            Icon(
+            const Icon(
               Icons.chevron_right,
-              color: const Color(0xFF6B7280),
+              color: Color(0xFF6B7280),
             ),
         ],
       ),
@@ -413,12 +453,6 @@ class _NotificationChannelsScreenState
                     tooltip: 'Send Test',
                   ),
                   IconButton(
-                    onPressed: () => _editChannel(channel),
-                    icon: const Icon(Icons.settings, size: 20),
-                    color: const Color(0xFF9CA3AF),
-                    tooltip: 'Settings',
-                  ),
-                  IconButton(
                     onPressed: () => _disconnectChannel(channel),
                     icon: const Icon(Icons.link_off, size: 20),
                     color: const Color(0xFFEF4444),
@@ -451,7 +485,7 @@ class _NotificationChannelsScreenState
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(String message) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -463,7 +497,7 @@ class _NotificationChannelsScreenState
           ),
           const SizedBox(height: 16),
           Text(
-            _error ?? 'An error occurred',
+            message,
             style: const TextStyle(
               color: Color(0xFF9CA3AF),
               fontSize: 14,
@@ -472,7 +506,9 @@ class _NotificationChannelsScreenState
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: _loadChannels,
+            onPressed: () {
+              context.read<CrowdfundCubit>().loadNotificationChannels(widget.crowdfundId);
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
               foregroundColor: Colors.white,
@@ -492,36 +528,23 @@ class _NotificationChannelsScreenState
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       isScrollControlled: true,
-      builder: (context) => _AddChannelBottomSheet(
-        crowdfundId: widget.crowdfundId,
-        onChannelAdded: (channel) {
-          setState(() {
-            _channels.add(channel);
-          });
-        },
+      builder: (sheetContext) => BlocProvider.value(
+        value: context.read<CrowdfundCubit>(),
+        child: _AddChannelBottomSheet(
+          crowdfundId: widget.crowdfundId,
+        ),
       ),
     );
   }
 
-  void _testChannel(NotificationChannel channel) async {
-    // TODO: Implement test notification
-    Get.snackbar(
-      'Test Notification',
-      'Sending test notification to ${channel.channelName}...',
-      backgroundColor: const Color(0xFF3B82F6),
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
-    );
-  }
-
-  void _editChannel(NotificationChannel channel) {
-    // TODO: Implement edit channel settings
+  void _testChannel(NotificationChannel channel) {
+    context.read<CrowdfundCubit>().testNotificationChannel(channel.id);
   }
 
   void _disconnectChannel(NotificationChannel channel) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -536,16 +559,13 @@ class _NotificationChannelsScreenState
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement disconnect
-              setState(() {
-                _channels.remove(channel);
-              });
+              Navigator.pop(dialogContext);
+              context.read<CrowdfundCubit>().disconnectNotificationChannel(channel.id);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
@@ -576,11 +596,9 @@ class _NotificationChannelsScreenState
 /// Bottom sheet for adding a new notification channel
 class _AddChannelBottomSheet extends StatefulWidget {
   final String crowdfundId;
-  final Function(NotificationChannel) onChannelAdded;
 
   const _AddChannelBottomSheet({
     required this.crowdfundId,
-    required this.onChannelAdded,
   });
 
   @override
@@ -592,7 +610,6 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
   bool _isConnecting = false;
   String? _error;
 
-  // Form controllers
   final _nameController = TextEditingController();
   final _webhookController = TextEditingController();
   final _chatIdController = TextEditingController();
@@ -607,91 +624,103 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _selectedType == null
-                      ? 'Connect Channel'
-                      : 'Connect ${_selectedType!.displayName}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (_error != null)
-              Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Color(0xFFEF4444),
-                      size: 20,
+    return BlocListener<CrowdfundCubit, CrowdfundState>(
+      listener: (context, state) {
+        if (state is NotificationChannelConnected) {
+          if (mounted) Navigator.pop(context);
+        } else if (state is CrowdfundError) {
+          setState(() {
+            _error = state.message;
+            _isConnecting = false;
+          });
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _selectedType == null
+                        ? 'Connect Channel'
+                        : 'Connect ${_selectedType!.displayName}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _error!,
-                        style: const TextStyle(
-                          color: Color(0xFFEF4444),
-                          fontSize: 12,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (_error != null)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Color(0xFFEF4444),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(
+                            color: Color(0xFFEF4444),
+                            fontSize: 12,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            if (_selectedType == null) ...[
-              const Text(
-                'Choose a platform to connect',
-                style: TextStyle(
-                  color: Color(0xFF9CA3AF),
-                  fontSize: 14,
+              if (_selectedType == null) ...[
+                const Text(
+                  'Choose a platform to connect',
+                  style: TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 14,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              _buildChannelTypeButton(
-                NotificationChannelType.telegram,
-                'Best for community groups',
-              ),
-              const SizedBox(height: 12),
-              _buildChannelTypeButton(
-                NotificationChannelType.discord,
-                'Use webhooks - no bot needed',
-              ),
-              const SizedBox(height: 12),
-              _buildChannelTypeButton(
-                NotificationChannelType.slack,
-                'For team workspaces',
-              ),
-            ] else ...[
-              _buildConnectionForm(),
+                const SizedBox(height: 24),
+                _buildChannelTypeButton(
+                  NotificationChannelType.telegram,
+                  'Best for community groups',
+                ),
+                const SizedBox(height: 12),
+                _buildChannelTypeButton(
+                  NotificationChannelType.discord,
+                  'Use webhooks - no bot needed',
+                ),
+                const SizedBox(height: 12),
+                _buildChannelTypeButton(
+                  NotificationChannelType.slack,
+                  'For team workspaces',
+                ),
+              ] else ...[
+                _buildConnectionForm(),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -788,40 +817,9 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
           ),
         ),
         const SizedBox(height: 24),
-        TextField(
-          controller: _nameController,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Channel Name',
-            labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            hintText: 'e.g., Campaign Updates Group',
-            hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-            filled: true,
-            fillColor: const Color(0xFF2D2D2D),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
+        _buildTextField(_nameController, 'Channel Name', 'e.g., Campaign Updates Group'),
         const SizedBox(height: 16),
-        TextField(
-          controller: _chatIdController,
-          style: const TextStyle(color: Colors.white),
-          keyboardType: TextInputType.text,
-          decoration: InputDecoration(
-            labelText: 'Chat ID',
-            labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            hintText: 'e.g., -1001234567890',
-            hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-            filled: true,
-            fillColor: const Color(0xFF2D2D2D),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
+        _buildTextField(_chatIdController, 'Chat ID', 'e.g., -1001234567890'),
         const SizedBox(height: 24),
         _buildConnectButton(),
       ],
@@ -845,39 +843,9 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
           ),
         ),
         const SizedBox(height: 24),
-        TextField(
-          controller: _nameController,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Channel Name',
-            labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            hintText: 'e.g., #donations-updates',
-            hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-            filled: true,
-            fillColor: const Color(0xFF2D2D2D),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
+        _buildTextField(_nameController, 'Channel Name', 'e.g., #donations-updates'),
         const SizedBox(height: 16),
-        TextField(
-          controller: _webhookController,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Webhook URL',
-            labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            hintText: 'https://discord.com/api/webhooks/...',
-            hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-            filled: true,
-            fillColor: const Color(0xFF2D2D2D),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
+        _buildTextField(_webhookController, 'Webhook URL', 'https://discord.com/api/webhooks/...'),
         const SizedBox(height: 24),
         _buildConnectButton(),
       ],
@@ -901,42 +869,31 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
           ),
         ),
         const SizedBox(height: 24),
-        TextField(
-          controller: _nameController,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Channel Name',
-            labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            hintText: 'e.g., #campaign-updates',
-            hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-            filled: true,
-            fillColor: const Color(0xFF2D2D2D),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
+        _buildTextField(_nameController, 'Channel Name', 'e.g., #campaign-updates'),
         const SizedBox(height: 16),
-        TextField(
-          controller: _webhookController,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Webhook URL',
-            labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            hintText: 'https://hooks.slack.com/services/...',
-            hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-            filled: true,
-            fillColor: const Color(0xFF2D2D2D),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
+        _buildTextField(_webhookController, 'Webhook URL', 'https://hooks.slack.com/services/...'),
         const SizedBox(height: 24),
         _buildConnectButton(),
       ],
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, String hint) {
+    return TextField(
+      controller: controller,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+        hintText: hint,
+        hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+        filled: true,
+        fillColor: const Color(0xFF2D2D2D),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
     );
   }
 
@@ -996,45 +953,33 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
       _error = null;
     });
 
-    try {
-      // TODO: Call API to connect channel
-      await Future.delayed(const Duration(seconds: 1));
+    final cubit = context.read<CrowdfundCubit>();
 
-      // For now, create a mock channel
-      final channel = NotificationChannel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        crowdfundId: widget.crowdfundId,
-        creatorUserId: '',
-        channelType: _selectedType!,
-        status: NotificationChannelStatus.active,
-        channelName: _nameController.text,
-        enabledEvents: [
-          NotificationEventType.newDonation,
-          NotificationEventType.milestoneReached,
-          NotificationEventType.goalReached,
-        ],
-        preferences: NotificationPreferences.defaultPrefs(),
-        notificationCount: 0,
-        failureCount: 0,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-
-      widget.onChannelAdded(channel);
-      if (mounted) Navigator.pop(context);
-
-      Get.snackbar(
-        'Success',
-        '${_selectedType!.displayName} channel connected',
-        backgroundColor: const Color(0xFF10B981),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-    } catch (e) {
-      setState(() => _error = e.toString());
-    } finally {
-      setState(() => _isConnecting = false);
-    }
+    cubit.connectNotificationChannel(
+      crowdfundId: widget.crowdfundId,
+      channelType: _selectedType!,
+      channelName: _nameController.text,
+      telegramChatId: _selectedType == NotificationChannelType.telegram
+          ? _chatIdController.text
+          : null,
+      discordWebhookUrl: _selectedType == NotificationChannelType.discord
+          ? _webhookController.text
+          : null,
+      discordChannelName: _selectedType == NotificationChannelType.discord
+          ? _nameController.text
+          : null,
+      slackWebhookUrl: _selectedType == NotificationChannelType.slack
+          ? _webhookController.text
+          : null,
+      slackChannelName: _selectedType == NotificationChannelType.slack
+          ? _nameController.text
+          : null,
+      enabledEvents: [
+        NotificationEventType.newDonation,
+        NotificationEventType.milestoneReached,
+        NotificationEventType.goalReached,
+      ],
+    );
   }
 
   IconData _getIconForType(NotificationChannelType type) {

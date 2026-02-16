@@ -15,6 +15,15 @@ abstract class IBatchTransferRemoteDataSource {
     required String verificationToken,
     DateTime? scheduledAt,
   });
+
+  Future<(List<BatchTransferHistoryEntity>, int)> getBatchTransfers({
+    required int page,
+    required int pageSize,
+  });
+
+  Future<BatchTransferDetailEntity> getBatchTransferDetail({
+    required String batchId,
+  });
 }
 
 class BatchTransferRemoteDataSourceImpl
@@ -45,6 +54,9 @@ class BatchTransferRemoteDataSourceImpl
             description: recipient.description ?? '',
             reference: recipient.reference ?? '',
             category: recipient.category ?? '',
+            destinationBankCode: recipient.destinationBankCode ?? '',
+            beneficiaryName: recipient.beneficiaryName ?? '',
+            destinationBankName: recipient.destinationBankName ?? '',
           );
         }).toList();
 
@@ -105,5 +117,75 @@ class BatchTransferRemoteDataSourceImpl
         return true;
       },
     );
+  }
+
+  @override
+  Future<(List<BatchTransferHistoryEntity>, int)> getBatchTransfers({
+    required int page,
+    required int pageSize,
+  }) async {
+    try {
+      final request = payments.GetBatchTransfersRequest(
+        page: page,
+        pageSize: pageSize,
+      );
+
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.getBatchTransfers(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 30)),
+          ),
+        );
+      });
+
+      final batches = response.batches
+          .map((b) => BatchTransferHistoryModel.fromProto(b))
+          .toList();
+
+      return (batches as List<BatchTransferHistoryEntity>, response.total.toInt());
+    } on GrpcError catch (e) {
+      throw ServerException(
+        message: 'Failed to get batch transfers: ${e.message ?? "Unknown error"}',
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'An unexpected error occurred while fetching batch transfers.',
+      );
+    }
+  }
+
+  @override
+  Future<BatchTransferDetailEntity> getBatchTransferDetail({
+    required String batchId,
+  }) async {
+    try {
+      final request = payments.GetBatchTransferDetailRequest(
+        batchId: batchId,
+      );
+
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.getBatchTransferDetail(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 30)),
+          ),
+        );
+      });
+
+      return BatchTransferDetailModel.fromProto(response);
+    } on GrpcError catch (e) {
+      throw ServerException(
+        message: 'Failed to get batch transfer detail: ${e.message ?? "Unknown error"}',
+      );
+    } catch (e) {
+      throw ServerException(
+        message: 'An unexpected error occurred while fetching batch transfer detail.',
+      );
+    }
   }
 }

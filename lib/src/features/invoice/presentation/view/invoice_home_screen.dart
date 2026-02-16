@@ -71,12 +71,12 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
   }
 
   void _initializeData() {
-    // Set user ID on InvoiceCubit from auth state so it can load invoices
+    // Set user ID on InvoiceCubit from auth state
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
       context.read<InvoiceCubit>().setUserId(authState.profile.userId);
     }
-    // Load received tab data with pagination
+    // Load default tab (received) data; created tab loads on first switch
     context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
   }
 
@@ -90,11 +90,17 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
   void _onTabChanged() {
     if (_tabController.indexIsChanging) return;
     setState(() => _selectedFilter = 'All');
-    // Reload data for the active tab with server-side pagination
+    // Only fetch if the tab doesn't already have loaded data
     if (_tabController.index == 0) {
-      context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
+      final state = context.read<TaggedInvoiceCubit>().state;
+      if (state is! IncomingTaggedInvoicesLoaded) {
+        context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
+      }
     } else {
-      context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
+      final state = context.read<InvoiceCubit>().state;
+      if (state is! InvoicesLoaded) {
+        context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
+      }
     }
   }
 
@@ -530,12 +536,14 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             ],
           );
         }
-        // Initial state - trigger load
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!context.read<TaggedInvoiceCubit>().isClosed) {
-            context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
-          }
-        });
+        // Only trigger load for truly initial state, not transient states
+        if (state is TaggedInvoiceInitial) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted && !context.read<TaggedInvoiceCubit>().isClosed) {
+              context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
+            }
+          });
+        }
         return const InvoiceListShimmer();
       },
     );
@@ -599,7 +607,14 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             ],
           );
         }
-        // Initial/form state - show shimmer while loading
+        // Only trigger load for truly initial state
+        if (state is InvoiceInitial) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted && !context.read<InvoiceCubit>().isClosed) {
+              context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
+            }
+          });
+        }
         return const InvoiceListShimmer();
       },
     );
@@ -625,10 +640,15 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     final receiverName = 'You';
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.invoiceDetails, arguments: {
-        'invoiceId': invoice.invoiceId,
-        'isFromReceivedTab': true,
-      }),
+      onTap: () async {
+        await Get.toNamed(AppRoutes.invoiceDetails, arguments: {
+          'invoiceId': invoice.invoiceId,
+          'isFromReceivedTab': true,
+        });
+        if (context.mounted) {
+          context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
+        }
+      },
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
@@ -768,9 +788,12 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 width: double.infinity,
                 height: 36.h,
                 child: ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
                     if (invoice.invoice != null) {
-                      Get.toNamed(AppRoutes.invoiceItemPayment, arguments: invoice.invoice!);
+                      await Get.toNamed(AppRoutes.invoiceItemPayment, arguments: invoice.invoice!);
+                      if (context.mounted) {
+                        context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -835,15 +858,18 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 : const Color(0xFFFB923C);
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         // Locked invoices need service fee payment before viewing details
         if (isLocked) {
-          Get.toNamed(AppRoutes.invoicePayment, arguments: invoice);
+          await Get.toNamed(AppRoutes.invoicePayment, arguments: invoice);
         } else {
-          Get.toNamed(AppRoutes.invoiceDetails, arguments: {
+          await Get.toNamed(AppRoutes.invoiceDetails, arguments: {
             'invoiceId': invoice.id,
             'isFromReceivedTab': false,
           });
+        }
+        if (context.mounted) {
+          context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
         }
       },
       child: Container(

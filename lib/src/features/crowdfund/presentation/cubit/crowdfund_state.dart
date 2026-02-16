@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import '../../domain/entities/notification_channel_entities.dart';
 
 /// Base state for crowdfund feature
 abstract class CrowdfundState extends Equatable {
@@ -232,5 +233,97 @@ class CrowdfundReportShareError extends CrowdfundState {
 
   @override
   List<Object?> get props => [message, platform];
+}
+
+// ============================================================================
+// CAMPAIGN WALLET STATES
+// ============================================================================
+
+/// User's own crowdfunds loaded
+class MyCrowdfundsLoaded extends CrowdfundState {
+  final List<Crowdfund> crowdfunds;
+
+  const MyCrowdfundsLoaded(this.crowdfunds);
+
+  @override
+  List<Object?> get props => [crowdfunds];
+}
+
+/// Withdrawal completed
+class WithdrawalCompleted extends CrowdfundState {
+  final CrowdfundWithdrawalResult result;
+
+  const WithdrawalCompleted(this.result);
+
+  @override
+  List<Object?> get props => [result];
+}
+
+/// Campaign wallet balance loaded
+class CampaignWalletBalanceLoaded extends CrowdfundState {
+  final CampaignWalletBalance balance;
+
+  const CampaignWalletBalanceLoaded(this.balance);
+
+  @override
+  List<Object?> get props => [balance];
+}
+
+// ============================================================================
+// NOTIFICATION CHANNEL STATES
+// ============================================================================
+
+/// Notification channels loaded
+class NotificationChannelsLoaded extends CrowdfundState {
+  final List<NotificationChannel> channels;
+
+  const NotificationChannelsLoaded(this.channels);
+
+  @override
+  List<Object?> get props => [channels];
+}
+
+/// Notification channel connected
+class NotificationChannelConnected extends CrowdfundState {
+  final NotificationChannel channel;
+
+  const NotificationChannelConnected(this.channel);
+
+  @override
+  List<Object?> get props => [channel];
+}
+
+/// Notification channel disconnected
+class NotificationChannelDisconnected extends CrowdfundState {
+  final String channelId;
+
+  const NotificationChannelDisconnected(this.channelId);
+
+  @override
+  List<Object?> get props => [channelId];
+}
+
+/// Notification channel updated
+class NotificationChannelUpdated extends CrowdfundState {
+  final NotificationChannel channel;
+
+  const NotificationChannelUpdated(this.channel);
+
+  @override
+  List<Object?> get props => [channel];
+}
+
+/// Notification channel test result
+class NotificationChannelTested extends CrowdfundState {
+  final bool success;
+  final String channelId;
+
+  const NotificationChannelTested({
+    required this.success,
+    required this.channelId,
+  });
+
+  @override
+  List<Object?> get props => [success, channelId];
 }
 

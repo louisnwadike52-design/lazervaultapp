@@ -1664,7 +1664,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
 
     return Column(
       children: [
-        // Invoice From (the invoice creator/sender)
+        // Invoice From (the invoice creator - who will receive payment)
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
@@ -1714,7 +1714,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               ),
               SizedBox(height: 16.h),
               _buildParticipantInfo(
-                invoice.payerDetails,
+                invoice.recipientDetails,
                 isSender && currentUserProfile != null
                     ? '${currentUserProfile.user.firstName} ${currentUserProfile.user.lastName}'.trim()
                     : null,
@@ -1726,7 +1726,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           ),
         ),
         SizedBox(height: 16.h),
-        // Bill To (the recipient who should pay)
+        // Bill To (the payer - who should pay this invoice)
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
@@ -1764,7 +1764,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                         ),
                       ),
                       Text(
-                        !isSender ? '(You)' : 'Recipient',
+                        !isSender ? '(You)' : 'Payer',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF9CA3AF),
                           fontSize: 12.sp,
@@ -1776,7 +1776,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               ),
               SizedBox(height: 16.h),
               _buildParticipantInfo(
-                invoice.recipientDetails,
+                invoice.payerDetails,
                 !isSender && currentUserProfile != null
                     ? '${currentUserProfile.user.firstName} ${currentUserProfile.user.lastName}'.trim()
                     : invoice.toName,

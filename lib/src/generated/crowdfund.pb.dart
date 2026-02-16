@@ -2014,7 +2014,7 @@ class MakeDonationRequest extends $pb.GeneratedMessage {
     $fixnum.Int64? amount,
     $core.String? message,
     $core.bool? isAnonymous,
-    $fixnum.Int64? sourceAccountId,
+    $core.String? sourceAccountId,
   }) {
     final $result = create();
     if (crowdfundId != null) {
@@ -2043,7 +2043,7 @@ class MakeDonationRequest extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, _omitFieldNames ? '' : 'message')
     ..aOB(4, _omitFieldNames ? '' : 'isAnonymous')
-    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'sourceAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, _omitFieldNames ? '' : 'sourceAccountId')
     ..hasRequiredFields = false
   ;
 
@@ -2105,9 +2105,9 @@ class MakeDonationRequest extends $pb.GeneratedMessage {
   void clearIsAnonymous() => clearField(4);
 
   @$pb.TagNumber(5)
-  $fixnum.Int64 get sourceAccountId => $_getI64(4);
+  $core.String get sourceAccountId => $_getSZ(4);
   @$pb.TagNumber(5)
-  set sourceAccountId($fixnum.Int64 v) { $_setInt64(4, v); }
+  set sourceAccountId($core.String v) { $_setString(4, v); }
   @$pb.TagNumber(5)
   $core.bool hasSourceAccountId() => $_has(4);
   @$pb.TagNumber(5)

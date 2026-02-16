@@ -23,17 +23,29 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
   bool _isDownloading = false;
   bool _isSharing = false;
 
+  String get _currencySymbol {
+    switch (payment.currency.toUpperCase()) {
+      case 'NGN':
+        return '\u20A6';
+      case 'USD':
+        return '\$';
+      case 'GBP':
+        return '\u00A3';
+      case 'EUR':
+        return '\u20AC';
+      default:
+        return '${payment.currency} ';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // C8: Null safety for args
     final args = Get.arguments as Map<String, dynamic>?;
     if (args == null || args['payment'] == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAllNamed(AppRoutes.electricityBillHome);
+        Get.offAllNamed(AppRoutes.billsHub);
       });
-      // Provide a dummy payment to avoid late initialization error
-      // The screen will redirect before rendering
       payment = BillPaymentEntity.empty();
       _checkController = AnimationController(
         duration: const Duration(milliseconds: 600),
@@ -55,7 +67,6 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
       CurvedAnimation(parent: _checkController, curve: Curves.elasticOut),
     );
 
-    // Trigger the animation after a short delay
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) _checkController.forward();
     });
@@ -125,7 +136,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.electricityBillHome),
+          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
           icon: Icon(
             Icons.arrow_back,
             color: Colors.white,
@@ -147,43 +158,41 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 8.h),
                     _buildSuccessIcon(),
-                    SizedBox(height: 24.h),
+                    SizedBox(height: 12.h),
                     Text(
                       'Payment Successful!',
                       style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 24.sp,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 4.h),
                     Text(
                       payment.isPrepaid
                           ? 'Your electricity token is ready'
                           : 'Your payment has been processed',
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
-                        fontSize: 14.sp,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    SizedBox(height: 28.h),
+                    SizedBox(height: 16.h),
                     if (payment.hasToken) _buildTokenCard(),
-                    if (payment.hasToken) SizedBox(height: 20.h),
-                    _buildAmountCard(),
-                    SizedBox(height: 20.h),
+                    if (payment.hasToken) SizedBox(height: 14.h),
                     _buildTransactionDetails(),
+                    SizedBox(height: 20.h),
+                    _buildActions(),
                   ],
                 ),
               ),
             ),
-            _buildActions(context),
           ],
         ),
       ),
@@ -197,8 +206,8 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
         return Transform.scale(
           scale: _checkScale.value,
           child: Container(
-            width: 100.w,
-            height: 100.w,
+            width: 64.w,
+            height: 64.w,
             decoration: BoxDecoration(
               color: const Color(0xFF10B981).withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -206,7 +215,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             child: Icon(
               Icons.check_circle,
               color: const Color(0xFF10B981),
-              size: 60.sp,
+              size: 40.sp,
             ),
           ),
         );
@@ -217,14 +226,14 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
   Widget _buildTokenCard() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF92400E), Color(0xFFD97706)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFD97706).withValues(alpha: 0.2),
@@ -241,21 +250,21 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
               Icon(
                 Icons.bolt,
                 color: const Color(0xFFFDE68A),
-                size: 20.sp,
+                size: 16.sp,
               ),
-              SizedBox(width: 8.w),
+              SizedBox(width: 6.w),
               Text(
                 'ELECTRICITY TOKEN',
                 style: GoogleFonts.inter(
                   color: const Color(0xFFFDE68A),
-                  fontSize: 12.sp,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.5,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
           GestureDetector(
             onTap: () {
               if (payment.token != null) {
@@ -274,10 +283,10 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             },
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
                 border: Border.all(
                   color: const Color(0xFFFDE68A).withValues(alpha: 0.3),
                 ),
@@ -288,27 +297,27 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                     payment.token ?? '',
                     style: GoogleFonts.robotoMono(
                       color: const Color(0xFFFEF3C7),
-                      fontSize: 26.sp,
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 3,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 10.h),
+                  SizedBox(height: 6.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.copy_rounded,
                         color: const Color(0xFFFDE68A).withValues(alpha: 0.8),
-                        size: 14.sp,
+                        size: 12.sp,
                       ),
-                      SizedBox(width: 6.w),
+                      SizedBox(width: 4.w),
                       Text(
                         'Tap to copy token',
                         style: GoogleFonts.inter(
                           color: const Color(0xFFFDE68A).withValues(alpha: 0.8),
-                          fontSize: 12.sp,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -319,12 +328,12 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             ),
           ),
           if (payment.units != null) ...[
-            SizedBox(height: 16.h),
+            SizedBox(height: 10.h),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20.r),
+                borderRadius: BorderRadius.circular(16.r),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -332,14 +341,14 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                   Icon(
                     Icons.electric_bolt,
                     color: const Color(0xFFFDE68A),
-                    size: 16.sp,
+                    size: 14.sp,
                   ),
-                  SizedBox(width: 6.w),
+                  SizedBox(width: 4.w),
                   Text(
                     '${payment.units!.toStringAsFixed(2)} kWh',
                     style: GoogleFonts.inter(
                       color: const Color(0xFFFEF3C7),
-                      fontSize: 16.sp,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -352,62 +361,6 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     );
   }
 
-  Widget _buildAmountCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        children: [
-          _buildAmountRow(
-            'Amount',
-            '\u20A6${payment.amount.toStringAsFixed(2)}',
-          ),
-          SizedBox(height: 12.h),
-          _buildAmountRow(
-            'Service Fee',
-            '\u20A6${payment.serviceFee.toStringAsFixed(2)}',
-          ),
-          SizedBox(height: 12.h),
-          Divider(color: const Color(0xFF2D2D2D)),
-          SizedBox(height: 12.h),
-          _buildAmountRow(
-            'Total',
-            '\u20A6${payment.totalAmount.toStringAsFixed(2)}',
-            isTotal: true,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAmountRow(String label, String value, {bool isTotal = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            color: const Color(0xFF9CA3AF),
-            fontSize: 14.sp,
-            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-          ),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            color: isTotal ? Colors.white : const Color(0xFFD1D5DB),
-            fontSize: isTotal ? 18.sp : 14.sp,
-            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTransactionDetails() {
     final dateFormat = DateFormat('MMM dd, yyyy');
     final timeFormat = DateFormat('hh:mm a');
@@ -415,10 +368,10 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(14.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,32 +380,44 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             'Transaction Details',
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 16.sp,
+              fontSize: 15.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 16.h),
-          _buildDetailRow('Provider', payment.providerName),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Customer', payment.customerName),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Meter Number', payment.meterNumber),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Meter Type', payment.meterType.displayName),
-          SizedBox(height: 12.h),
-          Divider(color: const Color(0xFF2D2D2D)),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Reference', payment.referenceNumber),
-          SizedBox(height: 12.h),
+          SizedBox(height: 14.h),
+          _buildDetailRow('Amount', '$_currencySymbol${payment.amount.toStringAsFixed(2)}'),
+          SizedBox(height: 10.h),
+          _buildDetailRow('Service Fee', '$_currencySymbol${payment.serviceFee.toStringAsFixed(2)}'),
+          SizedBox(height: 10.h),
           _buildDetailRow(
-            'Gateway',
-            payment.paymentGateway.toUpperCase(),
+            'Total',
+            '$_currencySymbol${payment.totalAmount.toStringAsFixed(2)}',
+            valueColor: Colors.white,
+            isBold: true,
           ),
-          SizedBox(height: 12.h),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 10.h),
+            child: Divider(color: const Color(0xFF2D2D2D), height: 1),
+          ),
+          _buildDetailRow('Provider', payment.providerName),
+          SizedBox(height: 10.h),
+          _buildDetailRow('Customer', payment.customerName),
+          SizedBox(height: 10.h),
+          _buildDetailRow('Meter Number', payment.meterNumber),
+          SizedBox(height: 10.h),
+          _buildDetailRow('Meter Type', payment.meterType.displayName),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 10.h),
+            child: Divider(color: const Color(0xFF2D2D2D), height: 1),
+          ),
+          _buildDetailRow('Reference', payment.referenceNumber),
+          SizedBox(height: 10.h),
+          _buildDetailRow('Gateway', payment.paymentGateway.toUpperCase()),
+          SizedBox(height: 10.h),
           _buildDetailRow('Date', dateFormat.format(displayDate)),
-          SizedBox(height: 12.h),
+          SizedBox(height: 10.h),
           _buildDetailRow('Time', timeFormat.format(displayDate)),
-          SizedBox(height: 12.h),
+          SizedBox(height: 10.h),
           _buildDetailRow(
             'Status',
             payment.status.displayName,
@@ -463,7 +428,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {Color? valueColor}) {
+  Widget _buildDetailRow(String label, String value, {Color? valueColor, bool isBold = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -472,7 +437,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           label,
           style: GoogleFonts.inter(
             color: const Color(0xFF9CA3AF),
-            fontSize: 14.sp,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -483,8 +448,8 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             textAlign: TextAlign.right,
             style: GoogleFonts.inter(
               color: valueColor ?? Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 13.sp,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),
@@ -492,111 +457,71 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     );
   }
 
-  Widget _buildActions(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isSharing ? null : _shareReceipt,
-                  icon: _isSharing
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Icon(Icons.share, size: 18.sp),
-                  label: Text(
-                    _isSharing ? 'Sharing...' : 'Share',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
+  Widget _buildActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: _isSharing ? null : _shareReceipt,
+            icon: _isSharing
+                ? SizedBox(
+                    width: 16.sp,
+                    height: 16.sp,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
                     ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFF3B82F6)),
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                ),
+                  )
+                : Icon(Icons.share, size: 16.sp),
+            label: Text(
+              _isSharing ? 'Sharing...' : 'Share',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
               ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isDownloading ? null : _downloadReceipt,
-                  icon: _isDownloading
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Icon(Icons.download, size: 18.sp),
-                  label: Text(
-                    _isDownloading ? 'Saving...' : 'Download',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFF3B82F6)),
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () =>
-                  Get.offAllNamed(AppRoutes.electricityBillHome),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Done',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Color(0xFF3B82F6)),
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: _isDownloading ? null : _downloadReceipt,
+            icon: _isDownloading
+                ? SizedBox(
+                    width: 16.sp,
+                    height: 16.sp,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Icon(Icons.download, size: 16.sp),
+            label: Text(
+              _isDownloading ? 'Saving...' : 'Download',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Color(0xFF3B82F6)),
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
-

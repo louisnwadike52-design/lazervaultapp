@@ -27,6 +27,19 @@ class _RemindersScreenState extends State<RemindersScreen> {
     context.read<ReminderCubit>().markReminderComplete(reminderId: reminder.id);
   }
 
+  void _payNowReminder(PaymentReminderEntity reminder) {
+    if (reminder.hasBeneficiary) {
+      // Navigate to electricity bill home where the beneficiary flow will handle it
+      Get.toNamed(
+        AppRoutes.electricityBillHome,
+        arguments: {'fromReminder': true, 'beneficiaryId': reminder.beneficiaryId},
+      );
+    } else {
+      // No beneficiary linked, go to electricity bill home to start fresh
+      Get.toNamed(AppRoutes.electricityBillHome);
+    }
+  }
+
   void _deleteReminder(PaymentReminderEntity reminder) {
     Get.dialog(
       AlertDialog(
@@ -500,6 +513,29 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            SizedBox(height: 12.h),
+            GestureDetector(
+              onTap: () => _payNowReminder(reminder),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [const Color(0xFF4E03D0), const Color(0xFF6B21E0)],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.payment, color: Colors.white, size: 18.sp),
+                    SizedBox(width: 8.w),
+                    Text('Pay Now',
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             ),
           ],

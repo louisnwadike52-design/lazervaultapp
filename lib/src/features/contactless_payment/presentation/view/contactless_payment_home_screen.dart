@@ -12,6 +12,7 @@ import '../cubit/contactless_payment_state.dart';
 import 'create_payment_session_screen.dart';
 import 'nfc_reader_screen.dart';
 import 'payment_history_screen.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class ContactlessPaymentHomeScreen extends StatelessWidget {
   const ContactlessPaymentHomeScreen({super.key});
@@ -192,6 +193,11 @@ class _ContactlessPaymentHomeViewState
               ],
             ),
           ),
+          MicroserviceChatIcon(
+            serviceName: 'Contactless Pay',
+            sourceContext: 'transfers',
+          ),
+          SizedBox(width: 8.w),
           GestureDetector(
             onTap: () {
               Navigator.push(

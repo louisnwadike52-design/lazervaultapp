@@ -10,6 +10,7 @@ class BillBeneficiaryEntity extends Equatable {
   final String meterNumber;
   final String customerName;
   final String? customerAddress;
+  final String? phoneNumber;
   final MeterType meterType;
   final String nickname;
   final bool isDefault;
@@ -26,6 +27,7 @@ class BillBeneficiaryEntity extends Equatable {
     required this.meterNumber,
     required this.customerName,
     this.customerAddress,
+    this.phoneNumber,
     required this.meterType,
     required this.nickname,
     required this.isDefault,
@@ -50,6 +52,7 @@ class BillBeneficiaryEntity extends Equatable {
         meterNumber,
         customerName,
         customerAddress,
+        phoneNumber,
         meterType,
         nickname,
         isDefault,

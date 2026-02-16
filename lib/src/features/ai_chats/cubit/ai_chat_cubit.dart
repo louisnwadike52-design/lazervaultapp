@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:lazervault/core/services/chat_session_manager.dart';
 import '../domain/usecases/process_ai_chat_usecase.dart';
 import '../domain/usecases/get_ai_chat_history_usecase.dart';
 import './ai_chat_state.dart';
@@ -7,48 +8,53 @@ import '../domain/entities/ai_chat_message_entity.dart';
 class AIChatCubit extends Cubit<AIChatState> {
   final ProcessChatUseCase _processChatUseCase;
   final GetAIChatHistoryUseCase _getAIChatHistoryUseCase;
+  final ChatSessionManager? _chatSessionManager;
 
   // Internal state to hold the current messages
   List<ChatMessageEntity> _currentMessages = [];
 
-  // Track session ID for conversation continuity
+  // Track session ID for conversation continuity — deterministic for persistence
   String? _sessionId;
 
   AIChatCubit({
     required ProcessChatUseCase processChatUseCase,
     required GetAIChatHistoryUseCase getAIChatHistoryUseCase,
+    ChatSessionManager? chatSessionManager,
   })  : _processChatUseCase = processChatUseCase,
         _getAIChatHistoryUseCase = getAIChatHistoryUseCase,
+        _chatSessionManager = chatSessionManager,
         super(const AIChatInitial()); // Start with initial state
 
-  // Load initial message and suggestions - Renamed for clarity
+  // Load initial message and suggestions
   void initializeChat() {
-     // This method is now mainly for ensuring the cubit starts in an initial state.
-     // The UI adds the first message or loads history.
      if (state is! AIChatInitial) {
        if (isClosed) return;
        emit(const AIChatInitial());
      }
   }
 
-  // Load chat history
+  // Load chat history using deterministic session ID
   Future<void> loadChatHistory({required String accessToken}) async {
-    // Emit loading state with current messages (if any) and isTyping=true
     if (isClosed) return;
+
+    // Use deterministic session ID so history persists across app restarts
+    if (_sessionId == null && _chatSessionManager != null) {
+      _sessionId = await _chatSessionManager!.getGeneralSessionId();
+    }
+
     emit(AIChatHistoryLoading(messages: _currentMessages));
     final result = await _getAIChatHistoryUseCase(
       accessToken: accessToken,
       sessionId: _sessionId,
+      sourceContext: 'general',
     );
 
     if (isClosed) return;
     result.fold(
       (failure) {
-        // Emit error state, keeping existing messages, set isTyping=false
         emit(AIChatHistoryError(failure.message, messages: _currentMessages));
       },
       (history) {
-        // Update internal messages and emit success state
         _currentMessages = history;
         emit(AIChatHistorySuccess(messages: _currentMessages));
       },
@@ -71,11 +77,16 @@ class AIChatCubit extends Cubit<AIChatState> {
     if (isClosed) return;
     emit(AIChatMessageLoading(messages: List.from(_currentMessages)));
 
+    // Ensure we have a deterministic session ID
+    if (_sessionId == null && _chatSessionManager != null) {
+      _sessionId = await _chatSessionManager!.getGeneralSessionId();
+    }
+
     final result = await _processChatUseCase(
       query: text,
       accessToken: accessToken,
       sessionId: _sessionId,
-      sourceContext: 'chat',
+      sourceContext: 'general',
       language: 'en',
     );
 

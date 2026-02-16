@@ -33,6 +33,7 @@ const Recipient$json = {
     {'1': 'swift_code', '3': 16, '4': 1, '5': 9, '10': 'swiftCode'},
     {'1': 'iban', '3': 17, '4': 1, '5': 9, '10': 'iban'},
     {'1': 'alias', '3': 18, '4': 1, '5': 9, '10': 'alias'},
+    {'1': 'is_saved', '3': 19, '4': 1, '5': 8, '10': 'isSaved'},
     {'1': 'created_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     {'1': 'updated_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
@@ -52,10 +53,11 @@ final $typed_data.Uint8List recipientDescriptor = $convert.base64Decode(
     '5hbWUYCSABKAlSCGJhbmtOYW1lEiEKDGNvdW50cnlfY29kZRgKIAEoCVILY291bnRyeUNvZGUS'
     'FAoFZW1haWwYDSABKAlSBWVtYWlsEiEKDHBob25lX251bWJlchgOIAEoCVILcGhvbmVOdW1iZX'
     'ISGgoIY3VycmVuY3kYDyABKAlSCGN1cnJlbmN5Eh0KCnN3aWZ0X2NvZGUYECABKAlSCXN3aWZ0'
-    'Q29kZRISCgRpYmFuGBEgASgJUgRpYmFuEhQKBWFsaWFzGBIgASgJUgVhbGlhcxI5CgpjcmVhdG'
-    'VkX2F0GAsgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVw'
-    'ZGF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXRCFg'
-    'oUX2ludGVybmFsX2FjY291bnRfaWRCEwoRX2ludGVybmFsX3VzZXJfaWQ=');
+    'Q29kZRISCgRpYmFuGBEgASgJUgRpYmFuEhQKBWFsaWFzGBIgASgJUgVhbGlhcxIZCghpc19zYX'
+    'ZlZBgTIAEoCFIHaXNTYXZlZBI5CgpjcmVhdGVkX2F0GAsgASgLMhouZ29vZ2xlLnByb3RvYnVm'
+    'LlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG'
+    '9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXRCFgoUX2ludGVybmFsX2FjY291bnRfaWRCEwoRX2lu'
+    'dGVybmFsX3VzZXJfaWQ=');
 
 @$core.Deprecated('Use createRecipientRequestDescriptor instead')
 const CreateRecipientRequest$json = {
@@ -75,6 +77,7 @@ const CreateRecipientRequest$json = {
     {'1': 'swift_code', '3': 12, '4': 1, '5': 9, '9': 10, '10': 'swiftCode', '17': true},
     {'1': 'iban', '3': 13, '4': 1, '5': 9, '9': 11, '10': 'iban', '17': true},
     {'1': 'alias', '3': 14, '4': 1, '5': 9, '9': 12, '10': 'alias', '17': true},
+    {'1': 'is_saved', '3': 15, '4': 1, '5': 8, '9': 13, '10': 'isSaved', '17': true},
   ],
   '8': [
     {'1': '_is_favorite'},
@@ -90,6 +93,7 @@ const CreateRecipientRequest$json = {
     {'1': '_swift_code'},
     {'1': '_iban'},
     {'1': '_alias'},
+    {'1': '_is_saved'},
   ],
 };
 
@@ -104,10 +108,11 @@ final $typed_data.Uint8List createRecipientRequestDescriptor = $convert.base64De
     'YWlsiAEBEiYKDHBob25lX251bWJlchgKIAEoCUgIUgtwaG9uZU51bWJlcogBARIfCghjdXJyZW'
     '5jeRgLIAEoCUgJUghjdXJyZW5jeYgBARIiCgpzd2lmdF9jb2RlGAwgASgJSApSCXN3aWZ0Q29k'
     'ZYgBARIXCgRpYmFuGA0gASgJSAtSBGliYW6IAQESGQoFYWxpYXMYDiABKAlIDFIFYWxpYXOIAQ'
-    'FCDgoMX2lzX2Zhdm9yaXRlQgcKBV90eXBlQhYKFF9pbnRlcm5hbF9hY2NvdW50X2lkQhEKD19h'
-    'Y2NvdW50X251bWJlckIMCgpfYmFua19uYW1lQgwKCl9zb3J0X2NvZGVCDwoNX2NvdW50cnlfY2'
-    '9kZUIICgZfZW1haWxCDwoNX3Bob25lX251bWJlckILCglfY3VycmVuY3lCDQoLX3N3aWZ0X2Nv'
-    'ZGVCBwoFX2liYW5CCAoGX2FsaWFz');
+    'ESHgoIaXNfc2F2ZWQYDyABKAhIDVIHaXNTYXZlZIgBAUIOCgxfaXNfZmF2b3JpdGVCBwoFX3R5'
+    'cGVCFgoUX2ludGVybmFsX2FjY291bnRfaWRCEQoPX2FjY291bnRfbnVtYmVyQgwKCl9iYW5rX2'
+    '5hbWVCDAoKX3NvcnRfY29kZUIPCg1fY291bnRyeV9jb2RlQggKBl9lbWFpbEIPCg1fcGhvbmVf'
+    'bnVtYmVyQgsKCV9jdXJyZW5jeUINCgtfc3dpZnRfY29kZUIHCgVfaWJhbkIICgZfYWxpYXNCCw'
+    'oJX2lzX3NhdmVk');
 
 @$core.Deprecated('Use createRecipientResponseDescriptor instead')
 const CreateRecipientResponse$json = {
@@ -176,6 +181,7 @@ const UpdateRecipientRequest$json = {
     {'1': 'bank_name', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.StringValue', '9': 4, '10': 'bankName', '17': true},
     {'1': 'country_code', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.StringValue', '9': 5, '10': 'countryCode', '17': true},
     {'1': 'alias', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.StringValue', '9': 6, '10': 'alias', '17': true},
+    {'1': 'is_saved', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.BoolValue', '9': 7, '10': 'isSaved', '17': true},
   ],
   '8': [
     {'1': '_name'},
@@ -185,6 +191,7 @@ const UpdateRecipientRequest$json = {
     {'1': '_bank_name'},
     {'1': '_country_code'},
     {'1': '_alias'},
+    {'1': '_is_saved'},
   ],
 };
 
@@ -199,8 +206,10 @@ final $typed_data.Uint8List updateRecipientRequestDescriptor = $convert.base64De
     'IAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdWYWx1ZUgEUghiYW5rTmFtZYgBARJECgxjb3'
     'VudHJ5X2NvZGUYByABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWVIBVILY291bnRy'
     'eUNvZGWIAQESNwoFYWxpYXMYCCABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWVIBl'
-    'IFYWxpYXOIAQFCBwoFX25hbWVCDgoMX2lzX2Zhdm9yaXRlQhEKD19hY2NvdW50X251bWJlckIM'
-    'Cgpfc29ydF9jb2RlQgwKCl9iYW5rX25hbWVCDwoNX2NvdW50cnlfY29kZUIICgZfYWxpYXM=');
+    'IFYWxpYXOIAQESOgoIaXNfc2F2ZWQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuQm9vbFZhbHVl'
+    'SAdSB2lzU2F2ZWSIAQFCBwoFX25hbWVCDgoMX2lzX2Zhdm9yaXRlQhEKD19hY2NvdW50X251bW'
+    'JlckIMCgpfc29ydF9jb2RlQgwKCl9iYW5rX25hbWVCDwoNX2NvdW50cnlfY29kZUIICgZfYWxp'
+    'YXNCCwoJX2lzX3NhdmVk');
 
 @$core.Deprecated('Use updateRecipientResponseDescriptor instead')
 const UpdateRecipientResponse$json = {

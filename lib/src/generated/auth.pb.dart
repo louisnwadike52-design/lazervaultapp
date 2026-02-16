@@ -7819,6 +7819,7 @@ class UserLookupResult extends $pb.GeneratedMessage {
     $core.bool? isLazervaultUser,
     $core.String? phoneNumber,
     $core.String? email,
+    $core.String? primaryAccountId,
   }) {
     final $result = create();
     if (userId != null) {
@@ -7845,6 +7846,9 @@ class UserLookupResult extends $pb.GeneratedMessage {
     if (email != null) {
       $result.email = email;
     }
+    if (primaryAccountId != null) {
+      $result.primaryAccountId = primaryAccountId;
+    }
     return $result;
   }
   UserLookupResult._() : super();
@@ -7860,6 +7864,7 @@ class UserLookupResult extends $pb.GeneratedMessage {
     ..aOB(6, _omitFieldNames ? '' : 'isLazervaultUser')
     ..aOS(7, _omitFieldNames ? '' : 'phoneNumber')
     ..aOS(8, _omitFieldNames ? '' : 'email')
+    ..aOS(9, _omitFieldNames ? '' : 'primaryAccountId')
     ..hasRequiredFields = false
   ;
 
@@ -7955,11 +7960,20 @@ class UserLookupResult extends $pb.GeneratedMessage {
   $core.bool hasEmail() => $_has(7);
   @$pb.TagNumber(8)
   void clearEmail() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get primaryAccountId => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set primaryAccountId($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasPrimaryAccountId() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPrimaryAccountId() => clearField(9);
 }
 
-/// Search users by username prefix request
-class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
-  factory SearchUsersByUsernameRequest({
+/// Search users by multiple fields request
+class UserSearchRequest extends $pb.GeneratedMessage {
+  factory UserSearchRequest({
     $core.String? query,
     $core.int? limit,
     $core.String? searchType,
@@ -7976,11 +7990,11 @@ class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  SearchUsersByUsernameRequest._() : super();
-  factory SearchUsersByUsernameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SearchUsersByUsernameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  UserSearchRequest._() : super();
+  factory UserSearchRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UserSearchRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchUsersByUsernameRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserSearchRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'query')
     ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'searchType')
@@ -7991,22 +8005,22 @@ class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  SearchUsersByUsernameRequest clone() => SearchUsersByUsernameRequest()..mergeFromMessage(this);
+  UserSearchRequest clone() => UserSearchRequest()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchUsersByUsernameRequest copyWith(void Function(SearchUsersByUsernameRequest) updates) => super.copyWith((message) => updates(message as SearchUsersByUsernameRequest)) as SearchUsersByUsernameRequest;
+  UserSearchRequest copyWith(void Function(UserSearchRequest) updates) => super.copyWith((message) => updates(message as UserSearchRequest)) as UserSearchRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static SearchUsersByUsernameRequest create() => SearchUsersByUsernameRequest._();
-  SearchUsersByUsernameRequest createEmptyInstance() => create();
-  static $pb.PbList<SearchUsersByUsernameRequest> createRepeated() => $pb.PbList<SearchUsersByUsernameRequest>();
+  static UserSearchRequest create() => UserSearchRequest._();
+  UserSearchRequest createEmptyInstance() => create();
+  static $pb.PbList<UserSearchRequest> createRepeated() => $pb.PbList<UserSearchRequest>();
   @$core.pragma('dart2js:noInline')
-  static SearchUsersByUsernameRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchUsersByUsernameRequest>(create);
-  static SearchUsersByUsernameRequest? _defaultInstance;
+  static UserSearchRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserSearchRequest>(create);
+  static UserSearchRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get query => $_getSZ(0);
@@ -8036,9 +8050,9 @@ class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
   void clearSearchType() => clearField(3);
 }
 
-/// Search users by username response
-class SearchUsersByUsernameResponse extends $pb.GeneratedMessage {
-  factory SearchUsersByUsernameResponse({
+/// Search users response
+class UserSearchResponse extends $pb.GeneratedMessage {
+  factory UserSearchResponse({
     $core.bool? success,
     $core.String? msg,
     $core.Iterable<UserLookupResult>? users,
@@ -8055,11 +8069,11 @@ class SearchUsersByUsernameResponse extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  SearchUsersByUsernameResponse._() : super();
-  factory SearchUsersByUsernameResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SearchUsersByUsernameResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  UserSearchResponse._() : super();
+  factory UserSearchResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UserSearchResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchUsersByUsernameResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserSearchResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'msg')
     ..pc<UserLookupResult>(3, _omitFieldNames ? '' : 'users', $pb.PbFieldType.PM, subBuilder: UserLookupResult.create)
@@ -8070,22 +8084,22 @@ class SearchUsersByUsernameResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  SearchUsersByUsernameResponse clone() => SearchUsersByUsernameResponse()..mergeFromMessage(this);
+  UserSearchResponse clone() => UserSearchResponse()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchUsersByUsernameResponse copyWith(void Function(SearchUsersByUsernameResponse) updates) => super.copyWith((message) => updates(message as SearchUsersByUsernameResponse)) as SearchUsersByUsernameResponse;
+  UserSearchResponse copyWith(void Function(UserSearchResponse) updates) => super.copyWith((message) => updates(message as UserSearchResponse)) as UserSearchResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static SearchUsersByUsernameResponse create() => SearchUsersByUsernameResponse._();
-  SearchUsersByUsernameResponse createEmptyInstance() => create();
-  static $pb.PbList<SearchUsersByUsernameResponse> createRepeated() => $pb.PbList<SearchUsersByUsernameResponse>();
+  static UserSearchResponse create() => UserSearchResponse._();
+  UserSearchResponse createEmptyInstance() => create();
+  static $pb.PbList<UserSearchResponse> createRepeated() => $pb.PbList<UserSearchResponse>();
   @$core.pragma('dart2js:noInline')
-  static SearchUsersByUsernameResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchUsersByUsernameResponse>(create);
-  static SearchUsersByUsernameResponse? _defaultInstance;
+  static UserSearchResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserSearchResponse>(create);
+  static UserSearchResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);

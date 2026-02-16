@@ -228,7 +228,7 @@ const ExpenseMessage$json = {
   '1': 'ExpenseMessage',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'account_id', '3': 3, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
@@ -250,7 +250,7 @@ const ExpenseMessage$json = {
 
 /// Descriptor for `ExpenseMessage`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List expenseMessageDescriptor = $convert.base64Decode(
-    'Cg5FeHBlbnNlTWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoBFIGdXNlck'
+    'Cg5FeHBlbnNlTWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlck'
     'lkEh0KCmFjY291bnRfaWQYAyABKAlSCWFjY291bnRJZBIWCgZhbW91bnQYBCABKAFSBmFtb3Vu'
     'dBIaCghjdXJyZW5jeRgFIAEoCVIIY3VycmVuY3kSLwoIY2F0ZWdvcnkYBiABKA4yEy5wYi5FeH'
     'BlbnNlQ2F0ZWdvcnlSCGNhdGVnb3J5EiAKC3N1YmNhdGVnb3J5GAcgASgJUgtzdWJjYXRlZ29y'
@@ -269,7 +269,7 @@ const BudgetMessage$json = {
   '1': 'BudgetMessage',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
@@ -290,7 +290,7 @@ const BudgetMessage$json = {
 
 /// Descriptor for `BudgetMessage`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List budgetMessageDescriptor = $convert.base64Decode(
-    'Cg1CdWRnZXRNZXNzYWdlEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgEUgZ1c2VySW'
+    'Cg1CdWRnZXRNZXNzYWdlEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySW'
     'QSEgoEbmFtZRgDIAEoCVIEbmFtZRIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIaCghjdXJyZW5j'
     'eRgFIAEoCVIIY3VycmVuY3kSLwoIY2F0ZWdvcnkYBiABKA4yEy5wYi5FeHBlbnNlQ2F0ZWdvcn'
     'lSCGNhdGVnb3J5EigKBnBlcmlvZBgHIAEoDjIQLnBiLkJ1ZGdldFBlcmlvZFIGcGVyaW9kEjkK'
@@ -309,7 +309,7 @@ const BudgetAlertMessage$json = {
   '1': 'BudgetAlertMessage',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'budget_id', '3': 3, '4': 1, '5': 9, '10': 'budgetId'},
     {'1': 'budget_name', '3': 4, '4': 1, '5': 9, '10': 'budgetName'},
     {'1': 'alert_type', '3': 5, '4': 1, '5': 14, '6': '.pb.AlertType', '10': 'alertType'},
@@ -324,7 +324,7 @@ const BudgetAlertMessage$json = {
 
 /// Descriptor for `BudgetAlertMessage`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List budgetAlertMessageDescriptor = $convert.base64Decode(
-    'ChJCdWRnZXRBbGVydE1lc3NhZ2USDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKARSBn'
+    'ChJCdWRnZXRBbGVydE1lc3NhZ2USDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBn'
     'VzZXJJZBIbCglidWRnZXRfaWQYAyABKAlSCGJ1ZGdldElkEh8KC2J1ZGdldF9uYW1lGAQgASgJ'
     'UgpidWRnZXROYW1lEiwKCmFsZXJ0X3R5cGUYBSABKA4yDS5wYi5BbGVydFR5cGVSCWFsZXJ0VH'
     'lwZRIYCgdtZXNzYWdlGAYgASgJUgdtZXNzYWdlEiMKDWN1cnJlbnRfc3BlbnQYByABKAFSDGN1'
@@ -1280,7 +1280,7 @@ const IncomeSource$json = {
   '1': 'IncomeSource',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
@@ -1297,7 +1297,7 @@ const IncomeSource$json = {
 
 /// Descriptor for `IncomeSource`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List incomeSourceDescriptor = $convert.base64Decode(
-    'CgxJbmNvbWVTb3VyY2USDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKARSBnVzZXJJZB'
+    'CgxJbmNvbWVTb3VyY2USDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZB'
     'ISCgRuYW1lGAMgASgJUgRuYW1lEhYKBmFtb3VudBgEIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5'
     'GAUgASgJUghjdXJyZW5jeRIuCghjYXRlZ29yeRgGIAEoDjISLnBiLkluY29tZUNhdGVnb3J5Ug'
     'hjYXRlZ29yeRIhCgxpc19yZWN1cnJpbmcYByABKAhSC2lzUmVjdXJyaW5nEi0KEnJlY3VycmVu'
@@ -1348,7 +1348,7 @@ const Investment$json = {
   '1': 'Investment',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
     {'1': 'investment_type', '3': 4, '4': 1, '5': 14, '6': '.pb.InvestmentType', '10': 'investmentType'},
     {'1': 'current_value', '3': 5, '4': 1, '5': 1, '10': 'currentValue'},
@@ -1366,7 +1366,7 @@ const Investment$json = {
 
 /// Descriptor for `Investment`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List investmentDescriptor = $convert.base64Decode(
-    'CgpJbnZlc3RtZW50Eg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgEUgZ1c2VySWQSEg'
+    'CgpJbnZlc3RtZW50Eg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSEg'
     'oEbmFtZRgDIAEoCVIEbmFtZRI7Cg9pbnZlc3RtZW50X3R5cGUYBCABKA4yEi5wYi5JbnZlc3Rt'
     'ZW50VHlwZVIOaW52ZXN0bWVudFR5cGUSIwoNY3VycmVudF92YWx1ZRgFIAEoAVIMY3VycmVudF'
     'ZhbHVlEi0KEmluaXRpYWxfaW52ZXN0bWVudBgGIAEoAVIRaW5pdGlhbEludmVzdG1lbnQSGwoJ'
@@ -1423,7 +1423,7 @@ const FinancialGoal$json = {
   '1': 'FinancialGoal',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
     {'1': 'goal_type', '3': 4, '4': 1, '5': 14, '6': '.pb.GoalType', '10': 'goalType'},
     {'1': 'target_amount', '3': 5, '4': 1, '5': 1, '10': 'targetAmount'},
@@ -1443,7 +1443,7 @@ const FinancialGoal$json = {
 
 /// Descriptor for `FinancialGoal`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List financialGoalDescriptor = $convert.base64Decode(
-    'Cg1GaW5hbmNpYWxHb2FsEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgEUgZ1c2VySW'
+    'Cg1GaW5hbmNpYWxHb2FsEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySW'
     'QSEgoEbmFtZRgDIAEoCVIEbmFtZRIpCglnb2FsX3R5cGUYBCABKA4yDC5wYi5Hb2FsVHlwZVII'
     'Z29hbFR5cGUSIwoNdGFyZ2V0X2Ftb3VudBgFIAEoAVIMdGFyZ2V0QW1vdW50EiUKDmN1cnJlbn'
     'RfYW1vdW50GAYgASgBUg1jdXJyZW50QW1vdW50EjEKFG1vbnRobHlfY29udHJpYnV0aW9uGAcg'
@@ -1479,7 +1479,7 @@ const SavingsGoal$json = {
   '1': 'SavingsGoal',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
     {'1': 'target_amount', '3': 4, '4': 1, '5': 1, '10': 'targetAmount'},
     {'1': 'current_amount', '3': 5, '4': 1, '5': 1, '10': 'currentAmount'},
@@ -1492,7 +1492,7 @@ const SavingsGoal$json = {
 
 /// Descriptor for `SavingsGoal`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List savingsGoalDescriptor = $convert.base64Decode(
-    'CgtTYXZpbmdzR29hbBIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoBFIGdXNlcklkEh'
+    'CgtTYXZpbmdzR29hbBIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEh'
     'IKBG5hbWUYAyABKAlSBG5hbWUSIwoNdGFyZ2V0X2Ftb3VudBgEIAEoAVIMdGFyZ2V0QW1vdW50'
     'EiUKDmN1cnJlbnRfYW1vdW50GAUgASgBUg1jdXJyZW50QW1vdW50Ei8KE3BlcmNlbnRhZ2VfY2'
     '9tcGxldGUYBiABKAFSEnBlcmNlbnRhZ2VDb21wbGV0ZRI7Cgt0YXJnZXRfZGF0ZRgHIAEoCzIa'
@@ -1505,7 +1505,7 @@ const RecurringBill$json = {
   '1': 'RecurringBill',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
@@ -1525,7 +1525,7 @@ const RecurringBill$json = {
 
 /// Descriptor for `RecurringBill`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List recurringBillDescriptor = $convert.base64Decode(
-    'Cg1SZWN1cnJpbmdCaWxsEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgEUgZ1c2VySW'
+    'Cg1SZWN1cnJpbmdCaWxsEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySW'
     'QSEgoEbmFtZRgDIAEoCVIEbmFtZRIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIaCghjdXJyZW5j'
     'eRgFIAEoCVIIY3VycmVuY3kSLwoIY2F0ZWdvcnkYBiABKA4yEy5wYi5FeHBlbnNlQ2F0ZWdvcn'
     'lSCGNhdGVnb3J5Ei0KEnJlY3VycmVuY2VfcGF0dGVybhgHIAEoCVIRcmVjdXJyZW5jZVBhdHRl'
@@ -1942,7 +1942,7 @@ const TrackedIncomeTransaction$json = {
   '1': 'TrackedIncomeTransaction',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'source_type', '3': 5, '4': 1, '5': 9, '10': 'sourceType'},
@@ -1950,7 +1950,7 @@ const TrackedIncomeTransaction$json = {
     {'1': 'source_reference', '3': 7, '4': 1, '5': 9, '10': 'sourceReference'},
     {'1': 'category', '3': 8, '4': 1, '5': 9, '10': 'category'},
     {'1': 'description', '3': 9, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'sender_id', '3': 10, '4': 1, '5': 4, '10': 'senderId'},
+    {'1': 'sender_id', '3': 10, '4': 1, '5': 9, '10': 'senderId'},
     {'1': 'sender_name', '3': 11, '4': 1, '5': 9, '10': 'senderName'},
     {'1': 'transaction_date', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'transactionDate'},
     {'1': 'metadata', '3': 13, '4': 1, '5': 9, '10': 'metadata'},
@@ -1961,11 +1961,11 @@ const TrackedIncomeTransaction$json = {
 /// Descriptor for `TrackedIncomeTransaction`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List trackedIncomeTransactionDescriptor = $convert.base64Decode(
     'ChhUcmFja2VkSW5jb21lVHJhbnNhY3Rpb24SDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAi'
-    'ABKARSBnVzZXJJZBIWCgZhbW91bnQYAyABKAFSBmFtb3VudBIaCghjdXJyZW5jeRgEIAEoCVII'
+    'ABKAlSBnVzZXJJZBIWCgZhbW91bnQYAyABKAFSBmFtb3VudBIaCghjdXJyZW5jeRgEIAEoCVII'
     'Y3VycmVuY3kSHwoLc291cmNlX3R5cGUYBSABKAlSCnNvdXJjZVR5cGUSGwoJc291cmNlX2lkGA'
     'YgASgJUghzb3VyY2VJZBIpChBzb3VyY2VfcmVmZXJlbmNlGAcgASgJUg9zb3VyY2VSZWZlcmVu'
     'Y2USGgoIY2F0ZWdvcnkYCCABKAlSCGNhdGVnb3J5EiAKC2Rlc2NyaXB0aW9uGAkgASgJUgtkZX'
-    'NjcmlwdGlvbhIbCglzZW5kZXJfaWQYCiABKARSCHNlbmRlcklkEh8KC3NlbmRlcl9uYW1lGAsg'
+    'NjcmlwdGlvbhIbCglzZW5kZXJfaWQYCiABKAlSCHNlbmRlcklkEh8KC3NlbmRlcl9uYW1lGAsg'
     'ASgJUgpzZW5kZXJOYW1lEkUKEHRyYW5zYWN0aW9uX2RhdGUYDCABKAsyGi5nb29nbGUucHJvdG'
     '9idWYuVGltZXN0YW1wUg90cmFuc2FjdGlvbkRhdGUSGgoIbWV0YWRhdGEYDSABKAlSCG1ldGFk'
     'YXRhEjkKCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcm'
@@ -1976,14 +1976,14 @@ const TrackedExpenditureTransaction$json = {
   '1': 'TrackedExpenditureTransaction',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'expense_type', '3': 5, '4': 1, '5': 9, '10': 'expenseType'},
     {'1': 'expense_id', '3': 6, '4': 1, '5': 9, '10': 'expenseId'},
     {'1': 'expense_reference', '3': 7, '4': 1, '5': 9, '10': 'expenseReference'},
     {'1': 'category', '3': 8, '4': 1, '5': 9, '10': 'category'},
-    {'1': 'recipient_id', '3': 9, '4': 1, '5': 4, '10': 'recipientId'},
+    {'1': 'recipient_id', '3': 9, '4': 1, '5': 9, '10': 'recipientId'},
     {'1': 'recipient_name', '3': 10, '4': 1, '5': 9, '10': 'recipientName'},
     {'1': 'merchant', '3': 11, '4': 1, '5': 9, '10': 'merchant'},
     {'1': 'description', '3': 12, '4': 1, '5': 9, '10': 'description'},
@@ -1996,11 +1996,11 @@ const TrackedExpenditureTransaction$json = {
 /// Descriptor for `TrackedExpenditureTransaction`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List trackedExpenditureTransactionDescriptor = $convert.base64Decode(
     'Ch1UcmFja2VkRXhwZW5kaXR1cmVUcmFuc2FjdGlvbhIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl'
-    '9pZBgCIAEoBFIGdXNlcklkEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAQg'
+    '9pZBgCIAEoCVIGdXNlcklkEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAQg'
     'ASgJUghjdXJyZW5jeRIhCgxleHBlbnNlX3R5cGUYBSABKAlSC2V4cGVuc2VUeXBlEh0KCmV4cG'
     'Vuc2VfaWQYBiABKAlSCWV4cGVuc2VJZBIrChFleHBlbnNlX3JlZmVyZW5jZRgHIAEoCVIQZXhw'
     'ZW5zZVJlZmVyZW5jZRIaCghjYXRlZ29yeRgIIAEoCVIIY2F0ZWdvcnkSIQoMcmVjaXBpZW50X2'
-    'lkGAkgASgEUgtyZWNpcGllbnRJZBIlCg5yZWNpcGllbnRfbmFtZRgKIAEoCVINcmVjaXBpZW50'
+    'lkGAkgASgJUgtyZWNpcGllbnRJZBIlCg5yZWNpcGllbnRfbmFtZRgKIAEoCVINcmVjaXBpZW50'
     'TmFtZRIaCghtZXJjaGFudBgLIAEoCVIIbWVyY2hhbnQSIAoLZGVzY3JpcHRpb24YDCABKAlSC2'
     'Rlc2NyaXB0aW9uEkUKEHRyYW5zYWN0aW9uX2RhdGUYDSABKAsyGi5nb29nbGUucHJvdG9idWYu'
     'VGltZXN0YW1wUg90cmFuc2FjdGlvbkRhdGUSGgoIbWV0YWRhdGEYDiABKAlSCG1ldGFkYXRhEj'

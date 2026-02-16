@@ -68,7 +68,7 @@ class _CableTVPaymentReceiptScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
           icon: Icon(
             Icons.arrow_back,
             color: Colors.white,

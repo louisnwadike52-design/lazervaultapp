@@ -8,6 +8,8 @@ class UserSearchResultEntity extends Equatable {
   final String email;
   final String phoneNumber;
   final String profilePicture;
+  final String searchType; // 'username', 'name', 'phone', 'email', or '' for unified
+  final String? primaryAccountId; // Primary account ID for transfers (from auth service)
 
   const UserSearchResultEntity({
     required this.userId,
@@ -17,6 +19,8 @@ class UserSearchResultEntity extends Equatable {
     required this.email,
     required this.phoneNumber,
     required this.profilePicture,
+    this.searchType = '', // Default to unified search
+    this.primaryAccountId, // Optional primary account ID
   });
 
   String get fullName => '$firstName $lastName';
@@ -43,6 +47,40 @@ class UserSearchResultEntity extends Equatable {
     return (first + last).toUpperCase();
   }
 
+  /// Returns the identifier to use for fetching account number
+  /// - For username searches: returns username without @
+  /// - For email/phone/name searches: returns userId (UUID)
+  /// - For unified search: uses searchType to determine
+  String getAccountQueryIdentifier() {
+    // If searchType is specified, use it to determine
+    if (searchType.isNotEmpty) {
+      switch (searchType) {
+        case 'username':
+          // Remove @ prefix for account lookup if it's a pure username search
+          return username.startsWith('@') ? username.substring(1) : username;
+        case 'email':
+        case 'phone':
+        case 'name':
+          // For email/phone/name searches, use userId directly
+          return userId;
+        default:
+          return userId;
+      }
+    }
+
+    // Unified search without specific type: check if username looks like an email
+    if (username.contains('@')) {
+      // Has @ symbol - could be email format, use userId to be safe
+      return userId;
+    }
+    // Looks like a username (no @), use it directly
+    if (username.isNotEmpty && !username.contains('@')) {
+      return username;
+    }
+    // Fallback: use userId
+    return userId;
+  }
+
   @override
   List<Object?> get props => [
         userId,
@@ -52,5 +90,6 @@ class UserSearchResultEntity extends Equatable {
         email,
         phoneNumber,
         profilePicture,
+        primaryAccountId,
       ];
 }

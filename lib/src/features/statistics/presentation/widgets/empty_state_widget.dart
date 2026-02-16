@@ -112,10 +112,10 @@ class EmptyStateWidget extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -123,7 +123,7 @@ class EmptyStateWidget extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.lightbulb_outline,
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF10B981),
                     size: 20.sp,
                   ),
                   SizedBox(width: 12.w),
@@ -132,7 +132,7 @@ class EmptyStateWidget extends StatelessWidget {
                       'Tip: Connect your bank account to automatically import all your transactions',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF10B981),
                       ),
                     ),
                   ),

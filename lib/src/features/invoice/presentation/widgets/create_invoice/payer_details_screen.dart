@@ -258,7 +258,7 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
         _buildTextField(
           controller: _companyController,
           label: 'Company Name (Optional)',
-          hint: 'Your Business Name',
+          hint: "Payer's business name",
           icon: Icons.business,
           onChanged: (value) => cubit.updatePayerCompany(value),
         ),
@@ -266,7 +266,7 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
         _buildTextField(
           controller: _contactController,
           label: 'Contact Person *',
-          hint: 'Your full name',
+          hint: "Payer's full name",
           icon: Icons.person,
           onChanged: (value) => cubit.updatePayerContact(value),
         ),
@@ -274,7 +274,7 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
         _buildTextField(
           controller: _emailController,
           label: 'Email Address (Optional)',
-          hint: 'your@email.com',
+          hint: 'payer@email.com',
           icon: Icons.email,
           keyboardType: TextInputType.emailAddress,
           onChanged: (value) => cubit.updatePayerEmail(value),
@@ -306,7 +306,7 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
           _buildTextField(
             controller: _address1Controller,
             label: 'Street Address',
-            hint: '456 Business Blvd',
+            hint: "Payer's street address",
             icon: Icons.location_on,
             onChanged: (value) => cubit.updatePayerAddress1(value),
           ),

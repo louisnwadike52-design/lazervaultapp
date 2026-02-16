@@ -27,6 +27,7 @@ class UsernameRecipientConfirmationSheet extends StatefulWidget {
 class UsernameRecipientConfirmationSheetState
     extends State<UsernameRecipientConfirmationSheet>
     with SingleTickerProviderStateMixin {
+  bool _isSaved = false;
   bool _isFavorite = false;
   String? _alias;
   late AnimationController _animationController;
@@ -51,6 +52,9 @@ class UsernameRecipientConfirmationSheetState
     _animationController.dispose();
     super.dispose();
   }
+
+  /// Whether recipient should be saved to the recipients list.
+  bool get isSaved => _isSaved;
 
   bool get isFavorite => _isFavorite;
 
@@ -473,39 +477,80 @@ class UsernameRecipientConfirmationSheetState
   }
 
   Widget _buildFavoriteToggle() {
-    return Row(
+    return Column(
       children: [
-        Icon(
-          _isFavorite ? Icons.star : Icons.star_outline,
-          color: _isFavorite ? const Color(0xFFF59E0B) : const Color(0xFF6B7280),
-          size: 20.sp,
-        ),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: Text(
-            'Save to Favorites',
-            style: TextStyle(
-              color: const Color(0xFF111827),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
+        // Save Recipient toggle
+        Row(
+          children: [
+            Icon(
+              _isSaved ? Icons.bookmark : Icons.bookmark_outline,
+              color: _isSaved ? const Color(0xFF4E03D0) : const Color(0xFF6B7280),
+              size: 20.sp,
             ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'Save Recipient',
+                style: TextStyle(
+                  color: const Color(0xFF111827),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Switch(
+              value: _isSaved,
+              onChanged: (value) {
+                setState(() {
+                  _isSaved = value;
+                  if (!value) {
+                    _isFavorite = false;
+                  }
+                });
+              },
+              activeThumbColor: const Color(0xFF4E03D0),
+            ),
+          ],
+        ),
+        // Add to Favorites toggle (only visible when saved)
+        if (_isSaved) ...[
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Icon(
+                _isFavorite ? Icons.star : Icons.star_outline,
+                color: _isFavorite ? const Color(0xFFF59E0B) : const Color(0xFF6B7280),
+                size: 20.sp,
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  'Add to Favorites',
+                  style: TextStyle(
+                    color: const Color(0xFF111827),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Switch(
+                value: _isFavorite,
+                onChanged: (value) {
+                  setState(() {
+                    _isFavorite = value;
+                  });
+                },
+                activeThumbColor: const Color(0xFFF59E0B),
+              ),
+            ],
           ),
-        ),
-        Switch(
-          value: _isFavorite,
-          onChanged: (value) {
-            setState(() {
-              _isFavorite = value;
-            });
-          },
-          activeThumbColor: const Color(0xFF4E03D0),
-        ),
+        ],
       ],
     );
   }
 
   Widget _buildAliasInput() {
-    if (!_isFavorite) return const SizedBox.shrink();
+    if (!_isSaved) return const SizedBox.shrink();
     return Padding(
       padding: EdgeInsets.only(top: 16.h),
       child: Container(

@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/qr_payment/domain/entities/qr_payment_entity.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -31,6 +32,7 @@ class _QRPaymentConfirmationScreenState
   String? _selectedAccountId;
   bool _isStaticQR = false;
   bool _isProcessing = false;
+  bool _isLoadingDetails = false;
 
   @override
   void initState() {
@@ -39,6 +41,14 @@ class _QRPaymentConfirmationScreenState
     _isStaticQR = (_qrData['qr_type'] ?? '') == 'static';
     if (!_isStaticQR && _qrData['amount'] != null) {
       _amountController.text = _qrData['amount'].toString();
+    }
+
+    // If QR data is incomplete (raw scan with only qr_code), fetch details
+    if (_qrData['recipient_name'] == null && _qrData['qr_code'] != null) {
+      _isLoadingDetails = true;
+      context
+          .read<QRPaymentCubit>()
+          .getQRDetails(qrCode: _qrData['qr_code'].toString());
     }
 
     // Load accounts if not already loaded
@@ -166,7 +176,27 @@ class _QRPaymentConfirmationScreenState
       ),
       body: BlocListener<QRPaymentCubit, QRPaymentState>(
         listener: (context, state) {
-          if (state is QRPaymentSuccess) {
+          if (state is QRDetailsLoaded) {
+            final qr = state.qrCode;
+            setState(() {
+              _qrData = {
+                ..._qrData,
+                'recipient': qr.username,
+                'recipient_name': qr.fullName,
+                'amount': qr.amount,
+                'currency': qr.currency,
+                'qr_type': qr.qrType == QRPaymentType.static
+                    ? 'static'
+                    : 'dynamic',
+                'description': qr.description,
+              };
+              _isStaticQR = qr.qrType == QRPaymentType.static;
+              if (!_isStaticQR && qr.amount > 0) {
+                _amountController.text = qr.amount.toString();
+              }
+              _isLoadingDetails = false;
+            });
+          } else if (state is QRPaymentSuccess) {
             setState(() {
               _isProcessing = false;
             });
@@ -180,6 +210,7 @@ class _QRPaymentConfirmationScreenState
           } else if (state is QRPaymentError) {
             setState(() {
               _isProcessing = false;
+              _isLoadingDetails = false;
             });
             Get.snackbar(
               'Payment Failed',
@@ -192,24 +223,39 @@ class _QRPaymentConfirmationScreenState
           }
         },
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildRecipientCard(),
-                const SizedBox(height: 24),
-                if (_isStaticQR) ...[
-                  _buildAmountInput(),
-                  const SizedBox(height: 24),
-                ] else
-                  _buildAmountDisplay(),
-                _buildAccountSelector(),
-                const SizedBox(height: 32),
-                _buildPayButton(),
-              ],
-            ),
-          ),
+          child: _isLoadingDetails
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                      SizedBox(height: 16),
+                      Text(
+                        'Loading QR details...',
+                        style:
+                            TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                      ),
+                    ],
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildRecipientCard(),
+                      const SizedBox(height: 24),
+                      if (_isStaticQR) ...[
+                        _buildAmountInput(),
+                        const SizedBox(height: 24),
+                      ] else
+                        _buildAmountDisplay(),
+                      _buildAccountSelector(),
+                      const SizedBox(height: 32),
+                      _buildPayButton(),
+                    ],
+                  ),
+                ),
         ),
       ),
     );

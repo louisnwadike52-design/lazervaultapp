@@ -11,7 +11,6 @@ import '../../../../../core/types/app_routes.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';
-import '../cubit/beneficiary_state.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
@@ -29,8 +28,9 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
   ElectricityProviderEntity? _selectedProvider;
   bool _isValidating = false;
   bool _isSmartValidating = false;
-  bool _showManualMode = false;
+  bool _useSmartLookup = true;
   List<ElectricityProviderEntity> _providers = [];
+  String? _beneficiaryPhoneNumber;
 
   @override
   void initState() {
@@ -60,6 +60,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
         _meterNumberController.text = beneficiary.meterNumber;
         _selectedMeterType = beneficiary.meterType;
         _selectedProvider = matchingProvider;
+        _beneficiaryPhoneNumber = beneficiary.phoneNumber;
       });
       // Direct validate since we know the provider
       context.read<ElectricityBillCubit>().validateMeter(
@@ -197,6 +198,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
         'providerCode': result.providerCode,
         'meterNumber': result.meterNumber,
         'meterType': MeterTypeExtension.fromString(result.meterType),
+        'phoneNumber': '',
       },
     );
   }
@@ -238,8 +240,10 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
                   'providerCode': state.providerCode,
                   'meterNumber': state.meterNumber,
                   'meterType': state.meterType,
+                  'phoneNumber': _beneficiaryPhoneNumber ?? '',
                 },
               );
+              _beneficiaryPhoneNumber = null;
             }
 
             if (state is MeterValidationFailed) {
@@ -272,8 +276,8 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
                 snackPosition: SnackPosition.TOP,
                 duration: const Duration(seconds: 4),
               );
-              // Auto-show manual mode on failure
-              setState(() => _showManualMode = true);
+              // Auto-switch to manual mode on failure
+              setState(() => _useSmartLookup = false);
             }
 
             if (state is ElectricityBillError) {
@@ -301,8 +305,6 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 8.h),
-                          _buildSavedBeneficiaries(),
-                          SizedBox(height: 20.h),
                           _buildQuickActions(),
                           SizedBox(height: 24.h),
                           _buildMeterInputSection(state),
@@ -326,7 +328,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => Get.offAllNamed(AppRoutes.billsHub),
             child: Container(
               width: 44.w,
               height: 44.w,
@@ -384,134 +386,6 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
     );
   }
 
-  Widget _buildSavedBeneficiaries() {
-    return BlocBuilder<BeneficiaryCubit, BeneficiaryState>(
-      builder: (context, state) {
-        if (state is BeneficiariesLoaded && state.beneficiaries.isNotEmpty) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Saved Beneficiaries',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Get.toNamed(
-                          AppRoutes.electricityBillBeneficiaries),
-                      child: Text(
-                        'View All',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF3B82F6),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 12.h),
-              SizedBox(
-                height: 100.h,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  itemCount: state.beneficiaries.length,
-                  separatorBuilder: (_, __) => SizedBox(width: 12.w),
-                  itemBuilder: (context, index) {
-                    final beneficiary = state.beneficiaries[index];
-                    return _buildBeneficiaryCard(beneficiary);
-                  },
-                ),
-              ),
-            ],
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget _buildBeneficiaryCard(BillBeneficiaryEntity beneficiary) {
-    return GestureDetector(
-      onTap: () => _prefillFromBeneficiary(beneficiary),
-      child: Container(
-        width: 140.w,
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: beneficiary.isDefault
-                ? const Color(0xFF3B82F6).withValues(alpha: 0.4)
-                : const Color(0xFF2D2D2D),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 30.w,
-                  height: 30.w,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFB923C).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Icon(
-                    Icons.bolt,
-                    color: const Color(0xFFFB923C),
-                    size: 16.sp,
-                  ),
-                ),
-                const Spacer(),
-                if (beneficiary.isDefault)
-                  Icon(
-                    Icons.star,
-                    color: const Color(0xFFFB923C),
-                    size: 14.sp,
-                  ),
-              ],
-            ),
-            SizedBox(height: 10.h),
-            Text(
-              beneficiary.displayName,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              beneficiary.meterNumber,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w400,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildQuickActions() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -522,8 +396,16 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
               title: 'Beneficiaries',
               icon: Icons.bookmark_border,
               color: const Color(0xFF3B82F6),
-              onTap: () =>
-                  Get.toNamed(AppRoutes.electricityBillBeneficiaries),
+              onTap: () async {
+                final result = await Get.toNamed(
+                  AppRoutes.electricityBillBeneficiaries,
+                  arguments: {'providers': _providers},
+                );
+                // Fallback: if beneficiary returned (e.g. provider not found), validate here
+                if (result is BillBeneficiaryEntity) {
+                  _prefillFromBeneficiary(result);
+                }
+              },
             ),
           ),
           SizedBox(width: 12.w),
@@ -639,52 +521,132 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
               ),
             ],
           ),
-          SizedBox(height: 6.h),
-          Padding(
-            padding: EdgeInsets.only(left: 48.w),
-            child: Text(
-              'Just enter your meter number',
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
+          SizedBox(height: 16.h),
+
+          // Smart Lookup / Manual Entry toggle
+          _buildLookupModeToggle(),
           SizedBox(height: 20.h),
 
-          // Meter number input
+          // Manual entry fields (provider + meter type) shown first when manual
+          if (!_useSmartLookup) ...[
+            _buildProviderDropdown(),
+            SizedBox(height: 16.h),
+            _buildMeterTypeSelector(),
+            SizedBox(height: 16.h),
+          ],
+
+          // Meter number input (shared by both modes)
           _buildMeterNumberInput(),
           SizedBox(height: 24.h),
 
-          // Smart validate button
-          _buildSmartValidateButton(),
+          // Action button depends on mode
+          if (_useSmartLookup)
+            _buildSmartValidateButton()
+          else
+            _buildManualValidateButton(),
+        ],
+      ),
+    );
+  }
 
-          // Manual entry fallback
-          if (!_showManualMode) ...[
-            SizedBox(height: 16.h),
-            Center(
-              child: GestureDetector(
-                onTap: () => setState(() => _showManualMode = true),
-                child: Text(
-                  'Enter manually instead',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w400,
-                    decoration: TextDecoration.underline,
-                    decorationColor: const Color(0xFF9CA3AF),
-                  ),
+  Widget _buildLookupModeToggle() {
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFF2D2D2D),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (!_useSmartLookup) {
+                  setState(() => _useSmartLookup = true);
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: _useSmartLookup
+                      ? const Color(0xFF3B82F6)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.search,
+                      color: _useSmartLookup
+                          ? Colors.white
+                          : const Color(0xFF6B7280),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Smart Lookup',
+                      style: GoogleFonts.inter(
+                        color: _useSmartLookup
+                            ? Colors.white
+                            : const Color(0xFF6B7280),
+                        fontSize: 14.sp,
+                        fontWeight:
+                            _useSmartLookup ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-
-          // Manual mode fields
-          if (_showManualMode) ...[
-            SizedBox(height: 24.h),
-            _buildManualModeSection(),
-          ],
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_useSmartLookup) {
+                  setState(() => _useSmartLookup = false);
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: !_useSmartLookup
+                      ? const Color(0xFF3B82F6)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.list,
+                      color: !_useSmartLookup
+                          ? Colors.white
+                          : const Color(0xFF6B7280),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Manual Entry',
+                      style: GoogleFonts.inter(
+                        color: !_useSmartLookup
+                            ? Colors.white
+                            : const Color(0xFF6B7280),
+                        fontSize: 14.sp,
+                        fontWeight: !_useSmartLookup
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -838,53 +800,6 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
     );
   }
 
-  Widget _buildManualModeSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 1,
-                color: const Color(0xFF2D2D2D),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
-              child: Text(
-                'Manual Entry',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                height: 1,
-                color: const Color(0xFF2D2D2D),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-
-        // Provider dropdown
-        _buildProviderDropdown(),
-        SizedBox(height: 16.h),
-
-        // Meter type toggle
-        _buildMeterTypeSelector(),
-        SizedBox(height: 24.h),
-
-        // Manual validate button
-        _buildManualValidateButton(),
-      ],
-    );
-  }
-
   Widget _buildProviderDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -898,90 +813,340 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
           ),
         ),
         SizedBox(height: 8.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: _selectedProvider != null
-                  ? const Color(0xFF3B82F6).withValues(alpha: 0.4)
-                  : const Color(0xFF2D2D2D),
-              width: 1,
+        GestureDetector(
+          onTap: _showProviderBottomSheet,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: _selectedProvider != null
+                    ? const Color(0xFF3B82F6).withValues(alpha: 0.4)
+                    : const Color(0xFF2D2D2D),
+                width: 1,
+              ),
             ),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<ElectricityProviderEntity>(
-              value: _selectedProvider,
-              isExpanded: true,
-              dropdownColor: const Color(0xFF1F1F1F),
-              icon: Icon(
-                Icons.keyboard_arrow_down,
-                color: const Color(0xFF9CA3AF),
-                size: 24.sp,
-              ),
-              hint: Text(
-                'Select your DisCo',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 15.sp,
-                ),
-              ),
-              items: _providers.map((provider) {
-                return DropdownMenuItem<ElectricityProviderEntity>(
-                  value: provider,
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 32.w,
-                        height: 32.w,
-                        decoration: BoxDecoration(
-                          color: _getProviderColor(provider)
-                              .withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Icon(
-                          Icons.bolt,
-                          color: _getProviderColor(provider),
-                          size: 18.sp,
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              provider.providerName,
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              provider.providerCode,
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF9CA3AF),
-                                fontSize: 11.sp,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+            child: Row(
+              children: [
+                if (_selectedProvider != null) ...[
+                  Container(
+                    width: 32.w,
+                    height: 32.w,
+                    decoration: BoxDecoration(
+                      color: _getProviderColor(_selectedProvider!)
+                          .withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Icon(
+                      Icons.bolt,
+                      color: _getProviderColor(_selectedProvider!),
+                      size: 18.sp,
+                    ),
                   ),
-                );
-              }).toList(),
-              onChanged: (provider) {
-                setState(() => _selectedProvider = provider);
-              },
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _selectedProvider!.providerName,
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          _selectedProvider!.providerCode,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF),
+                            fontSize: 11.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else
+                  Expanded(
+                    child: Text(
+                      'Select your DisCo',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF6B7280),
+                        fontSize: 15.sp,
+                      ),
+                    ),
+                  ),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  color: const Color(0xFF9CA3AF),
+                  size: 24.sp,
+                ),
+              ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  void _showProviderBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        final searchController = TextEditingController();
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final query = searchController.text.toLowerCase();
+            final filteredProviders = query.isEmpty
+                ? _providers
+                : _providers
+                    .where((p) =>
+                        p.providerName.toLowerCase().contains(query) ||
+                        p.providerCode.toLowerCase().contains(query))
+                    .toList();
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(24.r)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 12.h),
+                  Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Select Distribution Company',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.of(ctx).pop(),
+                          child: Icon(
+                            Icons.close,
+                            color: const Color(0xFF9CA3AF),
+                            size: 22.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0A0A0A),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: const Color(0xFF2D2D2D),
+                          width: 1,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: searchController,
+                        autofocus: true,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Search provider...',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF6B7280),
+                            fontSize: 14.sp,
+                          ),
+                          border: InputBorder.none,
+                          icon: Icon(
+                            Icons.search,
+                            color: const Color(0xFF6B7280),
+                            size: 20.sp,
+                          ),
+                          suffixIcon: searchController.text.isNotEmpty
+                              ? GestureDetector(
+                                  onTap: () {
+                                    searchController.clear();
+                                    setSheetState(() {});
+                                  },
+                                  child: Icon(
+                                    Icons.close,
+                                    color: const Color(0xFF6B7280),
+                                    size: 18.sp,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        onChanged: (_) => setSheetState(() {}),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  if (_providers.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.all(40.w),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            width: 32.w,
+                            height: 32.w,
+                            child: const CircularProgressIndicator(
+                              color: Color(0xFF3B82F6),
+                              strokeWidth: 3,
+                            ),
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'Loading providers...',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (filteredProviders.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.all(40.w),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            color: const Color(0xFF6B7280),
+                            size: 40.sp,
+                          ),
+                          SizedBox(height: 12.h),
+                          Text(
+                            'No providers found',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        itemCount: filteredProviders.length,
+                        itemBuilder: (context, index) {
+                          final provider = filteredProviders[index];
+                          final isSelected = _selectedProvider?.providerCode ==
+                              provider.providerCode;
+                          final color = _getProviderColor(provider);
+
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() => _selectedProvider = provider);
+                              Navigator.of(ctx).pop();
+                            },
+                            child: Container(
+                              margin: EdgeInsets.only(bottom: 8.h),
+                              padding: EdgeInsets.all(14.w),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF3B82F6)
+                                        .withValues(alpha: 0.1)
+                                    : const Color(0xFF0A0A0A),
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFF3B82F6)
+                                      : const Color(0xFF2D2D2D),
+                                  width: isSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40.w,
+                                    height: 40.w,
+                                    decoration: BoxDecoration(
+                                      color: color.withValues(alpha: 0.15),
+                                      borderRadius:
+                                          BorderRadius.circular(10.r),
+                                    ),
+                                    child: Icon(
+                                      Icons.bolt,
+                                      color: color,
+                                      size: 22.sp,
+                                    ),
+                                  ),
+                                  SizedBox(width: 14.w),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          provider.providerName,
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white,
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2.h),
+                                        Text(
+                                          provider.providerCode,
+                                          style: GoogleFonts.inter(
+                                            color: const Color(0xFF9CA3AF),
+                                            fontSize: 12.sp,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: const Color(0xFF3B82F6),
+                                      size: 22.sp,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  SizedBox(
+                      height: MediaQuery.of(ctx).padding.bottom + 16.h),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

@@ -378,9 +378,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                       separatorBuilder: (_, __) => SizedBox(height: 8.h),
                       itemBuilder: (context, index) {
                         final transfer = transfers[index] as Map<String, dynamic>;
-                        final name = transfer['recipientName'] as String? ??
-                            transfer['name'] as String? ??
-                            'Unknown';
+                        final name = _resolveTransferName(transfer);
                         final account = transfer['recipientAccount'] as String? ??
                             transfer['account'] as String? ??
                             '\u2022\u2022\u2022\u2022';
@@ -536,6 +534,27 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
             : Icon(icon, color: color, size: 18.sp),
       ),
     );
+  }
+
+  /// Resolve the best name from a transfer map, avoiding generic names like "business"
+  String _resolveTransferName(Map<String, dynamic> transfer) {
+    final recipientName = transfer['recipientName'] as String?;
+    final beneficiaryName = transfer['beneficiaryName'] as String?;
+    final name = transfer['name'] as String?;
+
+    // Check beneficiaryName first (actual person name from request)
+    if (beneficiaryName != null && beneficiaryName.isNotEmpty &&
+        beneficiaryName.toLowerCase() != 'unknown' &&
+        beneficiaryName.toLowerCase() != 'external account') {
+      return beneficiaryName;
+    }
+    // Then recipientName, but skip generic account type names
+    if (recipientName != null && recipientName.isNotEmpty &&
+        recipientName.toLowerCase() != 'unknown' &&
+        recipientName.toLowerCase() != 'business') {
+      return recipientName;
+    }
+    return name ?? recipientName ?? beneficiaryName ?? 'Unknown';
   }
 
   // --- Build ---
@@ -1078,9 +1097,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
             final index = entry.key;
             final transfer = entry.value as Map<String, dynamic>;
 
-            final name = transfer['recipientName'] as String? ??
-                transfer['name'] as String? ??
-                'Unknown';
+            final name = _resolveTransferName(transfer);
             final account = transfer['recipientAccount'] as String? ??
                 transfer['account'] as String? ??
                 '\u2022\u2022\u2022\u2022';
@@ -1293,9 +1310,6 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   }
 
   Widget _buildBottomActions() {
-    final transfers = receiptData['transfers'] as List<dynamic>? ?? [];
-    final hasTransfers = transfers.isNotEmpty;
-
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
@@ -1307,13 +1321,13 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Primary actions - Download All and Share All
+            // Primary actions - Download and Share
             Row(
               children: [
                 Expanded(
                   child: _buildActionButton(
                     icon: Icons.download_rounded,
-                    label: 'Download All',
+                    label: 'Download',
                     color: btGreen,
                     isLoading: _isDownloading,
                     onTap: _downloadReceipt,
@@ -1323,7 +1337,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 Expanded(
                   child: _buildActionButton(
                     icon: Icons.share_rounded,
-                    label: 'Share All',
+                    label: 'Share',
                     color: btBlue,
                     isLoading: _isSharing,
                     onTap: _shareReceipt,
@@ -1331,19 +1345,6 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 ),
               ],
             ),
-            // Individual receipts button
-            if (hasTransfers) ...[
-              SizedBox(height: 10.h),
-              SizedBox(
-                width: double.infinity,
-                child: _buildActionButton(
-                  icon: Icons.person_outline_rounded,
-                  label: 'Individual Receipts',
-                  color: btPurpleLight,
-                  onTap: _showIndividualReceiptsSheet,
-                ),
-              ),
-            ],
             SizedBox(height: 10.h),
             // Secondary actions - New Transfer and Dashboard
             Row(
@@ -1359,7 +1360,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 SizedBox(width: 12.w),
                 Expanded(
                   child: _buildActionButton(
-                    icon: Icons.dashboard_rounded,
+                    icon: Icons.home_outlined,
                     label: 'Dashboard',
                     color: btTextSecondary,
                     onTap: _navigateToDashboard,

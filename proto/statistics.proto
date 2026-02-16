@@ -279,7 +279,7 @@ service StatisticsService {
 // Expense Messages
 message ExpenseMessage {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   string account_id = 3;
   double amount = 4;
   string currency = 5;
@@ -321,7 +321,7 @@ enum ExpenseCategory {
 // Budget Messages
 message BudgetMessage {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   string name = 3;
   double amount = 4;
   string currency = 5;
@@ -361,7 +361,7 @@ enum BudgetStatus {
 // Alert Messages
 message BudgetAlertMessage {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   string budget_id = 3;
   string budget_name = 4;
   AlertType alert_type = 5;
@@ -807,7 +807,7 @@ enum IncomeCategory {
 
 message IncomeSource {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   string name = 3;
   double amount = 4;
   string currency = 5;
@@ -850,7 +850,7 @@ enum InvestmentType {
 
 message Investment {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   string name = 3;
   InvestmentType investment_type = 4;
   double current_value = 5;
@@ -906,7 +906,7 @@ enum GoalType {
 
 message FinancialGoal {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   string name = 3;
   GoalType goal_type = 4;
   double target_amount = 5;
@@ -933,7 +933,7 @@ message FinancialGoalsList {
 // Savings Goal (Primary/Main savings target)
 message SavingsGoal {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   string name = 3;
   double target_amount = 4;
   double current_amount = 5;
@@ -954,7 +954,7 @@ enum BillStatus {
 
 message RecurringBill {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   string name = 3;
   double amount = 4;
   string currency = 5;
@@ -1139,7 +1139,7 @@ message GetUpcomingBillsResponse {
 // Tracked Transaction Models
 message TrackedIncomeTransaction {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   double amount = 3;
   string currency = 4;
   string source_type = 5; // deposit, transfer_received, invoice_payment_received, etc.
@@ -1147,7 +1147,7 @@ message TrackedIncomeTransaction {
   string source_reference = 7;
   string category = 8;
   string description = 9;
-  uint64 sender_id = 10;
+  string sender_id = 10;
   string sender_name = 11;
   google.protobuf.Timestamp transaction_date = 12;
   string metadata = 13; // JSON string
@@ -1156,14 +1156,14 @@ message TrackedIncomeTransaction {
 
 message TrackedExpenditureTransaction {
   string id = 1;
-  uint64 user_id = 2;
+  string user_id = 2;
   double amount = 3;
   string currency = 4;
   string expense_type = 5; // withdrawal, transfer_sent, invoice_payment_made, bill_payment, exchange, etc.
   string expense_id = 6;
   string expense_reference = 7;
   string category = 8;
-  uint64 recipient_id = 9;
+  string recipient_id = 9;
   string recipient_name = 10;
   string merchant = 11;
   string description = 12;

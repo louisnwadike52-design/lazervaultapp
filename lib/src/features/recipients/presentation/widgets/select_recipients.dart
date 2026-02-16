@@ -34,6 +34,8 @@ import 'dart:io';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/qr_scan_confirmation_sheet.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/transfer_history_bottom_sheet.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 
 class SelectRecipients extends StatefulWidget {
   const SelectRecipients({super.key});
@@ -343,6 +345,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                               icon: Icons.group_outlined,
                               label: 'Split Bills',
                               onTap: _launchSplitBills,
+                            ),
+                            _buildQuickAction(
+                              icon: Icons.history,
+                              label: 'History',
+                              onTap: _showTransferHistory,
                             ),
                           ],
                         ),
@@ -1476,6 +1483,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
               bankName: 'LazerVault',
               sortCode: '',
               isFavorite: false,
+              isSaved: false,
               countryCode: _currentCountry,
               currency: currency,
             );
@@ -2351,6 +2359,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       bankName: _contactVerificationResult!.bankName,
       sortCode: _contactVerificationResult!.bankCode,
       isFavorite: isFavorite,
+      isSaved: false,
       alias: alias,
       countryCode: 'NG',
       currency: 'NGN',
@@ -2487,6 +2496,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             bankName: 'LazerVault',
             sortCode: '',
             isFavorite: false,
+            isSaved: false,
             countryCode: _currentCountry,
             currency: currency,
             profileImageUrl: matchedUser.profilePicture,
@@ -2950,6 +2960,17 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
   Future<void> _launchSplitBills() async {
     Get.toNamed(AppRoutes.splitBills);
+  }
+
+  void _showTransferHistory() {
+    Get.bottomSheet(
+      BlocProvider(
+        create: (_) => GetIt.I<TransactionHistoryCubit>(),
+        child: const TransferHistoryBottomSheet(),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
   }
 
   Widget _buildLoadingWidget() {

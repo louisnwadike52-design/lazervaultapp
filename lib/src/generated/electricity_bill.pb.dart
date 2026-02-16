@@ -631,6 +631,7 @@ class BillBeneficiary extends $pb.GeneratedMessage {
     $core.String? providerId,
     $core.String? customerAddress,
     $1.Timestamp? updatedAt,
+    $core.String? phoneNumber,
   }) {
     final $result = create();
     if (id != null) {
@@ -675,6 +676,9 @@ class BillBeneficiary extends $pb.GeneratedMessage {
     if (updatedAt != null) {
       $result.updatedAt = updatedAt;
     }
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
     return $result;
   }
   BillBeneficiary._() : super();
@@ -696,6 +700,7 @@ class BillBeneficiary extends $pb.GeneratedMessage {
     ..aOS(12, _omitFieldNames ? '' : 'providerId')
     ..aOS(13, _omitFieldNames ? '' : 'customerAddress')
     ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOS(15, _omitFieldNames ? '' : 'phoneNumber')
     ..hasRequiredFields = false
   ;
 
@@ -851,6 +856,15 @@ class BillBeneficiary extends $pb.GeneratedMessage {
   void clearUpdatedAt() => clearField(14);
   @$pb.TagNumber(14)
   $1.Timestamp ensureUpdatedAt() => $_ensure(13);
+
+  @$pb.TagNumber(15)
+  $core.String get phoneNumber => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set phoneNumber($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasPhoneNumber() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearPhoneNumber() => clearField(15);
 }
 
 class AutoRecharge extends $pb.GeneratedMessage {
@@ -3220,6 +3234,7 @@ class SaveBeneficiaryRequest extends $pb.GeneratedMessage {
     $core.String? providerId,
     $core.String? providerName,
     $core.String? customerAddress,
+    $core.String? phoneNumber,
   }) {
     final $result = create();
     if (providerCode != null) {
@@ -3249,6 +3264,9 @@ class SaveBeneficiaryRequest extends $pb.GeneratedMessage {
     if (customerAddress != null) {
       $result.customerAddress = customerAddress;
     }
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
     return $result;
   }
   SaveBeneficiaryRequest._() : super();
@@ -3265,6 +3283,7 @@ class SaveBeneficiaryRequest extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'providerId')
     ..aOS(8, _omitFieldNames ? '' : 'providerName')
     ..aOS(9, _omitFieldNames ? '' : 'customerAddress')
+    ..aOS(10, _omitFieldNames ? '' : 'phoneNumber')
     ..hasRequiredFields = false
   ;
 
@@ -3369,6 +3388,15 @@ class SaveBeneficiaryRequest extends $pb.GeneratedMessage {
   $core.bool hasCustomerAddress() => $_has(8);
   @$pb.TagNumber(9)
   void clearCustomerAddress() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get phoneNumber => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set phoneNumber($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasPhoneNumber() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearPhoneNumber() => clearField(10);
 }
 
 class SaveBeneficiaryResponse extends $pb.GeneratedMessage {

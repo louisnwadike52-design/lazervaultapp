@@ -8,6 +8,7 @@ class RecipientModel {
   final String bankName;
   final String? profileImageUrl;
   final bool isFavorite;
+  final bool isSaved;
   final String sortCode;
   final String? countryCode;
   final String? email;
@@ -25,6 +26,7 @@ class RecipientModel {
     required this.bankName,
     this.profileImageUrl,
     required this.isFavorite,
+    this.isSaved = true,
     required this.sortCode,
     this.countryCode,
     this.email,
@@ -49,6 +51,7 @@ class RecipientModel {
       accountNumber: recipient.accountNumber,
       bankName: recipient.bankName,
       isFavorite: recipient.isFavorite,
+      isSaved: recipient.isSaved,
       sortCode: recipient.sortCode,
       countryCode: recipient.countryCode.isNotEmpty ? recipient.countryCode : null,
       email: recipient.email.isNotEmpty ? recipient.email : null,
@@ -69,6 +72,7 @@ class RecipientModel {
       bankName: json['bankName'] as String? ?? '',
       profileImageUrl: json['profileImageUrl'] as String?,
       isFavorite: json['isFavorite'] as bool? ?? false,
+      isSaved: json['isSaved'] as bool? ?? true,
       sortCode: json['sortCode'] as String? ?? '',
       countryCode: json['countryCode'] as String?,
       email: json['email'] as String?,
@@ -89,6 +93,7 @@ class RecipientModel {
       'bankName': bankName,
       'profileImageUrl': profileImageUrl,
       'isFavorite': isFavorite,
+      'isSaved': isSaved,
       'sortCode': sortCode,
       'countryCode': countryCode,
       'email': email,
@@ -109,6 +114,7 @@ class RecipientModel {
       ..bankName = bankName
       ..sortCode = sortCode
       ..isFavorite = isFavorite
+      ..isSaved = isSaved
       ..countryCode = countryCode ?? ''
       ..email = email ?? ''
       ..phoneNumber = phoneNumber ?? ''
@@ -126,6 +132,7 @@ class RecipientModel {
     String? bankName,
     String? profileImageUrl,
     bool? isFavorite,
+    bool? isSaved,
     String? sortCode,
     String? countryCode,
     String? email,
@@ -143,6 +150,7 @@ class RecipientModel {
       bankName: bankName ?? this.bankName,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       isFavorite: isFavorite ?? this.isFavorite,
+      isSaved: isSaved ?? this.isSaved,
       sortCode: sortCode ?? this.sortCode,
       countryCode: countryCode ?? this.countryCode,
       email: email ?? this.email,

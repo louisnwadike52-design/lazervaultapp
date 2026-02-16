@@ -246,7 +246,7 @@ class BatchTransferPdfService {
               // Failed transfer reasons
               ...failedList.map((t) {
                 final transfer = t as Map<String, dynamic>;
-                final name = transfer['recipientName'] as String? ?? 'Unknown';
+                final name = _resolveTransferName(transfer);
                 final reason = transfer['failureReason'] as String?;
                 if (reason == null || reason.isEmpty) {
                   return pw.SizedBox.shrink();
@@ -618,8 +618,7 @@ class BatchTransferPdfService {
         // Data rows
         ...transfers.map((t) {
           final transfer = t as Map<String, dynamic>;
-          final name =
-              transfer['recipientName'] as String? ?? 'Unknown';
+          final name = _resolveTransferName(transfer);
           final account =
               transfer['recipientAccount'] as String? ?? 'N/A';
           final amount =
@@ -726,6 +725,25 @@ class BatchTransferPdfService {
     );
   }
 
+  /// Resolve the best name from a transfer map, avoiding generic names
+  static String _resolveTransferName(Map<String, dynamic> transfer) {
+    final recipientName = transfer['recipientName'] as String?;
+    final beneficiaryName = transfer['beneficiaryName'] as String?;
+    final name = transfer['name'] as String?;
+
+    if (beneficiaryName != null && beneficiaryName.isNotEmpty &&
+        beneficiaryName.toLowerCase() != 'unknown' &&
+        beneficiaryName.toLowerCase() != 'external account') {
+      return beneficiaryName;
+    }
+    if (recipientName != null && recipientName.isNotEmpty &&
+        recipientName.toLowerCase() != 'unknown' &&
+        recipientName.toLowerCase() != 'business') {
+      return recipientName;
+    }
+    return name ?? recipientName ?? beneficiaryName ?? 'Unknown';
+  }
+
   static String _formatStatus(String status) {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -769,7 +787,8 @@ class BatchTransferPdfService {
       'senderAccountInfo': senderAccountInfo,
       'transfers': entity.results
           .map((r) => {
-                'recipientName': r.recipientName ?? 'Unknown',
+                'recipientName': r.recipientName ?? r.beneficiaryName ?? 'Unknown',
+                'beneficiaryName': r.beneficiaryName,
                 'recipientAccount': r.recipientAccount ?? '',
                 'amount': r.amount.toDouble() / 100,
                 'fee': r.fee.toDouble() / 100,
@@ -878,8 +897,7 @@ class BatchTransferPdfService {
     }
 
     // Extract individual transfer data
-    final recipientName =
-        transfer['recipientName'] as String? ?? 'Unknown';
+    final recipientName = _resolveTransferName(transfer);
     final recipientAccount =
         transfer['recipientAccount'] as String? ?? 'N/A';
     final amount = (transfer['amount'] as num?)?.toDouble() ?? 0.0;

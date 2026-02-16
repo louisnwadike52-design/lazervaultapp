@@ -27,6 +27,7 @@ import 'package:lazervault/src/features/contacts/presentation/cubit/contact_sync
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/quick_actions_service.dart';
 
 /// Development utility to reset onboarding state
 /// Call this function to simulate a fresh install
@@ -119,6 +120,9 @@ void main() async {
 
   runApp(const MyApp());
 
+  // Initialize app icon quick actions (long-press shortcuts)
+  QuickActionsService.instance.initialize();
+
   // Remove the splash screen after the app has been fully initialized
   FlutterNativeSplash.remove();
 }
@@ -197,7 +201,7 @@ Future<String> _determineInitialRoute() async {
     return AppRoutes.emailSignIn;
   } catch (e) {
     print('Error determining initial route: $e');
-    return AppRoutes.root;
+    return AppRoutes.emailSignIn;
   }
 }
 
@@ -246,6 +250,8 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
 
     if (mounted) {
       Get.offAllNamed(initialRoute);
+      // Process any quick action shortcut that launched the app
+      QuickActionsService.instance.processPendingShortcut();
     }
   }
 
@@ -335,6 +341,10 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
           initialRoute: AppRoutes.authCheck,
+          unknownRoute: GetPage(
+            name: '/not-found',
+            page: () => const AuthCheckScreen(),
+          ),
           getPages: AppRouter.routes,
         ),
       ),

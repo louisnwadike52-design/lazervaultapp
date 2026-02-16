@@ -6,15 +6,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
+import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_form.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class BatchTransferScreen extends StatefulWidget {
   const BatchTransferScreen({super.key});
@@ -27,6 +32,9 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
   @override
   void initState() {
     super.initState();
+    // Load recent batch transfer history
+    context.read<BatchTransferCubit>().loadBatchTransferHistory(page: 1, pageSize: 5);
+
     // If coming from split bills, skip form and go directly to review
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -108,6 +116,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
                           batchReference: arguments?['batchReference'],
                         ),
                       ),
+                      _buildRecentHistory(),
                     ],
                   ),
                 ),
@@ -125,7 +134,13 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () {
+              if (Navigator.of(context).canPop()) {
+                Get.back();
+              } else {
+                Get.offAllNamed(AppRoutes.home);
+              }
+            },
             child: Container(
               width: 44.w,
               height: 44.w,
@@ -168,6 +183,11 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
           ServiceVoiceButton(
             serviceName: 'transfers',
             iconColor: Colors.white,
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Batch Transfer',
+            sourceContext: 'transfers',
           ),
         ],
       ),
@@ -248,6 +268,118 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRecentHistory() {
+    return BlocBuilder<BatchTransferCubit, BatchTransferState>(
+      builder: (context, state) {
+        if (state is BatchTransferHistoryLoaded && state.batches.isNotEmpty) {
+          final recentBatches = state.batches.take(3).toList();
+          return Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 0),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Recent Transfers',
+                      style: GoogleFonts.inter(
+                        color: btTextPrimary,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        await Get.toNamed(AppRoutes.batchTransferHistory);
+                        if (mounted) {
+                          context.read<BatchTransferCubit>().loadBatchTransferHistory(page: 1, pageSize: 5);
+                        }
+                      },
+                      child: Text(
+                        'View All',
+                        style: GoogleFonts.inter(
+                          color: btBlue,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10.h),
+                ...recentBatches.map((batch) => _buildRecentBatchTile(batch)),
+              ],
+            ),
+          );
+        }
+        // Don't show anything if loading, error, or empty
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildRecentBatchTile(BatchTransferHistoryEntity batch) {
+    final statusColor = batchStatusColor(batch.status);
+    final currencySymbol = CurrencyUtils.getSymbol(batch.currency);
+    final dateStr = DateFormat('MMM dd, yyyy \u2022 HH:mm').format(batch.createdAt);
+
+    return GestureDetector(
+      onTap: () async {
+        await Get.toNamed(AppRoutes.batchTransferDetail,
+            arguments: {'batchId': batch.batchId});
+        if (mounted) {
+          context.read<BatchTransferCubit>().loadBatchTransferHistory(page: 1, pageSize: 5);
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: btCard,
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(Icons.send_rounded, color: statusColor, size: 18.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$currencySymbol${batch.totalAmount.toStringAsFixed(2)}',
+                    style: GoogleFonts.inter(
+                      color: btTextPrimary,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    '${batch.totalRecipients} recipient${batch.totalRecipients == 1 ? '' : 's'} \u2022 $dateStr',
+                    style: GoogleFonts.inter(
+                      color: btTextTertiary,
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            buildBatchStatusBadge(batch.status),
+          ],
+        ),
       ),
     );
   }

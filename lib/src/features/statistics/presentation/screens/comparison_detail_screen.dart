@@ -39,7 +39,7 @@ class ComparisonDetailScreen extends StatelessWidget {
           }
           return RefreshIndicator(
             onRefresh: () => context.read<StatisticsCubit>().refresh(),
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF10B981),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -67,12 +67,13 @@ class ComparisonDetailScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.backgroundColor,
-            const Color.fromARGB(255, 95, 20, 225),
+            Color(0xFF0D9668),
+            Color(0xFF10B981),
+            Color(0xFF34D399),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),

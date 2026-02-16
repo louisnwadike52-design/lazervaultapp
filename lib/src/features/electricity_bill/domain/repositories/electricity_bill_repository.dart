@@ -33,6 +33,7 @@ abstract class ElectricityBillRepository {
     required double amount,
     required String currency,
     required String accountId,
+    required String phoneNumber,
     String? paymentGateway,
     String? beneficiaryId,
     String? transactionId,
@@ -59,8 +60,11 @@ abstract class ElectricityBillRepository {
     required MeterType meterType,
     required String customerName,
     String? customerAddress,
+    String? phoneNumber,
     required String nickname,
     bool isDefault = false,
+    String? providerCode,
+    String? providerName,
   });
 
   Future<Either<Failure, List<BillBeneficiaryEntity>>> getBeneficiaries();

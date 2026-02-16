@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/whatsapp_banking_cubit.dart';
 import '../../cubit/whatsapp_banking_state.dart';
 
@@ -561,7 +562,7 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
             ],
             decoration: InputDecoration(
-              prefixText: '\$ ',
+              prefixText: '${CurrencySymbols.currentSymbol} ',
               prefixStyle: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,

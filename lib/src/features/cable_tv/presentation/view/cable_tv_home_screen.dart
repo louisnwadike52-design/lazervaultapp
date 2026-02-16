@@ -16,10 +16,20 @@ class CableTVHomeScreen extends StatefulWidget {
 }
 
 class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  List<CableTVProviderEntity> _providers = [];
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
     context.read<CableTVCubit>().getProviders();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   IconData _getProviderIcon(String name) {
@@ -38,6 +48,16 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
     if (lower.contains('startimes')) return const Color(0xFFFB923C);
     if (lower.contains('showmax')) return const Color(0xFFEF4444);
     return const Color(0xFF3B82F6);
+  }
+
+  List<CableTVProviderEntity> get _filteredProviders {
+    final query = _searchController.text.toLowerCase();
+    if (query.isEmpty) return _providers;
+    return _providers
+        .where((p) =>
+            p.name.toLowerCase().contains(query) ||
+            p.serviceId.toLowerCase().contains(query))
+        .toList();
   }
 
   @override
@@ -66,101 +86,192 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 16.h),
+        child: BlocListener<CableTVCubit, CableTVState>(
+          listener: (context, state) {
+            if (state is CableTVProvidersLoaded) {
+              setState(() {
+                _providers = state.providers;
+                _isLoading = false;
+              });
+            }
+            if (state is CableTVLoading) {
+              setState(() => _isLoading = true);
+            }
+            if (state is CableTVError) {
+              setState(() => _isLoading = false);
+            }
+          },
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 16.h),
 
-              // Header illustration
-              Center(
-                child: Container(
-                  width: 100.w,
-                  height: 100.w,
+                // Header illustration
+                Center(
+                  child: Container(
+                    width: 80.w,
+                    height: 80.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                    ),
+                    child: Icon(
+                      Icons.live_tv,
+                      color: const Color(0xFF3B82F6),
+                      size: 40.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+
+                Center(
+                  child: Text(
+                    'Choose Your Provider',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Center(
+                  child: Text(
+                    'Select your cable TV provider to get started',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Search bar
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: const Color(0xFF2D2D2D),
+                      width: 1,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.live_tv,
-                    color: const Color(0xFF3B82F6),
-                    size: 48.sp,
+                  child: TextField(
+                    controller: _searchController,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Search provider...',
+                      hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF6B7280),
+                        fontSize: 14.sp,
+                      ),
+                      border: InputBorder.none,
+                      icon: Icon(
+                        Icons.search,
+                        color: const Color(0xFF6B7280),
+                        size: 20.sp,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? GestureDetector(
+                              onTap: () {
+                                _searchController.clear();
+                                setState(() {});
+                              },
+                              child: Icon(
+                                Icons.close,
+                                color: const Color(0xFF6B7280),
+                                size: 18.sp,
+                              ),
+                            )
+                          : null,
+                    ),
+                    onChanged: (_) => setState(() {}),
                   ),
                 ),
-              ),
-              SizedBox(height: 20.h),
+                SizedBox(height: 16.h),
 
-              Center(
-                child: Text(
-                  'Choose Your Provider',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
+                // Provider list
+                Expanded(
+                  child: _buildProviderList(),
                 ),
-              ),
-              SizedBox(height: 8.h),
-              Center(
-                child: Text(
-                  'Select your cable TV provider to get started',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
-                  ),
-                ),
-              ),
-              SizedBox(height: 28.h),
-
-              // Provider grid
-              Expanded(
-                child: BlocBuilder<CableTVCubit, CableTVState>(
-                  builder: (context, state) {
-                    if (state is CableTVLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF3B82F6),
-                          ),
-                        ),
-                      );
-                    }
-
-                    if (state is CableTVError) {
-                      return _buildErrorState(state.message);
-                    }
-
-                    if (state is CableTVProvidersLoaded) {
-                      if (state.providers.isEmpty) {
-                        return _buildEmptyState();
-                      }
-                      return GridView.builder(
-                        itemCount: state.providers.length,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16.w,
-                          mainAxisSpacing: 16.h,
-                          childAspectRatio: 1.0,
-                        ),
-                        itemBuilder: (context, index) {
-                          return _buildProviderCard(state.providers[index]);
-                        },
-                      );
-                    }
-
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildProviderCard(CableTVProviderEntity provider) {
+  Widget _buildProviderList() {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 32.w,
+              height: 32.w,
+              child: const CircularProgressIndicator(
+                color: Color(0xFF3B82F6),
+                strokeWidth: 3,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Loading providers...',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_providers.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    final filtered = _filteredProviders;
+    if (filtered.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              color: const Color(0xFF6B7280),
+              size: 40.sp,
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'No providers found',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        return _buildProviderItem(filtered[index]);
+      },
+    );
+  }
+
+  Widget _buildProviderItem(CableTVProviderEntity provider) {
     final accent = _getProviderAccent(provider.name);
     final icon = _getProviderIcon(provider.name);
 
@@ -172,42 +283,59 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
         );
       },
       child: Container(
-        padding: EdgeInsets.all(20.w),
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: const Color(0xFF2D2D2D),
             width: 1,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
             Container(
-              width: 56.w,
-              height: 56.w,
+              width: 48.w,
+              height: 48.w,
               decoration: BoxDecoration(
                 color: accent.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14.r),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
                 icon,
                 color: accent,
-                size: 28.sp,
+                size: 24.sp,
               ),
             ),
-            SizedBox(height: 14.h),
-            Text(
-              provider.name.toUpperCase(),
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    provider.name,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    provider.serviceId,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
               ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: const Color(0xFF6B7280),
+              size: 22.sp,
             ),
           ],
         ),
@@ -215,24 +343,23 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
     );
   }
 
-  Widget _buildErrorState(String message) {
+  Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.error_outline,
-            color: const Color(0xFFEF4444),
+            Icons.tv_off,
+            color: const Color(0xFF9CA3AF),
             size: 48.sp,
           ),
           SizedBox(height: 16.h),
           Text(
-            message,
+            'No providers available',
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),
               fontSize: 14.sp,
             ),
-            textAlign: TextAlign.center,
           ),
           SizedBox(height: 24.h),
           ElevatedButton(
@@ -254,29 +381,6 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.tv_off,
-            color: const Color(0xFF9CA3AF),
-            size: 48.sp,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'No providers available',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
             ),
           ),
         ],

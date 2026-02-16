@@ -209,7 +209,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                   fontSize: 16.sp,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Search by username, email, or phone',
+                  hintText: 'Search by @username, email, or phone',
                   hintStyle: TextStyle(
                     color: Colors.grey[500],
                     fontSize: 16.sp,

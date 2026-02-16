@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LazerVault</string>
+
+    <!-- App Icon Quick Action shortcuts -->
+    <string name="shortcut_send_money">Send Money</string>
+    <string name="shortcut_send_money_long">Transfer funds instantly</string>
+    <string name="shortcut_scan_to_pay">Scan to Pay</string>
+    <string name="shortcut_scan_to_pay_long">QR code payment</string>
+    <string name="shortcut_check_balance">Check Balance</string>
+    <string name="shortcut_check_balance_long">View account balance</string>
+    <string name="shortcut_pay_bills">Pay Bills</string>
+    <string name="shortcut_pay_bills_long">Electricity, airtime &amp; more</string>
+
+    <!-- Quick Settings Tile -->
+    <string name="quick_pay_tile_label">LazerVault Pay</string>
+</resources>

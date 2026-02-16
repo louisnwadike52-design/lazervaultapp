@@ -12,6 +12,10 @@ class BatchTransferResultModel extends BatchTransferResult {
     super.recipientAccount,
     super.failureReason,
     super.reference,
+    super.destinationBankCode,
+    super.destinationBankName,
+    super.transferType,
+    super.beneficiaryName,
   });
 
   factory BatchTransferResultModel.fromPaymentsProto(
@@ -28,6 +32,80 @@ class BatchTransferResultModel extends BatchTransferResult {
       failureReason:
           proto.failureReason.isNotEmpty ? proto.failureReason : null,
       reference: proto.reference.isNotEmpty ? proto.reference : null,
+      destinationBankCode:
+          proto.destinationBankCode.isNotEmpty ? proto.destinationBankCode : null,
+      destinationBankName:
+          proto.destinationBankName.isNotEmpty ? proto.destinationBankName : null,
+      transferType:
+          proto.transferType.isNotEmpty ? proto.transferType : 'internal',
+      beneficiaryName:
+          proto.beneficiaryName.isNotEmpty ? proto.beneficiaryName : null,
+    );
+  }
+}
+
+class BatchTransferHistoryModel extends BatchTransferHistoryEntity {
+  const BatchTransferHistoryModel({
+    required super.batchId,
+    required super.totalRecipients,
+    required super.successful,
+    required super.failed,
+    required super.totalAmount,
+    required super.totalFees,
+    required super.status,
+    required super.createdAt,
+    required super.currency,
+  });
+
+  factory BatchTransferHistoryModel.fromProto(payments.BatchTransferSummary proto) {
+    return BatchTransferHistoryModel(
+      batchId: proto.batchId,
+      totalRecipients: proto.totalRecipients,
+      successful: proto.successful,
+      failed: proto.failed,
+      totalAmount: proto.totalAmount,
+      totalFees: proto.totalFees,
+      status: proto.status,
+      createdAt: proto.createdAt.isNotEmpty
+          ? DateTime.tryParse(proto.createdAt)?.toLocal() ?? DateTime.now()
+          : DateTime.now(),
+      currency: proto.currency.isNotEmpty ? proto.currency : 'NGN',
+    );
+  }
+}
+
+class BatchTransferDetailModel extends BatchTransferDetailEntity {
+  const BatchTransferDetailModel({
+    required super.summary,
+    required super.items,
+    required super.sourceAccountNumber,
+    required super.sourceAccountName,
+  });
+
+  factory BatchTransferDetailModel.fromProto(payments.GetBatchTransferDetailResponse proto) {
+    final summary = proto.hasSummary()
+        ? BatchTransferHistoryModel.fromProto(proto.summary)
+        : BatchTransferHistoryModel(
+            batchId: '',
+            totalRecipients: 0,
+            successful: 0,
+            failed: 0,
+            totalAmount: 0,
+            totalFees: 0,
+            status: 'unknown',
+            createdAt: DateTime.now(),
+            currency: 'NGN',
+          );
+
+    final items = proto.items
+        .map((item) => BatchTransferResultModel.fromPaymentsProto(item))
+        .toList();
+
+    return BatchTransferDetailModel(
+      summary: summary,
+      items: items,
+      sourceAccountNumber: proto.sourceAccountNumber,
+      sourceAccountName: proto.sourceAccountName,
     );
   }
 }

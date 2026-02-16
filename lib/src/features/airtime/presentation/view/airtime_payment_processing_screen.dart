@@ -54,6 +54,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
       transactionId: _paymentParams!['transactionId'] as String,
       verificationToken: _paymentParams!['verificationToken'] as String,
       sourceAccountId: _paymentParams!['sourceAccountId'] as String?,
+      operatorId: _paymentParams!['operatorId'] as String?,
     );
   }
 

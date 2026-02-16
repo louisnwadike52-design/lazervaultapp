@@ -49,6 +49,17 @@ class MemberDetailDialog extends StatelessWidget {
   /// Check if this member is the original group admin
   bool get _isGroupAdmin => member.userId == group.adminId;
 
+  String _getDisplayName() {
+    if (member.userName.isNotEmpty) return member.userName;
+    if (member.userUsername != null && member.userUsername!.isNotEmpty) {
+      return '@${member.userUsername}';
+    }
+    if (member.email.isNotEmpty) {
+      return member.email.split('@').first;
+    }
+    return 'Unknown User';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -125,7 +136,7 @@ class MemberDetailDialog extends StatelessWidget {
           SizedBox(height: 12.h),
           // Name
           Text(
-            member.userName,
+            _getDisplayName(),
             style: GoogleFonts.inter(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
@@ -160,7 +171,7 @@ class MemberDetailDialog extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    final initials = _getInitials(member.userName);
+    final initials = _getInitials(_getDisplayName());
     final avatarColor = _getRoleColor();
 
     return Container(
@@ -638,6 +649,17 @@ class ChangeRoleDialog extends StatefulWidget {
 class _ChangeRoleDialogState extends State<ChangeRoleDialog> {
   late GroupMemberRole _selectedRole;
 
+  String _getDisplayName() {
+    if (widget.member.userName.isNotEmpty) return widget.member.userName;
+    if (widget.member.userUsername != null && widget.member.userUsername!.isNotEmpty) {
+      return '@${widget.member.userUsername}';
+    }
+    if (widget.member.email.isNotEmpty) {
+      return widget.member.email.split('@').first;
+    }
+    return 'Unknown User';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -692,7 +714,7 @@ class _ChangeRoleDialogState extends State<ChangeRoleDialog> {
                           ),
                         ),
                         Text(
-                          widget.member.userName,
+                          _getDisplayName(),
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
                             color: Colors.grey[400],
@@ -871,6 +893,17 @@ class RemoveMemberConfirmDialog extends StatelessWidget {
     required this.onConfirm,
   });
 
+  String _getDisplayName() {
+    if (member.userName.isNotEmpty) return member.userName;
+    if (member.userUsername != null && member.userUsername!.isNotEmpty) {
+      return '@${member.userUsername}';
+    }
+    if (member.email.isNotEmpty) {
+      return member.email.split('@').first;
+    }
+    return 'Unknown User';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -919,7 +952,7 @@ class RemoveMemberConfirmDialog extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    'Are you sure you want to remove ${member.userName} from this group?',
+                    'Are you sure you want to remove ${_getDisplayName()} from this group?',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
