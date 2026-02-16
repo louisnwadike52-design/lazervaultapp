@@ -85,6 +85,18 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
       '/utilitypayments.UtilityPaymentsService/GetCableTVProviders',
       ($0.GetCableTVProvidersRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetCableTVProvidersResponse.fromBuffer(value));
+  static final _$getInternetProviders = $grpc.ClientMethod<$0.GetInternetProvidersRequest, $0.GetInternetProvidersResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetInternetProviders',
+      ($0.GetInternetProvidersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInternetProvidersResponse.fromBuffer(value));
+  static final _$validateInternetAccount = $grpc.ClientMethod<$0.ValidateInternetAccountRequest, $0.ValidateInternetAccountResponse>(
+      '/utilitypayments.UtilityPaymentsService/ValidateInternetAccount',
+      ($0.ValidateInternetAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ValidateInternetAccountResponse.fromBuffer(value));
+  static final _$getInternetPackages = $grpc.ClientMethod<$0.GetInternetPackagesRequest, $0.GetInternetPackagesResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetInternetPackages',
+      ($0.GetInternetPackagesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInternetPackagesResponse.fromBuffer(value));
   static final _$purchaseEducationPin = $grpc.ClientMethod<$0.PurchaseEducationPinRequest, $0.PurchaseEducationPinResponse>(
       '/utilitypayments.UtilityPaymentsService/PurchaseEducationPin',
       ($0.PurchaseEducationPinRequest value) => value.writeToBuffer(),
@@ -162,6 +174,18 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetCableTVProvidersResponse> getCableTVProviders($0.GetCableTVProvidersRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCableTVProviders, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInternetProvidersResponse> getInternetProviders($0.GetInternetProvidersRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInternetProviders, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ValidateInternetAccountResponse> validateInternetAccount($0.ValidateInternetAccountRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$validateInternetAccount, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInternetPackagesResponse> getInternetPackages($0.GetInternetPackagesRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInternetPackages, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.PurchaseEducationPinResponse> purchaseEducationPin($0.PurchaseEducationPinRequest request, {$grpc.CallOptions? options}) {
@@ -290,6 +314,27 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetCableTVProvidersRequest.fromBuffer(value),
         ($0.GetCableTVProvidersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInternetProvidersRequest, $0.GetInternetProvidersResponse>(
+        'GetInternetProviders',
+        getInternetProviders_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInternetProvidersRequest.fromBuffer(value),
+        ($0.GetInternetProvidersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ValidateInternetAccountRequest, $0.ValidateInternetAccountResponse>(
+        'ValidateInternetAccount',
+        validateInternetAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ValidateInternetAccountRequest.fromBuffer(value),
+        ($0.ValidateInternetAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInternetPackagesRequest, $0.GetInternetPackagesResponse>(
+        'GetInternetPackages',
+        getInternetPackages_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInternetPackagesRequest.fromBuffer(value),
+        ($0.GetInternetPackagesResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.PurchaseEducationPinRequest, $0.PurchaseEducationPinResponse>(
         'PurchaseEducationPin',
         purchaseEducationPin_Pre,
@@ -370,6 +415,18 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
     return getCableTVProviders(call, await request);
   }
 
+  $async.Future<$0.GetInternetProvidersResponse> getInternetProviders_Pre($grpc.ServiceCall call, $async.Future<$0.GetInternetProvidersRequest> request) async {
+    return getInternetProviders(call, await request);
+  }
+
+  $async.Future<$0.ValidateInternetAccountResponse> validateInternetAccount_Pre($grpc.ServiceCall call, $async.Future<$0.ValidateInternetAccountRequest> request) async {
+    return validateInternetAccount(call, await request);
+  }
+
+  $async.Future<$0.GetInternetPackagesResponse> getInternetPackages_Pre($grpc.ServiceCall call, $async.Future<$0.GetInternetPackagesRequest> request) async {
+    return getInternetPackages(call, await request);
+  }
+
   $async.Future<$0.PurchaseEducationPinResponse> purchaseEducationPin_Pre($grpc.ServiceCall call, $async.Future<$0.PurchaseEducationPinRequest> request) async {
     return purchaseEducationPin(call, await request);
   }
@@ -394,6 +451,9 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
   $async.Future<$0.GetTVPackagesResponse> getTVPackages($grpc.ServiceCall call, $0.GetTVPackagesRequest request);
   $async.Future<$0.PayCableTVBillResponse> payCableTVBill($grpc.ServiceCall call, $0.PayCableTVBillRequest request);
   $async.Future<$0.GetCableTVProvidersResponse> getCableTVProviders($grpc.ServiceCall call, $0.GetCableTVProvidersRequest request);
+  $async.Future<$0.GetInternetProvidersResponse> getInternetProviders($grpc.ServiceCall call, $0.GetInternetProvidersRequest request);
+  $async.Future<$0.ValidateInternetAccountResponse> validateInternetAccount($grpc.ServiceCall call, $0.ValidateInternetAccountRequest request);
+  $async.Future<$0.GetInternetPackagesResponse> getInternetPackages($grpc.ServiceCall call, $0.GetInternetPackagesRequest request);
   $async.Future<$0.PurchaseEducationPinResponse> purchaseEducationPin($grpc.ServiceCall call, $0.PurchaseEducationPinRequest request);
   $async.Future<$0.GetEducationProvidersResponse> getEducationProviders($grpc.ServiceCall call, $0.GetEducationProvidersRequest request);
 }

@@ -65,6 +65,11 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- App Icon Quick Actions (long-press shortcuts) -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -94,6 +99,18 @@
             android:name="flutterEmbedding"
             android:value="2" />
             
+        <!-- Quick Settings Tile: "LazerVault Pay" in notification shade -->
+        <service
+            android:name=".QuickPayTileService"
+            android:label="@string/quick_pay_tile_label"
+            android:icon="@drawable/ic_quick_pay"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <!-- FileProvider for secure file sharing -->
         <provider
             android:name="androidx.core.content.FileProvider"

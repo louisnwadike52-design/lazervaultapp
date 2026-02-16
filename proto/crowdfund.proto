@@ -203,7 +203,7 @@ message MakeDonationRequest {
   uint64 amount = 2;
   string message = 3;
   bool is_anonymous = 4;
-  uint64 source_account_id = 5;
+  string source_account_id = 5;
 }
 
 message MakeDonationResponse {

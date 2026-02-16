@@ -11,7 +11,6 @@
 
 import 'dart:core' as $core;
 
-import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
@@ -23,7 +22,7 @@ export 'statistics.pbenum.dart';
 class ExpenseMessage extends $pb.GeneratedMessage {
   factory ExpenseMessage({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? accountId,
     $core.double? amount,
     $core.String? currency,
@@ -104,7 +103,7 @@ class ExpenseMessage extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExpenseMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'accountId')
     ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'currency')
@@ -155,9 +154,9 @@ class ExpenseMessage extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -312,7 +311,7 @@ class ExpenseMessage extends $pb.GeneratedMessage {
 class BudgetMessage extends $pb.GeneratedMessage {
   factory BudgetMessage({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? name,
     $core.double? amount,
     $core.String? currency,
@@ -389,7 +388,7 @@ class BudgetMessage extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BudgetMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'name')
     ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'currency')
@@ -439,9 +438,9 @@ class BudgetMessage extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -595,7 +594,7 @@ class BudgetMessage extends $pb.GeneratedMessage {
 class BudgetAlertMessage extends $pb.GeneratedMessage {
   factory BudgetAlertMessage({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? budgetId,
     $core.String? budgetName,
     AlertType? alertType,
@@ -648,7 +647,7 @@ class BudgetAlertMessage extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BudgetAlertMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'budgetId')
     ..aOS(4, _omitFieldNames ? '' : 'budgetName')
     ..e<AlertType>(5, _omitFieldNames ? '' : 'alertType', $pb.PbFieldType.OE, defaultOrMaker: AlertType.ALERT_TYPE_UNSPECIFIED, valueOf: AlertType.valueOf, enumValues: AlertType.values)
@@ -692,9 +691,9 @@ class BudgetAlertMessage extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -5705,7 +5704,7 @@ class ActionStep extends $pb.GeneratedMessage {
 class IncomeSource extends $pb.GeneratedMessage {
   factory IncomeSource({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? name,
     $core.double? amount,
     $core.String? currency,
@@ -5766,7 +5765,7 @@ class IncomeSource extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IncomeSource', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'name')
     ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'currency')
@@ -5812,9 +5811,9 @@ class IncomeSource extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -6109,7 +6108,7 @@ class IncomeCategoryData extends $pb.GeneratedMessage {
 class Investment extends $pb.GeneratedMessage {
   factory Investment({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? name,
     InvestmentType? investmentType,
     $core.double? currentValue,
@@ -6174,7 +6173,7 @@ class Investment extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Investment', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'name')
     ..e<InvestmentType>(4, _omitFieldNames ? '' : 'investmentType', $pb.PbFieldType.OE, defaultOrMaker: InvestmentType.INVESTMENT_TYPE_UNSPECIFIED, valueOf: InvestmentType.valueOf, enumValues: InvestmentType.values)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'currentValue', $pb.PbFieldType.OD)
@@ -6221,9 +6220,9 @@ class Investment extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -6565,7 +6564,7 @@ class InvestmentTypeData extends $pb.GeneratedMessage {
 class FinancialGoal extends $pb.GeneratedMessage {
   factory FinancialGoal({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? name,
     GoalType? goalType,
     $core.double? targetAmount,
@@ -6638,7 +6637,7 @@ class FinancialGoal extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FinancialGoal', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'name')
     ..e<GoalType>(4, _omitFieldNames ? '' : 'goalType', $pb.PbFieldType.OE, defaultOrMaker: GoalType.GOAL_TYPE_UNSPECIFIED, valueOf: GoalType.valueOf, enumValues: GoalType.values)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
@@ -6687,9 +6686,9 @@ class FinancialGoal extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -6918,7 +6917,7 @@ class FinancialGoalsList extends $pb.GeneratedMessage {
 class SavingsGoal extends $pb.GeneratedMessage {
   factory SavingsGoal({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? name,
     $core.double? targetAmount,
     $core.double? currentAmount,
@@ -6963,7 +6962,7 @@ class SavingsGoal extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SavingsGoal', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'name')
     ..a<$core.double>(4, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
@@ -7005,9 +7004,9 @@ class SavingsGoal extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -7086,7 +7085,7 @@ class SavingsGoal extends $pb.GeneratedMessage {
 class RecurringBill extends $pb.GeneratedMessage {
   factory RecurringBill({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? name,
     $core.double? amount,
     $core.String? currency,
@@ -7159,7 +7158,7 @@ class RecurringBill extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RecurringBill', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'name')
     ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'currency')
@@ -7208,9 +7207,9 @@ class RecurringBill extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -9309,7 +9308,7 @@ class GetUpcomingBillsResponse extends $pb.GeneratedMessage {
 class TrackedIncomeTransaction extends $pb.GeneratedMessage {
   factory TrackedIncomeTransaction({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.double? amount,
     $core.String? currency,
     $core.String? sourceType,
@@ -9317,7 +9316,7 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
     $core.String? sourceReference,
     $core.String? category,
     $core.String? description,
-    $fixnum.Int64? senderId,
+    $core.String? senderId,
     $core.String? senderName,
     $1.Timestamp? transactionDate,
     $core.String? metadata,
@@ -9374,7 +9373,7 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TrackedIncomeTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'currency')
     ..aOS(5, _omitFieldNames ? '' : 'sourceType')
@@ -9382,7 +9381,7 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'sourceReference')
     ..aOS(8, _omitFieldNames ? '' : 'category')
     ..aOS(9, _omitFieldNames ? '' : 'description')
-    ..a<$fixnum.Int64>(10, _omitFieldNames ? '' : 'senderId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(10, _omitFieldNames ? '' : 'senderId')
     ..aOS(11, _omitFieldNames ? '' : 'senderName')
     ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
     ..aOS(13, _omitFieldNames ? '' : 'metadata')
@@ -9421,9 +9420,9 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -9493,9 +9492,9 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(9);
 
   @$pb.TagNumber(10)
-  $fixnum.Int64 get senderId => $_getI64(9);
+  $core.String get senderId => $_getSZ(9);
   @$pb.TagNumber(10)
-  set senderId($fixnum.Int64 v) { $_setInt64(9, v); }
+  set senderId($core.String v) { $_setString(9, v); }
   @$pb.TagNumber(10)
   $core.bool hasSenderId() => $_has(9);
   @$pb.TagNumber(10)
@@ -9545,14 +9544,14 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
 class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
   factory TrackedExpenditureTransaction({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.double? amount,
     $core.String? currency,
     $core.String? expenseType,
     $core.String? expenseId,
     $core.String? expenseReference,
     $core.String? category,
-    $fixnum.Int64? recipientId,
+    $core.String? recipientId,
     $core.String? recipientName,
     $core.String? merchant,
     $core.String? description,
@@ -9614,14 +9613,14 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TrackedExpenditureTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'currency')
     ..aOS(5, _omitFieldNames ? '' : 'expenseType')
     ..aOS(6, _omitFieldNames ? '' : 'expenseId')
     ..aOS(7, _omitFieldNames ? '' : 'expenseReference')
     ..aOS(8, _omitFieldNames ? '' : 'category')
-    ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(9, _omitFieldNames ? '' : 'recipientId')
     ..aOS(10, _omitFieldNames ? '' : 'recipientName')
     ..aOS(11, _omitFieldNames ? '' : 'merchant')
     ..aOS(12, _omitFieldNames ? '' : 'description')
@@ -9662,9 +9661,9 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -9725,9 +9724,9 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
   void clearCategory() => clearField(8);
 
   @$pb.TagNumber(9)
-  $fixnum.Int64 get recipientId => $_getI64(8);
+  $core.String get recipientId => $_getSZ(8);
   @$pb.TagNumber(9)
-  set recipientId($fixnum.Int64 v) { $_setInt64(8, v); }
+  set recipientId($core.String v) { $_setString(8, v); }
   @$pb.TagNumber(9)
   $core.bool hasRecipientId() => $_has(8);
   @$pb.TagNumber(9)

@@ -8,15 +8,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/provider_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
-import '../cubit/electricity_bill_cubit.dart';
+import '../cubit/beneficiary_cubit.dart';
+import '../cubit/beneficiary_state.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
   const PaymentConfirmationScreen({super.key});
@@ -28,10 +31,24 @@ class PaymentConfirmationScreen extends StatefulWidget {
 
 class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     with TransactionPinMixin {
+  final PageController _pageController = PageController();
   final TextEditingController _amountController = TextEditingController();
-  String? _selectedAccountId;
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _nicknameController = TextEditingController();
+
+  int _currentStep = 0;
+  static const int _totalSteps = 2;
+
+  AccountSummaryEntity? _selectedAccount;
   bool _isProcessing = false;
   int? _selectedQuickAmount;
+  bool _saveBeneficiary = false;
+
+  // Beneficiary-aware fields
+  BillBeneficiaryEntity? _beneficiary;
+  bool _isFromBeneficiary = false;
+  bool _isNicknameEditable = false;
+  String? _originalNickname;
 
   // Parsed from Get.arguments in initState
   ElectricityProviderEntity? _provider;
@@ -46,8 +63,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
 
-  // C4: Get service fee from provider
-  double get _serviceFee => _provider?.serviceFee ?? 0.0;
+  // Service fee from provider (controlled by backend feature flag)
+  double get _serviceFee {
+    return _provider?.serviceFee ?? 0.0;
+  }
 
   @override
   void initState() {
@@ -65,6 +84,14 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       _meterNumber = args['meterNumber'] as String;
       _meterType = args['meterType'] as MeterType;
       _argsValid = true;
+
+      // Parse beneficiary if navigating from beneficiaries screen
+      if (args['beneficiary'] is BillBeneficiaryEntity) {
+        _beneficiary = args['beneficiary'] as BillBeneficiaryEntity;
+        _isFromBeneficiary = true;
+        _originalNickname = _beneficiary!.nickname;
+        _nicknameController.text = _beneficiary!.nickname;
+      }
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.back();
@@ -73,7 +100,9 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
 
     // C1: Ensure accounts are loaded with real user ID
     final accountState = context.read<AccountCardsSummaryCubit>().state;
-    if (accountState is! AccountCardsSummaryLoaded) {
+    if (accountState is AccountCardsSummaryLoaded) {
+      _preSelectAccount(accountState);
+    } else {
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is AuthenticationSuccess) {
         context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
@@ -83,12 +112,45 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     }
 
     _amountController.addListener(_onAmountChanged);
+
+    // Pre-load beneficiaries for duplicate check when saving
+    context.read<BeneficiaryCubit>().getBeneficiaries();
+
+    // Pre-fill phone number: from beneficiary args if present, else from user profile
+    final argsPhone = args is Map<String, dynamic> ? args['phoneNumber'] as String? : null;
+    if (argsPhone != null && argsPhone.isNotEmpty) {
+      _phoneController.text = _normalizePhone(argsPhone);
+    } else {
+      final authState = context.read<AuthenticationCubit>().state;
+      if (authState is AuthenticationSuccess) {
+        final profilePhone = authState.profile.user.phoneNumber ?? '';
+        _phoneController.text = profilePhone.isNotEmpty
+            ? _normalizePhone(profilePhone)
+            : '';
+      }
+    }
+  }
+
+  void _preSelectAccount(AccountCardsSummaryLoaded state) {
+    final ngnAccounts = state.accountSummaries
+        .where((a) => a.currency.toUpperCase() == 'NGN')
+        .toList();
+    if (ngnAccounts.isNotEmpty) {
+      // Prefer primary account, else first NGN account
+      final primary = ngnAccounts.where((a) => a.isPrimary).firstOrNull;
+      setState(() {
+        _selectedAccount = primary ?? ngnAccounts.first;
+      });
+    }
   }
 
   @override
   void dispose() {
     _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
+    _phoneController.dispose();
+    _nicknameController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -118,15 +180,59 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
 
   double get _totalAmount => _enteredAmount + _serviceFee;
 
-  String get _selectedAccountCurrency {
-    final accountState = context.read<AccountCardsSummaryCubit>().state;
-    if (accountState is AccountCardsSummaryLoaded && _selectedAccountId != null) {
-      final account = accountState.accountSummaries
-          .where((a) => a.id.toString() == _selectedAccountId)
-          .firstOrNull;
-      if (account != null) return account.currency;
+  String get _selectedAccountCurrency => _selectedAccount?.currency ?? 'NGN';
+
+  // ===== Navigation =====
+
+  void _goNext() {
+    if (_currentStep == 0 && !_validateStep1()) return;
+    if (_currentStep < _totalSteps - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      setState(() => _currentStep++);
     }
-    return 'NGN';
+  }
+
+  void _goBack() {
+    if (_currentStep > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      setState(() => _currentStep--);
+    } else {
+      Get.back();
+    }
+  }
+
+  bool _validateStep1() {
+    final phoneNumber = _phoneController.text.trim();
+    if (phoneNumber.isNotEmpty && !_isValidPhone(phoneNumber)) {
+      Get.snackbar(
+        'Invalid Phone Number',
+        'Enter a valid phone number (e.g. +2348012345678)',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return false;
+    }
+
+    // Only validate nickname for new beneficiary saves, not existing ones
+    if (!_isFromBeneficiary && _saveBeneficiary && _nicknameController.text.trim().isEmpty) {
+      Get.snackbar(
+        'Nickname Required',
+        'Please enter a nickname for this beneficiary',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return false;
+    }
+
+    return true;
   }
 
   void _processPayment() async {
@@ -187,7 +293,31 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       }
     }
 
-    if (_selectedAccountId == null) {
+    // Validate phone number
+    final phoneNumber = _phoneController.text.trim();
+    if (phoneNumber.isEmpty) {
+      Get.snackbar(
+        'Phone Number Required',
+        'Please enter a phone number for token delivery',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
+    if (!_isValidPhone(phoneNumber)) {
+      Get.snackbar(
+        'Invalid Phone Number',
+        'Enter a valid phone number (e.g. +2348012345678)',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
+    if (_selectedAccount == null) {
       Get.snackbar(
         'No Account Selected',
         'Please select a payment account',
@@ -198,22 +328,52 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       return;
     }
 
-    // C5: Check balance before proceeding
-    final accountState = context.read<AccountCardsSummaryCubit>().state;
-    if (accountState is AccountCardsSummaryLoaded) {
-      final selectedAccount = accountState.accountSummaries
-          .where((a) => a.id.toString() == _selectedAccountId)
-          .firstOrNull;
-      if (selectedAccount != null && selectedAccount.balance < _totalAmount) {
+    // Skip beneficiary saving/validation when coming from saved beneficiary
+    if (!_isFromBeneficiary) {
+      // Validate nickname if saving as beneficiary
+      if (_saveBeneficiary && _nicknameController.text.trim().isEmpty) {
         Get.snackbar(
-          'Insufficient Balance',
-          'Your account balance (\u20A6${selectedAccount.balance.toStringAsFixed(2)}) is less than the total amount (\u20A6${_totalAmount.toStringAsFixed(2)})',
+          'Nickname Required',
+          'Please enter a nickname for this beneficiary',
           backgroundColor: const Color(0xFFEF4444),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
         );
         return;
       }
+
+      // Check for duplicate beneficiary meter number
+      if (_saveBeneficiary) {
+        final beneficiaryState = context.read<BeneficiaryCubit>().state;
+        if (beneficiaryState is BeneficiariesLoaded) {
+          final isDuplicate = beneficiaryState.beneficiaries.any(
+            (b) => b.meterNumber == meterNumber,
+          );
+          if (isDuplicate) {
+            Get.snackbar(
+              'Already Saved',
+              'A beneficiary with this meter number already exists',
+              backgroundColor: const Color(0xFFFB923C),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
+            setState(() => _saveBeneficiary = false);
+            return;
+          }
+        }
+      }
+    }
+
+    // C5: Check balance before proceeding
+    if (_selectedAccount != null && _selectedAccount!.balance < _totalAmount) {
+      Get.snackbar(
+        'Insufficient Balance',
+        'Your account balance (\u20A6${_selectedAccount!.balance.toStringAsFixed(2)}) is less than the total amount (\u20A6${_totalAmount.toStringAsFixed(2)})',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
     }
 
     // C2: Set processing flag
@@ -234,7 +394,12 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       title: 'Confirm Bill Payment',
       message:
           'Confirm payment of \u20A6${amount.toStringAsFixed(2)} for ${provider.providerName}?',
+      showProcessingPhase: false,
       onPinValidated: (verificationToken) async {
+        // Pop the PIN bottom sheet before navigating to processing screen
+        if (mounted) {
+          try { Navigator.of(context).pop(); } catch (_) {}
+        }
         _executePaymentWithToken(
           provider: provider,
           validationResult: validationResult,
@@ -262,7 +427,35 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     required String transactionId,
     required String verificationToken,
   }) {
-    // Navigate to processing screen first
+    final phoneNumber = _normalizePhone(_phoneController.text.trim());
+
+    // Save beneficiary if toggle is on (new beneficiary flow only)
+    if (_saveBeneficiary && !_isFromBeneficiary) {
+      context.read<BeneficiaryCubit>().saveBeneficiary(
+            providerId: provider.id,
+            meterNumber: meterNumber,
+            meterType: meterType,
+            customerName: validationResult.customerName,
+            customerAddress: validationResult.customerAddress,
+            phoneNumber: phoneNumber,
+            nickname: _nicknameController.text.trim(),
+            providerCode: provider.providerCode,
+            providerName: provider.providerName,
+          );
+    }
+
+    // Update beneficiary nickname if changed
+    if (_isFromBeneficiary && _beneficiary != null) {
+      final newNickname = _nicknameController.text.trim();
+      if (newNickname.isNotEmpty && newNickname != _originalNickname) {
+        context.read<BeneficiaryCubit>().updateBeneficiary(
+              beneficiaryId: _beneficiary!.id,
+              nickname: newNickname,
+            );
+      }
+    }
+
+    // Navigate to processing screen with all payment params
     Get.toNamed(
       AppRoutes.electricityBillProcessing,
       arguments: {
@@ -271,23 +464,14 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         'amount': amount,
         'meterNumber': meterNumber,
         'meterType': meterType,
+        'providerCode': provider.providerCode,
+        'currency': _selectedAccountCurrency,
+        'accountId': _selectedAccount!.id,
+        'phoneNumber': phoneNumber,
+        'transactionId': transactionId,
+        'verificationToken': verificationToken,
       },
     );
-
-    // Then trigger the payment with verification token
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (!mounted) return;
-      context.read<ElectricityBillCubit>().initiatePaymentWithToken(
-            providerCode: provider.providerCode,
-            meterNumber: meterNumber,
-            meterType: meterType,
-            amount: amount,
-            currency: _selectedAccountCurrency,
-            accountId: _selectedAccountId!,
-            transactionId: transactionId,
-            verificationToken: verificationToken,
-          );
-    });
   }
 
   @override
@@ -303,91 +487,146 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     final validationResult = _validationResult!;
     final meterType = _meterType!;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
+    return BlocListener<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      listener: (context, state) {
+        if (state is AccountCardsSummaryLoaded && _selectedAccount == null) {
+          _preSelectAccount(state);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildProgressBar(),
+              SizedBox(height: 8.h),
+              _buildStepIndicators(),
+              SizedBox(height: 8.h),
+              // Customer summary always visible
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: _buildCustomerSummary(
+                    provider, validationResult, meterType),
+              ),
+              SizedBox(height: 16.h),
+              // PageView carousel
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (page) {
+                    setState(() => _currentStep = page);
+                  },
                   children: [
-                    SizedBox(height: 8.h),
-                    _buildCustomerSummary(
-                        provider, validationResult, meterType),
-                    SizedBox(height: 24.h),
-                    _buildQuickAmounts(provider),
-                    SizedBox(height: 20.h),
-                    _buildAmountInput(provider),
-                    SizedBox(height: 20.h),
-                    _buildFeeBreakdown(),
-                    SizedBox(height: 24.h),
-                    _buildAccountSelector(),
-                    SizedBox(height: 32.h),
+                    _buildStep1ContactDetails(),
+                    _buildStep2PaymentDetails(provider),
                   ],
                 ),
               ),
-            ),
-            _buildBottomBar(),
-          ],
+              _buildBottomNavigation(),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // ===== Header =====
+
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: _goBack,
             child: Container(
-              width: 44.w,
-              height: 44.w,
+              width: 40.w,
+              height: 40.w,
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(22.r),
+                borderRadius: BorderRadius.circular(20.r),
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
                 color: Colors.white,
-                size: 18.sp,
+                size: 16.sp,
               ),
             ),
           ),
           SizedBox(width: 16.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Confirm Payment',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Review details before paying',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
+            child: Text(
+              _currentStep == 0 ? 'Contact Details' : 'Payment Details',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            '${_currentStep + 1}/$_totalSteps',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
       ),
     );
   }
+
+  // ===== Progress Bar =====
+
+  Widget _buildProgressBar() {
+    return Container(
+      height: 4,
+      margin: EdgeInsets.symmetric(horizontal: 24.w),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(2)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: LinearProgressIndicator(
+          value: (_currentStep + 1) / _totalSteps,
+          backgroundColor: const Color(0xFF2D2D2D),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            _currentStep == _totalSteps - 1
+                ? const Color(0xFF10B981)
+                : const Color(0xFF3B82F6),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===== Step Indicators =====
+
+  Widget _buildStepIndicators() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(_totalSteps, (index) {
+        final isActive = index == _currentStep;
+        final isCompleted = index < _currentStep;
+        return Container(
+          width: isActive ? 24.w : 8.w,
+          height: 8.w,
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
+          decoration: BoxDecoration(
+            color: isActive
+                ? const Color(0xFF3B82F6)
+                : isCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF2D2D2D),
+            borderRadius: BorderRadius.circular(4.r),
+          ),
+        );
+      }),
+    );
+  }
+
+  // ===== Customer Summary (Always Visible) =====
 
   Widget _buildCustomerSummary(
     ElectricityProviderEntity provider,
@@ -395,178 +634,465 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     MeterType meterType,
   ) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Verified badge
+          // Verified icon
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            width: 40.w,
+            height: 40.w,
             decoration: BoxDecoration(
               color: const Color(0xFF10B981).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20.r),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Icon(
+              Icons.verified,
+              color: const Color(0xFF10B981),
+              size: 20.sp,
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.verified,
-                  color: const Color(0xFF10B981),
-                  size: 16.sp,
-                ),
-                SizedBox(width: 6.w),
                 Text(
-                  'Meter Verified',
+                  validationResult.customerName,
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF10B981),
-                    fontSize: 12.sp,
+                    color: Colors.white,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '${provider.providerName} \u2022 ${validationResult.meterNumber}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 16.h),
-
-          // Customer info
-          Row(
-            children: [
-              Container(
-                width: 48.w,
-                height: 48.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(24.r),
-                ),
-                child: Icon(
-                  Icons.person,
-                  color: const Color(0xFF3B82F6),
-                  size: 24.sp,
-                ),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      validationResult.customerName,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      validationResult.meterNumber,
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          // Customer address (from VTPass validation)
-          if (validationResult.customerAddress != null &&
-              validationResult.customerAddress!.isNotEmpty) ...[
-            SizedBox(height: 12.h),
-            Row(
-              children: [
-                Container(
-                  width: 32.w,
-                  height: 32.w,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Icon(
-                    Icons.location_on,
-                    color: const Color(0xFF8B5CF6),
-                    size: 16.sp,
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    validationResult.customerAddress!,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6.r),
             ),
-          ],
-
-          SizedBox(height: 16.h),
-          Divider(color: const Color(0xFF2D2D2D)),
-          SizedBox(height: 12.h),
-
-          // Provider + meter type row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 32.w,
-                    height: 32.w,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFB923C).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Icon(
-                      Icons.bolt,
-                      color: const Color(0xFFFB923C),
-                      size: 18.sp,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Text(
-                    provider.providerName,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+            child: Text(
+              meterType == MeterType.prepaid ? 'Prepaid' : 'Postpaid',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF3B82F6),
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  meterType == MeterType.prepaid ? 'Prepaid' : 'Postpaid',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
+
+  // ===== Step 1: Contact Details =====
+
+  Widget _buildStep1ContactDetails() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 8.h),
+          _buildPhoneInput(),
+          SizedBox(height: 20.h),
+          _buildSaveBeneficiaryToggle(),
+          SizedBox(height: 32.h),
+        ],
+      ),
+    );
+  }
+
+  // ===== Step 2: Payment Details =====
+
+  Widget _buildStep2PaymentDetails(ElectricityProviderEntity provider) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 8.h),
+          _buildQuickAmounts(provider),
+          SizedBox(height: 20.h),
+          _buildAmountInput(provider),
+          SizedBox(height: 20.h),
+          _buildFeeBreakdown(),
+          SizedBox(height: 20.h),
+          _buildAccountCard(),
+          SizedBox(height: 32.h),
+        ],
+      ),
+    );
+  }
+
+  // ===== Account Card (Pre-selected with Change) =====
+
+  Widget _buildAccountCard() {
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      builder: (context, state) {
+        if (state is AccountCardsSummaryLoading) {
+          return Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        }
+
+        if (state is AccountCardsSummaryLoaded) {
+          if (_selectedAccount == null && state.accountSummaries.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _preSelectAccount(state);
+            });
+          }
+
+          if (_selectedAccount != null) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Payment Account',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                GestureDetector(
+                  onTap: () => _showAccountSelector(state.accountSummaries),
+                  child: Container(
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      border: Border.all(
+                        color: const Color(0xFF3B82F6),
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3B82F6)
+                                .withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Icon(
+                            Icons.account_balance_wallet,
+                            color: const Color(0xFF3B82F6),
+                            size: 20.sp,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${_selectedAccount!.currency} Account  \u00B7\u00B7\u00B7${_selectedAccount!.accountNumberLast4}',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 2.h),
+                              Text(
+                                'Balance: \u20A6${_selectedAccount!.balance.toStringAsFixed(2)}',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D2D2D),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            'Change',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF3B82F6),
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  void _showAccountSelector(List<AccountSummaryEntity> allAccounts) {
+    final ngnAccounts = allAccounts
+        .where((a) => a.currency.toUpperCase() == 'NGN')
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.r),
+          topRight: Radius.circular(20.r),
+        ),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4B5563),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Select Account',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            ...ngnAccounts.map((account) {
+              final isSelected = _selectedAccount?.id == account.id;
+              return GestureDetector(
+                onTap: () {
+                  setState(() => _selectedAccount = account);
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  margin: EdgeInsets.only(bottom: 10.h),
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                        : const Color(0xFF2D2D2D),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF3B82F6)
+                          : const Color(0xFF374151),
+                      width: isSelected ? 2 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36.w,
+                        height: 36.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3B82F6)
+                              .withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(18.r),
+                        ),
+                        child: Icon(
+                          Icons.account_balance_wallet,
+                          color: const Color(0xFF3B82F6),
+                          size: 18.sp,
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              account.accountType,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '\u20A6${account.balance.toStringAsFixed(2)}',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isSelected)
+                        Icon(
+                          Icons.check_circle,
+                          color: const Color(0xFF3B82F6),
+                          size: 22.sp,
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ===== Bottom Navigation =====
+
+  Widget _buildBottomNavigation() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        border: const Border(
+            top: BorderSide(color: Color(0xFF2D2D2D))),
+      ),
+      child: Row(
+        children: [
+          if (_currentStep > 0) ...[
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _goBack,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF3B82F6)),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Back',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF3B82F6),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+          ],
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: _isProcessing
+                  ? null
+                  : (_currentStep == _totalSteps - 1
+                      ? _processPayment
+                      : _goNext),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _currentStep == _totalSteps - 1
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF3B82F6),
+                disabledBackgroundColor: (_currentStep == _totalSteps - 1
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF3B82F6))
+                    .withValues(alpha: 0.5),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                elevation: 0,
+              ),
+              child: _isProcessing
+                  ? SizedBox(
+                      height: 20.h,
+                      width: 20.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_currentStep == _totalSteps - 1)
+                          Icon(
+                            Icons.lock_outline,
+                            color: Colors.white,
+                            size: 18.sp,
+                          ),
+                        if (_currentStep == _totalSteps - 1)
+                          SizedBox(width: 8.w),
+                        Text(
+                          _currentStep == _totalSteps - 1
+                              ? (_enteredAmount > 0
+                                  ? 'Pay \u20A6${_totalAmount.toStringAsFixed(2)}'
+                                  : 'Pay Now')
+                              : 'Continue',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (_currentStep < _totalSteps - 1)
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.white,
+                            size: 14.sp,
+                          ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===== Shared Widgets =====
 
   Widget _buildQuickAmounts(ElectricityProviderEntity provider) {
     return Column(
@@ -765,183 +1291,202 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     );
   }
 
-  Widget _buildAccountSelector() {
-    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
-      builder: (context, state) {
-        if (state is AccountCardsSummaryLoading) {
-          return Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(16.r),
+  /// Strips whitespace, dashes from phone number.
+  String _normalizePhone(String phone) {
+    return phone.replaceAll(RegExp(r'[\s\-]'), '');
+  }
+
+  /// Validates phone numbers - accepts any valid phone format.
+  /// Must be at least 7 digits (shortest valid international numbers)
+  /// and at most 15 digits (ITU-T E.164 max). May start with +.
+  bool _isValidPhone(String phone) {
+    final normalized = _normalizePhone(phone);
+    return RegExp(r'^\+?\d{7,15}$').hasMatch(normalized);
+  }
+
+  Widget _buildPhoneInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Phone Number',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'For token delivery via SMS',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: const Color(0xFF2D2D2D),
+              width: 1,
             ),
-            child: const Center(
-              child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                strokeWidth: 2,
+          ),
+          child: TextField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+            decoration: InputDecoration(
+              hintText: '+2348012345678',
+              hintStyle: GoogleFonts.inter(
+                color: const Color(0xFF4B5563),
+                fontSize: 16.sp,
+              ),
+              border: InputBorder.none,
+              icon: Icon(
+                Icons.phone_outlined,
+                color: const Color(0xFF6B7280),
+                size: 22.sp,
               ),
             ),
-          );
-        }
-
-        if (state is AccountCardsSummaryLoaded) {
-          final ngnAccounts = state.accountSummaries
-              .where((a) => a.currency.toUpperCase() == 'NGN')
-              .toList();
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Payment Account',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 12.h),
-              ...ngnAccounts.map((account) {
-                final isSelected =
-                    _selectedAccountId == account.id.toString();
-
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedAccountId = account.id.toString();
-                    });
-                  },
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 10.h),
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
-                          : const Color(0xFF1F1F1F),
-                      border: Border.all(
-                        color: isSelected
-                            ? const Color(0xFF3B82F6)
-                            : const Color(0xFF2D2D2D),
-                        width: isSelected ? 2 : 1,
-                      ),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40.w,
-                          height: 40.w,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6)
-                                .withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Icon(
-                            Icons.account_balance_wallet,
-                            color: const Color(0xFF3B82F6),
-                            size: 20.sp,
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                account.accountType,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                '\u20A6${account.balance.toStringAsFixed(2)}',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF9CA3AF),
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (isSelected)
-                          Icon(
-                            Icons.check_circle,
-                            color: const Color(0xFF3B82F6),
-                            size: 24.sp,
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-            ],
-          );
-        }
-
-        return const SizedBox.shrink();
-      },
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildSaveBeneficiaryToggle() {
+    if (_isFromBeneficiary) {
+      return _buildBeneficiaryNicknameField();
+    }
+
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.bookmark_border,
+                color: _saveBeneficiary
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF6B7280),
+                size: 22.sp,
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  'Save as Beneficiary',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Switch.adaptive(
+                value: _saveBeneficiary,
+                onChanged: (v) => setState(() => _saveBeneficiary = v),
+                activeTrackColor: const Color(0xFF3B82F6),
+              ),
+            ],
+          ),
+        ),
+        if (_saveBeneficiary) ...[
+          SizedBox(height: 10.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
+            ),
+            child: TextField(
+              controller: _nicknameController,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Nickname (required)',
+                hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF4B5563),
+                  fontSize: 14.sp,
+                ),
+                border: InputBorder.none,
+                icon: Icon(
+                  Icons.label_outline,
+                  color: const Color(0xFF6B7280),
+                  size: 20.sp,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBeneficiaryNicknameField() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
+        color: _isNicknameEditable
+            ? const Color(0xFF1F1F1F)
+            : const Color(0xFF1F1F1F).withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: _isNicknameEditable
+              ? const Color(0xFF3B82F6)
+              : const Color(0xFF2D2D2D),
         ),
       ),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: _isProcessing ? null : _processPayment,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF10B981),
-            disabledBackgroundColor:
-                const Color(0xFF10B981).withValues(alpha: 0.5),
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            elevation: 0,
+      child: TextField(
+        controller: _nicknameController,
+        enabled: _isNicknameEditable,
+        style: GoogleFonts.inter(
+          color: _isNicknameEditable ? Colors.white : const Color(0xFF9CA3AF),
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          labelText: 'Beneficiary Nickname',
+          labelStyle: GoogleFonts.inter(
+            color: const Color(0xFF6B7280),
+            fontSize: 12.sp,
           ),
-          child: _isProcessing
-              ? SizedBox(
-                  height: 20.h,
-                  width: 20.w,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.lock_outline,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      _enteredAmount > 0
-                          ? 'Pay \u20A6${_totalAmount.toStringAsFixed(2)}'
-                          : 'Confirm Payment',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
+          border: InputBorder.none,
+          icon: Icon(
+            Icons.label_outline,
+            color: const Color(0xFF6B7280),
+            size: 20.sp,
+          ),
+          suffixIcon: IconButton(
+            onPressed: () {
+              setState(() => _isNicknameEditable = !_isNicknameEditable);
+            },
+            icon: Icon(
+              _isNicknameEditable ? Icons.check : Icons.edit,
+              color: _isNicknameEditable
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF6B7280),
+              size: 20.sp,
+            ),
+          ),
         ),
       ),
     );

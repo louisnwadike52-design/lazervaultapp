@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/whatsapp_banking_cubit.dart';
 import '../../cubit/whatsapp_banking_state.dart';
+import '../../domain/entities/security_settings.dart';
 
 class WhatsAppMainScreen extends StatefulWidget {
   const WhatsAppMainScreen({super.key});
@@ -14,10 +17,76 @@ class WhatsAppMainScreen extends StatefulWidget {
 }
 
 class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
+  // Inline security settings controllers
+  final _dailyLimitController = TextEditingController();
+  final _perTransactionLimitController = TextEditingController();
+  final _biometricThresholdController = TextEditingController();
+  bool _requirePinForAll = true;
+  bool _securityExpanded = false;
+  bool _settingsLoaded = false;
+  bool _hasSettingsChanges = false;
+
   @override
   void initState() {
     super.initState();
     context.read<WhatsAppBankingCubit>().loadStatus();
+  }
+
+  @override
+  void dispose() {
+    _dailyLimitController.dispose();
+    _perTransactionLimitController.dispose();
+    _biometricThresholdController.dispose();
+    super.dispose();
+  }
+
+  void _populateSettings(SecuritySettings settings) {
+    if (!_settingsLoaded) {
+      _dailyLimitController.text = settings.dailyTransactionLimit.toStringAsFixed(2);
+      _perTransactionLimitController.text = settings.perTransactionLimit.toStringAsFixed(2);
+      _biometricThresholdController.text = settings.biometricThreshold.toStringAsFixed(2);
+      _requirePinForAll = settings.requirePinForAll;
+      _settingsLoaded = true;
+    }
+  }
+
+  void _saveInlineSettings() {
+    final dailyLimit = double.tryParse(_dailyLimitController.text) ?? 0;
+    final perTxLimit = double.tryParse(_perTransactionLimitController.text) ?? 0;
+
+    if (dailyLimit <= 0 || perTxLimit <= 0) {
+      Get.snackbar(
+        'Invalid Amount',
+        'Please enter valid amounts greater than zero',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: Duration(seconds: 3),
+        margin: EdgeInsets.all(16.w),
+      );
+      return;
+    }
+
+    if (dailyLimit < perTxLimit) {
+      Get.snackbar(
+        'Invalid Limits',
+        'Daily limit must be greater than or equal to per-transaction limit',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: Duration(seconds: 3),
+        margin: EdgeInsets.all(16.w),
+      );
+      return;
+    }
+
+    context.read<WhatsAppBankingCubit>().updateSecuritySettings(
+      dailyTransactionLimit: dailyLimit,
+      perTransactionLimit: perTxLimit,
+      requirePinForAll: _requirePinForAll,
+      biometricThreshold: double.tryParse(_biometricThresholdController.text) ?? 0,
+    );
+    setState(() => _hasSettingsChanges = false);
   }
 
   @override
@@ -53,7 +122,21 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
               duration: Duration(seconds: 3),
               margin: EdgeInsets.all(16.w),
             );
+            setState(() {
+              _settingsLoaded = false;
+              _securityExpanded = false;
+            });
             context.read<WhatsAppBankingCubit>().loadStatus();
+          } else if (state is WhatsAppBankingSettingsUpdated) {
+            Get.snackbar(
+              'Settings Updated',
+              'Your security settings have been saved',
+              backgroundColor: Colors.green.withValues(alpha: 0.9),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: Duration(seconds: 3),
+              margin: EdgeInsets.all(16.w),
+            );
           } else if (state is WhatsAppBankingError) {
             Get.snackbar(
               'Error',
@@ -67,7 +150,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
           }
         },
         builder: (context, state) {
-          if (state is WhatsAppBankingLoading) {
+          if (state is WhatsAppBankingLoading && !_settingsLoaded) {
             return Center(
               child: CircularProgressIndicator(
                 color: Color.fromARGB(255, 78, 3, 208),
@@ -228,6 +311,17 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
 
   Widget _buildLinkedView(WhatsAppBankingLoaded state) {
     final user = state.user!;
+
+    // Populate settings if loaded
+    if (state.settings != null) {
+      _populateSettings(state.settings!);
+    } else if (!_settingsLoaded) {
+      // Load settings on first view
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<WhatsAppBankingCubit>().loadSecuritySettings();
+      });
+    }
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -326,70 +420,8 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
           ),
           SizedBox(height: 20.h),
 
-          // Security Settings Card
-          GestureDetector(
-            onTap: () => Get.toNamed(AppRoutes.whatsappSecurity),
-            child: Container(
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48.w,
-                    height: 48.w,
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.security,
-                      color: Color.fromARGB(255, 78, 3, 208),
-                      size: 24.sp,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Security Settings',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Manage limits and PIN settings',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16.sp,
-                    color: Colors.black38,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // Inline Security Settings (expandable)
+          _buildInlineSecuritySettings(),
           SizedBox(height: 20.h),
 
           // Quick Start Guide
@@ -472,6 +504,275 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInlineSecuritySettings() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header (tap to expand/collapse)
+          GestureDetector(
+            onTap: () => setState(() => _securityExpanded = !_securityExpanded),
+            child: Container(
+              padding: EdgeInsets.all(20.w),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48.w,
+                    height: 48.w,
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.security,
+                      color: Color.fromARGB(255, 78, 3, 208),
+                      size: 24.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Security Settings',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'Manage limits and PIN settings',
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: _securityExpanded ? 0.25 : 0,
+                    duration: Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16.sp,
+                      color: Colors.black38,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Expandable settings content
+          AnimatedCrossFade(
+            firstChild: SizedBox.shrink(),
+            secondChild: _buildSecuritySettingsContent(),
+            crossFadeState: _securityExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: Duration(milliseconds: 250),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecuritySettingsContent() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Divider(color: Colors.grey.shade200),
+          SizedBox(height: 16.h),
+
+          // Daily Transaction Limit
+          _buildInlineLimitField(
+            icon: Icons.calendar_today,
+            label: 'Daily Transaction Limit',
+            controller: _dailyLimitController,
+            hint: '5000.00',
+          ),
+          SizedBox(height: 12.h),
+
+          // Per Transaction Limit
+          _buildInlineLimitField(
+            icon: Icons.payment,
+            label: 'Per Transaction Limit',
+            controller: _perTransactionLimitController,
+            hint: '1000.00',
+          ),
+          SizedBox(height: 12.h),
+
+          // Biometric Threshold
+          _buildInlineLimitField(
+            icon: Icons.fingerprint,
+            label: 'Biometric Threshold',
+            controller: _biometricThresholdController,
+            hint: '5000.00',
+          ),
+          SizedBox(height: 12.h),
+
+          // Require PIN Toggle
+          Row(
+            children: [
+              Icon(
+                Icons.pin,
+                color: Color.fromARGB(255, 78, 3, 208),
+                size: 20.sp,
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  'Require PIN for All Transactions',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              Switch(
+                value: _requirePinForAll,
+                onChanged: (value) {
+                  setState(() {
+                    _requirePinForAll = value;
+                    _hasSettingsChanges = true;
+                  });
+                },
+                activeThumbColor: Color.fromARGB(255, 78, 3, 208),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+
+          // Save Button
+          if (_hasSettingsChanges)
+            ElevatedButton(
+              onPressed: _saveInlineSettings,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                elevation: 2,
+              ),
+              child: Text(
+                'Save Changes',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+
+          // Advanced settings link
+          SizedBox(height: 8.h),
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.whatsappSecurity),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Advanced Security Settings',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Color.fromARGB(255, 78, 3, 208),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(width: 4.w),
+                Icon(
+                  Icons.open_in_new,
+                  size: 14.sp,
+                  color: Color.fromARGB(255, 78, 3, 208),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInlineLimitField({
+    required IconData icon,
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+  }) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: Color.fromARGB(255, 78, 3, 208),
+          size: 20.sp,
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Expanded(
+          flex: 1,
+          child: TextFormField(
+            controller: controller,
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
+            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+            ],
+            onChanged: (_) => setState(() => _hasSettingsChanges = true),
+            decoration: InputDecoration(
+              prefixText: '${CurrencySymbols.currentSymbol} ',
+              prefixStyle: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Color.fromARGB(255, 78, 3, 208),
+              ),
+              hintText: hint,
+              isDense: true,
+              filled: true,
+              fillColor: Color(0xFFF5F5F5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 10.w,
+                vertical: 10.h,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

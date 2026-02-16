@@ -134,36 +134,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           children: [
             _buildCustomHeader(),
             Expanded(
-              child: BlocListener<AutoSaveCubit, AutoSaveState>(
-        listener: (context, state) {
-          if (state is AutoSaveRuleCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Auto-save rule created successfully!',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                ),
-                backgroundColor: const Color(0xFF00C853),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-              ),
-            );
-            Navigator.pop(context);
-          } else if (state is AutoSaveError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  state.message,
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                ),
-                backgroundColor: const Color(0xFFFF6B6B),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-              ),
-            );
-          }
-        },
-        child: Form(
+              child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             padding: EdgeInsets.all(16.w),
@@ -326,7 +297,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           ),
         ),
       ),
-    ),
           ],
         ),
       ),

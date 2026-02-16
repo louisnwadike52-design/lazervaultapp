@@ -26,6 +26,7 @@ import 'smart_trading_screen.dart';
 import 'secure_wallet_screen.dart';
 import 'pro_exchange_screen.dart';
 import 'learn_earn_screen.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class CryptoScreen extends StatefulWidget {
   const CryptoScreen({super.key});
@@ -171,24 +172,9 @@ class _CryptoScreenState extends State<CryptoScreen>
               ),
               SizedBox(width: 12.w),
               // Chat Button
-              Container(
-                height: 40.h,
-                width: 40.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.chat_bubble_outline, color: Colors.white, size: 20.sp),
-                  onPressed: () {
-                    Get.snackbar(
-                      'Chat Support',
-                      'Chat support feature coming soon!',
-                      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
-                      colorText: Colors.white,
-                    );
-                  },
-                ),
+              MicroserviceChatIcon(
+                serviceName: 'Crypto',
+                sourceContext: 'crypto',
               ),
               SizedBox(width: 12.w),
               // Notifications Button

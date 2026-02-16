@@ -98,7 +98,7 @@ class BudgetListView extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Get.toNamed(AppRoutes.createBudget),
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF10B981),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -125,7 +125,7 @@ class _BudgetsListView extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: () => context.read<BudgetCubit>().loadBudgets(),
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF10B981),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         padding: EdgeInsets.all(16.w),
@@ -209,7 +209,7 @@ class _SummaryCard extends StatelessWidget {
                           ? const Color(0xFFEF4444)
                           : overallPercentage >= 70
                               ? const Color(0xFFFB923C)
-                              : const Color(0xFF3B82F6),
+                              : const Color(0xFF10B981),
                     ),
                   ),
                 ),
@@ -390,7 +390,7 @@ class _BudgetCard extends StatelessWidget {
                       ? const Color(0xFFEF4444)
                       : percentage >= 70
                           ? const Color(0xFFFB923C)
-                          : const Color(0xFF3B82F6),
+                          : const Color(0xFF10B981),
                 ),
                 minHeight: 6.h,
               ),
@@ -470,7 +470,7 @@ class _EmptyStateView extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Create Budget'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(
                   horizontal: 24.w,
@@ -500,7 +500,7 @@ class _LoadingView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            color: Color(0xFF3B82F6),
+            color: Color(0xFF10B981),
           ),
           SizedBox(height: 16.h),
           Text(

@@ -73,8 +73,10 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
 
       // Map filters to accounts-service parameters
       String? typeFilter;
-      if (filters?.statuses?.contains(UnifiedTransactionStatus.completed) == true) {
-        typeFilter = null; // Get all types
+      if (filters?.flows?.isNotEmpty == true) {
+        typeFilter = filters!.flows!.first == TransactionFlow.incoming
+            ? 'credit'
+            : 'debit';
       }
 
       // Fetch from gRPC server
@@ -97,7 +99,18 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       );
 
       // Convert proto transactions to unified transactions
-      final transactions = response.transactions.map(_convertFromProto).toList();
+      var transactions = response.transactions.map(_convertFromProto).toList();
+
+      // Apply local search filter if set
+      if (filters?.searchQuery?.isNotEmpty == true) {
+        final query = filters!.searchQuery!.toLowerCase();
+        transactions = transactions.where((tx) =>
+          tx.title.toLowerCase().contains(query) ||
+          tx.description?.toLowerCase().contains(query) == true ||
+          tx.counterpartyName?.toLowerCase().contains(query) == true ||
+          tx.transactionReference?.toLowerCase().contains(query) == true
+        ).toList();
+      }
 
       // Cache the results
       if (page == 1 && transactions.isNotEmpty && userId != null) {
@@ -420,11 +433,15 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       metadata['balance_after'] = protoTx.balanceAfter;
     }
 
-    // Extract counterparty info from metadata
-    String? counterpartyName = metadata['recipient_name'] as String?
-        ?? metadata['counterparty_name'] as String?;
-    String? counterpartyAccount = metadata['recipient_account'] as String?
-        ?? metadata['counterparty_account'] as String?;
+    // Extract counterparty info: prefer proto fields, fallback to metadata
+    String? counterpartyName = protoTx.counterpartyName.isNotEmpty
+        ? protoTx.counterpartyName
+        : (metadata['recipient_name'] as String?
+            ?? metadata['counterparty_name'] as String?);
+    String? counterpartyAccount = protoTx.counterpartyAccount.isNotEmpty
+        ? protoTx.counterpartyAccount
+        : (metadata['recipient_account'] as String?
+            ?? metadata['counterparty_account'] as String?);
 
     // Fallback: try to parse account number from description
     if (counterpartyAccount == null && protoTx.description.isNotEmpty) {
@@ -434,10 +451,22 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       }
     }
 
+    // Generate title, enriched with counterparty name for transfers
+    String title = _generateTransactionTitle(protoTx.category, protoTx.type);
+    if (counterpartyName != null && counterpartyName.isNotEmpty) {
+      final categoryLower = protoTx.category.toLowerCase();
+      final typeLower = protoTx.type.toLowerCase();
+      if (categoryLower.contains('transfer')) {
+        title = typeLower == 'credit'
+            ? 'Transfer from $counterpartyName'
+            : 'Transfer to $counterpartyName';
+      }
+    }
+
     return UnifiedTransaction(
       id: protoTx.id,
       serviceType: serviceType,
-      title: _generateTransactionTitle(protoTx.category, protoTx.type),
+      title: title,
       description: protoTx.description.isNotEmpty ? protoTx.description : null,
       amount: protoTx.amount,
       currency: accountManager.activeAccountDetails?.currency ?? 'NGN',

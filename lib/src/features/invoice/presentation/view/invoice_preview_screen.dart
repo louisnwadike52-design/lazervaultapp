@@ -5,13 +5,12 @@ import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:file_picker/file_picker.dart';
 
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -433,20 +432,20 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
             Expanded(
               child: _buildParticipantCard(
                 title: 'From',
-                details: invoice.payerDetails,
+                details: invoice.recipientDetails,
                 fallbackName: fromName ?? 'Your Business',
                 fallbackEmail: fromEmail,
-                logoUrl: invoice.payerLogoUrl,
+                logoUrl: invoice.recipientLogoUrl,
               ),
             ),
             SizedBox(width: 24.w),
             Expanded(
               child: _buildParticipantCard(
-                title: 'To',
-                details: invoice.recipientDetails,
+                title: 'Bill To',
+                details: invoice.payerDetails,
                 fallbackName: invoice.toName ?? 'Client',
                 fallbackEmail: invoice.toEmail,
-                logoUrl: invoice.recipientLogoUrl,
+                logoUrl: invoice.payerLogoUrl,
               ),
             ),
           ],
@@ -932,7 +931,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
               ),
             ),
           if (widget.showTaggedUsers)
-          Container(
+          SizedBox(
             width: double.infinity,
             height: 52.h,
             child: ElevatedButton.icon(
@@ -1296,7 +1295,6 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
 
   void _downloadInvoice(BuildContext context) async {
     try {
-      // Show loading indicator
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1305,47 +1303,29 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
               SizedBox(
                 width: 20.w,
                 height: 20.w,
-                child: CircularProgressIndicator(
+                child: const CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
               SizedBox(width: 16.w),
-              Text('Generating PDF...'),
+              const Text('Generating PDF...'),
             ],
           ),
           backgroundColor: InvoiceThemeColors.infoBlue,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 10),
+          duration: const Duration(seconds: 10),
         ),
       );
 
-      // Generate the PDF file
-      final pdfFile = await InvoicePdfService.generateInvoicePdf(invoice);
+      final filePath = await InvoicePdfService.downloadInvoice(invoice);
 
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-      // Let user pick save location
-      final fileName = 'invoice_${invoice.id.substring(0, 8)}.pdf';
-      final result = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save Invoice PDF',
-        fileName: fileName,
-        type: FileType.custom,
-        allowedExtensions: ['pdf'],
-      );
-
-      if (result == null) return; // User cancelled
-
-      // Copy file to chosen location
-      final savedFile = File(result);
-      await pdfFile.copy(savedFile.path);
-
-      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Invoice PDF saved successfully'),
+          content: Text('Invoice PDF saved to $filePath'),
           backgroundColor: InvoiceThemeColors.successGreen,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
@@ -2392,7 +2372,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 fontSize: 16.sp,
               ),
               decoration: InputDecoration(
-                hintText: 'Search by name, email, or username...',
+                hintText: 'Search by name, email, or @username...',
                 hintStyle: GoogleFonts.inter(
                   color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 16.sp,
@@ -3416,6 +3396,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
       );
 
       if (response.success) {
+        if (!mounted) return;
         Navigator.pop(context);
 
         // Show detailed success message
@@ -3431,6 +3412,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
           message = '$totalInvited invitation${totalInvited == 1 ? '' : 's'} sent';
         }
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(

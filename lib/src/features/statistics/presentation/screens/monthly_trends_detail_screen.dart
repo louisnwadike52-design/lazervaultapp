@@ -39,7 +39,7 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
           }
           return RefreshIndicator(
             onRefresh: () => context.read<StatisticsCubit>().refresh(),
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF10B981),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),

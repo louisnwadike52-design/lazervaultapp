@@ -1676,6 +1676,7 @@ const UserLookupResult$json = {
     {'1': 'is_lazervault_user', '3': 6, '4': 1, '5': 8, '10': 'isLazervaultUser'},
     {'1': 'phone_number', '3': 7, '4': 1, '5': 9, '10': 'phoneNumber'},
     {'1': 'email', '3': 8, '4': 1, '5': 9, '10': 'email'},
+    {'1': 'primary_account_id', '3': 9, '4': 1, '5': 9, '10': 'primaryAccountId'},
   ],
 };
 
@@ -1685,11 +1686,12 @@ final $typed_data.Uint8List userLookupResultDescriptor = $convert.base64Decode(
     'gCIAEoCVIIdXNlcm5hbWUSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3Rf'
     'bmFtZRgEIAEoCVIIbGFzdE5hbWUSJwoPcHJvZmlsZV9waWN0dXJlGAUgASgJUg5wcm9maWxlUG'
     'ljdHVyZRIsChJpc19sYXplcnZhdWx0X3VzZXIYBiABKAhSEGlzTGF6ZXJ2YXVsdFVzZXISIQoM'
-    'cGhvbmVfbnVtYmVyGAcgASgJUgtwaG9uZU51bWJlchIUCgVlbWFpbBgIIAEoCVIFZW1haWw=');
+    'cGhvbmVfbnVtYmVyGAcgASgJUgtwaG9uZU51bWJlchIUCgVlbWFpbBgIIAEoCVIFZW1haWwSLA'
+    'oScHJpbWFyeV9hY2NvdW50X2lkGAkgASgJUhBwcmltYXJ5QWNjb3VudElk');
 
-@$core.Deprecated('Use searchUsersByUsernameRequestDescriptor instead')
-const SearchUsersByUsernameRequest$json = {
-  '1': 'SearchUsersByUsernameRequest',
+@$core.Deprecated('Use userSearchRequestDescriptor instead')
+const UserSearchRequest$json = {
+  '1': 'UserSearchRequest',
   '2': [
     {'1': 'query', '3': 1, '4': 1, '5': 9, '10': 'query'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
@@ -1697,14 +1699,14 @@ const SearchUsersByUsernameRequest$json = {
   ],
 };
 
-/// Descriptor for `SearchUsersByUsernameRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List searchUsersByUsernameRequestDescriptor = $convert.base64Decode(
-    'ChxTZWFyY2hVc2Vyc0J5VXNlcm5hbWVSZXF1ZXN0EhQKBXF1ZXJ5GAEgASgJUgVxdWVyeRIUCg'
-    'VsaW1pdBgCIAEoBVIFbGltaXQSHwoLc2VhcmNoX3R5cGUYAyABKAlSCnNlYXJjaFR5cGU=');
+/// Descriptor for `UserSearchRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List userSearchRequestDescriptor = $convert.base64Decode(
+    'ChFVc2VyU2VhcmNoUmVxdWVzdBIUCgVxdWVyeRgBIAEoCVIFcXVlcnkSFAoFbGltaXQYAiABKA'
+    'VSBWxpbWl0Eh8KC3NlYXJjaF90eXBlGAMgASgJUgpzZWFyY2hUeXBl');
 
-@$core.Deprecated('Use searchUsersByUsernameResponseDescriptor instead')
-const SearchUsersByUsernameResponse$json = {
-  '1': 'SearchUsersByUsernameResponse',
+@$core.Deprecated('Use userSearchResponseDescriptor instead')
+const UserSearchResponse$json = {
+  '1': 'UserSearchResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
@@ -1712,11 +1714,10 @@ const SearchUsersByUsernameResponse$json = {
   ],
 };
 
-/// Descriptor for `SearchUsersByUsernameResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List searchUsersByUsernameResponseDescriptor = $convert.base64Decode(
-    'Ch1TZWFyY2hVc2Vyc0J5VXNlcm5hbWVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
-    'NzEhAKA21zZxgCIAEoCVIDbXNnEiwKBXVzZXJzGAMgAygLMhYuYXV0aC5Vc2VyTG9va3VwUmVz'
-    'dWx0UgV1c2Vycw==');
+/// Descriptor for `UserSearchResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List userSearchResponseDescriptor = $convert.base64Decode(
+    'ChJVc2VyU2VhcmNoUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIQCgNtc2cYAi'
+    'ABKAlSA21zZxIsCgV1c2VycxgDIAMoCzIWLmF1dGguVXNlckxvb2t1cFJlc3VsdFIFdXNlcnM=');
 
 @$core.Deprecated('Use initiateKYCRequestDescriptor instead')
 const InitiateKYCRequest$json = {

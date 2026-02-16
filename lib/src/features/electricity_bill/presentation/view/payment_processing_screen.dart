@@ -4,11 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide Transition;
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/provider_entity.dart';
+import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
-import 'dart:async';
 
 class PaymentProcessingScreen extends StatefulWidget {
   const PaymentProcessingScreen({super.key});
@@ -21,20 +21,25 @@ class PaymentProcessingScreen extends StatefulWidget {
 class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     with TickerProviderStateMixin {
   late AnimationController _stepController;
-  Timer? _pollingTimer;
-  String? _currentPaymentId;
   int _currentStep = 0;
   bool _isComplete = false;
   bool _hasFailed = false;
-  bool _hasTimedOut = false;
   String _failMessage = '';
-  int _pollCount = 0;
-  static const int _maxPollCount = 20; // 20 polls * 3s = 60s timeout
 
   ElectricityProviderEntity? _provider;
   MeterValidationResult? _validationResult;
   double _amount = 0;
   bool _argsValid = false;
+
+  // Payment execution params
+  String? _providerCode;
+  String? _meterNumber;
+  MeterType? _meterType;
+  String? _currency;
+  String? _accountId;
+  String? _phoneNumber;
+  String? _transactionId;
+  String? _verificationToken;
 
   static const _steps = [
     _ProcessingStep(
@@ -44,8 +49,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       activeColor: Color(0xFF3B82F6),
     ),
     _ProcessingStep(
-      title: 'Verifying Meter',
-      subtitle: 'Confirming meter number and customer details',
+      title: 'Confirming Details',
+      subtitle: 'Validating payment and account details',
       icon: Icons.verified_user,
       activeColor: Color(0xFF8B5CF6),
     ),
@@ -71,10 +76,23 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     if (args is Map<String, dynamic> &&
         args['provider'] is ElectricityProviderEntity &&
         args['validationResult'] is MeterValidationResult &&
-        args['amount'] is double) {
+        args['amount'] is double &&
+        args['providerCode'] is String &&
+        args['currency'] is String &&
+        args['accountId'] is String &&
+        args['transactionId'] is String &&
+        args['verificationToken'] is String) {
       _provider = args['provider'] as ElectricityProviderEntity;
       _validationResult = args['validationResult'] as MeterValidationResult;
       _amount = args['amount'] as double;
+      _providerCode = args['providerCode'] as String;
+      _meterNumber = args['meterNumber'] as String;
+      _meterType = args['meterType'] as MeterType;
+      _currency = args['currency'] as String;
+      _accountId = args['accountId'] as String;
+      _phoneNumber = args['phoneNumber'] as String?;
+      _transactionId = args['transactionId'] as String;
+      _verificationToken = args['verificationToken'] as String;
       _argsValid = true;
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,9 +111,26 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       vsync: this,
     )..repeat(reverse: true);
 
-    // Simulate step progression
     if (_argsValid) {
       _advanceSteps();
+      // Initiate payment on this screen's own cubit
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        print('[PaymentProcessing] Initiating payment: provider=$_providerCode, meter=$_meterNumber, amount=$_amount, txId=$_transactionId');
+        context.read<ElectricityBillCubit>().initiatePaymentWithToken(
+              providerCode: _providerCode!,
+              meterNumber: _meterNumber!,
+              meterType: _meterType!,
+              amount: _amount,
+              currency: _currency!,
+              accountId: _accountId!,
+              phoneNumber: _phoneNumber ?? '',
+              transactionId: _transactionId!,
+              verificationToken: _verificationToken!,
+            );
+      });
+    } else {
+      print('[PaymentProcessing] Args invalid! args=$args');
     }
   }
 
@@ -113,42 +148,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     });
   }
 
-  void _startPolling(String paymentId) {
-    if (_currentPaymentId == paymentId) return;
-    _currentPaymentId = paymentId;
-
-    // C7: Cancel existing timer before creating a new one
-    _pollingTimer?.cancel();
-    _pollCount = 0;
-
-    // Poll every 3 seconds for payment verification
-    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-
-      // C6: Timeout after max polls
-      _pollCount++;
-      if (_pollCount >= _maxPollCount) {
-        timer.cancel();
-        if (!mounted) return;
-        setState(() {
-          _hasTimedOut = true;
-          _hasFailed = true;
-          _failMessage = 'Payment verification timed out. Check your payment history for the latest status.';
-        });
-        return;
-      }
-
-      context.read<ElectricityBillCubit>().verifyPayment(paymentId: paymentId);
-    });
-  }
-
   @override
   void dispose() {
     _stepController.dispose();
-    _pollingTimer?.cancel();
     super.dispose();
   }
 
@@ -164,7 +166,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && !_hasTimedOut) {
+        if (!didPop) {
           Get.snackbar(
             'Payment in Progress',
             'Please wait while your payment is being processed.',
@@ -180,15 +182,15 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
         body: SafeArea(
           child: BlocListener<ElectricityBillCubit, ElectricityBillState>(
             listener: (context, state) {
-              if (state is PaymentInitiated || state is PaymentProcessing) {
-                final payment = state is PaymentInitiated
-                    ? state.payment
-                    : (state as PaymentProcessing).payment;
-                _startPolling(payment.id);
+              if (state is PaymentInitiating) {
+                print('[PaymentProcessing] State: PaymentInitiating');
+              }
+
+              if (state is PaymentInitiated) {
+                print('[PaymentProcessing] State: PaymentInitiated (id=${state.payment.id})');
               }
 
               if (state is PaymentSuccess) {
-                _pollingTimer?.cancel();
                 setState(() {
                   _currentStep = 3;
                   _isComplete = true;
@@ -205,7 +207,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               }
 
               if (state is PaymentFailed) {
-                _pollingTimer?.cancel();
+                print('[PaymentProcessing] PaymentFailed: ${state.errorMessage}');
                 setState(() {
                   _hasFailed = true;
                   _failMessage = state.errorMessage;
@@ -220,10 +222,17 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               }
 
               if (state is ElectricityBillError) {
-                _pollingTimer?.cancel();
+                print('[PaymentProcessing] ElectricityBillError: ${state.message}');
                 setState(() {
                   _hasFailed = true;
                   _failMessage = state.message;
+                });
+
+                Future.delayed(const Duration(seconds: 3), () {
+                  if (mounted) {
+                    Get.back();
+                    Get.back();
+                  }
                 });
               }
             },
@@ -462,64 +471,35 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
   }
 
   Widget _buildFailureInfo() {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: const Color(0xFFEF4444).withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: const Color(0xFFEF4444),
-                size: 20.sp,
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Text(
-                  _hasTimedOut ? _failMessage : 'Payment failed. Redirecting back...',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFFEF4444),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
         ),
-        if (_hasTimedOut) ...[
-          SizedBox(height: 16.h),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Get.offAllNamed(AppRoutes.electricityBillHome),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                padding: EdgeInsets.symmetric(vertical: 14.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Go to History',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: const Color(0xFFEF4444),
+            size: 20.sp,
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(
+              'Payment failed. Redirecting back...',
+              style: GoogleFonts.inter(
+                color: const Color(0xFFEF4444),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
         ],
-      ],
+      ),
     );
   }
 

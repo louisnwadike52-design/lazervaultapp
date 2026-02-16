@@ -332,16 +332,34 @@ class _BatchTransferProcessingScreenState
       'senderAccountName': batchTransferDetails['senderAccountName'],
       'senderAccountInfo': batchTransferDetails['senderAccountInfo'],
       'transfers': response.results
-          .map((r) => {
-                'recipientName': r.recipientName ??
-                    recipientNames[r.recipientAccount] ??
-                    'Unknown',
-                'recipientAccount': r.recipientAccount ?? '',
-                'amount': r.amount.toDouble() / 100,
-                'fee': r.fee.toDouble() / 100,
-                'status': r.status,
-                'failureReason': r.failureReason,
-                'reference': r.reference,
+          .map((r) {
+                // Resolve best name: prefer beneficiaryName (actual person name)
+                // over recipientName (which may be account type like "Business")
+                final beneficiary = r.beneficiaryName;
+                final recipient = r.recipientName;
+                final fallback = recipientNames[r.recipientAccount];
+                String resolvedName;
+                if (beneficiary != null && beneficiary.isNotEmpty &&
+                    beneficiary.toLowerCase() != 'unknown' &&
+                    beneficiary.toLowerCase() != 'external account') {
+                  resolvedName = beneficiary;
+                } else if (recipient != null && recipient.isNotEmpty &&
+                    recipient.toLowerCase() != 'unknown' &&
+                    recipient.toLowerCase() != 'business') {
+                  resolvedName = recipient;
+                } else {
+                  resolvedName = fallback ?? beneficiary ?? recipient ?? 'Unknown';
+                }
+                return {
+                  'recipientName': resolvedName,
+                  'beneficiaryName': beneficiary,
+                  'recipientAccount': r.recipientAccount ?? '',
+                  'amount': r.amount.toDouble() / 100,
+                  'fee': r.fee.toDouble() / 100,
+                  'status': r.status,
+                  'failureReason': r.failureReason,
+                  'reference': r.reference,
+                };
               })
           .toList(),
     };

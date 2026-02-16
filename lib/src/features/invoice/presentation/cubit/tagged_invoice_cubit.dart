@@ -401,7 +401,12 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   }) async {
     try {
       if (isClosed) return;
-      emit(const TaggedInvoiceLoading());
+      // If data already loaded, show revalidating state instead of full loading shimmer
+      if (state is IncomingTaggedInvoicesLoaded) {
+        emit((state as IncomingTaggedInvoicesLoaded).copyWith(isRevalidating: true));
+      } else {
+        emit(const TaggedInvoiceLoading());
+      }
 
       // Use paginated method if repository supports it
       if (repository is TaggedInvoiceRepositoryGrpcImpl) {

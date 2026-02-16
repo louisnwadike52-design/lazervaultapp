@@ -1,3 +1,4 @@
+import 'package:lazervault/src/generated/utility-payments.pb.dart' as pb;
 import '../../domain/entities/water_payment_entity.dart';
 
 class WaterPaymentModel extends WaterPaymentEntity {
@@ -67,6 +68,42 @@ class WaterPaymentModel extends WaterPaymentEntity {
       case WaterPaymentStatus.refunded:
         return 'refunded';
     }
+  }
+
+  factory WaterPaymentModel.fromProtoResponse({
+    required pb.BillPayment payment,
+    required double newBalance,
+    required String receiptNumber,
+  }) {
+    return WaterPaymentModel(
+      id: payment.id,
+      providerCode: payment.providerId,
+      providerName: payment.providerId,
+      customerNumber: payment.customerNumber,
+      customerName: '',
+      amount: payment.amount,
+      currency: 'NGN',
+      receiptNumber: receiptNumber.isNotEmpty ? receiptNumber : payment.reference,
+      status: _parseStatus(payment.status),
+      createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
+      transactionReference: payment.reference,
+    );
+  }
+
+  factory WaterPaymentModel.fromProtoPayment(pb.BillPayment payment) {
+    return WaterPaymentModel(
+      id: payment.id,
+      providerCode: payment.providerId,
+      providerName: payment.providerId,
+      customerNumber: payment.customerNumber,
+      customerName: '',
+      amount: payment.amount,
+      currency: 'NGN',
+      receiptNumber: payment.reference,
+      status: _parseStatus(payment.status),
+      createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
+      transactionReference: payment.reference,
+    );
   }
 
   Map<String, dynamic> toJson() {

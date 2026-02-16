@@ -9,6 +9,7 @@ import '../../generated/ai_scan.pbgrpc.dart';
 import '../../generated/tag_pay.pbgrpc.dart';
 import '../../generated/exchange.pbgrpc.dart';
 import '../../generated/qr_pay.pbgrpc.dart';
+import '../../generated/id_pay.pbgrpc.dart';
 import '../../generated/portfolio.pbgrpc.dart';
 import '../../generated/account_card.pbgrpc.dart';
 import '../../generated/electricity_bill.pbgrpc.dart';
@@ -28,6 +29,7 @@ class GrpcClient {
   late TagPayServiceClient _tagPayClient;
   late ExchangeServiceClient _exchangeClient;
   late QRPayServiceClient _qrPayClient;
+  late IDPayServiceClient _idPayClient;
   late PortfolioServiceClient _portfolioClient;
   late AccountCardServiceClient _accountCardClient;
   late ElectricityBillServiceClient _electricityBillClient;
@@ -60,6 +62,7 @@ class GrpcClient {
     _tagPayClient = TagPayServiceClient(_channel);
     _exchangeClient = ExchangeServiceClient(_channel);
     _qrPayClient = QRPayServiceClient(_channel);
+    _idPayClient = IDPayServiceClient(_channel);
     _portfolioClient = PortfolioServiceClient(_channel);
     _accountCardClient = AccountCardServiceClient(_channel);
     _electricityBillClient = ElectricityBillServiceClient(_channel);
@@ -79,6 +82,7 @@ class GrpcClient {
   TagPayServiceClient get tagPayClient => _tagPayClient;
   ExchangeServiceClient get exchangeClient => _exchangeClient;
   QRPayServiceClient get qrPayClient => _qrPayClient;
+  IDPayServiceClient get idPayClient => _idPayClient;
   PortfolioServiceClient get portfolioClient => _portfolioClient;
   AccountCardServiceClient get accountCardClient => _accountCardClient;
   ElectricityBillServiceClient get electricityBillClient => _electricityBillClient;

@@ -1,5 +1,8 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/errors/failures.dart';
 import '../../domain/entities/qr_payment_entity.dart';
+import '../../domain/entities/qr_transaction_entity.dart';
 import '../../domain/repositories/qr_payment_repository.dart';
 import 'qr_payment_state.dart';
 
@@ -147,6 +150,27 @@ class QRPaymentCubit extends Cubit<QRPaymentState> {
       (transaction) =>
           emit(QRTransactionReceiptLoaded(transaction: transaction)),
     );
+  }
+
+  Future<void> getRecentActivity() async {
+    if (isClosed) return;
+    emit(QRPaymentLoading());
+
+    final results = await Future.wait([
+      repository.getMyGeneratedQRCodes(limit: 3),
+      repository.getMyQRPayments(limit: 3),
+    ]);
+
+    if (isClosed) return;
+
+    final qrCodesResult = results[0] as Either<Failure, List<QRPaymentEntity>>;
+    final paymentsResult =
+        results[1] as Either<Failure, List<QRTransactionEntity>>;
+
+    emit(QRRecentActivityLoaded(
+      recentQRCodes: qrCodesResult.getOrElse(() => []),
+      recentPayments: paymentsResult.getOrElse(() => []),
+    ));
   }
 
   void reset() {

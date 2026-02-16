@@ -14,6 +14,11 @@ class PaymentHistoryCard extends StatelessWidget {
     this.onTap,
   });
 
+  String _getPayerName() {
+    if (payment.userName.isNotEmpty) return payment.userName;
+    return 'Unknown User';
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -45,7 +50,7 @@ class PaymentHistoryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        payment.userName,
+                        _getPayerName(),
                         style: GoogleFonts.inter(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
+import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:intl/intl.dart';
 
 /// Financial Goals Screen
@@ -14,64 +18,13 @@ class FinancialGoalsScreen extends StatefulWidget {
 }
 
 class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
-  final List<FinancialGoal> _goals = [];
-
   @override
   void initState() {
     super.initState();
-    _loadGoals();
-  }
-
-  void _loadGoals() {
-    // TODO: Load from backend
-    setState(() {
-      _goals.addAll([
-        FinancialGoal(
-          id: '1',
-          name: 'Emergency Fund',
-          goalType: 'Emergency Fund',
-          targetAmount: 1000000,
-          currentAmount: 450000,
-          monthlyContribution: 50000,
-          currency: 'NGN',
-          targetDate: DateTime.now().add(const Duration(days: 330)),
-          status: 'in_progress',
-          icon: 'shield',
-          color: '#3B82F6',
-        ),
-        FinancialGoal(
-          id: '2',
-          name: 'Vacation to Dubai',
-          goalType: 'Vacation',
-          targetAmount: 500000,
-          currentAmount: 200000,
-          monthlyContribution: 25000,
-          currency: 'NGN',
-          targetDate: DateTime.now().add(const Duration(days: 365)),
-          status: 'in_progress',
-          icon: 'flight',
-          color: '#10B981',
-        ),
-        FinancialGoal(
-          id: '3',
-          name: 'New Car',
-          goalType: 'Car',
-          targetAmount: 5000000,
-          currentAmount: 1500000,
-          monthlyContribution: 100000,
-          currency: 'NGN',
-          targetDate: DateTime.now().add(const Duration(days: 720)),
-          status: 'in_progress',
-          icon: 'directions_car',
-          color: '#F59E0B',
-        ),
-      ]);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BudgetCubit>().loadFinancialGoals();
     });
   }
-
-  double get totalTarget => _goals.fold(0, (sum, g) => sum + g.targetAmount);
-  double get totalSaved => _goals.fold(0, (sum, g) => sum + g.currentAmount);
-  double get overallProgress => totalTarget > 0 ? (totalSaved / totalTarget * 100) : 0;
 
   @override
   Widget build(BuildContext context) {
@@ -96,41 +49,98 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildOverallProgressCard(),
-          Expanded(
-            child: _goals.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: EdgeInsets.all(16.w),
-                    itemCount: _goals.length,
-                    itemBuilder: (context, index) {
-                      return _GoalCard(
-                        goal: _goals[index],
-                        onContribute: () => _contributeToGoal(_goals[index]),
-                        onEdit: () => _editGoal(_goals[index]),
-                        onDelete: () => _deleteGoal(_goals[index].id),
-                      );
-                    },
-                  ),
-          ),
-        ],
+      body: BlocConsumer<BudgetCubit, BudgetState>(
+        listener: (context, state) {
+          if (state is BudgetError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFFEF4444),
+              ),
+            );
+          }
+          if (state is BudgetCreated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is BudgetLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF10B981)),
+            );
+          }
+
+          if (state is FinancialGoalsLoaded) {
+            return Column(
+              children: [
+                _buildOverallProgressCard(
+                  totalSaved: state.totalSaved,
+                  totalTarget: state.totalTarget,
+                ),
+                Expanded(
+                  child: state.goals.isEmpty
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          onRefresh: () => context.read<BudgetCubit>().loadFinancialGoals(),
+                          color: const Color(0xFF10B981),
+                          backgroundColor: const Color(0xFF1F1F1F),
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.all(16.w),
+                            itemCount: state.goals.length,
+                            itemBuilder: (context, index) {
+                              return _GoalCard(
+                                goal: state.goals[index],
+                                onContribute: () => _contributeToGoal(state.goals[index]),
+                              );
+                            },
+                          ),
+                        ),
+                ),
+              ],
+            );
+          }
+
+          if (state is BudgetError) {
+            return _buildErrorState(state.message);
+          }
+
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF10B981)),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildOverallProgressCard() {
+  Widget _buildOverallProgressCard({
+    required double totalSaved,
+    required double totalTarget,
+  }) {
+    final overallProgress = totalTarget > 0 ? (totalSaved / totalTarget * 100) : 0.0;
+
     return Container(
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+          colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,9 +206,9 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(10.r),
             child: LinearProgressIndicator(
-              value: overallProgress / 100,
+              value: (overallProgress / 100).clamp(0.0, 1.0),
               backgroundColor: Colors.white.withValues(alpha: 0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
               minHeight: 8.h,
             ),
           ),
@@ -208,31 +218,74 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
   }
 
   Widget _buildEmptyState() {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: 100.h),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80.r,
+                height: 80.r,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.flag, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 40.r),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'No financial goals yet',
+                style: TextStyle(color: Colors.grey[400], fontSize: 16.sp),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Set goals to stay motivated and on track',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+              ),
+              SizedBox(height: 24.h),
+              ElevatedButton.icon(
+                onPressed: () => _showCreateGoalDialog(),
+                icon: const Icon(Icons.add),
+                label: const Text('Create Goal'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(String message) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.flag, color: Colors.grey[600], size: 64.r),
+          const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
           SizedBox(height: 16.h),
-          Text(
-            'No financial goals yet',
-            style: TextStyle(color: Colors.grey[400], fontSize: 16.sp),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Set goals to stay motivated and on track',
-            style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Text(
+              message,
+              style: const TextStyle(color: Color(0xFF9CA3AF)),
+              textAlign: TextAlign.center,
+            ),
           ),
           SizedBox(height: 24.h),
-          ElevatedButton.icon(
-            onPressed: () => _showCreateGoalDialog(),
-            icon: const Icon(Icons.add),
-            label: const Text('Create Goal'),
+          ElevatedButton(
+            onPressed: () => context.read<BudgetCubit>().loadFinancialGoals(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF10B981),
               foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
             ),
+            child: const Text('Retry'),
           ),
         ],
       ),
@@ -240,10 +293,169 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
   }
 
   void _showCreateGoalDialog() {
-    Get.toNamed('/statistics/financial-goals/create');
+    final nameController = TextEditingController();
+    final targetController = TextEditingController();
+    final monthlyController = TextEditingController();
+    pb.GoalType selectedType = pb.GoalType.GOAL_TYPE_CUSTOM;
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 4.h,
+                    margin: EdgeInsets.only(bottom: 24.h),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[600],
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                  const Text(
+                    'Create Financial Goal',
+                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 24.h),
+                  TextField(
+                    controller: nameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Goal Name',
+                      labelStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: const Color(0xFF2D2D2D),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<pb.GoalType>(
+                        value: selectedType,
+                        dropdownColor: const Color(0xFF2D2D2D),
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+                        isExpanded: true,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        items: [
+                          pb.GoalType.GOAL_TYPE_EMERGENCY_FUND,
+                          pb.GoalType.GOAL_TYPE_VACATION,
+                          pb.GoalType.GOAL_TYPE_CAR,
+                          pb.GoalType.GOAL_TYPE_HOUSE,
+                          pb.GoalType.GOAL_TYPE_EDUCATION,
+                          pb.GoalType.GOAL_TYPE_RETIREMENT,
+                          pb.GoalType.GOAL_TYPE_WEDDING,
+                          pb.GoalType.GOAL_TYPE_DEBT_PAYOFF,
+                          pb.GoalType.GOAL_TYPE_CUSTOM,
+                        ].map((type) {
+                          return DropdownMenuItem(
+                            value: type,
+                            child: Text(_goalTypeLabel(type)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) setSheetState(() => selectedType = value);
+                        },
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  TextField(
+                    controller: targetController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Target Amount',
+                      labelStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: const Color(0xFF2D2D2D),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixText: '${CurrencySymbols.currentSymbol} ',
+                      prefixStyle: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  TextField(
+                    controller: monthlyController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Monthly Contribution',
+                      labelStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: const Color(0xFF2D2D2D),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixText: '${CurrencySymbols.currentSymbol} ',
+                      prefixStyle: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final name = nameController.text.trim();
+                        final target = double.tryParse(targetController.text.trim()) ?? 0;
+                        final monthly = double.tryParse(monthlyController.text.trim()) ?? 0;
+
+                        if (name.isEmpty || target <= 0) {
+                          Get.snackbar('Error', 'Please enter a name and target amount',
+                              backgroundColor: const Color(0xFFEF4444));
+                          return;
+                        }
+
+                        Get.back();
+                        context.read<BudgetCubit>().createFinancialGoal(
+                          name: name,
+                          goalType: selectedType,
+                          targetAmount: target,
+                          monthlyContribution: monthly,
+                          currency: CurrencySymbols.currentCurrency,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      child: const Text('Create Goal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 
-  void _contributeToGoal(FinancialGoal goal) {
+  void _contributeToGoal(pb.FinancialGoal goal) {
+    final amountController = TextEditingController();
+
     Get.bottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
@@ -267,30 +479,27 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
               'Contribute to ${goal.name}',
               style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
             ),
+            SizedBox(height: 8.h),
+            Text(
+              'Remaining: ${CurrencySymbols.formatAmount(goal.targetAmount - goal.currentAmount)}',
+              style: TextStyle(color: Colors.grey[400], fontSize: 14),
+            ),
             SizedBox(height: 24.h),
             TextField(
+              controller: amountController,
               keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Amount',
+                labelStyle: TextStyle(color: Colors.grey[400]),
                 filled: true,
                 fillColor: const Color(0xFF2D2D2D),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide.none,
                 ),
-                prefixText: '₦ ',
-              ),
-            ),
-            SizedBox(height: 16.h),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Note (optional)',
-                filled: true,
-                fillColor: const Color(0xFF2D2D2D),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide.none,
-                ),
+                prefixText: '${CurrencySymbols.currentSymbol} ',
+                prefixStyle: const TextStyle(color: Colors.white),
               ),
             ),
             SizedBox(height: 24.h),
@@ -298,16 +507,21 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
+                  final amount = double.tryParse(amountController.text.trim()) ?? 0;
+                  if (amount <= 0) {
+                    Get.snackbar('Error', 'Please enter a valid amount',
+                        backgroundColor: const Color(0xFFEF4444));
+                    return;
+                  }
+
                   Get.back();
-                  // TODO: Process contribution
-                  Get.snackbar(
-                    'Success',
-                    'Contribution added successfully',
-                    backgroundColor: const Color(0xFF10B981),
+                  context.read<BudgetCubit>().contributeToGoal(
+                    goalId: goal.id,
+                    amount: amount,
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -321,65 +535,71 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen> {
     );
   }
 
-  void _editGoal(FinancialGoal goal) {
-    Get.toNamed('/statistics/financial-goals/create', arguments: {'goalId': goal.id});
-  }
-
-  void _deleteGoal(String id) {
-    Get.defaultDialog(
-      title: 'Delete Goal',
-      middleText: 'Are you sure you want to delete this goal? All progress will be lost.',
-      textConfirm: 'Delete',
-      textCancel: 'Cancel',
-      confirmTextColor: Colors.white,
-      cancelTextColor: const Color(0xFF9CA3AF),
-      buttonColor: const Color(0xFFEF4444),
-      onConfirm: () {
-        setState(() {
-          _goals.removeWhere((g) => g.id == id);
-        });
-        Get.back();
-        Get.snackbar('Deleted', 'Goal deleted successfully', backgroundColor: const Color(0xFF10B981));
-      },
-    );
+  String _goalTypeLabel(pb.GoalType type) {
+    switch (type) {
+      case pb.GoalType.GOAL_TYPE_EMERGENCY_FUND:
+        return 'Emergency Fund';
+      case pb.GoalType.GOAL_TYPE_VACATION:
+        return 'Vacation';
+      case pb.GoalType.GOAL_TYPE_CAR:
+        return 'Car';
+      case pb.GoalType.GOAL_TYPE_HOUSE:
+        return 'House';
+      case pb.GoalType.GOAL_TYPE_EDUCATION:
+        return 'Education';
+      case pb.GoalType.GOAL_TYPE_RETIREMENT:
+        return 'Retirement';
+      case pb.GoalType.GOAL_TYPE_WEDDING:
+        return 'Wedding';
+      case pb.GoalType.GOAL_TYPE_DEBT_PAYOFF:
+        return 'Debt Payoff';
+      case pb.GoalType.GOAL_TYPE_CUSTOM:
+        return 'Custom';
+      default:
+        return 'Other';
+    }
   }
 }
 
 class _GoalCard extends StatelessWidget {
-  final FinancialGoal goal;
+  final pb.FinancialGoal goal;
   final VoidCallback onContribute;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
 
   const _GoalCard({
     required this.goal,
     required this.onContribute,
-    required this.onEdit,
-    required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    final percentage = goal.targetAmount > 0
-        ? (goal.currentAmount / goal.targetAmount * 100).clamp(0, 100)
-        : 0.0;
+    final percentage = goal.percentageComplete.clamp(0, 100);
     final remaining = goal.targetAmount - goal.currentAmount;
-    final remainingMonths = goal.targetDate.difference(DateTime.now()).inDays ~/ 30;
 
-    Color goalColor = const Color(0xFF3B82F6);
-    try {
-      goalColor = Color(int.parse(goal.color.replaceFirst('#', '0xFF')));
-    } catch (e) {
-      // Use default color if parsing fails
+    Color goalColor = const Color(0xFF10B981);
+    if (goal.color.isNotEmpty) {
+      try {
+        goalColor = Color(int.parse(goal.color.replaceFirst('#', '0xFF')));
+      } catch (_) {}
     }
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        border: Border.all(color: goalColor.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: goalColor.withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,26 +632,21 @@ class _GoalCard extends StatelessWidget {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      goal.goalType,
+                      _goalTypeLabel(goal.goalType),
                       style: TextStyle(color: Colors.grey[400], fontSize: 12),
                     ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                      '${percentage.toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        color: goalColor,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+              Text(
+                '${percentage.toStringAsFixed(0)}%',
+                style: TextStyle(
+                  color: goalColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
+              ),
+            ],
           ),
           SizedBox(height: 16.h),
           Row(
@@ -445,7 +660,7 @@ class _GoalCard extends StatelessWidget {
               Expanded(
                 child: _ProgressItem(
                   label: 'Remaining',
-                  value: CurrencySymbols.formatAmount(remaining),
+                  value: CurrencySymbols.formatAmount(remaining > 0 ? remaining : 0),
                 ),
               ),
               Expanded(
@@ -460,7 +675,7 @@ class _GoalCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(10.r),
             child: LinearProgressIndicator(
-              value: percentage / 100,
+              value: (percentage / 100).clamp(0.0, 1.0),
               backgroundColor: const Color(0xFF2D2D2D),
               valueColor: AlwaysStoppedAnimation<Color>(goalColor),
               minHeight: 6.h,
@@ -469,51 +684,39 @@ class _GoalCard extends StatelessWidget {
           SizedBox(height: 12.h),
           Row(
             children: [
-              Icon(Icons.calendar_today, size: 14.r, color: Colors.grey[500]),
-              SizedBox(width: 4.w),
-              Text(
-                'Target: ${DateFormat('MMM y').format(goal.targetDate)}',
-                style: TextStyle(color: Colors.grey[400], fontSize: 12),
-              ),
+              if (goal.hasTargetDate()) ...[
+                Icon(Icons.calendar_today, size: 14.r, color: Colors.grey[500]),
+                SizedBox(width: 4.w),
+                Text(
+                  'Target: ${DateFormat('MMM y').format(goal.targetDate.toDateTime())}',
+                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                ),
+              ],
               const Spacer(),
-              if (remainingMonths > 0) ...[
+              if (goal.monthsRemaining > 0) ...[
                 Icon(Icons.schedule, size: 14.r, color: Colors.grey[500]),
                 SizedBox(width: 4.w),
                 Text(
-                  '$remainingMonths months left',
+                  '${goal.monthsRemaining} months left',
                   style: TextStyle(color: Colors.grey[400], fontSize: 12),
                 ),
               ],
             ],
           ),
           SizedBox(height: 12.h),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: onContribute,
-                  icon: const Icon(Icons.add_circle_outline, size: 16),
-                  label: const Text('Add Money'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: goalColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 10.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                  ),
-                ),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: onContribute,
+              icon: const Icon(Icons.add_circle_outline, size: 16),
+              label: const Text('Add Money'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: goalColor,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 10.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
               ),
-              SizedBox(width: 8.w),
-              IconButton(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                color: Colors.grey[400],
-              ),
-              IconButton(
-                onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline, size: 18),
-                color: Colors.grey[400],
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -534,8 +737,37 @@ class _GoalCard extends StatelessWidget {
         return Icons.school;
       case 'card_giftcard':
         return Icons.card_giftcard;
+      case 'savings':
+        return Icons.savings;
+      case 'favorite':
+        return Icons.favorite;
       default:
         return Icons.flag;
+    }
+  }
+
+  String _goalTypeLabel(pb.GoalType type) {
+    switch (type) {
+      case pb.GoalType.GOAL_TYPE_EMERGENCY_FUND:
+        return 'Emergency Fund';
+      case pb.GoalType.GOAL_TYPE_VACATION:
+        return 'Vacation';
+      case pb.GoalType.GOAL_TYPE_CAR:
+        return 'Car';
+      case pb.GoalType.GOAL_TYPE_HOUSE:
+        return 'House';
+      case pb.GoalType.GOAL_TYPE_EDUCATION:
+        return 'Education';
+      case pb.GoalType.GOAL_TYPE_RETIREMENT:
+        return 'Retirement';
+      case pb.GoalType.GOAL_TYPE_WEDDING:
+        return 'Wedding';
+      case pb.GoalType.GOAL_TYPE_DEBT_PAYOFF:
+        return 'Debt Payoff';
+      case pb.GoalType.GOAL_TYPE_CUSTOM:
+        return 'Custom';
+      default:
+        return 'Other';
     }
   }
 }
@@ -560,33 +792,4 @@ class _ProgressItem extends StatelessWidget {
       ],
     );
   }
-}
-
-/// Financial Goal Model
-class FinancialGoal {
-  final String id;
-  final String name;
-  final String goalType;
-  final double targetAmount;
-  final double currentAmount;
-  final double monthlyContribution;
-  final String currency;
-  final DateTime targetDate;
-  final String status;
-  final String icon;
-  final String color;
-
-  FinancialGoal({
-    required this.id,
-    required this.name,
-    required this.goalType,
-    required this.targetAmount,
-    required this.currentAmount,
-    required this.monthlyContribution,
-    required this.currency,
-    required this.targetDate,
-    required this.status,
-    required this.icon,
-    required this.color,
-  });
 }

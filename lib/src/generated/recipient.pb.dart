@@ -39,6 +39,7 @@ class Recipient extends $pb.GeneratedMessage {
     $core.String? swiftCode,
     $core.String? iban,
     $core.String? alias,
+    $core.bool? isSaved,
   }) {
     final $result = create();
     if (id != null) {
@@ -95,6 +96,9 @@ class Recipient extends $pb.GeneratedMessage {
     if (alias != null) {
       $result.alias = alias;
     }
+    if (isSaved != null) {
+      $result.isSaved = isSaved;
+    }
     return $result;
   }
   Recipient._() : super();
@@ -120,6 +124,7 @@ class Recipient extends $pb.GeneratedMessage {
     ..aOS(16, _omitFieldNames ? '' : 'swiftCode')
     ..aOS(17, _omitFieldNames ? '' : 'iban')
     ..aOS(18, _omitFieldNames ? '' : 'alias')
+    ..aOB(19, _omitFieldNames ? '' : 'isSaved')
     ..hasRequiredFields = false
   ;
 
@@ -311,6 +316,15 @@ class Recipient extends $pb.GeneratedMessage {
   $core.bool hasAlias() => $_has(17);
   @$pb.TagNumber(18)
   void clearAlias() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.bool get isSaved => $_getBF(18);
+  @$pb.TagNumber(19)
+  set isSaved($core.bool v) { $_setBool(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasIsSaved() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearIsSaved() => clearField(19);
 }
 
 class CreateRecipientRequest extends $pb.GeneratedMessage {
@@ -329,6 +343,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     $core.String? swiftCode,
     $core.String? iban,
     $core.String? alias,
+    $core.bool? isSaved,
   }) {
     final $result = create();
     if (name != null) {
@@ -373,6 +388,9 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     if (alias != null) {
       $result.alias = alias;
     }
+    if (isSaved != null) {
+      $result.isSaved = isSaved;
+    }
     return $result;
   }
   CreateRecipientRequest._() : super();
@@ -394,6 +412,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     ..aOS(12, _omitFieldNames ? '' : 'swiftCode')
     ..aOS(13, _omitFieldNames ? '' : 'iban')
     ..aOS(14, _omitFieldNames ? '' : 'alias')
+    ..aOB(15, _omitFieldNames ? '' : 'isSaved')
     ..hasRequiredFields = false
   ;
 
@@ -544,6 +563,15 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
   $core.bool hasAlias() => $_has(13);
   @$pb.TagNumber(14)
   void clearAlias() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.bool get isSaved => $_getBF(14);
+  @$pb.TagNumber(15)
+  set isSaved($core.bool v) { $_setBool(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasIsSaved() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearIsSaved() => clearField(15);
 }
 
 class CreateRecipientResponse extends $pb.GeneratedMessage {
@@ -776,6 +804,7 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
     $3.StringValue? bankName,
     $3.StringValue? countryCode,
     $3.StringValue? alias,
+    $3.BoolValue? isSaved,
   }) {
     final $result = create();
     if (recipientId != null) {
@@ -802,6 +831,9 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
     if (alias != null) {
       $result.alias = alias;
     }
+    if (isSaved != null) {
+      $result.isSaved = isSaved;
+    }
     return $result;
   }
   UpdateRecipientRequest._() : super();
@@ -817,6 +849,7 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
     ..aOM<$3.StringValue>(6, _omitFieldNames ? '' : 'bankName', subBuilder: $3.StringValue.create)
     ..aOM<$3.StringValue>(7, _omitFieldNames ? '' : 'countryCode', subBuilder: $3.StringValue.create)
     ..aOM<$3.StringValue>(8, _omitFieldNames ? '' : 'alias', subBuilder: $3.StringValue.create)
+    ..aOM<$3.BoolValue>(9, _omitFieldNames ? '' : 'isSaved', subBuilder: $3.BoolValue.create)
     ..hasRequiredFields = false
   ;
 
@@ -928,6 +961,17 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
   void clearAlias() => clearField(8);
   @$pb.TagNumber(8)
   $3.StringValue ensureAlias() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  $3.BoolValue get isSaved => $_getN(8);
+  @$pb.TagNumber(9)
+  set isSaved($3.BoolValue v) { setField(9, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasIsSaved() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIsSaved() => clearField(9);
+  @$pb.TagNumber(9)
+  $3.BoolValue ensureIsSaved() => $_ensure(8);
 }
 
 class UpdateRecipientResponse extends $pb.GeneratedMessage {

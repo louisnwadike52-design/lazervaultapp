@@ -19,21 +19,47 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 
+/// Maps category names from backend to display-friendly names.
+/// The backend now returns meaningful names (e.g., "P2P Transfers", "Gift Cards")
+/// but this function handles legacy/fallback values and raw service names.
 String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
-  'transfer' => 'Transfers',
+  // Backend display names (pass through as-is since they're already friendly)
+  'p2p transfers' || 'bank transfers' || 'international transfers' ||
+  'gift cards' || 'bills & utilities' || 'savings & products' ||
+  'service fees' || 'tagpay' || 'invoices' || 'investments' ||
+  'payroll' || 'crowdfunding' || 'deposits' || 'withdrawals' ||
+  'reversals' || 'transfers' || 'banking' || 'payments' => raw,
+
+  // Legacy raw category values (from older transactions)
+  'transfer' || 'c2c_transfer' => 'P2P Transfers',
+  'domestic_transfer' => 'Bank Transfers',
+  'international_transfer' => 'International Transfers',
   'deposit' => 'Deposits',
   'withdrawal' => 'Withdrawals',
   'fee' => 'Service Fees',
   'reversal' => 'Reversals',
-  'payment' => 'Payments',
-  'tag-pay' || 'tagpay' => 'TagPay',
+  'payment' || 'invoice_payment' => 'Payments',
+  'tag-pay' => 'TagPay',
   'invoice' => 'Invoices',
-  'giftcards' || 'gift-cards' => 'Gift Cards',
-  'airtime' => 'Airtime & Bills',
+  'giftcards' || 'gift-cards' || 'gift_card' => 'Gift Cards',
+  'airtime' || 'bill_payment' => 'Bills & Utilities',
   'investment' || 'investments' => 'Investments',
-  'core-payments' => 'Transfers',
-  'banking' => 'Banking',
-  'utility-payments' => 'Bills & Utilities',
+  'autosave' || 'lock_funds' => 'Savings & Products',
+
+  // Raw service names (fallback if somehow still passed through)
+  'core-payments-service' || 'core-payments' => 'Transfers',
+  'banking-service' => 'Banking',
+  'invoice-service' => 'Invoices',
+  'giftcards-service' => 'Gift Cards',
+  'utility-payments-service' => 'Bills & Utilities',
+  'tag-pay-service' => 'TagPay',
+  'financial-products-service' => 'Savings & Products',
+  'investments-service' => 'Investments',
+  'payroll-service' => 'Payroll',
+  'crowdfund-service' => 'Crowdfunding',
+  'accounts-service' => 'Other',
+
+  // Fallback: capitalize and clean up
   _ => raw.replaceAll('-', ' ').replaceAll('_', ' ').split(' ').map((w) =>
       w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
 };
@@ -115,7 +141,7 @@ class _StatisticsState extends State<Statistics> {
           color: const Color(0xFF0A0A0A),
           child: RefreshIndicator(
             onRefresh: () => context.read<StatisticsCubit>().refresh(),
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF10B981),
             backgroundColor: const Color(0xFF1F1F1F),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -149,27 +175,47 @@ class _StatisticsState extends State<Statistics> {
 
   Widget _buildHeader() {
     return SafeArea(
-      child: Padding(
+      child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF10B981).withValues(alpha: 0.08),
+              Colors.transparent,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'AI Budgeting',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.insights,
+                      color: const Color(0xFF10B981),
+                      size: 28.sp,
+                    ),
+                    SizedBox(width: 10.w),
+                    Text(
+                      'AI Budgeting',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 4.h),
                 Text(
                   'Smart budgeting powered by AI',
                   style: TextStyle(
-                    color: const Color(0xFF9CA3AF),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.7),
                     fontSize: 14.sp,
                   ),
                 ),
@@ -230,13 +276,13 @@ class _StatisticsState extends State<Statistics> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                     child: Text(
                       account.currency,
                       style: TextStyle(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF10B981),
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -258,46 +304,75 @@ class _StatisticsState extends State<Statistics> {
   }
 
   Widget _buildQuickStats(StatisticsState state) {
-    double totalSpending = 0.0;
     double totalIncome = 0.0;
     double totalExpenses = 0.0;
     double savingsRate = 0.0;
+    double incomeChange = 0.0;
+    double expenseChange = 0.0;
 
     if (state is StatisticsLoaded && state.financialAnalytics != null) {
       final analytics = state.financialAnalytics!;
       if (analytics.hasCurrentPeriod()) {
         totalIncome = analytics.currentPeriod.totalIncome;
         totalExpenses = analytics.currentPeriod.totalExpenses;
-        totalSpending = totalExpenses;
         if (totalIncome > 0) {
           savingsRate = ((totalIncome - totalExpenses) / totalIncome * 100);
         }
       }
+      incomeChange = analytics.incomeChangePercent;
+      expenseChange = analytics.expenseChangePercent;
     }
+
+    String formatTrend(double change) {
+      final prefix = change >= 0 ? '+' : '';
+      return '$prefix${change.toStringAsFixed(1)}%';
+    }
+
+    final savingsChange = incomeChange - expenseChange;
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.4),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Financial Overview',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(6.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Icon(Icons.analytics_outlined, color: Colors.white, size: 18.sp),
+                  ),
+                  SizedBox(width: 10.w),
+                  Text(
+                    'Financial Overview',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -324,8 +399,9 @@ class _StatisticsState extends State<Statistics> {
                   label: 'Income',
                   value: CurrencySymbols.formatAmount(totalIncome),
                   icon: Icons.arrow_downward,
-                  color: Colors.green[300]!,
-                  trend: '+12%',
+                  color: Colors.white,
+                  trend: formatTrend(incomeChange),
+                  isPositive: incomeChange >= 0,
                 ),
               ),
               SizedBox(width: 12.w),
@@ -334,8 +410,9 @@ class _StatisticsState extends State<Statistics> {
                   label: 'Expenses',
                   value: CurrencySymbols.formatAmount(totalExpenses),
                   icon: Icons.arrow_upward,
-                  color: Colors.red[300]!,
-                  trend: '-5%',
+                  color: Colors.white,
+                  trend: formatTrend(expenseChange),
+                  isPositive: expenseChange <= 0,
                 ),
               ),
               SizedBox(width: 12.w),
@@ -344,8 +421,9 @@ class _StatisticsState extends State<Statistics> {
                   label: 'Savings',
                   value: '${savingsRate.toStringAsFixed(0)}%',
                   icon: Icons.savings,
-                  color: Colors.amber[300]!,
-                  trend: '+8%',
+                  color: Colors.white,
+                  trend: formatTrend(savingsChange),
+                  isPositive: savingsChange >= 0,
                 ),
               ),
             ],
@@ -437,12 +515,26 @@ class _StatisticsState extends State<Statistics> {
             margin: EdgeInsets.all(16.r),
             height: 180.h,
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.15)),
             ),
-            child: const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: Color(0xFF10B981), strokeWidth: 2.5),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'Loading budgets...',
+                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -457,20 +549,33 @@ class _StatisticsState extends State<Statistics> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Your Budgets',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 3.w,
+                          height: 20.h,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'Your Budgets',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                     GestureDetector(
                       onTap: () => Get.toNamed(AppRoutes.budgetList),
                       child: Text(
                         'See All',
                         style: TextStyle(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF10B981),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -530,9 +635,18 @@ class _StatisticsState extends State<Statistics> {
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF6C5CE7)
+                    ? const Color(0xFF10B981)
                     : const Color(0xFF2D2D3F),
                 borderRadius: BorderRadius.circular(20.r),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               alignment: Alignment.center,
               child: Text(
@@ -568,9 +682,13 @@ class _StatisticsState extends State<Statistics> {
         child: Container(
           height: 200.h,
           margin: EdgeInsets.all(16.r),
-          padding: EdgeInsets.all(16.r),
+          padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
@@ -578,11 +696,23 @@ class _StatisticsState extends State<Statistics> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.show_chart, color: Colors.white60, size: 40.r),
-                SizedBox(height: 8.h),
+                Container(
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Icon(Icons.show_chart, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 32.r),
+                ),
+                SizedBox(height: 12.h),
                 Text(
                   'No expense data for this period',
                   style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Tap to view detailed spending',
+                  style: TextStyle(color: const Color(0xFF10B981).withValues(alpha: 0.6), fontSize: 12.sp),
                 ),
               ],
             ),
@@ -597,28 +727,53 @@ class _StatisticsState extends State<Statistics> {
         margin: EdgeInsets.all(16.r),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: const Color(0xFF2D2D2D)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Spending Overview',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 3.w,
+                      height: 20.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Spending Overview',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
                 Text(
                   'See Details',
                   style: TextStyle(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF10B981),
                     fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -636,7 +791,7 @@ class _StatisticsState extends State<Statistics> {
                       spots: spots,
                       isCurved: true,
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF6C5CE7), Color(0xFF8E5CE7)],
+                        colors: [Color(0xFF10B981), Color(0xFF34D399)],
                       ),
                       barWidth: 3,
                       dotData: FlDotData(show: false),
@@ -644,8 +799,8 @@ class _StatisticsState extends State<Statistics> {
                         show: true,
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF6C5CE7).withValues(alpha: 0.3),
-                            const Color(0xFF8E5CE7).withValues(alpha: 0.0),
+                            const Color(0xFF10B981).withValues(alpha: 0.3),
+                            const Color(0xFF34D399).withValues(alpha: 0.0),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -675,9 +830,13 @@ class _StatisticsState extends State<Statistics> {
         child: Container(
           height: 280.h,
           margin: EdgeInsets.all(16.r),
-          padding: EdgeInsets.all(16.r),
+          padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
@@ -685,11 +844,23 @@ class _StatisticsState extends State<Statistics> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.bar_chart, color: Colors.white60, size: 40.r),
-                SizedBox(height: 8.h),
+                Container(
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Icon(Icons.bar_chart, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 32.r),
+                ),
+                SizedBox(height: 12.h),
                 Text(
                   'No monthly trend data available',
                   style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Tap to view monthly trends',
+                  style: TextStyle(color: const Color(0xFF10B981).withValues(alpha: 0.6), fontSize: 12.sp),
                 ),
               ],
             ),
@@ -711,20 +882,44 @@ class _StatisticsState extends State<Statistics> {
         margin: EdgeInsets.all(16.r),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: const Color(0xFF2D2D2D)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Monthly Trends',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 3.w,
+                  height: 20.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  'Monthly Trends',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 20.h),
             Expanded(
@@ -828,12 +1023,21 @@ class _StatisticsState extends State<Statistics> {
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 decoration: BoxDecoration(
                   color: showIncome
-                      ? const Color(0xFF3B82F6)
+                      ? const Color(0xFF10B981)
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: showIncome ? Colors.transparent : const Color(0xFF2D2D2D),
                   ),
+                  boxShadow: showIncome
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Text(
                   'Income',
@@ -855,12 +1059,21 @@ class _StatisticsState extends State<Statistics> {
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 decoration: BoxDecoration(
                   color: !showIncome
-                      ? const Color(0xFF3B82F6)
+                      ? const Color(0xFF10B981)
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: !showIncome ? Colors.transparent : const Color(0xFF2D2D2D),
                   ),
+                  boxShadow: !showIncome
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Text(
                   'Expenses',
@@ -891,17 +1104,37 @@ class _StatisticsState extends State<Statistics> {
 
     return Container(
       margin: EdgeInsets.all(16.r),
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(24.r),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
-      child: Center(
-        child: Text(
-          'No income data available',
-          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-        ),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(Icons.trending_up, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 28.r),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'No income data available',
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Income will appear after transactions',
+            style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
+          ),
+        ],
       ),
     );
   }
@@ -919,9 +1152,20 @@ class _StatisticsState extends State<Statistics> {
         margin: EdgeInsets.all(16.r),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: const Color(0xFF2D2D2D)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -929,13 +1173,26 @@ class _StatisticsState extends State<Statistics> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Income Breakdown',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 3.w,
+                      height: 20.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Income Breakdown',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
                 Text(
                   CurrencySymbols.formatAmount(totalIncome),
@@ -996,9 +1253,20 @@ class _StatisticsState extends State<Statistics> {
           margin: EdgeInsets.all(16.r),
           padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(color: const Color(0xFF2D2D2D)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1006,13 +1274,26 @@ class _StatisticsState extends State<Statistics> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Expense Analysis',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 3.w,
+                        height: 20.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Expense Analysis',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   Text(
                     CurrencySymbols.formatAmount(totalExpenses),
@@ -1057,17 +1338,37 @@ class _StatisticsState extends State<Statistics> {
 
     return Container(
       margin: EdgeInsets.all(16.r),
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(24.r),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
-      child: Center(
-        child: Text(
-          'No expense analysis data available',
-          style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 14.sp),
-        ),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(Icons.trending_down, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 28.r),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'No expense analysis data available',
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Expenses will appear after transactions',
+            style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
+          ),
+        ],
       ),
     );
   }
@@ -1185,25 +1486,79 @@ class _StatisticsState extends State<Statistics> {
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
         children: [
+          // Header shimmer
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            child: Row(
+              children: [
+                Container(
+                  width: 28.w,
+                  height: 28.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Container(
+                  width: 160.w,
+                  height: 28.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Quick stats shimmer
           Container(
-            height: 280.h,
-            margin: EdgeInsets.all(16.r),
+            height: 160.h,
+            margin: EdgeInsets.symmetric(horizontal: 16.w),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withValues(alpha: 0.05),
-                  Colors.white.withValues(alpha: 0.02),
+                  const Color(0xFF10B981).withValues(alpha: 0.08),
+                  const Color(0xFF10B981).withValues(alpha: 0.03),
                 ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(24.r),
             ),
           ),
-          ...[200.0, 280.0, 160.0, 50.0, 200.0, 180.0].map((h) => Container(
+          SizedBox(height: 16.h),
+          // Feature grid shimmer
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12.h,
+                crossAxisSpacing: 12.w,
+                childAspectRatio: 1.5,
+              ),
+              itemCount: 6,
+              itemBuilder: (context, index) => Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          // Chart shimmer blocks
+          ...[200.0, 300.0, 160.0].map((h) => Container(
                 height: h.h,
                 margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.03),
                   borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
                 ),
               )),
         ],
@@ -1224,26 +1579,50 @@ class _FeatureCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
+          border: Border.all(
+            color: feature.color.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: feature.color.withValues(alpha: 0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: feature.color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Icon(
-                feature.icon,
-                color: feature.color,
-                size: 24.sp,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: feature.color.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(
+                    feature.icon,
+                    color: feature.color,
+                    size: 22.sp,
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: feature.color.withValues(alpha: 0.5),
+                  size: 20.sp,
+                ),
+              ],
             ),
-            SizedBox(height: 12.h),
+            const Spacer(),
             Text(
               feature.title,
               style: TextStyle(
@@ -1252,7 +1631,7 @@ class _FeatureCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 2.h),
             Text(
               feature.description,
               style: TextStyle(
@@ -1273,6 +1652,7 @@ class _QuickStatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String trend;
+  final bool isPositive;
 
   const _QuickStatCard({
     required this.label,
@@ -1280,46 +1660,65 @@ class _QuickStatCard extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.trend,
+    this.isPositive = true,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, color: color, size: 16.sp),
-            SizedBox(width: 4.w),
-            Text(
-              label,
+    return Container(
+      padding: EdgeInsets.all(10.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color.withValues(alpha: 0.8), size: 14.sp),
+              SizedBox(width: 4.w),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 11.sp,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.bold,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 4.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+            decoration: BoxDecoration(
+              color: (isPositive ? Colors.white : const Color(0xFFEF4444)).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(6.r),
+            ),
+            child: Text(
+              trend,
               style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 11.sp,
+                color: isPositive ? Colors.white : const Color(0xFFFFCDD2),
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w700,
               ),
             ),
-          ],
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          value,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
           ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          trend,
-          style: TextStyle(
-            color: color,
-            fontSize: 11.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1356,9 +1755,23 @@ class _BudgetPreviewCard extends StatelessWidget {
         margin: EdgeInsets.only(right: 12.w),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
+          border: Border.all(
+            color: progressColor.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: progressColor.withValues(alpha: 0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1425,11 +1838,15 @@ class _EmptyBudgetsCard extends StatelessWidget {
         margin: EdgeInsets.only(right: 12.w),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-            width: 2,
+            color: const Color(0xFF10B981).withValues(alpha: 0.4),
+            width: 1.5,
           ),
         ),
         child: Column(
@@ -1437,7 +1854,7 @@ class _EmptyBudgetsCard extends StatelessWidget {
           children: [
             Icon(
               Icons.add_circle_outline,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF10B981),
               size: 32.sp,
             ),
             SizedBox(height: 8.h),

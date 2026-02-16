@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import '../../../../../core/services/injection_container.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import 'donation_processing_screen.dart';
@@ -26,7 +30,9 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
   double? _selectedSuggestedAmount;
   bool _isAnonymous = false;
   bool _isCustomAmount = false;
-  bool _accountSelected = false;
+  bool _isSubmitting = false;
+  String? _selectedAccountId;
+  late final AccountCardsSummaryCubit _accountsCubit;
 
   /// Returns currency-aware suggested amounts for donations
   List<double> get _suggestedAmounts {
@@ -51,42 +57,53 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _accountsCubit = serviceLocator<AccountCardsSummaryCubit>();
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    _accountsCubit.fetchAccountSummaries(userId: userId);
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     _messageController.dispose();
+    _accountsCubit.close();
     super.dispose();
   }
 
   void _processDonation() {
-    if (_formKey.currentState!.validate()) {
-      final amount = _isCustomAmount
-          ? double.parse(_amountController.text.trim())
-          : _selectedSuggestedAmount!;
+    if (_isSubmitting) return;
+    if (!_formKey.currentState!.validate()) return;
 
-      final cubit = context.read<CrowdfundCubit>();
+    final amount = _getDonationAmount();
+    if (amount <= 0) return;
 
-      cubit.makeDonation(
-            crowdfundId: widget.crowdfund.id,
-            amount: amount,
-            message: _messageController.text.trim().isEmpty
-                ? null
-                : _messageController.text.trim(),
-            isAnonymous: _isAnonymous,
-            sourceAccountId: null, // Will use default account
-          );
+    setState(() => _isSubmitting = true);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: cubit,
-            child: DonationProcessingScreen(
-              crowdfund: widget.crowdfund,
-            ),
+    final cubit = context.read<CrowdfundCubit>();
+
+    cubit.makeDonation(
+          crowdfundId: widget.crowdfund.id,
+          amount: amount,
+          message: _messageController.text.trim().isEmpty
+              ? null
+              : _messageController.text.trim(),
+          isAnonymous: _isAnonymous,
+          sourceAccountId: _selectedAccountId,
+        );
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: DonationProcessingScreen(
+            crowdfund: widget.crowdfund,
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -168,10 +185,9 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: (_selectedSuggestedAmount != null ||
-                          (_isCustomAmount &&
-                              _amountController.text.isNotEmpty)) &&
-                      _accountSelected
+                  onPressed: !_isSubmitting &&
+                      _getDonationAmount() > 0 &&
+                      _selectedAccountId != null
                       ? _processDonation
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -184,25 +200,36 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                         const Color(0xFF6366F1).withValues(alpha: 0.3),
                     elevation: 0,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.volunteer_activism,
-                        color: Colors.white,
-                        size: 20.sp,
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'Donate ${widget.crowdfund.currency} ${_getDonationAmount().toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
+                  child: _isSubmitting
+                      ? SizedBox(
+                          height: 20.h,
+                          width: 20.w,
+                          child: const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.volunteer_activism,
+                              color: Colors.white,
+                              size: 20.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              _getDonationAmount() > 0
+                                  ? 'Donate ${widget.crowdfund.currency} ${_getDonationAmount().toStringAsFixed(2)}'
+                                  : 'Select an amount',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
@@ -500,73 +527,114 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
   }
 
   Widget _buildAccountSelector() {
-    // Mock accounts for UI display
-    final accounts = [
-      {'name': 'Default Account', 'currency': widget.crowdfund.currency},
-    ];
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      bloc: _accountsCubit,
+      builder: (context, state) {
+        if (state is AccountCardsSummaryLoading) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+          );
+        }
 
-    return Column(
-      children: accounts.map((account) {
-        return InkWell(
-          onTap: () {
-            setState(() {
-              _accountSelected = true;
+        if (state is AccountCardsSummaryError) {
+          return Text(
+            'Failed to load accounts',
+            style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontSize: 13.sp),
+          );
+        }
+
+        if (state is AccountCardsSummaryLoaded) {
+          final accounts = state.accountSummaries
+              .where((a) => a.currency.toUpperCase() == widget.crowdfund.currency.toUpperCase())
+              .toList();
+
+          if (accounts.isEmpty) {
+            return Text(
+              'No ${widget.crowdfund.currency} accounts available',
+              style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 13.sp),
+            );
+          }
+
+          // Auto-select primary or first account
+          if (_selectedAccountId == null) {
+            final primary = accounts.where((a) => a.isPrimary).firstOrNull;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _selectedAccountId = (primary ?? accounts.first).id;
+                });
+              }
             });
-          },
-          borderRadius: BorderRadius.circular(12.r),
-          child: Container(
-            margin: EdgeInsets.only(bottom: 8.h),
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              gradient: _accountSelected
-                  ? const LinearGradient(
-                      colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: _accountSelected ? null : const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _accountSelected
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_unchecked,
-                  color: _accountSelected
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFF6B7280),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          }
+
+          return Column(
+            children: accounts.map((account) {
+              final isSelected = _selectedAccountId == account.id;
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedAccountId = account.id;
+                  });
+                },
+                borderRadius: BorderRadius.circular(12.r),
+                child: Container(
+                  margin: EdgeInsets.only(bottom: 8.h),
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                        ? const LinearGradient(
+                            colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
+                    color: isSelected ? null : const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Row(
                     children: [
-                      Text(
-                        account['name'] as String,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Icon(
+                        isSelected
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                        color: isSelected
+                            ? const Color(0xFF6366F1)
+                            : const Color(0xFF6B7280),
                       ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        'Donation will use your default account',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF6B7280),
-                          fontSize: 12.sp,
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              account.displayName,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              '${account.currency} ${account.balance.toStringAsFixed(2)}',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
+              );
+            }).toList(),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
     );
   }
 

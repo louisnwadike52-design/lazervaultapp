@@ -82,6 +82,7 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
     required double amount,
     required String currency,
     required String accountId,
+    required String phoneNumber,
     String? paymentGateway,
     String? beneficiaryId,
     String? transactionId,
@@ -95,6 +96,7 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
         amount: amount,
         currency: currency,
         accountId: accountId,
+        phoneNumber: phoneNumber,
         paymentGateway: paymentGateway,
         beneficiaryId: beneficiaryId,
         transactionId: transactionId,
@@ -154,8 +156,11 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
     required MeterType meterType,
     required String customerName,
     String? customerAddress,
+    String? phoneNumber,
     required String nickname,
     bool isDefault = false,
+    String? providerCode,
+    String? providerName,
   }) async {
     try {
       final result = await remoteDataSource.saveBeneficiary(
@@ -164,8 +169,11 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
         meterType: meterType,
         customerName: customerName,
         customerAddress: customerAddress,
+        phoneNumber: phoneNumber,
         nickname: nickname,
         isDefault: isDefault,
+        providerCode: providerCode,
+        providerName: providerName,
       );
       return Right(result);
     } on GrpcError catch (e) {

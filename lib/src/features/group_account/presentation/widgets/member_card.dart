@@ -19,8 +19,20 @@ class MemberCard extends StatelessWidget {
     this.onTap,
   });
 
+  String _getDisplayName() {
+    if (member.userName.isNotEmpty) return member.userName;
+    if (member.userUsername != null && member.userUsername!.isNotEmpty) {
+      return '@${member.userUsername}';
+    }
+    if (member.email.isNotEmpty) {
+      return member.email.split('@').first;
+    }
+    return 'Unknown User';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final displayName = _getDisplayName();
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -35,7 +47,7 @@ class MemberCard extends StatelessWidget {
             offset: Offset(0, 2),
           ),
         ],
-        
+
         ),
         child: Row(
           children: [
@@ -53,9 +65,9 @@ class MemberCard extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  member.userName.isNotEmpty 
-                      ? member.userName[0].toUpperCase()
-                      : '?',
+                  displayName.startsWith('@') && displayName.length > 1
+                      ? displayName[1].toUpperCase()
+                      : displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
                   style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
@@ -65,14 +77,14 @@ class MemberCard extends StatelessWidget {
               ),
             ),
             SizedBox(width: 12.w),
-            
+
             // Member Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    member.userName,
+                    displayName,
                     style: GoogleFonts.inter(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,

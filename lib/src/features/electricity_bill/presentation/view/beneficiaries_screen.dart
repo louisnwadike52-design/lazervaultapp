@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/beneficiary_entity.dart';
-import '../../domain/entities/extensions/meter_type_extension.dart';
+import '../../domain/entities/provider_entity.dart';
+import '../../domain/entities/bill_payment_entity.dart';
+import '../../domain/repositories/electricity_bill_repository.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/beneficiary_cubit.dart';
 import '../cubit/beneficiary_state.dart';
@@ -18,10 +20,52 @@ class BeneficiariesScreen extends StatefulWidget {
 }
 
 class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
+  List<ElectricityProviderEntity> _providers = [];
+
   @override
   void initState() {
     super.initState();
+    final args = Get.arguments;
+    if (args is Map<String, dynamic> && args['providers'] is List<ElectricityProviderEntity>) {
+      _providers = args['providers'] as List<ElectricityProviderEntity>;
+    }
     context.read<BeneficiaryCubit>().getBeneficiaries();
+  }
+
+  void _proceedToPayment(BillBeneficiaryEntity beneficiary) {
+    // Find matching provider from the list passed by home screen
+    final matchingProvider = _providers
+        .where((p) => p.providerCode == beneficiary.providerCode)
+        .firstOrNull;
+
+    if (matchingProvider == null) {
+      // Fallback: return to home screen for validation
+      Get.back(result: beneficiary);
+      return;
+    }
+
+    // Construct MeterValidationResult from saved beneficiary data
+    final validationResult = MeterValidationResult(
+      customerName: beneficiary.customerName,
+      customerAddress: beneficiary.customerAddress,
+      meterNumber: beneficiary.meterNumber,
+      meterType: beneficiary.meterType,
+      isValid: true,
+    );
+
+    // Navigate directly to confirmation screen
+    Get.toNamed(
+      AppRoutes.electricityBillConfirmation,
+      arguments: {
+        'provider': matchingProvider,
+        'validationResult': validationResult,
+        'providerCode': beneficiary.providerCode,
+        'meterNumber': beneficiary.meterNumber,
+        'meterType': beneficiary.meterType,
+        'phoneNumber': beneficiary.phoneNumber ?? '',
+        'beneficiary': beneficiary,
+      },
+    );
   }
 
   void _deleteBeneficiary(BillBeneficiaryEntity beneficiary) {
@@ -172,8 +216,16 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Get.toNamed(AppRoutes.electricityBillAddBeneficiary);
+        onPressed: () async {
+          final result = await Get.toNamed(AppRoutes.electricityBillAddBeneficiary);
+          if (result is BillBeneficiaryEntity) {
+            // User chose "Proceed to Payment" from add beneficiary
+            _proceedToPayment(result);
+            return;
+          }
+          // Refresh list in case a new beneficiary was added
+          if (!mounted) return;
+          context.read<BeneficiaryCubit>().getBeneficiaries();
         },
         backgroundColor: const Color(0xFF4E03D0),
         icon: Icon(Icons.add, size: 24.sp),
@@ -292,14 +344,186 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
     );
   }
 
+  void _showBeneficiaryDetailsSheet(BillBeneficiaryEntity beneficiary) {
+    final dateFormat = DateFormat('MMM dd, yyyy');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A3E),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 12.h),
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            // Beneficiary icon
+            Container(
+              width: 60.w,
+              height: 60.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                beneficiary.isPrepaid ? Icons.bolt : Icons.receipt_long,
+                color: const Color(0xFF4E03D0),
+                size: 28.sp,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              beneficiary.displayName,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (beneficiary.nickname.isNotEmpty &&
+                beneficiary.nickname != beneficiary.customerName)
+              Padding(
+                padding: EdgeInsets.only(top: 4.h),
+                child: Text(
+                  beneficiary.customerName,
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+            SizedBox(height: 20.h),
+            // Details card
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+              child: Column(
+                children: [
+                  _buildDetailRow('Meter Number', beneficiary.meterNumber, Icons.numbers),
+                  SizedBox(height: 12.h),
+                  _buildDetailRow('Provider', beneficiary.providerName, Icons.business),
+                  SizedBox(height: 12.h),
+                  _buildDetailRow('Meter Type', beneficiary.meterType.displayName, Icons.label),
+                  if (beneficiary.customerAddress != null &&
+                      beneficiary.customerAddress!.isNotEmpty) ...[
+                    SizedBox(height: 12.h),
+                    _buildDetailRow('Address', beneficiary.customerAddress!, Icons.location_on_outlined),
+                  ],
+                  if (beneficiary.phoneNumber != null &&
+                      beneficiary.phoneNumber!.isNotEmpty) ...[
+                    SizedBox(height: 12.h),
+                    _buildDetailRow('Phone', beneficiary.phoneNumber!, Icons.phone_outlined),
+                  ],
+                  SizedBox(height: 12.h),
+                  _buildDetailRow('Added', dateFormat.format(beneficiary.createdAt), Icons.calendar_today),
+                  if (beneficiary.hasBeenUsed) ...[
+                    SizedBox(height: 12.h),
+                    _buildDetailRow('Last Used', dateFormat.format(beneficiary.lastUsedAt!), Icons.access_time),
+                  ],
+                ],
+              ),
+            ),
+            SizedBox(height: 24.h),
+            // Proceed to Payment button
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _proceedToPayment(beneficiary);
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
+                    ),
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.payment, color: Colors.white, size: 22.sp),
+                      SizedBox(width: 10.w),
+                      Text(
+                        'Proceed to Payment',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 20.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: Colors.white.withValues(alpha: 0.5),
+          size: 18.sp,
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 11.sp,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                value,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildBeneficiaryCard(BillBeneficiaryEntity beneficiary) {
     final dateFormat = DateFormat('MMM dd, yyyy');
 
     return GestureDetector(
-      onTap: () {
-        // Navigate back to payment flow with this beneficiary
-        Get.back(result: beneficiary);
-      },
+      onTap: () => _showBeneficiaryDetailsSheet(beneficiary),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(

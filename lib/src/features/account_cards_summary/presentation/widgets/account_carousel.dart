@@ -42,8 +42,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
   // Track real-time balance updates per account
   final Map<String, double> _realtimeBalances = {};
 
-  // Pending balance updates to apply when dashboard becomes visible
-  final Map<String, double> _pendingBalanceUpdates = {};
+  // Pending balance updates to apply when dashboard becomes visible (from→to for two-phase animation)
+  final Map<String, ({double from, double to})> _pendingBalanceUpdates = {};
   // Helper to convert currency code to symbol
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
@@ -77,21 +77,42 @@ class _AccountCarouselState extends State<AccountCarousel> {
     _initializeCarouselPosition();
     // Set the first account as active if none is selected
     _initializeActiveAccount();
-    // Check if there's a recent WebSocket balance update we missed
-    // (e.g., when navigating back to dashboard via Get.offAllNamed after a transfer)
-    // Only apply if the event is recent (within 30 seconds) to avoid stale updates
+    // Check if the cubit has pending WebSocket animations to play
+    // (e.g., when dashboard is rebuilt via Get.offAllNamed after a transfer)
+    _checkForPendingAnimation();
+  }
+
+  /// Reads cubit tracking maps for unconsumed WebSocket updates and plays
+  /// a two-phase animation: show old balance → animate to new balance.
+  void _checkForPendingAnimation() {
     Future.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
-      final wsState = context.read<BalanceWebSocketCubit>().state;
-      if (wsState.lastUpdate != null) {
-        final eventAge = DateTime.now().millisecondsSinceEpoch - wsState.lastUpdate!.timestamp;
-        // Only apply if event occurred within last 30 seconds (30000ms)
-        if (eventAge < 30000 && eventAge > 0) {
-          _handleBalanceUpdate(wsState.lastUpdate!);
-        } else {
-          debugPrint('AccountCarousel: Skipping stale WebSocket event (age: ${eventAge}ms)');
+      final cubit = context.read<AccountCardsSummaryCubit>();
+      final animations = cubit.getPendingAnimations();
+      if (animations.isEmpty) return;
+
+      // Phase 1: Set _realtimeBalances to "from" values (shows old balance)
+      setState(() {
+        for (final entry in animations.entries) {
+          _realtimeBalances[entry.key] = entry.value.from;
         }
-      }
+      });
+
+      // Phase 2: After a short delay, set "to" values (triggers CompactAnimatedBalance animation)
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!mounted) return;
+        setState(() {
+          for (final entry in animations.entries) {
+            _realtimeBalances[entry.key] = entry.value.to;
+          }
+        });
+
+        // After animation completes (~3s duration), consume the update so entities reflect reality
+        Future.delayed(const Duration(seconds: 3), () {
+          if (!mounted) return;
+          cubit.markBalanceUpdateConsumed();
+        });
+      });
     });
   }
 
@@ -186,7 +207,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   /// Handle real-time balance updates from WebSocket
   void _handleBalanceUpdate(BalanceUpdateEvent event) {
-    // Find the account that matches this update
     final accountId = event.accountId;
     final newBalance = event.newBalance;
 
@@ -200,25 +220,60 @@ class _AccountCarouselState extends State<AccountCarousel> {
       setState(() {
         _realtimeBalances[accountId] = newBalance;
       });
+
+      // After animation completes (~3s), consume so entities reflect the new balance
+      Future.delayed(const Duration(seconds: 3), () {
+        if (!mounted) return;
+        context.read<AccountCardsSummaryCubit>().markBalanceUpdateConsumed();
+      });
     } else {
-      // Dashboard is not visible — buffer the update for later
-      _pendingBalanceUpdates[accountId] = newBalance;
+      // Dashboard is not visible — buffer with from→to for two-phase animation on return.
+      // "from" is the currently displayed balance (use putIfAbsent to keep earliest value).
+      final currentDisplayed = _realtimeBalances[accountId]
+          ?? widget.accountSummaries.where((a) => a.id == accountId).firstOrNull?.balance;
+      if (currentDisplayed != null) {
+        _pendingBalanceUpdates.putIfAbsent(accountId, () => (from: currentDisplayed, to: newBalance));
+        // Always update "to" in case multiple events arrive while away
+        _pendingBalanceUpdates[accountId] = (from: _pendingBalanceUpdates[accountId]!.from, to: newBalance);
+      }
       debugPrint('AccountCarousel: Buffered balance update for account $accountId (dashboard not visible)');
     }
 
-    // Log the update for debugging
     debugPrint('AccountCarousel: Real-time balance update for account $accountId: $newBalance (${event.eventType})');
   }
 
-  /// Apply any pending balance updates when dashboard becomes visible
+  /// Apply any pending balance updates when dashboard becomes visible.
+  /// Uses two-phase animation: show old balance first, then animate to new balance.
   void _applyPendingUpdates() {
-    if (_pendingBalanceUpdates.isNotEmpty && mounted) {
+    if (_pendingBalanceUpdates.isEmpty || !mounted) return;
+
+    final updates = Map<String, ({double from, double to})>.from(_pendingBalanceUpdates);
+    _pendingBalanceUpdates.clear();
+
+    // Phase 1: Set to "from" values (shows old balance)
+    setState(() {
+      for (final entry in updates.entries) {
+        _realtimeBalances[entry.key] = entry.value.from;
+      }
+    });
+
+    // Phase 2: After short delay, set "to" values (triggers animation)
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
       setState(() {
-        _realtimeBalances.addAll(_pendingBalanceUpdates);
-        _pendingBalanceUpdates.clear();
+        for (final entry in updates.entries) {
+          _realtimeBalances[entry.key] = entry.value.to;
+        }
       });
-      debugPrint('AccountCarousel: Applied pending balance updates');
-    }
+
+      // After animation completes, consume so entities reflect reality
+      Future.delayed(const Duration(seconds: 3), () {
+        if (!mounted) return;
+        context.read<AccountCardsSummaryCubit>().markBalanceUpdateConsumed();
+      });
+
+      debugPrint('AccountCarousel: Applied pending balance updates (two-phase animation)');
+    });
   }
 
   /// Get the current balance for an account (real-time if available, otherwise from entity)

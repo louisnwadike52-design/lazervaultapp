@@ -8,11 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/types/app_routes.dart';
-import '../../../../../core/services/injection_container.dart';
 import '../../domain/entities/group_entities.dart';
-import '../../data/datasources/group_account_remote_data_source.dart';
-import '../../data/services/contribution_payment_service.dart';
-import '../../data/repositories/contribution_payment_repository_impl.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../widgets/payment_history_card.dart';
@@ -39,8 +35,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   Contribution? _currentContribution;
   List<ContributionPayment> _localPayments = [];
 
-  late ContributionPaymentRepositoryImpl _paymentRepository;
-
   @override
   void initState() {
     super.initState();
@@ -48,7 +42,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     _tabController = TabController(length: 3, vsync: this);
     _currentContribution = widget.contribution;
     _loadContributionDetails();
-    _initializeAndLoadPayments();
+    _loadLocalPayments();
   }
 
   @override
@@ -66,35 +60,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     }
   }
 
-  Future<void> _initializeAndLoadPayments() async {
-    await _initializePaymentRepository();
-    _loadLocalPayments();
-  }
-
-  Future<void> _initializePaymentRepository() async {
-    // Use service locator to get the gRPC data source instead of mock
-    final remoteDataSource = serviceLocator<GroupAccountRemoteDataSource>();
-    final paymentService = ContributionPaymentServiceImpl(remoteDataSource: remoteDataSource);
-    _paymentRepository = ContributionPaymentRepositoryImpl(paymentService: paymentService);
-  }
-
   Future<void> _loadLocalPayments() async {
-    setState(() {
-    });
-
     try {
-      final payments = await _paymentRepository.getPaymentsByContribution(widget.contributionId);
+      final payments = await context.read<GroupAccountCubit>().getContributionPayments.call(widget.contributionId);
       if (mounted) {
         setState(() {
           _localPayments = payments;
         });
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-        });
-      }
-      print('Error loading local payments: $e');
+    } catch (_) {
+      // Payments will remain empty on error
     }
   }
 
@@ -440,13 +415,22 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Implement join contribution functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Request to join sent!'),
-                  backgroundColor: const Color(0xFF10B981),
-                ),
-              );
+              final cubit = context.read<GroupAccountCubit>();
+              final userId = cubit.currentUserId;
+              if (userId != null && userId.isNotEmpty) {
+                cubit.addMembersToContributionAccount(
+                  contributionId: contribution.id,
+                  groupId: contribution.groupId,
+                  memberUserIds: [userId],
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Unable to join: user not authenticated'),
+                    backgroundColor: Color(0xFFEF4444),
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6C5CE7),
@@ -1221,6 +1205,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     ContributionMember? member,
     DateTime? joinedAt,
   }) {
+    final displayName = userName.isNotEmpty ? userName : (email != null && email.isNotEmpty ? email.split('@').first : 'Unknown User');
     final progressPercent = expectedAmount > 0 ? (totalPaid / expectedAmount * 100).clamp(0.0, 100.0) : 0.0;
     final isPaid = totalPaid >= expectedAmount;
 
@@ -1252,7 +1237,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               backgroundImage: profileImage != null ? NetworkImage(profileImage) : null,
               child: profileImage == null
                   ? Text(
-                      userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                      displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -1270,7 +1255,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     children: [
                       Expanded(
                         child: Text(
-                          userName,
+                          displayName,
                           style: GoogleFonts.inter(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
@@ -1677,7 +1662,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ),
               SizedBox(height: 4.h),
               Text(
-                'Paid by ${payment.userName}',
+                'Paid by ${payment.userName.isNotEmpty ? payment.userName : 'Unknown User'}',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
                   color: Colors.white.withValues(alpha: 0.8),
@@ -2119,7 +2104,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
 💰 Amount: ${payment.currency} ${payment.amount.toStringAsFixed(2)}
 📋 Contribution: ${contribution?.title ?? 'N/A'}
-👤 Paid by: ${payment.userName}
+👤 Paid by: ${payment.userName.isNotEmpty ? payment.userName : 'Unknown User'}
 📅 Date: ${DateFormat('MMM dd, yyyy • HH:mm').format(payment.paymentDate)}
 💳 Method: $paymentMethod
 🆔 Transaction ID: ${payment.transactionId ?? 'N/A'}
@@ -2327,8 +2312,9 @@ Powered by LazerVault 🚀
         child: AddMembersToContributionDialog(
           contribution: contribution,
           onMembersAdded: () {
-            // Refresh the contribution data or show success message
             _refreshPayments();
+            // Also reload contribution details to update the members list
+            context.read<GroupAccountCubit>().loadContributionDetails(contribution.id);
           },
         ),
       ),

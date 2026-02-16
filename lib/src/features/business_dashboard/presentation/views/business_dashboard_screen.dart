@@ -13,6 +13,7 @@ import '../widgets/recent_business_transactions.dart';
 import '../widgets/payroll_summary_widget.dart';
 import '../widgets/pending_invoices_card.dart';
 import '../widgets/period_selector_chip.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class BusinessDashboardScreen extends StatefulWidget {
   const BusinessDashboardScreen({super.key});
@@ -56,6 +57,13 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen> {
         ),
         centerTitle: true,
         actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 4.w),
+            child: MicroserviceChatIcon(
+              serviceName: 'Business',
+              sourceContext: 'accounts',
+            ),
+          ),
           IconButton(
             onPressed: () => Get.toNamed(AppRoutes.businessAnalytics),
             icon: Icon(

@@ -35,6 +35,7 @@ abstract class ElectricityBillRemoteDataSource {
     required double amount,
     required String currency,
     required String accountId,
+    required String phoneNumber,
     String? paymentGateway,
     String? beneficiaryId,
     String? transactionId,
@@ -52,8 +53,11 @@ abstract class ElectricityBillRemoteDataSource {
     required MeterType meterType,
     required String customerName,
     String? customerAddress,
+    String? phoneNumber,
     required String nickname,
     bool isDefault = false,
+    String? providerCode,
+    String? providerName,
   });
 
   Future<List<BillBeneficiaryModel>> getBeneficiaries();
@@ -209,6 +213,7 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     required double amount,
     required String currency,
     required String accountId,
+    required String phoneNumber,
     String? paymentGateway,
     String? beneficiaryId,
     String? transactionId,
@@ -220,7 +225,8 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
       ..meterType = meterType.name
       ..amount = amount
       ..currency = currency
-      ..sourceAccountId = accountId;
+      ..sourceAccountId = accountId
+      ..phoneNumber = phoneNumber;
 
     if (paymentGateway != null) {
       request.paymentGateway = paymentGateway;
@@ -241,10 +247,31 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
       options: options,
     );
 
-    // InitiatePaymentResponse returns payment_id, not full payment object
-    // We need to verify the payment to get the full details
-    final payment = await verifyPayment(paymentId: response.paymentId);
-    return payment;
+    // Map the status from the backend response.
+    // The backend processes payment synchronously, so status is usually 'completed'.
+    final responseStatus = BillPaymentStatusExtension.fromString(
+      response.status.isNotEmpty ? response.status : 'processing',
+    );
+
+    return BillPaymentModel(
+      id: response.paymentId,
+      userId: '',
+      providerId: '',
+      providerCode: providerCode,
+      providerName: '',
+      meterNumber: meterNumber,
+      customerName: '',
+      meterType: meterType,
+      amount: amount,
+      currency: currency,
+      serviceFee: response.serviceFee,
+      totalAmount: response.totalAmount,
+      status: responseStatus,
+      paymentGateway: paymentGateway ?? '',
+      referenceNumber: response.referenceNumber,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
   }
 
   @override
@@ -299,8 +326,11 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     required MeterType meterType,
     required String customerName,
     String? customerAddress,
+    String? phoneNumber,
     required String nickname,
     bool isDefault = false,
+    String? providerCode,
+    String? providerName,
   }) async {
     final request = pb.SaveBeneficiaryRequest()
       ..providerId = providerId
@@ -310,8 +340,20 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
       ..nickname = nickname
       ..isDefault = isDefault;
 
+    if (providerCode != null) {
+      request.providerCode = providerCode;
+    }
+
+    if (providerName != null) {
+      request.providerName = providerName;
+    }
+
     if (customerAddress != null) {
       request.customerAddress = customerAddress;
+    }
+
+    if (phoneNumber != null) {
+      request.phoneNumber = phoneNumber;
     }
 
     final options = await grpcClient.callOptions;

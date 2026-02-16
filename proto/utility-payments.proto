@@ -45,7 +45,7 @@ service UtilityPaymentsService {
     };
   }
 
-  // Buy data bundle
+  // Buy data bundle (dedicated data purchase via eBills Africa)
   rpc BuyData(BuyDataRequest) returns (BuyDataResponse) {
     option (google.api.http) = {
       post: "/api/v1/bills/buydata"
@@ -138,6 +138,30 @@ service UtilityPaymentsService {
   rpc GetCableTVProviders(GetCableTVProvidersRequest) returns (GetCableTVProvidersResponse) {
     option (google.api.http) = {
       get: "/api/v1/bills/cabletvproviders"
+    };
+  }
+
+  // === INTERNET BILL OPERATIONS ===
+
+  // Get internet providers (Smile, Spectranet)
+  rpc GetInternetProviders(GetInternetProvidersRequest) returns (GetInternetProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/internetproviders"
+    };
+  }
+
+  // Validate internet account number
+  rpc ValidateInternetAccount(ValidateInternetAccountRequest) returns (ValidateInternetAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/validateinternetaccount"
+      body: "*"
+    };
+  }
+
+  // Get internet packages for a provider
+  rpc GetInternetPackages(GetInternetPackagesRequest) returns (GetInternetPackagesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/internetpackages"
     };
   }
 
@@ -301,53 +325,6 @@ message BuyAirtimeResponse {
   string message = 5;
   double commission_earned = 6;         // Commission earned on this transaction
   string provider_reference = 7;        // Reloadly transaction ID
-}
-
-// ===== DATA PLANS =====
-
-message DataPlan {
-  string variation_id = 1;
-  string name = 2;
-  double price = 3;
-  string network = 4;
-  string availability = 5;
-}
-
-message GetDataPlansRequest {
-  string network = 1;
-}
-
-message GetDataPlansResponse {
-  repeated DataPlan plans = 1;
-  int32 total = 2;
-}
-
-// ===== BUY DATA =====
-// NOTE: user_id extracted from JWT token, not from request
-message BuyDataRequest {
-  string phone_number = 1;
-  string network = 2;
-  string variation_id = 3;
-  double amount = 4;
-
-  // Transaction PIN verification (replaces direct PIN field)
-  string transaction_id = 5;           // Unique transaction identifier
-  string verification_token = 6;        // Token from TransactionPinService validation
-
-  // Idempotency
-  string idempotency_key = 7;          // Unique key for idempotency (recommended: UUID)
-
-  string country_code = 8;             // ISO country code (e.g., "NG")
-}
-
-message BuyDataResponse {
-  BillPayment payment = 1;
-  double new_balance = 2;
-  string phone_number = 3;
-  string data_plan = 4;
-  string message = 5;
-  double commission_earned = 6;         // Commission earned on this transaction
-  string provider_reference = 7;        // Provider transaction ID
 }
 
 // ===== BARCODE PAY =====
@@ -581,5 +558,106 @@ message GetEducationProvidersRequest {
 
 message GetEducationProvidersResponse {
   repeated EducationProvider providers = 1;
+  int32 total = 2;
+}
+
+// ===== DATA BUNDLES (eBills Africa) =====
+
+message DataPlan {
+  string variation_id = 1;
+  string name = 2;                    // e.g., "1.5GB - 30 Days"
+  double price = 3;
+  string network = 4;                 // "mtn", "airtel", "glo", "9mobile"
+  string availability = 5;
+}
+
+message GetDataPlansRequest {
+  string network = 1;                 // Required: "mtn", "airtel", "glo", "9mobile"
+}
+
+message GetDataPlansResponse {
+  repeated DataPlan plans = 1;
+  int32 total = 2;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message BuyDataRequest {
+  string phone_number = 1;
+  string network = 2;                 // "mtn", "airtel", "glo", "9mobile"
+  string variation_id = 3;            // eBills variation_id from GetDataPlans
+  double amount = 4;                  // Expected price (validated against plan price)
+
+  // Transaction PIN verification
+  string transaction_id = 5;
+  string verification_token = 6;
+
+  // Idempotency
+  string idempotency_key = 7;
+  string country_code = 8;            // "NG" default
+}
+
+message BuyDataResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string phone_number = 3;
+  string data_plan = 4;               // Human-readable plan name
+  string message = 5;
+  double commission_earned = 6;
+  string provider_reference = 7;
+}
+
+// ===== INTERNET PROVIDERS =====
+
+message InternetProvider {
+  string id = 1;
+  string name = 2;
+  string service_id = 3;              // VTPass serviceID (e.g., "smile-direct", "spectranet")
+  string logo_url = 4;
+  bool is_active = 5;
+  double commission_rate = 6;
+}
+
+message InternetPackage {
+  string id = 1;
+  string name = 2;
+  string variation_code = 3;          // VTPass variation code
+  double amount = 4;
+  string provider_id = 5;
+  string validity = 6;                // e.g., "1 Month", "1 Week"
+}
+
+message InternetAccountValidation {
+  bool is_valid = 1;
+  string customer_name = 2;
+  string account_number = 3;
+  string status = 4;
+  double due_amount = 5;
+}
+
+message GetInternetProvidersRequest {
+  bool active_only = 1;
+}
+
+message GetInternetProvidersResponse {
+  repeated InternetProvider providers = 1;
+  int32 total = 2;
+}
+
+message ValidateInternetAccountRequest {
+  string provider_id = 1;             // e.g., "smile-direct", "spectranet"
+  string account_number = 2;
+}
+
+message ValidateInternetAccountResponse {
+  InternetAccountValidation validation = 1;
+  string message = 2;
+}
+
+message GetInternetPackagesRequest {
+  string provider_id = 1;             // e.g., "smile-direct", "spectranet"
+}
+
+message GetInternetPackagesResponse {
+  repeated InternetPackage packages = 1;
   int32 total = 2;
 }

@@ -26,8 +26,7 @@ class _DashboardTransactionHistoryScreenState
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
-  int? _selectedMonth;
-  int? _selectedYear;
+  TransactionFilters? _activeFilters;
 
   @override
   void initState() {
@@ -56,19 +55,37 @@ class _DashboardTransactionHistoryScreenState
     }
   }
 
-  void _onMonthChanged(({int? month, int? year}) selection) {
-    setState(() {
-      _selectedMonth = selection.month;
-      _selectedYear = selection.year;
-    });
+  void _showFilterSheet() {
+    FilterBottomSheet.show(
+      context,
+      initialFilters: _activeFilters,
+      onApply: (filters) {
+        setState(() => _activeFilters = filters.hasFilters ? filters : null);
+        // Merge with current search query
+        final merged = _searchController.text.isNotEmpty
+            ? filters.copyWith(searchQuery: _searchController.text)
+            : filters;
+        context.read<TransactionHistoryCubit>().applyFilters(merged);
+      },
+    );
+  }
 
-    if (selection.month == null) {
-      context.read<TransactionHistoryCubit>().clearFilters();
+  void _clearAllFilters() {
+    setState(() => _activeFilters = null);
+    _searchController.clear();
+    context.read<TransactionHistoryCubit>().clearFilters();
+  }
+
+  void _removeFilter(TransactionFilters updatedFilters) {
+    setState(() => _activeFilters = updatedFilters.hasFilters ? updatedFilters : null);
+    // Merge with current search query
+    final merged = _searchController.text.isNotEmpty
+        ? updatedFilters.copyWith(searchQuery: _searchController.text)
+        : updatedFilters;
+    if (merged.hasFilters) {
+      context.read<TransactionHistoryCubit>().applyFilters(merged);
     } else {
-      final start = DateTime(selection.year!, selection.month!, 1);
-      final end = DateTime(selection.year!, selection.month! + 1, 0, 23, 59, 59);
-      final filters = TransactionFilters(startDate: start, endDate: end);
-      context.read<TransactionHistoryCubit>().applyFilters(filters);
+      context.read<TransactionHistoryCubit>().clearFilters();
     }
   }
 
@@ -99,22 +116,30 @@ class _DashboardTransactionHistoryScreenState
             TransactionSearchBar(
               controller: _searchController,
               onChanged: (query) {
-                if (query.isNotEmpty) {
-                  context.read<TransactionHistoryCubit>().searchTransactions(query);
+                final merged = (_activeFilters ?? const TransactionFilters())
+                    .copyWith(searchQuery: query.isNotEmpty ? query : null);
+                if (merged.hasFilters) {
+                  context.read<TransactionHistoryCubit>().applyFilters(merged);
                 } else {
                   context.read<TransactionHistoryCubit>().clearFilters();
                 }
               },
               onClear: () {
                 _searchController.clear();
-                context.read<TransactionHistoryCubit>().clearFilters();
+                if (_activeFilters != null && _activeFilters!.hasFilters) {
+                  // Keep other filters, just clear search
+                  context.read<TransactionHistoryCubit>().applyFilters(_activeFilters!);
+                } else {
+                  context.read<TransactionHistoryCubit>().clearFilters();
+                }
               },
             ),
             SizedBox(height: 4.h),
-            MonthFilterChips(
-              selectedMonth: _selectedMonth,
-              selectedYear: _selectedYear,
-              onChanged: _onMonthChanged,
+            TransactionFilterBar(
+              activeFilters: _activeFilters,
+              onOpenFilters: _showFilterSheet,
+              onClearAll: _clearAllFilters,
+              onRemoveFilter: _removeFilter,
             ),
             SizedBox(height: 8.h),
             Expanded(
@@ -127,7 +152,7 @@ class _DashboardTransactionHistoryScreenState
                   } else if (state is TransactionHistoryEmpty) {
                     return TransactionEmptyState(
                       message: state.message,
-                      action: state.activeFilters != null
+                      action: (_activeFilters != null || _searchController.text.isNotEmpty)
                           ? _buildClearFiltersButton()
                           : null,
                     );
@@ -267,13 +292,7 @@ class _DashboardTransactionHistoryScreenState
 
   Widget _buildClearFiltersButton() {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedMonth = null;
-          _selectedYear = null;
-        });
-        context.read<TransactionHistoryCubit>().clearFilters();
-      },
+      onTap: _clearAllFilters,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
         decoration: BoxDecoration(

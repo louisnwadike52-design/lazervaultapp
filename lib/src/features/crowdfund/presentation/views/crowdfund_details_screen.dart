@@ -64,8 +64,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DonationPaymentScreen(
-                          crowdfund: crowdfund!,
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<CrowdfundCubit>(),
+                          child: DonationPaymentScreen(
+                            crowdfund: crowdfund!,
+                          ),
                         ),
                       ),
                     );
@@ -709,16 +712,21 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
     List<CrowdfundDonation> donations,
     CrowdfundStatistics? statistics,
   ) {
-    // Generate a campaign URL for sharing
     final campaignUrl = 'https://app.lazervault.com/crowdfund/${crowdfund.crowdfundCode}';
+    final cubit = context.read<CrowdfundCubit>();
 
     Navigator.push(
       context,
-      CrowdfundReportScreen.route(
-        crowdfund: crowdfund,
-        statistics: statistics,
-        donations: donations,
-        campaignUrl: campaignUrl,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: CrowdfundReportScreen(
+            crowdfund: crowdfund,
+            statistics: statistics,
+            donations: donations,
+            campaignUrl: campaignUrl,
+          ),
+        ),
       ),
     );
   }

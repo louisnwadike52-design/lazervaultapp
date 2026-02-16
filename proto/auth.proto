@@ -553,15 +553,15 @@ service AuthService {
     };
   }
 
-  // Search users by username, email, or phone
-  rpc SearchUsersByUsername(SearchUsersByUsernameRequest) returns (SearchUsersByUsernameResponse) {
+  // Search users by username prefix (for autocomplete/search functionality)
+  rpc SearchUsers(UserSearchRequest) returns (UserSearchResponse) {
     option (google.api.http) = {
       get: "/api/v1/auth/search/users"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Search Users";
-      description: "Search users by username, email, or phone number";
-      tags: ["User"];
+      description: "Search for users by name, username, email, or phone number. Supports multi-field search with optional search_type filter";
+      tags: ["User Lookup"];
       security: {
         security_requirement: {
           key: "bearer";
@@ -1180,25 +1180,28 @@ message ReauthorizeSocialAccountResponse {
   LinkedSocialAccount account = 3;
 }
 
-// ===== User Search =====
+// User lookup result - minimal info for transfers
 message UserLookupResult {
   string user_id = 1;
-  string username = 2;
+  string username = 2;                // LazerTag username
   string first_name = 3;
   string last_name = 4;
   string profile_picture = 5;
-  bool is_lazervault_user = 6;
-  string phone_number = 7;
-  string email = 8;
+  bool is_lazervault_user = 6;        // Always true for internal users
+  string phone_number = 7;            // Phone number (masked for privacy)
+  string email = 8;                   // Email (masked for privacy)
+  string primary_account_id = 9;      // Primary account ID (UUID) for transfers
 }
 
-message SearchUsersByUsernameRequest {
-  string query = 1;
-  int32 limit = 2;
-  string search_type = 3;
+// Search users by multiple fields request
+message UserSearchRequest {
+  string query = 1;                   // Search query (name, username, email, or phone)
+  int32 limit = 2;                    // Maximum number of results (default 10, max 50)
+  string search_type = 3;             // Optional: "username", "name", "phone", "email", or "" for unified search across all fields
 }
 
-message SearchUsersByUsernameResponse {
+// Search users response
+message UserSearchResponse {
   bool success = 1;
   string msg = 2;
   repeated UserLookupResult users = 3;

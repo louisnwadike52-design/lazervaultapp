@@ -31,6 +31,7 @@ import 'package:lazervault/src/features/widgets/dashboard/dashboard.dart';
 import 'package:lazervault/src/features/widgets/my_cards.dart';
 import 'package:lazervault/src/features/widgets/statistics.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
@@ -65,6 +66,9 @@ class Screen {
             BlocProvider.value(
               value: serviceLocator<OpenBankingCubit>(),
             ),
+            BlocProvider.value(
+              value: serviceLocator<BudgetCubit>(),
+            ),
           ],
           child: const Statistics(),
         );
@@ -76,6 +80,9 @@ class Screen {
             ),
             BlocProvider.value(
               value: serviceLocator<OpenBankingCubit>(),
+            ),
+            BlocProvider.value(
+              value: serviceLocator<BudgetCubit>(),
             ),
           ],
           child: const Statistics(),

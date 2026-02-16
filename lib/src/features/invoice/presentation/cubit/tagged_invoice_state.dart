@@ -26,6 +26,7 @@ class IncomingTaggedInvoicesLoaded extends TaggedInvoiceState {
   final int totalPages;
   final int totalCount;
   final int pageSize;
+  final bool isRevalidating;
 
   const IncomingTaggedInvoicesLoaded({
     required this.invoices,
@@ -36,10 +37,11 @@ class IncomingTaggedInvoicesLoaded extends TaggedInvoiceState {
     this.totalPages = 1,
     this.totalCount = 0,
     this.pageSize = 20,
+    this.isRevalidating = false,
   });
 
   @override
-  List<Object?> get props => [invoices, statistics, currentPage, hasMore, currentFilter, totalPages, totalCount, pageSize];
+  List<Object?> get props => [invoices, statistics, currentPage, hasMore, currentFilter, totalPages, totalCount, pageSize, isRevalidating];
 
   IncomingTaggedInvoicesLoaded copyWith({
     List<TaggedInvoice>? invoices,
@@ -50,6 +52,7 @@ class IncomingTaggedInvoicesLoaded extends TaggedInvoiceState {
     int? totalPages,
     int? totalCount,
     int? pageSize,
+    bool? isRevalidating,
   }) {
     return IncomingTaggedInvoicesLoaded(
       invoices: invoices ?? this.invoices,
@@ -60,6 +63,7 @@ class IncomingTaggedInvoicesLoaded extends TaggedInvoiceState {
       totalPages: totalPages ?? this.totalPages,
       totalCount: totalCount ?? this.totalCount,
       pageSize: pageSize ?? this.pageSize,
+      isRevalidating: isRevalidating ?? this.isRevalidating,
     );
   }
 }

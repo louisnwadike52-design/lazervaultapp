@@ -264,6 +264,7 @@ message BillBeneficiary {
   string provider_id = 12;
   string customer_address = 13;
   google.protobuf.Timestamp updated_at = 14;
+  string phone_number = 15;
 }
 
 message AutoRecharge {
@@ -460,6 +461,7 @@ message SaveBeneficiaryRequest {
   string provider_id = 7;
   string provider_name = 8;
   string customer_address = 9;
+  string phone_number = 10;
 }
 
 message SaveBeneficiaryResponse {

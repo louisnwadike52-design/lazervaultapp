@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
+import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:intl/intl.dart';
 
 /// Recurring Bills Screen
-/// Manage recurring bills and subscriptions with automatic reminders
+/// Manage recurring bills and subscriptions loaded from the backend
 class RecurringBillsScreen extends StatefulWidget {
   const RecurringBillsScreen({super.key});
 
@@ -14,90 +18,12 @@ class RecurringBillsScreen extends StatefulWidget {
 }
 
 class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
-  final List<RecurringBill> _bills = [];
-  bool _showUpcomingOnly = false;
-
   @override
   void initState() {
     super.initState();
-    _loadBills();
-  }
-
-  void _loadBills() {
-    // TODO: Load from backend
-    setState(() {
-      _bills.addAll([
-        RecurringBill(
-          id: '1',
-          name: 'Netflix Subscription',
-          amount: 4500,
-          currency: 'NGN',
-          category: 'Subscriptions',
-          recurrencePattern: 'monthly',
-          nextDueDate: DateTime.now().add(const Duration(days: 5)),
-          daysUntilDue: 5,
-          icon: 'movie',
-          autoPayEnabled: false,
-        ),
-        RecurringBill(
-          id: '2',
-          name: 'Rent',
-          amount: 500000,
-          currency: 'NGN',
-          category: 'Rent/Mortgage',
-          recurrencePattern: 'monthly',
-          nextDueDate: DateTime.now().add(const Duration(days: 12)),
-          daysUntilDue: 12,
-          icon: 'home',
-          autoPayEnabled: true,
-        ),
-        RecurringBill(
-          id: '3',
-          name: 'Electricity Bill',
-          amount: 25000,
-          currency: 'NGN',
-          category: 'Bills/Utilities',
-          recurrencePattern: 'monthly',
-          nextDueDate: DateTime.now().add(const Duration(days: 8)),
-          daysUntilDue: 8,
-          merchant: 'EKEDC',
-          icon: 'bolt',
-          autoPayEnabled: false,
-        ),
-        RecurringBill(
-          id: '4',
-          name: 'Spotify Premium',
-          amount: 1200,
-          currency: 'NGN',
-          category: 'Subscriptions',
-          recurrencePattern: 'monthly',
-          nextDueDate: DateTime.now().add(const Duration(days: 15)),
-          daysUntilDue: 15,
-          icon: 'music_note',
-          autoPayEnabled: false,
-        ),
-        RecurringBill(
-          id: '5',
-          name: 'Internet Service',
-          amount: 15000,
-          currency: 'NGN',
-          category: 'Bills/Utilities',
-          recurrencePattern: 'monthly',
-          nextDueDate: DateTime.now().subtract(const Duration(days: 2)),
-          daysUntilDue: -2,
-          merchant: 'Spectranet',
-          icon: 'wifi',
-          autoPayEnabled: true,
-        ),
-      ]);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BudgetCubit>().loadRecurringBills();
     });
-  }
-
-  List<RecurringBill> get _filteredBills {
-    if (_showUpcomingOnly) {
-      return _bills.where((b) => b.daysUntilDue >= 0 && b.daysUntilDue <= 30).toList();
-    }
-    return _bills;
   }
 
   @override
@@ -118,54 +44,101 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () => _showFilterDialog(),
-            icon: Icon(Icons.filter_list, color: _showUpcomingOnly ? const Color(0xFF3B82F6) : Colors.white),
-          ),
-          IconButton(
-            onPressed: () => Get.toNamed('/statistics/recurring-bills/create'),
+            onPressed: () => _showCreateBillDialog(),
             icon: const Icon(Icons.add, color: Colors.white),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildSummaryCard(),
-          Expanded(
-            child: _filteredBills.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: EdgeInsets.all(16.w),
-                    itemCount: _filteredBills.length,
-                    itemBuilder: (context, index) {
-                      return _BillCard(
-                        bill: _filteredBills[index],
-                        onMarkPaid: () => _markAsPaid(_filteredBills[index].id),
-                        onEdit: () => _editBill(_filteredBills[index].id),
-                        onDelete: () => _deleteBill(_filteredBills[index].id),
-                      );
-                    },
-                  ),
-          ),
-        ],
+      body: BlocConsumer<BudgetCubit, BudgetState>(
+        listener: (context, state) {
+          if (state is BudgetError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFFEF4444),
+              ),
+            );
+          }
+          if (state is BudgetCreated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is BudgetLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF10B981)),
+            );
+          }
+
+          if (state is RecurringBillsLoaded) {
+            return Column(
+              children: [
+                _buildSummaryCard(
+                  bills: state.bills,
+                  totalUpcoming: state.totalUpcoming,
+                ),
+                Expanded(
+                  child: state.bills.isEmpty
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          onRefresh: () => context.read<BudgetCubit>().loadRecurringBills(),
+                          color: const Color(0xFF10B981),
+                          backgroundColor: const Color(0xFF1F1F1F),
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.all(16.w),
+                            itemCount: state.bills.length,
+                            itemBuilder: (context, index) {
+                              return _BillCard(bill: state.bills[index]);
+                            },
+                          ),
+                        ),
+                ),
+              ],
+            );
+          }
+
+          if (state is BudgetError) {
+            return _buildErrorState(state.message);
+          }
+
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF10B981)),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSummaryCard() {
-    final upcomingBills = _bills.where((b) => b.daysUntilDue >= 0 && b.daysUntilDue <= 30).toList();
-    final overdueBills = _bills.where((b) => b.daysUntilDue < 0).toList();
-    final totalUpcoming = upcomingBills.fold<double>(0, (sum, b) => sum + b.amount);
+  Widget _buildSummaryCard({
+    required List<pb.RecurringBill> bills,
+    required double totalUpcoming,
+  }) {
+    final upcomingBills = bills.where((b) => b.daysUntilDue >= 0 && b.daysUntilDue <= 30).toList();
+    final overdueBills = bills.where((b) => b.daysUntilDue < 0).toList();
 
     return Container(
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -194,7 +167,7 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
             label: 'Overdue',
             value: '${overdueBills.length}',
             subtext: overdueBills.isEmpty ? 'bills' : '!',
-            subtextColor: const Color(0xFFFFA726),
+            subtextColor: overdueBills.isNotEmpty ? const Color(0xFFFFA726) : null,
           ),
         ],
       ),
@@ -202,63 +175,87 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
   }
 
   Widget _buildEmptyState() {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: 100.h),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80.r,
+                height: 80.r,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.receipt_long, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 40.r),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'No recurring bills',
+                style: TextStyle(color: Colors.grey[400], fontSize: 16.sp),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Track your recurring expenses and subscriptions',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+              ),
+              SizedBox(height: 24.h),
+              ElevatedButton.icon(
+                onPressed: () => _showCreateBillDialog(),
+                icon: const Icon(Icons.add),
+                label: const Text('Add Bill'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(String message) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long, color: Colors.grey[600], size: 64.r),
+          const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
           SizedBox(height: 16.h),
-          Text(
-            _showUpcomingOnly ? 'No upcoming bills' : 'No recurring bills',
-            style: TextStyle(color: Colors.grey[400], fontSize: 16.sp),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Track your recurring expenses and subscriptions',
-            style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
-          ),
-          if (!_showUpcomingOnly) ...[
-            SizedBox(height: 24.h),
-            ElevatedButton.icon(
-              onPressed: () => Get.toNamed('/statistics/recurring-bills/create'),
-              icon: const Icon(Icons.add),
-              label: const Text('Add Bill'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-              ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Text(
+              message,
+              style: const TextStyle(color: Color(0xFF9CA3AF)),
+              textAlign: TextAlign.center,
             ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  void _showFilterDialog() {
-    Get.defaultDialog(
-      title: 'Filter Bills',
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CheckboxListTile(
-            title: const Text('Show upcoming only (next 30 days)'),
-            value: _showUpcomingOnly,
-            onChanged: (value) {
-              setState(() => _showUpcomingOnly = value ?? false);
-              Get.back();
-            },
-            activeColor: const Color(0xFF3B82F6),
-            checkColor: Colors.white,
+          ),
+          SizedBox(height: 24.h),
+          ElevatedButton(
+            onPressed: () => context.read<BudgetCubit>().loadRecurringBills(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Retry'),
           ),
         ],
       ),
-      textConfirm: 'Close',
-      onConfirm: () => Get.back(),
     );
   }
 
-  void _markAsPaid(String id) {
+  void _showCreateBillDialog() {
+    final nameController = TextEditingController();
+    final amountController = TextEditingController();
+    final merchantController = TextEditingController();
+    pb.ExpenseCategory selectedCategory = pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS;
+    String selectedRecurrence = 'monthly';
+
     Get.bottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
@@ -266,112 +263,196 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
           color: Color(0xFF1F1F1F),
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              margin: EdgeInsets.only(bottom: 24.h),
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(2.r),
+        child: StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 4.h,
+                    margin: EdgeInsets.only(bottom: 24.h),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[600],
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                  const Text(
+                    'Add Recurring Bill',
+                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 24.h),
+                  TextField(
+                    controller: nameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Bill Name',
+                      labelStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: const Color(0xFF2D2D2D),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  TextField(
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Amount',
+                      labelStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: const Color(0xFF2D2D2D),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixText: '${CurrencySymbols.currentSymbol} ',
+                      prefixStyle: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  TextField(
+                    controller: merchantController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Merchant (optional)',
+                      labelStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: const Color(0xFF2D2D2D),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<pb.ExpenseCategory>(
+                        value: selectedCategory,
+                        dropdownColor: const Color(0xFF2D2D2D),
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+                        isExpanded: true,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        items: [
+                          pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS,
+                          pb.ExpenseCategory.EXPENSE_CATEGORY_BILLS_UTILITIES,
+                          pb.ExpenseCategory.EXPENSE_CATEGORY_RENT_MORTGAGE,
+                          pb.ExpenseCategory.EXPENSE_CATEGORY_INSURANCE,
+                          pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER,
+                        ].map((cat) {
+                          return DropdownMenuItem(
+                            value: cat,
+                            child: Text(_categoryLabel(cat)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) setSheetState(() => selectedCategory = value);
+                        },
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: selectedRecurrence,
+                        dropdownColor: const Color(0xFF2D2D2D),
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+                        isExpanded: true,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        items: const [
+                          DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+                          DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+                          DropdownMenuItem(value: 'quarterly', child: Text('Quarterly')),
+                          DropdownMenuItem(value: 'yearly', child: Text('Yearly')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) setSheetState(() => selectedRecurrence = value);
+                        },
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final name = nameController.text.trim();
+                        final amount = double.tryParse(amountController.text.trim()) ?? 0;
+                        final merchant = merchantController.text.trim();
+
+                        if (name.isEmpty || amount <= 0) {
+                          Get.snackbar('Error', 'Please enter a name and amount',
+                              backgroundColor: const Color(0xFFEF4444));
+                          return;
+                        }
+
+                        Get.back();
+                        context.read<BudgetCubit>().createRecurringBill(
+                          name: name,
+                          amount: amount,
+                          currency: CurrencySymbols.currentCurrency,
+                          category: selectedCategory,
+                          recurrencePattern: selectedRecurrence,
+                          merchant: merchant.isNotEmpty ? merchant : null,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      child: const Text('Add Bill', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const Text(
-              'Mark Bill as Paid',
-              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 24.h),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Payment Date',
-                filled: true,
-                fillColor: const Color(0xFF2D2D2D),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              readOnly: true,
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: Get.context!,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now().subtract(const Duration(days: 30)),
-                  lastDate: DateTime.now().add(const Duration(days: 30)),
-                );
-                // TODO: Handle date selection
-              },
-            ),
-            SizedBox(height: 16.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Get.back();
-                  setState(() {
-                    _bills.removeWhere((b) => b.id == id);
-                  });
-                  Get.snackbar(
-                    'Success',
-                    'Bill marked as paid',
-                    backgroundColor: const Color(0xFF10B981),
-                  );
-                  // TODO: Call backend to mark as paid
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                ),
-                child: const Text('Confirm Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
   }
 
-  void _editBill(String id) {
-    Get.toNamed('/statistics/recurring-bills/create', arguments: {'billId': id});
-  }
-
-  void _deleteBill(String id) {
-    Get.defaultDialog(
-      title: 'Delete Bill',
-      middleText: 'Are you sure you want to delete this recurring bill? Payments will no longer be tracked.',
-      textConfirm: 'Delete',
-      textCancel: 'Cancel',
-      confirmTextColor: Colors.white,
-      cancelTextColor: const Color(0xFF9CA3AF),
-      buttonColor: const Color(0xFFEF4444),
-      onConfirm: () {
-        setState(() {
-          _bills.removeWhere((b) => b.id == id);
-        });
-        Get.back();
-        // TODO: Delete from backend
-        Get.snackbar('Deleted', 'Bill deleted successfully', backgroundColor: const Color(0xFF10B981));
-      },
-    );
+  String _categoryLabel(pb.ExpenseCategory cat) {
+    switch (cat) {
+      case pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS:
+        return 'Subscriptions';
+      case pb.ExpenseCategory.EXPENSE_CATEGORY_BILLS_UTILITIES:
+        return 'Bills & Utilities';
+      case pb.ExpenseCategory.EXPENSE_CATEGORY_RENT_MORTGAGE:
+        return 'Rent/Mortgage';
+      case pb.ExpenseCategory.EXPENSE_CATEGORY_INSURANCE:
+        return 'Insurance';
+      case pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER:
+        return 'Other';
+      default:
+        return 'Other';
+    }
   }
 }
 
 class _BillCard extends StatelessWidget {
-  final RecurringBill bill;
-  final VoidCallback onMarkPaid;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final pb.RecurringBill bill;
 
-  const _BillCard({
-    required this.bill,
-    required this.onMarkPaid,
-    required this.onEdit,
-    required this.onDelete,
-  });
+  const _BillCard({required this.bill});
 
   @override
   Widget build(BuildContext context) {
@@ -383,19 +464,31 @@ class _BillCard extends StatelessWidget {
             ? const Color(0xFFF59E0B)
             : const Color(0xFF10B981);
 
-    final dateFormat = DateFormat('MMM d, yyyy');
-    final recurrenceLabel = bill.recurrencePattern[0].toUpperCase() + bill.recurrencePattern.substring(1);
+    final recurrenceLabel = bill.recurrencePattern.isNotEmpty
+        ? bill.recurrencePattern[0].toUpperCase() + bill.recurrencePattern.substring(1)
+        : 'Monthly';
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: isOverdue ? const Color(0xFFEF4444).withValues(alpha: 0.3) : const Color(0xFF2D2D2D),
+          color: isOverdue ? const Color(0xFFEF4444).withValues(alpha: 0.3) : statusColor.withValues(alpha: 0.2),
           width: isOverdue ? 2 : 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: statusColor.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,10 +519,10 @@ class _BillCard extends StatelessWidget {
                       bill.name,
                       style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    if (bill.merchant != null) ...[
+                    if (bill.merchant.isNotEmpty) ...[
                       SizedBox(height: 2.h),
                       Text(
-                        bill.merchant!,
+                        bill.merchant,
                         style: TextStyle(color: Colors.grey[400], fontSize: 12),
                       ),
                     ],
@@ -466,13 +559,15 @@ class _BillCard extends StatelessWidget {
           SizedBox(height: 12.h),
           Row(
             children: [
-              Icon(Icons.calendar_today, size: 14.r, color: Colors.grey[500]),
-              SizedBox(width: 4.w),
-              Text(
-                dateFormat.format(bill.nextDueDate),
-                style: TextStyle(color: Colors.grey[400], fontSize: 12),
-              ),
-              SizedBox(width: 16.w),
+              if (bill.hasNextDueDate()) ...[
+                Icon(Icons.calendar_today, size: 14.r, color: Colors.grey[500]),
+                SizedBox(width: 4.w),
+                Text(
+                  DateFormat('MMM d, yyyy').format(bill.nextDueDate.toDateTime()),
+                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                ),
+                SizedBox(width: 16.w),
+              ],
               Icon(Icons.repeat, size: 14.r, color: Colors.grey[500]),
               SizedBox(width: 4.w),
               Text(
@@ -483,37 +578,8 @@ class _BillCard extends StatelessWidget {
               if (bill.autoPayEnabled) ...[
                 Icon(Icons.autorenew, size: 14.r, color: const Color(0xFF10B981)),
                 SizedBox(width: 4.w),
-                Text('Auto-pay', style: TextStyle(color: const Color(0xFF10B981), fontSize: 12)),
+                const Text('Auto-pay', style: TextStyle(color: Color(0xFF10B981), fontSize: 12)),
               ],
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onMarkPaid,
-                  icon: const Icon(Icons.check_circle_outline, size: 16),
-                  label: const Text('Mark Paid'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF10B981),
-                    side: const BorderSide(color: Color(0xFF10B981)),
-                    padding: EdgeInsets.symmetric(vertical: 10.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              IconButton(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                color: Colors.grey[400],
-              ),
-              IconButton(
-                onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline, size: 18),
-                color: Colors.grey[400],
-              ),
             ],
           ),
         ],
@@ -533,6 +599,10 @@ class _BillCard extends StatelessWidget {
         return Icons.music_note;
       case 'wifi':
         return Icons.wifi;
+      case 'phone':
+        return Icons.phone;
+      case 'tv':
+        return Icons.tv;
       default:
         return Icons.receipt;
     }
@@ -581,33 +651,4 @@ class _SummaryItem extends StatelessWidget {
       ],
     );
   }
-}
-
-/// Recurring Bill Model
-class RecurringBill {
-  final String id;
-  final String name;
-  final double amount;
-  final String currency;
-  final String category;
-  final String recurrencePattern;
-  final DateTime nextDueDate;
-  final int daysUntilDue;
-  final String? icon;
-  final bool autoPayEnabled;
-  final String? merchant;
-
-  RecurringBill({
-    required this.id,
-    required this.name,
-    required this.amount,
-    required this.currency,
-    required this.category,
-    required this.recurrencePattern,
-    required this.nextDueDate,
-    required this.daysUntilDue,
-    this.icon,
-    required this.autoPayEnabled,
-    this.merchant,
-  });
 }

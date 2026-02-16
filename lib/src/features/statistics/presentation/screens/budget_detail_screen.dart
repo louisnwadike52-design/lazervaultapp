@@ -73,13 +73,13 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
             return _BudgetDetailView(budget: budget);
           }
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+            child: CircularProgressIndicator(color: Color(0xFF10B981)),
           );
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Get.toNamed(AppRoutes.budgetAIInsights),
-        backgroundColor: const Color(0xFF8B5CF6),
+        backgroundColor: const Color(0xFF10B981),
         icon: const Icon(Icons.auto_awesome, color: Colors.white),
         label: const Text('AI Insights', style: TextStyle(color: Colors.white)),
       ),
@@ -141,7 +141,7 @@ class _BudgetDetailView extends StatelessWidget {
                             ? const Color(0xFFEF4444)
                             : percentage >= 70
                                 ? const Color(0xFFFB923C)
-                                : const Color(0xFF3B82F6),
+                                : const Color(0xFF10B981),
                       ),
                     ),
                   ),
@@ -164,7 +164,7 @@ class _BudgetDetailView extends StatelessWidget {
                               ? const Color(0xFFEF4444)
                               : percentage >= 70
                                   ? const Color(0xFFFB923C)
-                                  : const Color(0xFF3B82F6),
+                                  : const Color(0xFF10B981),
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),

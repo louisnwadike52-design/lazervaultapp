@@ -22,11 +22,10 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   String? _currentUserId;
   String? get currentUserId => _currentUserId;
 
-  /// Set the current user ID from authentication state
+  /// Set the current user ID from authentication state.
+  /// Does not auto-load; caller should trigger the appropriate load method.
   void setUserId(String userId) {
     _currentUserId = userId;
-    // Automatically load invoices when user ID is set
-    loadInvoices();
   }
 
   InvoiceCubit({
@@ -39,10 +38,6 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   Future<void> close() {
     _cacheSubscription?.cancel();
     return super.close();
-  }
-
-  String _getCacheKey({String? status}) {
-    return 'invoices:${_currentUserId ?? 'unknown'}:${status ?? 'all'}';
   }
 
   /// Check if an error is a network-related error that should trigger offline queuing
@@ -141,7 +136,12 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       }
 
       if (isClosed) return;
-      emit(InvoiceLoading());
+      // If data already loaded, show revalidating state instead of full loading shimmer
+      if (state is InvoicesLoaded) {
+        emit((state as InvoicesLoaded).copyWith(isRevalidating: true));
+      } else {
+        emit(InvoiceLoading());
+      }
 
       final result = await repository.getSentInvoicesPaginated(
         page: page,
@@ -519,7 +519,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       if (isClosed) return;
       emit(InvoiceUnlockProcessing(invoiceId: invoiceId));
 
-      final idempotencyKey = 'unlock-${invoiceId}-${const Uuid().v4().substring(0, 8)}';
+      final idempotencyKey = 'unlock-$invoiceId-${const Uuid().v4().substring(0, 8)}';
       final invoice = await repository.unlockInvoice(
         invoiceId,
         accountId: accountId,
@@ -528,6 +528,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         idempotencyKey: idempotencyKey,
       );
       if (isClosed) return;
+
+      cacheManager?.invalidatePattern('invoices:');
 
       emit(InvoiceUnlockSuccess(
         message: 'Invoice unlocked successfully',

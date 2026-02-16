@@ -140,20 +140,33 @@ class HttpAiChatDataSource implements IAiChatDataSource {
   }
 
   @override
-  Future<dynamic> getChatHistory({String? sessionId}) async {
+  Future<dynamic> getChatHistory({String? sessionId, String? sourceContext}) async {
     try {
       final userId = await _secureStorageService.getUserId() ?? '';
-      // Use provided sessionId or generate a new one (for new sessions)
-      final effectiveSessionId = sessionId ?? _generateSessionId();
+      // Use provided sessionId — don't generate random ones (breaks persistence)
+      final effectiveSessionId = sessionId ?? '';
       final token = await _secureStorageService.getAccessToken() ?? '';
+
+      final queryParams = <String, dynamic>{
+        'user_id': userId,
+        'access_token': token,
+        'limit': 50,
+        'offset': 0,
+      };
+
+      // Only include session_id if provided (backend treats empty as "all")
+      if (effectiveSessionId.isNotEmpty) {
+        queryParams['session_id'] = effectiveSessionId;
+      }
+
+      // Include source_context for filtering
+      if (sourceContext != null && sourceContext.isNotEmpty) {
+        queryParams['source_context'] = sourceContext;
+      }
 
       final response = await _dio.get(
         '/chat/history',
-        queryParameters: {
-          'user_id': userId,
-          'session_id': effectiveSessionId,
-          'access_token': token,
-        },
+        queryParameters: queryParams,
       );
 
       if (response.statusCode == 200) {

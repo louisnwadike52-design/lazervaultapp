@@ -49,44 +49,34 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
   @override
   Future<List<GroupAccountModel>> getUserGroups(String userId) async {
-    print('🔵 GroupAccountGrpcDataSource: getUserGroups called with userId: $userId');
     try {
       final request = pb.ListUserGroupsRequest()
         ..page = 1
         ..pageSize = 100;
 
-      print('🔵 GroupAccountGrpcDataSource: calling listUserGroups gRPC...');
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.listUserGroups(request, options: callOptions);
-      print('🟢 GroupAccountGrpcDataSource: listUserGroups response: ${response.groups.length} groups');
 
       return response.groups.map((group) => _mapGroupFromProto(group)).toList();
     } on GrpcError catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: gRPC Error - ${e.codeName}: ${e.message}');
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get user groups'}');
     } catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: Unexpected error - $e');
       rethrow;
     }
   }
 
   @override
   Future<GroupAccountModel> getGroupById(String groupId) async {
-    print('🔵 GroupAccountGrpcDataSource: getGroupById called with groupId: $groupId');
     try {
       final request = pb.GetGroupRequest()..groupId = groupId;
 
-      print('🔵 GroupAccountGrpcDataSource: calling getGroup gRPC...');
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.getGroup(request, options: callOptions);
-      print('🟢 GroupAccountGrpcDataSource: getGroup response received');
 
       return _mapGroupFromProto(response.group);
     } on GrpcError catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getGroupById gRPC Error - ${e.codeName}: ${e.message}');
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group'}');
     } catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getGroupById unexpected error - $e');
       rethrow;
     }
   }
@@ -168,21 +158,16 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
   @override
   Future<List<GroupMemberModel>> getGroupMembers(String groupId) async {
-    print('🔵 GroupAccountGrpcDataSource: getGroupMembers called with groupId: $groupId');
     try {
       final request = pb.GetGroupMembersRequest()..groupId = groupId;
 
-      print('🔵 GroupAccountGrpcDataSource: calling getGroupMembers gRPC...');
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.getGroupMembers(request, options: callOptions);
-      print('🟢 GroupAccountGrpcDataSource: getGroupMembers response: ${response.members.length} members');
 
       return response.members.map((member) => _mapMemberFromProto(member)).toList();
     } on GrpcError catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getGroupMembers gRPC Error - ${e.codeName}: ${e.message}');
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group members'}');
     } catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getGroupMembers unexpected error - $e');
       rethrow;
     }
   }
@@ -202,28 +187,18 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..groupId = groupId
         ..role = _mapRoleToProto(role);
 
-      // Send userId if it's a valid UUID, otherwise use username/email for lookup
-      // Check if it's a UUID (36 chars with hyphens) or numeric legacy ID
-      if (userId.isNotEmpty && (userId.length == 36 || userId.contains('-'))) {
-        // It's a UUID string - try to parse as numeric if possible, otherwise use lookup
-        // Since proto expects uint64, we can't send UUID directly - use username/email lookup
-        if (username != null && username.isNotEmpty) {
-          final cleanUsername = username.replaceAll('@', '').trim();
-          request.lookupUsername = cleanUsername;
-        } else if (email.isNotEmpty) {
-          request.email = email;
-        }
-      } else if (userId.isNotEmpty) {
-        // Set the userId directly as string
+      // Always set userId when provided (proto field is string, supports UUIDs)
+      if (userId.isNotEmpty) {
         request.userId = userId;
       }
 
-      if (username != null && username.isNotEmpty && request.userId.isEmpty) {
-        // Prefer username lookup - more reliable for getting full user info
-        final cleanUsername = username.replaceAll('@', '').trim();
-        request.lookupUsername = cleanUsername;
-      } else if (email.isNotEmpty) {
-        // Fallback to email for backend to find existing user or create partial user
+      // Also set lookupUsername for backend to resolve full user info
+      if (username != null && username.isNotEmpty) {
+        request.lookupUsername = username.replaceAll('@', '').trim();
+      }
+
+      // Set email for fallback lookup
+      if (email.isNotEmpty) {
         request.email = email;
       }
 
@@ -285,14 +260,15 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final response = await _client.searchUsers(request, options: callOptions);
 
       return response.users.map((user) => GroupMemberModel(
-        id: user.userId.toString(),  // Use userId as id for search results
-        userId: user.userId.toString(),  // Convert Int64 to String
+        id: user.userId,
+        userId: user.userId,
         userName: user.userName,
         email: user.email,
         profileImage: user.profileImage.isNotEmpty ? user.profileImage : null,
         role: GroupMemberRole.member,
         joinedAt: DateTime.now(),
         status: GroupMemberStatus.active,
+        userUsername: user.userUsername.isNotEmpty ? user.userUsername : null,
       )).toList();
     } on GrpcError catch (e) {
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to search users'}');
@@ -305,24 +281,19 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
   @override
   Future<List<ContributionModel>> getGroupContributions(String groupId) async {
-    print('🔵 GroupAccountGrpcDataSource: getGroupContributions called with groupId: $groupId');
     try {
       final request = pb.ListGroupContributionsRequest()
         ..groupId = groupId
         ..page = 1
         ..pageSize = 100;
 
-      print('🔵 GroupAccountGrpcDataSource: calling listGroupContributions gRPC...');
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.listGroupContributions(request, options: callOptions);
-      print('🟢 GroupAccountGrpcDataSource: listGroupContributions response: ${response.contributions.length} contributions');
 
       return response.contributions.map((contribution) => _mapContributionFromProto(contribution)).toList();
     } on GrpcError catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getGroupContributions gRPC Error - ${e.codeName}: ${e.message}');
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contributions'}');
     } catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getGroupContributions unexpected error - $e');
       rethrow;
     }
   }
@@ -363,8 +334,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     double? minimumBalance,
     Map<String, dynamic>? metadata,
   }) async {
-    print('🔵 GroupAccountGrpcDataSource: createContribution called');
-    print('🔵 createContribution params: groupId=$groupId, title=$title, type=$type, createdBy=$createdBy');
     try {
       final request = pb.CreateContributionRequest()
         ..groupId = groupId
@@ -408,10 +377,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         request.minimumBalance = _amountToInt64(minimumBalance);
       }
 
-      print('🔵 GroupAccountGrpcDataSource: calling createContribution gRPC...');
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.createContribution(request, options: callOptions);
-      print('🟢 GroupAccountGrpcDataSource: createContribution success');
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
@@ -460,16 +427,10 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     required String contributionId,
     required List<String> memberUserIds,
   }) async {
-    print('🔵 GroupAccountGrpcDataSource: addMembersToContribution called');
-    print('🔵 contributionId: $contributionId');
-    print('🔵 memberUserIds: $memberUserIds');
-
     // Filter out empty or invalid UUIDs
     final validUserIds = memberUserIds.where((id) =>
       id.isNotEmpty && id != '00000000-0000-0000-0000-000000000000'
     ).toList();
-
-    print('🔵 validUserIds after filtering: $validUserIds');
 
     if (validUserIds.isEmpty) {
       throw Exception('No valid user IDs to add. All provided IDs were empty or invalid.');
@@ -556,13 +517,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     String? idempotencyKey,
   }) async {
     try {
-      print('🔵 GroupAccountGrpcDataSource: makeContributionPayment called');
-      print('🔵 contributionId: $contributionId');
-      print('🔵 sourceAccountId: $sourceAccountId');
-      print('🔵 amount: $amount');
-      print('🔵 transactionPin provided: ${transactionPin != null && transactionPin.isNotEmpty}');
-      print('🔵 idempotencyKey: $idempotencyKey');
-
       final request = pb.MakePaymentRequest()
         ..contributionId = contributionId
         ..amount = _amountToInt64(amount);
@@ -574,29 +528,23 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // Send sourceAccountId - required for account lookup
       if (sourceAccountId != null && sourceAccountId.isNotEmpty) {
         request.sourceAccountId = sourceAccountId;
-        print('🔵 Setting sourceAccountId in request: $sourceAccountId');
       }
 
       // Send transaction PIN token for validation
       if (transactionPin != null && transactionPin.isNotEmpty) {
         request.transactionPin = transactionPin;
-        print('🔵 Setting transactionPin in request');
       }
 
       // Send idempotency key for duplicate prevention
       if (idempotencyKey != null && idempotencyKey.isNotEmpty) {
         request.idempotencyKey = idempotencyKey;
-        print('🔵 Setting idempotencyKey in request: $idempotencyKey');
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
-      print('🔵 Calling makePayment gRPC...');
       final response = await _client.makePayment(request, options: callOptions);
-      print('🟢 makePayment response received');
 
       return _mapPaymentFromProto(response.payment);
     } on GrpcError catch (e) {
-      print('🔴 makePayment gRPC Error: ${e.codeName} - ${e.message}');
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to make payment'}');
     }
   }
@@ -933,7 +881,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   GroupMemberModel _mapMemberFromProto(pb.GroupMemberMessage member) {
     return GroupMemberModel(
       id: member.id,
-      userId: member.userId.toString(),  // Convert Int64 to String
+      userId: member.userId,
       userName: member.userName,
       email: member.email,
       profileImage: member.profileImage.isNotEmpty ? member.profileImage : null,
@@ -991,7 +939,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     return ContributionMemberModel(
       id: member.id,
       contributionId: member.contributionId,
-      userId: member.userId.toString(),  // Convert Int64 to String
+      userId: member.userId,
       userName: member.userName,
       email: member.email,
       profileImage: member.profileImage.isNotEmpty ? member.profileImage : null,
@@ -1007,7 +955,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       id: payment.id,
       contributionId: payment.contributionId,
       groupId: payment.groupId,
-      userId: payment.userId.toString(),  // Convert Int64 to String
+      userId: payment.userId,
       userName: payment.userName,
       amount: _int64ToAmount(payment.amount),
       currency: payment.currency,
@@ -1021,7 +969,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   PayoutScheduleModel _mapPayoutScheduleFromProto(pb.PayoutScheduleMessage schedule) {
     return PayoutScheduleModel(
       id: schedule.id,
-      userId: schedule.userId.toString(),  // Convert Int64 to String
+      userId: schedule.userId,
       userName: schedule.userName,
       position: schedule.position,
       scheduledDate: _timestampToDateTime(schedule.scheduledDate),
@@ -1039,7 +987,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       id: payout.id,
       contributionId: payout.contributionId,
       groupId: payout.groupId,
-      recipientUserId: payout.recipientUserId.toString(),  // Convert Int64 to String
+      recipientUserId: payout.recipientUserId,
       recipientUserName: payout.recipientUserName,
       amount: _int64ToAmount(payout.amount),
       currency: payout.currency,
@@ -1057,7 +1005,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       paymentId: receipt.paymentId,
       contributionId: receipt.contributionId,
       groupId: receipt.groupId,
-      userId: receipt.userId.toString(),  // Convert Int64 to String
+      userId: receipt.userId,
       userName: receipt.userName,
       amount: _int64ToAmount(receipt.amount),
       currency: receipt.currency,
@@ -1320,48 +1268,38 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
   @override
   Future<List<ActivityLogEntryModel>> getGroupActivityLogs(String groupId) async {
-    print('🔵 GroupAccountGrpcDataSource: getGroupActivityLogs called with groupId: $groupId');
     try {
       final request = pb.GetGroupActivityLogsRequest()
         ..groupId = groupId
         ..page = 1
         ..pageSize = 50;
 
-      print('🔵 GroupAccountGrpcDataSource: calling getGroupActivityLogs gRPC...');
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.getGroupActivityLogs(request, options: callOptions);
-      print('🟢 GroupAccountGrpcDataSource: getGroupActivityLogs response: ${response.logs.length} logs');
 
       return response.logs.map((log) => _mapActivityLogFromProto(log)).toList();
     } on GrpcError catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getGroupActivityLogs gRPC Error - ${e.codeName}: ${e.message}');
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group activity logs'}');
     } catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getGroupActivityLogs unexpected error - $e');
       rethrow;
     }
   }
 
   @override
   Future<List<ActivityLogEntryModel>> getContributionActivityLogs(String contributionId) async {
-    print('🔵 GroupAccountGrpcDataSource: getContributionActivityLogs called with contributionId: $contributionId');
     try {
       final request = pb.GetContributionActivityLogsRequest()
         ..contributionId = contributionId
         ..page = 1
         ..pageSize = 50;
 
-      print('🔵 GroupAccountGrpcDataSource: calling getContributionActivityLogs gRPC...');
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.getContributionActivityLogs(request, options: callOptions);
-      print('🟢 GroupAccountGrpcDataSource: getContributionActivityLogs response: ${response.logs.length} logs');
 
       return response.logs.map((log) => _mapActivityLogFromProto(log)).toList();
     } on GrpcError catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getContributionActivityLogs gRPC Error - ${e.codeName}: ${e.message}');
       throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contribution activity logs'}');
     } catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: getContributionActivityLogs unexpected error - $e');
       rethrow;
     }
   }
@@ -1401,7 +1339,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     try {
       return jsonEncode(metadata);
     } catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: Failed to encode metadata - $e');
       return '{}';
     }
   }
@@ -1413,7 +1350,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final decoded = jsonDecode(metadataJson) as Map<String, dynamic>;
       return decoded;
     } catch (e) {
-      print('🔴 GroupAccountGrpcDataSource: Failed to decode metadata - $e');
       return {};
     }
   }

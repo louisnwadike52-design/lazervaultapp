@@ -7,10 +7,14 @@ import 'package:lazervault/src/features/funds/domain/usecases/initiate_batch_tra
 
 class BatchTransferCubit extends Cubit<BatchTransferState> {
   final InitiateBatchTransferUseCase initiateBatchTransferUseCase;
+  final GetBatchTransfersUseCase? getBatchTransfersUseCase;
+  final GetBatchTransferDetailUseCase? getBatchTransferDetailUseCase;
   bool _isProcessing = false;
 
   BatchTransferCubit({
     required this.initiateBatchTransferUseCase,
+    this.getBatchTransfersUseCase,
+    this.getBatchTransferDetailUseCase,
   }) : super(const BatchTransferInitial());
 
   bool _isNetworkError(dynamic error) {
@@ -76,6 +80,50 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
       }
     } finally {
       _isProcessing = false;
+    }
+  }
+
+  Future<void> loadBatchTransferHistory({int page = 1, int pageSize = 20}) async {
+    if (getBatchTransfersUseCase == null || isClosed) return;
+    emit(const BatchTransferHistoryLoading());
+
+    try {
+      final result = await getBatchTransfersUseCase!(
+        GetBatchTransfersParams(page: page, pageSize: pageSize),
+      );
+
+      if (isClosed) return;
+      result.fold(
+        (failure) => emit(BatchTransferHistoryError(message: failure.message)),
+        (data) => emit(BatchTransferHistoryLoaded(
+          batches: data.$1,
+          total: data.$2,
+          page: page,
+        )),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(BatchTransferHistoryError(message: e.toString()));
+    }
+  }
+
+  Future<void> loadBatchTransferDetail(String batchId) async {
+    if (getBatchTransferDetailUseCase == null || isClosed) return;
+    emit(const BatchTransferDetailLoading());
+
+    try {
+      final result = await getBatchTransferDetailUseCase!(
+        GetBatchTransferDetailParams(batchId: batchId),
+      );
+
+      if (isClosed) return;
+      result.fold(
+        (failure) => emit(BatchTransferDetailError(message: failure.message)),
+        (detail) => emit(BatchTransferDetailLoaded(detail: detail)),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(BatchTransferDetailError(message: e.toString()));
     }
   }
 }

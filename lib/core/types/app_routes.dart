@@ -57,12 +57,36 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String cableTVPaymentProcessing = '/cable-tv/payment-processing';
   static const String cableTVPaymentReceipt = '/cable-tv/payment-receipt';
 
+  // Internet Bill Routes
+  static const String internetBillHome = '/internet-bill';
+  static const String internetAccountInput = '/internet-bill/account-input';
+  static const String internetPackageSelection = '/internet-bill/package-selection';
+  static const String internetPaymentConfirmation = '/internet-bill/payment-confirmation';
+  static const String internetPaymentProcessing = '/internet-bill/payment-processing';
+  static const String internetPaymentReceipt = '/internet-bill/payment-receipt';
+
   // Education PIN Routes
   static const String educationHome = '/education';
   static const String educationPurchase = '/education/purchase';
   static const String educationPaymentConfirmation = '/education/payment-confirmation';
   static const String educationPaymentProcessing = '/education/payment-processing';
   static const String educationPinResult = '/education/pin-result';
+
+  // Water Bill Routes
+  static const String waterBillHome = '/water-bill';
+  static const String waterBillCustomerInput = '/water-bill/customer-input';
+  static const String waterBillPaymentConfirmation = '/water-bill/payment-confirmation';
+  static const String waterBillPaymentProcessing = '/water-bill/payment-processing';
+  static const String waterBillPaymentReceipt = '/water-bill/payment-receipt';
+  static const String waterBillHistory = '/water-bill/history';
+
+  // Data Bundles Routes
+  static const String dataBundlesHome = '/data-bundles';
+  static const String dataBundlesPlanSelection = '/data-bundles/plan-selection';
+  static const String dataBundlesRecipientInput = '/data-bundles/recipient-input';
+  static const String dataBundlesPaymentConfirmation = '/data-bundles/payment-confirmation';
+  static const String dataBundlesPaymentProcessing = '/data-bundles/payment-processing';
+  static const String dataBundlesPaymentReceipt = '/data-bundles/payment-receipt';
 
   static const String flights = '/flights';
   static const String payInvoice = '/pay-invoice';
@@ -257,6 +281,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String batchTransferReview = '/batch-transfer-review';
 static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String batchTransferReceipt = '/batch-transfer-receipt';
+  static const String batchTransferHistory = '/batch-transfer-history';
+  static const String batchTransferDetail = '/batch-transfer-detail';
 
   static const String investments = '/investments';
 
@@ -315,6 +341,15 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String qrPaymentReceipt = '/qr-pay/payment-receipt';
   static const String generatedQRHistory = '/qr-pay/generated-history';
   static const String qrPaymentsHistory = '/qr-pay/payments-history';
+
+  // IDPay Routes
+  static const String idPayHome = '/id-pay';
+  static const String createIdPay = '/id-pay/create';
+  static const String idPayCreated = '/id-pay/created';
+  static const String idPayLookup = '/id-pay/lookup';
+  static const String idPayPayment = '/id-pay/payment';
+  static const String idPayReceipt = '/id-pay/receipt';
+  static const String idPayDetails = '/id-pay/details';
 
   // Contactless Payment Routes
   static const String contactlessPay = '/contactless-pay';

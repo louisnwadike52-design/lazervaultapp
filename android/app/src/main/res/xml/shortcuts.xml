@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- App Icon Quick Actions: long-press app icon shortcuts -->
+
+    <shortcut
+        android:shortcutId="send_money"
+        android:enabled="true"
+        android:icon="@drawable/ic_send_money"
+        android:shortcutShortLabel="@string/shortcut_send_money"
+        android:shortcutLongLabel="@string/shortcut_send_money_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.lazervaultapp"
+            android:targetClass="com.example.lazervaultapp.MainActivity"
+            android:data="lazervault://quick-action/send_money" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="scan_to_pay"
+        android:enabled="true"
+        android:icon="@drawable/ic_scan_pay"
+        android:shortcutShortLabel="@string/shortcut_scan_to_pay"
+        android:shortcutLongLabel="@string/shortcut_scan_to_pay_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.lazervaultapp"
+            android:targetClass="com.example.lazervaultapp.MainActivity"
+            android:data="lazervault://quick-action/scan_to_pay" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="check_balance"
+        android:enabled="true"
+        android:icon="@drawable/ic_check_balance"
+        android:shortcutShortLabel="@string/shortcut_check_balance"
+        android:shortcutLongLabel="@string/shortcut_check_balance_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.lazervaultapp"
+            android:targetClass="com.example.lazervaultapp.MainActivity"
+            android:data="lazervault://quick-action/check_balance" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="pay_bills"
+        android:enabled="true"
+        android:icon="@drawable/ic_pay_bills"
+        android:shortcutShortLabel="@string/shortcut_pay_bills"
+        android:shortcutLongLabel="@string/shortcut_pay_bills_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.lazervaultapp"
+            android:targetClass="com.example.lazervaultapp.MainActivity"
+            android:data="lazervault://quick-action/pay_bills" />
+    </shortcut>
+
+    <!-- Google Assistant App Actions (Built-In Intents) -->
+    <!-- "Hey Google, send money on LazerVault" -->
+    <capability android:name="actions.intent.CREATE_MONEY_TRANSFER">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.lazervaultapp"
+            android:targetClass="com.example.lazervaultapp.MainActivity"
+            android:data="lazervault://quick-action/send_money" />
+    </capability>
+
+    <!-- "Hey Google, check my balance on LazerVault" -->
+    <capability android:name="actions.intent.GET_ACCOUNT">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.lazervaultapp"
+            android:targetClass="com.example.lazervaultapp.MainActivity"
+            android:data="lazervault://quick-action/check_balance" />
+    </capability>
+
+    <!-- "Hey Google, pay my bills on LazerVault" -->
+    <capability android:name="actions.intent.CREATE_BILL_PAYMENT">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.lazervaultapp"
+            android:targetClass="com.example.lazervaultapp.MainActivity"
+            android:data="lazervault://quick-action/pay_bills" />
+    </capability>
+
+    <!-- "Hey Google, open LazerVault" (fallback for general open) -->
+    <capability android:name="actions.intent.OPEN_APP_FEATURE">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.lazervaultapp"
+            android:targetClass="com.example.lazervaultapp.MainActivity"
+            android:data="lazervault://quick-action/check_balance">
+            <parameter
+                android:name="feature"
+                android:key="feature" />
+        </intent>
+    </capability>
+
+</shortcuts>

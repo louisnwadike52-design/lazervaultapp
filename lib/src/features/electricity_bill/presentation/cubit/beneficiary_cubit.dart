@@ -14,11 +14,30 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
     required MeterType meterType,
     required String customerName,
     String? customerAddress,
+    String? phoneNumber,
     required String nickname,
     bool isDefault = false,
+    String? providerCode,
+    String? providerName,
   }) async {
     if (isClosed) return;
     emit(BeneficiarySaving());
+
+    // Check for duplicate meter number
+    final existingResult = await repository.getBeneficiaries();
+    final existingBeneficiaries = existingResult.fold(
+      (_) => <dynamic>[],
+      (list) => list,
+    );
+    final isDuplicate = existingBeneficiaries.any(
+      (b) => b.meterNumber == meterNumber,
+    );
+    if (isDuplicate) {
+      if (isClosed) return;
+      emit(BeneficiaryError(
+          message: 'A beneficiary with this meter number already exists'));
+      return;
+    }
 
     final result = await repository.saveBeneficiary(
       providerId: providerId,
@@ -26,8 +45,11 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
       meterType: meterType,
       customerName: customerName,
       customerAddress: customerAddress,
+      phoneNumber: phoneNumber,
       nickname: nickname,
       isDefault: isDefault,
+      providerCode: providerCode,
+      providerName: providerName,
     );
 
     if (isClosed) return;
@@ -59,6 +81,7 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
     required MeterType meterType,
     required String customerName,
     String? customerAddress,
+    String? phoneNumber,
     required String nickname,
     bool isDefault = false,
   }) => saveBeneficiary(
@@ -67,8 +90,11 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
     meterType: meterType,
     customerName: customerName,
     customerAddress: customerAddress,
+    phoneNumber: phoneNumber,
     nickname: nickname,
     isDefault: isDefault,
+    providerCode: providerCode,
+    providerName: providerName,
   );
 
   Future<void> setDefaultBeneficiary(String beneficiaryId) async {

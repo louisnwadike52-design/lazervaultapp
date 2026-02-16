@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class InvestmentsScreen extends StatefulWidget {
   const InvestmentsScreen({super.key});
@@ -185,6 +186,15 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       centerTitle: true,
       floating: true,
       snap: true,
+      actions: [
+        Padding(
+          padding: EdgeInsets.only(right: 16.w),
+          child: MicroserviceChatIcon(
+            serviceName: 'Investments',
+            sourceContext: 'investments',
+          ),
+        ),
+      ],
     );
   }
 

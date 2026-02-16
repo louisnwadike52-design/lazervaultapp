@@ -30,29 +30,29 @@ class GroupCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(20.w),
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
+            // Header row
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Group Avatar
                 Container(
-                  width: 48.w,
-                  height: 48.w,
+                  width: 40.w,
+                  height: 40.w,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -60,21 +60,21 @@ class GroupCard extends StatelessWidget {
                         const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.7),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Center(
                     child: Text(
                       group.name.isNotEmpty ? group.name[0].toUpperCase() : 'G',
                       style: GoogleFonts.inter(
-                        fontSize: 20.sp,
+                        fontSize: 17.sp,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 16.w),
-                
+                SizedBox(width: 12.w),
+
                 // Group Info
                 Expanded(
                   child: Column(
@@ -83,186 +83,116 @@ class GroupCard extends StatelessWidget {
                       Text(
                         group.name,
                         style: GoogleFonts.inter(
-                          fontSize: 16.sp,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 4.h),
+                      SizedBox(height: 2.h),
                       Text(
                         group.description,
                         style: GoogleFonts.inter(
-                          fontSize: 13.sp,
+                          fontSize: 12.sp,
                           color: Colors.grey[400],
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                
-                // Visibility + Status Badges
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(group.status).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        group.status.displayName,
-                        style: GoogleFonts.inter(
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w600,
-                          color: _getStatusColor(group.status),
-                        ),
-                      ),
+
+                // Status badge
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(group.status).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+                    group.status.displayName,
+                    style: GoogleFonts.inter(
+                      fontSize: 9.sp,
+                      fontWeight: FontWeight.w600,
+                      color: _getStatusColor(group.status),
                     ),
-                    SizedBox(height: 4.h),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          group.visibility == GroupVisibility.public
-                              ? Icons.public
-                              : Icons.lock,
-                          size: 12.sp,
-                          color: group.visibility == GroupVisibility.public
-                              ? const Color(0xFF3B82F6)
-                              : const Color(0xFF9CA3AF),
-                        ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          group.visibility.displayName,
-                          style: GoogleFonts.inter(
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w500,
-                            color: group.visibility == GroupVisibility.public
-                                ? const Color(0xFF3B82F6)
-                                : const Color(0xFF9CA3AF),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
+                ),
+                SizedBox(width: 6.w),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18.sp,
+                  color: Colors.grey[500],
                 ),
               ],
             ),
-            
-            SizedBox(height: 20.h),
-            
-            // Stats Row
+
+            SizedBox(height: 10.h),
+
+            // Stats + Progress row
             Row(
               children: [
                 _buildStatChip(
                   icon: Icons.people,
-                  label: '$memberCount Members',
+                  label: '$memberCount',
                   color: const Color(0xFF3B82F6),
                 ),
-                SizedBox(width: 12.w),
+                SizedBox(width: 8.w),
                 _buildStatChip(
                   icon: Icons.account_balance_wallet,
-                  label: '$contributionCount Contributions',
+                  label: '$contributionCount',
                   color: const Color(0xFF10B981),
                 ),
-              ],
-            ),
-            
-            if (contributionCount > 0) ...[
-              SizedBox(height: 16.h),
-              
-              // Progress Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total Progress',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[400],
-                    ),
-                  ),
-                  Text(
-                    '${progressPercentage.toStringAsFixed(1)}%',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color.fromARGB(255, 78, 3, 208),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8.h),
-              
-              // Progress Bar
-              Container(
-                height: 6.h,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(3.r),
-                ),
-                child: Stack(
-                  children: [
-                    FractionallySizedBox(
-                      widthFactor: progressPercentage / 100,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 78, 3, 208),
-                          borderRadius: BorderRadius.circular(3.r),
+                if (contributionCount > 0) ...[
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${progressPercentage.toStringAsFixed(0)}%',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color.fromARGB(255, 78, 3, 208),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 8.h),
-              
-              // Amount Info
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '\$${totalCurrentAmount.toStringAsFixed(2)} raised',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.sp,
-                      color: Colors.grey[400],
+                        SizedBox(height: 4.h),
+                        Container(
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D2D2D),
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                          child: Stack(
+                            children: [
+                              FractionallySizedBox(
+                                widthFactor: (progressPercentage / 100).clamp(0.0, 1.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(255, 78, 3, 208),
+                                    borderRadius: BorderRadius.circular(2.r),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                ] else ...[
+                  const Spacer(),
                   Text(
-                    'of \$${totalTargetAmount.toStringAsFixed(2)}',
+                    _formatDate(group.updatedAt),
                     style: GoogleFonts.inter(
-                      fontSize: 11.sp,
-                      color: Colors.grey[400],
+                      fontSize: 10.sp,
+                      color: Colors.grey[500],
                     ),
                   ),
                 ],
-              ),
-            ],
-            
-            SizedBox(height: 16.h),
-            
-            // Footer
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Updated ${_formatDate(group.updatedAt)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.sp,
-                    color: Colors.grey[500],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 14.sp,
-                  color: Colors.grey[400],
-                ),
               ],
             ),
           ],

@@ -290,6 +290,18 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
             ],
           ),
           SizedBox(height: 16.h),
+          if (cubit.recipientImage != null) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: Image.file(
+                cubit.recipientImage!,
+                height: 100.h,
+                width: 100.w,
+                fit: BoxFit.cover,
+              ),
+            ),
+            SizedBox(height: 12.h),
+          ],
           if (cubit.recipientCompany.isNotEmpty)
             _buildInfoRow('Company', cubit.recipientCompany),
           if (cubit.recipientCompany.isNotEmpty) SizedBox(height: 12.h),

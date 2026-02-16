@@ -1,4 +1,5 @@
 import '../entities/crowdfund_entities.dart';
+import '../entities/notification_channel_entities.dart';
 import '../repositories/crowdfund_repository.dart';
 
 // ============================================================================
@@ -141,7 +142,7 @@ class MakeDonationUseCase {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    int? sourceAccountId,
+    String? sourceAccountId,
   }) {
     return repository.makeDonation(
       crowdfundId: crowdfundId,
@@ -252,5 +253,147 @@ class GetCrowdfundLeaderboardUseCase {
       limit: limit,
       offset: offset,
     );
+  }
+}
+
+// ============================================================================
+// CAMPAIGN WALLET USE CASES
+// ============================================================================
+
+class GetMyCrowdfundsUseCase {
+  final CrowdfundRepository repository;
+
+  GetMyCrowdfundsUseCase(this.repository);
+
+  Future<List<Crowdfund>> call({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+  }) {
+    return repository.getMyCrowdfunds(
+      page: page,
+      pageSize: pageSize,
+      statusFilter: statusFilter,
+    );
+  }
+}
+
+class WithdrawFromCrowdfundUseCase {
+  final CrowdfundRepository repository;
+
+  WithdrawFromCrowdfundUseCase(this.repository);
+
+  Future<CrowdfundWithdrawalResult> call({
+    required String crowdfundId,
+    required double amount,
+    required String transactionPin,
+    String? destinationAccountId,
+    String? destinationAccountType,
+  }) {
+    return repository.withdrawFromCrowdfund(
+      crowdfundId: crowdfundId,
+      amount: amount,
+      transactionPin: transactionPin,
+      destinationAccountId: destinationAccountId,
+      destinationAccountType: destinationAccountType,
+    );
+  }
+}
+
+class GetCampaignWalletBalanceUseCase {
+  final CrowdfundRepository repository;
+
+  GetCampaignWalletBalanceUseCase(this.repository);
+
+  Future<CampaignWalletBalance> call(String crowdfundId) {
+    return repository.getCampaignWalletBalance(crowdfundId);
+  }
+}
+
+// ============================================================================
+// NOTIFICATION CHANNEL USE CASES
+// ============================================================================
+
+class ConnectNotificationChannelUseCase {
+  final CrowdfundRepository repository;
+
+  ConnectNotificationChannelUseCase(this.repository);
+
+  Future<NotificationChannel> call({
+    required String crowdfundId,
+    required NotificationChannelType channelType,
+    required String channelName,
+    String? telegramChatId,
+    String? discordWebhookUrl,
+    String? discordServerName,
+    String? discordChannelName,
+    String? slackWebhookUrl,
+    String? slackWorkspaceName,
+    String? slackChannelName,
+    List<NotificationEventType>? enabledEvents,
+  }) {
+    return repository.connectNotificationChannel(
+      crowdfundId: crowdfundId,
+      channelType: channelType,
+      channelName: channelName,
+      telegramChatId: telegramChatId,
+      discordWebhookUrl: discordWebhookUrl,
+      discordServerName: discordServerName,
+      discordChannelName: discordChannelName,
+      slackWebhookUrl: slackWebhookUrl,
+      slackWorkspaceName: slackWorkspaceName,
+      slackChannelName: slackChannelName,
+      enabledEvents: enabledEvents,
+    );
+  }
+}
+
+class DisconnectNotificationChannelUseCase {
+  final CrowdfundRepository repository;
+
+  DisconnectNotificationChannelUseCase(this.repository);
+
+  Future<void> call(String channelId) {
+    return repository.disconnectNotificationChannel(channelId);
+  }
+}
+
+class GetNotificationChannelsUseCase {
+  final CrowdfundRepository repository;
+
+  GetNotificationChannelsUseCase(this.repository);
+
+  Future<List<NotificationChannel>> call(String crowdfundId) {
+    return repository.getNotificationChannels(crowdfundId);
+  }
+}
+
+class UpdateNotificationChannelUseCase {
+  final CrowdfundRepository repository;
+
+  UpdateNotificationChannelUseCase(this.repository);
+
+  Future<NotificationChannel> call({
+    required String channelId,
+    String? channelName,
+    List<NotificationEventType>? enabledEvents,
+    NotificationChannelStatus? status,
+  }) {
+    return repository.updateNotificationChannel(
+      channelId: channelId,
+      channelName: channelName,
+      enabledEvents: enabledEvents,
+      status: status,
+    );
+  }
+}
+
+class TestNotificationChannelUseCase {
+  final CrowdfundRepository repository;
+
+  TestNotificationChannelUseCase(this.repository);
+
+  Future<bool> call(String channelId) {
+    return repository.testNotificationChannel(channelId);
   }
 }

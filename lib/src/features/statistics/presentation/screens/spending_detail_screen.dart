@@ -40,7 +40,7 @@ class SpendingDetailScreen extends StatelessWidget {
           }
           return RefreshIndicator(
             onRefresh: () => context.read<StatisticsCubit>().refresh(),
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF10B981),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -178,14 +178,14 @@ class SpendingDetailScreen extends StatelessWidget {
                     spots: spots,
                     isCurved: true,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6C5CE7), Color(0xFF8E5CE7)],
+                      colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
                     ),
                     barWidth: 3,
                     dotData: FlDotData(
                       show: true,
                       getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
                         radius: 3,
-                        color: const Color(0xFF6C5CE7),
+                        color: const Color(0xFF10B981),
                         strokeWidth: 1,
                         strokeColor: Colors.white,
                       ),
@@ -194,8 +194,8 @@ class SpendingDetailScreen extends StatelessWidget {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFF6C5CE7).withValues(alpha: 0.3),
-                          const Color(0xFF8E5CE7).withValues(alpha: 0.0),
+                          const Color(0xFF10B981).withValues(alpha: 0.3),
+                          const Color(0xFF34D399).withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,

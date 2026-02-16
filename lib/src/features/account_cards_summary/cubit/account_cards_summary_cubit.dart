@@ -23,6 +23,12 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   // Track the user ID for whom the data was loaded
   String? _currentUserId;
 
+  // Stores the entity balance before the first WebSocket update per account (for animation "from" value)
+  final Map<String, double> _preAnimationBalances = {};
+
+  // Stores the latest WebSocket balance per account (for animation "to" value)
+  final Map<String, double> _latestWebSocketBalances = {};
+
   AccountCardsSummaryCubit(
     this._getAccountSummariesUseCase, {
     required AccountManager accountManager,
@@ -45,11 +51,16 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   void reset() {
     _currentSummaries = [];
     _currentUserId = null;
+    _preAnimationBalances.clear();
+    _latestWebSocketBalances.clear();
     emit(AccountCardsSummaryInitial());
     print('AccountCardsSummaryCubit: State reset');
   }
 
   /// Handle incoming WebSocket balance update
+  ///
+  /// Does NOT mutate _currentSummaries — entities always reflect server-fetched
+  /// balances. WebSocket updates are tracked separately for animation purposes.
   void _handleBalanceUpdate(BalanceUpdateEvent event) {
     if (isClosed) return;
 
@@ -59,30 +70,22 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     );
 
     if (accountIndex == -1) {
-      // Account not found in current list, just refresh
       print('AccountCardsSummaryCubit: Account ${event.accountId} not found, skipping update');
       return;
     }
 
-    // Get previous balance for animation
-    final previousAccount = _currentSummaries[accountIndex];
-    final previousBalance = previousAccount.balance;
+    // Record the entity balance before any WebSocket update (only on first update per account)
+    final entityBalance = _currentSummaries[accountIndex].balance;
+    _preAnimationBalances.putIfAbsent(event.accountId, () => entityBalance);
 
-    // Calculate trend percentage
-    final trendPercentage = _calculateTrendPercentage(previousBalance, event.newBalance);
+    // Always store the latest WebSocket balance
+    _latestWebSocketBalances[event.accountId] = event.newBalance;
 
-    // Create updated account using copyWith
-    final updatedAccount = previousAccount.copyWith(
-      balance: event.newBalance,
-      trendPercentage: trendPercentage,
-      currency: event.currency,
-    );
+    // Determine the "previous" balance for the emitted state:
+    // Use the pre-animation balance (entity snapshot) so the carousel can animate from→to
+    final previousBalance = _preAnimationBalances[event.accountId]!;
 
-    // Update the summaries list
-    _currentSummaries = List.from(_currentSummaries);
-    _currentSummaries[accountIndex] = updatedAccount;
-
-    // Emit animated update state
+    // Emit animated update state (entities unchanged — carousel uses _realtimeBalances overlay)
     emit(AccountBalanceUpdated(
       accountSummaries: _currentSummaries,
       updatedAccountId: event.accountId,
@@ -94,7 +97,7 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       reference: event.reference,
     ));
 
-    print('AccountCardsSummaryCubit: Balance updated for account ${event.accountId} - ${event.eventType}: $previousBalance -> ${event.newBalance}');
+    print('AccountCardsSummaryCubit: Balance update tracked for account ${event.accountId} - ${event.eventType}: $previousBalance -> ${event.newBalance}');
   }
 
   /// Calculate trend percentage
@@ -173,6 +176,53 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       return currencyMap[countryCode] ?? countryCode;
     }
     return 'USD'; // Default fallback
+  }
+
+  /// Returns true if the cubit already holds loaded data for [userId].
+  /// Used by the dashboard to skip redundant gRPC fetches on re-mount.
+  bool hasDataForUser(String userId) {
+    return _currentUserId == userId && _currentSummaries.isNotEmpty;
+  }
+
+  /// Builds animation info from the tracking maps.
+  /// Returns a map of accountId → (from, to) balance pairs for accounts
+  /// that have pending WebSocket updates not yet consumed.
+  Map<String, ({double from, double to})> getPendingAnimations() {
+    final result = <String, ({double from, double to})>{};
+    for (final accountId in _latestWebSocketBalances.keys) {
+      final from = _preAnimationBalances[accountId];
+      final to = _latestWebSocketBalances[accountId];
+      if (from != null && to != null) {
+        result[accountId] = (from: from, to: to);
+      }
+    }
+    return result;
+  }
+
+  /// Called after the carousel finishes animating. Updates _currentSummaries
+  /// with WebSocket balances so entities reflect reality, then clears tracking maps.
+  void markBalanceUpdateConsumed() {
+    if (isClosed) return;
+
+    // Apply WebSocket balances to entities
+    for (final entry in _latestWebSocketBalances.entries) {
+      final idx = _currentSummaries.indexWhere((s) => s.id == entry.key);
+      if (idx != -1) {
+        final prev = _currentSummaries[idx];
+        final trendPercentage = _calculateTrendPercentage(prev.balance, entry.value);
+        _currentSummaries = List.from(_currentSummaries);
+        _currentSummaries[idx] = prev.copyWith(
+          balance: entry.value,
+          trendPercentage: trendPercentage,
+        );
+      }
+    }
+
+    _preAnimationBalances.clear();
+    _latestWebSocketBalances.clear();
+
+    emit(AccountCardsSummaryLoaded(_currentSummaries));
+    print('AccountCardsSummaryCubit: Balance updates consumed, entities updated');
   }
 
   /// Connect WebSocket for real-time updates

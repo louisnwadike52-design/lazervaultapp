@@ -47,9 +47,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
   StreamSubscription<SWRResult<List<GroupAccount>>>? _cacheSubscription;
 
-  // Current user ID - set from authentication state
+  // Current user ID and name - set from authentication state
   String? _currentUserId;
   String? get currentUserId => _currentUserId;
+  String? _currentUserName;
+  String? get currentUserName => _currentUserName;
 
   // Cached groups list for restoring state when returning from details
   List<GroupAccount>? _cachedGroups;
@@ -59,10 +61,10 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   GroupAccountReport? _cachedReport;
   GroupAccountReport? get cachedReport => _cachedReport;
 
-  /// Set the current user ID from authentication state
-  void setUserId(String userId) {
-    print('🔵 GroupAccountCubit: setUserId called with: $userId');
+  /// Set the current user ID and name from authentication state
+  void setUserId(String userId, {String? userName}) {
     _currentUserId = userId;
+    if (userName != null) _currentUserName = userName;
     // Automatically load groups when user ID is set
     loadUserGroups();
   }
@@ -133,9 +135,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
   // Group management methods
   Future<void> loadUserGroups([String? userId]) async {
-    print('🔵 GroupAccountCubit: loadUserGroups called with userId: $userId, currentUserId: $currentUserId');
     if (isClosed) {
-      print('🔴 GroupAccountCubit: loadUserGroups - cubit is closed, returning');
       return;
     }
 
@@ -143,62 +143,49 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     final effectiveUserId = userId ?? currentUserId;
     if (effectiveUserId == null) {
       if (isClosed) return;
-      print('🔴 GroupAccountCubit: loadUserGroups - effectiveUserId is null');
       emit(const GroupAccountError('User not authenticated. Please log in.'));
       return;
     }
 
-    print('🟢 GroupAccountCubit: loadUserGroups - emitting loading state');
     emit(const GroupAccountLoading(message: 'Loading groups...'));
     try {
-      print('🔵 GroupAccountCubit: loadUserGroups - calling getUserGroups($effectiveUserId)');
       final groups = await getUserGroups(effectiveUserId);
       if (isClosed) return;
-      print('🟢 GroupAccountCubit: loadUserGroups - got ${groups.length} groups');
       _cachedGroups = groups; // Cache the groups list
       emit(GroupAccountGroupsLoaded(groups));
     } catch (e) {
       if (isClosed) return;
-      print('🔴 GroupAccountCubit: loadUserGroups - error: $e');
       emit(GroupAccountError('Failed to load groups: ${e.toString()}'));
     }
   }
 
-  Future<void> loadGroupDetails(String groupId) async {
-    print('🔵 GroupAccountCubit: loadGroupDetails called with groupId: $groupId');
+  Future<void> loadGroupDetails(String groupId, {bool silent = false}) async {
     if (isClosed) {
-      print('🔴 GroupAccountCubit: loadGroupDetails - cubit is closed, returning');
       return;
     }
-    print('🟢 GroupAccountCubit: loadGroupDetails - emitting loading state');
-    emit(const GroupAccountLoading(message: 'Loading group details...'));
+    if (!silent) {
+      emit(const GroupAccountLoading(message: 'Loading group details...'));
+    }
     try {
-      print('🔵 GroupAccountCubit: loadGroupDetails - calling getGroupById($groupId)');
       final group = await getGroupById(groupId);
-      print('🟢 GroupAccountCubit: loadGroupDetails - got group: ${group.name}');
 
-      print('🔵 GroupAccountCubit: loadGroupDetails - calling getGroupMembers($groupId)');
       final members = await getGroupMembers(groupId);
-      print('🟢 GroupAccountCubit: loadGroupDetails - got ${members.length} members');
 
-      print('🔵 GroupAccountCubit: loadGroupDetails - calling getGroupContributions($groupId)');
       final contributions = await getGroupContributions(groupId);
-      print('🟢 GroupAccountCubit: loadGroupDetails - got ${contributions.length} contributions');
 
       if (isClosed) {
-        print('🔴 GroupAccountCubit: loadGroupDetails - cubit closed after fetching, returning');
         return;
       }
-      print('🟢 GroupAccountCubit: loadGroupDetails - emitting GroupAccountGroupLoaded');
       emit(GroupAccountGroupLoaded(
         group: group,
         members: members,
         contributions: contributions,
       ));
     } catch (e) {
-      print('🔴 GroupAccountCubit: loadGroupDetails - error: $e');
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load group details: ${e.toString()}'));
+      if (!silent) {
+        emit(GroupAccountError('Failed to load group details: ${e.toString()}'));
+      }
     }
   }
 
@@ -209,21 +196,15 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     GroupVisibility? visibility,
     String? imageUrl,
   }) async {
-    print('🔵 GroupAccountCubit: createNewGroup called - name: $name, description: $description');
-    print('🔵 GroupAccountCubit: currentUserId = $currentUserId');
     if (isClosed) {
-      print('🔴 GroupAccountCubit: Cubit is closed, returning');
       return;
     }
     if (currentUserId == null) {
-      print('🔴 GroupAccountCubit: User not authenticated (currentUserId is null)');
       emit(const GroupAccountError('User not authenticated'));
       return;
     }
-    print('🟢 GroupAccountCubit: Emitting GroupAccountLoading...');
     emit(const GroupAccountLoading(message: 'Creating group...'));
     try {
-      print('🔵 GroupAccountCubit: Calling createGroup use case...');
       final group = await createGroup(CreateGroupParams(
         name: name,
         description: description,
@@ -233,14 +214,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         imageUrl: imageUrl,
       ));
       if (isClosed) return;
-      print('🟢 GroupAccountCubit: Group created successfully - id: ${group.id}');
       emit(GroupAccountGroupCreated(group));
 
       // Auto-generate group creation report
       await generateGroupCreationReport(group: group);
     } catch (e) {
       if (isClosed) return;
-      print('🔴 GroupAccountCubit: Error creating group - $e');
       emit(GroupAccountError('Failed to create group: ${e.toString()}'));
     }
   }
@@ -251,9 +230,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     try {
       await updateGroup(group);
       if (isClosed) return;
-      emit(GroupAccountSuccess('Group updated successfully'));
-      // Reload group details
-      await loadGroupDetails(group.id);
+      // Reload group details silently to preserve UI
+      await loadGroupDetails(group.id, silent: true);
 
       // Check if social links were added and trigger report
       await generateSocialLinkedReport(group: group);
@@ -571,7 +549,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         contributionId: contributionId,
         groupId: groupId,
         userId: currentUserId!,
-        userName: 'Current User', // In real app, get from user service
+        userName: _currentUserName ?? 'User',
         amount: amount,
         currency: currency,
         notes: notes,
@@ -911,14 +889,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   /// Restore the groups list state from cache (used when returning from details)
   /// If cache exists, immediately shows cached data. Otherwise triggers a reload.
   void restoreGroupsListState() {
-    print('🔵 GroupAccountCubit: restoreGroupsListState called, cached groups: ${_cachedGroups?.length ?? 0}');
     if (isClosed) return;
 
     if (_cachedGroups != null && _cachedGroups!.isNotEmpty) {
-      print('🟢 GroupAccountCubit: restoreGroupsListState - restoring ${_cachedGroups!.length} cached groups');
       emit(GroupAccountGroupsLoaded(_cachedGroups!));
     } else {
-      print('🔵 GroupAccountCubit: restoreGroupsListState - no cache, reloading');
       loadUserGroups();
     }
   }

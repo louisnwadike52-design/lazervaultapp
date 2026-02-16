@@ -119,6 +119,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
       'sourceAccountId': _selectedAccountId!,
       'providerName': networkProvider!.name,
       'providerType': networkProvider!.type,
+      'operatorId': networkProvider!.operatorId,
       'recipientName': recipientName ?? '',
       'fee': fee ?? 0.0,
       'totalAmount': totalAmount ?? amount!,

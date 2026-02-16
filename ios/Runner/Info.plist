@@ -75,5 +75,52 @@
 		<!-- Universal Links - Associated Domains configured in Xcode -->
 		<key>FlutterDeepLinkingEnabled</key>
 		<true/>
+		<!-- Siri integration for voice-activated payments -->
+		<key>NSSiriUsageDescription</key>
+		<string>LazerVault uses Siri to let you quickly send money, check your balance, and pay bills with your voice.</string>
+		<!-- App Icon Quick Actions (long-press shortcuts) -->
+		<key>UIApplicationShortcutItems</key>
+		<array>
+			<dict>
+				<key>UIApplicationShortcutItemType</key>
+				<string>send_money</string>
+				<key>UIApplicationShortcutItemTitle</key>
+				<string>Send Money</string>
+				<key>UIApplicationShortcutItemSubtitle</key>
+				<string>Transfer funds instantly</string>
+				<key>UIApplicationShortcutItemIconType</key>
+				<string>UIApplicationShortcutIconTypeShuffle</string>
+			</dict>
+			<dict>
+				<key>UIApplicationShortcutItemType</key>
+				<string>scan_to_pay</string>
+				<key>UIApplicationShortcutItemTitle</key>
+				<string>Scan to Pay</string>
+				<key>UIApplicationShortcutItemSubtitle</key>
+				<string>QR code payment</string>
+				<key>UIApplicationShortcutItemIconType</key>
+				<string>UIApplicationShortcutIconTypeCapturePhoto</string>
+			</dict>
+			<dict>
+				<key>UIApplicationShortcutItemType</key>
+				<string>check_balance</string>
+				<key>UIApplicationShortcutItemTitle</key>
+				<string>Check Balance</string>
+				<key>UIApplicationShortcutItemSubtitle</key>
+				<string>View account balance</string>
+				<key>UIApplicationShortcutItemIconType</key>
+				<string>UIApplicationShortcutIconTypeSearch</string>
+			</dict>
+			<dict>
+				<key>UIApplicationShortcutItemType</key>
+				<string>pay_bills</string>
+				<key>UIApplicationShortcutItemTitle</key>
+				<string>Pay Bills</string>
+				<key>UIApplicationShortcutItemSubtitle</key>
+				<string>Electricity, airtime &amp; more</string>
+				<key>UIApplicationShortcutItemIconType</key>
+				<string>UIApplicationShortcutIconTypeTask</string>
+			</dict>
+		</array>
 	</dict>
 </plist>

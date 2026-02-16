@@ -18,6 +18,10 @@ class MicroserviceChatInitial extends MicroserviceChatState {
   const MicroserviceChatInitial({super.messages, super.isTyping = false});
 }
 
+class MicroserviceChatHistoryLoading extends MicroserviceChatState {
+  const MicroserviceChatHistoryLoading({super.messages, super.isTyping = false});
+}
+
 class MicroserviceChatMessageLoading extends MicroserviceChatState {
   const MicroserviceChatMessageLoading({super.messages, super.isTyping = true});
 }

@@ -14,10 +14,10 @@ abstract class IAiChatRepository {
     String? language,
   });
 
-  // Update return type to use ChatMessageEntity
   Future<Either<Failure, List<ChatMessageEntity>>> getChatHistory({
     required String accessToken,
     String? sessionId,
+    String? sourceContext,
   });
   // Add other methods if needed (e.g., clear chat history on backend?)
 } 

@@ -9,7 +9,7 @@ abstract class IAiChatDataSource {
     String? sourceContext,
     String? language,
   });
-  Future<dynamic> getChatHistory({String? sessionId});
+  Future<dynamic> getChatHistory({String? sessionId, String? sourceContext});
 }
 
 class GrpcAiChatDataSource implements IAiChatDataSource {
@@ -63,7 +63,7 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
   }
 
   @override
-  Future<GetAIChatHistoryResponse> getChatHistory({String? sessionId}) async {
+  Future<GetAIChatHistoryResponse> getChatHistory({String? sessionId, String? sourceContext}) async {
     final request = GetAIChatHistoryRequest();
     // Note: Session ID is tracked server-side, so we don't need to send it for gRPC
     // The server extracts the user ID from the JWT token

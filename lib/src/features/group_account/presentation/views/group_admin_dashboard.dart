@@ -4,11 +4,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../../../core/services/injection_container.dart';
+import '../../data/datasources/group_account_remote_data_source.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../utils/group_export_helper.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import '../widgets/add_member_bottom_sheet.dart';
 import '../widgets/share_contribution_bottom_sheet.dart';
+import '../view/create_contribution_carousel.dart';
 import 'activity_log_screen.dart';
+import 'edit_contribution_screen.dart';
 import 'edit_group_screen.dart';
 
 class GroupAdminDashboard extends StatefulWidget {
@@ -35,6 +41,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    // Load activity logs for the Recent Activity card
+    context.read<GroupAccountCubit>().loadGroupActivityLogs(widget.group.id);
   }
 
   @override
@@ -139,7 +147,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
               ),
               _buildStatItem(
                 label: 'Collected',
-                value: currencyFormat.format(totalCurrent / 100),
+                value: currencyFormat.format(totalCurrent),
                 icon: Icons.account_balance_wallet,
                 isLarge: true,
               ),
@@ -400,17 +408,13 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
               _buildQuickActionButton(
                 icon: Icons.person_add,
                 label: 'Add Member',
-                onTap: () {
-                  // Show add member dialog
-                },
+                onTap: _showAddMemberSheet,
               ),
               SizedBox(width: 12.w),
               _buildQuickActionButton(
                 icon: Icons.add_chart,
                 label: 'New Goal',
-                onTap: () {
-                  // Show create contribution
-                },
+                onTap: _navigateToCreateContribution,
               ),
               SizedBox(width: 12.w),
               _buildQuickActionButton(
@@ -503,28 +507,85 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
             ],
           ),
           SizedBox(height: 8.h),
-          // Mock recent activity
-          _buildActivityItem(
-            icon: Icons.payment,
-            title: 'Payment received',
-            subtitle: 'John Doe paid \u20A65,000',
-            time: '2 hours ago',
-          ),
-          _buildActivityItem(
-            icon: Icons.person_add,
-            title: 'New member',
-            subtitle: 'Alex joined the group',
-            time: '1 day ago',
-          ),
-          _buildActivityItem(
-            icon: Icons.add_chart,
-            title: 'Goal created',
-            subtitle: 'House Fund was created',
-            time: '3 days ago',
+          BlocBuilder<GroupAccountCubit, GroupAccountState>(
+            buildWhen: (previous, current) =>
+                current is GroupActivityLogsLoaded ||
+                current is ActivityLogsLoading ||
+                current is GroupAccountError,
+            builder: (context, state) {
+              if (state is ActivityLogsLoading) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    child: SizedBox(
+                      width: 24.w,
+                      height: 24.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
+                      ),
+                    ),
+                  ),
+                );
+              }
+              if (state is GroupActivityLogsLoaded && state.logs.isNotEmpty) {
+                final recentLogs = state.logs.take(3).toList();
+                return Column(
+                  children: recentLogs.map((log) => _buildActivityItem(
+                    icon: _getActivityIcon(log.actionType),
+                    title: _formatActivityTitle(log.actionType),
+                    subtitle: '${log.actorName} - ${log.actionType.replaceAll('_', ' ')}',
+                    time: _formatTimeAgo(log.createdAt),
+                  )).toList(),
+                );
+              }
+              return Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  child: Text(
+                    'No recent activity',
+                    style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
     );
+  }
+
+  IconData _getActivityIcon(String actionType) {
+    final type = actionType.toLowerCase();
+    if (type.contains('payment') || type.contains('paid')) return Icons.payment;
+    if (type.contains('member') || type.contains('join')) return Icons.person_add;
+    if (type.contains('contribution') || type.contains('goal') || type.contains('create')) return Icons.add_chart;
+    if (type.contains('payout')) return Icons.account_balance_wallet;
+    if (type.contains('update') || type.contains('edit')) return Icons.edit;
+    if (type.contains('remove') || type.contains('delete')) return Icons.remove_circle;
+    return Icons.history;
+  }
+
+  String _formatActivityTitle(String actionType) {
+    final type = actionType.toLowerCase();
+    if (type.contains('payment') || type.contains('paid')) return 'Payment received';
+    if (type.contains('member_added') || type.contains('join')) return 'New member';
+    if (type.contains('member_removed')) return 'Member removed';
+    if (type.contains('contribution_created') || type.contains('goal')) return 'Goal created';
+    if (type.contains('payout')) return 'Payout processed';
+    if (type.contains('role_updated')) return 'Role updated';
+    if (type.contains('update')) return 'Update';
+    return actionType.replaceAll('_', ' ');
+  }
+
+  String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final diff = now.difference(dateTime);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return DateFormat('MMM d').format(dateTime);
   }
 
   Widget _buildActivityItem({
@@ -768,7 +829,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                currencyFormat.format(contribution.currentAmount / 100),
+                currencyFormat.format(contribution.currentAmount),
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 14.sp,
@@ -776,7 +837,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                 ),
               ),
               Text(
-                currencyFormat.format(contribution.targetAmount / 100),
+                currencyFormat.format(contribution.targetAmount),
                 style: GoogleFonts.inter(
                   color: Colors.grey[400],
                   fontSize: 14.sp,
@@ -925,23 +986,115 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   }
 
   void _showExportOptions() {
-    // Show export options bottom sheet
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Export Data',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              _buildExportOption(
+                icon: Icons.people,
+                title: 'Members List',
+                onTap: () async {
+                  Navigator.pop(context);
+                  try {
+                    final file = await GroupExportHelper.exportMembersListCSV(
+                      group: widget.group,
+                      members: widget.members,
+                    );
+                    await GroupExportHelper.shareCSV(file, subject: '${widget.group.name} - Members');
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Export failed: $e'), backgroundColor: const Color(0xFFEF4444)),
+                      );
+                    }
+                  }
+                },
+              ),
+              _buildExportOption(
+                icon: Icons.bar_chart,
+                title: 'Contributions Summary',
+                onTap: () async {
+                  Navigator.pop(context);
+                  try {
+                    final file = await GroupExportHelper.exportContributionsSummaryCSV(
+                      group: widget.group,
+                      contributions: widget.contributions,
+                    );
+                    await GroupExportHelper.shareCSV(file, subject: '${widget.group.name} - Contributions');
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Export failed: $e'), backgroundColor: const Color(0xFFEF4444)),
+                      );
+                    }
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExportOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp),
+      title: Text(title, style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+    );
   }
 
   void _showShareOptions() {
     if (widget.contributions.isNotEmpty) {
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) => ShareContributionBottomSheet(
-          contribution: widget.contributions.first,
-          groupName: widget.group.name,
-          members: widget.members,
-          payments: const [], // Would need to load payments
-        ),
-      );
+      _showShareForContribution(widget.contributions.first);
     }
+  }
+
+  Future<void> _showShareForContribution(Contribution contribution) async {
+    // Load actual payments for this contribution before showing share sheet
+    List<ContributionPayment> payments = [];
+    try {
+      final cubit = context.read<GroupAccountCubit>();
+      payments = await cubit.getContributionPayments.call(contribution.id);
+    } catch (_) {
+      // Continue with empty payments if load fails
+    }
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ShareContributionBottomSheet(
+        contribution: contribution,
+        groupName: widget.group.name,
+        members: widget.members,
+        payments: payments,
+      ),
+    );
   }
 
   void _handleMemberAction(String action, GroupMember member) {
@@ -958,31 +1111,109 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   void _handleContributionAction(String action, Contribution contribution) {
     switch (action) {
       case 'edit':
-        // Navigate to edit contribution
+        Get.to(() => EditContributionScreen(contribution: contribution));
         break;
       case 'share':
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => ShareContributionBottomSheet(
-            contribution: contribution,
-            groupName: widget.group.name,
-            members: widget.members,
-            payments: const [],
-          ),
-        );
+        _showShareForContribution(contribution);
         break;
       case 'payout':
-        // Process payout
+        _showProcessPayoutDialog(contribution);
         break;
       case 'pause':
-        // Pause contribution
+        _showPauseContributionDialog(contribution);
         break;
       case 'delete':
         _showDeleteContributionDialog(contribution);
         break;
     }
+  }
+
+  void _showAddMemberSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AddMemberBottomSheet(
+        group: widget.group,
+        existingMembers: widget.members,
+      ),
+    );
+  }
+
+  void _navigateToCreateContribution() {
+    final cubit = context.read<GroupAccountCubit>();
+    Get.to(() => CreateContributionCarousel(
+          groupId: widget.group.id,
+          groupMembers: widget.members,
+          createdBy: cubit.currentUserId ?? '',
+          dataSource: serviceLocator<GroupAccountRemoteDataSource>(),
+        ));
+  }
+
+  void _showProcessPayoutDialog(Contribution contribution) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        title: Text('Process Payout', style: GoogleFonts.inter(color: Colors.white)),
+        content: Text(
+          'Process the next payout for "${contribution.title}"? '
+          'This will distribute funds to the next member in the rotation.',
+          style: GoogleFonts.inter(color: Colors.grey[300]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<GroupAccountCubit>().generateTranscriptForContribution(contribution.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Processing payout for ${contribution.title}...'),
+                  backgroundColor: const Color(0xFF3B82F6),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+            ),
+            child: Text('Process', style: GoogleFonts.inter(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPauseContributionDialog(Contribution contribution) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        title: Text('Pause Contribution', style: GoogleFonts.inter(color: Colors.white)),
+        content: Text(
+          'Are you sure you want to pause "${contribution.title}"? '
+          'Members will not be able to make payments while paused.',
+          style: GoogleFonts.inter(color: Colors.grey[300]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              final paused = contribution.copyWith(status: ContributionStatus.paused);
+              context.read<GroupAccountCubit>().updateContributionDetails(paused);
+            },
+            child: Text('Pause', style: GoogleFonts.inter(color: Colors.orange)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showChangeRoleDialog(GroupMember member) {

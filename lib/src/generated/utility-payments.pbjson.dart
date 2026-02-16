@@ -269,97 +269,6 @@ final $typed_data.Uint8List buyAirtimeResponseDescriptor = $convert.base64Decode
     'IAEoAVIQY29tbWlzc2lvbkVhcm5lZBItChJwcm92aWRlcl9yZWZlcmVuY2UYByABKAlSEXByb3'
     'ZpZGVyUmVmZXJlbmNl');
 
-@$core.Deprecated('Use dataPlanDescriptor instead')
-const DataPlan$json = {
-  '1': 'DataPlan',
-  '2': [
-    {'1': 'variation_id', '3': 1, '4': 1, '5': 9, '10': 'variationId'},
-    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
-    {'1': 'price', '3': 3, '4': 1, '5': 1, '10': 'price'},
-    {'1': 'network', '3': 4, '4': 1, '5': 9, '10': 'network'},
-    {'1': 'availability', '3': 5, '4': 1, '5': 9, '10': 'availability'},
-  ],
-};
-
-/// Descriptor for `DataPlan`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List dataPlanDescriptor = $convert.base64Decode(
-    'CghEYXRhUGxhbhIhCgx2YXJpYXRpb25faWQYASABKAlSC3ZhcmlhdGlvbklkEhIKBG5hbWUYAi'
-    'ABKAlSBG5hbWUSFAoFcHJpY2UYAyABKAFSBXByaWNlEhgKB25ldHdvcmsYBCABKAlSB25ldHdv'
-    'cmsSIgoMYXZhaWxhYmlsaXR5GAUgASgJUgxhdmFpbGFiaWxpdHk=');
-
-@$core.Deprecated('Use getDataPlansRequestDescriptor instead')
-const GetDataPlansRequest$json = {
-  '1': 'GetDataPlansRequest',
-  '2': [
-    {'1': 'network', '3': 1, '4': 1, '5': 9, '10': 'network'},
-  ],
-};
-
-/// Descriptor for `GetDataPlansRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDataPlansRequestDescriptor = $convert.base64Decode(
-    'ChNHZXREYXRhUGxhbnNSZXF1ZXN0EhgKB25ldHdvcmsYASABKAlSB25ldHdvcms=');
-
-@$core.Deprecated('Use getDataPlansResponseDescriptor instead')
-const GetDataPlansResponse$json = {
-  '1': 'GetDataPlansResponse',
-  '2': [
-    {'1': 'plans', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.DataPlan', '10': 'plans'},
-    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
-  ],
-};
-
-/// Descriptor for `GetDataPlansResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDataPlansResponseDescriptor = $convert.base64Decode(
-    'ChRHZXREYXRhUGxhbnNSZXNwb25zZRIvCgVwbGFucxgBIAMoCzIZLnV0aWxpdHlwYXltZW50cy'
-    '5EYXRhUGxhblIFcGxhbnMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
-
-@$core.Deprecated('Use buyDataRequestDescriptor instead')
-const BuyDataRequest$json = {
-  '1': 'BuyDataRequest',
-  '2': [
-    {'1': 'phone_number', '3': 1, '4': 1, '5': 9, '10': 'phoneNumber'},
-    {'1': 'network', '3': 2, '4': 1, '5': 9, '10': 'network'},
-    {'1': 'variation_id', '3': 3, '4': 1, '5': 9, '10': 'variationId'},
-    {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
-    {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
-    {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
-    {'1': 'country_code', '3': 8, '4': 1, '5': 9, '10': 'countryCode'},
-  ],
-};
-
-/// Descriptor for `BuyDataRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List buyDataRequestDescriptor = $convert.base64Decode(
-    'Cg5CdXlEYXRhUmVxdWVzdBIhCgxwaG9uZV9udW1iZXIYASABKAlSC3Bob25lTnVtYmVyEhgKB2'
-    '5ldHdvcmsYAiABKAlSB25ldHdvcmsSIQoMdmFyaWF0aW9uX2lkGAMgASgJUgt2YXJpYXRpb25J'
-    'ZBIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIlCg50cmFuc2FjdGlvbl9pZBgFIAEoCVINdHJhbn'
-    'NhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YBiABKAlSEXZlcmlmaWNhdGlvblRva2Vu'
-    'EicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZXkSIQoMY291bnRyeV9jb2'
-    'RlGAggASgJUgtjb3VudHJ5Q29kZQ==');
-
-@$core.Deprecated('Use buyDataResponseDescriptor instead')
-const BuyDataResponse$json = {
-  '1': 'BuyDataResponse',
-  '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
-    {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
-    {'1': 'phone_number', '3': 3, '4': 1, '5': 9, '10': 'phoneNumber'},
-    {'1': 'data_plan', '3': 4, '4': 1, '5': 9, '10': 'dataPlan'},
-    {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'commission_earned', '3': 6, '4': 1, '5': 1, '10': 'commissionEarned'},
-    {'1': 'provider_reference', '3': 7, '4': 1, '5': 9, '10': 'providerReference'},
-  ],
-};
-
-/// Descriptor for `BuyDataResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List buyDataResponseDescriptor = $convert.base64Decode(
-    'Cg9CdXlEYXRhUmVzcG9uc2USNgoHcGF5bWVudBgBIAEoCzIcLnV0aWxpdHlwYXltZW50cy5CaW'
-    'xsUGF5bWVudFIHcGF5bWVudBIfCgtuZXdfYmFsYW5jZRgCIAEoAVIKbmV3QmFsYW5jZRIhCgxw'
-    'aG9uZV9udW1iZXIYAyABKAlSC3Bob25lTnVtYmVyEhsKCWRhdGFfcGxhbhgEIAEoCVIIZGF0YV'
-    'BsYW4SGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZRIrChFjb21taXNzaW9uX2Vhcm5lZBgGIAEo'
-    'AVIQY29tbWlzc2lvbkVhcm5lZBItChJwcm92aWRlcl9yZWZlcmVuY2UYByABKAlSEXByb3ZpZG'
-    'VyUmVmZXJlbmNl');
-
 @$core.Deprecated('Use barcodePayRequestDescriptor instead')
 const BarcodePayRequest$json = {
   '1': 'BarcodePayRequest',
@@ -860,4 +769,239 @@ final $typed_data.Uint8List getEducationProvidersResponseDescriptor = $convert.b
     'Ch1HZXRFZHVjYXRpb25Qcm92aWRlcnNSZXNwb25zZRJACglwcm92aWRlcnMYASADKAsyIi51dG'
     'lsaXR5cGF5bWVudHMuRWR1Y2F0aW9uUHJvdmlkZXJSCXByb3ZpZGVycxIUCgV0b3RhbBgCIAEo'
     'BVIFdG90YWw=');
+
+@$core.Deprecated('Use dataPlanDescriptor instead')
+const DataPlan$json = {
+  '1': 'DataPlan',
+  '2': [
+    {'1': 'variation_id', '3': 1, '4': 1, '5': 9, '10': 'variationId'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'price', '3': 3, '4': 1, '5': 1, '10': 'price'},
+    {'1': 'network', '3': 4, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'availability', '3': 5, '4': 1, '5': 9, '10': 'availability'},
+  ],
+};
+
+/// Descriptor for `DataPlan`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List dataPlanDescriptor = $convert.base64Decode(
+    'CghEYXRhUGxhbhIhCgx2YXJpYXRpb25faWQYASABKAlSC3ZhcmlhdGlvbklkEhIKBG5hbWUYAi'
+    'ABKAlSBG5hbWUSFAoFcHJpY2UYAyABKAFSBXByaWNlEhgKB25ldHdvcmsYBCABKAlSB25ldHdv'
+    'cmsSIgoMYXZhaWxhYmlsaXR5GAUgASgJUgxhdmFpbGFiaWxpdHk=');
+
+@$core.Deprecated('Use getDataPlansRequestDescriptor instead')
+const GetDataPlansRequest$json = {
+  '1': 'GetDataPlansRequest',
+  '2': [
+    {'1': 'network', '3': 1, '4': 1, '5': 9, '10': 'network'},
+  ],
+};
+
+/// Descriptor for `GetDataPlansRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDataPlansRequestDescriptor = $convert.base64Decode(
+    'ChNHZXREYXRhUGxhbnNSZXF1ZXN0EhgKB25ldHdvcmsYASABKAlSB25ldHdvcms=');
+
+@$core.Deprecated('Use getDataPlansResponseDescriptor instead')
+const GetDataPlansResponse$json = {
+  '1': 'GetDataPlansResponse',
+  '2': [
+    {'1': 'plans', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.DataPlan', '10': 'plans'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetDataPlansResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDataPlansResponseDescriptor = $convert.base64Decode(
+    'ChRHZXREYXRhUGxhbnNSZXNwb25zZRIvCgVwbGFucxgBIAMoCzIZLnV0aWxpdHlwYXltZW50cy'
+    '5EYXRhUGxhblIFcGxhbnMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
+
+@$core.Deprecated('Use buyDataRequestDescriptor instead')
+const BuyDataRequest$json = {
+  '1': 'BuyDataRequest',
+  '2': [
+    {'1': 'phone_number', '3': 1, '4': 1, '5': 9, '10': 'phoneNumber'},
+    {'1': 'network', '3': 2, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'variation_id', '3': 3, '4': 1, '5': 9, '10': 'variationId'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
+    {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
+    {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'country_code', '3': 8, '4': 1, '5': 9, '10': 'countryCode'},
+  ],
+};
+
+/// Descriptor for `BuyDataRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List buyDataRequestDescriptor = $convert.base64Decode(
+    'Cg5CdXlEYXRhUmVxdWVzdBIhCgxwaG9uZV9udW1iZXIYASABKAlSC3Bob25lTnVtYmVyEhgKB2'
+    '5ldHdvcmsYAiABKAlSB25ldHdvcmsSIQoMdmFyaWF0aW9uX2lkGAMgASgJUgt2YXJpYXRpb25J'
+    'ZBIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIlCg50cmFuc2FjdGlvbl9pZBgFIAEoCVINdHJhbn'
+    'NhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YBiABKAlSEXZlcmlmaWNhdGlvblRva2Vu'
+    'EicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZXkSIQoMY291bnRyeV9jb2'
+    'RlGAggASgJUgtjb3VudHJ5Q29kZQ==');
+
+@$core.Deprecated('Use buyDataResponseDescriptor instead')
+const BuyDataResponse$json = {
+  '1': 'BuyDataResponse',
+  '2': [
+    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
+    {'1': 'phone_number', '3': 3, '4': 1, '5': 9, '10': 'phoneNumber'},
+    {'1': 'data_plan', '3': 4, '4': 1, '5': 9, '10': 'dataPlan'},
+    {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'commission_earned', '3': 6, '4': 1, '5': 1, '10': 'commissionEarned'},
+    {'1': 'provider_reference', '3': 7, '4': 1, '5': 9, '10': 'providerReference'},
+  ],
+};
+
+/// Descriptor for `BuyDataResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List buyDataResponseDescriptor = $convert.base64Decode(
+    'Cg9CdXlEYXRhUmVzcG9uc2USNgoHcGF5bWVudBgBIAEoCzIcLnV0aWxpdHlwYXltZW50cy5CaW'
+    'xsUGF5bWVudFIHcGF5bWVudBIfCgtuZXdfYmFsYW5jZRgCIAEoAVIKbmV3QmFsYW5jZRIhCgxw'
+    'aG9uZV9udW1iZXIYAyABKAlSC3Bob25lTnVtYmVyEhsKCWRhdGFfcGxhbhgEIAEoCVIIZGF0YV'
+    'BsYW4SGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZRIrChFjb21taXNzaW9uX2Vhcm5lZBgGIAEo'
+    'AVIQY29tbWlzc2lvbkVhcm5lZBItChJwcm92aWRlcl9yZWZlcmVuY2UYByABKAlSEXByb3ZpZG'
+    'VyUmVmZXJlbmNl');
+
+@$core.Deprecated('Use internetProviderDescriptor instead')
+const InternetProvider$json = {
+  '1': 'InternetProvider',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'service_id', '3': 3, '4': 1, '5': 9, '10': 'serviceId'},
+    {'1': 'logo_url', '3': 4, '4': 1, '5': 9, '10': 'logoUrl'},
+    {'1': 'is_active', '3': 5, '4': 1, '5': 8, '10': 'isActive'},
+    {'1': 'commission_rate', '3': 6, '4': 1, '5': 1, '10': 'commissionRate'},
+  ],
+};
+
+/// Descriptor for `InternetProvider`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List internetProviderDescriptor = $convert.base64Decode(
+    'ChBJbnRlcm5ldFByb3ZpZGVyEg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEh'
+    '0KCnNlcnZpY2VfaWQYAyABKAlSCXNlcnZpY2VJZBIZCghsb2dvX3VybBgEIAEoCVIHbG9nb1Vy'
+    'bBIbCglpc19hY3RpdmUYBSABKAhSCGlzQWN0aXZlEicKD2NvbW1pc3Npb25fcmF0ZRgGIAEoAV'
+    'IOY29tbWlzc2lvblJhdGU=');
+
+@$core.Deprecated('Use internetPackageDescriptor instead')
+const InternetPackage$json = {
+  '1': 'InternetPackage',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'variation_code', '3': 3, '4': 1, '5': 9, '10': 'variationCode'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'provider_id', '3': 5, '4': 1, '5': 9, '10': 'providerId'},
+    {'1': 'validity', '3': 6, '4': 1, '5': 9, '10': 'validity'},
+  ],
+};
+
+/// Descriptor for `InternetPackage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List internetPackageDescriptor = $convert.base64Decode(
+    'Cg9JbnRlcm5ldFBhY2thZ2USDgoCaWQYASABKAlSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSJQ'
+    'oOdmFyaWF0aW9uX2NvZGUYAyABKAlSDXZhcmlhdGlvbkNvZGUSFgoGYW1vdW50GAQgASgBUgZh'
+    'bW91bnQSHwoLcHJvdmlkZXJfaWQYBSABKAlSCnByb3ZpZGVySWQSGgoIdmFsaWRpdHkYBiABKA'
+    'lSCHZhbGlkaXR5');
+
+@$core.Deprecated('Use internetAccountValidationDescriptor instead')
+const InternetAccountValidation$json = {
+  '1': 'InternetAccountValidation',
+  '2': [
+    {'1': 'is_valid', '3': 1, '4': 1, '5': 8, '10': 'isValid'},
+    {'1': 'customer_name', '3': 2, '4': 1, '5': 9, '10': 'customerName'},
+    {'1': 'account_number', '3': 3, '4': 1, '5': 9, '10': 'accountNumber'},
+    {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'due_amount', '3': 5, '4': 1, '5': 1, '10': 'dueAmount'},
+  ],
+};
+
+/// Descriptor for `InternetAccountValidation`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List internetAccountValidationDescriptor = $convert.base64Decode(
+    'ChlJbnRlcm5ldEFjY291bnRWYWxpZGF0aW9uEhkKCGlzX3ZhbGlkGAEgASgIUgdpc1ZhbGlkEi'
+    'MKDWN1c3RvbWVyX25hbWUYAiABKAlSDGN1c3RvbWVyTmFtZRIlCg5hY2NvdW50X251bWJlchgD'
+    'IAEoCVINYWNjb3VudE51bWJlchIWCgZzdGF0dXMYBCABKAlSBnN0YXR1cxIdCgpkdWVfYW1vdW'
+    '50GAUgASgBUglkdWVBbW91bnQ=');
+
+@$core.Deprecated('Use getInternetProvidersRequestDescriptor instead')
+const GetInternetProvidersRequest$json = {
+  '1': 'GetInternetProvidersRequest',
+  '2': [
+    {'1': 'active_only', '3': 1, '4': 1, '5': 8, '10': 'activeOnly'},
+  ],
+};
+
+/// Descriptor for `GetInternetProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInternetProvidersRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRJbnRlcm5ldFByb3ZpZGVyc1JlcXVlc3QSHwoLYWN0aXZlX29ubHkYASABKAhSCmFjdG'
+    'l2ZU9ubHk=');
+
+@$core.Deprecated('Use getInternetProvidersResponseDescriptor instead')
+const GetInternetProvidersResponse$json = {
+  '1': 'GetInternetProvidersResponse',
+  '2': [
+    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.InternetProvider', '10': 'providers'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetInternetProvidersResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInternetProvidersResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRJbnRlcm5ldFByb3ZpZGVyc1Jlc3BvbnNlEj8KCXByb3ZpZGVycxgBIAMoCzIhLnV0aW'
+    'xpdHlwYXltZW50cy5JbnRlcm5ldFByb3ZpZGVyUglwcm92aWRlcnMSFAoFdG90YWwYAiABKAVS'
+    'BXRvdGFs');
+
+@$core.Deprecated('Use validateInternetAccountRequestDescriptor instead')
+const ValidateInternetAccountRequest$json = {
+  '1': 'ValidateInternetAccountRequest',
+  '2': [
+    {'1': 'provider_id', '3': 1, '4': 1, '5': 9, '10': 'providerId'},
+    {'1': 'account_number', '3': 2, '4': 1, '5': 9, '10': 'accountNumber'},
+  ],
+};
+
+/// Descriptor for `ValidateInternetAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List validateInternetAccountRequestDescriptor = $convert.base64Decode(
+    'Ch5WYWxpZGF0ZUludGVybmV0QWNjb3VudFJlcXVlc3QSHwoLcHJvdmlkZXJfaWQYASABKAlSCn'
+    'Byb3ZpZGVySWQSJQoOYWNjb3VudF9udW1iZXIYAiABKAlSDWFjY291bnROdW1iZXI=');
+
+@$core.Deprecated('Use validateInternetAccountResponseDescriptor instead')
+const ValidateInternetAccountResponse$json = {
+  '1': 'ValidateInternetAccountResponse',
+  '2': [
+    {'1': 'validation', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.InternetAccountValidation', '10': 'validation'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ValidateInternetAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List validateInternetAccountResponseDescriptor = $convert.base64Decode(
+    'Ch9WYWxpZGF0ZUludGVybmV0QWNjb3VudFJlc3BvbnNlEkoKCnZhbGlkYXRpb24YASABKAsyKi'
+    '51dGlsaXR5cGF5bWVudHMuSW50ZXJuZXRBY2NvdW50VmFsaWRhdGlvblIKdmFsaWRhdGlvbhIY'
+    'CgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use getInternetPackagesRequestDescriptor instead')
+const GetInternetPackagesRequest$json = {
+  '1': 'GetInternetPackagesRequest',
+  '2': [
+    {'1': 'provider_id', '3': 1, '4': 1, '5': 9, '10': 'providerId'},
+  ],
+};
+
+/// Descriptor for `GetInternetPackagesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInternetPackagesRequestDescriptor = $convert.base64Decode(
+    'ChpHZXRJbnRlcm5ldFBhY2thZ2VzUmVxdWVzdBIfCgtwcm92aWRlcl9pZBgBIAEoCVIKcHJvdm'
+    'lkZXJJZA==');
+
+@$core.Deprecated('Use getInternetPackagesResponseDescriptor instead')
+const GetInternetPackagesResponse$json = {
+  '1': 'GetInternetPackagesResponse',
+  '2': [
+    {'1': 'packages', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.InternetPackage', '10': 'packages'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetInternetPackagesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInternetPackagesResponseDescriptor = $convert.base64Decode(
+    'ChtHZXRJbnRlcm5ldFBhY2thZ2VzUmVzcG9uc2USPAoIcGFja2FnZXMYASADKAsyIC51dGlsaX'
+    'R5cGF5bWVudHMuSW50ZXJuZXRQYWNrYWdlUghwYWNrYWdlcxIUCgV0b3RhbBgCIAEoBVIFdG90'
+    'YWw=');
 

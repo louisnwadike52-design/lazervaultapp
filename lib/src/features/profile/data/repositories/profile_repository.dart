@@ -229,25 +229,25 @@ class ProfileRepositoryImpl implements IProfileRepository {
   }
 
   @override
-  Future<List<UserSearchResultEntity>> searchUsersByUsername({
+  Future<List<UserSearchResultEntity>> searchUsers({
     required String query,
     int limit = 10,
     String searchType = '', // Empty for unified search across username, name, phone, email
   }) async {
     try {
-      final request = auth_pb.SearchUsersByUsernameRequest()
+      final request = auth_pb.UserSearchRequest()
         ..query = query
         ..limit = limit
         ..searchType = searchType;
 
-      print('[ProfileRepository] searchUsersByUsername: query="$query", limit=$limit, searchType="$searchType"');
+      print('[ProfileRepository] searchUsers: query="$query", limit=$limit, searchType="$searchType"');
       final options = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.searchUsersByUsername(
+      final response = await _authServiceClient.searchUsers(
         request,
         options: options,
       );
 
-      print('[ProfileRepository] searchUsersByUsername response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
+      print('[ProfileRepository] searchUsers response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
       if (!response.success) {
         print('[ProfileRepository] User search failed: ${response.msg}');
         return [];
@@ -262,6 +262,7 @@ class ProfileRepositoryImpl implements IProfileRepository {
                 email: user.email,
                 phoneNumber: user.phoneNumber,
                 profilePicture: user.profilePicture,
+                primaryAccountId: user.hasPrimaryAccountId() ? user.primaryAccountId : null,
               ))
           .toList();
     } on GrpcError catch (e) {

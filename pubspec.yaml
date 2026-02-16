@@ -120,6 +120,7 @@ dependencies:
   rxdart: ^0.28.0
   mono_connect: ^2.1.0  # Mono Connect native SDK for bank account linking
   app_links: ^6.3.3  # Deep link handling for payment callbacks
+  quick_actions: ^1.0.7  # App icon long-press shortcuts (Send Money, Scan to Pay, etc.)
   # webview_cookie_manager: ^2.0.6  # Removed - incompatible with current Flutter version and not used
 
 dev_dependencies:

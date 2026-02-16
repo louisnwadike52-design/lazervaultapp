@@ -1,4 +1,5 @@
 import '../entities/crowdfund_entities.dart';
+import '../entities/notification_channel_entities.dart';
 
 /// Abstract repository interface for crowdfund operations
 /// Following clean architecture, this is defined in the domain layer
@@ -53,7 +54,7 @@ abstract class CrowdfundRepository {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    int? sourceAccountId,
+    String? sourceAccountId,
   });
 
   Future<List<CrowdfundDonation>> getCrowdfundDonations({
@@ -85,4 +86,49 @@ abstract class CrowdfundRepository {
     int limit = 20,
     int offset = 0,
   });
+
+  // Campaign Wallet Operations
+  Future<List<Crowdfund>> getMyCrowdfunds({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+  });
+
+  Future<CrowdfundWithdrawalResult> withdrawFromCrowdfund({
+    required String crowdfundId,
+    required double amount,
+    required String transactionPin,
+    String? destinationAccountId,
+    String? destinationAccountType,
+  });
+
+  Future<CampaignWalletBalance> getCampaignWalletBalance(String crowdfundId);
+
+  // Notification Channel Operations
+  Future<NotificationChannel> connectNotificationChannel({
+    required String crowdfundId,
+    required NotificationChannelType channelType,
+    required String channelName,
+    String? telegramChatId,
+    String? discordWebhookUrl,
+    String? discordServerName,
+    String? discordChannelName,
+    String? slackWebhookUrl,
+    String? slackWorkspaceName,
+    String? slackChannelName,
+    List<NotificationEventType>? enabledEvents,
+  });
+
+  Future<void> disconnectNotificationChannel(String channelId);
+
+  Future<List<NotificationChannel>> getNotificationChannels(String crowdfundId);
+
+  Future<NotificationChannel> updateNotificationChannel({
+    required String channelId,
+    String? channelName,
+    List<NotificationEventType>? enabledEvents,
+    NotificationChannelStatus? status,
+  });
+
+  Future<bool> testNotificationChannel(String channelId);
 }

@@ -30,6 +30,8 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
   final double taxAmount;
   final double discountAmount;
   final double total;
+  final String? payerImagePath;
+  final String? recipientImagePath;
 
   const CreateInvoiceFormUpdated({
     required this.invoiceType,
@@ -41,6 +43,8 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
     required this.taxAmount,
     required this.discountAmount,
     required this.total,
+    this.payerImagePath,
+    this.recipientImagePath,
   });
 
   @override
@@ -54,6 +58,8 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
         taxAmount,
         discountAmount,
         total,
+        payerImagePath,
+        recipientImagePath,
       ];
 }
 

@@ -25,18 +25,27 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 
 class BatchRecipientItem {
   final RecipientModel recipient;
   final TextEditingController amountController;
   final TextEditingController referenceController;
   bool isExpanded;
+  final String? bankCode;
+  final String? bankName;
+  final String? beneficiaryName;
 
   BatchRecipientItem({
     required this.recipient,
     String? initialAmount,
     String? initialReference,
     this.isExpanded = false,
+    this.bankCode,
+    this.bankName,
+    this.beneficiaryName,
   }) : amountController = TextEditingController(text: initialAmount ?? ''),
        referenceController = TextEditingController(text: initialReference ?? '');
 
@@ -46,7 +55,8 @@ class BatchRecipientItem {
   }
 
   double get amount => double.tryParse(amountController.text) ?? 0.0;
-  bool get isValid => amount > 0;
+  bool get isValid => amount >= 1.0;
+  bool get isExternal => bankCode != null && bankCode!.isNotEmpty;
 }
 
 // --- Enhanced Multi-Select Recipient Bottom Sheet with User Search ---
@@ -79,6 +89,14 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   bool _isSearchingUsers = false;
   String? _userSearchError;
 
+  // Bank account tab state
+  final TextEditingController _bankAccountController = TextEditingController();
+  String? _selectedBankCode;
+  String? _selectedBankName;
+  String? _verifiedBeneficiaryName;
+  bool _isBankSelected = false;
+  final TextEditingController _bankAmountController = TextEditingController();
+
   // Current user info for self-transfer prevention
   String? _currentUserId;
   String? _currentUsername;
@@ -86,7 +104,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _searchController.addListener(_onSearchChanged);
     _loadCurrentUserInfo();
   }
@@ -114,6 +132,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     _userSearchController.dispose();
     _userSearchDebouncer.dispose();
     _tabController.dispose();
+    _bankAccountController.dispose();
+    _bankAmountController.dispose();
     super.dispose();
   }
 
@@ -179,13 +199,16 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   }
 
   RecipientModel _userSearchResultToRecipient(UserSearchResultEntity user) {
+    // Use userId as the account identifier - backend resolves via GetPrimaryAccount fallback
+    final accountIdentifier = user.userId;
     return RecipientModel(
       id: user.userId,
       name: user.fullName,
-      accountNumber: user.username,
+      accountNumber: accountIdentifier,
       bankName: 'LazerVault',
       sortCode: '',
       isFavorite: false,
+      isSaved: false,
       email: user.email,
       phoneNumber: user.phoneNumber,
       type: 'internal',
@@ -347,9 +370,11 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               unselectedLabelColor: const Color(0xFF9CA3AF),
               labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
               unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w500),
+              labelPadding: EdgeInsets.zero,
               tabs: const [
                 Tab(text: 'Saved'),
-                Tab(text: 'Search Users'),
+                Tab(text: 'Users'),
+                Tab(text: 'Bank Acct'),
               ],
             ),
           ),
@@ -363,6 +388,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               children: [
                 _buildSavedRecipientsTab(),
                 _buildUserSearchTab(),
+                _buildBankAccountTab(),
               ],
             ),
           ),
@@ -543,7 +569,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               controller: _userSearchController,
               style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
               decoration: InputDecoration(
-                hintText: 'Search by username, email, or phone...',
+                hintText: 'Search by @username, email, or phone...',
                 hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
                 prefixIcon: Icon(Icons.person_search_outlined, color: btTextTertiary, size: 20.sp),
                 suffixIcon: _userSearchController.text.isNotEmpty
@@ -753,6 +779,433 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // --- Bank Account Tab ---
+  Widget _buildBankAccountTab() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Bank selection
+          GestureDetector(
+            onTap: _showBankSelectionSheet,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: btCardElevated,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: _isBankSelected ? btGreen : btBorder),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _isBankSelected ? Icons.account_balance : Icons.account_balance_outlined,
+                    color: _isBankSelected ? btGreen : btTextTertiary,
+                    size: 20.sp,
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text(
+                      _selectedBankName ?? 'Select Bank',
+                      style: GoogleFonts.inter(
+                        color: _isBankSelected ? btTextPrimary : btTextTertiary,
+                        fontSize: 14.sp,
+                        fontWeight: _isBankSelected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.keyboard_arrow_down, color: btTextTertiary, size: 20.sp),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+          // Account number input
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            decoration: BoxDecoration(
+              color: btCardElevated,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: TextField(
+              controller: _bankAccountController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
+              decoration: InputDecoration(
+                hintText: 'Enter 10-digit account number',
+                hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
+                prefixIcon: Icon(Icons.numbers, color: btTextTertiary, size: 20.sp),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 14.h),
+              ),
+              onChanged: (value) {
+                if (value.length == 10 && _isBankSelected) {
+                  _verifyBankAccount();
+                } else {
+                  setState(() {
+                    _verifiedBeneficiaryName = null;
+                  });
+                }
+              },
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+          // Verify button
+          if (_isBankSelected && _bankAccountController.text.length == 10)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _verifyBankAccount,
+                icon: Icon(Icons.verified_user_outlined, size: 16.sp),
+                label: Text('Verify Account',
+                    style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: btBlue,
+                  side: const BorderSide(color: btBlue),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                ),
+              ),
+            ),
+
+          SizedBox(height: 12.h),
+
+          // Verification result
+          BlocBuilder<AccountVerificationCubit, AccountVerificationState>(
+            builder: (context, state) {
+              if (state is AccountVerificationLoading) {
+                return Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: btBlue.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 18.w,
+                        height: 18.w,
+                        child: const CircularProgressIndicator(strokeWidth: 2, color: btBlue),
+                      ),
+                      SizedBox(width: 12.w),
+                      Text('Verifying account...',
+                          style: GoogleFonts.inter(color: btTextSecondary, fontSize: 13.sp)),
+                    ],
+                  ),
+                );
+              }
+
+              if (state is AccountVerificationSuccess) {
+                _verifiedBeneficiaryName = state.accountName;
+                return Column(
+                  children: [
+                    // Verified beneficiary name
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: btGreen.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: btGreen.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle, color: btGreen, size: 20.sp),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Account Verified',
+                                    style: GoogleFonts.inter(
+                                        color: btGreen, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                                SizedBox(height: 2.h),
+                                Text(state.accountName,
+                                    style: GoogleFonts.inter(
+                                        color: btTextPrimary, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 16.h),
+
+                    // Add as recipient button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _addBankAccountRecipient,
+                        icon: Icon(Icons.person_add, size: 18.sp),
+                        label: Text('Add Recipient',
+                            style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: btBlue,
+                          foregroundColor: btTextPrimary,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              if (state is AccountVerificationFailure) {
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: btRed.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: btRed.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: btRed, size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Text(state.userMessage,
+                            style: GoogleFonts.inter(color: btRed, fontSize: 13.sp)),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
+
+          SizedBox(height: 20.h),
+
+          // Instructions
+          if (!_isBankSelected || _bankAccountController.text.isEmpty)
+            _buildEmptySearchState(
+              icon: Icons.account_balance_outlined,
+              title: 'Add Bank Account',
+              subtitle: 'Select a bank and enter an account number\nto add an external recipient',
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showBankSelectionSheet() {
+    final banks = BanksData.getBanksForCountry('NG');
+    final searchCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final query = searchCtrl.text.toLowerCase();
+            final filtered = query.isEmpty
+                ? banks
+                : banks.where((b) =>
+                    (b['name'] ?? '').toLowerCase().contains(query) ||
+                    (b['code'] ?? '').toLowerCase().contains(query)).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: BoxDecoration(
+                color: btCard,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(top: 12.h),
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: btBorderLight,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
+                    child: Text('Select Bank',
+                        style: GoogleFonts.inter(
+                            color: btTextPrimary, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      decoration: BoxDecoration(
+                        color: btCardElevated,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: TextField(
+                        controller: searchCtrl,
+                        style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
+                        decoration: InputDecoration(
+                          hintText: 'Search banks...',
+                          hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
+                          prefixIcon: Icon(Icons.search, color: btTextTertiary, size: 20.sp),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 14.h),
+                        ),
+                        onChanged: (_) => setSheetState(() {}),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final bank = filtered[index];
+                        final name = bank['name'] ?? '';
+                        final code = bank['code'] ?? '';
+                        final isSelected = code == _selectedBankCode;
+
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              _selectedBankCode = code;
+                              _selectedBankName = name;
+                              _isBankSelected = true;
+                              _verifiedBeneficiaryName = null;
+                            });
+                            // Reset verification
+                            try {
+                              context.read<AccountVerificationCubit>().reset();
+                            } catch (_) {}
+                            Navigator.pop(ctx);
+                            // Auto-verify if account number is already entered
+                            if (_bankAccountController.text.length == 10) {
+                              _verifyBankAccount();
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(10.r),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                            margin: EdgeInsets.only(bottom: 4.h),
+                            decoration: BoxDecoration(
+                              color: isSelected ? btBlue.withValues(alpha: 0.1) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(10.r),
+                              border: isSelected ? Border.all(color: btBlue.withValues(alpha: 0.3)) : null,
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36.w,
+                                  height: 36.w,
+                                  decoration: BoxDecoration(
+                                    color: btBlue.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      name.isNotEmpty ? name[0] : '?',
+                                      style: GoogleFonts.inter(
+                                          color: btBlue, fontSize: 14.sp, fontWeight: FontWeight.w700),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Text(name,
+                                      style: GoogleFonts.inter(
+                                          color: btTextPrimary, fontSize: 14.sp, fontWeight: FontWeight.w500)),
+                                ),
+                                if (isSelected)
+                                  Icon(Icons.check_circle, color: btBlue, size: 20.sp),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _verifyBankAccount() {
+    if (_selectedBankCode == null || _bankAccountController.text.length != 10) return;
+    try {
+      context.read<AccountVerificationCubit>().verifyAccount(
+        bankCode: _selectedBankCode!,
+        accountNumber: _bankAccountController.text,
+        bankName: _selectedBankName ?? '',
+      );
+    } catch (_) {}
+  }
+
+  void _addBankAccountRecipient() {
+    if (_verifiedBeneficiaryName == null || _selectedBankCode == null) return;
+
+    final recipient = RecipientModel(
+      id: '${_selectedBankCode}_${_bankAccountController.text}',
+      name: _verifiedBeneficiaryName!,
+      accountNumber: _bankAccountController.text,
+      bankName: _selectedBankName ?? '',
+      sortCode: _selectedBankCode ?? '',
+      isFavorite: false,
+      isSaved: false,
+      type: 'external',
+    );
+
+    // Check if already selected
+    if (_tempSelectedRecipients.any((r) => r.accountNumber == recipient.accountNumber &&
+        r.sortCode == recipient.sortCode)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('This account is already added',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: btTextPrimary)),
+          backgroundColor: btOrange,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _tempSelectedRecipients.add(recipient);
+      // Reset form for next entry
+      _bankAccountController.clear();
+      _verifiedBeneficiaryName = null;
+    });
+
+    try {
+      context.read<AccountVerificationCubit>().reset();
+    } catch (_) {}
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${recipient.name} added',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: btTextPrimary)),
+        backgroundColor: btGreen,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       ),
     );
   }
@@ -1180,7 +1633,13 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
 
             setState(() {
               for (var recipient in newRecipients) {
-                _selectedRecipients.add(BatchRecipientItem(recipient: recipient));
+                final isExternal = recipient.type == 'external';
+                _selectedRecipients.add(BatchRecipientItem(
+                  recipient: recipient,
+                  bankCode: isExternal ? recipient.sortCode : null,
+                  bankName: isExternal ? recipient.bankName : null,
+                  beneficiaryName: recipient.name,
+                ));
               }
               _calculateTotal();
             });
@@ -1549,6 +2008,9 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
         category: _categoryController.text.trim().isNotEmpty
             ? _categoryController.text.trim()
             : null,
+        destinationBankCode: item.bankCode,
+        beneficiaryName: item.beneficiaryName ?? item.recipient.name,
+        destinationBankName: item.bankName ?? (item.recipient.type == 'internal' ? 'LazerVault' : null),
       );
     }).toList();
 
@@ -2212,44 +2674,6 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                       ),
                     ),
 
-                    // Amount badge
-                    if (recipientItem.amount > 0)
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-                        decoration: BoxDecoration(
-                          color: btGreen.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8.r),
-                          border: Border.all(color: btGreen.withValues(alpha: 0.2)),
-                        ),
-                        child: Text(
-                          '$_currencySymbol${recipientItem.amount.toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(
-                            color: btGreen,
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-                        decoration: BoxDecoration(
-                          color: btOrange.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8.r),
-                          border: Border.all(color: btOrange.withValues(alpha: 0.2)),
-                        ),
-                        child: Text(
-                          'Set amount',
-                          style: GoogleFonts.inter(
-                            color: btOrange,
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-
-                    SizedBox(width: 8.w),
-
                     // Actions
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -2279,7 +2703,65 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
             ),
           ),
 
-          // Expanded content
+          // Always-visible inline amount input
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.w),
+            child: TextFormField(
+              controller: recipientItem.amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+              ],
+              style: GoogleFonts.inter(
+                color: btTextPrimary,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              onChanged: (value) => _calculateTotal(),
+              decoration: InputDecoration(
+                hintText: '0.00',
+                hintStyle: GoogleFonts.inter(color: btTextTertiary),
+                prefixText: '$_currencySymbol ',
+                prefixStyle: GoogleFonts.inter(
+                  color: btGreen,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+                isDense: true,
+                filled: true,
+                fillColor: btBackground,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: const BorderSide(color: btBorder),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: BorderSide(
+                    color: recipientItem.isValid ? btGreen.withValues(alpha: 0.3) : btBorder,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: const BorderSide(color: btBlue, width: 1.5),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: const BorderSide(color: btRed),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: const BorderSide(color: btRed, width: 1.5),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                errorText: recipientItem.amount > 0 && recipientItem.amount < 1.0
+                    ? 'Minimum amount is ${_currencySymbol}1.00'
+                    : null,
+                errorStyle: GoogleFonts.inter(color: btRed, fontSize: 11.sp),
+              ),
+            ),
+          ),
+
+          // Expanded content - Reference
           if (recipientItem.isExpanded)
             Container(
               padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.w),
@@ -2289,50 +2771,6 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
               child: Column(
                 children: [
                   SizedBox(height: 14.h),
-
-                  // Amount input
-                  TextFormField(
-                    controller: recipientItem.amountController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-                    ],
-                    style: GoogleFonts.inter(
-                      color: btTextPrimary,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    onChanged: (value) => _calculateTotal(),
-                    decoration: InputDecoration(
-                      labelText: 'Amount',
-                      labelStyle: GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp),
-                      hintText: '0.00',
-                      hintStyle: GoogleFonts.inter(color: btTextTertiary),
-                      prefixText: '$_currencySymbol ',
-                      prefixStyle: GoogleFonts.inter(
-                        color: btGreen,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      filled: true,
-                      fillColor: btBackground,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: btBorder),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: btBorder),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: btBlue, width: 1.5),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                    ),
-                  ),
-
-                  SizedBox(height: 10.h),
 
                   // Reference input
                   TextFormField(

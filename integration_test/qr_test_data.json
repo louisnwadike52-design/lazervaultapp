@@ -1,0 +1,17 @@
+{
+  "qr_code_str": "QR-41e0cfb9-1c6",
+  "qr_code_id": "aad290a8-94d4-4a4c-8ec4-7ff9291ae713",
+  "qr_data_json": "{\"amount\":500,\"currency\":\"NGN\",\"description\":\"Integration test QR payment - 2026-02-16T01:02:49.283967\",\"expires_at\":1771207369,\"qr_code\":\"QR-41e0cfb9-1c6\",\"qr_id\":\"aad290a8-94d4-4a4c-8ec4-7ff9291ae713\",\"qr_type\":\"dynamic\",\"recipient\":\"efizy\",\"recipient_id\":\"f1d07de9-961f-4275-a36b-4a0b3ddb7935\",\"recipient_name\":\"Efizy Montaze\",\"type\":\"qr_payment\"}",
+  "amount": 500.0,
+  "currency": "NGN",
+  "recipient_username": "efizy",
+  "recipient_name": "Efizy Montaze",
+  "generated_at": "2026-02-16T01:02:49.348322",
+  "transaction_id": "cdabbe1c-249f-47c1-9118-0b1d2ec27ae9",
+  "reference_number": "QR-9165d620-7e6",
+  "payer_username": "mark_nans",
+  "payer_name": "mark nans",
+  "payment_status": "QR_STATUS_PENDING",
+  "new_payer_balance": 0.0,
+  "paid_at": "2026-02-16T01:02:50.937827"
+}

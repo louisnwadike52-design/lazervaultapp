@@ -37,7 +37,7 @@ class MemberStarRating extends StatelessWidget {
         )),
         SizedBox(width: 4.w),
         Text(
-          'AI Rating',
+          'Rating',
           style: GoogleFonts.inter(
             fontSize: 9.sp,
             color: Colors.grey[500],
@@ -67,7 +67,7 @@ class MemberStarRating extends StatelessWidget {
               ),
               SizedBox(width: 6.w),
               Text(
-                'AI Member Rating',
+                'Member Rating',
                 style: GoogleFonts.inter(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w600,

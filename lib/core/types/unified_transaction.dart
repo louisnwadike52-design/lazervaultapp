@@ -353,6 +353,7 @@ class TransactionStatistics extends Equatable {
 class TransactionFilters extends Equatable {
   final List<TransactionServiceType>? serviceTypes;
   final List<UnifiedTransactionStatus>? statuses;
+  final List<TransactionFlow>? flows;
   final DateTime? startDate;
   final DateTime? endDate;
   final double? minAmount;
@@ -362,6 +363,7 @@ class TransactionFilters extends Equatable {
   const TransactionFilters({
     this.serviceTypes,
     this.statuses,
+    this.flows,
     this.startDate,
     this.endDate,
     this.minAmount,
@@ -372,6 +374,7 @@ class TransactionFilters extends Equatable {
   bool get hasFilters =>
       serviceTypes != null ||
       statuses != null ||
+      flows != null ||
       startDate != null ||
       endDate != null ||
       minAmount != null ||
@@ -381,6 +384,7 @@ class TransactionFilters extends Equatable {
   TransactionFilters copyWith({
     List<TransactionServiceType>? serviceTypes,
     List<UnifiedTransactionStatus>? statuses,
+    List<TransactionFlow>? flows,
     DateTime? startDate,
     DateTime? endDate,
     double? minAmount,
@@ -390,6 +394,7 @@ class TransactionFilters extends Equatable {
     return TransactionFilters(
       serviceTypes: serviceTypes ?? this.serviceTypes,
       statuses: statuses ?? this.statuses,
+      flows: flows ?? this.flows,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       minAmount: minAmount ?? this.minAmount,
@@ -406,6 +411,7 @@ class TransactionFilters extends Equatable {
   List<Object?> get props => [
         serviceTypes,
         statuses,
+        flows,
         startDate,
         endDate,
         minAmount,

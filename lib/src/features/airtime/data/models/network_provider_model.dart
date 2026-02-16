@@ -16,6 +16,7 @@ class NetworkProviderModel extends NetworkProvider {
     super.promoMessage,
     super.minAmount,
     super.maxAmount,
+    super.operatorId,
   });
 
   factory NetworkProviderModel.fromProto(pb.AirtimeProvider provider) {
@@ -33,6 +34,7 @@ class NetworkProviderModel extends NetworkProvider {
       discount: provider.commissionRate,
       minAmount: provider.minAmount,
       maxAmount: provider.maxAmount,
+      operatorId: provider.operatorId.isNotEmpty ? provider.operatorId : null,
     );
   }
 
@@ -93,6 +95,7 @@ class NetworkProviderModel extends NetworkProvider {
       promoMessage: json['promoMessage'] as String?,
       minAmount: (json['minAmount'] as num?)?.toDouble() ?? 1.0,
       maxAmount: (json['maxAmount'] as num?)?.toDouble() ?? 1000.0,
+      operatorId: json['operatorId'] as String?,
     );
   }
 
@@ -112,6 +115,7 @@ class NetworkProviderModel extends NetworkProvider {
       'promoMessage': promoMessage,
       'minAmount': minAmount,
       'maxAmount': maxAmount,
+      'operatorId': operatorId,
     };
   }
 
@@ -130,6 +134,7 @@ class NetworkProviderModel extends NetworkProvider {
     String? promoMessage,
     double? minAmount,
     double? maxAmount,
+    String? operatorId,
   }) {
     return NetworkProviderModel(
       id: id ?? this.id,
@@ -145,6 +150,7 @@ class NetworkProviderModel extends NetworkProvider {
       promoMessage: promoMessage ?? this.promoMessage,
       minAmount: minAmount ?? this.minAmount,
       maxAmount: maxAmount ?? this.maxAmount,
+      operatorId: operatorId ?? this.operatorId,
     );
   }
 } 

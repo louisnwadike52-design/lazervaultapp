@@ -140,6 +140,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     required double amount,
     required String currency,
     required String accountId,
+    required String phoneNumber,
     String? paymentGateway,
     String? beneficiaryId,
   }) async {
@@ -153,6 +154,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
       amount: amount,
       currency: currency,
       accountId: accountId,
+      phoneNumber: phoneNumber,
       paymentGateway: paymentGateway,
       beneficiaryId: beneficiaryId,
     );
@@ -162,13 +164,13 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
       (failure) => emit(ElectricityBillError(message: failure.message)),
       (payment) {
         emit(PaymentInitiated(payment: payment));
-        // Automatically start verifying the payment
-        verifyPayment(paymentId: payment.id);
+        // The processing screen handles polling for verification via _startPolling
       },
     );
   }
 
   /// Initiate payment with verification token (for PIN-validated transactions)
+  /// Payment completes synchronously on the backend - no polling needed.
   Future<void> initiatePaymentWithToken({
     required String providerCode,
     required String meterNumber,
@@ -176,6 +178,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     required double amount,
     required String currency,
     required String accountId,
+    required String phoneNumber,
     required String transactionId,
     required String verificationToken,
     String? paymentGateway,
@@ -191,6 +194,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
       amount: amount,
       currency: currency,
       accountId: accountId,
+      phoneNumber: phoneNumber,
       paymentGateway: paymentGateway,
       beneficiaryId: beneficiaryId,
       transactionId: transactionId,
@@ -198,14 +202,36 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     );
 
     if (isClosed) return;
-    result.fold(
-      (failure) => emit(ElectricityBillError(message: failure.message)),
-      (payment) {
-        emit(PaymentInitiated(payment: payment));
-        // Automatically start verifying the payment
-        verifyPayment(paymentId: payment.id);
+
+    final payment = result.fold(
+      (failure) {
+        emit(ElectricityBillError(message: failure.message));
+        return null;
       },
+      (payment) => payment,
     );
+
+    if (payment == null) return;
+
+    if (payment.isCompleted) {
+      // Payment completed synchronously - fetch full details (includes token)
+      emit(PaymentInitiated(payment: payment));
+      final verifyResult = await repository.verifyPayment(paymentId: payment.id);
+      if (isClosed) return;
+      verifyResult.fold(
+        (failure) {
+          // Even if verify fails, payment succeeded - emit with initial data
+          _cacheManager?.invalidatePattern('electricity_providers:');
+          emit(PaymentSuccess(payment: payment));
+        },
+        (fullPayment) {
+          _cacheManager?.invalidatePattern('electricity_providers:');
+          emit(PaymentSuccess(payment: fullPayment));
+        },
+      );
+    } else {
+      emit(PaymentInitiated(payment: payment));
+    }
   }
 
   Future<void> verifyPayment({required String paymentId}) async {

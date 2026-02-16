@@ -14,7 +14,7 @@ class BillsHubScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
@@ -28,7 +28,7 @@ class BillsHubScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,10 +49,38 @@ class BillsHubScreen extends StatelessWidget {
               ),
               SizedBox(height: 12.h),
               _BillTile(
+                icon: Icons.phone_android,
+                title: 'Airtime',
+                description: 'Top up airtime for any network',
+                onTap: () => Get.toNamed(AppRoutes.airtime),
+              ),
+              SizedBox(height: 12.h),
+              _BillTile(
+                icon: Icons.wifi,
+                title: 'Data Bundles',
+                description: 'Buy data plans for MTN, Airtel, Glo & 9mobile',
+                onTap: () => Get.toNamed(AppRoutes.dataBundlesHome),
+              ),
+              SizedBox(height: 12.h),
+              _BillTile(
                 icon: Icons.tv,
                 title: 'Cable TV',
                 description: 'Subscribe to DStv, GOtv, Startimes & more',
                 onTap: () => Get.toNamed(AppRoutes.cableTVHome),
+              ),
+              SizedBox(height: 12.h),
+              _BillTile(
+                icon: Icons.router,
+                title: 'Internet',
+                description: 'Pay for Smile, Spectranet & more',
+                onTap: () => Get.toNamed(AppRoutes.internetBillHome),
+              ),
+              SizedBox(height: 12.h),
+              _BillTile(
+                icon: Icons.water_drop,
+                title: 'Water Bill',
+                description: 'Pay water corporation bills',
+                onTap: () => Get.toNamed(AppRoutes.waterBillHome),
               ),
               SizedBox(height: 12.h),
               _BillTile(

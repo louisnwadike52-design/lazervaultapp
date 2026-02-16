@@ -11,6 +11,7 @@ import '../controllers/exchange_controller.dart';
 import 'widgets/currency_selector_sheet.dart';
 import 'exchange_recipient_screen.dart';
 import 'exchange_history_screen.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class ExchangeScreen extends StatefulWidget {
   const ExchangeScreen({super.key});
@@ -163,6 +164,11 @@ class _ExchangeScreenState extends State<ExchangeScreen>
               ],
             ),
           ),
+          MicroserviceChatIcon(
+            serviceName: 'Exchange',
+            sourceContext: 'investments',
+          ),
+          SizedBox(width: 8.w),
           GestureDetector(
             onTap: () => Get.to(() => const ExchangeHistoryScreen()),
             child: Container(

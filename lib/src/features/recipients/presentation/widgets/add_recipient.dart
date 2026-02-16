@@ -828,7 +828,9 @@ class _AddRecipientState extends State<AddRecipient> {
 
     // Show confirmation bottom sheet
     bool confirmed = false;
+    bool isSaved = false;
     bool isFavorite = false;
+    String? alias;
 
     await Get.bottomSheet(
       PopScope(
@@ -837,16 +839,18 @@ class _AddRecipientState extends State<AddRecipient> {
           builder: (context, setSheetState) {
             return UsernameRecipientConfirmationSheet(
               user: selectedUser,
-              accountNumber: accountNumber ?? '@${selectedUser.username}',
+              accountNumber: accountNumber,
               onConfirm: () {
                 setSheetState(() {
                   confirmed = true;
-                  // Get the favorite state from the sheet before closing
+                  // Get the save/favorite/alias state from the sheet before closing
                   final sheetState = context
                       .findAncestorStateOfType<
                           UsernameRecipientConfirmationSheetState>();
                   if (sheetState != null) {
+                    isSaved = sheetState.isSaved;
                     isFavorite = sheetState.isFavorite;
+                    alias = sheetState.alias;
                   }
                 });
                 Get.back();
@@ -869,7 +873,7 @@ class _AddRecipientState extends State<AddRecipient> {
     if (!mounted) return;
     if (confirmed) {
       // Proceed directly to payment screen after confirmation
-      _proceedToPaymentWithUsernameRecipient(selectedUser, accountNumber, isFavorite);
+      _proceedToPaymentWithUsernameRecipient(selectedUser, accountNumber, isSaved, isFavorite, alias);
     }
   }
 
@@ -878,7 +882,9 @@ class _AddRecipientState extends State<AddRecipient> {
   void _proceedToPaymentWithUsernameRecipient(
       UserSearchResultEntity selectedUser,
       String? accountNumber,
-      bool isFavorite) {
+      bool isSaved,
+      bool isFavorite,
+      String? alias) {
     // Get active country from profile preferences
     String? countryCode;
     final profileState = context.read<ProfileCubit>().state;
@@ -897,6 +903,8 @@ class _AddRecipientState extends State<AddRecipient> {
       bankName: 'LazerVault',
       sortCode: '',
       isFavorite: isFavorite,
+      isSaved: isSaved,
+      alias: alias,
       countryCode: countryCode,
       currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: selectedUser.email.isNotEmpty ? selectedUser.email : null,
@@ -908,7 +916,7 @@ class _AddRecipientState extends State<AddRecipient> {
       arguments: {
         'recipient': recipient,
         'isTemporary': true,
-        'shouldSaveOnSuccess': isFavorite, // Only save if favorited
+        'shouldSaveOnSuccess': isSaved || isFavorite, // Save if user chose to save or favorite
       },
     );
   }
@@ -1110,7 +1118,7 @@ class _AddRecipientState extends State<AddRecipient> {
           _handleVerifyAccount();
         } else {
           // Verification already done, proceed to payment
-          _proceedToPayment(_verificationResult!, _isFavorite);
+          _proceedToPayment(_verificationResult!, false, _isFavorite, null);
         }
         break;
       case AddRecipientMethod.username:
@@ -1153,6 +1161,7 @@ class _AddRecipientState extends State<AddRecipient> {
       bankName: 'LazerVault',
       sortCode: '',
       isFavorite: false,
+      isSaved: false,
       countryCode: countryCode,
       currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: _selectedUser!.email.isNotEmpty ? _selectedUser!.email : null,
@@ -2094,6 +2103,7 @@ class _AddRecipientState extends State<AddRecipient> {
       bankName: 'LazerVault',
       sortCode: '',
       isFavorite: false,
+      isSaved: false,
       countryCode: countryCode,
     );
 
@@ -2689,7 +2699,9 @@ class _AddRecipientState extends State<AddRecipient> {
 
   /// Step 3: Show confirmation with verified account name
   void _showContactConfirmationSheet(DeviceContact contact) {
+    bool isSaved = false;
     bool isFavorite = false;
+    String? alias;
 
     showModalBottomSheet(
       context: context,
@@ -2782,40 +2794,120 @@ class _AddRecipientState extends State<AddRecipient> {
                     ),
                     SizedBox(height: 16.h),
 
-                    // Save as Favorite Toggle
+                    // Save Recipient Toggle
                     Container(
                       padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withValues(alpha: 0.1),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
-                      child: Row(
+                      child: Column(
                         children: [
-                          Icon(
-                            isFavorite ? Icons.star : Icons.star_border,
-                            color: Colors.amber[700],
-                            size: 24.sp,
+                          Row(
+                            children: [
+                              Icon(
+                                isSaved ? Icons.bookmark : Icons.bookmark_outline,
+                                color: isSaved ? const Color(0xFF4E03D0) : Colors.grey[600],
+                                size: 24.sp,
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Text(
+                                  'Save Recipient',
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Switch(
+                                value: isSaved,
+                                onChanged: (value) {
+                                  setSheetState(() {
+                                    isSaved = value;
+                                    if (!value) isFavorite = false;
+                                  });
+                                },
+                                activeThumbColor: const Color(0xFF4E03D0),
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Text(
-                              'Save to favorites',
+                          if (isSaved) ...[
+                            SizedBox(height: 8.h),
+                            Row(
+                              children: [
+                                Icon(
+                                  isFavorite ? Icons.star : Icons.star_border,
+                                  color: isFavorite ? const Color(0xFFF59E0B) : Colors.grey[600],
+                                  size: 24.sp,
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Text(
+                                    'Add to Favorites',
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                Switch(
+                                  value: isFavorite,
+                                  onChanged: (value) {
+                                    setSheetState(() {
+                                      isFavorite = value;
+                                    });
+                                  },
+                                  activeThumbColor: const Color(0xFFF59E0B),
+                                ),
+                              ],
+                            ),
+                          ],
+                          // Alias input when saved
+                          if (isSaved) ...[
+                            SizedBox(height: 12.h),
+                            TextField(
+                              onChanged: (value) {
+                                alias = value.isEmpty ? null : value;
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Nickname (optional)',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14.sp,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.edit_outlined,
+                                  color: Colors.grey[500],
+                                  size: 20.sp,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  borderSide: const BorderSide(color: Color(0xFF4E03D0)),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12.w,
+                                  vertical: 10.h,
+                                ),
+                              ),
                               style: TextStyle(
                                 color: Colors.black87,
                                 fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ),
-                          Switch(
-                            value: isFavorite,
-                            onChanged: (value) {
-                              setSheetState(() {
-                                isFavorite = value;
-                              });
-                            },
-                            activeThumbColor: Color.fromARGB(255, 78, 3, 208),
-                          ),
+                          ],
                         ],
                       ),
                     ),
@@ -2857,7 +2949,7 @@ class _AddRecipientState extends State<AddRecipient> {
                               Navigator.pop(bottomSheetContext);
                               // Proceed to payment with verified contact
                               _proceedToPaymentWithContact(
-                                  contact, isFavorite);
+                                  contact, isSaved, isFavorite, alias);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(255, 78, 3, 208),
@@ -2918,7 +3010,7 @@ class _AddRecipientState extends State<AddRecipient> {
   }
 
   /// Proceed to payment with verified contact
-  void _proceedToPaymentWithContact(DeviceContact contact, bool isFavorite) {
+  void _proceedToPaymentWithContact(DeviceContact contact, bool isSaved, bool isFavorite, String? alias) {
     if (_contactVerificationResult == null) return;
 
     // Create temporary recipient model (not saved to DB yet)
@@ -2929,6 +3021,8 @@ class _AddRecipientState extends State<AddRecipient> {
       bankName: _contactVerificationResult!.bankName,
       sortCode: _contactVerificationResult!.bankCode,
       isFavorite: isFavorite,
+      isSaved: isSaved,
+      alias: alias,
       countryCode: 'NG',
       currency: 'NGN',
     );
@@ -3694,15 +3788,17 @@ class _AddRecipientState extends State<AddRecipient> {
           bankName: result.bankName,
           bankCode: result.bankCode,
           onConfirm: () {
-            // Get favorite status from bottomsheet
+            // Get save/favorite/alias status from bottomsheet
             final bottomSheet = context.findAncestorStateOfType<AccountConfirmationBottomSheetState>();
+            final isSaved = bottomSheet?.isSaved ?? false;
             final isFavorite = bottomSheet?.isFavorite ?? false;
+            final alias = bottomSheet?.alias;
 
             // Close bottomsheet
             Navigator.pop(context);
 
             // Proceed to payment WITHOUT saving to DB (Lemfi-style)
-            _proceedToPayment(result, isFavorite);
+            _proceedToPayment(result, isSaved, isFavorite, alias);
           },
           onCancel: () {
             // Close bottomsheet and reset verification
@@ -3717,8 +3813,8 @@ class _AddRecipientState extends State<AddRecipient> {
   }
 
   /// Proceed to payment screen without saving recipient to database
-  /// (Lemfi-style: only save after successful payment if favorited)
-  void _proceedToPayment(AccountVerificationResult result, bool isFavorite) {
+  /// (Lemfi-style: only save after successful payment)
+  void _proceedToPayment(AccountVerificationResult result, bool isSaved, bool isFavorite, String? alias) {
     // Create temporary recipient model (not saved to DB yet)
     final temporaryRecipient = RecipientModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(), // Temporary ID
@@ -3727,6 +3823,8 @@ class _AddRecipientState extends State<AddRecipient> {
       bankName: result.bankName,
       sortCode: result.bankCode, // Use bank code as sort code for Nigerian banks
       isFavorite: isFavorite,
+      isSaved: isSaved,
+      alias: alias,
       countryCode: 'NG',
       currency: 'NGN',
     );

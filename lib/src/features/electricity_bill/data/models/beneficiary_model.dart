@@ -13,6 +13,7 @@ class BillBeneficiaryModel extends BillBeneficiaryEntity {
     required super.meterNumber,
     required super.customerName,
     super.customerAddress,
+    super.phoneNumber,
     required super.meterType,
     required super.nickname,
     required super.isDefault,
@@ -31,6 +32,7 @@ class BillBeneficiaryModel extends BillBeneficiaryEntity {
       meterNumber: proto.meterNumber,
       customerName: proto.customerName,
       customerAddress: proto.hasCustomerAddress() ? proto.customerAddress : null,
+      phoneNumber: proto.hasPhoneNumber() ? proto.phoneNumber : null,
       meterType: MeterTypeExtension.fromString(proto.meterType),
       nickname: proto.nickname,
       isDefault: proto.isDefault,
@@ -57,6 +59,10 @@ class BillBeneficiaryModel extends BillBeneficiaryEntity {
 
     if (customerAddress != null) {
       proto.customerAddress = customerAddress!;
+    }
+
+    if (phoneNumber != null) {
+      proto.phoneNumber = phoneNumber!;
     }
 
     if (lastUsedAt != null) {

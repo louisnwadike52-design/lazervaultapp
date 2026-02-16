@@ -598,14 +598,14 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     // This follows proper architecture where user search is handled by UserService/AuthService
     return retryWithBackoff(
       operation: () async {
-        final request = auth_pb.SearchUsersByUsernameRequest()
+        final request = auth_pb.UserSearchRequest()
           ..query = query
           ..limit = limit
           ..searchType = searchType;
 
         print('[TagPayRepository] searchUsers: query="$query", limit=$limit, searchType="$searchType"');
         final options = await callOptionsHelper.withAuth();
-        final response = await authServiceClient.searchUsersByUsername(
+        final response = await authServiceClient.searchUsers(
           request,
           options: options,
         );
@@ -625,6 +625,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
                   email: user.email,
                   phoneNumber: user.phoneNumber,
                   profilePicture: user.profilePicture,
+                  primaryAccountId: user.hasPrimaryAccountId() ? user.primaryAccountId : null,
                 ))
             .toList();
       },

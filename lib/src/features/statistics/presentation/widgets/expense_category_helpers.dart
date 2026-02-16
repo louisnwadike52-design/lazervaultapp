@@ -168,7 +168,7 @@ class ExpenseCategoryHelpers {
   static Color getStatusColor(pb.BudgetStatus status) {
     switch (status) {
       case pb.BudgetStatus.BUDGET_STATUS_ACTIVE:
-        return const Color(0xFF3B82F6); // Blue
+        return const Color(0xFF10B981); // Green
       case pb.BudgetStatus.BUDGET_STATUS_EXCEEDED:
         return const Color(0xFFEF4444); // Red
       case pb.BudgetStatus.BUDGET_STATUS_NEAR_LIMIT:

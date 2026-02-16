@@ -781,7 +781,10 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   Widget _buildRecipientRow(BatchTransferRecipient recipient, int index) {
     final amount = recipient.amount.toDouble() / 100;
     final recipientId = recipient.toAccountNumber;
-    final recipientName = recipientNames[recipientId] ?? 'Recipient ${index + 1}';
+    final recipientName = recipient.isExternal
+        ? (recipient.beneficiaryName ?? recipientNames[recipientId] ?? 'Recipient ${index + 1}')
+        : (recipientNames[recipientId] ?? 'Recipient ${index + 1}');
+    final isExternal = recipient.isExternal;
 
     return Container(
       padding: EdgeInsets.all(14.w),
@@ -795,18 +798,22 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: btBlue.withValues(alpha: 0.15),
+              color: isExternal
+                  ? btOrange.withValues(alpha: 0.15)
+                  : btBlue.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Text(
-                recipientName[0].toUpperCase(),
-                style: GoogleFonts.inter(
-                  color: btBlue,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              child: isExternal
+                  ? Icon(Icons.account_balance, color: btOrange, size: 18.sp)
+                  : Text(
+                      recipientName[0].toUpperCase(),
+                      style: GoogleFonts.inter(
+                        color: btBlue,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
             ),
           ),
           SizedBox(width: 12.w),
@@ -814,23 +821,54 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  recipientName,
-                  style: GoogleFonts.inter(
-                    color: btTextPrimary,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (recipient.reference != null && recipient.reference!.isNotEmpty)
-                  Text(
-                    recipient.reference!,
-                    style: GoogleFonts.inter(
-                      color: btTextSecondary,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        recipientName,
+                        style: GoogleFonts.inter(
+                          color: btTextPrimary,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    SizedBox(width: 6.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: isExternal
+                            ? btOrange.withValues(alpha: 0.15)
+                            : btPurple.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        isExternal ? 'Bank' : 'LV',
+                        style: GoogleFonts.inter(
+                          color: isExternal ? btOrange : btPurple,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  isExternal
+                      ? '${recipient.destinationBankName ?? ''} \u2022 ${recipient.toAccountNumber}'
+                      : (recipient.reference != null && recipient.reference!.isNotEmpty
+                          ? recipient.reference!
+                          : '@${recipient.toAccountNumber}'),
+                  style: GoogleFonts.inter(
+                    color: btTextSecondary,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),

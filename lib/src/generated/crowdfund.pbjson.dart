@@ -517,7 +517,7 @@ const MakeDonationRequest$json = {
     {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
     {'1': 'is_anonymous', '3': 4, '4': 1, '5': 8, '10': 'isAnonymous'},
-    {'1': 'source_account_id', '3': 5, '4': 1, '5': 4, '10': 'sourceAccountId'},
+    {'1': 'source_account_id', '3': 5, '4': 1, '5': 9, '10': 'sourceAccountId'},
   ],
 };
 
@@ -526,7 +526,7 @@ final $typed_data.Uint8List makeDonationRequestDescriptor = $convert.base64Decod
     'ChNNYWtlRG9uYXRpb25SZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSW'
     'QSFgoGYW1vdW50GAIgASgEUgZhbW91bnQSGAoHbWVzc2FnZRgDIAEoCVIHbWVzc2FnZRIhCgxp'
     'c19hbm9ueW1vdXMYBCABKAhSC2lzQW5vbnltb3VzEioKEXNvdXJjZV9hY2NvdW50X2lkGAUgAS'
-    'gEUg9zb3VyY2VBY2NvdW50SWQ=');
+    'gJUg9zb3VyY2VBY2NvdW50SWQ=');
 
 @$core.Deprecated('Use makeDonationResponseDescriptor instead')
 const MakeDonationResponse$json = {

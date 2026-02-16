@@ -44,7 +44,7 @@ class BudgetProgressWidget extends StatelessWidget {
               children: [
                 Icon(
                   Icons.account_balance_wallet,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF10B981),
                   size: 24.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -156,7 +156,7 @@ class _BudgetProgressItem extends StatelessWidget {
               _DetailItem(
                 label: 'Budget',
                 value: CurrencySymbols.formatAmount(progress.budgetAmount),
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF10B981),
               ),
               _DetailItem(
                 label: 'Remaining',
@@ -186,7 +186,7 @@ class _BudgetProgressItem extends StatelessWidget {
     } else if (percentage >= 50) {
       return _BudgetStatus(
         label: 'On Track',
-        color: const Color(0xFF3B82F6), // Blue - WCAG AA
+        color: const Color(0xFF10B981), // Green - WCAG AA
       );
     } else {
       return _BudgetStatus(

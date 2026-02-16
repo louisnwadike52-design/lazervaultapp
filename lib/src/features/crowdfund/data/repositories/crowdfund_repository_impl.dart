@@ -1,5 +1,6 @@
 import 'package:lazervault/src/generated/crowdfund.pb.dart' as pb;
 import '../../domain/entities/crowdfund_entities.dart';
+import '../../domain/entities/notification_channel_entities.dart';
 import '../../domain/repositories/crowdfund_repository.dart';
 import '../datasources/crowdfund_grpc_data_source.dart';
 
@@ -130,7 +131,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    int? sourceAccountId,
+    String? sourceAccountId,
   }) async {
     try {
       return await remoteDataSource.makeDonation(
@@ -242,6 +243,138 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         return pb.LeaderboardSortBy.LEADERBOARD_SORT_NEARLY_COMPLETE;
       case LeaderboardSortBy.newest:
         return pb.LeaderboardSortBy.LEADERBOARD_SORT_NEWEST;
+    }
+  }
+
+  // Campaign Wallet Operations
+
+  @override
+  Future<List<Crowdfund>> getMyCrowdfunds({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+  }) async {
+    try {
+      return await remoteDataSource.getMyCrowdfunds(
+        page: page,
+        pageSize: pageSize,
+        statusFilter: statusFilter,
+      );
+    } catch (e) {
+      throw Exception('Failed to get my crowdfunds: $e');
+    }
+  }
+
+  @override
+  Future<CrowdfundWithdrawalResult> withdrawFromCrowdfund({
+    required String crowdfundId,
+    required double amount,
+    required String transactionPin,
+    String? destinationAccountId,
+    String? destinationAccountType,
+  }) async {
+    try {
+      return await remoteDataSource.withdrawFromCrowdfund(
+        crowdfundId: crowdfundId,
+        amount: amount,
+        transactionPin: transactionPin,
+        destinationAccountId: destinationAccountId,
+        destinationAccountType: destinationAccountType,
+      );
+    } catch (e) {
+      throw Exception('Failed to withdraw from crowdfund: $e');
+    }
+  }
+
+  @override
+  Future<CampaignWalletBalance> getCampaignWalletBalance(
+      String crowdfundId) async {
+    try {
+      return await remoteDataSource.getCampaignWalletBalance(crowdfundId);
+    } catch (e) {
+      throw Exception('Failed to get campaign wallet balance: $e');
+    }
+  }
+
+  // Notification Channel Operations
+
+  @override
+  Future<NotificationChannel> connectNotificationChannel({
+    required String crowdfundId,
+    required NotificationChannelType channelType,
+    required String channelName,
+    String? telegramChatId,
+    String? discordWebhookUrl,
+    String? discordServerName,
+    String? discordChannelName,
+    String? slackWebhookUrl,
+    String? slackWorkspaceName,
+    String? slackChannelName,
+    List<NotificationEventType>? enabledEvents,
+  }) async {
+    try {
+      return await remoteDataSource.connectNotificationChannel(
+        crowdfundId: crowdfundId,
+        channelType: channelType,
+        channelName: channelName,
+        telegramChatId: telegramChatId,
+        discordWebhookUrl: discordWebhookUrl,
+        discordServerName: discordServerName,
+        discordChannelName: discordChannelName,
+        slackWebhookUrl: slackWebhookUrl,
+        slackWorkspaceName: slackWorkspaceName,
+        slackChannelName: slackChannelName,
+        enabledEvents: enabledEvents,
+      );
+    } catch (e) {
+      throw Exception('Failed to connect notification channel: $e');
+    }
+  }
+
+  @override
+  Future<void> disconnectNotificationChannel(String channelId) async {
+    try {
+      await remoteDataSource.disconnectNotificationChannel(channelId);
+    } catch (e) {
+      throw Exception('Failed to disconnect notification channel: $e');
+    }
+  }
+
+  @override
+  Future<List<NotificationChannel>> getNotificationChannels(
+      String crowdfundId) async {
+    try {
+      return await remoteDataSource.getNotificationChannels(crowdfundId);
+    } catch (e) {
+      throw Exception('Failed to get notification channels: $e');
+    }
+  }
+
+  @override
+  Future<NotificationChannel> updateNotificationChannel({
+    required String channelId,
+    String? channelName,
+    List<NotificationEventType>? enabledEvents,
+    NotificationChannelStatus? status,
+  }) async {
+    try {
+      return await remoteDataSource.updateNotificationChannel(
+        channelId: channelId,
+        channelName: channelName,
+        enabledEvents: enabledEvents,
+        status: status,
+      );
+    } catch (e) {
+      throw Exception('Failed to update notification channel: $e');
+    }
+  }
+
+  @override
+  Future<bool> testNotificationChannel(String channelId) async {
+    try {
+      return await remoteDataSource.testNotificationChannel(channelId);
+    } catch (e) {
+      throw Exception('Failed to test notification channel: $e');
     }
   }
 }

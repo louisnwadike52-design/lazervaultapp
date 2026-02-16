@@ -204,7 +204,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   }
 
   Future<List<UserSearchResultEntity>> searchUsers(String query, {int limit = 10}) async {
-    return await _repository.searchUsersByUsername(query: query, limit: limit);
+    return await _repository.searchUsers(query: query, limit: limit);
   }
 
   void resetState() {

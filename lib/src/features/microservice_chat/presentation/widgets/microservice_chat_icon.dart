@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+import 'service_chat_bottom_sheet.dart';
 
 class MicroserviceChatIcon extends StatelessWidget {
   final String serviceName;
   final String sourceContext;
   final IconData icon;
   final Color? iconColor;
+  final String? agentDescription;
 
   const MicroserviceChatIcon({
     super.key,
@@ -14,18 +14,19 @@ class MicroserviceChatIcon extends StatelessWidget {
     required this.sourceContext,
     this.icon = Icons.chat_bubble_outline,
     this.iconColor,
+    this.agentDescription,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed(
-          AppRoutes.microserviceChat,
-          arguments: {
-            'serviceName': serviceName,
-            'sourceContext': sourceContext,
-          },
+        showServiceChatBottomSheet(
+          context,
+          serviceName: serviceName,
+          sourceContext: sourceContext,
+          agentDescription: agentDescription,
+          accentColor: iconColor ?? const Color(0xFF8B5CF6),
         );
       },
       child: Container(
@@ -33,15 +34,15 @@ class MicroserviceChatIcon extends StatelessWidget {
         height: 50,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.blue.withValues(alpha: 0.1),
+          color: (iconColor ?? const Color(0xFF8B5CF6)).withValues(alpha: 0.1),
           border: Border.all(
-            color: iconColor ?? Colors.blue,
+            color: iconColor ?? const Color(0xFF8B5CF6),
             width: 2,
           ),
         ),
         child: Icon(
           icon,
-          color: iconColor ?? Colors.blue,
+          color: iconColor ?? const Color(0xFF8B5CF6),
           size: 24,
         ),
       ),

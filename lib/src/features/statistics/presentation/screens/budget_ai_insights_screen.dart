@@ -2,49 +2,88 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 
 /// Budget AI Insights Screen
-class BudgetAIInsightsScreen extends StatelessWidget {
+class BudgetAIInsightsScreen extends StatefulWidget {
   const BudgetAIInsightsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: Get.find<BudgetCubit>(),
-      child: const BudgetAIInsightsView(),
-    );
-  }
+  State<BudgetAIInsightsScreen> createState() => _BudgetAIInsightsScreenState();
 }
 
-class BudgetAIInsightsView extends StatefulWidget {
-  const BudgetAIInsightsView({super.key});
-
-  @override
-  State<BudgetAIInsightsView> createState() => _BudgetAIInsightsViewState();
-}
-
-class _BudgetAIInsightsViewState extends State<BudgetAIInsightsView> {
+class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInsights();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInsights();
+    });
   }
 
   void _loadInsights() {
-    // TODO: Get actual data from app state
+    // Pull real data from StatisticsCubit for income/spending analysis
+    double monthlyIncome = 0;
+    List<Map<String, dynamic>> spendingData = [];
+    final statisticsCubit = context.read<StatisticsCubit>();
+    final statsState = statisticsCubit.state;
+
+    if (statsState is StatisticsLoaded && statsState.financialAnalytics != null) {
+      final analytics = statsState.financialAnalytics!;
+      if (analytics.hasCurrentPeriod()) {
+        monthlyIncome = analytics.currentPeriod.totalIncome;
+      }
+    }
+
+    if (statsState is StatisticsLoaded && statsState.categoryAnalytics != null) {
+      final catAnalytics = statsState.categoryAnalytics!;
+      final totalExpenses = catAnalytics.totalExpenses;
+      for (final cat in catAnalytics.expenseCategories) {
+        spendingData.add({
+          'category': cat.categoryName,
+          'amount': cat.amount,
+          'percentage': totalExpenses > 0 ? (cat.amount / totalExpenses * 100).round() : 0,
+        });
+      }
+    }
+
+    // Pull active budgets from BudgetCubit if previously loaded
+    List<Map<String, dynamic>> activeBudgets = [];
+    final budgetState = context.read<BudgetCubit>().state;
+    if (budgetState is BudgetsLoaded) {
+      for (final budget in budgetState.budgets) {
+        activeBudgets.add({
+          'name': budget.name,
+          'category': budget.category.name,
+          'budget_amount': budget.amount,
+          'spent_amount': budget.spentAmount,
+          'remaining': budget.amount - budget.spentAmount,
+          'percentage_used': budget.amount > 0
+              ? (budget.spentAmount / budget.amount * 100).round()
+              : 0,
+        });
+      }
+    }
+
+    // Use sensible defaults if no real data yet
+    if (monthlyIncome == 0) monthlyIncome = 500000;
+    if (spendingData.isEmpty) {
+      spendingData = [
+        {'category': 'General', 'amount': 0, 'percentage': 0},
+      ];
+    }
+
     context.read<BudgetCubit>().loadAIInsights(
-      monthlyIncome: 500000, // Example: 500k NGN
-      spendingData: [
-        {'category': 'Food', 'amount': 50000, 'percentage': 30},
-        {'category': 'Transport', 'amount': 30000, 'percentage': 18},
-        {'category': 'Bills', 'amount': 40000, 'percentage': 24},
-      ],
-      activeBudgets: [],
-      goals: ['Save more', 'Reduce debt'],
+      monthlyIncome: monthlyIncome,
+      spendingData: spendingData,
+      activeBudgets: activeBudgets,
+      goals: ['Save more', 'Reduce spending'],
       riskTolerance: 'moderate',
-      currency: 'NGN',
+      currency: CurrencySymbols.currentCurrency,
       monthsOfData: 3,
     );
   }
@@ -87,7 +126,10 @@ class _BudgetAIInsightsViewState extends State<BudgetAIInsightsView> {
           }
 
           if (state is BudgetAIInsightsError) {
-            return _ErrorView(message: state.message);
+            return _ErrorView(
+              message: state.message,
+              onRetry: _loadInsights,
+            );
           }
 
           return const _LoadingView();
@@ -100,7 +142,7 @@ class _BudgetAIInsightsViewState extends State<BudgetAIInsightsView> {
 class _InsightsView extends StatelessWidget {
   final BudgetAIInsightsData insights;
 
-  const _InsightsView({required this.insights, super.key});
+  const _InsightsView({required this.insights});
 
   @override
   Widget build(BuildContext context) {
@@ -112,11 +154,18 @@ class _InsightsView extends StatelessWidget {
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+              colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,9 +196,13 @@ class _InsightsView extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
+            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
           ),
           child: Column(
             children: [
@@ -171,48 +224,140 @@ class _InsightsView extends StatelessWidget {
         ),
         SizedBox(height: 24.h),
 
-        // Budget Recommendations
-        const Text(
-          'Budget Recommendations',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 16.h),
-        ...insights.budgetRecommendations.map((rec) => _RecommendationCard(rec: rec)),
-        SizedBox(height: 24.h),
-
-        // Savings Opportunities
-        const Text(
-          'Savings Opportunities',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 16.h),
-        ...insights.savingsOpportunities.asMap().entries.map((entry) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: 12.h),
-            child: Row(
+        // Risk Level & Spending Patterns
+        if (insights.riskLevel.isNotEmpty || insights.spendingPatterns.isNotEmpty) ...[
+          Row(
+            children: [
+              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 8),
+              const Text(
+                'Spending Patterns',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: const Color(0xFF2D2D2D).withValues(alpha: 0.5)),
+            ),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  margin: EdgeInsets.only(right: 12.w),
-                  child: const Icon(Icons.lightbulb, color: Color(0xFFFB923C), size: 20),
-                ),
-                Expanded(
-                  child: Text(
-                    entry.value,
-                    style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                if (insights.riskLevel.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      const Icon(Icons.shield, color: Color(0xFF10B981), size: 18),
+                      SizedBox(width: 8.w),
+                      const Text('Risk Level', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
+                      const Spacer(),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          insights.riskLevel[0].toUpperCase() + insights.riskLevel.substring(1),
+                          style: const TextStyle(color: Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  if (insights.spendingPatterns.isNotEmpty) SizedBox(height: 12.h),
+                ],
+                ...insights.spendingPatterns.entries.map((entry) {
+                  final label = entry.key.replaceAll('_', ' ');
+                  final displayLabel = label[0].toUpperCase() + label.substring(1);
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.insights, color: Color(0xFF34D399), size: 16),
+                        SizedBox(width: 8.w),
+                        Text('$displayLabel: ', style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
+                        Expanded(
+                          child: Text(
+                            entry.value.toString(),
+                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
               ],
             ),
-          );
-        }),
-        SizedBox(height: 32.h),
+          ),
+          SizedBox(height: 24.h),
+        ],
+
+        // Budget Recommendations
+        if (insights.budgetRecommendations.isNotEmpty) ...[
+          Row(
+            children: [
+              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 8),
+              const Text(
+                'Budget Recommendations',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          ...insights.budgetRecommendations.map((rec) => _RecommendationCard(rec: rec)),
+          SizedBox(height: 24.h),
+        ],
+
+        // Savings Opportunities
+        if (insights.savingsOpportunities.isNotEmpty) ...[
+          Row(
+            children: [
+              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 8),
+              const Text(
+                'Savings Opportunities',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          ...insights.savingsOpportunities.map((opportunity) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(right: 12.w),
+                    child: const Icon(Icons.lightbulb, color: Color(0xFFFB923C), size: 20),
+                  ),
+                  Expanded(
+                    child: Text(
+                      opportunity,
+                      style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          SizedBox(height: 32.h),
+        ],
 
         // Apply Button
         ElevatedButton(
           onPressed: () => Get.back(),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF10B981),
             foregroundColor: Colors.white,
             minimumSize: Size(double.infinity, 50.h),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -227,7 +372,7 @@ class _InsightsView extends StatelessWidget {
 class _RecommendationCard extends StatelessWidget {
   final BudgetRecommendationData rec;
 
-  const _RecommendationCard({required this.rec, super.key});
+  const _RecommendationCard({required this.rec});
 
   @override
   Widget build(BuildContext context) {
@@ -235,9 +380,13 @@ class _RecommendationCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        border: Border.all(color: const Color(0xFF2D2D2D).withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,10 +419,10 @@ class _RecommendationCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _StatLine(label: 'Current', value: '₦${rec.currentAmount.toStringAsFixed(0)}'),
+                child: _StatLine(label: 'Current', value: CurrencySymbols.formatAmount(rec.currentAmount)),
               ),
               Expanded(
-                child: _StatLine(label: 'Recommended', value: '₦${rec.recommendedAmount.toStringAsFixed(0)}'),
+                child: _StatLine(label: 'Recommended', value: CurrencySymbols.formatAmount(rec.recommendedAmount)),
               ),
             ],
           ),
@@ -292,7 +441,7 @@ class _StatLine extends StatelessWidget {
   final String label;
   final String value;
 
-  const _StatLine({required this.label, required this.value, super.key});
+  const _StatLine({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +456,7 @@ class _StatLine extends StatelessWidget {
 }
 
 class _LoadingView extends StatelessWidget {
-  const _LoadingView({super.key});
+  const _LoadingView();
 
   @override
   Widget build(BuildContext context) {
@@ -315,7 +464,7 @@ class _LoadingView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Color(0xFF3B82F6)),
+          CircularProgressIndicator(color: Color(0xFF10B981)),
           SizedBox(height: 16),
           Text(
             'Analyzing your spending patterns...',
@@ -329,8 +478,9 @@ class _LoadingView extends StatelessWidget {
 
 class _ErrorView extends StatelessWidget {
   final String message;
+  final VoidCallback onRetry;
 
-  const _ErrorView({required this.message, super.key});
+  const _ErrorView({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -339,16 +489,23 @@ class _ErrorView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
-          SizedBox(height: 16),
-          Text(
-            message,
-            style: const TextStyle(color: Color(0xFF9CA3AF)),
-            textAlign: TextAlign.center,
+          SizedBox(height: 16.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Text(
+              message,
+              style: const TextStyle(color: Color(0xFF9CA3AF)),
+              textAlign: TextAlign.center,
+            ),
           ),
-          SizedBox(height: 24),
+          SizedBox(height: 24.h),
           ElevatedButton(
-            onPressed: () => Get.back(),
-            child: const Text('Go Back'),
+            onPressed: onRetry,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Retry'),
           ),
         ],
       ),

@@ -48,9 +48,63 @@ class ChatResponse {
   }
 }
 
+class ChatHistoryResponse {
+  final List<ChatHistoryMessage> history;
+  final int totalCount;
+  final String sessionId;
+
+  ChatHistoryResponse({
+    required this.history,
+    required this.totalCount,
+    required this.sessionId,
+  });
+
+  factory ChatHistoryResponse.fromJson(Map<String, dynamic> json) {
+    final historyList = (json['history'] as List<dynamic>?) ?? [];
+    return ChatHistoryResponse(
+      history: historyList
+          .map((e) => ChatHistoryMessage.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      totalCount: json['total_count'] as int? ?? 0,
+      sessionId: json['session_id'] as String? ?? '',
+    );
+  }
+}
+
+class ChatHistoryMessage {
+  final String role;
+  final String content;
+  final String service;
+  final String sourceContext;
+  final String timestamp;
+
+  ChatHistoryMessage({
+    required this.role,
+    required this.content,
+    required this.service,
+    required this.sourceContext,
+    required this.timestamp,
+  });
+
+  factory ChatHistoryMessage.fromJson(Map<String, dynamic> json) {
+    return ChatHistoryMessage(
+      role: json['role'] as String? ?? '',
+      content: json['content'] as String? ?? '',
+      service: json['service'] as String? ?? '',
+      sourceContext: json['source_context'] as String? ?? '',
+      timestamp: json['timestamp'] as String? ?? '',
+    );
+  }
+}
+
 abstract class MicroserviceChatDataSource {
   Future<ChatResponse> processChat(ChatRequest request);
   Future<void> sendTypingIndicator(String sessionId, bool isTyping);
+  Future<ChatHistoryResponse> getHistory({
+    required String sourceContext,
+    required String sessionId,
+    required String accessToken,
+  });
 }
 
 class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
@@ -89,6 +143,45 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
       throw Exception('Dio error: ${e.message}');
     } catch (e) {
       throw Exception('Error processing chat: $e');
+    }
+  }
+
+  @override
+  Future<ChatHistoryResponse> getHistory({
+    required String sourceContext,
+    required String sessionId,
+    required String accessToken,
+  }) async {
+    try {
+      final options = await callOptionsHelper.withAuth();
+
+      final response = await dio.get(
+        '$baseUrl/chat/history',
+        queryParameters: {
+          'user_id': '', // Will be extracted from token on backend
+          'session_id': sessionId,
+          'source_context': sourceContext,
+          'access_token': accessToken,
+          'limit': 50,
+          'offset': 0,
+        },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            ...options.metadata,
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return ChatHistoryResponse.fromJson(response.data);
+      } else {
+        throw Exception('Failed to get history: ${response.statusMessage}');
+      }
+    } on DioException catch (e) {
+      throw Exception('Dio error: ${e.message}');
+    } catch (e) {
+      throw Exception('Error fetching history: $e');
     }
   }
 
