@@ -190,17 +190,33 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     return Column(
       children: [
         _buildHeader(group),
-        _buildGroupOverview(group, members, contributions),
-        if (currentUserMember != null)
-          _buildCompactRoleChip(currentUserMember, group),
-        _buildTabBar(),
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildMembersTab(members, group, contributions),
-              _buildContributionsTab(contributions, group),
-            ],
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverToBoxAdapter(
+                  child: _buildGroupOverview(group, members, contributions),
+                ),
+                if (currentUserMember != null)
+                  SliverToBoxAdapter(
+                    child: _buildCompactRoleChip(currentUserMember, group),
+                  ),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _SliverTabBarDelegate(
+                    child: _buildTabBar(),
+                    height: 46 + 20.h,
+                  ),
+                ),
+              ];
+            },
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildMembersTab(members, group, contributions),
+                _buildContributionsTab(contributions, group, currentUserMember),
+              ],
+            ),
           ),
         ),
       ],
@@ -470,13 +486,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         children: [
           GestureDetector(
             onTap: () {
-              // Check if we can pop, otherwise navigate to groups list explicitly
-              // This handles the case when coming from receipt screen which clears the stack
-              if (Get.previousRoute.isNotEmpty) {
-                Get.back();
-              } else {
-                Get.offAllNamed(AppRoutes.groupAccount);
-              }
+              // Always navigate to the groups funds landing page
+              Get.offAllNamed(AppRoutes.groupAccount);
             },
             child: Container(
               padding: EdgeInsets.all(12.w),
@@ -907,6 +918,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
+        key: const PageStorageKey<String>('members'),
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
@@ -992,7 +1004,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
-  Widget _buildContributionsTab(List<Contribution> contributions, GroupAccount group) {
+  Widget _buildContributionsTab(List<Contribution> contributions, GroupAccount group, GroupMember? currentUserMember) {
+    final isAdmin = currentUserMember?.role == GroupMemberRole.admin;
+
     return RefreshIndicator(
       onRefresh: () async {
         context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
@@ -1000,8 +1014,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
       child: contributions.isEmpty
-          ? _buildEmptyContributions(group)
+          ? _buildEmptyContributions(group, isAdmin)
           : CustomScrollView(
+              key: const PageStorageKey<String>('contributions'),
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
@@ -1018,22 +1033,23 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                             color: Colors.white,
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: () => _showCreateContributionBottomSheet(group),
-                          icon: Icon(Icons.add, size: 16.sp),
-                          label: Text(
-                            'New Goal',
-                            style: GoogleFonts.inter(fontSize: 12.sp),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.r),
+                        if (isAdmin)
+                          ElevatedButton.icon(
+                            onPressed: () => _showCreateContributionBottomSheet(group),
+                            icon: Icon(Icons.add, size: 16.sp),
+                            label: Text(
+                              'New Goal',
+                              style: GoogleFonts.inter(fontSize: 12.sp),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -1062,8 +1078,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
-  Widget _buildEmptyContributions(GroupAccount group) {
+  Widget _buildEmptyContributions(GroupAccount group, bool isAdmin) {
     return ListView(
+      key: const PageStorageKey<String>('empty_contributions'),
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(height: 60.h),
@@ -1087,7 +1104,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
               ),
               SizedBox(height: 8.h),
               Text(
-                'Create the first contribution goal for this group',
+                isAdmin
+                    ? 'Create the first contribution goal for this group'
+                    : 'No contributions have been created yet',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   color: Colors.grey[400],
@@ -1095,25 +1114,26 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 24.h),
-              ElevatedButton.icon(
-                onPressed: () => _showCreateContributionBottomSheet(group),
-                icon: Icon(Icons.add, size: 20.sp),
-                label: Text(
-                  'Create Contribution',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+              if (isAdmin)
+                ElevatedButton.icon(
+                  onPressed: () => _showCreateContributionBottomSheet(group),
+                  icon: Icon(Icons.add, size: 20.sp),
+                  label: Text(
+                    'Create Contribution',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ),
-              ),
               SizedBox(height: 16.h),
               Text(
                 'Pull down to refresh',
@@ -1375,4 +1395,30 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       },
     );
   }
-} 
+}
+
+class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  _SliverTabBarDelegate({required this.child, required this.height});
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: const Color(0xFF0A0A0A),
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverTabBarDelegate oldDelegate) {
+    return oldDelegate.height != height;
+  }
+}

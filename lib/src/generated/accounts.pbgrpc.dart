@@ -181,6 +181,18 @@ class AccountsServiceClient extends $grpc.Client {
       '/accounts.AccountsService/GetTransfer',
       ($0.GetTransferRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetTransferResponse.fromBuffer(value));
+  static final _$getUserCategoryMappings = $grpc.ClientMethod<$0.GetUserCategoryMappingsRequest, $0.GetUserCategoryMappingsResponse>(
+      '/accounts.AccountsService/GetUserCategoryMappings',
+      ($0.GetUserCategoryMappingsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetUserCategoryMappingsResponse.fromBuffer(value));
+  static final _$updateUserCategoryMapping = $grpc.ClientMethod<$0.UpdateUserCategoryMappingRequest, $0.UpdateUserCategoryMappingResponse>(
+      '/accounts.AccountsService/UpdateUserCategoryMapping',
+      ($0.UpdateUserCategoryMappingRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateUserCategoryMappingResponse.fromBuffer(value));
+  static final _$reorderCategories = $grpc.ClientMethod<$0.ReorderCategoriesRequest, $0.ReorderCategoriesResponse>(
+      '/accounts.AccountsService/ReorderCategories',
+      ($0.ReorderCategoriesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ReorderCategoriesResponse.fromBuffer(value));
 
   AccountsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -346,6 +358,18 @@ class AccountsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetTransferResponse> getTransfer($0.GetTransferRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTransfer, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetUserCategoryMappingsResponse> getUserCategoryMappings($0.GetUserCategoryMappingsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserCategoryMappings, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateUserCategoryMappingResponse> updateUserCategoryMapping($0.UpdateUserCategoryMappingRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateUserCategoryMapping, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ReorderCategoriesResponse> reorderCategories($0.ReorderCategoriesRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$reorderCategories, request, options: options);
   }
 }
 
@@ -634,6 +658,27 @@ abstract class AccountsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetTransferRequest.fromBuffer(value),
         ($0.GetTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserCategoryMappingsRequest, $0.GetUserCategoryMappingsResponse>(
+        'GetUserCategoryMappings',
+        getUserCategoryMappings_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetUserCategoryMappingsRequest.fromBuffer(value),
+        ($0.GetUserCategoryMappingsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateUserCategoryMappingRequest, $0.UpdateUserCategoryMappingResponse>(
+        'UpdateUserCategoryMapping',
+        updateUserCategoryMapping_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UpdateUserCategoryMappingRequest.fromBuffer(value),
+        ($0.UpdateUserCategoryMappingResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ReorderCategoriesRequest, $0.ReorderCategoriesResponse>(
+        'ReorderCategories',
+        reorderCategories_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ReorderCategoriesRequest.fromBuffer(value),
+        ($0.ReorderCategoriesResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateAccountResponse> createAccount_Pre($grpc.ServiceCall call, $async.Future<$0.CreateAccountRequest> request) async {
@@ -796,6 +841,18 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return getTransfer(call, await request);
   }
 
+  $async.Future<$0.GetUserCategoryMappingsResponse> getUserCategoryMappings_Pre($grpc.ServiceCall call, $async.Future<$0.GetUserCategoryMappingsRequest> request) async {
+    return getUserCategoryMappings(call, await request);
+  }
+
+  $async.Future<$0.UpdateUserCategoryMappingResponse> updateUserCategoryMapping_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateUserCategoryMappingRequest> request) async {
+    return updateUserCategoryMapping(call, await request);
+  }
+
+  $async.Future<$0.ReorderCategoriesResponse> reorderCategories_Pre($grpc.ServiceCall call, $async.Future<$0.ReorderCategoriesRequest> request) async {
+    return reorderCategories(call, await request);
+  }
+
   $async.Future<$0.CreateAccountResponse> createAccount($grpc.ServiceCall call, $0.CreateAccountRequest request);
   $async.Future<$0.GetAccountsResponse> getAccounts($grpc.ServiceCall call, $0.GetAccountsRequest request);
   $async.Future<$0.GetUserAccountsResponse> getUserAccounts($grpc.ServiceCall call, $0.GetUserAccountsRequest request);
@@ -836,4 +893,7 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.CreateTransferResponse> createTransfer($grpc.ServiceCall call, $0.CreateTransferRequest request);
   $async.Future<$0.CreateVirtualAccountResponse> createVirtualAccount($grpc.ServiceCall call, $0.CreateVirtualAccountRequest request);
   $async.Future<$0.GetTransferResponse> getTransfer($grpc.ServiceCall call, $0.GetTransferRequest request);
+  $async.Future<$0.GetUserCategoryMappingsResponse> getUserCategoryMappings($grpc.ServiceCall call, $0.GetUserCategoryMappingsRequest request);
+  $async.Future<$0.UpdateUserCategoryMappingResponse> updateUserCategoryMapping($grpc.ServiceCall call, $0.UpdateUserCategoryMappingRequest request);
+  $async.Future<$0.ReorderCategoriesResponse> reorderCategories($grpc.ServiceCall call, $0.ReorderCategoriesRequest request);
 }

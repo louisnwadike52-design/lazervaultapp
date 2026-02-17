@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_transaction_entity.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
@@ -25,57 +27,135 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A3E),
+              Color(0xFF0A0E27),
+              Color(0xFF0F0F23),
+            ],
+          ),
         ),
-        title: const Text(
-          'QR Payments',
-          style: TextStyle(color: Colors.white, fontSize: 20),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: BlocBuilder<QRPaymentCubit, QRPaymentState>(
+                  builder: (context, state) {
+                    if (state is QRPaymentLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                            color: Color(0xFF3B82F6)),
+                      );
+                    }
+
+                    if (state is QRPaymentsLoaded) {
+                      if (state.transactions.isEmpty) {
+                        return _buildEmptyState();
+                      }
+                      return _buildList(state.transactions);
+                    }
+
+                    if (state is QRPaymentError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              state.message,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFEF4444),
+                                fontSize: 14.sp,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 16.h),
+                            GestureDetector(
+                              onTap: () => context
+                                  .read<QRPaymentCubit>()
+                                  .getMyQRPayments(),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 24.w, vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF3B82F6)
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                    color: const Color(0xFF3B82F6)
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Retry',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF3B82F6),
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-        centerTitle: true,
       ),
-      body: BlocBuilder<QRPaymentCubit, QRPaymentState>(
-        builder: (context, state) {
-          if (state is QRPaymentLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
-            );
-          }
+    );
+  }
 
-          if (state is QRPaymentsLoaded) {
-            if (state.transactions.isEmpty) {
-              return _buildEmptyState();
-            }
-            return _buildList(state.transactions);
-          }
-
-          if (state is QRPaymentError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.message,
-                    style: const TextStyle(color: Color(0xFFEF4444)),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () =>
-                        context.read<QRPaymentCubit>().getMyQRPayments(),
-                    child: const Text('Retry'),
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(22.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-            );
-          }
-
-          return const SizedBox.shrink();
-        },
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                color: Colors.white,
+                size: 18.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Text(
+              'QR Payments',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -84,19 +164,43 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
     return RefreshIndicator(
       onRefresh: () => context.read<QRPaymentCubit>().getMyQRPayments(),
       color: const Color(0xFF3B82F6),
-      backgroundColor: const Color(0xFF1F1F1F),
+      backgroundColor: const Color(0xFF1F1F35),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-          const Center(
+          SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+          Center(
             child: Column(
               children: [
-                Icon(Icons.payment, color: Color(0xFF4B5563), size: 48),
-                SizedBox(height: 16),
+                Container(
+                  width: 72.w,
+                  height: 72.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.payment_rounded,
+                    color: const Color(0xFF4B5563),
+                    size: 36.sp,
+                  ),
+                ),
+                SizedBox(height: 16.h),
                 Text(
                   'No QR payments yet',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Scan a QR code to make a payment',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF4B5563),
+                    fontSize: 13.sp,
+                  ),
                 ),
               ],
             ),
@@ -110,10 +214,10 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
     return RefreshIndicator(
       onRefresh: () => context.read<QRPaymentCubit>().getMyQRPayments(),
       color: const Color(0xFF3B82F6),
-      backgroundColor: const Color(0xFF1F1F1F),
+      backgroundColor: const Color(0xFF1F1F35),
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
         itemCount: transactions.length,
         itemBuilder: (context, index) =>
             _buildTransactionTile(transactions[index]),
@@ -122,7 +226,8 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
   }
 
   Widget _buildTransactionTile(QRTransactionEntity txn) {
-    final isCompleted = txn.status == QRTransactionStatus.completed;
+    final color = _statusColor(txn.status);
+    final icon = _statusIcon(txn.status);
 
     return GestureDetector(
       onTap: () {
@@ -135,66 +240,121 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              const Color(0xFF1F1F35).withValues(alpha: 0.9),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              width: 44.w,
+              height: 44.w,
               decoration: BoxDecoration(
-                color: isCompleted
-                    ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                    : const Color(0xFFEF4444).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: color.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
-                isCompleted ? Icons.check_circle : Icons.cancel,
-                color: isCompleted
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFEF4444),
-                size: 22,
+                icon,
+                color: color,
+                size: 22.sp,
               ),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'To ${txn.recipientName}',
-                    style: const TextStyle(
+                    style: GoogleFonts.inter(
                       color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     _formatDate(txn.createdAt),
-                    style: const TextStyle(
-                      color: Color(0xFF9CA3AF),
-                      fontSize: 12,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],
               ),
             ),
-            Text(
-              '- ${txn.currency} ${txn.amount.toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '- ${txn.currency} ${txn.amount.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                _buildStatusBadge(txn.status),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStatusBadge(QRTransactionStatus status) {
+    final color = _statusColor(status);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Text(
+        status.displayName,
+        style: GoogleFonts.inter(
+          color: color,
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Color _statusColor(QRTransactionStatus status) {
+    switch (status) {
+      case QRTransactionStatus.completed:
+        return const Color(0xFF10B981);
+      case QRTransactionStatus.failed:
+        return const Color(0xFFEF4444);
+    }
+  }
+
+  IconData _statusIcon(QRTransactionStatus status) {
+    switch (status) {
+      case QRTransactionStatus.completed:
+        return Icons.check_circle_rounded;
+      case QRTransactionStatus.failed:
+        return Icons.cancel_rounded;
+    }
   }
 
   String _formatDate(DateTime date) {

@@ -46,20 +46,26 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   }
 
   Future<void> _checkPasscodeAvailability() async {
-    final loginMethod = await _storage.read(key: 'login_method');
-    final storedEmail = await _storage.read(key: 'stored_email');
-    final storedPasscode = await _storage.read(key: 'user_passcode');
+    try {
+      final loginMethod = await _storage.read(key: 'login_method');
+      final storedEmail = await _storage.read(key: 'stored_email');
+      final userEmail = await _storage.read(key: 'user_email');
+      final storedPasscode = await _storage.read(key: 'user_passcode');
 
-    if (mounted) {
-      setState(() {
-        // Show passcode option if:
-        // 1. Login method is set to passcode OR
-        // 2. A passcode is stored (regardless of login method)
-        // AND there's a stored email
-        _hasPasscodeSetup = (loginMethod == 'passcode' || storedPasscode != null) &&
-                           storedEmail != null &&
-                           storedEmail.isNotEmpty;
-      });
+      final hasEmail = (storedEmail != null && storedEmail.isNotEmpty) ||
+                       (userEmail != null && userEmail.isNotEmpty);
+
+      if (mounted) {
+        setState(() {
+          // Show passcode option if:
+          // 1. Login method is set to passcode OR a passcode is stored locally
+          // AND there's a stored email (either key)
+          _hasPasscodeSetup = (loginMethod == 'passcode' || storedPasscode != null) &&
+                             hasEmail;
+        });
+      }
+    } catch (e) {
+      print('Error checking passcode availability: $e');
     }
   }
 
@@ -149,7 +155,9 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 listener: (context, state) async {
                   if (state is PasscodeExistsChecked) {
                     if (state.exists) {
-                      // User has passcode, go to dashboard
+                      // User has passcode on backend - save login method locally
+                      // so next app restart routes to passcode login
+                      await _storage.write(key: 'login_method', value: 'passcode');
                       Get.offAllNamed(AppRoutes.dashboard);
                     } else {
                       // No passcode set, prompt to set up

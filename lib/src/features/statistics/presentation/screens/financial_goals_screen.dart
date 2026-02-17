@@ -592,7 +592,6 @@ class _GoalCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: goalColor.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
             color: goalColor.withValues(alpha: 0.1),

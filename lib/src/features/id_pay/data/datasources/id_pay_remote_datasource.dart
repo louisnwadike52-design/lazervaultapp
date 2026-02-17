@@ -1,7 +1,9 @@
 import '../../../../generated/id_pay.pbgrpc.dart' as pb;
 import '../../../../core/network/grpc_client.dart';
 import '../../domain/entities/id_pay_entity.dart';
+import '../../domain/entities/id_pay_organization_entity.dart';
 import '../models/id_pay_model.dart';
+import '../models/id_pay_organization_model.dart';
 import '../models/id_pay_transaction_model.dart';
 
 abstract class IDPayRemoteDataSource {
@@ -14,6 +16,8 @@ abstract class IDPayRemoteDataSource {
     double? maxAmount,
     String? description,
     required int validityMinutes,
+    bool neverExpires = false,
+    String? organizationId,
   });
 
   Future<IDPayModel> lookupIDPay({
@@ -47,6 +51,39 @@ abstract class IDPayRemoteDataSource {
   Future<IDPayModel> getIDPayDetails({
     required String id,
   });
+
+  Future<IDPayOrganizationModel> createOrganization({
+    required String name,
+    required String description,
+    String? logoUrl,
+    required String accountId,
+  });
+
+  Future<(List<IDPayOrganizationModel>, int)> getMyOrganizations({
+    required String accountId,
+    int? limit,
+    int? offset,
+  });
+
+  Future<IDPayOrganizationModel> updateOrganization({
+    required String id,
+    String? name,
+    String? description,
+    String? logoUrl,
+  });
+
+  Future<void> deleteOrganization({
+    required String id,
+  });
+
+  Future<(IDPayOrganizationModel, List<IDPayModel>, double)>
+      getOrganizationDetails({
+    required String id,
+  });
+
+  Future<(IDPayModel, IDPayOrganizationModel?)> lookupIDPayWithOrg({
+    required String payId,
+  });
 }
 
 class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
@@ -64,6 +101,8 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
     double? maxAmount,
     String? description,
     required int validityMinutes,
+    bool neverExpires = false,
+    String? organizationId,
   }) async {
     final request = pb.CreateIDPayRequest()
       ..type = type == IDPayType.recurring
@@ -75,10 +114,12 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
       ..amount = amount
       ..currency = currency
       ..description = description ?? ''
-      ..validityMinutes = validityMinutes;
+      ..validityMinutes = validityMinutes
+      ..neverExpires = neverExpires;
 
     if (minAmount != null) request.minAmount = minAmount;
     if (maxAmount != null) request.maxAmount = maxAmount;
+    if (organizationId != null) request.organizationId = organizationId;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.idPayClient.createIDPay(
@@ -203,6 +244,125 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
       options: options,
     );
     return IDPayModel.fromProto(response.idPay);
+  }
+
+  @override
+  Future<IDPayOrganizationModel> createOrganization({
+    required String name,
+    required String description,
+    String? logoUrl,
+    required String accountId,
+  }) async {
+    final request = pb.CreateOrganizationRequest()
+      ..name = name
+      ..description = description
+      ..accountId = accountId;
+
+    if (logoUrl != null) request.logoUrl = logoUrl;
+
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.idPayClient.createOrganization(
+      request,
+      options: options,
+    );
+
+    return IDPayOrganizationModel.fromProto(response.organization);
+  }
+
+  @override
+  Future<(List<IDPayOrganizationModel>, int)> getMyOrganizations({
+    required String accountId,
+    int? limit,
+    int? offset,
+  }) async {
+    final request = pb.GetMyOrganizationsRequest()
+      ..accountId = accountId
+      ..limit = limit ?? 50
+      ..offset = offset ?? 0;
+
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.idPayClient.getMyOrganizations(
+      request,
+      options: options,
+    );
+
+    final orgs = response.organizations
+        .map((o) => IDPayOrganizationModel.fromProto(o))
+        .toList();
+    return (orgs, response.total);
+  }
+
+  @override
+  Future<IDPayOrganizationModel> updateOrganization({
+    required String id,
+    String? name,
+    String? description,
+    String? logoUrl,
+  }) async {
+    final request = pb.UpdateOrganizationRequest()..id = id;
+
+    if (name != null) request.name = name;
+    if (description != null) request.description = description;
+    if (logoUrl != null) request.logoUrl = logoUrl;
+
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.idPayClient.updateOrganization(
+      request,
+      options: options,
+    );
+
+    return IDPayOrganizationModel.fromProto(response.organization);
+  }
+
+  @override
+  Future<void> deleteOrganization({
+    required String id,
+  }) async {
+    final request = pb.DeleteOrganizationRequest()..id = id;
+
+    final options = await grpcClient.callOptions;
+    await grpcClient.idPayClient.deleteOrganization(
+      request,
+      options: options,
+    );
+  }
+
+  @override
+  Future<(IDPayOrganizationModel, List<IDPayModel>, double)>
+      getOrganizationDetails({
+    required String id,
+  }) async {
+    final request = pb.GetOrganizationDetailsRequest()..id = id;
+
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.idPayClient.getOrganizationDetails(
+      request,
+      options: options,
+    );
+
+    final org = IDPayOrganizationModel.fromProto(response.organization);
+    final idPays =
+        response.idPays.map((ip) => IDPayModel.fromProto(ip)).toList();
+    return (org, idPays, response.totalPaidOut);
+  }
+
+  @override
+  Future<(IDPayModel, IDPayOrganizationModel?)> lookupIDPayWithOrg({
+    required String payId,
+  }) async {
+    final request = pb.LookupIDPayRequest()..payId = payId;
+
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.idPayClient.lookupIDPay(
+      request,
+      options: options,
+    );
+
+    final idPay = IDPayModel.fromProto(response.idPay);
+    final org = response.hasOrganization()
+        ? IDPayOrganizationModel.fromProto(response.organization)
+        : null;
+    return (idPay, org);
   }
 
   pb.IDPayStatus _statusToProto(IDPayStatus status) {

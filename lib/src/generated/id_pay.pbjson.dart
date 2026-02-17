@@ -82,6 +82,9 @@ const IDPay$json = {
     {'1': 'created_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     {'1': 'total_received', '3': 16, '4': 1, '5': 1, '10': 'totalReceived'},
     {'1': 'payment_count', '3': 17, '4': 1, '5': 5, '10': 'paymentCount'},
+    {'1': 'never_expires', '3': 18, '4': 1, '5': 8, '10': 'neverExpires'},
+    {'1': 'organization_id', '3': 19, '4': 1, '5': 9, '10': 'organizationId'},
+    {'1': 'organization_name', '3': 20, '4': 1, '5': 9, '10': 'organizationName'},
   ],
 };
 
@@ -98,7 +101,9 @@ final $typed_data.Uint8List iDPayDescriptor = $convert.base64Decode(
     'cxI5CgpleHBpcmVzX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJZXhwaX'
     'Jlc0F0EjkKCmNyZWF0ZWRfYXQYDyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglj'
     'cmVhdGVkQXQSJQoOdG90YWxfcmVjZWl2ZWQYECABKAFSDXRvdGFsUmVjZWl2ZWQSIwoNcGF5bW'
-    'VudF9jb3VudBgRIAEoBVIMcGF5bWVudENvdW50');
+    'VudF9jb3VudBgRIAEoBVIMcGF5bWVudENvdW50EiMKDW5ldmVyX2V4cGlyZXMYEiABKAhSDG5l'
+    'dmVyRXhwaXJlcxInCg9vcmdhbml6YXRpb25faWQYEyABKAlSDm9yZ2FuaXphdGlvbklkEisKEW'
+    '9yZ2FuaXphdGlvbl9uYW1lGBQgASgJUhBvcmdhbml6YXRpb25OYW1l');
 
 @$core.Deprecated('Use iDPayTransactionDescriptor instead')
 const IDPayTransaction$json = {
@@ -130,6 +135,35 @@ final $typed_data.Uint8List iDPayTransactionDescriptor = $convert.base64Decode(
     'cxI5CgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYX'
     'RlZEF0');
 
+@$core.Deprecated('Use iDPayOrganizationDescriptor instead')
+const IDPayOrganization$json = {
+  '1': 'IDPayOrganization',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'creator_id', '3': 2, '4': 1, '5': 9, '10': 'creatorId'},
+    {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'logo_url', '3': 5, '4': 1, '5': 9, '10': 'logoUrl'},
+    {'1': 'account_id', '3': 6, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'total_received', '3': 7, '4': 1, '5': 1, '10': 'totalReceived'},
+    {'1': 'total_payment_count', '3': 8, '4': 1, '5': 5, '10': 'totalPaymentCount'},
+    {'1': 'active_id_pay_count', '3': 9, '4': 1, '5': 5, '10': 'activeIdPayCount'},
+    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `IDPayOrganization`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List iDPayOrganizationDescriptor = $convert.base64Decode(
+    'ChFJRFBheU9yZ2FuaXphdGlvbhIOCgJpZBgBIAEoCVICaWQSHQoKY3JlYXRvcl9pZBgCIAEoCV'
+    'IJY3JlYXRvcklkEhIKBG5hbWUYAyABKAlSBG5hbWUSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rl'
+    'c2NyaXB0aW9uEhkKCGxvZ29fdXJsGAUgASgJUgdsb2dvVXJsEh0KCmFjY291bnRfaWQYBiABKA'
+    'lSCWFjY291bnRJZBIlCg50b3RhbF9yZWNlaXZlZBgHIAEoAVINdG90YWxSZWNlaXZlZBIuChN0'
+    'b3RhbF9wYXltZW50X2NvdW50GAggASgFUhF0b3RhbFBheW1lbnRDb3VudBItChNhY3RpdmVfaW'
+    'RfcGF5X2NvdW50GAkgASgFUhBhY3RpdmVJZFBheUNvdW50EjkKCmNyZWF0ZWRfYXQYCiABKAsy'
+    'Gi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSOQoKdXBkYXRlZF9hdBgLIA'
+    'EoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdA==');
+
 @$core.Deprecated('Use createIDPayRequestDescriptor instead')
 const CreateIDPayRequest$json = {
   '1': 'CreateIDPayRequest',
@@ -143,6 +177,8 @@ const CreateIDPayRequest$json = {
     {'1': 'description', '3': 7, '4': 1, '5': 9, '10': 'description'},
     {'1': 'validity_minutes', '3': 8, '4': 1, '5': 5, '10': 'validityMinutes'},
     {'1': 'recipient_account_id', '3': 9, '4': 1, '5': 9, '10': 'recipientAccountId'},
+    {'1': 'never_expires', '3': 10, '4': 1, '5': 8, '10': 'neverExpires'},
+    {'1': 'organization_id', '3': 11, '4': 1, '5': 9, '10': 'organizationId'},
   ],
 };
 
@@ -154,7 +190,8 @@ final $typed_data.Uint8List createIDPayRequestDescriptor = $convert.base64Decode
     '5jeRIdCgptaW5fYW1vdW50GAUgASgBUgltaW5BbW91bnQSHQoKbWF4X2Ftb3VudBgGIAEoAVIJ'
     'bWF4QW1vdW50EiAKC2Rlc2NyaXB0aW9uGAcgASgJUgtkZXNjcmlwdGlvbhIpChB2YWxpZGl0eV'
     '9taW51dGVzGAggASgFUg92YWxpZGl0eU1pbnV0ZXMSMAoUcmVjaXBpZW50X2FjY291bnRfaWQY'
-    'CSABKAlSEnJlY2lwaWVudEFjY291bnRJZA==');
+    'CSABKAlSEnJlY2lwaWVudEFjY291bnRJZBIjCg1uZXZlcl9leHBpcmVzGAogASgIUgxuZXZlck'
+    'V4cGlyZXMSJwoPb3JnYW5pemF0aW9uX2lkGAsgASgJUg5vcmdhbml6YXRpb25JZA==');
 
 @$core.Deprecated('Use createIDPayResponseDescriptor instead')
 const CreateIDPayResponse$json = {
@@ -187,13 +224,15 @@ const LookupIDPayResponse$json = {
   '1': 'LookupIDPayResponse',
   '2': [
     {'1': 'id_pay', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPay', '10': 'idPay'},
+    {'1': 'organization', '3': 2, '4': 1, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organization'},
   ],
 };
 
 /// Descriptor for `LookupIDPayResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List lookupIDPayResponseDescriptor = $convert.base64Decode(
     'ChNMb29rdXBJRFBheVJlc3BvbnNlEiQKBmlkX3BheRgBIAEoCzINLmlkX3BheS5JRFBheVIFaW'
-    'RQYXk=');
+    'RQYXkSPQoMb3JnYW5pemF0aW9uGAIgASgLMhkuaWRfcGF5LklEUGF5T3JnYW5pemF0aW9uUgxv'
+    'cmdhbml6YXRpb24=');
 
 @$core.Deprecated('Use payIDPayRequestDescriptor instead')
 const PayIDPayRequest$json = {
@@ -338,4 +377,149 @@ const GetIDPayDetailsResponse$json = {
 final $typed_data.Uint8List getIDPayDetailsResponseDescriptor = $convert.base64Decode(
     'ChdHZXRJRFBheURldGFpbHNSZXNwb25zZRIkCgZpZF9wYXkYASABKAsyDS5pZF9wYXkuSURQYX'
     'lSBWlkUGF5');
+
+@$core.Deprecated('Use createOrganizationRequestDescriptor instead')
+const CreateOrganizationRequest$json = {
+  '1': 'CreateOrganizationRequest',
+  '2': [
+    {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'logo_url', '3': 3, '4': 1, '5': 9, '10': 'logoUrl'},
+    {'1': 'account_id', '3': 4, '4': 1, '5': 9, '10': 'accountId'},
+  ],
+};
+
+/// Descriptor for `CreateOrganizationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createOrganizationRequestDescriptor = $convert.base64Decode(
+    'ChlDcmVhdGVPcmdhbml6YXRpb25SZXF1ZXN0EhIKBG5hbWUYASABKAlSBG5hbWUSIAoLZGVzY3'
+    'JpcHRpb24YAiABKAlSC2Rlc2NyaXB0aW9uEhkKCGxvZ29fdXJsGAMgASgJUgdsb2dvVXJsEh0K'
+    'CmFjY291bnRfaWQYBCABKAlSCWFjY291bnRJZA==');
+
+@$core.Deprecated('Use createOrganizationResponseDescriptor instead')
+const CreateOrganizationResponse$json = {
+  '1': 'CreateOrganizationResponse',
+  '2': [
+    {'1': 'organization', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organization'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `CreateOrganizationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createOrganizationResponseDescriptor = $convert.base64Decode(
+    'ChpDcmVhdGVPcmdhbml6YXRpb25SZXNwb25zZRI9Cgxvcmdhbml6YXRpb24YASABKAsyGS5pZF'
+    '9wYXkuSURQYXlPcmdhbml6YXRpb25SDG9yZ2FuaXphdGlvbhIYCgdtZXNzYWdlGAIgASgJUgdt'
+    'ZXNzYWdl');
+
+@$core.Deprecated('Use getMyOrganizationsRequestDescriptor instead')
+const GetMyOrganizationsRequest$json = {
+  '1': 'GetMyOrganizationsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 3, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetMyOrganizationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMyOrganizationsRequestDescriptor = $convert.base64Decode(
+    'ChlHZXRNeU9yZ2FuaXphdGlvbnNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bn'
+    'RJZBIUCgVsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMgASgFUgZvZmZzZXQ=');
+
+@$core.Deprecated('Use getMyOrganizationsResponseDescriptor instead')
+const GetMyOrganizationsResponse$json = {
+  '1': 'GetMyOrganizationsResponse',
+  '2': [
+    {'1': 'organizations', '3': 1, '4': 3, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organizations'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetMyOrganizationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMyOrganizationsResponseDescriptor = $convert.base64Decode(
+    'ChpHZXRNeU9yZ2FuaXphdGlvbnNSZXNwb25zZRI/Cg1vcmdhbml6YXRpb25zGAEgAygLMhkuaW'
+    'RfcGF5LklEUGF5T3JnYW5pemF0aW9uUg1vcmdhbml6YXRpb25zEhQKBXRvdGFsGAIgASgFUgV0'
+    'b3RhbA==');
+
+@$core.Deprecated('Use updateOrganizationRequestDescriptor instead')
+const UpdateOrganizationRequest$json = {
+  '1': 'UpdateOrganizationRequest',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'logo_url', '3': 4, '4': 1, '5': 9, '10': 'logoUrl'},
+  ],
+};
+
+/// Descriptor for `UpdateOrganizationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateOrganizationRequestDescriptor = $convert.base64Decode(
+    'ChlVcGRhdGVPcmdhbml6YXRpb25SZXF1ZXN0Eg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGAIgAS'
+    'gJUgRuYW1lEiAKC2Rlc2NyaXB0aW9uGAMgASgJUgtkZXNjcmlwdGlvbhIZCghsb2dvX3VybBgE'
+    'IAEoCVIHbG9nb1VybA==');
+
+@$core.Deprecated('Use updateOrganizationResponseDescriptor instead')
+const UpdateOrganizationResponse$json = {
+  '1': 'UpdateOrganizationResponse',
+  '2': [
+    {'1': 'organization', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organization'},
+  ],
+};
+
+/// Descriptor for `UpdateOrganizationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateOrganizationResponseDescriptor = $convert.base64Decode(
+    'ChpVcGRhdGVPcmdhbml6YXRpb25SZXNwb25zZRI9Cgxvcmdhbml6YXRpb24YASABKAsyGS5pZF'
+    '9wYXkuSURQYXlPcmdhbml6YXRpb25SDG9yZ2FuaXphdGlvbg==');
+
+@$core.Deprecated('Use deleteOrganizationRequestDescriptor instead')
+const DeleteOrganizationRequest$json = {
+  '1': 'DeleteOrganizationRequest',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+  ],
+};
+
+/// Descriptor for `DeleteOrganizationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteOrganizationRequestDescriptor = $convert.base64Decode(
+    'ChlEZWxldGVPcmdhbml6YXRpb25SZXF1ZXN0Eg4KAmlkGAEgASgJUgJpZA==');
+
+@$core.Deprecated('Use deleteOrganizationResponseDescriptor instead')
+const DeleteOrganizationResponse$json = {
+  '1': 'DeleteOrganizationResponse',
+  '2': [
+    {'1': 'message', '3': 1, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DeleteOrganizationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteOrganizationResponseDescriptor = $convert.base64Decode(
+    'ChpEZWxldGVPcmdhbml6YXRpb25SZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use getOrganizationDetailsRequestDescriptor instead')
+const GetOrganizationDetailsRequest$json = {
+  '1': 'GetOrganizationDetailsRequest',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+  ],
+};
+
+/// Descriptor for `GetOrganizationDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getOrganizationDetailsRequestDescriptor = $convert.base64Decode(
+    'Ch1HZXRPcmdhbml6YXRpb25EZXRhaWxzUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
+
+@$core.Deprecated('Use getOrganizationDetailsResponseDescriptor instead')
+const GetOrganizationDetailsResponse$json = {
+  '1': 'GetOrganizationDetailsResponse',
+  '2': [
+    {'1': 'organization', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organization'},
+    {'1': 'id_pays', '3': 2, '4': 3, '5': 11, '6': '.id_pay.IDPay', '10': 'idPays'},
+    {'1': 'total_paid_out', '3': 3, '4': 1, '5': 1, '10': 'totalPaidOut'},
+  ],
+};
+
+/// Descriptor for `GetOrganizationDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getOrganizationDetailsResponseDescriptor = $convert.base64Decode(
+    'Ch5HZXRPcmdhbml6YXRpb25EZXRhaWxzUmVzcG9uc2USPQoMb3JnYW5pemF0aW9uGAEgASgLMh'
+    'kuaWRfcGF5LklEUGF5T3JnYW5pemF0aW9uUgxvcmdhbml6YXRpb24SJgoHaWRfcGF5cxgCIAMo'
+    'CzINLmlkX3BheS5JRFBheVIGaWRQYXlzEiQKDnRvdGFsX3BhaWRfb3V0GAMgASgBUgx0b3RhbF'
+    'BhaWRPdXQ=');
 

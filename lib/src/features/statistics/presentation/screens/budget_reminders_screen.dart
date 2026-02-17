@@ -211,10 +211,6 @@ class _AlertCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: alert.isRead ? const Color(0xFF2D2D2D) : alertColor.withValues(alpha: 0.3),
-          width: alert.isRead ? 1 : 2,
-        ),
         boxShadow: alert.isRead ? null : [
           BoxShadow(
             color: alertColor.withValues(alpha: 0.1),

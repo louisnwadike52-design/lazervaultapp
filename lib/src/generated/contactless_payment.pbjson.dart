@@ -36,7 +36,7 @@ final $typed_data.Uint8List createPaymentSessionRequestDescriptor = $convert.bas
 const CreatePaymentSessionResponse$json = {
   '1': 'CreatePaymentSessionResponse',
   '2': [
-    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.contactless_payment.PaymentSession', '10': 'session'},
+    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.contactless.PaymentSession', '10': 'session'},
     {'1': 'nfc_payload', '3': 2, '4': 1, '5': 9, '10': 'nfcPayload'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -44,9 +44,9 @@ const CreatePaymentSessionResponse$json = {
 
 /// Descriptor for `CreatePaymentSessionResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createPaymentSessionResponseDescriptor = $convert.base64Decode(
-    'ChxDcmVhdGVQYXltZW50U2Vzc2lvblJlc3BvbnNlEj0KB3Nlc3Npb24YASABKAsyIy5jb250YW'
-    'N0bGVzc19wYXltZW50LlBheW1lbnRTZXNzaW9uUgdzZXNzaW9uEh8KC25mY19wYXlsb2FkGAIg'
-    'ASgJUgpuZmNQYXlsb2FkEhgKB21lc3NhZ2UYAyABKAlSB21lc3NhZ2U=');
+    'ChxDcmVhdGVQYXltZW50U2Vzc2lvblJlc3BvbnNlEjUKB3Nlc3Npb24YASABKAsyGy5jb250YW'
+    'N0bGVzcy5QYXltZW50U2Vzc2lvblIHc2Vzc2lvbhIfCgtuZmNfcGF5bG9hZBgCIAEoCVIKbmZj'
+    'UGF5bG9hZBIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use getPaymentSessionRequestDescriptor instead')
 const GetPaymentSessionRequest$json = {
@@ -65,14 +65,14 @@ final $typed_data.Uint8List getPaymentSessionRequestDescriptor = $convert.base64
 const GetPaymentSessionResponse$json = {
   '1': 'GetPaymentSessionResponse',
   '2': [
-    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.contactless_payment.PaymentSession', '10': 'session'},
+    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.contactless.PaymentSession', '10': 'session'},
   ],
 };
 
 /// Descriptor for `GetPaymentSessionResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getPaymentSessionResponseDescriptor = $convert.base64Decode(
-    'ChlHZXRQYXltZW50U2Vzc2lvblJlc3BvbnNlEj0KB3Nlc3Npb24YASABKAsyIy5jb250YWN0bG'
-    'Vzc19wYXltZW50LlBheW1lbnRTZXNzaW9uUgdzZXNzaW9u');
+    'ChlHZXRQYXltZW50U2Vzc2lvblJlc3BvbnNlEjUKB3Nlc3Npb24YASABKAsyGy5jb250YWN0bG'
+    'Vzcy5QYXltZW50U2Vzc2lvblIHc2Vzc2lvbg==');
 
 @$core.Deprecated('Use processContactlessPaymentRequestDescriptor instead')
 const ProcessContactlessPaymentRequest$json = {
@@ -96,7 +96,7 @@ final $typed_data.Uint8List processContactlessPaymentRequestDescriptor = $conver
 const ProcessContactlessPaymentResponse$json = {
   '1': 'ProcessContactlessPaymentResponse',
   '2': [
-    {'1': 'transaction', '3': 1, '4': 1, '5': 11, '6': '.contactless_payment.ContactlessTransaction', '10': 'transaction'},
+    {'1': 'transaction', '3': 1, '4': 1, '5': 11, '6': '.contactless.ContactlessTransaction', '10': 'transaction'},
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -104,10 +104,9 @@ const ProcessContactlessPaymentResponse$json = {
 
 /// Descriptor for `ProcessContactlessPaymentResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List processContactlessPaymentResponseDescriptor = $convert.base64Decode(
-    'CiFQcm9jZXNzQ29udGFjdGxlc3NQYXltZW50UmVzcG9uc2USTQoLdHJhbnNhY3Rpb24YASABKA'
-    'syKy5jb250YWN0bGVzc19wYXltZW50LkNvbnRhY3RsZXNzVHJhbnNhY3Rpb25SC3RyYW5zYWN0'
-    'aW9uEh8KC25ld19iYWxhbmNlGAIgASgBUgpuZXdCYWxhbmNlEhgKB21lc3NhZ2UYAyABKAlSB2'
-    '1lc3NhZ2U=');
+    'CiFQcm9jZXNzQ29udGFjdGxlc3NQYXltZW50UmVzcG9uc2USRQoLdHJhbnNhY3Rpb24YASABKA'
+    'syIy5jb250YWN0bGVzcy5Db250YWN0bGVzc1RyYW5zYWN0aW9uUgt0cmFuc2FjdGlvbhIfCgtu'
+    'ZXdfYmFsYW5jZRgCIAEoAVIKbmV3QmFsYW5jZRIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use cancelPaymentSessionRequestDescriptor instead')
 const CancelPaymentSessionRequest$json = {
@@ -155,16 +154,15 @@ final $typed_data.Uint8List getMyPaymentSessionsRequestDescriptor = $convert.bas
 const GetMyPaymentSessionsResponse$json = {
   '1': 'GetMyPaymentSessionsResponse',
   '2': [
-    {'1': 'sessions', '3': 1, '4': 3, '5': 11, '6': '.contactless_payment.PaymentSession', '10': 'sessions'},
+    {'1': 'sessions', '3': 1, '4': 3, '5': 11, '6': '.contactless.PaymentSession', '10': 'sessions'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetMyPaymentSessionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getMyPaymentSessionsResponseDescriptor = $convert.base64Decode(
-    'ChxHZXRNeVBheW1lbnRTZXNzaW9uc1Jlc3BvbnNlEj8KCHNlc3Npb25zGAEgAygLMiMuY29udG'
-    'FjdGxlc3NfcGF5bWVudC5QYXltZW50U2Vzc2lvblIIc2Vzc2lvbnMSFAoFdG90YWwYAiABKAVS'
-    'BXRvdGFs');
+    'ChxHZXRNeVBheW1lbnRTZXNzaW9uc1Jlc3BvbnNlEjcKCHNlc3Npb25zGAEgAygLMhsuY29udG'
+    'FjdGxlc3MuUGF5bWVudFNlc3Npb25SCHNlc3Npb25zEhQKBXRvdGFsGAIgASgFUgV0b3RhbA==');
 
 @$core.Deprecated('Use getMyContactlessPaymentsRequestDescriptor instead')
 const GetMyContactlessPaymentsRequest$json = {
@@ -186,16 +184,16 @@ final $typed_data.Uint8List getMyContactlessPaymentsRequestDescriptor = $convert
 const GetMyContactlessPaymentsResponse$json = {
   '1': 'GetMyContactlessPaymentsResponse',
   '2': [
-    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.contactless_payment.ContactlessTransaction', '10': 'transactions'},
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.contactless.ContactlessTransaction', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetMyContactlessPaymentsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getMyContactlessPaymentsResponseDescriptor = $convert.base64Decode(
-    'CiBHZXRNeUNvbnRhY3RsZXNzUGF5bWVudHNSZXNwb25zZRJPCgx0cmFuc2FjdGlvbnMYASADKA'
-    'syKy5jb250YWN0bGVzc19wYXltZW50LkNvbnRhY3RsZXNzVHJhbnNhY3Rpb25SDHRyYW5zYWN0'
-    'aW9ucxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');
+    'CiBHZXRNeUNvbnRhY3RsZXNzUGF5bWVudHNSZXNwb25zZRJHCgx0cmFuc2FjdGlvbnMYASADKA'
+    'syIy5jb250YWN0bGVzcy5Db250YWN0bGVzc1RyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMSFAoF'
+    'dG90YWwYAiABKAVSBXRvdGFs');
 
 @$core.Deprecated('Use checkSessionStatusRequestDescriptor instead')
 const CheckSessionStatusRequest$json = {
@@ -243,16 +241,16 @@ final $typed_data.Uint8List acknowledgeSessionReadRequestDescriptor = $convert.b
 const AcknowledgeSessionReadResponse$json = {
   '1': 'AcknowledgeSessionReadResponse',
   '2': [
-    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.contactless_payment.PaymentSession', '10': 'session'},
+    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.contactless.PaymentSession', '10': 'session'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `AcknowledgeSessionReadResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List acknowledgeSessionReadResponseDescriptor = $convert.base64Decode(
-    'Ch5BY2tub3dsZWRnZVNlc3Npb25SZWFkUmVzcG9uc2USPQoHc2Vzc2lvbhgBIAEoCzIjLmNvbn'
-    'RhY3RsZXNzX3BheW1lbnQuUGF5bWVudFNlc3Npb25SB3Nlc3Npb24SGAoHbWVzc2FnZRgCIAEo'
-    'CVIHbWVzc2FnZQ==');
+    'Ch5BY2tub3dsZWRnZVNlc3Npb25SZWFkUmVzcG9uc2USNQoHc2Vzc2lvbhgBIAEoCzIbLmNvbn'
+    'RhY3RsZXNzLlBheW1lbnRTZXNzaW9uUgdzZXNzaW9uEhgKB21lc3NhZ2UYAiABKAlSB21lc3Nh'
+    'Z2U=');
 
 @$core.Deprecated('Use paymentSessionDescriptor instead')
 const PaymentSession$json = {

@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../../core/types/app_routes.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../domain/entities/id_pay_transaction_entity.dart';
 import '../cubit/id_pay_cubit.dart';
@@ -109,7 +109,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
             snackPosition: SnackPosition.BOTTOM,
             margin: EdgeInsets.all(16.w),
           );
-          Get.back(result: true);
+          Get.offAllNamed(AppRoutes.idPayHome);
         } else if (state is IDPayDetailsLoaded) {
           setState(() {
             _idPay = state.idPay;
@@ -360,7 +360,9 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
           SizedBox(height: 12.h),
           _buildInfoRow(
             'Expires',
-            _formatDateTime(_idPay.expiresAt),
+            _idPay.neverExpires
+                ? 'Never'
+                : _formatDateTime(_idPay.expiresAt),
           ),
           if (_idPay.description.isNotEmpty) ...[
             SizedBox(height: 12.h),

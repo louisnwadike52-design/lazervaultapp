@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/group_account_cubit.dart';
@@ -33,6 +34,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   final TextEditingController _searchController = TextEditingController();
   final Debouncer _debouncer = Debouncer.search();
   final Set<String> _joiningGroupIds = {};
+  final Set<String> _joinedGroupIds = {};
   String _selectedSort = 'most_members';
 
   // Leaderboard tab state
@@ -1068,7 +1070,10 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
             listener: (context, state) {
               if (state is JoinPublicGroupSuccess) {
-                setState(() => _joiningGroupIds.clear());
+                setState(() {
+                  _joinedGroupIds.add(state.group.id);
+                  _joiningGroupIds.clear();
+                });
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
@@ -1280,6 +1285,43 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
   Widget _buildJoinButton(GroupAccount group) {
     final isJoining = _joiningGroupIds.contains(group.id);
+    // Check if user already belongs to this group
+    final cachedGroups = context.read<GroupAccountCubit>().cachedGroups;
+    final isAlreadyMember = _joinedGroupIds.contains(group.id) ||
+        (cachedGroups != null && cachedGroups.any((g) => g.id == group.id));
+
+    if (isAlreadyMember) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.check_circle,
+              color: const Color(0xFF10B981),
+              size: 14.sp,
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              'Joined',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF10B981),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return GestureDetector(
       onTap: isJoining
@@ -1571,7 +1613,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                       SizedBox(width: 4.w),
                       Expanded(
                         child: Text(
-                          '\$${group.totalRaised.toStringAsFixed(2)} collected',
+                          '${CurrencySymbols.formatAmount(group.totalRaised)} collected',
                           style: GoogleFonts.inter(
                             color: const Color(0xFF10B981),
                             fontSize: 12.sp,

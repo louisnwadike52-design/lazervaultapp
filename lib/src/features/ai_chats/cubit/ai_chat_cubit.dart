@@ -65,9 +65,12 @@ class AIChatCubit extends Cubit<AIChatState> {
   Future<void> sendMessage(String text, {required String accessToken}) async {
     if (text.trim().isEmpty) return;
 
+    // Mask PIN-like input (4-6 digits) in the displayed message for security
+    final displayText = RegExp(r'^\d{4,6}$').hasMatch(text.trim()) ? 'Sensitive data ****' : text;
+
     // Add user message to the internal list immediately for responsiveness
     final userMessageEntity = ChatMessageEntity(
-      text: text,
+      text: displayText,
       isUser: true,
       timestamp: DateTime.now(),
     );
@@ -167,5 +170,12 @@ class AIChatCubit extends Cubit<AIChatState> {
     _sessionId = null;
     if (isClosed) return;
     emit(AIChatInitial(messages: _currentMessages, isTyping: false));
+  }
+
+  /// Notify cubit that settings changed. The actual values are persisted locally
+  /// via SharedPreferences and read by the datasource on the next API call.
+  void updateSettings({required String responseStyle, required bool emojiUsage}) {
+    // No-op: settings are read from SharedPreferences by HttpAiChatDataSource.
+    // This method exists so the UI can signal the cubit if needed in the future.
   }
 } 

@@ -13,7 +13,6 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-/// Enum for transaction status
 class ExchangeStatus extends $pb.ProtobufEnum {
   static const ExchangeStatus PENDING = ExchangeStatus._(0, _omitEnumNames ? '' : 'PENDING');
   static const ExchangeStatus PROCESSING = ExchangeStatus._(1, _omitEnumNames ? '' : 'PROCESSING');
@@ -33,6 +32,23 @@ class ExchangeStatus extends $pb.ProtobufEnum {
   static ExchangeStatus? valueOf($core.int value) => _byValue[value];
 
   const ExchangeStatus._($core.int v, $core.String n) : super(v, n);
+}
+
+class ExchangeType extends $pb.ProtobufEnum {
+  static const ExchangeType EXCHANGE_TYPE_UNSPECIFIED = ExchangeType._(0, _omitEnumNames ? '' : 'EXCHANGE_TYPE_UNSPECIFIED');
+  static const ExchangeType CONVERSION = ExchangeType._(1, _omitEnumNames ? '' : 'CONVERSION');
+  static const ExchangeType INTERNATIONAL = ExchangeType._(2, _omitEnumNames ? '' : 'INTERNATIONAL');
+
+  static const $core.List<ExchangeType> values = <ExchangeType> [
+    EXCHANGE_TYPE_UNSPECIFIED,
+    CONVERSION,
+    INTERNATIONAL,
+  ];
+
+  static final $core.Map<$core.int, ExchangeType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static ExchangeType? valueOf($core.int value) => _byValue[value];
+
+  const ExchangeType._($core.int v, $core.String n) : super(v, n);
 }
 
 

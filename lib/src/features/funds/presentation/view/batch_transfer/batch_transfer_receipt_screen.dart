@@ -591,6 +591,8 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                         _buildBatchSummary(),
                         SizedBox(height: 20.h),
                         _buildTransferResults(),
+                        SizedBox(height: 12.h),
+                        _buildViewAllRecipientsCTA(),
                         SizedBox(height: 20.h),
                         if (_hasNewBalance) ...[
                           _buildNewBalanceCard(),
@@ -648,7 +650,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 color: btCardElevated,
                 borderRadius: BorderRadius.circular(22.r),
               ),
-              child: Icon(Icons.close, color: btTextPrimary, size: 20.sp),
+              child: Icon(Icons.arrow_back_ios_new, color: btTextPrimary, size: 18.sp),
             ),
           ),
           SizedBox(width: 16.w),
@@ -674,19 +676,6 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                   ),
                 ),
               ],
-            ),
-          ),
-          GestureDetector(
-            onTap: _navigateToDashboard,
-            child: Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                color: btCardElevated,
-                borderRadius: BorderRadius.circular(22.r),
-              ),
-              child:
-                  Icon(Icons.home_outlined, color: btTextPrimary, size: 20.sp),
             ),
           ),
         ],
@@ -1309,6 +1298,50 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     );
   }
 
+  Widget _buildViewAllRecipientsCTA() {
+    final transfers = receiptData['transfers'] as List<dynamic>? ?? [];
+    if (transfers.isEmpty) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: _showIndividualReceiptsSheet,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
+        decoration: BoxDecoration(
+          color: btBlue.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: btBlue.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.receipt_long_rounded, color: btBlue, size: 18.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'View All Recipients',
+              style: GoogleFonts.inter(
+                color: btBlue,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              '(${transfers.length})',
+              style: GoogleFonts.inter(
+                color: btBlue.withValues(alpha: 0.7),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            Icon(Icons.chevron_right, color: btBlue, size: 20.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildBottomActions() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -1346,7 +1379,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
               ],
             ),
             SizedBox(height: 10.h),
-            // Secondary actions - New Transfer and Dashboard
+            // Secondary actions - New Transfer and View All Recipients
             Row(
               children: [
                 Expanded(
@@ -1360,10 +1393,10 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 SizedBox(width: 12.w),
                 Expanded(
                   child: _buildActionButton(
-                    icon: Icons.home_outlined,
-                    label: 'Dashboard',
-                    color: btTextSecondary,
-                    onTap: _navigateToDashboard,
+                    icon: Icons.receipt_long_rounded,
+                    label: 'All Recipients',
+                    color: btPurple,
+                    onTap: _showIndividualReceiptsSheet,
                   ),
                 ),
               ],

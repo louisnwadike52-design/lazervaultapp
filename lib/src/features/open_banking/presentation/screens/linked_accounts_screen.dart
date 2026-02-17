@@ -39,10 +39,14 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
   }
 
   void _navigateToLinkBank() async {
+    final cubit = context.read<OpenBankingCubit>();
     final result = await Get.to<bool>(
-      () => LinkBankScreen(
-        userId: widget.userId,
-        accessToken: widget.accessToken,
+      () => BlocProvider.value(
+        value: cubit,
+        child: LinkBankScreen(
+          userId: widget.userId,
+          accessToken: widget.accessToken,
+        ),
       ),
     );
 

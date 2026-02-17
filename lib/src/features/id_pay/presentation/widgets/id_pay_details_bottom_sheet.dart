@@ -160,7 +160,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
           SizedBox(height: 24.h),
 
           // PayID
-          _buildDetailRow('PayID', idPay.displayPayId),
+          _buildPayIdRow(idPay.displayPayId),
           SizedBox(height: 16.h),
 
           // Type
@@ -230,7 +230,9 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
           SizedBox(height: 16.h),
           _buildDetailRow(
             'Expires',
-            DateFormat('MMM dd, yyyy - hh:mm a').format(idPay.expiresAt),
+            idPay.neverExpires
+                ? 'Never'
+                : DateFormat('MMM dd, yyyy - hh:mm a').format(idPay.expiresAt),
           ),
 
           SizedBox(height: 24.h),
@@ -343,6 +345,54 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
           SizedBox(height: 8.h),
         ],
       ),
+    );
+  }
+
+  Widget _buildPayIdRow(String payId) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'PayID',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              payId,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: payId));
+                Get.snackbar(
+                  'Copied',
+                  'PayID copied to clipboard',
+                  backgroundColor: const Color(0xFF10B981),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                  duration: const Duration(seconds: 2),
+                );
+              },
+              child: Icon(
+                Icons.copy,
+                color: const Color(0xFF3B82F6),
+                size: 16.sp,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

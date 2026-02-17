@@ -94,4 +94,93 @@ class FinancialAnalyticsRepository {
       ),
     );
   }
+
+  /// Get failed and reversed transactions for the current period
+  Future<GetTransactionHistoryResponse> getFailedTransactions({
+    DateTime? startDate,
+    DateTime? endDate,
+    int limit = 50,
+  }) async {
+    final accountId = _accountId;
+    if (accountId == null || accountId.isEmpty) {
+      return GetTransactionHistoryResponse();
+    }
+
+    // Fetch failed and reversed in parallel — handle each independently
+    // so a failure in one doesn't discard the other
+    Future<GetTransactionHistoryResponse?> safeFetch(String status) async {
+      try {
+        return await retryWithBackoff(
+          operation: () => grpcClient.getTransactionHistory(
+            accountId: accountId,
+            status: status,
+            startDate: startDate,
+            endDate: endDate,
+            limit: limit,
+          ),
+        );
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final results = await Future.wait([
+      safeFetch('failed'),
+      safeFetch('reversed'),
+    ]);
+
+    final failed = results[0];
+    final reversed = results[1];
+
+    // Merge whatever succeeded into a single response
+    final merged = GetTransactionHistoryResponse();
+    if (failed != null) {
+      merged.transactions.addAll(failed.transactions);
+      merged.total += failed.total;
+    }
+    if (reversed != null) {
+      merged.transactions.addAll(reversed.transactions);
+      merged.total += reversed.total;
+    }
+
+    // Sort by date descending
+    if (merged.transactions.length > 1) {
+      merged.transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }
+
+    return merged;
+  }
+
+  // ===== CATEGORY MANAGEMENT =====
+
+  /// Get user's custom category mappings
+  Future<GetUserCategoryMappingsResponse> getUserCategoryMappings() async {
+    return retryWithBackoff(
+      operation: () => grpcClient.getUserCategoryMappings(),
+    );
+  }
+
+  /// Update a category mapping (rename, re-parent)
+  Future<UpdateUserCategoryMappingResponse> updateUserCategoryMapping({
+    required String originalCategory,
+    required String customCategory,
+    String parentCategory = '',
+  }) async {
+    return retryWithBackoff(
+      operation: () => grpcClient.updateUserCategoryMapping(
+        originalCategory: originalCategory,
+        customCategory: customCategory,
+        parentCategory: parentCategory,
+      ),
+    );
+  }
+
+  /// Reorder categories (batch update display order)
+  Future<ReorderCategoriesResponse> reorderCategories({
+    required List<CategoryOrderItem> orderings,
+  }) async {
+    return retryWithBackoff(
+      operation: () => grpcClient.reorderCategories(orderings: orderings),
+    );
+  }
 }

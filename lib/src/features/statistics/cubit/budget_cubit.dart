@@ -191,6 +191,10 @@ class BudgetCubit extends Cubit<BudgetState> {
     required String riskTolerance,
     String currency = 'NGN',
     int monthsOfData = 3,
+    List<Map<String, dynamic>> financialGoals = const [],
+    List<Map<String, dynamic>> upcomingBills = const [],
+    List<Map<String, dynamic>> budgetAlerts = const [],
+    List<Map<String, dynamic>> failedTransactions = const [],
   }) async {
     emit(BudgetAIInsightsLoading());
     try {
@@ -202,6 +206,10 @@ class BudgetCubit extends Cubit<BudgetState> {
         riskTolerance: riskTolerance,
         currency: currency,
         monthsOfData: monthsOfData,
+        financialGoals: financialGoals,
+        upcomingBills: upcomingBills,
+        budgetAlerts: budgetAlerts,
+        failedTransactions: failedTransactions,
       );
 
       final insights = BudgetAIInsightsData(
@@ -220,6 +228,20 @@ class BudgetCubit extends Cubit<BudgetState> {
         spendingPatterns: aiResponse.spendingPatterns,
         recommendedSavingsRate: aiResponse.recommendedSavingsRate,
         riskLevel: aiResponse.riskLevel,
+        categoryInsights: aiResponse.categoryInsights
+            .map((c) => CategoryInsightData(
+                  categoryName: c.categoryName,
+                  analysis: c.analysis,
+                  subCategories: c.subCategories
+                      .map((s) => SubCategoryInsightData(
+                            name: s.name,
+                            amount: s.amount,
+                            insight: s.insight,
+                          ))
+                      .toList(),
+                  actionItems: c.actionItems,
+                ))
+            .toList(),
       );
 
       emit(BudgetAIInsightsLoaded(insights: insights));

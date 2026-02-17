@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/types/app_routes.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
@@ -41,6 +41,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     '24hr': 1440,
     '7 days': 10080,
     '30 days': 43200,
+    'Never': 0,
     'Custom': -1,
   };
 
@@ -80,7 +81,10 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     }
   }
 
+  bool get _neverExpires => _selectedExpiry == 'Never';
+
   int get _validityMinutes {
+    if (_neverExpires) return 0;
     if (_selectedExpiry == 'Custom') {
       final custom = int.tryParse(_customExpiryController.text.trim());
       return custom ?? 1440;
@@ -107,6 +111,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           ? _descriptionController.text.trim()
           : null,
       validityMinutes: _validityMinutes,
+      neverExpires: _neverExpires,
     );
   }
 
@@ -783,9 +788,11 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                 SizedBox(height: 16.h),
                 _buildReviewRow(
                   'Expiry',
-                  _selectedExpiry == 'Custom'
-                      ? '${_customExpiryController.text} minutes'
-                      : _selectedExpiry,
+                  _neverExpires
+                      ? 'Never'
+                      : _selectedExpiry == 'Custom'
+                          ? '${_customExpiryController.text} minutes'
+                          : _selectedExpiry,
                 ),
                 if (_descriptionController.text.trim().isNotEmpty) ...[
                   SizedBox(height: 16.h),

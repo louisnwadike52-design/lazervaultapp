@@ -87,6 +87,9 @@ class IDPayEntity extends Equatable {
   final DateTime createdAt;
   final double totalReceived;
   final int paymentCount;
+  final bool neverExpires;
+  final String organizationId;
+  final String organizationName;
 
   const IDPayEntity({
     required this.id,
@@ -106,9 +109,12 @@ class IDPayEntity extends Equatable {
     required this.createdAt,
     required this.totalReceived,
     required this.paymentCount,
+    this.neverExpires = false,
+    this.organizationId = '',
+    this.organizationName = '',
   });
 
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
+  bool get isExpired => neverExpires ? false : DateTime.now().isAfter(expiresAt);
   bool get isActive => status == IDPayStatus.active && !isExpired;
   bool get isPaid => status == IDPayStatus.paid;
   bool get isOneTime => type == IDPayType.oneTime;
@@ -117,6 +123,52 @@ class IDPayEntity extends Equatable {
   bool get isFlexible => amountMode == IDPayAmountMode.flexible;
 
   String get displayPayId => 'PAY-$payId';
+
+  IDPayEntity copyWith({
+    String? id,
+    String? payId,
+    String? creatorId,
+    String? creatorName,
+    String? creatorUsername,
+    IDPayType? type,
+    IDPayAmountMode? amountMode,
+    double? amount,
+    double? minAmount,
+    double? maxAmount,
+    String? currency,
+    String? description,
+    IDPayStatus? status,
+    DateTime? expiresAt,
+    DateTime? createdAt,
+    double? totalReceived,
+    int? paymentCount,
+    bool? neverExpires,
+    String? organizationId,
+    String? organizationName,
+  }) {
+    return IDPayEntity(
+      id: id ?? this.id,
+      payId: payId ?? this.payId,
+      creatorId: creatorId ?? this.creatorId,
+      creatorName: creatorName ?? this.creatorName,
+      creatorUsername: creatorUsername ?? this.creatorUsername,
+      type: type ?? this.type,
+      amountMode: amountMode ?? this.amountMode,
+      amount: amount ?? this.amount,
+      minAmount: minAmount ?? this.minAmount,
+      maxAmount: maxAmount ?? this.maxAmount,
+      currency: currency ?? this.currency,
+      description: description ?? this.description,
+      status: status ?? this.status,
+      expiresAt: expiresAt ?? this.expiresAt,
+      createdAt: createdAt ?? this.createdAt,
+      totalReceived: totalReceived ?? this.totalReceived,
+      paymentCount: paymentCount ?? this.paymentCount,
+      neverExpires: neverExpires ?? this.neverExpires,
+      organizationId: organizationId ?? this.organizationId,
+      organizationName: organizationName ?? this.organizationName,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -137,5 +189,8 @@ class IDPayEntity extends Equatable {
         createdAt,
         totalReceived,
         paymentCount,
+        neverExpires,
+        organizationId,
+        organizationName,
       ];
 }

@@ -3,8 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/types/app_routes.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
+import '../../domain/entities/id_pay_organization_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import '../widgets/id_pay_status_badge.dart';
@@ -186,8 +187,8 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
           );
         }
 
-        if (state is IDPayLookedUp) {
-          return _buildIDPayResultCard(state.idPay);
+        if (state is IDPayLookedUpWithOrg) {
+          return _buildIDPayResultCard(state.idPay, state.organization);
         }
 
         if (state is IDPayError) {
@@ -199,111 +200,181 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
     );
   }
 
-  Widget _buildIDPayResultCard(IDPayEntity idPay) {
+  Widget _buildIDPayResultCard(
+      IDPayEntity idPay, IDPayOrganizationEntity? organization) {
     return Column(
       children: [
         Expanded(
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 52.w,
-                        height: 52.w,
-                        decoration: BoxDecoration(
-                          color:
-                              const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(26.r),
-                        ),
-                        child: Center(
-                          child: Text(
-                            idPay.creatorName.isNotEmpty
-                                ? idPay.creatorName[0].toUpperCase()
-                                : '?',
-                            style: GoogleFonts.inter(
+            child: Column(
+              children: [
+                // Organization card (if present)
+                if (organization != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44.w,
+                          height: 44.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3B82F6)
+                                .withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.business,
                               color: const Color(0xFF3B82F6),
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.w700,
+                              size: 22.sp,
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 14.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              idPay.creatorName,
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                organization.name,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              '@${idPay.creatorUsername}',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF9CA3AF),
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
+                              if (organization.description.isNotEmpty) ...[
+                                SizedBox(height: 2.h),
+                                Text(
+                                  organization.description,
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 12.sp,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                ],
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(20.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 52.w,
+                            height: 52.w,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3B82F6)
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(26.r),
+                            ),
+                            child: Center(
+                              child: Text(
+                                idPay.creatorName.isNotEmpty
+                                    ? idPay.creatorName[0].toUpperCase()
+                                    : '?',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF3B82F6),
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 14.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  idPay.creatorName,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  '@${idPay.creatorUsername}',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IDPayStatusBadge(status: idPay.status),
+                        ],
                       ),
-                      IDPayStatusBadge(status: idPay.status),
+                      SizedBox(height: 20.h),
+                      Divider(color: const Color(0xFF2D2D2D), height: 1.h),
+                      SizedBox(height: 20.h),
+                      _buildInfoRow(
+                        'Amount',
+                        idPay.isFixed
+                            ? '${_currencySymbol(idPay.currency)}${idPay.amount.toStringAsFixed(2)}'
+                            : 'Flexible',
+                      ),
+                      if (idPay.isFlexible && idPay.minAmount > 0) ...[
+                        SizedBox(height: 12.h),
+                        _buildInfoRow(
+                          'Min',
+                          '${_currencySymbol(idPay.currency)}${idPay.minAmount.toStringAsFixed(2)}',
+                        ),
+                      ],
+                      if (idPay.isFlexible && idPay.maxAmount > 0) ...[
+                        SizedBox(height: 12.h),
+                        _buildInfoRow(
+                          'Max',
+                          '${_currencySymbol(idPay.currency)}${idPay.maxAmount.toStringAsFixed(2)}',
+                        ),
+                      ],
+                      SizedBox(height: 12.h),
+                      _buildInfoRow('Currency', idPay.currency),
+                      if (idPay.description.isNotEmpty) ...[
+                        SizedBox(height: 12.h),
+                        _buildInfoRow('Description', idPay.description),
+                      ],
+                      SizedBox(height: 12.h),
+                      _buildInfoRow('Status', idPay.status.displayName),
+                      SizedBox(height: 12.h),
+                      _buildInfoRow(
+                        'Expires',
+                        idPay.neverExpires
+                            ? 'Never'
+                            : _formatExpiryCountdown(idPay.expiresAt),
+                      ),
                     ],
                   ),
-                  SizedBox(height: 20.h),
-                  Divider(color: const Color(0xFF2D2D2D), height: 1.h),
-                  SizedBox(height: 20.h),
-                  _buildInfoRow(
-                    'Amount',
-                    idPay.isFixed
-                        ? '${_currencySymbol(idPay.currency)}${idPay.amount.toStringAsFixed(2)}'
-                        : 'Flexible',
-                  ),
-                  if (idPay.isFlexible && idPay.minAmount > 0) ...[
-                    SizedBox(height: 12.h),
-                    _buildInfoRow(
-                      'Min',
-                      '${_currencySymbol(idPay.currency)}${idPay.minAmount.toStringAsFixed(2)}',
-                    ),
-                  ],
-                  if (idPay.isFlexible && idPay.maxAmount > 0) ...[
-                    SizedBox(height: 12.h),
-                    _buildInfoRow(
-                      'Max',
-                      '${_currencySymbol(idPay.currency)}${idPay.maxAmount.toStringAsFixed(2)}',
-                    ),
-                  ],
-                  SizedBox(height: 12.h),
-                  _buildInfoRow('Currency', idPay.currency),
-                  if (idPay.description.isNotEmpty) ...[
-                    SizedBox(height: 12.h),
-                    _buildInfoRow('Description', idPay.description),
-                  ],
-                  SizedBox(height: 12.h),
-                  _buildInfoRow('Status', idPay.status.displayName),
-                  SizedBox(height: 12.h),
-                  _buildInfoRow(
-                    'Expires',
-                    _formatExpiryCountdown(idPay.expiresAt),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

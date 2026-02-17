@@ -38,6 +38,9 @@ class IDPay extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $core.double? totalReceived,
     $core.int? paymentCount,
+    $core.bool? neverExpires,
+    $core.String? organizationId,
+    $core.String? organizationName,
   }) {
     final $result = create();
     if (id != null) {
@@ -91,6 +94,15 @@ class IDPay extends $pb.GeneratedMessage {
     if (paymentCount != null) {
       $result.paymentCount = paymentCount;
     }
+    if (neverExpires != null) {
+      $result.neverExpires = neverExpires;
+    }
+    if (organizationId != null) {
+      $result.organizationId = organizationId;
+    }
+    if (organizationName != null) {
+      $result.organizationName = organizationName;
+    }
     return $result;
   }
   IDPay._() : super();
@@ -115,6 +127,9 @@ class IDPay extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..a<$core.double>(16, _omitFieldNames ? '' : 'totalReceived', $pb.PbFieldType.OD)
     ..a<$core.int>(17, _omitFieldNames ? '' : 'paymentCount', $pb.PbFieldType.O3)
+    ..aOB(18, _omitFieldNames ? '' : 'neverExpires')
+    ..aOS(19, _omitFieldNames ? '' : 'organizationId')
+    ..aOS(20, _omitFieldNames ? '' : 'organizationName')
     ..hasRequiredFields = false
   ;
 
@@ -295,6 +310,33 @@ class IDPay extends $pb.GeneratedMessage {
   $core.bool hasPaymentCount() => $_has(16);
   @$pb.TagNumber(17)
   void clearPaymentCount() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.bool get neverExpires => $_getBF(17);
+  @$pb.TagNumber(18)
+  set neverExpires($core.bool v) { $_setBool(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasNeverExpires() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearNeverExpires() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get organizationId => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set organizationId($core.String v) { $_setString(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasOrganizationId() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearOrganizationId() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get organizationName => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set organizationName($core.String v) { $_setString(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasOrganizationName() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearOrganizationName() => clearField(20);
 }
 
 class IDPayTransaction extends $pb.GeneratedMessage {
@@ -503,6 +545,200 @@ class IDPayTransaction extends $pb.GeneratedMessage {
   $1.Timestamp ensureCreatedAt() => $_ensure(11);
 }
 
+class IDPayOrganization extends $pb.GeneratedMessage {
+  factory IDPayOrganization({
+    $core.String? id,
+    $core.String? creatorId,
+    $core.String? name,
+    $core.String? description,
+    $core.String? logoUrl,
+    $core.String? accountId,
+    $core.double? totalReceived,
+    $core.int? totalPaymentCount,
+    $core.int? activeIdPayCount,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (creatorId != null) {
+      $result.creatorId = creatorId;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (logoUrl != null) {
+      $result.logoUrl = logoUrl;
+    }
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (totalReceived != null) {
+      $result.totalReceived = totalReceived;
+    }
+    if (totalPaymentCount != null) {
+      $result.totalPaymentCount = totalPaymentCount;
+    }
+    if (activeIdPayCount != null) {
+      $result.activeIdPayCount = activeIdPayCount;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      $result.updatedAt = updatedAt;
+    }
+    return $result;
+  }
+  IDPayOrganization._() : super();
+  factory IDPayOrganization.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory IDPayOrganization.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IDPayOrganization', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'creatorId')
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..aOS(4, _omitFieldNames ? '' : 'description')
+    ..aOS(5, _omitFieldNames ? '' : 'logoUrl')
+    ..aOS(6, _omitFieldNames ? '' : 'accountId')
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'totalReceived', $pb.PbFieldType.OD)
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'totalPaymentCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(9, _omitFieldNames ? '' : 'activeIdPayCount', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  IDPayOrganization clone() => IDPayOrganization()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  IDPayOrganization copyWith(void Function(IDPayOrganization) updates) => super.copyWith((message) => updates(message as IDPayOrganization)) as IDPayOrganization;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static IDPayOrganization create() => IDPayOrganization._();
+  IDPayOrganization createEmptyInstance() => create();
+  static $pb.PbList<IDPayOrganization> createRepeated() => $pb.PbList<IDPayOrganization>();
+  @$core.pragma('dart2js:noInline')
+  static IDPayOrganization getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<IDPayOrganization>(create);
+  static IDPayOrganization? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get creatorId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set creatorId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCreatorId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreatorId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get name => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set name($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get description => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set description($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDescription() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDescription() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get logoUrl => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set logoUrl($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasLogoUrl() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLogoUrl() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get accountId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set accountId($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAccountId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAccountId() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get totalReceived => $_getN(6);
+  @$pb.TagNumber(7)
+  set totalReceived($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasTotalReceived() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTotalReceived() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get totalPaymentCount => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set totalPaymentCount($core.int v) { $_setSignedInt32(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasTotalPaymentCount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTotalPaymentCount() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get activeIdPayCount => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set activeIdPayCount($core.int v) { $_setSignedInt32(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasActiveIdPayCount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearActiveIdPayCount() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $1.Timestamp get createdAt => $_getN(9);
+  @$pb.TagNumber(10)
+  set createdAt($1.Timestamp v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCreatedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCreatedAt() => clearField(10);
+  @$pb.TagNumber(10)
+  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+
+  @$pb.TagNumber(11)
+  $1.Timestamp get updatedAt => $_getN(10);
+  @$pb.TagNumber(11)
+  set updatedAt($1.Timestamp v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasUpdatedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearUpdatedAt() => clearField(11);
+  @$pb.TagNumber(11)
+  $1.Timestamp ensureUpdatedAt() => $_ensure(10);
+}
+
 /// Request/Response messages
 class CreateIDPayRequest extends $pb.GeneratedMessage {
   factory CreateIDPayRequest({
@@ -515,6 +751,8 @@ class CreateIDPayRequest extends $pb.GeneratedMessage {
     $core.String? description,
     $core.int? validityMinutes,
     $core.String? recipientAccountId,
+    $core.bool? neverExpires,
+    $core.String? organizationId,
   }) {
     final $result = create();
     if (type != null) {
@@ -544,6 +782,12 @@ class CreateIDPayRequest extends $pb.GeneratedMessage {
     if (recipientAccountId != null) {
       $result.recipientAccountId = recipientAccountId;
     }
+    if (neverExpires != null) {
+      $result.neverExpires = neverExpires;
+    }
+    if (organizationId != null) {
+      $result.organizationId = organizationId;
+    }
     return $result;
   }
   CreateIDPayRequest._() : super();
@@ -560,6 +804,8 @@ class CreateIDPayRequest extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'description')
     ..a<$core.int>(8, _omitFieldNames ? '' : 'validityMinutes', $pb.PbFieldType.O3)
     ..aOS(9, _omitFieldNames ? '' : 'recipientAccountId')
+    ..aOB(10, _omitFieldNames ? '' : 'neverExpires')
+    ..aOS(11, _omitFieldNames ? '' : 'organizationId')
     ..hasRequiredFields = false
   ;
 
@@ -664,6 +910,24 @@ class CreateIDPayRequest extends $pb.GeneratedMessage {
   $core.bool hasRecipientAccountId() => $_has(8);
   @$pb.TagNumber(9)
   void clearRecipientAccountId() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.bool get neverExpires => $_getBF(9);
+  @$pb.TagNumber(10)
+  set neverExpires($core.bool v) { $_setBool(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasNeverExpires() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearNeverExpires() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get organizationId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set organizationId($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasOrganizationId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearOrganizationId() => clearField(11);
 }
 
 class CreateIDPayResponse extends $pb.GeneratedMessage {
@@ -785,10 +1049,14 @@ class LookupIDPayRequest extends $pb.GeneratedMessage {
 class LookupIDPayResponse extends $pb.GeneratedMessage {
   factory LookupIDPayResponse({
     IDPay? idPay,
+    IDPayOrganization? organization,
   }) {
     final $result = create();
     if (idPay != null) {
       $result.idPay = idPay;
+    }
+    if (organization != null) {
+      $result.organization = organization;
     }
     return $result;
   }
@@ -798,6 +1066,7 @@ class LookupIDPayResponse extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LookupIDPayResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
     ..aOM<IDPay>(1, _omitFieldNames ? '' : 'idPay', subBuilder: IDPay.create)
+    ..aOM<IDPayOrganization>(2, _omitFieldNames ? '' : 'organization', subBuilder: IDPayOrganization.create)
     ..hasRequiredFields = false
   ;
 
@@ -832,6 +1101,17 @@ class LookupIDPayResponse extends $pb.GeneratedMessage {
   void clearIdPay() => clearField(1);
   @$pb.TagNumber(1)
   IDPay ensureIdPay() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  IDPayOrganization get organization => $_getN(1);
+  @$pb.TagNumber(2)
+  set organization(IDPayOrganization v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasOrganization() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOrganization() => clearField(2);
+  @$pb.TagNumber(2)
+  IDPayOrganization ensureOrganization() => $_ensure(1);
 }
 
 class PayIDPayRequest extends $pb.GeneratedMessage {
@@ -1492,6 +1772,669 @@ class GetIDPayDetailsResponse extends $pb.GeneratedMessage {
   void clearIdPay() => clearField(1);
   @$pb.TagNumber(1)
   IDPay ensureIdPay() => $_ensure(0);
+}
+
+/// Organization request/response messages
+class CreateOrganizationRequest extends $pb.GeneratedMessage {
+  factory CreateOrganizationRequest({
+    $core.String? name,
+    $core.String? description,
+    $core.String? logoUrl,
+    $core.String? accountId,
+  }) {
+    final $result = create();
+    if (name != null) {
+      $result.name = name;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (logoUrl != null) {
+      $result.logoUrl = logoUrl;
+    }
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    return $result;
+  }
+  CreateOrganizationRequest._() : super();
+  factory CreateOrganizationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateOrganizationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateOrganizationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..aOS(2, _omitFieldNames ? '' : 'description')
+    ..aOS(3, _omitFieldNames ? '' : 'logoUrl')
+    ..aOS(4, _omitFieldNames ? '' : 'accountId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateOrganizationRequest clone() => CreateOrganizationRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateOrganizationRequest copyWith(void Function(CreateOrganizationRequest) updates) => super.copyWith((message) => updates(message as CreateOrganizationRequest)) as CreateOrganizationRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateOrganizationRequest create() => CreateOrganizationRequest._();
+  CreateOrganizationRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateOrganizationRequest> createRepeated() => $pb.PbList<CreateOrganizationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateOrganizationRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateOrganizationRequest>(create);
+  static CreateOrganizationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get description => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set description($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDescription() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDescription() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get logoUrl => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set logoUrl($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasLogoUrl() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLogoUrl() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get accountId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set accountId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAccountId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAccountId() => clearField(4);
+}
+
+class CreateOrganizationResponse extends $pb.GeneratedMessage {
+  factory CreateOrganizationResponse({
+    IDPayOrganization? organization,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (organization != null) {
+      $result.organization = organization;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  CreateOrganizationResponse._() : super();
+  factory CreateOrganizationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateOrganizationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateOrganizationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOM<IDPayOrganization>(1, _omitFieldNames ? '' : 'organization', subBuilder: IDPayOrganization.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateOrganizationResponse clone() => CreateOrganizationResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateOrganizationResponse copyWith(void Function(CreateOrganizationResponse) updates) => super.copyWith((message) => updates(message as CreateOrganizationResponse)) as CreateOrganizationResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateOrganizationResponse create() => CreateOrganizationResponse._();
+  CreateOrganizationResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateOrganizationResponse> createRepeated() => $pb.PbList<CreateOrganizationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateOrganizationResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateOrganizationResponse>(create);
+  static CreateOrganizationResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  IDPayOrganization get organization => $_getN(0);
+  @$pb.TagNumber(1)
+  set organization(IDPayOrganization v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrganization() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrganization() => clearField(1);
+  @$pb.TagNumber(1)
+  IDPayOrganization ensureOrganization() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class GetMyOrganizationsRequest extends $pb.GeneratedMessage {
+  factory GetMyOrganizationsRequest({
+    $core.String? accountId,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    if (offset != null) {
+      $result.offset = offset;
+    }
+    return $result;
+  }
+  GetMyOrganizationsRequest._() : super();
+  factory GetMyOrganizationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyOrganizationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyOrganizationsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMyOrganizationsRequest clone() => GetMyOrganizationsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMyOrganizationsRequest copyWith(void Function(GetMyOrganizationsRequest) updates) => super.copyWith((message) => updates(message as GetMyOrganizationsRequest)) as GetMyOrganizationsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMyOrganizationsRequest create() => GetMyOrganizationsRequest._();
+  GetMyOrganizationsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMyOrganizationsRequest> createRepeated() => $pb.PbList<GetMyOrganizationsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyOrganizationsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMyOrganizationsRequest>(create);
+  static GetMyOrganizationsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => clearField(3);
+}
+
+class GetMyOrganizationsResponse extends $pb.GeneratedMessage {
+  factory GetMyOrganizationsResponse({
+    $core.Iterable<IDPayOrganization>? organizations,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (organizations != null) {
+      $result.organizations.addAll(organizations);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetMyOrganizationsResponse._() : super();
+  factory GetMyOrganizationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyOrganizationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyOrganizationsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..pc<IDPayOrganization>(1, _omitFieldNames ? '' : 'organizations', $pb.PbFieldType.PM, subBuilder: IDPayOrganization.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMyOrganizationsResponse clone() => GetMyOrganizationsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMyOrganizationsResponse copyWith(void Function(GetMyOrganizationsResponse) updates) => super.copyWith((message) => updates(message as GetMyOrganizationsResponse)) as GetMyOrganizationsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMyOrganizationsResponse create() => GetMyOrganizationsResponse._();
+  GetMyOrganizationsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetMyOrganizationsResponse> createRepeated() => $pb.PbList<GetMyOrganizationsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyOrganizationsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMyOrganizationsResponse>(create);
+  static GetMyOrganizationsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<IDPayOrganization> get organizations => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+class UpdateOrganizationRequest extends $pb.GeneratedMessage {
+  factory UpdateOrganizationRequest({
+    $core.String? id,
+    $core.String? name,
+    $core.String? description,
+    $core.String? logoUrl,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (logoUrl != null) {
+      $result.logoUrl = logoUrl;
+    }
+    return $result;
+  }
+  UpdateOrganizationRequest._() : super();
+  factory UpdateOrganizationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateOrganizationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateOrganizationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..aOS(3, _omitFieldNames ? '' : 'description')
+    ..aOS(4, _omitFieldNames ? '' : 'logoUrl')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateOrganizationRequest clone() => UpdateOrganizationRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateOrganizationRequest copyWith(void Function(UpdateOrganizationRequest) updates) => super.copyWith((message) => updates(message as UpdateOrganizationRequest)) as UpdateOrganizationRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateOrganizationRequest create() => UpdateOrganizationRequest._();
+  UpdateOrganizationRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateOrganizationRequest> createRepeated() => $pb.PbList<UpdateOrganizationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateOrganizationRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateOrganizationRequest>(create);
+  static UpdateOrganizationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get description => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set description($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDescription() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDescription() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get logoUrl => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set logoUrl($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasLogoUrl() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLogoUrl() => clearField(4);
+}
+
+class UpdateOrganizationResponse extends $pb.GeneratedMessage {
+  factory UpdateOrganizationResponse({
+    IDPayOrganization? organization,
+  }) {
+    final $result = create();
+    if (organization != null) {
+      $result.organization = organization;
+    }
+    return $result;
+  }
+  UpdateOrganizationResponse._() : super();
+  factory UpdateOrganizationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateOrganizationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateOrganizationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOM<IDPayOrganization>(1, _omitFieldNames ? '' : 'organization', subBuilder: IDPayOrganization.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateOrganizationResponse clone() => UpdateOrganizationResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateOrganizationResponse copyWith(void Function(UpdateOrganizationResponse) updates) => super.copyWith((message) => updates(message as UpdateOrganizationResponse)) as UpdateOrganizationResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateOrganizationResponse create() => UpdateOrganizationResponse._();
+  UpdateOrganizationResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateOrganizationResponse> createRepeated() => $pb.PbList<UpdateOrganizationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateOrganizationResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateOrganizationResponse>(create);
+  static UpdateOrganizationResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  IDPayOrganization get organization => $_getN(0);
+  @$pb.TagNumber(1)
+  set organization(IDPayOrganization v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrganization() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrganization() => clearField(1);
+  @$pb.TagNumber(1)
+  IDPayOrganization ensureOrganization() => $_ensure(0);
+}
+
+class DeleteOrganizationRequest extends $pb.GeneratedMessage {
+  factory DeleteOrganizationRequest({
+    $core.String? id,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    return $result;
+  }
+  DeleteOrganizationRequest._() : super();
+  factory DeleteOrganizationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteOrganizationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteOrganizationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteOrganizationRequest clone() => DeleteOrganizationRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteOrganizationRequest copyWith(void Function(DeleteOrganizationRequest) updates) => super.copyWith((message) => updates(message as DeleteOrganizationRequest)) as DeleteOrganizationRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeleteOrganizationRequest create() => DeleteOrganizationRequest._();
+  DeleteOrganizationRequest createEmptyInstance() => create();
+  static $pb.PbList<DeleteOrganizationRequest> createRepeated() => $pb.PbList<DeleteOrganizationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteOrganizationRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteOrganizationRequest>(create);
+  static DeleteOrganizationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+}
+
+class DeleteOrganizationResponse extends $pb.GeneratedMessage {
+  factory DeleteOrganizationResponse({
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  DeleteOrganizationResponse._() : super();
+  factory DeleteOrganizationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteOrganizationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteOrganizationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteOrganizationResponse clone() => DeleteOrganizationResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteOrganizationResponse copyWith(void Function(DeleteOrganizationResponse) updates) => super.copyWith((message) => updates(message as DeleteOrganizationResponse)) as DeleteOrganizationResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeleteOrganizationResponse create() => DeleteOrganizationResponse._();
+  DeleteOrganizationResponse createEmptyInstance() => create();
+  static $pb.PbList<DeleteOrganizationResponse> createRepeated() => $pb.PbList<DeleteOrganizationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteOrganizationResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteOrganizationResponse>(create);
+  static DeleteOrganizationResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get message => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set message($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMessage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMessage() => clearField(1);
+}
+
+class GetOrganizationDetailsRequest extends $pb.GeneratedMessage {
+  factory GetOrganizationDetailsRequest({
+    $core.String? id,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    return $result;
+  }
+  GetOrganizationDetailsRequest._() : super();
+  factory GetOrganizationDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetOrganizationDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOrganizationDetailsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetOrganizationDetailsRequest clone() => GetOrganizationDetailsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetOrganizationDetailsRequest copyWith(void Function(GetOrganizationDetailsRequest) updates) => super.copyWith((message) => updates(message as GetOrganizationDetailsRequest)) as GetOrganizationDetailsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetOrganizationDetailsRequest create() => GetOrganizationDetailsRequest._();
+  GetOrganizationDetailsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetOrganizationDetailsRequest> createRepeated() => $pb.PbList<GetOrganizationDetailsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetOrganizationDetailsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOrganizationDetailsRequest>(create);
+  static GetOrganizationDetailsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+}
+
+class GetOrganizationDetailsResponse extends $pb.GeneratedMessage {
+  factory GetOrganizationDetailsResponse({
+    IDPayOrganization? organization,
+    $core.Iterable<IDPay>? idPays,
+    $core.double? totalPaidOut,
+  }) {
+    final $result = create();
+    if (organization != null) {
+      $result.organization = organization;
+    }
+    if (idPays != null) {
+      $result.idPays.addAll(idPays);
+    }
+    if (totalPaidOut != null) {
+      $result.totalPaidOut = totalPaidOut;
+    }
+    return $result;
+  }
+  GetOrganizationDetailsResponse._() : super();
+  factory GetOrganizationDetailsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetOrganizationDetailsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOrganizationDetailsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'), createEmptyInstance: create)
+    ..aOM<IDPayOrganization>(1, _omitFieldNames ? '' : 'organization', subBuilder: IDPayOrganization.create)
+    ..pc<IDPay>(2, _omitFieldNames ? '' : 'idPays', $pb.PbFieldType.PM, subBuilder: IDPay.create)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalPaidOut', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetOrganizationDetailsResponse clone() => GetOrganizationDetailsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetOrganizationDetailsResponse copyWith(void Function(GetOrganizationDetailsResponse) updates) => super.copyWith((message) => updates(message as GetOrganizationDetailsResponse)) as GetOrganizationDetailsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetOrganizationDetailsResponse create() => GetOrganizationDetailsResponse._();
+  GetOrganizationDetailsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetOrganizationDetailsResponse> createRepeated() => $pb.PbList<GetOrganizationDetailsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetOrganizationDetailsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOrganizationDetailsResponse>(create);
+  static GetOrganizationDetailsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  IDPayOrganization get organization => $_getN(0);
+  @$pb.TagNumber(1)
+  set organization(IDPayOrganization v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrganization() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrganization() => clearField(1);
+  @$pb.TagNumber(1)
+  IDPayOrganization ensureOrganization() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.List<IDPay> get idPays => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.double get totalPaidOut => $_getN(2);
+  @$pb.TagNumber(3)
+  set totalPaidOut($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalPaidOut() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalPaidOut() => clearField(3);
 }
 
 

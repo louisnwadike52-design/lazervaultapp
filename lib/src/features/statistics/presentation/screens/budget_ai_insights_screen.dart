@@ -7,6 +7,9 @@ import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
+import 'package:lazervault/src/features/statistics/data/budget_repository.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/generated/statistics.pb.dart' as stats_pb;
 
 /// Budget AI Insights Screen
 class BudgetAIInsightsScreen extends StatefulWidget {
@@ -25,7 +28,7 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     });
   }
 
-  void _loadInsights() {
+  void _loadInsights() async {
     // Pull real data from StatisticsCubit for income/spending analysis
     double monthlyIncome = 0;
     List<Map<String, dynamic>> spendingData = [];
@@ -43,10 +46,20 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       final catAnalytics = statsState.categoryAnalytics!;
       final totalExpenses = catAnalytics.totalExpenses;
       for (final cat in catAnalytics.expenseCategories) {
+        // Include sub-category breakdowns so AI can give granular advice
+        final subCats = cat.subCategories.map((sub) => {
+          'name': sub.name,
+          'amount': sub.amount,
+          'transaction_count': sub.transactionCount,
+          'percentage': cat.amount > 0 ? (sub.amount / cat.amount * 100).round() : 0,
+        }).toList();
+
         spendingData.add({
           'category': cat.categoryName,
           'amount': cat.amount,
           'percentage': totalExpenses > 0 ? (cat.amount / totalExpenses * 100).round() : 0,
+          'transaction_count': cat.transactionCount,
+          if (subCats.isNotEmpty) 'sub_categories': subCats,
         });
       }
     }
@@ -69,6 +82,67 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       }
     }
 
+    // Fetch financial goals, upcoming bills, and budget alerts directly
+    // from the repository (since the cubit can only hold one state at a time)
+    List<Map<String, dynamic>> financialGoals = [];
+    List<Map<String, dynamic>> upcomingBills = [];
+    List<Map<String, dynamic>> budgetAlerts = [];
+
+    try {
+      final budgetRepo = serviceLocator<BudgetRepository>();
+      final results = await Future.wait([
+        budgetRepo.getFinancialGoals(),
+        budgetRepo.getUpcomingBills(daysAhead: 30),
+        budgetRepo.getBudgetAlerts(unreadOnly: false, limit: 20),
+      ]);
+
+      // Financial goals
+      final goalsResponse = results[0] as stats_pb.GetFinancialGoalsResponse;
+      for (final goal in goalsResponse.goalsList.goals) {
+        financialGoals.add({
+          'name': goal.name,
+          'goal_type': goal.goalType.name,
+          'target_amount': goal.targetAmount,
+          'current_amount': goal.currentAmount,
+          'monthly_contribution': goal.monthlyContribution,
+          'percentage_complete': goal.percentageComplete,
+          'months_remaining': goal.monthsRemaining,
+        });
+      }
+
+      // Upcoming bills
+      final billsResponse = results[1] as stats_pb.GetUpcomingBillsResponse;
+      for (final bill in billsResponse.billsList.bills) {
+        upcomingBills.add({
+          'name': bill.name,
+          'amount': bill.amount,
+          'days_until_due': bill.daysUntilDue,
+          'recurrence_pattern': bill.recurrencePattern,
+          'auto_pay_enabled': bill.autoPayEnabled,
+        });
+      }
+
+      // Budget alerts
+      final alertsResponse = results[2] as stats_pb.GetBudgetAlertsResponse;
+      for (final alert in alertsResponse.alerts) {
+        budgetAlerts.add({
+          'budget_name': alert.budgetName,
+          'alert_type': alert.alertType.name,
+          'message': alert.message,
+          'current_spent': alert.currentSpent,
+          'budget_limit': alert.budgetLimit,
+          'percentage_used': alert.percentageUsed,
+        });
+      }
+    } catch (_) {
+      // Non-critical — proceed with empty lists if fetch fails
+    }
+
+    // Build goal name list for legacy field
+    final goalNames = financialGoals.isNotEmpty
+        ? financialGoals.map((g) => g['name'] as String).toList()
+        : ['Save more', 'Reduce spending'];
+
     // Use sensible defaults if no real data yet
     if (monthlyIncome == 0) monthlyIncome = 500000;
     if (spendingData.isEmpty) {
@@ -77,14 +151,35 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       ];
     }
 
+    // Extract failed/reversed transactions for AI analysis
+    List<Map<String, dynamic>> failedTransactions = [];
+    if (statsState is StatisticsLoaded && statsState.failedTransactions != null) {
+      for (final tx in statsState.failedTransactions!.transactions) {
+        failedTransactions.add({
+          'reference': tx.reference,
+          'amount': tx.amount,
+          'category': tx.category,
+          'description': tx.description,
+          'status': tx.status,
+          'date': tx.createdAt,
+        });
+      }
+    }
+
+    if (!mounted) return;
+
     context.read<BudgetCubit>().loadAIInsights(
       monthlyIncome: monthlyIncome,
       spendingData: spendingData,
       activeBudgets: activeBudgets,
-      goals: ['Save more', 'Reduce spending'],
+      goals: goalNames,
       riskTolerance: 'moderate',
       currency: CurrencySymbols.currentCurrency,
       monthsOfData: 3,
+      financialGoals: financialGoals,
+      upcomingBills: upcomingBills,
+      budgetAlerts: budgetAlerts,
+      failedTransactions: failedTransactions,
     );
   }
 
@@ -202,7 +297,6 @@ class _InsightsView extends StatelessWidget {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
           ),
           child: Column(
             children: [
@@ -246,7 +340,6 @@ class _InsightsView extends StatelessWidget {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: const Color(0xFF2D2D2D).withValues(alpha: 0.5)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,6 +390,23 @@ class _InsightsView extends StatelessWidget {
               ],
             ),
           ),
+          SizedBox(height: 24.h),
+        ],
+
+        // Category Deep-Dive Insights
+        if (insights.categoryInsights.isNotEmpty) ...[
+          Row(
+            children: [
+              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color(0xFF8B5CF6), borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 8),
+              const Text(
+                'Category Deep Dive',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          ...insights.categoryInsights.map((ci) => _CategoryInsightCard(insight: ci)),
           SizedBox(height: 24.h),
         ],
 
@@ -369,6 +479,210 @@ class _InsightsView extends StatelessWidget {
   }
 }
 
+// ── Category Insight Card ──────────────────────────────────────────
+
+class _CategoryInsightCard extends StatefulWidget {
+  final CategoryInsightData insight;
+
+  const _CategoryInsightCard({required this.insight});
+
+  @override
+  State<_CategoryInsightCard> createState() => _CategoryInsightCardState();
+}
+
+class _CategoryInsightCardState extends State<_CategoryInsightCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final ci = widget.insight;
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.h),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header — always visible, tappable to expand
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(16.r),
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(Icons.category, color: const Color(0xFF8B5CF6), size: 20.sp),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ci.categoryName,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        if (ci.subCategories.isNotEmpty)
+                          Text(
+                            '${ci.subCategories.length} sub-categories',
+                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    color: const Color(0xFF9CA3AF),
+                    size: 24.sp,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Analysis — always visible
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Text(
+              ci.analysis,
+              style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 13.sp, height: 1.5),
+            ),
+          ),
+          SizedBox(height: 12.h),
+
+          // Expanded: sub-categories + action items
+          if (_expanded) ...[
+            // Sub-categories
+            if (ci.subCategories.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Text(
+                  'Sub-Category Breakdown',
+                  style: TextStyle(color: const Color(0xFF8B5CF6), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              ...ci.subCategories.map((sub) => _SubCategoryRow(sub: sub)),
+            ],
+
+            // Action Items
+            if (ci.actionItems.isNotEmpty) ...[
+              SizedBox(height: 12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Text(
+                  'Action Items',
+                  style: TextStyle(color: const Color(0xFF10B981), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              ...ci.actionItems.map((item) => Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w).copyWith(bottom: 6.h),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 16.sp),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            item,
+                            style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 12.sp),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+            ],
+            SizedBox(height: 16.h),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SubCategoryRow extends StatelessWidget {
+  final SubCategoryInsightData sub;
+
+  const _SubCategoryRow({required this.sub});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w).copyWith(bottom: 10.h),
+      child: Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 8.w,
+                      height: 8.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8B5CF6),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      sub.name,
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+                if (sub.amount > 0)
+                  Text(
+                    CurrencySymbols.formatAmount(sub.amount),
+                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, fontWeight: FontWeight.w600),
+                  ),
+              ],
+            ),
+            if (sub.insight.isNotEmpty) ...[
+              SizedBox(height: 4.h),
+              Text(
+                sub.insight,
+                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp, height: 1.4),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Existing cards ─────────────────────────────────────────────────
+
 class _RecommendationCard extends StatelessWidget {
   final BudgetRecommendationData rec;
 
@@ -386,7 +700,6 @@ class _RecommendationCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D).withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,24 +768,214 @@ class _StatLine extends StatelessWidget {
   }
 }
 
-class _LoadingView extends StatelessWidget {
+// ── Enhanced Loading View ──────────────────────────────────────────
+
+class _LoadingView extends StatefulWidget {
   const _LoadingView();
 
   @override
+  State<_LoadingView> createState() => _LoadingViewState();
+}
+
+class _LoadingViewState extends State<_LoadingView> with TickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final AnimationController _progressController;
+  int _messageIndex = 0;
+
+  static const _messages = [
+    'Analyzing your spending patterns...',
+    'Reviewing category breakdowns...',
+    'Evaluating sub-category trends...',
+    'Comparing with recommended budgets...',
+    'Generating savings opportunities...',
+    'Building personalized insights...',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 18),
+    )..forward();
+
+    // Cycle through messages
+    _cycleMessages();
+  }
+
+  void _cycleMessages() {
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _messageIndex = (_messageIndex + 1) % _messages.length;
+        });
+        _cycleMessages();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Padding(
+      padding: EdgeInsets.all(24.w),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Color(0xFF10B981)),
-          SizedBox(height: 16),
-          Text(
-            'Analyzing your spending patterns...',
-            style: TextStyle(color: Color(0xFF9CA3AF)),
+          SizedBox(height: 40.h),
+          // Animated AI icon
+          AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Container(
+                width: 100.w,
+                height: 100.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF8B5CF6).withValues(alpha: 0.3 + _pulseController.value * 0.2),
+                      const Color(0xFF10B981).withValues(alpha: 0.1 + _pulseController.value * 0.1),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Icon(
+                  Icons.auto_awesome,
+                  color: Color.lerp(
+                    const Color(0xFF8B5CF6),
+                    const Color(0xFF10B981),
+                    _pulseController.value,
+                  ),
+                  size: 48.sp,
+                ),
+              );
+            },
           ),
+          SizedBox(height: 32.h),
+
+          // Title
+          Text(
+            'AI is analyzing your finances',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8.h),
+
+          // Rotating subtitle
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: Text(
+              _messages[_messageIndex],
+              key: ValueKey<int>(_messageIndex),
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(height: 32.h),
+
+          // Progress bar
+          AnimatedBuilder(
+            animation: _progressController,
+            builder: (context, child) {
+              return Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4.r),
+                    child: LinearProgressIndicator(
+                      value: _progressController.value * 0.9,
+                      backgroundColor: const Color(0xFF2D2D2D),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                      minHeight: 6.h,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    '${(_progressController.value * 90).toInt()}%',
+                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                  ),
+                ],
+              );
+            },
+          ),
+          SizedBox(height: 40.h),
+
+          // Shimmer cards
+          ..._buildShimmerCards(),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildShimmerCards() {
+    return List.generate(3, (index) {
+      return AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          final opacity = 0.03 + _pulseController.value * 0.04;
+          return Container(
+            height: 80.h,
+            margin: EdgeInsets.only(bottom: 12.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: opacity),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            padding: EdgeInsets.all(16.w),
+            child: Row(
+              children: [
+                Container(
+                  width: 48.w,
+                  height: 48.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: opacity),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 14.h,
+                        width: 120.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: opacity),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Container(
+                        height: 10.h,
+                        width: 200.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: opacity * 0.7),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    });
   }
 }
 

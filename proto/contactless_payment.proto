@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package contactless_payment;
+package contactless;
 option go_package = "lazervaultGo/pb";
 
 import "google/protobuf/timestamp.proto";

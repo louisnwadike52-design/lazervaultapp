@@ -112,10 +112,6 @@ class ErrorStateWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFFEE2E2), // Light red
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.2),
-                  width: 1,
-                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

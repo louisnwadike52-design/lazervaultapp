@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../domain/entities/country.dart';
 
 class QuickActionsCard extends StatelessWidget {
   const QuickActionsCard({super.key});
@@ -47,7 +48,7 @@ class QuickActionsCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  onTap: () => Get.toNamed(AppRoutes.airtimeNetworkSelection),
+                  onTap: () => Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {'country': DefaultCountries.nigeria}),
                 ),
               ),
 
@@ -63,7 +64,7 @@ class QuickActionsCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  onTap: () => Get.toNamed(AppRoutes.airtimeNetworkSelection),
+                  onTap: () => Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {'country': DefaultCountries.nigeria}),
                 ),
               ),
             ],

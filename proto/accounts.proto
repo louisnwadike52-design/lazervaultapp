@@ -570,6 +570,49 @@ service AccountsService {
       security: { security_requirement: { key: "bearer"; } };
     };
   }
+
+  // ===== CATEGORY MANAGEMENT =====
+
+  // Get user's custom category mappings
+  rpc GetUserCategoryMappings(GetUserCategoryMappingsRequest) returns (GetUserCategoryMappingsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/categories/mappings"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Category Mappings";
+      description: "Get user's custom category name mappings and ordering";
+      tags: ["Categories"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Update a category mapping (rename, re-parent)
+  rpc UpdateUserCategoryMapping(UpdateUserCategoryMappingRequest) returns (UpdateUserCategoryMappingResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/categories/mappings"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Category Mapping";
+      description: "Rename a category or move it under a different parent";
+      tags: ["Categories"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Reorder categories (batch update display order)
+  rpc ReorderCategories(ReorderCategoriesRequest) returns (ReorderCategoriesResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/categories/reorder"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reorder Categories";
+      description: "Batch update display order of categories via drag-and-drop";
+      tags: ["Categories"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
 }
 
 // ===== Account Model =====
@@ -1346,12 +1389,21 @@ message GetFinancialAnalyticsResponse {
   string period_label = 5;             // e.g., "This Month", "This Week"
 }
 
+// Sub-category breakdown item (e.g., Airtime within Bills & Utilities)
+message SubCategoryItem {
+  string name = 1;
+  double amount = 2;
+  int32 transaction_count = 3;
+  double percentage = 4;               // percentage of parent category
+}
+
 // Category breakdown item
 message CategoryBreakdownItem {
   string category_name = 1;            // service_name or category
   double amount = 2;
   int32 transaction_count = 3;
   double percentage = 4;               // percentage of total
+  repeated SubCategoryItem sub_categories = 5;  // sub-category breakdowns
 }
 
 // GetCategoryAnalytics - Breakdown by category for income and expenses
@@ -1403,4 +1455,47 @@ message GetExpenseTimeSeriesResponse {
   repeated DailyExpensePoint data_points = 1;
   double total_expenses = 2;
   double daily_average = 3;
+}
+
+// ===== CATEGORY MANAGEMENT =====
+
+// A single category mapping entry
+message UserCategoryMappingItem {
+  string id = 1;
+  string original_category = 2;
+  string custom_category = 3;
+  int32 display_order = 4;
+  string parent_category = 5;
+}
+
+// GetUserCategoryMappings
+message GetUserCategoryMappingsRequest {}
+
+message GetUserCategoryMappingsResponse {
+  repeated UserCategoryMappingItem mappings = 1;
+}
+
+// UpdateUserCategoryMapping
+message UpdateUserCategoryMappingRequest {
+  string original_category = 1;       // system category to map
+  string custom_category = 2;         // user's custom name
+  string parent_category = 3;         // optional: move under another category
+}
+
+message UpdateUserCategoryMappingResponse {
+  UserCategoryMappingItem mapping = 1;
+}
+
+// ReorderCategories - batch update display order
+message CategoryOrderItem {
+  string original_category = 1;
+  int32 display_order = 2;
+}
+
+message ReorderCategoriesRequest {
+  repeated CategoryOrderItem orderings = 1;
+}
+
+message ReorderCategoriesResponse {
+  bool success = 1;
 }

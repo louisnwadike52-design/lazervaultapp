@@ -20,6 +20,7 @@ enum AppServiceName {
   crowdfund,
   lockFunds,
   whatsappIntegration,
+  idPay,
   payroll,
   businessDashboard,
   businessAnalytics,
@@ -69,9 +70,11 @@ extension AppServiceNameExtension on AppServiceName {
       case AppServiceName.crowdfund:
         return 'Crowdfund';
       case AppServiceName.lockFunds:
-        return 'Lock Funds';
+        return 'PiggyVault';
       case AppServiceName.whatsappIntegration:
         return 'WhatsApp Banking';
+      case AppServiceName.idPay:
+        return 'IDPay';
       case AppServiceName.payroll:
         return 'Payroll';
       case AppServiceName.businessDashboard:
@@ -131,6 +134,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'accounts-service';
       case AppServiceName.whatsappIntegration:
         return 'whatsapp-service';
+      case AppServiceName.idPay:
+        return 'id-pay-service';
       case AppServiceName.payroll:
         return 'payroll-service';
       case AppServiceName.businessDashboard:
@@ -174,6 +179,7 @@ enum AppServiceImg {
   crowdfund,
   lockFunds,
   whatsappIntegration,
+  idPay,
   payroll,
   businessDashboard,
   businessAnalytics,
@@ -226,6 +232,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/lock.png';
       case AppServiceImg.whatsappIntegration:
         return 'assets/images/whatsapp-banking.png';
+      case AppServiceImg.idPay:
+        return 'assets/images/money-receive.png';
       case AppServiceImg.payroll:
         return 'assets/images/payroll.png';
       case AppServiceImg.businessDashboard:

@@ -20,6 +20,9 @@ class IDPayModel extends IDPayEntity {
     required super.createdAt,
     required super.totalReceived,
     required super.paymentCount,
+    super.neverExpires = false,
+    super.organizationId = '',
+    super.organizationName = '',
   });
 
   factory IDPayModel.fromProto(pb.IDPay proto) {
@@ -41,6 +44,9 @@ class IDPayModel extends IDPayEntity {
       createdAt: proto.createdAt.toDateTime(),
       totalReceived: proto.totalReceived,
       paymentCount: proto.paymentCount,
+      neverExpires: proto.neverExpires,
+      organizationId: proto.organizationId,
+      organizationName: proto.organizationName,
     );
   }
 

@@ -52,18 +52,29 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       final start = startDate ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
       final end = endDate ?? DateTime.now();
 
-      // Load real financial analytics from accounts-service
-      final analyticsResults = await Future.wait([
+      // Load core analytics (these are required for the page)
+      final coreResults = await Future.wait([
         analyticsRepository.getFinancialAnalytics(period: _currentPeriod),
         analyticsRepository.getCategoryAnalytics(startDate: start, endDate: end),
         analyticsRepository.getMonthlyTrends(months: 6),
         analyticsRepository.getExpenseTimeSeries(startDate: start, endDate: end),
       ]);
 
-      final financialAnalytics = analyticsResults[0] as accounts_pb.GetFinancialAnalyticsResponse;
-      final categoryAnalytics = analyticsResults[1] as accounts_pb.GetCategoryAnalyticsResponse;
-      final monthlyTrends = analyticsResults[2] as accounts_pb.GetMonthlyTrendsResponse;
-      final expenseTimeSeries = analyticsResults[3] as accounts_pb.GetExpenseTimeSeriesResponse;
+      // Load failed transactions separately — non-fatal if this fails
+      accounts_pb.GetTransactionHistoryResponse? failedTransactions;
+      try {
+        failedTransactions = await analyticsRepository.getFailedTransactions(
+          startDate: start,
+          endDate: end,
+        );
+      } catch (_) {
+        // Silently ignore — failed transactions card simply won't show
+      }
+
+      final financialAnalytics = coreResults[0] as accounts_pb.GetFinancialAnalyticsResponse;
+      final categoryAnalytics = coreResults[1] as accounts_pb.GetCategoryAnalyticsResponse;
+      final monthlyTrends = coreResults[2] as accounts_pb.GetMonthlyTrendsResponse;
+      final expenseTimeSeries = coreResults[3] as accounts_pb.GetExpenseTimeSeriesResponse;
 
       if (isClosed) return;
       emit(StatisticsLoaded(
@@ -73,6 +84,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         categoryAnalytics: categoryAnalytics,
         monthlyTrends: monthlyTrends,
         expenseTimeSeries: expenseTimeSeries,
+        failedTransactions: failedTransactions,
         currentPeriod: _currentPeriod,
       ));
     } catch (e, stackTrace) {

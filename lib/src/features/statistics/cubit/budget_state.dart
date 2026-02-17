@@ -181,6 +181,7 @@ class BudgetAIInsightsData {
   final Map<String, dynamic> spendingPatterns;
   final double recommendedSavingsRate;
   final String riskLevel;
+  final List<CategoryInsightData> categoryInsights;
 
   BudgetAIInsightsData({
     required this.summary,
@@ -189,6 +190,7 @@ class BudgetAIInsightsData {
     required this.spendingPatterns,
     required this.recommendedSavingsRate,
     required this.riskLevel,
+    required this.categoryInsights,
   });
 }
 
@@ -207,5 +209,31 @@ class BudgetRecommendationData {
     required this.currentAmount,
     required this.difference,
     required this.reasoning,
+  });
+}
+
+class SubCategoryInsightData {
+  final String name;
+  final double amount;
+  final String insight;
+
+  SubCategoryInsightData({
+    required this.name,
+    required this.amount,
+    required this.insight,
+  });
+}
+
+class CategoryInsightData {
+  final String categoryName;
+  final String analysis;
+  final List<SubCategoryInsightData> subCategories;
+  final List<String> actionItems;
+
+  CategoryInsightData({
+    required this.categoryName,
+    required this.analysis,
+    required this.subCategories,
+    required this.actionItems,
   });
 }

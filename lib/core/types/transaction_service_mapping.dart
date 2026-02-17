@@ -111,6 +111,8 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.unknown; // Business service
       case AppServiceName.expenses:
         return TransactionServiceType.unknown; // Business service
+      case AppServiceName.idPay:
+        return TransactionServiceType.unknown; // ID-based payment
     }
   }
 }

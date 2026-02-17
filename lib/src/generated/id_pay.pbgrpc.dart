@@ -49,6 +49,26 @@ class IDPayServiceClient extends $grpc.Client {
       '/id_pay.IDPayService/GetIDPayDetails',
       ($0.GetIDPayDetailsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetIDPayDetailsResponse.fromBuffer(value));
+  static final _$createOrganization = $grpc.ClientMethod<$0.CreateOrganizationRequest, $0.CreateOrganizationResponse>(
+      '/id_pay.IDPayService/CreateOrganization',
+      ($0.CreateOrganizationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreateOrganizationResponse.fromBuffer(value));
+  static final _$getMyOrganizations = $grpc.ClientMethod<$0.GetMyOrganizationsRequest, $0.GetMyOrganizationsResponse>(
+      '/id_pay.IDPayService/GetMyOrganizations',
+      ($0.GetMyOrganizationsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetMyOrganizationsResponse.fromBuffer(value));
+  static final _$updateOrganization = $grpc.ClientMethod<$0.UpdateOrganizationRequest, $0.UpdateOrganizationResponse>(
+      '/id_pay.IDPayService/UpdateOrganization',
+      ($0.UpdateOrganizationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateOrganizationResponse.fromBuffer(value));
+  static final _$deleteOrganization = $grpc.ClientMethod<$0.DeleteOrganizationRequest, $0.DeleteOrganizationResponse>(
+      '/id_pay.IDPayService/DeleteOrganization',
+      ($0.DeleteOrganizationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.DeleteOrganizationResponse.fromBuffer(value));
+  static final _$getOrganizationDetails = $grpc.ClientMethod<$0.GetOrganizationDetailsRequest, $0.GetOrganizationDetailsResponse>(
+      '/id_pay.IDPayService/GetOrganizationDetails',
+      ($0.GetOrganizationDetailsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetOrganizationDetailsResponse.fromBuffer(value));
 
   IDPayServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -82,6 +102,26 @@ class IDPayServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetIDPayDetailsResponse> getIDPayDetails($0.GetIDPayDetailsRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getIDPayDetails, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateOrganizationResponse> createOrganization($0.CreateOrganizationRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createOrganization, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetMyOrganizationsResponse> getMyOrganizations($0.GetMyOrganizationsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMyOrganizations, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateOrganizationResponse> updateOrganization($0.UpdateOrganizationRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateOrganization, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteOrganizationResponse> deleteOrganization($0.DeleteOrganizationRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deleteOrganization, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetOrganizationDetailsResponse> getOrganizationDetails($0.GetOrganizationDetailsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getOrganizationDetails, request, options: options);
   }
 }
 
@@ -139,6 +179,41 @@ abstract class IDPayServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetIDPayDetailsRequest.fromBuffer(value),
         ($0.GetIDPayDetailsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateOrganizationRequest, $0.CreateOrganizationResponse>(
+        'CreateOrganization',
+        createOrganization_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CreateOrganizationRequest.fromBuffer(value),
+        ($0.CreateOrganizationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyOrganizationsRequest, $0.GetMyOrganizationsResponse>(
+        'GetMyOrganizations',
+        getMyOrganizations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMyOrganizationsRequest.fromBuffer(value),
+        ($0.GetMyOrganizationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateOrganizationRequest, $0.UpdateOrganizationResponse>(
+        'UpdateOrganization',
+        updateOrganization_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UpdateOrganizationRequest.fromBuffer(value),
+        ($0.UpdateOrganizationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteOrganizationRequest, $0.DeleteOrganizationResponse>(
+        'DeleteOrganization',
+        deleteOrganization_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.DeleteOrganizationRequest.fromBuffer(value),
+        ($0.DeleteOrganizationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetOrganizationDetailsRequest, $0.GetOrganizationDetailsResponse>(
+        'GetOrganizationDetails',
+        getOrganizationDetails_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetOrganizationDetailsRequest.fromBuffer(value),
+        ($0.GetOrganizationDetailsResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateIDPayResponse> createIDPay_Pre($grpc.ServiceCall call, $async.Future<$0.CreateIDPayRequest> request) async {
@@ -169,6 +244,26 @@ abstract class IDPayServiceBase extends $grpc.Service {
     return getIDPayDetails(call, await request);
   }
 
+  $async.Future<$0.CreateOrganizationResponse> createOrganization_Pre($grpc.ServiceCall call, $async.Future<$0.CreateOrganizationRequest> request) async {
+    return createOrganization(call, await request);
+  }
+
+  $async.Future<$0.GetMyOrganizationsResponse> getMyOrganizations_Pre($grpc.ServiceCall call, $async.Future<$0.GetMyOrganizationsRequest> request) async {
+    return getMyOrganizations(call, await request);
+  }
+
+  $async.Future<$0.UpdateOrganizationResponse> updateOrganization_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateOrganizationRequest> request) async {
+    return updateOrganization(call, await request);
+  }
+
+  $async.Future<$0.DeleteOrganizationResponse> deleteOrganization_Pre($grpc.ServiceCall call, $async.Future<$0.DeleteOrganizationRequest> request) async {
+    return deleteOrganization(call, await request);
+  }
+
+  $async.Future<$0.GetOrganizationDetailsResponse> getOrganizationDetails_Pre($grpc.ServiceCall call, $async.Future<$0.GetOrganizationDetailsRequest> request) async {
+    return getOrganizationDetails(call, await request);
+  }
+
   $async.Future<$0.CreateIDPayResponse> createIDPay($grpc.ServiceCall call, $0.CreateIDPayRequest request);
   $async.Future<$0.LookupIDPayResponse> lookupIDPay($grpc.ServiceCall call, $0.LookupIDPayRequest request);
   $async.Future<$0.PayIDPayResponse> payIDPay($grpc.ServiceCall call, $0.PayIDPayRequest request);
@@ -176,4 +271,9 @@ abstract class IDPayServiceBase extends $grpc.Service {
   $async.Future<$0.GetIDPayTransactionsResponse> getIDPayTransactions($grpc.ServiceCall call, $0.GetIDPayTransactionsRequest request);
   $async.Future<$0.CancelIDPayResponse> cancelIDPay($grpc.ServiceCall call, $0.CancelIDPayRequest request);
   $async.Future<$0.GetIDPayDetailsResponse> getIDPayDetails($grpc.ServiceCall call, $0.GetIDPayDetailsRequest request);
+  $async.Future<$0.CreateOrganizationResponse> createOrganization($grpc.ServiceCall call, $0.CreateOrganizationRequest request);
+  $async.Future<$0.GetMyOrganizationsResponse> getMyOrganizations($grpc.ServiceCall call, $0.GetMyOrganizationsRequest request);
+  $async.Future<$0.UpdateOrganizationResponse> updateOrganization($grpc.ServiceCall call, $0.UpdateOrganizationRequest request);
+  $async.Future<$0.DeleteOrganizationResponse> deleteOrganization($grpc.ServiceCall call, $0.DeleteOrganizationRequest request);
+  $async.Future<$0.GetOrganizationDetailsResponse> getOrganizationDetails($grpc.ServiceCall call, $0.GetOrganizationDetailsRequest request);
 }

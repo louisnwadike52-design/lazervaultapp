@@ -19,38 +19,38 @@ import 'contactless_payment.pb.dart' as $0;
 
 export 'contactless_payment.pb.dart';
 
-@$pb.GrpcServiceName('contactless_payment.ContactlessPaymentService')
+@$pb.GrpcServiceName('contactless.ContactlessPaymentService')
 class ContactlessPaymentServiceClient extends $grpc.Client {
   static final _$createPaymentSession = $grpc.ClientMethod<$0.CreatePaymentSessionRequest, $0.CreatePaymentSessionResponse>(
-      '/contactless_payment.ContactlessPaymentService/CreatePaymentSession',
+      '/contactless.ContactlessPaymentService/CreatePaymentSession',
       ($0.CreatePaymentSessionRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.CreatePaymentSessionResponse.fromBuffer(value));
   static final _$getPaymentSession = $grpc.ClientMethod<$0.GetPaymentSessionRequest, $0.GetPaymentSessionResponse>(
-      '/contactless_payment.ContactlessPaymentService/GetPaymentSession',
+      '/contactless.ContactlessPaymentService/GetPaymentSession',
       ($0.GetPaymentSessionRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetPaymentSessionResponse.fromBuffer(value));
   static final _$processContactlessPayment = $grpc.ClientMethod<$0.ProcessContactlessPaymentRequest, $0.ProcessContactlessPaymentResponse>(
-      '/contactless_payment.ContactlessPaymentService/ProcessContactlessPayment',
+      '/contactless.ContactlessPaymentService/ProcessContactlessPayment',
       ($0.ProcessContactlessPaymentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.ProcessContactlessPaymentResponse.fromBuffer(value));
   static final _$cancelPaymentSession = $grpc.ClientMethod<$0.CancelPaymentSessionRequest, $0.CancelPaymentSessionResponse>(
-      '/contactless_payment.ContactlessPaymentService/CancelPaymentSession',
+      '/contactless.ContactlessPaymentService/CancelPaymentSession',
       ($0.CancelPaymentSessionRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.CancelPaymentSessionResponse.fromBuffer(value));
   static final _$getMyPaymentSessions = $grpc.ClientMethod<$0.GetMyPaymentSessionsRequest, $0.GetMyPaymentSessionsResponse>(
-      '/contactless_payment.ContactlessPaymentService/GetMyPaymentSessions',
+      '/contactless.ContactlessPaymentService/GetMyPaymentSessions',
       ($0.GetMyPaymentSessionsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetMyPaymentSessionsResponse.fromBuffer(value));
   static final _$getMyContactlessPayments = $grpc.ClientMethod<$0.GetMyContactlessPaymentsRequest, $0.GetMyContactlessPaymentsResponse>(
-      '/contactless_payment.ContactlessPaymentService/GetMyContactlessPayments',
+      '/contactless.ContactlessPaymentService/GetMyContactlessPayments',
       ($0.GetMyContactlessPaymentsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetMyContactlessPaymentsResponse.fromBuffer(value));
   static final _$checkSessionStatus = $grpc.ClientMethod<$0.CheckSessionStatusRequest, $0.CheckSessionStatusResponse>(
-      '/contactless_payment.ContactlessPaymentService/CheckSessionStatus',
+      '/contactless.ContactlessPaymentService/CheckSessionStatus',
       ($0.CheckSessionStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.CheckSessionStatusResponse.fromBuffer(value));
   static final _$acknowledgeSessionRead = $grpc.ClientMethod<$0.AcknowledgeSessionReadRequest, $0.AcknowledgeSessionReadResponse>(
-      '/contactless_payment.ContactlessPaymentService/AcknowledgeSessionRead',
+      '/contactless.ContactlessPaymentService/AcknowledgeSessionRead',
       ($0.AcknowledgeSessionReadRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.AcknowledgeSessionReadResponse.fromBuffer(value));
 
@@ -93,9 +93,9 @@ class ContactlessPaymentServiceClient extends $grpc.Client {
   }
 }
 
-@$pb.GrpcServiceName('contactless_payment.ContactlessPaymentService')
+@$pb.GrpcServiceName('contactless.ContactlessPaymentService')
 abstract class ContactlessPaymentServiceBase extends $grpc.Service {
-  $core.String get $name => 'contactless_payment.ContactlessPaymentService';
+  $core.String get $name => 'contactless.ContactlessPaymentService';
 
   ContactlessPaymentServiceBase() {
     $addMethod($grpc.ServiceMethod<$0.CreatePaymentSessionRequest, $0.CreatePaymentSessionResponse>(

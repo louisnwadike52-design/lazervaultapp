@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/id_pay_entity.dart';
+import '../entities/id_pay_organization_entity.dart';
 import '../entities/id_pay_transaction_entity.dart';
 
 abstract class IDPayRepository {
@@ -13,6 +14,8 @@ abstract class IDPayRepository {
     double? maxAmount,
     String? description,
     required int validityMinutes,
+    bool neverExpires = false,
+    String? organizationId,
   });
 
   Future<Either<Failure, IDPayEntity>> lookupIDPay({
@@ -45,5 +48,40 @@ abstract class IDPayRepository {
 
   Future<Either<Failure, IDPayEntity>> getIDPayDetails({
     required String id,
+  });
+
+  Future<Either<Failure, IDPayOrganizationEntity>> createOrganization({
+    required String name,
+    required String description,
+    String? logoUrl,
+    required String accountId,
+  });
+
+  Future<Either<Failure, (List<IDPayOrganizationEntity>, int)>>
+      getMyOrganizations({
+    required String accountId,
+    int? limit,
+    int? offset,
+  });
+
+  Future<Either<Failure, IDPayOrganizationEntity>> updateOrganization({
+    required String id,
+    String? name,
+    String? description,
+    String? logoUrl,
+  });
+
+  Future<Either<Failure, void>> deleteOrganization({
+    required String id,
+  });
+
+  Future<Either<Failure, (IDPayOrganizationEntity, List<IDPayEntity>, double)>>
+      getOrganizationDetails({
+    required String id,
+  });
+
+  Future<Either<Failure, (IDPayEntity, IDPayOrganizationEntity?)>>
+      lookupIDPayWithOrg({
+    required String payId,
   });
 }

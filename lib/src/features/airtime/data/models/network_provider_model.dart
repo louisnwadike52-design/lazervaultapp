@@ -17,6 +17,7 @@ class NetworkProviderModel extends NetworkProvider {
     super.minAmount,
     super.maxAmount,
     super.operatorId,
+    super.reloadlyOperatorId,
   });
 
   factory NetworkProviderModel.fromProto(pb.AirtimeProvider provider) {
@@ -35,6 +36,7 @@ class NetworkProviderModel extends NetworkProvider {
       minAmount: provider.minAmount,
       maxAmount: provider.maxAmount,
       operatorId: provider.operatorId.isNotEmpty ? provider.operatorId : null,
+      reloadlyOperatorId: provider.reloadlyOperatorId.isNotEmpty ? provider.reloadlyOperatorId : null,
     );
   }
 
@@ -96,6 +98,7 @@ class NetworkProviderModel extends NetworkProvider {
       minAmount: (json['minAmount'] as num?)?.toDouble() ?? 1.0,
       maxAmount: (json['maxAmount'] as num?)?.toDouble() ?? 1000.0,
       operatorId: json['operatorId'] as String?,
+      reloadlyOperatorId: json['reloadlyOperatorId'] as String?,
     );
   }
 
@@ -116,6 +119,7 @@ class NetworkProviderModel extends NetworkProvider {
       'minAmount': minAmount,
       'maxAmount': maxAmount,
       'operatorId': operatorId,
+      'reloadlyOperatorId': reloadlyOperatorId,
     };
   }
 
@@ -135,6 +139,7 @@ class NetworkProviderModel extends NetworkProvider {
     double? minAmount,
     double? maxAmount,
     String? operatorId,
+    String? reloadlyOperatorId,
   }) {
     return NetworkProviderModel(
       id: id ?? this.id,
@@ -151,6 +156,7 @@ class NetworkProviderModel extends NetworkProvider {
       minAmount: minAmount ?? this.minAmount,
       maxAmount: maxAmount ?? this.maxAmount,
       operatorId: operatorId ?? this.operatorId,
+      reloadlyOperatorId: reloadlyOperatorId ?? this.reloadlyOperatorId,
     );
   }
 } 

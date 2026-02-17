@@ -83,6 +83,7 @@ const AirtimeProvider$json = {
     {'1': 'max_amount', '3': 10, '4': 1, '5': 1, '10': 'maxAmount'},
     {'1': 'commission_rate', '3': 11, '4': 1, '5': 1, '10': 'commissionRate'},
     {'1': 'operator_id', '3': 12, '4': 1, '5': 9, '10': 'operatorId'},
+    {'1': 'reloadly_operator_id', '3': 13, '4': 1, '5': 9, '10': 'reloadlyOperatorId'},
   ],
 };
 
@@ -94,7 +95,8 @@ final $typed_data.Uint8List airtimeProviderDescriptor = $convert.base64Decode(
     '5hdGlvbnMSHQoKZGF0YV9wbGFucxgHIAMoCVIJZGF0YVBsYW5zEiEKDGNvdW50cnlfY29kZRgI'
     'IAEoCVILY291bnRyeUNvZGUSHQoKbWluX2Ftb3VudBgJIAEoAVIJbWluQW1vdW50Eh0KCm1heF'
     '9hbW91bnQYCiABKAFSCW1heEFtb3VudBInCg9jb21taXNzaW9uX3JhdGUYCyABKAFSDmNvbW1p'
-    'c3Npb25SYXRlEh8KC29wZXJhdG9yX2lkGAwgASgJUgpvcGVyYXRvcklk');
+    'c3Npb25SYXRlEh8KC29wZXJhdG9yX2lkGAwgASgJUgpvcGVyYXRvcklkEjAKFHJlbG9hZGx5X2'
+    '9wZXJhdG9yX2lkGA0gASgJUhJyZWxvYWRseU9wZXJhdG9ySWQ=');
 
 @$core.Deprecated('Use payElectricityBillRequestDescriptor instead')
 const PayElectricityBillRequest$json = {
@@ -233,6 +235,7 @@ const BuyAirtimeRequest$json = {
     {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'country_code', '3': 9, '4': 1, '5': 9, '10': 'countryCode'},
     {'1': 'operator_id', '3': 10, '4': 1, '5': 9, '10': 'operatorId'},
+    {'1': 'reloadly_operator_id', '3': 11, '4': 1, '5': 9, '10': 'reloadlyOperatorId'},
   ],
 };
 
@@ -244,7 +247,8 @@ final $typed_data.Uint8List buyAirtimeRequestDescriptor = $convert.base64Decode(
     'gJUgpkYXRhUGxhbklkEiUKDnRyYW5zYWN0aW9uX2lkGAYgASgJUg10cmFuc2FjdGlvbklkEi0K'
     'EnZlcmlmaWNhdGlvbl90b2tlbhgHIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW4SJwoPaWRlbXBvdG'
     'VuY3lfa2V5GAggASgJUg5pZGVtcG90ZW5jeUtleRIhCgxjb3VudHJ5X2NvZGUYCSABKAlSC2Nv'
-    'dW50cnlDb2RlEh8KC29wZXJhdG9yX2lkGAogASgJUgpvcGVyYXRvcklk');
+    'dW50cnlDb2RlEh8KC29wZXJhdG9yX2lkGAogASgJUgpvcGVyYXRvcklkEjAKFHJlbG9hZGx5X2'
+    '9wZXJhdG9yX2lkGAsgASgJUhJyZWxvYWRseU9wZXJhdG9ySWQ=');
 
 @$core.Deprecated('Use buyAirtimeResponseDescriptor instead')
 const BuyAirtimeResponse$json = {

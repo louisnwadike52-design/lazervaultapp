@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/types/app_routes.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';

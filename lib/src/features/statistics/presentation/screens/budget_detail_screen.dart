@@ -18,7 +18,7 @@ class BudgetDetailScreen extends StatefulWidget {
 }
 
 class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
-  final String? budgetId = Get.arguments as String?;
+  final String? budgetId = (Get.arguments as Map<String, dynamic>?)?['budgetId'] as String?;
 
   @override
   void initState() {
@@ -187,7 +187,6 @@ class _BudgetDetailView extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -206,7 +205,6 @@ class _BudgetDetailView extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,11 +235,6 @@ class _BudgetDetailView extends StatelessWidget {
                     ? const Color(0xFFEF4444).withValues(alpha: 0.1)
                     : const Color(0xFFFB923C).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: percentage >= 90
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFFFB923C),
-                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -110,6 +110,7 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'discount': 2.0,
       'minAmount': 50.0,
       'maxAmount': 10000.0,
+      'operatorId': 'MTN',
     },
     {
       'id': 'airtel_ng',
@@ -124,6 +125,7 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'discount': 1.5,
       'minAmount': 50.0,
       'maxAmount': 10000.0,
+      'operatorId': 'AIRTEL',
     },
     {
       'id': 'glo_ng',
@@ -135,6 +137,7 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'primaryColor': '#00FF00',
       'isActive': true,
       'discountPercentage': 1.0,
+      'operatorId': 'GLO',
     },
     {
       'id': '9mobile_ng',
@@ -146,6 +149,7 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'primaryColor': '#009900',
       'isActive': true,
       'discountPercentage': 1.0,
+      'operatorId': '9MOBILE',
     },
     // United States
     {

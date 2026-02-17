@@ -8,6 +8,7 @@ class BudgetAIInsightsResponse {
   final Map<String, dynamic> spendingPatterns;
   final double recommendedSavingsRate;
   final String riskLevel;
+  final List<CategoryInsightItem> categoryInsights;
 
   BudgetAIInsightsResponse({
     required this.summary,
@@ -16,6 +17,7 @@ class BudgetAIInsightsResponse {
     required this.spendingPatterns,
     required this.recommendedSavingsRate,
     required this.riskLevel,
+    required this.categoryInsights,
   });
 
   factory BudgetAIInsightsResponse.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,10 @@ class BudgetAIInsightsResponse {
       recommendedSavingsRate:
           (json['recommended_savings_rate'] as num?)?.toDouble() ?? 0.0,
       riskLevel: json['risk_level'] as String? ?? 'moderate',
+      categoryInsights: (json['category_insights'] as List?)
+              ?.map((item) => CategoryInsightItem.fromJson(item as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -45,6 +51,8 @@ class BudgetAIInsightsResponse {
       'spending_patterns': spendingPatterns,
       'recommended_savings_rate': recommendedSavingsRate,
       'risk_level': riskLevel,
+      'category_insights':
+          categoryInsights.map((c) => c.toJson()).toList(),
     };
   }
 }
@@ -91,6 +99,70 @@ class BudgetRecommendationItem {
   }
 }
 
+/// Sub-category insight item
+class SubCategoryInsightItem {
+  final String name;
+  final double amount;
+  final String insight;
+
+  SubCategoryInsightItem({
+    required this.name,
+    required this.amount,
+    required this.insight,
+  });
+
+  factory SubCategoryInsightItem.fromJson(Map<String, dynamic> json) {
+    return SubCategoryInsightItem(
+      name: json['name'] as String? ?? '',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      insight: json['insight'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'amount': amount, 'insight': insight};
+  }
+}
+
+/// Per-category deep-dive insight with sub-category breakdowns
+class CategoryInsightItem {
+  final String categoryName;
+  final String analysis;
+  final List<SubCategoryInsightItem> subCategories;
+  final List<String> actionItems;
+
+  CategoryInsightItem({
+    required this.categoryName,
+    required this.analysis,
+    required this.subCategories,
+    required this.actionItems,
+  });
+
+  factory CategoryInsightItem.fromJson(Map<String, dynamic> json) {
+    return CategoryInsightItem(
+      categoryName: json['category_name'] as String? ?? '',
+      analysis: json['analysis'] as String? ?? '',
+      subCategories: (json['sub_categories'] as List?)
+              ?.map((item) => SubCategoryInsightItem.fromJson(item as Map<String, dynamic>))
+              .toList() ??
+          [],
+      actionItems: (json['action_items'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'category_name': categoryName,
+      'analysis': analysis,
+      'sub_categories': subCategories.map((s) => s.toJson()).toList(),
+      'action_items': actionItems,
+    };
+  }
+}
+
 /// Service for generating AI-powered budget insights
 /// Communicates with chat-agent-gateway POST /api/budget/ai-insights
 class BudgetAIService {
@@ -115,6 +187,10 @@ class BudgetAIService {
     required String riskTolerance,
     String currency = 'NGN',
     int monthsOfData = 3,
+    List<Map<String, dynamic>> financialGoals = const [],
+    List<Map<String, dynamic>> upcomingBills = const [],
+    List<Map<String, dynamic>> budgetAlerts = const [],
+    List<Map<String, dynamic>> failedTransactions = const [],
   }) async {
     try {
       final accessToken = await _getAccessToken();
@@ -125,7 +201,11 @@ class BudgetAIService {
           'monthly_income': monthlyIncome,
           'spending_data': spendingData,
           'active_budgets': activeBudgets,
-          'financial_goals': goals,
+          'goals': goals,
+          'financial_goals': financialGoals,
+          'upcoming_bills': upcomingBills,
+          'budget_alerts': budgetAlerts,
+          'failed_transactions': failedTransactions,
           'risk_tolerance': riskTolerance,
           'currency': currency,
           'months_of_data': monthsOfData,
@@ -135,8 +215,8 @@ class BudgetAIService {
             'Authorization': 'Bearer $accessToken',
             'Content-Type': 'application/json',
           },
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 60),
         ),
       );
 

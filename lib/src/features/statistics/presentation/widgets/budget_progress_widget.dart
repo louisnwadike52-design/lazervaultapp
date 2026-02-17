@@ -91,10 +91,6 @@ class _BudgetProgressItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: status.color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: status.color.withValues(alpha: 0.2),
-          width: 1,
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
