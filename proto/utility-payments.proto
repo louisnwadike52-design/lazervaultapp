@@ -224,7 +224,8 @@ message AirtimeProvider {
   double min_amount = 9;               // Minimum topup amount
   double max_amount = 10;              // Maximum topup amount
   double commission_rate = 11;         // % earned per transaction
-  string operator_id = 12;            // Reloadly operator ID
+  string operator_id = 12;            // Universal operator ID (network name: "MTN", "AIRTEL")
+  string reloadly_operator_id = 13;   // Reloadly-specific numeric ID ("649")
 }
 
 // ===== ELECTRICITY BILL =====
@@ -314,7 +315,8 @@ message BuyAirtimeRequest {
   string idempotency_key = 8;          // Unique key for idempotency (recommended: UUID)
 
   string country_code = 9;             // ISO country code (e.g., "NG")
-  string operator_id = 10;             // Reloadly operator ID
+  string operator_id = 10;             // Universal operator ID (network name)
+  string reloadly_operator_id = 11;   // Reloadly-specific numeric ID
 }
 
 message BuyAirtimeResponse {

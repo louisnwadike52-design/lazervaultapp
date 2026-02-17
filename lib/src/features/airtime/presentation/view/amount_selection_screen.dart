@@ -8,6 +8,7 @@ import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
+import '../../domain/airtime_fee_config.dart';
 import '../widgets/airtime_step_indicator.dart';
 
 class AmountSelectionScreen extends StatefulWidget {
@@ -143,7 +144,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             child: Column(
               children: [
                 _buildHeader(),
-                const AirtimeStepIndicator(currentStep: 2),
+                const AirtimeStepIndicator(currentStep: 1),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -461,12 +462,9 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
   }
 
   Widget _buildAmountSummary() {
-    final fee = selectedAmount! * 0.01;
-    final clampedFee = fee.clamp(5.0, 100.0);
-    final discount = networkProvider?.discount != null 
-      ? selectedAmount! * (networkProvider!.discount! / 100) 
-      : 0.0;
-    final total = selectedAmount! + clampedFee - discount;
+    final countryCode = selectedCountry?.code ?? 'NG';
+    final fee = AirtimeFeeConfig.calculateFee(selectedAmount!, countryCode);
+    final total = selectedAmount! + fee;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -480,27 +478,27 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
       ),
       child: Column(
         children: [
           _buildSummaryRow('Airtime Amount', '$_cs${selectedAmount!.toStringAsFixed(0)}'),
-          if (discount > 0) ...[
+          if (AirtimeFeeConfig.serviceFeeEnabled && fee > 0) ...[
             SizedBox(height: 8.h),
-            _buildSummaryRow('Discount (${networkProvider!.discount!.toStringAsFixed(0)}%)', '-$_cs${discount.toStringAsFixed(0)}', isDiscount: true),
+            _buildSummaryRow('Service Fee', '$_cs${fee.toStringAsFixed(0)}'),
           ],
-          SizedBox(height: 8.h),
-          _buildSummaryRow('Service Fee', '$_cs${clampedFee.toStringAsFixed(0)}'),
-          SizedBox(height: 12.h),
-          Divider(color: Colors.white.withValues(alpha: 0.1)),
-          SizedBox(height: 12.h),
-          _buildSummaryRow('Total Amount', '$_cs${total.toStringAsFixed(0)}', isTotal: true),
+          if (AirtimeFeeConfig.serviceFeeEnabled && fee > 0) ...[
+            SizedBox(height: 12.h),
+            Divider(color: Colors.white.withValues(alpha: 0.1)),
+            SizedBox(height: 12.h),
+            _buildSummaryRow('Total Amount', '$_cs${total.toStringAsFixed(0)}', isTotal: true),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildSummaryRow(String label, String amount, {bool isTotal = false, bool isDiscount = false}) {
+  Widget _buildSummaryRow(String label, String amount, {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -517,10 +515,8 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isDiscount 
-              ? Color(0xFF10B981) 
-              : isTotal 
-                ? Colors.white 
+            color: isTotal
+                ? Colors.white
                 : Colors.white.withValues(alpha: 0.8),
           ),
         ),

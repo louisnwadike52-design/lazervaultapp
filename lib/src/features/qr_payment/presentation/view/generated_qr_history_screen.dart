@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_payment_entity.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
@@ -25,67 +27,145 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A3E),
+              Color(0xFF0A0E27),
+              Color(0xFF0F0F23),
+            ],
+          ),
         ),
-        title: const Text(
-          'Generated QR Codes',
-          style: TextStyle(color: Colors.white, fontSize: 20),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: BlocConsumer<QRPaymentCubit, QRPaymentState>(
+                  listener: (context, state) {
+                    if (state is QRCancelled) {
+                      Get.snackbar(
+                        'Success',
+                        state.message,
+                        backgroundColor: const Color(0xFF10B981),
+                        colorText: Colors.white,
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is QRPaymentLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                            color: Color(0xFF3B82F6)),
+                      );
+                    }
+
+                    if (state is GeneratedQRCodesLoaded) {
+                      if (state.qrCodes.isEmpty) {
+                        return _buildEmptyState();
+                      }
+                      return _buildList(state.qrCodes);
+                    }
+
+                    if (state is QRPaymentError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              state.message,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFEF4444),
+                                fontSize: 14.sp,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 16.h),
+                            GestureDetector(
+                              onTap: () => context
+                                  .read<QRPaymentCubit>()
+                                  .getMyGeneratedQRCodes(),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 24.w, vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF3B82F6)
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                    color: const Color(0xFF3B82F6)
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Retry',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF3B82F6),
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-        centerTitle: true,
       ),
-      body: BlocConsumer<QRPaymentCubit, QRPaymentState>(
-        listener: (context, state) {
-          if (state is QRCancelled) {
-            Get.snackbar(
-              'Success',
-              state.message,
-              backgroundColor: const Color(0xFF10B981),
-              colorText: Colors.white,
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is QRPaymentLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
-            );
-          }
+    );
+  }
 
-          if (state is GeneratedQRCodesLoaded) {
-            if (state.qrCodes.isEmpty) {
-              return _buildEmptyState();
-            }
-            return _buildList(state.qrCodes);
-          }
-
-          if (state is QRPaymentError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.message,
-                    style: const TextStyle(color: Color(0xFFEF4444)),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () =>
-                        context.read<QRPaymentCubit>().getMyGeneratedQRCodes(),
-                    child: const Text('Retry'),
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(22.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-            );
-          }
-
-          return const SizedBox.shrink();
-        },
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                color: Colors.white,
+                size: 18.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Text(
+              'Generated QR Codes',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -94,19 +174,43 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
     return RefreshIndicator(
       onRefresh: () => context.read<QRPaymentCubit>().getMyGeneratedQRCodes(),
       color: const Color(0xFF3B82F6),
-      backgroundColor: const Color(0xFF1F1F1F),
+      backgroundColor: const Color(0xFF1F1F35),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-          const Center(
+          SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+          Center(
             child: Column(
               children: [
-                Icon(Icons.qr_code, color: Color(0xFF4B5563), size: 48),
-                SizedBox(height: 16),
+                Container(
+                  width: 72.w,
+                  height: 72.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.qr_code_rounded,
+                    color: const Color(0xFF4B5563),
+                    size: 36.sp,
+                  ),
+                ),
+                SizedBox(height: 16.h),
                 Text(
                   'No QR codes generated yet',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Generate a QR code to receive payments',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF4B5563),
+                    fontSize: 13.sp,
+                  ),
                 ),
               ],
             ),
@@ -120,10 +224,10 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
     return RefreshIndicator(
       onRefresh: () => context.read<QRPaymentCubit>().getMyGeneratedQRCodes(),
       color: const Color(0xFF3B82F6),
-      backgroundColor: const Color(0xFF1F1F1F),
+      backgroundColor: const Color(0xFF1F1F35),
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
         itemCount: qrCodes.length,
         itemBuilder: (context, index) => _buildQRCodeTile(qrCodes[index]),
       ),
@@ -141,107 +245,163 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (qr.amount > 0)
-                Text(
-                  '${qr.currency} ${qr.amount.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                )
-              else
-                const Text(
-                  'Static QR',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              _buildStatusBadge(qr.status),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              const Color(0xFF1F1F35).withValues(alpha: 0.9),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            qr.qrCode,
-            style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
-          ),
-          if (qr.description.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              qr.description,
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                _formatDate(qr.createdAt),
-                style:
-                    const TextStyle(color: Color(0xFF4B5563), fontSize: 12),
-              ),
-              if (qr.isPending)
-                GestureDetector(
-                  onTap: () =>
-                      context.read<QRPaymentCubit>().cancelQR(qrId: qr.id),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Color(0xFFEF4444),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 44.w,
+                  height: 44.w,
+                  decoration: BoxDecoration(
+                    color: _statusColor(qr.status).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(
+                    Icons.qr_code_rounded,
+                    color: _statusColor(qr.status),
+                    size: 22.sp,
                   ),
                 ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (qr.amount > 0)
+                        Text(
+                          '${qr.currency} ${qr.amount.toStringAsFixed(2)}',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      else
+                        Text(
+                          'Static QR',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        qr.qrType.displayName,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _buildStatusBadge(qr.status),
+              ],
+            ),
+            if (qr.description.isNotEmpty) ...[
+              SizedBox(height: 12.h),
+              Text(
+                qr.description,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 13.sp,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
-          ),
-        ],
-      ),
+            SizedBox(height: 12.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _formatDate(qr.createdAt),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF4B5563),
+                    fontSize: 12.sp,
+                  ),
+                ),
+                if (qr.isPending)
+                  GestureDetector(
+                    onTap: () =>
+                        context.read<QRPaymentCubit>().cancelQR(qrId: qr.id),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFEF4444),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildStatusBadge(QRPaymentStatus status) {
-    Color color;
-    switch (status) {
-      case QRPaymentStatus.pending:
-        color = const Color(0xFFFB923C);
-      case QRPaymentStatus.paid:
-        color = const Color(0xFF10B981);
-      case QRPaymentStatus.cancelled:
-        color = const Color(0xFFEF4444);
-      case QRPaymentStatus.expired:
-        color = const Color(0xFF6B7280);
-    }
+    final color = _statusColor(status);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Text(
         status.displayName,
-        style: TextStyle(
-            color: color, fontSize: 12, fontWeight: FontWeight.w500),
+        style: GoogleFonts.inter(
+          color: color,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
+  }
+
+  Color _statusColor(QRPaymentStatus status) {
+    switch (status) {
+      case QRPaymentStatus.pending:
+        return const Color(0xFFFB923C);
+      case QRPaymentStatus.paid:
+        return const Color(0xFF10B981);
+      case QRPaymentStatus.cancelled:
+        return const Color(0xFFEF4444);
+      case QRPaymentStatus.expired:
+        return const Color(0xFF6B7280);
+    }
   }
 
   String _formatDate(DateTime date) {

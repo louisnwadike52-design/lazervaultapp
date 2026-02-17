@@ -478,10 +478,6 @@ class _BillCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: isOverdue ? const Color(0xFFEF4444).withValues(alpha: 0.3) : statusColor.withValues(alpha: 0.2),
-          width: isOverdue ? 2 : 1,
-        ),
         boxShadow: [
           BoxShadow(
             color: statusColor.withValues(alpha: 0.08),

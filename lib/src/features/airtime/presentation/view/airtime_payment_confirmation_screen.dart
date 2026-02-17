@@ -392,11 +392,6 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
               child: Column(
                 children: [
                   _buildReceiptRow('Airtime Amount', '${transaction!.currencySymbol}${transaction!.amount.toStringAsFixed(0)}'),
-                  if (transaction!.discount != null && transaction!.discount! > 0) ...[
-                    SizedBox(height: 8.h),
-                    _buildReceiptRow('Discount', '-${transaction!.currencySymbol}${transaction!.discount!.toStringAsFixed(0)}',
-                      valueColor: Color(0xFF10B981)),
-                  ],
                   if (transaction!.fee != null) ...[
                     SizedBox(height: 8.h),
                     _buildReceiptRow('Service Fee', '${transaction!.currencySymbol}${transaction!.fee!.toStringAsFixed(0)}'),

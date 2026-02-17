@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
+import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -18,6 +19,11 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/open_banking_status_card.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/financial_health_score_card.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/cash_flow_insights_card.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/failed_transactions_card.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 
 /// Maps category names from backend to display-friendly names.
 /// The backend now returns meaningful names (e.g., "P2P Transfers", "Gift Cards")
@@ -25,10 +31,16 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
   // Backend display names (pass through as-is since they're already friendly)
   'p2p transfers' || 'bank transfers' || 'international transfers' ||
-  'gift cards' || 'bills & utilities' || 'savings & products' ||
+  'gift cards' || 'bills & utilities' ||
   'service fees' || 'tagpay' || 'invoices' || 'investments' ||
   'payroll' || 'crowdfunding' || 'deposits' || 'withdrawals' ||
-  'reversals' || 'transfers' || 'banking' || 'payments' => raw,
+  'reversals' || 'transfers' || 'banking' || 'payments' ||
+  'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
+
+  // PiggyVault (Lock Funds) — savings product
+  'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'PiggyVault',
+  'autosave' => 'AutoSave',
+  'savings & products' => 'Savings & Products',
 
   // Legacy raw category values (from older transactions)
   'transfer' || 'c2c_transfer' => 'P2P Transfers',
@@ -44,7 +56,6 @@ String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
   'giftcards' || 'gift-cards' || 'gift_card' => 'Gift Cards',
   'airtime' || 'bill_payment' => 'Bills & Utilities',
   'investment' || 'investments' => 'Investments',
-  'autosave' || 'lock_funds' => 'Savings & Products',
 
   // Raw service names (fallback if somehow still passed through)
   'core-payments-service' || 'core-payments' => 'Transfers',
@@ -85,6 +96,9 @@ class _StatisticsState extends State<Statistics> {
   ];
 
   bool showIncome = true;
+  bool _isSyncing = false;
+  String _userId = '';
+  String _accessToken = '';
 
   @override
   void initState() {
@@ -92,10 +106,48 @@ class _StatisticsState extends State<Statistics> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<StatisticsCubit>().loadStatistics();
-      context.read<OpenBankingCubit>().fetchCreditScore(userId: '');
-      context.read<OpenBankingCubit>().fetchLinkedAccounts(userId: '', accessToken: '');
       context.read<BudgetCubit>().loadBudgetProgress();
+      _initOpenBanking();
     });
+  }
+
+  Future<void> _initOpenBanking() async {
+    final secureStorage = serviceLocator<SecureStorageService>();
+    final userId = await secureStorage.getUserId() ?? '';
+    final accessToken = await secureStorage.getAccessToken() ?? '';
+    if (userId.isNotEmpty && mounted) {
+      setState(() {
+        _userId = userId;
+        _accessToken = accessToken;
+      });
+      context.read<OpenBankingCubit>().fetchCreditScore(userId: userId);
+      context.read<OpenBankingCubit>().fetchLinkedAccounts(userId: userId, accessToken: accessToken);
+    }
+  }
+
+  Future<void> _syncLinkedAccounts(List<LinkedBankAccount> accounts) async {
+    if (_isSyncing || _userId.isEmpty || accounts.isEmpty) return;
+    setState(() => _isSyncing = true);
+    final cubit = context.read<OpenBankingCubit>();
+    try {
+      for (final account in accounts) {
+        try {
+          await cubit.refreshBalance(
+            accountId: account.id,
+            userId: _userId,
+            accessToken: _accessToken,
+          );
+        } catch (_) {
+          // Continue syncing remaining accounts even if one fails
+        }
+      }
+      // Re-fetch to get updated data
+      if (mounted) {
+        await cubit.fetchLinkedAccounts(userId: _userId, accessToken: _accessToken);
+      }
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
   }
 
   @override
@@ -150,8 +202,16 @@ class _StatisticsState extends State<Statistics> {
                   _buildHeader(),
                   SizedBox(height: 16.h),
                   _buildQuickStats(state),
+                  SizedBox(height: 12.h),
+                  _buildPerformanceAlert(state),
+                  SizedBox(height: 16.h),
+                  _buildFinancialHealthScore(state),
+                  SizedBox(height: 12.h),
+                  _buildCashFlowInsights(state),
                   SizedBox(height: 16.h),
                   _buildFeatureGrid(state),
+                  SizedBox(height: 16.h),
+                  _buildOpenBankingSection(),
                   SizedBox(height: 16.h),
                   _buildPeriodSelector(),
                   SizedBox(height: 16.h),
@@ -161,6 +221,7 @@ class _StatisticsState extends State<Statistics> {
                   SizedBox(height: 16.h),
                   _buildBudgetSection(),
                   SizedBox(height: 16.h),
+                  _buildFailedTransactionsSection(state),
                   _buildToggleSection(),
                   showIncome ? _buildIncomeAnalysis(state) : _buildExpenseAnalysis(state),
                   SizedBox(height: 100.h),
@@ -246,58 +307,63 @@ class _StatisticsState extends State<Statistics> {
 
     final activeId = accountManager.activeAccountId;
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: activeId != null && accounts.any((a) => a.id == activeId)
-              ? activeId
-              : accounts.first.id,
-          dropdownColor: const Color(0xFF1F1F1F),
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 20.r),
-          isDense: true,
-          style: TextStyle(color: Colors.white, fontSize: 13.sp),
-          items: accounts.map((account) {
-            return DropdownMenuItem<String>(
-              value: account.id,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '${account.accountType} •••• ${account.accountNumberLast4}',
-                    style: TextStyle(color: Colors.white, fontSize: 13.sp),
-                  ),
-                  SizedBox(width: 6.w),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                    child: Text(
-                      account.currency,
-                      style: TextStyle(
-                        color: const Color(0xFF10B981),
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 160.w),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: activeId != null && accounts.any((a) => a.id == activeId)
+                ? activeId
+                : accounts.first.id,
+            dropdownColor: const Color(0xFF1F1F1F),
+            icon: Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 18.r),
+            isDense: true,
+            isExpanded: true,
+            style: TextStyle(color: Colors.white, fontSize: 12.sp),
+            items: accounts.map((account) {
+              return DropdownMenuItem<String>(
+                value: account.id,
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '•••• ${account.accountNumberLast4}',
+                        style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (newAccountId) {
-            if (newAccountId != null && newAccountId != activeId) {
-              accountManager.setActiveAccount(newAccountId);
-              context.read<StatisticsCubit>().refresh();
-            }
-          },
+                    SizedBox(width: 4.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        account.currency,
+                        style: TextStyle(
+                          color: const Color(0xFF10B981),
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+            onChanged: (newAccountId) {
+              if (newAccountId != null && newAccountId != activeId) {
+                accountManager.setActiveAccount(newAccountId);
+                context.read<StatisticsCubit>().refresh();
+              }
+            },
+          ),
         ),
       ),
     );
@@ -340,13 +406,6 @@ class _StatisticsState extends State<Statistics> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: 0.4),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Column(
         children: [
@@ -433,6 +492,188 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
+  Widget _buildPerformanceAlert(StatisticsState state) {
+    if (state is! StatisticsLoaded || state.financialAnalytics == null) {
+      return const SizedBox.shrink();
+    }
+
+    final analytics = state.financialAnalytics!;
+    double totalIncome = 0;
+    double totalExpenses = 0;
+    double savingsRate = 0;
+    double expenseChange = analytics.expenseChangePercent;
+
+    if (analytics.hasCurrentPeriod()) {
+      totalIncome = analytics.currentPeriod.totalIncome;
+      totalExpenses = analytics.currentPeriod.totalExpenses;
+      if (totalIncome > 0) {
+        savingsRate = (totalIncome - totalExpenses) / totalIncome * 100;
+      }
+    }
+
+    // Don't show if no income data
+    if (totalIncome <= 0) return const SizedBox.shrink();
+
+    // Determine alert type
+    String emoji;
+    String message;
+    Color borderColor;
+
+    if (expenseChange > 20) {
+      emoji = '\u{1F534}'; // red circle
+      message = 'Spending up ${expenseChange.toStringAsFixed(0)}% vs last period';
+      borderColor = const Color(0xFFEF4444).withValues(alpha: 0.3);
+    } else if (savingsRate >= 20) {
+      emoji = '\u{1F389}'; // party popper
+      message = 'Great job! You\'re saving ${savingsRate.toStringAsFixed(0)}% this month';
+      borderColor = const Color(0xFF10B981).withValues(alpha: 0.3);
+    } else if (savingsRate >= 10) {
+      emoji = '\u{1F4AA}'; // flexed bicep
+      message = 'Good progress \u2014 you saved ${savingsRate.toStringAsFixed(0)}% this month';
+      borderColor = const Color(0xFF3B82F6).withValues(alpha: 0.3);
+    } else {
+      emoji = '\u{26A0}\u{FE0F}'; // warning
+      message = 'Heads up \u2014 only ${savingsRate.toStringAsFixed(0)}% saved this month';
+      borderColor = const Color(0xFFFB923C).withValues(alpha: 0.3);
+    }
+
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.budgetAIInsights),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: borderColor,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(emoji, style: TextStyle(fontSize: 22.sp)),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.auto_awesome,
+              color: const Color(0xFF8B5CF6),
+              size: 18.sp,
+            ),
+            SizedBox(width: 4.w),
+            Icon(
+              Icons.chevron_right,
+              color: const Color(0xFF9CA3AF),
+              size: 18.sp,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFinancialHealthScore(StatisticsState state) {
+    if (state is! StatisticsLoaded || state.financialAnalytics == null) {
+      return const SizedBox.shrink();
+    }
+
+    final analytics = state.financialAnalytics!;
+    if (!analytics.hasCurrentPeriod()) return const SizedBox.shrink();
+
+    final current = analytics.currentPeriod;
+
+    // Don't show if user has zero activity
+    if (current.totalIncome <= 0 && current.totalExpenses <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    return BlocBuilder<BudgetCubit, BudgetState>(
+      buildWhen: (prev, curr) =>
+          curr is BudgetProgressLoaded || curr is BudgetInitial,
+      builder: (context, budgetState) {
+        List<({double spent, double budget})> budgetItems = [];
+        if (budgetState is BudgetProgressLoaded) {
+          budgetItems = budgetState.items
+              .map((item) => (spent: item.spentAmount, budget: item.budgetAmount))
+              .toList();
+        }
+
+        return FinancialHealthScoreCard(
+          data: FinancialHealthData(
+            totalIncome: current.totalIncome,
+            totalExpenses: current.totalExpenses,
+            incomeChangePercent: analytics.incomeChangePercent,
+            expenseChangePercent: analytics.expenseChangePercent,
+            budgetItems: budgetItems,
+          ),
+          onTap: () => Get.toNamed(AppRoutes.budgetAIInsights),
+        );
+      },
+    );
+  }
+
+  Widget _buildCashFlowInsights(StatisticsState state) {
+    if (state is! StatisticsLoaded || state.financialAnalytics == null) {
+      return const SizedBox.shrink();
+    }
+
+    final analytics = state.financialAnalytics!;
+    if (!analytics.hasCurrentPeriod()) return const SizedBox.shrink();
+
+    final current = analytics.currentPeriod;
+    if (current.totalIncome <= 0 && current.totalExpenses <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    // Get daily average from expense time series (falls back to manual calculation)
+    double dailyAverage = 0;
+    if (state.expenseTimeSeries != null && state.expenseTimeSeries!.dailyAverage > 0) {
+      dailyAverage = state.expenseTimeSeries!.dailyAverage;
+    } else if (current.totalExpenses > 0) {
+      final elapsed = DateTime.now().difference(state.startDate).inDays.clamp(1, 366);
+      dailyAverage = current.totalExpenses / elapsed;
+    }
+
+    // Build top categories from expense breakdown
+    List<({String name, double amount, double percentage})> topCategories = [];
+    if (state.categoryAnalytics != null) {
+      topCategories = state.categoryAnalytics!.expenseCategories
+          .map((c) => (
+                name: _friendlyCategoryName(c.categoryName),
+                amount: c.amount,
+                percentage: c.percentage,
+              ))
+          .toList();
+      // Already sorted by amount desc from backend, just take top 3
+      if (topCategories.length > 3) {
+        topCategories = topCategories.sublist(0, 3);
+      }
+    }
+
+    return CashFlowInsightsCard(
+      data: CashFlowData(
+        totalIncome: current.totalIncome,
+        totalExpenses: current.totalExpenses,
+        dailyAverage: dailyAverage,
+        expenseChangePercent: analytics.expenseChangePercent,
+        period: state.currentPeriod,
+        periodStart: state.startDate,
+        periodEnd: state.endDate,
+        topCategories: topCategories,
+        transactionCount: current.transactionCount,
+      ),
+    );
+  }
+
   Widget _buildFeatureGrid(StatisticsState state) {
     final features = [
       _FeatureItem(
@@ -477,6 +718,21 @@ class _StatisticsState extends State<Statistics> {
         color: const Color(0xFFEC4899),
         route: AppRoutes.statisticsSpendingDetail,
       ),
+      _FeatureItem(
+        title: 'Categories',
+        description: 'Manage categories',
+        icon: Icons.category,
+        color: const Color(0xFF06B6D4),
+        route: AppRoutes.categoryManagement,
+      ),
+      _FeatureItem(
+        title: 'Linked Banks',
+        description: 'Open banking',
+        icon: Icons.account_balance,
+        color: const Color(0xFF9B4AE2),
+        route: AppRoutes.openBankingConnect,
+        arguments: {'userId': _userId, 'accessToken': _accessToken},
+      ),
     ];
 
     return GridView.builder(
@@ -492,6 +748,36 @@ class _StatisticsState extends State<Statistics> {
       itemCount: features.length,
       itemBuilder: (context, index) {
         return _FeatureCard(feature: features[index]);
+      },
+    );
+  }
+
+  Widget _buildOpenBankingSection() {
+    return BlocBuilder<OpenBankingCubit, OpenBankingState>(
+      buildWhen: (prev, curr) =>
+          curr is LinkedAccountsLoaded ||
+          curr is OpenBankingInitial ||
+          curr is OpenBankingError,
+      builder: (context, state) {
+        final isConnected = state is LinkedAccountsLoaded && state.accounts.isNotEmpty;
+        final linkedAccounts = state is LinkedAccountsLoaded ? state.accounts : <LinkedBankAccount>[];
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          child: OpenBankingStatusCard(
+            isConnected: isConnected,
+            isSyncing: _isSyncing,
+            linkedAccounts: linkedAccounts,
+            onConnectBank: () => Get.toNamed(
+              AppRoutes.openBankingConnect,
+              arguments: {'userId': _userId, 'accessToken': _accessToken},
+            ),
+            onSync: () => _syncLinkedAccounts(linkedAccounts),
+            onViewAll: () => Get.toNamed(
+              AppRoutes.openBankingConnect,
+              arguments: {'userId': _userId, 'accessToken': _accessToken},
+            ),
+          ),
+        );
       },
     );
   }
@@ -521,7 +807,6 @@ class _StatisticsState extends State<Statistics> {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.15)),
             ),
             child: Center(
               child: Column(
@@ -690,7 +975,6 @@ class _StatisticsState extends State<Statistics> {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
           child: Center(
             child: Column(
@@ -733,7 +1017,6 @@ class _StatisticsState extends State<Statistics> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),
@@ -838,7 +1121,6 @@ class _StatisticsState extends State<Statistics> {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
           child: Center(
             child: Column(
@@ -888,7 +1170,6 @@ class _StatisticsState extends State<Statistics> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),
@@ -1011,6 +1292,21 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
+  Widget _buildFailedTransactionsSection(StatisticsState state) {
+    if (state is! StatisticsLoaded || state.failedTransactions == null) {
+      return const SizedBox.shrink();
+    }
+    final transactions = state.failedTransactions!.transactions;
+    if (transactions.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        FailedTransactionsCard(transactions: transactions),
+        SizedBox(height: 16.h),
+      ],
+    );
+  }
+
   Widget _buildToggleSection() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -1026,9 +1322,6 @@ class _StatisticsState extends State<Statistics> {
                       ? const Color(0xFF10B981)
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: showIncome ? Colors.transparent : const Color(0xFF2D2D2D),
-                  ),
                   boxShadow: showIncome
                       ? [
                           BoxShadow(
@@ -1062,9 +1355,6 @@ class _StatisticsState extends State<Statistics> {
                       ? const Color(0xFF10B981)
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: !showIncome ? Colors.transparent : const Color(0xFF2D2D2D),
-                  ),
                   boxShadow: !showIncome
                       ? [
                           BoxShadow(
@@ -1112,7 +1402,6 @@ class _StatisticsState extends State<Statistics> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         children: [
@@ -1158,7 +1447,6 @@ class _StatisticsState extends State<Statistics> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),
@@ -1220,11 +1508,12 @@ class _StatisticsState extends State<Statistics> {
               children: categories.asMap().entries.map((entry) {
                 final index = entry.key;
                 final cat = entry.value;
-                return _buildAnalyticsCategoryItem(
-                  cat.categoryName,
-                  cat.amount,
-                  totalIncome,
-                  categoryColors[index % categoryColors.length],
+                return _ExpandableCategoryItem(
+                  categoryName: cat.categoryName,
+                  amount: cat.amount,
+                  total: totalIncome,
+                  color: categoryColors[index % categoryColors.length],
+                  subCategories: cat.subCategories,
                 );
               }).toList(),
             ),
@@ -1259,7 +1548,6 @@ class _StatisticsState extends State<Statistics> {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),
@@ -1322,11 +1610,12 @@ class _StatisticsState extends State<Statistics> {
                 children: categories.asMap().entries.map((entry) {
                   final index = entry.key;
                   final cat = entry.value;
-                  return _buildAnalyticsCategoryItem(
-                    cat.categoryName,
-                    cat.amount,
-                    totalExpenses,
-                    categoryColors[index % categoryColors.length],
+                  return _ExpandableCategoryItem(
+                    categoryName: cat.categoryName,
+                    amount: cat.amount,
+                    total: totalExpenses,
+                    color: categoryColors[index % categoryColors.length],
+                    subCategories: cat.subCategories,
                   );
                 }).toList(),
               ),
@@ -1346,7 +1635,6 @@ class _StatisticsState extends State<Statistics> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         children: [
@@ -1397,68 +1685,6 @@ class _StatisticsState extends State<Statistics> {
         ),
       );
     }).toList();
-  }
-
-  Widget _buildAnalyticsCategoryItem(
-    String categoryName,
-    double amount,
-    double total,
-    Color color,
-  ) {
-    final safeTotal = total > 0 ? total : 1.0;
-    final percentage = (amount / safeTotal * 100).toStringAsFixed(1);
-    final displayName = _friendlyCategoryName(categoryName);
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 12.w,
-                    height: 12.w,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    displayName,
-                    style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 14.sp),
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    '$percentage%',
-                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
-                  ),
-                ],
-              ),
-              Text(
-                CurrencySymbols.formatAmount(amount),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          LinearProgressIndicator(
-            value: (amount / safeTotal).clamp(0.0, 1.0),
-            backgroundColor: Colors.white10,
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 4.h,
-            borderRadius: BorderRadius.circular(2.r),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildChartLegend(String label, Color color) {
@@ -1545,7 +1771,6 @@ class _StatisticsState extends State<Statistics> {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.03),
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                 ),
               ),
             ),
@@ -1558,7 +1783,6 @@ class _StatisticsState extends State<Statistics> {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.03),
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
                 ),
               )),
         ],
@@ -1575,7 +1799,7 @@ class _FeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(feature.route),
+      onTap: () => Get.toNamed(feature.route, arguments: feature.arguments),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -1585,10 +1809,6 @@ class _FeatureCard extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: feature.color.withValues(alpha: 0.3),
-            width: 1.5,
-          ),
           boxShadow: [
             BoxShadow(
               color: feature.color.withValues(alpha: 0.15),
@@ -1761,10 +1981,6 @@ class _BudgetPreviewCard extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: progressColor.withValues(alpha: 0.3),
-            width: 1.5,
-          ),
           boxShadow: [
             BoxShadow(
               color: progressColor.withValues(alpha: 0.1),
@@ -1844,10 +2060,6 @@ class _EmptyBudgetsCard extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: const Color(0xFF10B981).withValues(alpha: 0.4),
-            width: 1.5,
-          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1881,12 +2093,182 @@ class _EmptyBudgetsCard extends StatelessWidget {
   }
 }
 
+class _ExpandableCategoryItem extends StatefulWidget {
+  final String categoryName;
+  final double amount;
+  final double total;
+  final Color color;
+  final List<accounts_pb.SubCategoryItem> subCategories;
+
+  const _ExpandableCategoryItem({
+    required this.categoryName,
+    required this.amount,
+    required this.total,
+    required this.color,
+    required this.subCategories,
+  });
+
+  @override
+  State<_ExpandableCategoryItem> createState() => _ExpandableCategoryItemState();
+}
+
+class _ExpandableCategoryItemState extends State<_ExpandableCategoryItem> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final safeTotal = widget.total > 0 ? widget.total : 1.0;
+    final percentage = (widget.amount / safeTotal * 100).toStringAsFixed(1);
+    final displayName = _friendlyCategoryName(widget.categoryName);
+    final hasSubCategories = widget.subCategories.isNotEmpty;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      child: Column(
+        children: [
+          // Main category row
+          GestureDetector(
+            onTap: hasSubCategories ? () => setState(() => _expanded = !_expanded) : null,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 12.w,
+                        height: 12.w,
+                        decoration: BoxDecoration(
+                          color: widget.color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Flexible(
+                        child: Text(
+                          displayName,
+                          style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 14.sp),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        '$percentage%',
+                        style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                      ),
+                      if (hasSubCategories) ...[
+                        SizedBox(width: 4.w),
+                        Icon(
+                          _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          color: const Color(0xFF9CA3AF),
+                          size: 16.sp,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Text(
+                  CurrencySymbols.formatAmount(widget.amount),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8.h),
+          LinearProgressIndicator(
+            value: (widget.amount / safeTotal).clamp(0.0, 1.0),
+            backgroundColor: Colors.white10,
+            valueColor: AlwaysStoppedAnimation<Color>(widget.color),
+            minHeight: 4.h,
+            borderRadius: BorderRadius.circular(2.r),
+          ),
+          // Expanded sub-categories
+          if (_expanded && hasSubCategories)
+            Container(
+              margin: EdgeInsets.only(top: 8.h),
+              padding: EdgeInsets.only(left: 20.w),
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: widget.color.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                ),
+              ),
+              child: Column(
+                children: widget.subCategories.map((sub) {
+                  final subPct = widget.amount > 0
+                      ? (sub.amount / widget.amount * 100).toStringAsFixed(1)
+                      : '0.0';
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 6.h),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 6.w,
+                                height: 6.w,
+                                decoration: BoxDecoration(
+                                  color: widget.color.withValues(alpha: 0.6),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              Flexible(
+                                child: Text(
+                                  sub.name,
+                                  style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 12.sp,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                '$subPct%',
+                                style: TextStyle(
+                                  color: const Color(0xFF6B7280),
+                                  fontSize: 11.sp,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          CurrencySymbols.formatAmount(sub.amount),
+                          style: TextStyle(
+                            color: const Color(0xFFD1D5DB),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _FeatureItem {
   final String title;
   final String description;
   final IconData icon;
   final Color color;
   final String route;
+  final Map<String, dynamic>? arguments;
 
   _FeatureItem({
     required this.title,
@@ -1894,5 +2276,6 @@ class _FeatureItem {
     required this.icon,
     required this.color,
     required this.route,
+    this.arguments,
   });
 }

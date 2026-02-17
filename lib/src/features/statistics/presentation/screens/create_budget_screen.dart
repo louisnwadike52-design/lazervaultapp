@@ -329,7 +329,6 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<pb.ExpenseCategory>(
@@ -460,8 +459,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
+          ),
         child: Row(
           children: [
             Text(
@@ -497,7 +495,6 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

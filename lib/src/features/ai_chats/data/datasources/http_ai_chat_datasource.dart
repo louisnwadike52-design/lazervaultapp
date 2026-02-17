@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'grpc_ai_chat_service.dart'; // Import the interface from gRPC file
 
 /// HTTP Data Source for AI Chat - calls Chat Agent Gateway directly
@@ -103,6 +104,11 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       // Debug logging
       print('AI Chat Request - User ID: $userId, Has Token: ${accessToken.isNotEmpty}');
 
+      // Load user chat preferences for backend style injection
+      final prefs = await SharedPreferences.getInstance();
+      final responseStyle = prefs.getString('ai_chat_settings_response_style') ?? 'balanced';
+      final emojiUsage = prefs.getBool('ai_chat_settings_emoji_usage') ?? true;
+
       // Build request body matching Chat Agent Gateway's ChatMessage model
       final requestBody = {
         'message': query,
@@ -114,6 +120,10 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         'account_id': accountId,
         'user_country': country,
         'currency': currency,
+        'metadata': {
+          'response_style': responseStyle,
+          'emoji_usage': emojiUsage,
+        },
       };
 
       print('AI Chat Request Body: ${requestBody.keys}');

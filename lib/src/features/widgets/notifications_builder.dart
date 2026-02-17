@@ -187,6 +187,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color(0xFF10B981);
       case AppServiceName.expenses:
         return const Color(0xFFEF4444);
+      case AppServiceName.idPay:
+        return const Color(0xFF3B82F6);
     }
   }
 

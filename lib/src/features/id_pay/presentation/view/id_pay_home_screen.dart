@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/types/app_routes.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
@@ -53,11 +53,8 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Get.toNamed('/id-pay/create');
-          if (context.mounted) {
-            context.read<IDPayCubit>().getMyIDPays();
-          }
+        onPressed: () {
+          Get.toNamed('/id-pay/create');
         },
         backgroundColor: const Color(0xFF3B82F6),
         icon: const Icon(Icons.add, color: Colors.white),
@@ -98,7 +95,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => Get.offAllNamed(AppRoutes.dashboard),
             child: Container(
               width: 44.w,
               height: 44.w,
@@ -121,6 +118,25 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
                 color: Colors.white,
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Get.toNamed(AppRoutes.idPayOrganizations,
+                  arguments: {'accountId': ''});
+            },
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child: Icon(
+                Icons.business_outlined,
+                color: const Color(0xFF3B82F6),
+                size: 20.sp,
               ),
             ),
           ),
@@ -498,11 +514,8 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
                   ),
                   SizedBox(height: 20.h),
                   ElevatedButton.icon(
-                    onPressed: () async {
-                      await Get.toNamed('/id-pay/create');
-                      if (context.mounted) {
-                        context.read<IDPayCubit>().getMyIDPays();
-                      }
+                    onPressed: () {
+                      Get.toNamed('/id-pay/create');
                     },
                     icon: Icon(Icons.add, size: 20.sp, color: Colors.white),
                     label: Text(

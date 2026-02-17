@@ -785,11 +785,117 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
 
   // --- Bank Account Tab ---
   Widget _buildBankAccountTab() {
+    final addedBankRecipients = _tempSelectedRecipients
+        .where((r) => r.type == 'external')
+        .toList();
+
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Show already-added bank recipients
+          if (addedBankRecipients.isNotEmpty) ...[
+            Text(
+              'Added (${addedBankRecipients.length})',
+              style: GoogleFonts.inter(
+                color: btTextSecondary,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            ...addedBankRecipients.map((recipient) {
+              return Container(
+                margin: EdgeInsets.only(bottom: 8.h),
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: btGreen.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: btGreen.withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40.w,
+                      height: 40.w,
+                      decoration: BoxDecoration(
+                        color: btGreen.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          recipient.name.isNotEmpty
+                              ? recipient.name[0].toUpperCase()
+                              : '?',
+                          style: GoogleFonts.inter(
+                            color: btGreen,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            recipient.name,
+                            style: GoogleFonts.inter(
+                              color: btTextPrimary,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            '${recipient.bankName} \u2022 ${recipient.accountNumber}',
+                            style: GoogleFonts.inter(
+                              color: btTextSecondary,
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _tempSelectedRecipients.removeWhere(
+                            (r) => r.id == recipient.id &&
+                                r.accountNumber == recipient.accountNumber,
+                          );
+                        });
+                      },
+                      child: Container(
+                        width: 28.w,
+                        height: 28.w,
+                        decoration: BoxDecoration(
+                          color: btRed.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        child: Icon(Icons.close, color: btRed, size: 14.sp),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            SizedBox(height: 12.h),
+            Text(
+              'Add Another',
+              style: GoogleFonts.inter(
+                color: btTextSecondary,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+          ],
+
           // Bank selection
           GestureDetector(
             onTap: _showBankSelectionSheet,
@@ -2051,6 +2157,10 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
         } else if (state is AccountBalanceUpdated) {
           setState(() {
             _accounts = state.accountSummaries;
+            if (_selectedAccountIndex >= _accounts.length) {
+              _selectedAccountIndex = _accounts.isEmpty ? 0 : _accounts.length - 1;
+              _updateCurrencyFromAccount();
+            }
           });
         }
       },
@@ -2189,13 +2299,13 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                 itemBuilder: (context, index) => _buildRecipientCard(index),
               ),
 
-            SizedBox(height: 24.h),
+            SizedBox(height: _selectedRecipients.isNotEmpty ? 24.h : 16.h),
 
             // Total amount section
-            if (_selectedRecipients.isNotEmpty)
+            if (_selectedRecipients.isNotEmpty) ...[
               _buildTotalSection(),
-
-            SizedBox(height: 24.h),
+              SizedBox(height: 24.h),
+            ],
 
             // Proceed button
             SizedBox(
@@ -2229,7 +2339,6 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                     ),
               ),
             ),
-            SizedBox(height: 16.h),
           ],
         ),
       ),
@@ -2266,72 +2375,55 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
       );
     }
 
-    return SizedBox(
-      height: 100.h,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _accounts.length,
-        itemBuilder: (context, index) {
-          final account = _accounts[index];
-          final isSelected = index == _selectedAccountIndex;
-          final typeColor = _getAccountTypeColor(account.accountType);
+    final safeIndex = _selectedAccountIndex.clamp(0, _accounts.length - 1);
+    if (safeIndex != _selectedAccountIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _selectedAccountIndex = safeIndex);
+      });
+    }
+    final account = _accounts[safeIndex];
+    final typeColor = _getAccountTypeColor(account.accountType);
 
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedAccountIndex = index;
-                _updateCurrencyFromAccount();
-              });
-            },
-            child: Container(
-              width: 200.w,
-              margin: EdgeInsets.only(right: 12.w),
-              padding: EdgeInsets.all(14.w),
+    return GestureDetector(
+      onTap: _accounts.length > 1 ? _showAccountSelectionSheet : null,
+      child: Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: typeColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: typeColor, width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40.w,
+              height: 40.w,
               decoration: BoxDecoration(
-                color: isSelected ? typeColor.withValues(alpha: 0.1) : btCardElevated,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: isSelected ? typeColor : btBorder,
-                  width: isSelected ? 1.5 : 1,
-                ),
+                color: typeColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12.r),
               ),
+              child: Icon(
+                _getAccountTypeIcon(account.accountType),
+                color: typeColor,
+                size: 20.sp,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 28.w,
-                        height: 28.w,
-                        decoration: BoxDecoration(
-                          color: typeColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Icon(
-                          _getAccountTypeIcon(account.accountType),
-                          color: typeColor,
-                          size: 14.sp,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Expanded(
-                        child: Text(
-                          account.displayName,
-                          style: GoogleFonts.inter(
-                            color: btTextPrimary,
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (isSelected)
-                        Icon(Icons.check_circle, color: typeColor, size: 18.sp),
-                    ],
+                  Text(
+                    account.displayName,
+                    style: GoogleFonts.inter(
+                      color: btTextPrimary,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  SizedBox(height: 2.h),
+                  Row(
                     children: [
                       Text(
                         '${CurrencyUtils.getSymbol(account.currency)}${account.balance.toStringAsFixed(2)}',
@@ -2341,11 +2433,12 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                           fontWeight: FontWeight.w700,
                         ),
                       ),
+                      SizedBox(width: 8.w),
                       Text(
                         '\u2022\u2022\u2022\u2022 ${account.accountNumberLast4}',
                         style: GoogleFonts.inter(
                           color: btTextSecondary,
-                          fontSize: 11.sp,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ],
@@ -2353,8 +2446,24 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                 ],
               ),
             ),
-          );
-        },
+            if (_accounts.length > 1)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: typeColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  'Change',
+                  style: GoogleFonts.inter(
+                    color: typeColor,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -2389,6 +2498,125 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
       default:
         return Icons.account_balance_wallet_outlined;
     }
+  }
+
+  void _showAccountSelectionSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: btCard,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 12.h),
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: btBorderLight,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
+                child: Text(
+                  'Select Account',
+                  style: GoogleFonts.inter(
+                    color: btTextPrimary,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                itemCount: _accounts.length,
+                itemBuilder: (context, index) {
+                  final account = _accounts[index];
+                  final isSelected = index == _selectedAccountIndex;
+                  final typeColor = _getAccountTypeColor(account.accountType);
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedAccountIndex = index;
+                        _updateCurrencyFromAccount();
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      padding: EdgeInsets.all(14.w),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? typeColor.withValues(alpha: 0.1)
+                            : btCardElevated,
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(
+                          color: isSelected ? typeColor : btBorder,
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40.w,
+                            height: 40.w,
+                            decoration: BoxDecoration(
+                              color: typeColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Icon(
+                              _getAccountTypeIcon(account.accountType),
+                              color: typeColor,
+                              size: 20.sp,
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  account.displayName,
+                                  style: GoogleFonts.inter(
+                                    color: btTextPrimary,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  '${CurrencyUtils.getSymbol(account.currency)}${account.balance.toStringAsFixed(2)} \u2022 \u2022\u2022\u2022\u2022 ${account.accountNumberLast4}',
+                                  style: GoogleFonts.inter(
+                                    color: btTextSecondary,
+                                    fontSize: 13.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected)
+                            Icon(Icons.check_circle, color: typeColor, size: 22.sp),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 12.h),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   // --- Total Section with balance warning ---

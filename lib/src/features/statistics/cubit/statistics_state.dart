@@ -32,6 +32,7 @@ class StatisticsLoaded extends StatisticsState {
   final accounts_pb.GetCategoryAnalyticsResponse? categoryAnalytics;
   final accounts_pb.GetMonthlyTrendsResponse? monthlyTrends;
   final accounts_pb.GetExpenseTimeSeriesResponse? expenseTimeSeries;
+  final accounts_pb.GetTransactionHistoryResponse? failedTransactions;
   final String currentPeriod;
 
   const StatisticsLoaded({
@@ -41,6 +42,7 @@ class StatisticsLoaded extends StatisticsState {
     this.categoryAnalytics,
     this.monthlyTrends,
     this.expenseTimeSeries,
+    this.failedTransactions,
     this.currentPeriod = 'month',
   });
 
@@ -52,6 +54,7 @@ class StatisticsLoaded extends StatisticsState {
         categoryAnalytics,
         monthlyTrends,
         expenseTimeSeries,
+        failedTransactions,
         currentPeriod,
       ];
 
@@ -63,6 +66,7 @@ class StatisticsLoaded extends StatisticsState {
     accounts_pb.GetCategoryAnalyticsResponse? categoryAnalytics,
     accounts_pb.GetMonthlyTrendsResponse? monthlyTrends,
     accounts_pb.GetExpenseTimeSeriesResponse? expenseTimeSeries,
+    accounts_pb.GetTransactionHistoryResponse? failedTransactions,
     String? currentPeriod,
   }) {
     return StatisticsLoaded(
@@ -72,6 +76,7 @@ class StatisticsLoaded extends StatisticsState {
       categoryAnalytics: categoryAnalytics ?? this.categoryAnalytics,
       monthlyTrends: monthlyTrends ?? this.monthlyTrends,
       expenseTimeSeries: expenseTimeSeries ?? this.expenseTimeSeries,
+      failedTransactions: failedTransactions ?? this.failedTransactions,
       currentPeriod: currentPeriod ?? this.currentPeriod,
     );
   }

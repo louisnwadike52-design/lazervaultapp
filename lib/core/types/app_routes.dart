@@ -291,6 +291,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String statisticsMonthlyTrends = '/statistics/monthly-trends';
   static const String statisticsCategoryAnalysis = '/statistics/category-analysis';
   static const String statisticsComparison = '/statistics/comparison';
+  static const String categoryManagement = '/statistics/category-management';
 
   // Budget Routes
   static const String budgetList = '/statistics/budgets';
@@ -350,6 +351,9 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String idPayPayment = '/id-pay/payment';
   static const String idPayReceipt = '/id-pay/receipt';
   static const String idPayDetails = '/id-pay/details';
+  static const String idPayOrganizations = '/id-pay/organizations';
+  static const String createIdPayOrganization = '/id-pay/organizations/create';
+  static const String idPayOrganizationDetails = '/id-pay/organizations/details';
 
   // Contactless Payment Routes
   static const String contactlessPay = '/contactless-pay';

@@ -1,4 +1,5 @@
 import '../../domain/entities/id_pay_entity.dart';
+import '../../domain/entities/id_pay_organization_entity.dart';
 import '../../domain/entities/id_pay_transaction_entity.dart';
 
 sealed class IDPayState {}
@@ -39,6 +40,41 @@ class IDPayCancelled extends IDPayState {}
 class IDPayDetailsLoaded extends IDPayState {
   final IDPayEntity idPay;
   IDPayDetailsLoaded({required this.idPay});
+}
+
+class IDPayOrganizationsLoaded extends IDPayState {
+  final List<IDPayOrganizationEntity> organizations;
+  final bool isStale;
+  IDPayOrganizationsLoaded({required this.organizations, this.isStale = false});
+}
+
+class IDPayOrganizationCreated extends IDPayState {
+  final IDPayOrganizationEntity organization;
+  IDPayOrganizationCreated({required this.organization});
+}
+
+class IDPayOrganizationUpdated extends IDPayState {
+  final IDPayOrganizationEntity organization;
+  IDPayOrganizationUpdated({required this.organization});
+}
+
+class IDPayOrganizationDeleted extends IDPayState {}
+
+class IDPayOrganizationDetailsLoaded extends IDPayState {
+  final IDPayOrganizationEntity organization;
+  final List<IDPayEntity> idPays;
+  final double totalPaidOut;
+  IDPayOrganizationDetailsLoaded({
+    required this.organization,
+    required this.idPays,
+    required this.totalPaidOut,
+  });
+}
+
+class IDPayLookedUpWithOrg extends IDPayState {
+  final IDPayEntity idPay;
+  final IDPayOrganizationEntity? organization;
+  IDPayLookedUpWithOrg({required this.idPay, this.organization});
 }
 
 class IDPayError extends IDPayState {

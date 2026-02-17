@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../domain/entities/qr_payment_entity.dart';
 import '../../services/qr_pay_pdf_service.dart';
 import '../cubit/qr_payment_cubit.dart';
@@ -178,6 +179,37 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
                   ),
                 ),
               ],
+            ),
+          ),
+          SizedBox(height: 24.h),
+
+          // QR Code Display
+          Center(
+            child: Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: QrImageView(
+                data: qr.qrCode,
+                version: QrVersions.auto,
+                size: 180.w,
+                gapless: true,
+                errorStateBuilder: (ctx, err) {
+                  return SizedBox(
+                    width: 180.w,
+                    height: 180.w,
+                    child: Center(
+                      child: Icon(
+                        Icons.qr_code_rounded,
+                        size: 64.sp,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
           SizedBox(height: 24.h),

@@ -157,6 +157,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     required String transactionId,
     required String verificationToken,
     String? operatorId,
+    String? reloadlyOperatorId,
     String? sourceAccountId,
   }) async {
     try {
@@ -203,6 +204,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         transactionId: transactionId,
         verificationToken: verificationToken,
         operatorId: operatorId,
+        reloadlyOperatorId: reloadlyOperatorId,
       );
 
       if (isClosed) return;

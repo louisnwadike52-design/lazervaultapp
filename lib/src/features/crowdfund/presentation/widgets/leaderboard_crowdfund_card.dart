@@ -37,118 +37,126 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
                 )
               : null,
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Rank badge
-            _buildRankBadge(entry.rank),
-            SizedBox(width: 12.w),
-            // Campaign image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: crowdfund.imageUrl != null
-                  ? Image.network(
-                      crowdfund.imageUrl!,
-                      width: 60.w,
-                      height: 60.w,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
-                    )
-                  : _buildImagePlaceholder(),
-            ),
-            SizedBox(width: 12.w),
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    crowdfund.title,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4.h),
-                  // Creator name + verified
-                  Row(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Rank badge
+                _buildRankBadge(entry.rank),
+                SizedBox(width: 12.w),
+                // Campaign image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: crowdfund.imageUrl != null
+                      ? Image.network(
+                          crowdfund.imageUrl!,
+                          width: 60.w,
+                          height: 60.w,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                        )
+                      : _buildImagePlaceholder(),
+                ),
+                SizedBox(width: 12.w),
+                // Title and creator
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Title
                       Text(
-                        crowdfund.creator.displayName,
+                        crowdfund.title,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                      if (crowdfund.creator.verified) ...[
-                        SizedBox(width: 4.w),
-                        Icon(
-                          Icons.verified,
-                          color: const Color(0xFF10B981),
-                          size: 12.sp,
-                        ),
-                      ],
-                    ],
-                  ),
-                  SizedBox(height: 8.h),
-                  // Progress bar
-                  CrowdfundProgressIndicator(
-                    progressPercentage: crowdfund.progressPercentage,
-                    height: 4,
-                  ),
-                  SizedBox(height: 6.h),
-                  // Stats row
-                  Row(
-                    children: [
-                      Text(
-                        '${crowdfund.currency} ${_amountFormat.format(crowdfund.currentAmount)}',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF6366F1),
-                          fontSize: 12.sp,
+                          color: Colors.white,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(width: 8.w),
-                      Container(
-                        width: 3.w,
-                        height: 3.w,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF4B5563),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        '${crowdfund.donorCount} ${crowdfund.donorCount == 1 ? 'donor' : 'donors'}',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 11.sp,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Container(
-                        width: 3.w,
-                        height: 3.w,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4B5563),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        '${crowdfund.progressPercentage.toStringAsFixed(0)}%',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 11.sp,
-                        ),
+                      SizedBox(height: 4.h),
+                      // Creator name + verified
+                      Row(
+                        children: [
+                          Text(
+                            crowdfund.creator.displayName,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                          if (crowdfund.creator.verified) ...[
+                            SizedBox(width: 4.w),
+                            Icon(
+                              Icons.verified,
+                              color: const Color(0xFF10B981),
+                              size: 12.sp,
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.h),
+            // Progress bar - below the row so it's never hidden
+            CrowdfundProgressIndicator(
+              progressPercentage: crowdfund.progressPercentage,
+              height: 6,
+            ),
+            SizedBox(height: 8.h),
+            // Stats row
+            Row(
+              children: [
+                Text(
+                  '${crowdfund.currency} ${_amountFormat.format(crowdfund.currentAmount)}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6366F1),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Container(
+                  width: 3.w,
+                  height: 3.w,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4B5563),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  '${crowdfund.donorCount} ${crowdfund.donorCount == 1 ? 'donor' : 'donors'}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Container(
+                  width: 3.w,
+                  height: 3.w,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4B5563),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  '${crowdfund.progressPercentage.toStringAsFixed(0)}%',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -387,6 +387,7 @@ class AirtimeProvider extends $pb.GeneratedMessage {
     $core.double? maxAmount,
     $core.double? commissionRate,
     $core.String? operatorId,
+    $core.String? reloadlyOperatorId,
   }) {
     final $result = create();
     if (id != null) {
@@ -425,6 +426,9 @@ class AirtimeProvider extends $pb.GeneratedMessage {
     if (operatorId != null) {
       $result.operatorId = operatorId;
     }
+    if (reloadlyOperatorId != null) {
+      $result.reloadlyOperatorId = reloadlyOperatorId;
+    }
     return $result;
   }
   AirtimeProvider._() : super();
@@ -444,6 +448,7 @@ class AirtimeProvider extends $pb.GeneratedMessage {
     ..a<$core.double>(10, _omitFieldNames ? '' : 'maxAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(11, _omitFieldNames ? '' : 'commissionRate', $pb.PbFieldType.OD)
     ..aOS(12, _omitFieldNames ? '' : 'operatorId')
+    ..aOS(13, _omitFieldNames ? '' : 'reloadlyOperatorId')
     ..hasRequiredFields = false
   ;
 
@@ -563,6 +568,15 @@ class AirtimeProvider extends $pb.GeneratedMessage {
   $core.bool hasOperatorId() => $_has(11);
   @$pb.TagNumber(12)
   void clearOperatorId() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get reloadlyOperatorId => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set reloadlyOperatorId($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasReloadlyOperatorId() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearReloadlyOperatorId() => clearField(13);
 }
 
 /// ===== ELECTRICITY BILL =====
@@ -1289,6 +1303,7 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
     $core.String? idempotencyKey,
     $core.String? countryCode,
     $core.String? operatorId,
+    $core.String? reloadlyOperatorId,
   }) {
     final $result = create();
     if (providerId != null) {
@@ -1321,6 +1336,9 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
     if (operatorId != null) {
       $result.operatorId = operatorId;
     }
+    if (reloadlyOperatorId != null) {
+      $result.reloadlyOperatorId = reloadlyOperatorId;
+    }
     return $result;
   }
   BuyAirtimeRequest._() : super();
@@ -1338,6 +1356,7 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'idempotencyKey')
     ..aOS(9, _omitFieldNames ? '' : 'countryCode')
     ..aOS(10, _omitFieldNames ? '' : 'operatorId')
+    ..aOS(11, _omitFieldNames ? '' : 'reloadlyOperatorId')
     ..hasRequiredFields = false
   ;
 
@@ -1453,6 +1472,15 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
   $core.bool hasOperatorId() => $_has(9);
   @$pb.TagNumber(10)
   void clearOperatorId() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get reloadlyOperatorId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set reloadlyOperatorId($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasReloadlyOperatorId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearReloadlyOperatorId() => clearField(11);
 }
 
 class BuyAirtimeResponse extends $pb.GeneratedMessage {

@@ -78,6 +78,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.whatsappIntegration:
         Get.toNamed(AppRoutes.whatsappBanking);
         break;
+      case AppServiceName.idPay:
+        Get.toNamed(AppRoutes.idPayHome);
+        break;
       case AppServiceName.sendFunds:
         Get.toNamed(AppRoutes.selectRecipient);
         break;
@@ -244,6 +247,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.whatsappIntegration:
         iconData = Icons.chat_bubble;
+        break;
+      case AppServiceName.idPay:
+        iconData = Icons.fingerprint;
         break;
       case AppServiceName.payroll:
         iconData = Icons.payments;

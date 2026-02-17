@@ -46,7 +46,7 @@ class CreatePaymentSessionRequest extends $pb.GeneratedMessage {
   factory CreatePaymentSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreatePaymentSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreatePaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreatePaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..a<$core.double>(1, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(2, _omitFieldNames ? '' : 'currency')
     ..aOS(3, _omitFieldNames ? '' : 'category')
@@ -144,7 +144,7 @@ class CreatePaymentSessionResponse extends $pb.GeneratedMessage {
   factory CreatePaymentSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreatePaymentSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreatePaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreatePaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOM<PaymentSession>(1, _omitFieldNames ? '' : 'session', subBuilder: PaymentSession.create)
     ..aOS(2, _omitFieldNames ? '' : 'nfcPayload')
     ..aOS(3, _omitFieldNames ? '' : 'message')
@@ -216,7 +216,7 @@ class GetPaymentSessionRequest extends $pb.GeneratedMessage {
   factory GetPaymentSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPaymentSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
     ..hasRequiredFields = false
   ;
@@ -266,7 +266,7 @@ class GetPaymentSessionResponse extends $pb.GeneratedMessage {
   factory GetPaymentSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPaymentSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOM<PaymentSession>(1, _omitFieldNames ? '' : 'session', subBuilder: PaymentSession.create)
     ..hasRequiredFields = false
   ;
@@ -330,7 +330,7 @@ class ProcessContactlessPaymentRequest extends $pb.GeneratedMessage {
   factory ProcessContactlessPaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessContactlessPaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessContactlessPaymentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessContactlessPaymentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
     ..aOS(2, _omitFieldNames ? '' : 'sourceAccountId')
     ..aOS(3, _omitFieldNames ? '' : 'transactionId')
@@ -418,7 +418,7 @@ class ProcessContactlessPaymentResponse extends $pb.GeneratedMessage {
   factory ProcessContactlessPaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessContactlessPaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessContactlessPaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessContactlessPaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOM<ContactlessTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: ContactlessTransaction.create)
     ..a<$core.double>(2, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
     ..aOS(3, _omitFieldNames ? '' : 'message')
@@ -490,7 +490,7 @@ class CancelPaymentSessionRequest extends $pb.GeneratedMessage {
   factory CancelPaymentSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelPaymentSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelPaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelPaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
     ..hasRequiredFields = false
   ;
@@ -540,7 +540,7 @@ class CancelPaymentSessionResponse extends $pb.GeneratedMessage {
   factory CancelPaymentSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelPaymentSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelPaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelPaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'message')
     ..hasRequiredFields = false
   ;
@@ -598,7 +598,7 @@ class GetMyPaymentSessionsRequest extends $pb.GeneratedMessage {
   factory GetMyPaymentSessionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyPaymentSessionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyPaymentSessionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyPaymentSessionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'statusFilter')
@@ -672,7 +672,7 @@ class GetMyPaymentSessionsResponse extends $pb.GeneratedMessage {
   factory GetMyPaymentSessionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyPaymentSessionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyPaymentSessionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyPaymentSessionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..pc<PaymentSession>(1, _omitFieldNames ? '' : 'sessions', $pb.PbFieldType.PM, subBuilder: PaymentSession.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -734,7 +734,7 @@ class GetMyContactlessPaymentsRequest extends $pb.GeneratedMessage {
   factory GetMyContactlessPaymentsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyContactlessPaymentsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyContactlessPaymentsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyContactlessPaymentsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'roleFilter')
@@ -808,7 +808,7 @@ class GetMyContactlessPaymentsResponse extends $pb.GeneratedMessage {
   factory GetMyContactlessPaymentsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyContactlessPaymentsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyContactlessPaymentsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyContactlessPaymentsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..pc<ContactlessTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: ContactlessTransaction.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -862,7 +862,7 @@ class CheckSessionStatusRequest extends $pb.GeneratedMessage {
   factory CheckSessionStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CheckSessionStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckSessionStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckSessionStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
     ..hasRequiredFields = false
   ;
@@ -920,7 +920,7 @@ class CheckSessionStatusResponse extends $pb.GeneratedMessage {
   factory CheckSessionStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CheckSessionStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckSessionStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckSessionStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'status')
     ..aOS(2, _omitFieldNames ? '' : 'payerName')
     ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
@@ -992,7 +992,7 @@ class AcknowledgeSessionReadRequest extends $pb.GeneratedMessage {
   factory AcknowledgeSessionReadRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AcknowledgeSessionReadRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AcknowledgeSessionReadRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AcknowledgeSessionReadRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
     ..hasRequiredFields = false
   ;
@@ -1046,7 +1046,7 @@ class AcknowledgeSessionReadResponse extends $pb.GeneratedMessage {
   factory AcknowledgeSessionReadResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AcknowledgeSessionReadResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AcknowledgeSessionReadResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AcknowledgeSessionReadResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOM<PaymentSession>(1, _omitFieldNames ? '' : 'session', subBuilder: PaymentSession.create)
     ..aOS(2, _omitFieldNames ? '' : 'message')
     ..hasRequiredFields = false
@@ -1169,7 +1169,7 @@ class PaymentSession extends $pb.GeneratedMessage {
   factory PaymentSession.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PaymentSession.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaymentSession', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaymentSession', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'receiverId')
     ..aOS(3, _omitFieldNames ? '' : 'receiverUsername')
@@ -1442,7 +1442,7 @@ class ContactlessTransaction extends $pb.GeneratedMessage {
   factory ContactlessTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ContactlessTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ContactlessTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ContactlessTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'sessionId')
     ..aOS(3, _omitFieldNames ? '' : 'payerId')
@@ -1696,7 +1696,7 @@ class NfcPayloadData extends $pb.GeneratedMessage {
   factory NfcPayloadData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory NfcPayloadData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NfcPayloadData', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NfcPayloadData', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'type')
     ..aOS(2, _omitFieldNames ? '' : 'sessionId')
     ..aOS(3, _omitFieldNames ? '' : 'receiverId')

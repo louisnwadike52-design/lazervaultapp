@@ -26,6 +26,13 @@ service IDPayService {
 
   // Get IDPay details by internal ID (for creator)
   rpc GetIDPayDetails(GetIDPayDetailsRequest) returns (GetIDPayDetailsResponse);
+
+  // Organization RPCs (business accounts only)
+  rpc CreateOrganization(CreateOrganizationRequest) returns (CreateOrganizationResponse);
+  rpc GetMyOrganizations(GetMyOrganizationsRequest) returns (GetMyOrganizationsResponse);
+  rpc UpdateOrganization(UpdateOrganizationRequest) returns (UpdateOrganizationResponse);
+  rpc DeleteOrganization(DeleteOrganizationRequest) returns (DeleteOrganizationResponse);
+  rpc GetOrganizationDetails(GetOrganizationDetailsRequest) returns (GetOrganizationDetailsResponse);
 }
 
 // Enums
@@ -68,6 +75,9 @@ message IDPay {
   google.protobuf.Timestamp created_at = 15;
   double total_received = 16;
   int32 payment_count = 17;
+  bool never_expires = 18;
+  string organization_id = 19;
+  string organization_name = 20;
 }
 
 message IDPayTransaction {
@@ -85,6 +95,20 @@ message IDPayTransaction {
   google.protobuf.Timestamp created_at = 12;
 }
 
+message IDPayOrganization {
+  string id = 1;
+  string creator_id = 2;
+  string name = 3;
+  string description = 4;
+  string logo_url = 5;
+  string account_id = 6;
+  double total_received = 7;
+  int32 total_payment_count = 8;
+  int32 active_id_pay_count = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
 // Request/Response messages
 message CreateIDPayRequest {
   IDPayType type = 1;
@@ -96,6 +120,8 @@ message CreateIDPayRequest {
   string description = 7;
   int32 validity_minutes = 8;        // Expiry duration in minutes
   string recipient_account_id = 9;   // Account to receive payment
+  bool never_expires = 10;
+  string organization_id = 11;       // Optional: link to organization
 }
 
 message CreateIDPayResponse {
@@ -109,6 +135,7 @@ message LookupIDPayRequest {
 
 message LookupIDPayResponse {
   IDPay id_pay = 1;
+  IDPayOrganization organization = 2;  // Populated if IDPay belongs to an org
 }
 
 message PayIDPayRequest {
@@ -161,4 +188,57 @@ message GetIDPayDetailsRequest {
 
 message GetIDPayDetailsResponse {
   IDPay id_pay = 1;
+}
+
+// Organization request/response messages
+message CreateOrganizationRequest {
+  string name = 1;
+  string description = 2;
+  string logo_url = 3;
+  string account_id = 4;
+}
+
+message CreateOrganizationResponse {
+  IDPayOrganization organization = 1;
+  string message = 2;
+}
+
+message GetMyOrganizationsRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetMyOrganizationsResponse {
+  repeated IDPayOrganization organizations = 1;
+  int32 total = 2;
+}
+
+message UpdateOrganizationRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string logo_url = 4;
+}
+
+message UpdateOrganizationResponse {
+  IDPayOrganization organization = 1;
+}
+
+message DeleteOrganizationRequest {
+  string id = 1;
+}
+
+message DeleteOrganizationResponse {
+  string message = 1;
+}
+
+message GetOrganizationDetailsRequest {
+  string id = 1;
+}
+
+message GetOrganizationDetailsResponse {
+  IDPayOrganization organization = 1;
+  repeated IDPay id_pays = 2;
+  double total_paid_out = 3;
 }

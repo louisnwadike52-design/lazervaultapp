@@ -92,6 +92,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.whatsappIntegration,
         serviceImg: AppServiceImg.whatsappIntegration),
+    AppService(
+        serviceName: AppServiceName.idPay,
+        serviceImg: AppServiceImg.idPay),
   ];
 
   // Business services (shown when Business card is active)

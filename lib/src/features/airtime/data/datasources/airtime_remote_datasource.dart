@@ -17,6 +17,7 @@ abstract class AirtimeRemoteDataSource {
     required String idempotencyKey,
     required String countryCode,
     String? operatorId,
+    String? reloadlyOperatorId,
     required String currency,
   });
   Future<List<AirtimeTransactionModel>> getHistory({
@@ -63,6 +64,7 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
     required String idempotencyKey,
     required String countryCode,
     String? operatorId,
+    String? reloadlyOperatorId,
     required String currency,
   }) async {
     try {
@@ -81,6 +83,9 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
       }
       if (operatorId != null && operatorId.isNotEmpty) {
         request.operatorId = operatorId;
+      }
+      if (reloadlyOperatorId != null && reloadlyOperatorId.isNotEmpty) {
+        request.reloadlyOperatorId = reloadlyOperatorId;
       }
 
       final options = await grpcClient.callOptions;

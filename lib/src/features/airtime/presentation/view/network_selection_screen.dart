@@ -255,32 +255,10 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                 ],
               ),
             ),
-            Column(
-              children: [
-                if (provider.discount != null && provider.discount! > 0)
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      '${provider.discount!.toStringAsFixed(0)}% OFF',
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                SizedBox(height: 8.h),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: const Color(0xFF9CA3AF),
-                  size: 14.sp,
-                ),
-              ],
+            Icon(
+              Icons.arrow_forward_ios,
+              color: const Color(0xFF9CA3AF),
+              size: 14.sp,
             ),
           ],
         ),

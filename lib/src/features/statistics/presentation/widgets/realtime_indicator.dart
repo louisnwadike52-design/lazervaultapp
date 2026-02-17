@@ -23,12 +23,6 @@ class RealtimeIndicator extends StatelessWidget {
             ? const Color(0xFF10B981).withValues(alpha: 0.1)
             : const Color(0xFF6B7280).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: isConnected
-              ? const Color(0xFF10B981).withValues(alpha: 0.3)
-              : const Color(0xFF6B7280).withValues(alpha: 0.3),
-          width: 1,
-        ),
       ),
       child: Row(
         children: [

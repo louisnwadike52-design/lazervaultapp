@@ -23,6 +23,7 @@ class GetExchangeRateRequest extends $pb.GeneratedMessage {
   factory GetExchangeRateRequest({
     $core.String? fromCurrency,
     $core.String? toCurrency,
+    $core.double? amount,
   }) {
     final $result = create();
     if (fromCurrency != null) {
@@ -30,6 +31,9 @@ class GetExchangeRateRequest extends $pb.GeneratedMessage {
     }
     if (toCurrency != null) {
       $result.toCurrency = toCurrency;
+    }
+    if (amount != null) {
+      $result.amount = amount;
     }
     return $result;
   }
@@ -40,6 +44,7 @@ class GetExchangeRateRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExchangeRateRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'fromCurrency')
     ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -81,6 +86,15 @@ class GetExchangeRateRequest extends $pb.GeneratedMessage {
   $core.bool hasToCurrency() => $_has(1);
   @$pb.TagNumber(2)
   void clearToCurrency() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
 }
 
 /// Response containing the exchange rate
@@ -90,6 +104,10 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     $core.String? toCurrency,
     $core.double? rate,
     $1.Timestamp? timestamp,
+    $core.double? fee,
+    $core.double? feePercentage,
+    $core.int? rateValidSeconds,
+    $core.String? rateId,
   }) {
     final $result = create();
     if (fromCurrency != null) {
@@ -104,6 +122,18 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     if (timestamp != null) {
       $result.timestamp = timestamp;
     }
+    if (fee != null) {
+      $result.fee = fee;
+    }
+    if (feePercentage != null) {
+      $result.feePercentage = feePercentage;
+    }
+    if (rateValidSeconds != null) {
+      $result.rateValidSeconds = rateValidSeconds;
+    }
+    if (rateId != null) {
+      $result.rateId = rateId;
+    }
     return $result;
   }
   GetExchangeRateResponse._() : super();
@@ -115,6 +145,10 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'rate', $pb.PbFieldType.OD)
     ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'feePercentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'rateValidSeconds', $pb.PbFieldType.O3)
+    ..aOS(8, _omitFieldNames ? '' : 'rateId')
     ..hasRequiredFields = false
   ;
 
@@ -176,6 +210,42 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
   void clearTimestamp() => clearField(4);
   @$pb.TagNumber(4)
   $1.Timestamp ensureTimestamp() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  $core.double get fee => $_getN(4);
+  @$pb.TagNumber(5)
+  set fee($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasFee() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFee() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get feePercentage => $_getN(5);
+  @$pb.TagNumber(6)
+  set feePercentage($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasFeePercentage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFeePercentage() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get rateValidSeconds => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set rateValidSeconds($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasRateValidSeconds() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRateValidSeconds() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get rateId => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set rateId($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasRateId() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearRateId() => clearField(8);
 }
 
 /// Represents receiver details for an international transfer
@@ -185,6 +255,9 @@ class ReceiverDetails extends $pb.GeneratedMessage {
     $core.String? accountNumber,
     $core.String? bankName,
     $core.String? swiftBicCode,
+    $core.String? country,
+    $core.String? bankCode,
+    $core.String? email,
   }) {
     final $result = create();
     if (fullName != null) {
@@ -199,6 +272,15 @@ class ReceiverDetails extends $pb.GeneratedMessage {
     if (swiftBicCode != null) {
       $result.swiftBicCode = swiftBicCode;
     }
+    if (country != null) {
+      $result.country = country;
+    }
+    if (bankCode != null) {
+      $result.bankCode = bankCode;
+    }
+    if (email != null) {
+      $result.email = email;
+    }
     return $result;
   }
   ReceiverDetails._() : super();
@@ -210,6 +292,9 @@ class ReceiverDetails extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'accountNumber')
     ..aOS(3, _omitFieldNames ? '' : 'bankName')
     ..aOS(4, _omitFieldNames ? '' : 'swiftBicCode')
+    ..aOS(5, _omitFieldNames ? '' : 'country')
+    ..aOS(6, _omitFieldNames ? '' : 'bankCode')
+    ..aOS(7, _omitFieldNames ? '' : 'email')
     ..hasRequiredFields = false
   ;
 
@@ -269,6 +354,33 @@ class ReceiverDetails extends $pb.GeneratedMessage {
   $core.bool hasSwiftBicCode() => $_has(3);
   @$pb.TagNumber(4)
   void clearSwiftBicCode() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get country => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set country($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCountry() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCountry() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get bankCode => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set bankCode($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasBankCode() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearBankCode() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get email => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set email($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasEmail() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearEmail() => clearField(7);
 }
 
 /// Request to initiate an international currency transfer
@@ -278,6 +390,10 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
     $core.String? toCurrency,
     $core.double? amountFrom,
     ReceiverDetails? receiverDetails,
+    $core.String? verificationToken,
+    $core.String? idempotencyKey,
+    $core.String? rateId,
+    $core.String? purposeOfPayment,
   }) {
     final $result = create();
     if (fromCurrency != null) {
@@ -292,6 +408,18 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
     if (receiverDetails != null) {
       $result.receiverDetails = receiverDetails;
     }
+    if (verificationToken != null) {
+      $result.verificationToken = verificationToken;
+    }
+    if (idempotencyKey != null) {
+      $result.idempotencyKey = idempotencyKey;
+    }
+    if (rateId != null) {
+      $result.rateId = rateId;
+    }
+    if (purposeOfPayment != null) {
+      $result.purposeOfPayment = purposeOfPayment;
+    }
     return $result;
   }
   InitiateInternationalTransferRequest._() : super();
@@ -303,6 +431,10 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'amountFrom', $pb.PbFieldType.OD)
     ..aOM<ReceiverDetails>(4, _omitFieldNames ? '' : 'receiverDetails', subBuilder: ReceiverDetails.create)
+    ..aOS(5, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(6, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(7, _omitFieldNames ? '' : 'rateId')
+    ..aOS(8, _omitFieldNames ? '' : 'purposeOfPayment')
     ..hasRequiredFields = false
   ;
 
@@ -364,6 +496,42 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
   void clearReceiverDetails() => clearField(4);
   @$pb.TagNumber(4)
   ReceiverDetails ensureReceiverDetails() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  $core.String get verificationToken => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set verificationToken($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasVerificationToken() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearVerificationToken() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get idempotencyKey => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set idempotencyKey($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasIdempotencyKey() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearIdempotencyKey() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get rateId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set rateId($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasRateId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRateId() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get purposeOfPayment => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set purposeOfPayment($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasPurposeOfPayment() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPurposeOfPayment() => clearField(8);
 }
 
 /// Represents a recorded exchange transaction
@@ -381,6 +549,10 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
     ExchangeStatus? status,
     $1.Timestamp? createdAt,
     $1.Timestamp? updatedAt,
+    $core.String? reference,
+    $core.String? providerReference,
+    ExchangeType? exchangeType,
+    $core.String? failureReason,
   }) {
     final $result = create();
     if (transactionId != null) {
@@ -419,6 +591,18 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
     if (updatedAt != null) {
       $result.updatedAt = updatedAt;
     }
+    if (reference != null) {
+      $result.reference = reference;
+    }
+    if (providerReference != null) {
+      $result.providerReference = providerReference;
+    }
+    if (exchangeType != null) {
+      $result.exchangeType = exchangeType;
+    }
+    if (failureReason != null) {
+      $result.failureReason = failureReason;
+    }
     return $result;
   }
   ExchangeTransaction._() : super();
@@ -438,6 +622,10 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
     ..e<ExchangeStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ExchangeStatus.PENDING, valueOf: ExchangeStatus.valueOf, enumValues: ExchangeStatus.values)
     ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
     ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOS(13, _omitFieldNames ? '' : 'reference')
+    ..aOS(14, _omitFieldNames ? '' : 'providerReference')
+    ..e<ExchangeType>(15, _omitFieldNames ? '' : 'exchangeType', $pb.PbFieldType.OE, defaultOrMaker: ExchangeType.EXCHANGE_TYPE_UNSPECIFIED, valueOf: ExchangeType.valueOf, enumValues: ExchangeType.values)
+    ..aOS(16, _omitFieldNames ? '' : 'failureReason')
     ..hasRequiredFields = false
   ;
 
@@ -575,6 +763,42 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
   void clearUpdatedAt() => clearField(12);
   @$pb.TagNumber(12)
   $1.Timestamp ensureUpdatedAt() => $_ensure(11);
+
+  @$pb.TagNumber(13)
+  $core.String get reference => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set reference($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasReference() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearReference() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get providerReference => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set providerReference($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasProviderReference() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearProviderReference() => clearField(14);
+
+  @$pb.TagNumber(15)
+  ExchangeType get exchangeType => $_getN(14);
+  @$pb.TagNumber(15)
+  set exchangeType(ExchangeType v) { setField(15, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasExchangeType() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearExchangeType() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get failureReason => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set failureReason($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasFailureReason() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearFailureReason() => clearField(16);
 }
 
 /// Response after initiating a transfer
@@ -752,6 +976,504 @@ class GetRecentExchangesResponse extends $pb.GeneratedMessage {
   $core.bool hasNextPageToken() => $_has(1);
   @$pb.TagNumber(2)
   void clearNextPageToken() => clearField(2);
+}
+
+class ConvertCurrencyRequest extends $pb.GeneratedMessage {
+  factory ConvertCurrencyRequest({
+    $core.String? fromCurrency,
+    $core.String? toCurrency,
+    $core.double? amount,
+    $core.String? verificationToken,
+    $core.String? idempotencyKey,
+    $core.String? rateId,
+  }) {
+    final $result = create();
+    if (fromCurrency != null) {
+      $result.fromCurrency = fromCurrency;
+    }
+    if (toCurrency != null) {
+      $result.toCurrency = toCurrency;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (verificationToken != null) {
+      $result.verificationToken = verificationToken;
+    }
+    if (idempotencyKey != null) {
+      $result.idempotencyKey = idempotencyKey;
+    }
+    if (rateId != null) {
+      $result.rateId = rateId;
+    }
+    return $result;
+  }
+  ConvertCurrencyRequest._() : super();
+  factory ConvertCurrencyRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ConvertCurrencyRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConvertCurrencyRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'fromCurrency')
+    ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(5, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(6, _omitFieldNames ? '' : 'rateId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ConvertCurrencyRequest clone() => ConvertCurrencyRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ConvertCurrencyRequest copyWith(void Function(ConvertCurrencyRequest) updates) => super.copyWith((message) => updates(message as ConvertCurrencyRequest)) as ConvertCurrencyRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ConvertCurrencyRequest create() => ConvertCurrencyRequest._();
+  ConvertCurrencyRequest createEmptyInstance() => create();
+  static $pb.PbList<ConvertCurrencyRequest> createRepeated() => $pb.PbList<ConvertCurrencyRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ConvertCurrencyRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ConvertCurrencyRequest>(create);
+  static ConvertCurrencyRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get fromCurrency => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set fromCurrency($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFromCurrency() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFromCurrency() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get toCurrency => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set toCurrency($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasToCurrency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearToCurrency() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get verificationToken => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set verificationToken($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasVerificationToken() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVerificationToken() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get idempotencyKey => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set idempotencyKey($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIdempotencyKey() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIdempotencyKey() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get rateId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set rateId($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasRateId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRateId() => clearField(6);
+}
+
+class ConvertCurrencyResponse extends $pb.GeneratedMessage {
+  factory ConvertCurrencyResponse({
+    ExchangeTransaction? transaction,
+  }) {
+    final $result = create();
+    if (transaction != null) {
+      $result.transaction = transaction;
+    }
+    return $result;
+  }
+  ConvertCurrencyResponse._() : super();
+  factory ConvertCurrencyResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ConvertCurrencyResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConvertCurrencyResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ExchangeTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: ExchangeTransaction.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ConvertCurrencyResponse clone() => ConvertCurrencyResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ConvertCurrencyResponse copyWith(void Function(ConvertCurrencyResponse) updates) => super.copyWith((message) => updates(message as ConvertCurrencyResponse)) as ConvertCurrencyResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ConvertCurrencyResponse create() => ConvertCurrencyResponse._();
+  ConvertCurrencyResponse createEmptyInstance() => create();
+  static $pb.PbList<ConvertCurrencyResponse> createRepeated() => $pb.PbList<ConvertCurrencyResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ConvertCurrencyResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ConvertCurrencyResponse>(create);
+  static ConvertCurrencyResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ExchangeTransaction get transaction => $_getN(0);
+  @$pb.TagNumber(1)
+  set transaction(ExchangeTransaction v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransaction() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransaction() => clearField(1);
+  @$pb.TagNumber(1)
+  ExchangeTransaction ensureTransaction() => $_ensure(0);
+}
+
+class GetTransactionStatusRequest extends $pb.GeneratedMessage {
+  factory GetTransactionStatusRequest({
+    $core.String? transactionId,
+  }) {
+    final $result = create();
+    if (transactionId != null) {
+      $result.transactionId = transactionId;
+    }
+    return $result;
+  }
+  GetTransactionStatusRequest._() : super();
+  factory GetTransactionStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTransactionStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTransactionStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'transactionId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTransactionStatusRequest clone() => GetTransactionStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTransactionStatusRequest copyWith(void Function(GetTransactionStatusRequest) updates) => super.copyWith((message) => updates(message as GetTransactionStatusRequest)) as GetTransactionStatusRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetTransactionStatusRequest create() => GetTransactionStatusRequest._();
+  GetTransactionStatusRequest createEmptyInstance() => create();
+  static $pb.PbList<GetTransactionStatusRequest> createRepeated() => $pb.PbList<GetTransactionStatusRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetTransactionStatusRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTransactionStatusRequest>(create);
+  static GetTransactionStatusRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get transactionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set transactionId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransactionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransactionId() => clearField(1);
+}
+
+class GetTransactionStatusResponse extends $pb.GeneratedMessage {
+  factory GetTransactionStatusResponse({
+    ExchangeTransaction? transaction,
+  }) {
+    final $result = create();
+    if (transaction != null) {
+      $result.transaction = transaction;
+    }
+    return $result;
+  }
+  GetTransactionStatusResponse._() : super();
+  factory GetTransactionStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTransactionStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTransactionStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ExchangeTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: ExchangeTransaction.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTransactionStatusResponse clone() => GetTransactionStatusResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTransactionStatusResponse copyWith(void Function(GetTransactionStatusResponse) updates) => super.copyWith((message) => updates(message as GetTransactionStatusResponse)) as GetTransactionStatusResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetTransactionStatusResponse create() => GetTransactionStatusResponse._();
+  GetTransactionStatusResponse createEmptyInstance() => create();
+  static $pb.PbList<GetTransactionStatusResponse> createRepeated() => $pb.PbList<GetTransactionStatusResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetTransactionStatusResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTransactionStatusResponse>(create);
+  static GetTransactionStatusResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ExchangeTransaction get transaction => $_getN(0);
+  @$pb.TagNumber(1)
+  set transaction(ExchangeTransaction v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransaction() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransaction() => clearField(1);
+  @$pb.TagNumber(1)
+  ExchangeTransaction ensureTransaction() => $_ensure(0);
+}
+
+class GetSupportedCurrenciesRequest extends $pb.GeneratedMessage {
+  factory GetSupportedCurrenciesRequest() => create();
+  GetSupportedCurrenciesRequest._() : super();
+  factory GetSupportedCurrenciesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSupportedCurrenciesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSupportedCurrenciesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSupportedCurrenciesRequest clone() => GetSupportedCurrenciesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSupportedCurrenciesRequest copyWith(void Function(GetSupportedCurrenciesRequest) updates) => super.copyWith((message) => updates(message as GetSupportedCurrenciesRequest)) as GetSupportedCurrenciesRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetSupportedCurrenciesRequest create() => GetSupportedCurrenciesRequest._();
+  GetSupportedCurrenciesRequest createEmptyInstance() => create();
+  static $pb.PbList<GetSupportedCurrenciesRequest> createRepeated() => $pb.PbList<GetSupportedCurrenciesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetSupportedCurrenciesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSupportedCurrenciesRequest>(create);
+  static GetSupportedCurrenciesRequest? _defaultInstance;
+}
+
+class SupportedCurrency extends $pb.GeneratedMessage {
+  factory SupportedCurrency({
+    $core.String? code,
+    $core.String? name,
+    $core.String? symbol,
+    $core.String? country,
+    $core.bool? supportsConversion,
+    $core.bool? supportsInternational,
+    $core.double? minAmount,
+    $core.double? maxAmount,
+  }) {
+    final $result = create();
+    if (code != null) {
+      $result.code = code;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    if (symbol != null) {
+      $result.symbol = symbol;
+    }
+    if (country != null) {
+      $result.country = country;
+    }
+    if (supportsConversion != null) {
+      $result.supportsConversion = supportsConversion;
+    }
+    if (supportsInternational != null) {
+      $result.supportsInternational = supportsInternational;
+    }
+    if (minAmount != null) {
+      $result.minAmount = minAmount;
+    }
+    if (maxAmount != null) {
+      $result.maxAmount = maxAmount;
+    }
+    return $result;
+  }
+  SupportedCurrency._() : super();
+  factory SupportedCurrency.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SupportedCurrency.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SupportedCurrency', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'code')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..aOS(3, _omitFieldNames ? '' : 'symbol')
+    ..aOS(4, _omitFieldNames ? '' : 'country')
+    ..aOB(5, _omitFieldNames ? '' : 'supportsConversion')
+    ..aOB(6, _omitFieldNames ? '' : 'supportsInternational')
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'minAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'maxAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SupportedCurrency clone() => SupportedCurrency()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SupportedCurrency copyWith(void Function(SupportedCurrency) updates) => super.copyWith((message) => updates(message as SupportedCurrency)) as SupportedCurrency;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SupportedCurrency create() => SupportedCurrency._();
+  SupportedCurrency createEmptyInstance() => create();
+  static $pb.PbList<SupportedCurrency> createRepeated() => $pb.PbList<SupportedCurrency>();
+  @$core.pragma('dart2js:noInline')
+  static SupportedCurrency getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SupportedCurrency>(create);
+  static SupportedCurrency? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get code => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set code($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCode() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get symbol => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set symbol($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSymbol() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSymbol() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get country => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set country($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCountry() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCountry() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get supportsConversion => $_getBF(4);
+  @$pb.TagNumber(5)
+  set supportsConversion($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSupportsConversion() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSupportsConversion() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get supportsInternational => $_getBF(5);
+  @$pb.TagNumber(6)
+  set supportsInternational($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSupportsInternational() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSupportsInternational() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get minAmount => $_getN(6);
+  @$pb.TagNumber(7)
+  set minAmount($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasMinAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMinAmount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get maxAmount => $_getN(7);
+  @$pb.TagNumber(8)
+  set maxAmount($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasMaxAmount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearMaxAmount() => clearField(8);
+}
+
+class GetSupportedCurrenciesResponse extends $pb.GeneratedMessage {
+  factory GetSupportedCurrenciesResponse({
+    $core.Iterable<SupportedCurrency>? currencies,
+  }) {
+    final $result = create();
+    if (currencies != null) {
+      $result.currencies.addAll(currencies);
+    }
+    return $result;
+  }
+  GetSupportedCurrenciesResponse._() : super();
+  factory GetSupportedCurrenciesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSupportedCurrenciesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSupportedCurrenciesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<SupportedCurrency>(1, _omitFieldNames ? '' : 'currencies', $pb.PbFieldType.PM, subBuilder: SupportedCurrency.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSupportedCurrenciesResponse clone() => GetSupportedCurrenciesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSupportedCurrenciesResponse copyWith(void Function(GetSupportedCurrenciesResponse) updates) => super.copyWith((message) => updates(message as GetSupportedCurrenciesResponse)) as GetSupportedCurrenciesResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetSupportedCurrenciesResponse create() => GetSupportedCurrenciesResponse._();
+  GetSupportedCurrenciesResponse createEmptyInstance() => create();
+  static $pb.PbList<GetSupportedCurrenciesResponse> createRepeated() => $pb.PbList<GetSupportedCurrenciesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetSupportedCurrenciesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSupportedCurrenciesResponse>(create);
+  static GetSupportedCurrenciesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<SupportedCurrency> get currencies => $_getList(0);
 }
 
 

@@ -8,8 +8,8 @@ class AirtimeStepIndicator extends StatelessWidget {
   const AirtimeStepIndicator({
     super.key,
     required this.currentStep,
-    this.totalSteps = 4,
-    this.stepLabels = const ['Network', 'Phone', 'Amount', 'Confirm'],
+    this.totalSteps = 3,
+    this.stepLabels = const ['Phone', 'Amount', 'Confirm'],
   });
 
   @override

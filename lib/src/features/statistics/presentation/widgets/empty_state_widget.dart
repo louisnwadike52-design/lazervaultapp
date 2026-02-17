@@ -114,10 +114,6 @@ class EmptyStateWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                  width: 1,
-                ),
               ),
               child: Row(
                 children: [

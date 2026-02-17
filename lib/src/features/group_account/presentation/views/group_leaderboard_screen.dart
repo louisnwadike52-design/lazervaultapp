@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 
@@ -258,7 +259,7 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
                     SizedBox(width: 4.w),
                     Expanded(
                       child: Text(
-                        '\$${group.totalRaised.toStringAsFixed(2)} collected',
+                        '${CurrencySymbols.formatAmount(group.totalRaised)} collected',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF10B981),
                           fontSize: 12.sp,

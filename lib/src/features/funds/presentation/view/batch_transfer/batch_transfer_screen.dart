@@ -278,7 +278,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
         if (state is BatchTransferHistoryLoaded && state.batches.isNotEmpty) {
           final recentBatches = state.batches.take(3).toList();
           return Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 0),
+            padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 0),
             child: Column(
               children: [
                 Row(

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/expense_category_helpers.dart';
@@ -16,7 +17,7 @@ class BudgetListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
-      value: Get.find<BudgetCubit>(),
+      value: serviceLocator<BudgetCubit>(),
       child: const BudgetListView(),
     );
   }
@@ -165,7 +166,6 @@ class _SummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         children: [
@@ -315,7 +315,6 @@ class _BudgetCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

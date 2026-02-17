@@ -1,3 +1,4 @@
+import '../../domain/airtime_fee_config.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/network_provider.dart';
@@ -84,6 +85,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
     String? transactionId,
     String? verificationToken,
     String? operatorId,
+    String? reloadlyOperatorId,
   }) async {
     // Use remote data source for real purchases
     if (remoteDataSource != null &&
@@ -104,6 +106,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
         idempotencyKey: idempotencyKey,
         countryCode: countryCode,
         operatorId: operatorId,
+        reloadlyOperatorId: reloadlyOperatorId,
         currency: currency,
       );
 
@@ -242,62 +245,8 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
   @override
   Future<double> calculateTransactionFee(
       double amount, String countryCode) async {
-    try {
-      double feePercentage;
-      double minFee;
-      double maxFee;
-
-      switch (countryCode) {
-        case 'NG':
-          feePercentage = 0.01;
-          minFee = 5.0;
-          maxFee = 100.0;
-          break;
-        case 'US':
-          feePercentage = 0.02;
-          minFee = 1.0;
-          maxFee = 10.0;
-          break;
-        case 'GB':
-          feePercentage = 0.015;
-          minFee = 0.5;
-          maxFee = 5.0;
-          break;
-        case 'IN':
-          feePercentage = 0.01;
-          minFee = 2.0;
-          maxFee = 50.0;
-          break;
-        case 'ZA':
-          feePercentage = 0.015;
-          minFee = 1.0;
-          maxFee = 20.0;
-          break;
-        case 'KE':
-          feePercentage = 0.01;
-          minFee = 5.0;
-          maxFee = 100.0;
-          break;
-        case 'GH':
-          feePercentage = 0.02;
-          minFee = 0.5;
-          maxFee = 10.0;
-          break;
-        default:
-          feePercentage = 0.02;
-          minFee = 1.0;
-          maxFee = 10.0;
-      }
-
-      double calculatedFee = amount * feePercentage;
-
-      if (calculatedFee < minFee) calculatedFee = minFee;
-      if (calculatedFee > maxFee) calculatedFee = maxFee;
-
-      return double.parse(calculatedFee.toStringAsFixed(2));
-    } catch (e) {
-      throw Exception('Failed to calculate transaction fee: $e');
-    }
+    if (!AirtimeFeeConfig.serviceFeeEnabled) return 0.0;
+    return AirtimeFeeConfig.calculateFee(amount, countryCode);
   }
 
   @override

@@ -44,18 +44,9 @@ class NetworkProvidersCard extends StatelessWidget {
                 builder: (context, state) {
                   return GestureDetector(
                     onTap: () {
-                      // Pass available providers or trigger loading in the next screen
-                      if (state is AirtimeNetworkProvidersLoaded) {
-                        Get.toNamed(AppRoutes.airtimeNetworkSelection, arguments: {
-                          'country': DefaultCountries.nigeria,
-                          'networkProviders': state.providers,
-                        });
-                      } else {
-                        // Navigate without providers, let the screen load them
-                        Get.toNamed(AppRoutes.airtimeNetworkSelection, arguments: {
-                          'countryCode': 'NG',
-                        });
-                      }
+                      Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {
+                        'country': DefaultCountries.nigeria,
+                      });
                     },
                     child: Text(
                       'View All',
@@ -177,24 +168,6 @@ class NetworkProvidersCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             
-            if (provider.discount != null && provider.discount! > 0) ...[
-              SizedBox(height: 2.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
-                decoration: BoxDecoration(
-                  color: Color(0xFF10B981).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-                child: Text(
-                  '${provider.discount!.toStringAsFixed(0)}%',
-                  style: TextStyle(
-                    fontSize: 8.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF10B981),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

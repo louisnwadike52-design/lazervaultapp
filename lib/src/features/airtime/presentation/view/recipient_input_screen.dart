@@ -202,7 +202,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             return Column(
               children: [
                 _buildHeader(),
-                const AirtimeStepIndicator(currentStep: 1),
+                const AirtimeStepIndicator(currentStep: 0),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),

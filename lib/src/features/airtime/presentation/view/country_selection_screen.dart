@@ -69,10 +69,9 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
                       _filteredCountries = state.countries;
                     } else if (state is AirtimeNetworkProvidersLoaded) {
                       Navigator.of(context).pushReplacementNamed(
-                        AppRoutes.airtimeNetworkSelection,
+                        AppRoutes.airtimeRecipientInput,
                         arguments: {
-                          'countryCode': state.countryCode,
-                          'networkProviders': state.providers,
+                          'country': DefaultCountries.nigeria,
                         },
                       );
                     } else if (state is AirtimeNetworkProvidersError) {

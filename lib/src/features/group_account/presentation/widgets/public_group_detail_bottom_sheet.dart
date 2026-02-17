@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
@@ -294,7 +295,7 @@ class _PublicGroupDetailBottomSheetState
                     _buildStatCard(
                       icon: Icons.account_balance_wallet_outlined,
                       label: 'Collected',
-                      value: '\$$totalCollected',
+                      value: '${CurrencySymbols.currentSymbol}$totalCollected',
                     ),
                   ],
                 ),
@@ -427,7 +428,7 @@ class _PublicGroupDetailBottomSheetState
           ),
           // Amount
           Text(
-            '\$${contributor.totalContributed.toStringAsFixed(2)}',
+            '${CurrencySymbols.formatAmount(contributor.totalContributed)}',
             style: GoogleFonts.inter(
               color: const Color(0xFF10B981),
               fontSize: 13.sp,

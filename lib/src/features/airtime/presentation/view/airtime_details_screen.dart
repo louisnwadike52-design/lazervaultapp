@@ -502,10 +502,6 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
 
           _buildBreakdownRow('Airtime Amount', '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}'),
 
-          if (transaction.discount != null && transaction.discount! > 0) ...[
-            SizedBox(height: 8.h),
-            _buildBreakdownRow('Discount', '-${transaction.currencySymbol}${transaction.discount!.toStringAsFixed(0)}', isDiscount: true),
-          ],
 
           if (transaction.fee != null) ...[
             SizedBox(height: 8.h),
@@ -552,7 +548,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     );
   }
 
-  Widget _buildBreakdownRow(String label, String amount, {bool isTotal = false, bool isDiscount = false}) {
+  Widget _buildBreakdownRow(String label, String amount, {bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -569,9 +565,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isDiscount
-              ? Color(0xFF10B981)
-              : isTotal
+            color: isTotal
                 ? Colors.white
                 : Colors.white.withValues(alpha: 0.8),
           ),

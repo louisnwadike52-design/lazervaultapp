@@ -446,6 +446,7 @@ class NetworkProvider extends Equatable {
   final double minAmount;
   final double maxAmount;
   final String? operatorId;
+  final String? reloadlyOperatorId;
 
   const NetworkProvider({
     required this.id,
@@ -462,6 +463,7 @@ class NetworkProvider extends Equatable {
     this.minAmount = 1.0,
     this.maxAmount = 1000.0,
     this.operatorId,
+    this.reloadlyOperatorId,
   });
 
   bool canHandleNumber(String phoneNumber) {
@@ -493,6 +495,7 @@ class NetworkProvider extends Equatable {
       'minAmount': minAmount,
       'maxAmount': maxAmount,
       'operatorId': operatorId,
+      'reloadlyOperatorId': reloadlyOperatorId,
     };
   }
 
@@ -515,6 +518,7 @@ class NetworkProvider extends Equatable {
       minAmount: (json['minAmount'] as num?)?.toDouble() ?? 1.0,
       maxAmount: (json['maxAmount'] as num?)?.toDouble() ?? 1000.0,
       operatorId: json['operatorId'] as String?,
+      reloadlyOperatorId: json['reloadlyOperatorId'] as String?,
     );
   }
 
@@ -533,6 +537,7 @@ class NetworkProvider extends Equatable {
     double? minAmount,
     double? maxAmount,
     String? operatorId,
+    String? reloadlyOperatorId,
   }) {
     return NetworkProvider(
       id: id ?? this.id,
@@ -549,6 +554,7 @@ class NetworkProvider extends Equatable {
       minAmount: minAmount ?? this.minAmount,
       maxAmount: maxAmount ?? this.maxAmount,
       operatorId: operatorId ?? this.operatorId,
+      reloadlyOperatorId: reloadlyOperatorId ?? this.reloadlyOperatorId,
     );
   }
 
@@ -568,5 +574,6 @@ class NetworkProvider extends Equatable {
         minAmount,
         maxAmount,
         operatorId,
+        reloadlyOperatorId,
       ];
 } 

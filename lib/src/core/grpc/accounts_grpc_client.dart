@@ -349,6 +349,50 @@ class AccountsGrpcClient {
     }
   }
 
+  // ===== CATEGORY MANAGEMENT =====
+
+  /// Get user's custom category mappings
+  Future<GetUserCategoryMappingsResponse> getUserCategoryMappings() async {
+    final request = GetUserCategoryMappingsRequest();
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      return await _client.getUserCategoryMappings(request, options: options);
+    } catch (e) {
+      throw Exception('Failed to fetch category mappings: $e');
+    }
+  }
+
+  /// Update a category mapping (rename, re-parent)
+  Future<UpdateUserCategoryMappingResponse> updateUserCategoryMapping({
+    required String originalCategory,
+    required String customCategory,
+    String parentCategory = '',
+  }) async {
+    final request = UpdateUserCategoryMappingRequest()
+      ..originalCategory = originalCategory
+      ..customCategory = customCategory
+      ..parentCategory = parentCategory;
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      return await _client.updateUserCategoryMapping(request, options: options);
+    } catch (e) {
+      throw Exception('Failed to update category mapping: $e');
+    }
+  }
+
+  /// Reorder categories (batch update display order)
+  Future<ReorderCategoriesResponse> reorderCategories({
+    required List<CategoryOrderItem> orderings,
+  }) async {
+    final request = ReorderCategoriesRequest()..orderings.addAll(orderings);
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      return await _client.reorderCategories(request, options: options);
+    } catch (e) {
+      throw Exception('Failed to reorder categories: $e');
+    }
+  }
+
   /// Helper: Convert DateTime to ISO8601 string
   String _dateTimeToString(DateTime dateTime) {
     return dateTime.toIso8601String();

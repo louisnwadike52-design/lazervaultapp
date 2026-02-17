@@ -33,6 +33,18 @@ class ExchangeServiceClient extends $grpc.Client {
       '/pb.ExchangeService/GetRecentExchanges',
       ($0.GetRecentExchangesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetRecentExchangesResponse.fromBuffer(value));
+  static final _$convertCurrency = $grpc.ClientMethod<$0.ConvertCurrencyRequest, $0.ConvertCurrencyResponse>(
+      '/pb.ExchangeService/ConvertCurrency',
+      ($0.ConvertCurrencyRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ConvertCurrencyResponse.fromBuffer(value));
+  static final _$getTransactionStatus = $grpc.ClientMethod<$0.GetTransactionStatusRequest, $0.GetTransactionStatusResponse>(
+      '/pb.ExchangeService/GetTransactionStatus',
+      ($0.GetTransactionStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetTransactionStatusResponse.fromBuffer(value));
+  static final _$getSupportedCurrencies = $grpc.ClientMethod<$0.GetSupportedCurrenciesRequest, $0.GetSupportedCurrenciesResponse>(
+      '/pb.ExchangeService/GetSupportedCurrencies',
+      ($0.GetSupportedCurrenciesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetSupportedCurrenciesResponse.fromBuffer(value));
 
   ExchangeServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -50,6 +62,18 @@ class ExchangeServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetRecentExchangesResponse> getRecentExchanges($0.GetRecentExchangesRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getRecentExchanges, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ConvertCurrencyResponse> convertCurrency($0.ConvertCurrencyRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$convertCurrency, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetTransactionStatusResponse> getTransactionStatus($0.GetTransactionStatusRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getTransactionStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetSupportedCurrenciesResponse> getSupportedCurrencies($0.GetSupportedCurrenciesRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSupportedCurrencies, request, options: options);
   }
 }
 
@@ -79,6 +103,27 @@ abstract class ExchangeServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetRecentExchangesRequest.fromBuffer(value),
         ($0.GetRecentExchangesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ConvertCurrencyRequest, $0.ConvertCurrencyResponse>(
+        'ConvertCurrency',
+        convertCurrency_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ConvertCurrencyRequest.fromBuffer(value),
+        ($0.ConvertCurrencyResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetTransactionStatusRequest, $0.GetTransactionStatusResponse>(
+        'GetTransactionStatus',
+        getTransactionStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetTransactionStatusRequest.fromBuffer(value),
+        ($0.GetTransactionStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetSupportedCurrenciesRequest, $0.GetSupportedCurrenciesResponse>(
+        'GetSupportedCurrencies',
+        getSupportedCurrencies_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetSupportedCurrenciesRequest.fromBuffer(value),
+        ($0.GetSupportedCurrenciesResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.GetExchangeRateResponse> getExchangeRate_Pre($grpc.ServiceCall call, $async.Future<$0.GetExchangeRateRequest> request) async {
@@ -93,7 +138,22 @@ abstract class ExchangeServiceBase extends $grpc.Service {
     return getRecentExchanges(call, await request);
   }
 
+  $async.Future<$0.ConvertCurrencyResponse> convertCurrency_Pre($grpc.ServiceCall call, $async.Future<$0.ConvertCurrencyRequest> request) async {
+    return convertCurrency(call, await request);
+  }
+
+  $async.Future<$0.GetTransactionStatusResponse> getTransactionStatus_Pre($grpc.ServiceCall call, $async.Future<$0.GetTransactionStatusRequest> request) async {
+    return getTransactionStatus(call, await request);
+  }
+
+  $async.Future<$0.GetSupportedCurrenciesResponse> getSupportedCurrencies_Pre($grpc.ServiceCall call, $async.Future<$0.GetSupportedCurrenciesRequest> request) async {
+    return getSupportedCurrencies(call, await request);
+  }
+
   $async.Future<$0.GetExchangeRateResponse> getExchangeRate($grpc.ServiceCall call, $0.GetExchangeRateRequest request);
   $async.Future<$0.InitiateInternationalTransferResponse> initiateInternationalTransfer($grpc.ServiceCall call, $0.InitiateInternationalTransferRequest request);
   $async.Future<$0.GetRecentExchangesResponse> getRecentExchanges($grpc.ServiceCall call, $0.GetRecentExchangesRequest request);
+  $async.Future<$0.ConvertCurrencyResponse> convertCurrency($grpc.ServiceCall call, $0.ConvertCurrencyRequest request);
+  $async.Future<$0.GetTransactionStatusResponse> getTransactionStatus($grpc.ServiceCall call, $0.GetTransactionStatusRequest request);
+  $async.Future<$0.GetSupportedCurrenciesResponse> getSupportedCurrencies($grpc.ServiceCall call, $0.GetSupportedCurrenciesRequest request);
 }

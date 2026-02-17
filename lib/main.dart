@@ -181,11 +181,11 @@ Future<String> _determineInitialRoute() async {
     final userId = await storage.read(key: 'user_id');
 
     // If user has passcode login set up, require passcode authentication
+    // Note: userId may be null after logout (cleared by _clearSession),
+    // but passcode login only needs stored_email + passcode to authenticate
     if (loginMethod == 'passcode' &&
         storedEmail != null &&
-        storedEmail.isNotEmpty &&
-        userId != null &&
-        userId.isNotEmpty) {
+        storedEmail.isNotEmpty) {
       print('🔐 User has passcode login configured, redirecting to passcode login');
       return AppRoutes.passcodeLogin;
     }
