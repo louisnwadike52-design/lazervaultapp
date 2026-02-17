@@ -173,7 +173,7 @@ import 'package:lazervault/src/features/airtime/presentation/view/network_select
 import 'package:lazervault/src/features/airtime/presentation/view/recipient_input_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/amount_selection_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_review_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_processing_screen.dart';
+// Processing screen removed — payment now runs inside PIN modal
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_history_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
@@ -214,6 +214,8 @@ import 'package:lazervault/src/features/statistics/presentation/screens/budget_a
 import 'package:lazervault/src/features/statistics/presentation/screens/budget_reminders_screen.dart';
 import 'package:lazervault/src/features/statistics/presentation/screens/financial_goals_screen.dart';
 import 'package:lazervault/src/features/statistics/presentation/screens/recurring_bills_screen.dart';
+import 'package:lazervault/src/features/statistics/cubit/category_management_cubit.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/category_management_screen.dart';
 
 // Credit Score & Open Banking imports
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
@@ -252,6 +254,9 @@ import 'package:lazervault/src/features/id_pay/presentation/view/id_pay_lookup_s
 import 'package:lazervault/src/features/id_pay/presentation/view/id_pay_payment_screen.dart';
 import 'package:lazervault/src/features/id_pay/presentation/view/id_pay_receipt_screen.dart';
 import 'package:lazervault/src/features/id_pay/presentation/view/id_pay_details_screen.dart';
+import 'package:lazervault/src/features/id_pay/presentation/view/id_pay_organization_screen.dart';
+import 'package:lazervault/src/features/id_pay/presentation/view/create_organization_screen.dart';
+import 'package:lazervault/src/features/id_pay/presentation/view/id_pay_organization_details_screen.dart';
 
 // Contactless Payment imports
 import 'package:lazervault/src/features/contactless_payment/presentation/cubit/contactless_payment_cubit.dart';
@@ -1567,14 +1572,7 @@ GetPage(
       ),
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.airtimePaymentProcessing,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const AirtimePaymentProcessingScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
+    // Processing screen removed — payment now runs inside PIN modal on review screen
     GetPage(
       name: AppRoutes.airtimePaymentConfirmation,
       page: () => BlocProvider(
@@ -1736,6 +1734,15 @@ GetPage(
       page: () => BlocProvider.value(
         value: serviceLocator<StatisticsCubit>(),
         child: const ComparisonDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Category management route
+    GetPage(
+      name: AppRoutes.categoryManagement,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CategoryManagementCubit>(),
+        child: const CategoryManagementScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2041,6 +2048,38 @@ GetPage(
         return BlocProvider(
           create: (_) => serviceLocator<IDPayCubit>(),
           child: const IDPayDetailsScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
+    // IDPay Organization routes
+    GetPage(
+      name: AppRoutes.idPayOrganizations,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<IDPayCubit>(),
+          child: const IDPayOrganizationScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createIdPayOrganization,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<IDPayCubit>(),
+          child: const CreateOrganizationScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.idPayOrganizationDetails,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<IDPayCubit>(),
+          child: const IDPayOrganizationDetailsScreen(),
         );
       },
       transition: Transition.rightToLeft,

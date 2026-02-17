@@ -1,30 +1,38 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/network/grpc_client.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import '../../../../generated/exchange.pbgrpc.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/entities/recipient_entity.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 
 class ExchangeRepositoryImpl implements IExchangeRepository {
-  final GrpcClient grpcClient;
+  final ExchangeServiceClient _exchangeClient;
+  final GrpcCallOptionsHelper _callOptionsHelper;
 
-  ExchangeRepositoryImpl({required this.grpcClient});
-
-  ExchangeServiceClient get _exchangeClient => grpcClient.exchangeClient;
+  ExchangeRepositoryImpl({
+    required ExchangeServiceClient exchangeClient,
+    required GrpcCallOptionsHelper callOptionsHelper,
+  })  : _exchangeClient = exchangeClient,
+        _callOptionsHelper = callOptionsHelper;
 
   @override
   Future<Either<Failure, ExchangeRate>> getExchangeRate({
     required String fromCurrency,
     required String toCurrency,
+    double? amount,
   }) async {
     try {
       final request = GetExchangeRateRequest()
         ..fromCurrency = fromCurrency
         ..toCurrency = toCurrency;
 
-      final callOptions = await grpcClient.callOptions;
+      if (amount != null && amount > 0) {
+        request.amount = amount;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
       final response = await _exchangeClient.getExchangeRate(
         request,
         options: callOptions,
@@ -37,7 +45,10 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
         timestamp: DateTime.fromMillisecondsSinceEpoch(
           response.timestamp.seconds.toInt() * 1000,
         ),
-        fees: _calculateFees(0.0, fromCurrency), // Fees calculated separately
+        fees: response.fee,
+        feePercentage: response.feePercentage,
+        rateValidSeconds: response.rateValidSeconds,
+        rateId: response.rateId,
       );
 
       return Right(exchangeRate);
@@ -60,24 +71,45 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     required String toCurrency,
     required double amount,
     required String recipientId,
+    required String verificationToken,
+    required String idempotencyKey,
+    String? rateId,
+    String? purposeOfPayment,
+    String? recipientName,
+    String? recipientAccountNumber,
+    String? recipientBankName,
+    String? recipientBankCode,
+    String? recipientSwiftCode,
+    String? recipientCountry,
+    String? recipientEmail,
     String? notes,
   }) async {
     try {
-      // For now, we'll need to get recipient details from somewhere
-      // This should be passed from the UI or fetched from recipient repository
       final receiverDetails = ReceiverDetails()
-        ..fullName = '' // To be filled from recipient data
-        ..accountNumber = ''
-        ..bankName = ''
-        ..swiftBicCode = '';
+        ..fullName = recipientName ?? ''
+        ..accountNumber = recipientAccountNumber ?? ''
+        ..bankName = recipientBankName ?? ''
+        ..swiftBicCode = recipientSwiftCode ?? ''
+        ..country = recipientCountry ?? ''
+        ..bankCode = recipientBankCode ?? ''
+        ..email = recipientEmail ?? '';
 
       final request = InitiateInternationalTransferRequest()
         ..fromCurrency = fromCurrency
         ..toCurrency = toCurrency
         ..amountFrom = amount
-        ..receiverDetails = receiverDetails;
+        ..receiverDetails = receiverDetails
+        ..verificationToken = verificationToken
+        ..idempotencyKey = idempotencyKey;
 
-      final callOptions = await grpcClient.callOptions;
+      if (rateId != null && rateId.isNotEmpty) {
+        request.rateId = rateId;
+      }
+      if (purposeOfPayment != null && purposeOfPayment.isNotEmpty) {
+        request.purposeOfPayment = purposeOfPayment;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
       final response = await _exchangeClient.initiateInternationalTransfer(
         request,
         options: callOptions,
@@ -99,6 +131,77 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
   }
 
   @override
+  Future<Either<Failure, CurrencyTransaction>> convertCurrency({
+    required String fromCurrency,
+    required String toCurrency,
+    required double amount,
+    required String verificationToken,
+    required String idempotencyKey,
+    String? rateId,
+  }) async {
+    try {
+      final request = ConvertCurrencyRequest()
+        ..fromCurrency = fromCurrency
+        ..toCurrency = toCurrency
+        ..amount = amount
+        ..verificationToken = verificationToken
+        ..idempotencyKey = idempotencyKey;
+
+      if (rateId != null && rateId.isNotEmpty) {
+        request.rateId = rateId;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _exchangeClient.convertCurrency(
+        request,
+        options: callOptions,
+      );
+
+      final transaction = _mapTransactionFromProto(response.transaction);
+      return Right(transaction);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to convert currency',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: e.toString(),
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, CurrencyTransaction>> getTransactionStatus({
+    required String transactionId,
+  }) async {
+    try {
+      final request = GetTransactionStatusRequest()
+        ..transactionId = transactionId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _exchangeClient.getTransactionStatus(
+        request,
+        options: callOptions,
+      );
+
+      final transaction = _mapTransactionFromProto(response.transaction);
+      return Right(transaction);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to get transaction status',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: e.toString(),
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<CurrencyTransaction>>> getRecentExchanges({
     int? limit,
     int? offset,
@@ -107,7 +210,7 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       final request = GetRecentExchangesRequest();
       if (limit != null) request.pageSize = limit;
 
-      final callOptions = await grpcClient.callOptions;
+      final callOptions = await _callOptionsHelper.withAuth();
       final response = await _exchangeClient.getRecentExchanges(
         request,
         options: callOptions,
@@ -121,6 +224,42 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     } on GrpcError catch (e) {
       return Left(ServerFailure(
         message: e.message ?? 'Failed to get recent exchanges',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: e.toString(),
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<SupportedCurrencyInfo>>> getSupportedCurrencies() async {
+    try {
+      final request = GetSupportedCurrenciesRequest();
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _exchangeClient.getSupportedCurrencies(
+        request,
+        options: callOptions,
+      );
+
+      final currencies = response.currencies.map((c) => SupportedCurrencyInfo(
+        code: c.code,
+        name: c.name,
+        symbol: c.symbol,
+        country: c.country,
+        supportsConversion: c.supportsConversion,
+        supportsInternational: c.supportsInternational,
+        minAmount: c.minAmount,
+        maxAmount: c.maxAmount,
+      )).toList();
+
+      return Right(currencies);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to get supported currencies',
         statusCode: e.code,
       ));
     } catch (e) {
@@ -155,21 +294,26 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
             )
           : null,
       transactionHash: protoTransaction.transactionId,
-      referenceNumber: protoTransaction.transactionId,
-      type: TransactionType.exchange,
+      referenceNumber: protoTransaction.reference.isNotEmpty
+          ? protoTransaction.reference
+          : protoTransaction.transactionId,
+      type: protoTransaction.exchangeType == ExchangeType.CONVERSION
+          ? TransactionType.exchange
+          : TransactionType.exchange,
+      failureReason: protoTransaction.failureReason,
     );
   }
 
   Recipient _mapRecipientFromProto(ReceiverDetails protoRecipient) {
     return Recipient(
-      id: '', // No ID in proto
+      id: '',
       name: protoRecipient.fullName,
-      email: '', // Not in proto
+      email: protoRecipient.email,
       accountNumber: protoRecipient.accountNumber,
       bankName: protoRecipient.bankName,
       swiftCode: protoRecipient.swiftBicCode,
-      countryCode: '', // Not in proto
-      currency: '', // Not in proto
+      countryCode: protoRecipient.country,
+      currency: '',
       createdAt: DateTime.now(),
     );
   }
@@ -187,14 +331,5 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       default:
         return TransactionStatus.pending;
     }
-  }
-
-  double _calculateFees(double amount, String currency) {
-    // Simple fee calculation: 1% of amount with minimum $2 and maximum $50
-    const feePercentage = 0.01;
-    final fee = amount * feePercentage;
-    const minFee = 2.0;
-    const maxFee = 50.0;
-    return fee.clamp(minFee, maxFee);
   }
 }
