@@ -59,6 +59,7 @@ class _ExchangeConfirmationScreenState
 
   Future<void> _confirmAndSubmit() async {
     final controller = Get.find<ExchangeController>();
+    final isConversion = controller.isConversionMode.value;
 
     // Get exchange details for PIN validation
     final fromCurrency = controller.fromCurrency.value!.code;
@@ -66,26 +67,27 @@ class _ExchangeConfirmationScreenState
     final amount = controller.amount.value;
 
     // Generate unique transaction ID
-    final transactionId = 'currency_exchange_${DateTime.now().millisecondsSinceEpoch}_${fromCurrency}_to_$toCurrency';
+    final txType = isConversion ? 'currency_conversion' : 'currency_exchange';
+    final transactionId = '${txType}_${DateTime.now().millisecondsSinceEpoch}_${fromCurrency}_to_$toCurrency';
 
-    // Validate PIN before processing currency exchange
+    // Validate PIN before processing
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
-      transactionType: 'currency_exchange',
+      transactionType: txType,
       amount: amount,
       currency: fromCurrency,
-      title: 'Confirm Currency Exchange',
-      message: 'Confirm exchange of $amount $fromCurrency to $toCurrency?',
+      title: isConversion ? 'Confirm Currency Conversion' : 'Confirm Currency Exchange',
+      message: isConversion
+          ? 'Confirm conversion of $amount $fromCurrency to $toCurrency?'
+          : 'Confirm exchange of $amount $fromCurrency to $toCurrency?',
       onPinValidated: (verificationToken) async {
-        // PIN is valid, proceed with exchange
         _executeExchangeWithToken(transactionId, verificationToken, controller);
       },
     );
 
     if (!success) {
       // PIN validation failed or was cancelled
-      // User has already been notified via the mixin
     }
   }
 
@@ -99,7 +101,13 @@ class _ExchangeConfirmationScreenState
     controller.setVerificationToken(verificationToken);
     controller.setTransactionId(transactionId);
 
-    final success = await controller.submitTransfer();
+    // Call the appropriate submit method based on exchange mode
+    final bool success;
+    if (controller.isConversionMode.value) {
+      success = await controller.submitConversion();
+    } else {
+      success = await controller.submitTransfer();
+    }
 
     if (success) {
       // Navigate to processing screen
@@ -108,17 +116,17 @@ class _ExchangeConfirmationScreenState
       // Show error dialog
       Get.dialog(
         AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFF1F1F1F),
           title: Text(
-            'Transfer Failed',
+            controller.isConversionMode.value ? 'Conversion Failed' : 'Transfer Failed',
             style: GoogleFonts.inter(
-              color: const Color(0xFF1A1D1F),
+              color: Colors.white,
               fontWeight: FontWeight.w700,
             ),
           ),
           content: Text(
             controller.errorMessage.value,
-            style: GoogleFonts.inter(color: const Color(0xFF6F767E)),
+            style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
           ),
           actions: [
             TextButton(
@@ -143,7 +151,7 @@ class _ExchangeConfirmationScreenState
           builder: (controller) {
             return Column(
               children: [
-                _buildHeader(),
+                _buildHeader(controller),
                 Expanded(
                   child: AnimatedBuilder(
                     animation: _slideAnimation,
@@ -167,7 +175,8 @@ class _ExchangeConfirmationScreenState
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ExchangeController controller) {
+    final isConversion = controller.isConversionMode.value;
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -206,7 +215,7 @@ class _ExchangeConfirmationScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Review Transfer',
+                  isConversion ? 'Review Conversion' : 'Review Transfer',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
@@ -215,7 +224,9 @@ class _ExchangeConfirmationScreenState
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Confirm your transfer details',
+                  isConversion
+                      ? 'Confirm your conversion details'
+                      : 'Confirm your transfer details',
                   style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 12.sp,
@@ -230,6 +241,7 @@ class _ExchangeConfirmationScreenState
   }
 
   Widget _buildReviewContent(ExchangeController controller) {
+    final isConversion = controller.isConversionMode.value;
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.w),
       child: Column(
@@ -237,9 +249,10 @@ class _ExchangeConfirmationScreenState
           SizedBox(height: 16.h),
           _buildTransferSummaryCard(controller),
           SizedBox(height: 16.h),
-          if (controller.selectedRecipient.value != null)
+          if (!isConversion && controller.selectedRecipient.value != null)
             _buildRecipientCard(controller),
-          SizedBox(height: 16.h),
+          if (!isConversion && controller.selectedRecipient.value != null)
+            SizedBox(height: 16.h),
           _buildTransactionDetails(controller),
           SizedBox(height: 32.h),
         ],
@@ -250,6 +263,7 @@ class _ExchangeConfirmationScreenState
   Widget _buildTransferSummaryCard(ExchangeController controller) {
     final fromCurrency = controller.fromCurrency.value!;
     final toCurrency = controller.toCurrency.value!;
+    final isConversion = controller.isConversionMode.value;
 
     return Container(
       padding: EdgeInsets.all(24.w),
@@ -291,7 +305,7 @@ class _ExchangeConfirmationScreenState
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.arrow_downward_rounded,
+              isConversion ? Icons.swap_vert : Icons.arrow_downward_rounded,
               color: Colors.white,
               size: 20.sp,
             ),
@@ -301,7 +315,7 @@ class _ExchangeConfirmationScreenState
 
           // Receive Section
           _buildAmountSection(
-            title: 'They Receive',
+            title: isConversion ? 'You Receive' : 'They Receive',
             amount: controller.convertedAmount,
             currency: toCurrency,
             alignment: CrossAxisAlignment.end,
@@ -500,6 +514,7 @@ class _ExchangeConfirmationScreenState
   }
 
   Widget _buildTransactionDetails(ExchangeController controller) {
+    final isConversion = controller.isConversionMode.value;
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -534,8 +549,14 @@ class _ExchangeConfirmationScreenState
             'Transfer Fee',
             '${controller.fromCurrency.value?.symbol}${controller.fees.toStringAsFixed(2)}',
           ),
-          _buildDetailRow('Estimated Arrival', '1-3 business days'),
-          _buildDetailRow('Transfer Method', 'Bank Transfer'),
+          _buildDetailRow(
+            'Estimated Arrival',
+            isConversion ? 'Instant' : '1-3 business days',
+          ),
+          _buildDetailRow(
+            'Transfer Method',
+            isConversion ? 'Wallet Conversion' : 'Bank Transfer',
+          ),
           Divider(color: const Color(0xFF2D2D2D), height: 24.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -616,6 +637,7 @@ class _ExchangeConfirmationScreenState
   }
 
   Widget _buildBottomButton(ExchangeController controller) {
+    final isConversion = controller.isConversionMode.value;
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -664,7 +686,7 @@ class _ExchangeConfirmationScreenState
                           Icon(Icons.security, color: Colors.white, size: 20.sp),
                           SizedBox(width: 8.w),
                           Text(
-                            'Confirm & Send',
+                            isConversion ? 'Confirm & Convert' : 'Confirm & Send',
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 16.sp,

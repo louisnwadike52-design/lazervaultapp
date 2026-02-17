@@ -469,6 +469,7 @@ import 'package:lazervault/src/features/contacts/presentation/cubit/contact_sync
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import 'package:lazervault/src/features/statistics/data/financial_analytics_repository.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/category_management_cubit.dart';
 // Budget Imports
 import 'package:lazervault/src/features/statistics/data/budget_repository.dart';
 import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
@@ -676,6 +677,12 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<ClientChannel>(
     () => serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),
     instanceName: 'financialChannel',
+  );
+
+  // Exchange Service Channel - For currency exchange, international transfers (port 50081)
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createExchangeChannel(),
+    instanceName: 'exchangeChannel',
   );
 
   // Investment Gateway Channel - For stocks, crypto, portfolio, analytics
@@ -996,15 +1003,16 @@ Future<void> init() async {
 
   // ================== Feature: Currency Exchange ==================
 
-  // Register Exchange Service Client - routes to Commerce/Financial Gateway
+  // Register Exchange Service Client - routes to Exchange Service (port 50081)
   serviceLocator.registerLazySingleton<ExchangeServiceClient>(
-    () => ExchangeServiceClient(serviceLocator<ClientChannel>(instanceName: 'commerceChannel')),
+    () => ExchangeServiceClient(serviceLocator<ClientChannel>(instanceName: 'exchangeChannel')),
   );
 
   // Repositories
   serviceLocator.registerLazySingleton<IExchangeRepository>(
     () => ExchangeRepositoryImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      exchangeClient: serviceLocator<ExchangeServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
 
@@ -2243,6 +2251,13 @@ Future<void> init() async {
     ),
   );
 
+  // Category Management Cubit (factory - new instance per screen)
+  serviceLocator.registerFactory<CategoryManagementCubit>(
+    () => CategoryManagementCubit(
+      analyticsRepository: serviceLocator<FinancialAnalyticsRepository>(),
+    ),
+  );
+
   // Budget Feature - Budget Repository, AI Service, and Cubit
   serviceLocator.registerLazySingleton<BudgetRepository>(
     () => BudgetRepository(
@@ -2254,7 +2269,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<BudgetAIService>(
     () => BudgetAIService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'http://localhost:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';

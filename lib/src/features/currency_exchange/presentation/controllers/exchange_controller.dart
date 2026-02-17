@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_contacts/flutter_contacts.dart' as fc;
+import 'package:uuid/uuid.dart';
 import '../../data/currency_data.dart';
 import '../../domain/entities/currency_entity.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/entities/recipient_entity.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/core/models/device_contact.dart';
+import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 class ExchangeController extends GetxController {
   final IExchangeRepository _repository;
@@ -35,9 +41,18 @@ class ExchangeController extends GetxController {
   final RxString selectedFilter = 'All'.obs;
   final Rx<CurrencyTransaction?> lastTransaction = Rx<CurrencyTransaction?>(null);
 
+  // Exchange mode: true = conversion (wallet-to-wallet), false = international transfer
+  final RxBool isConversionMode = false.obs;
+
   // Transaction verification
   final RxString verificationToken = ''.obs;
   final RxString transactionId = ''.obs;
+
+  // Debouncer for rate refresh
+  final Debouncer _rateDebouncer = Debouncer.search();
+
+  // UUID generator for idempotency keys
+  static const _uuid = Uuid();
 
   // Computed values
   double get convertedAmount {
@@ -55,6 +70,13 @@ class ExchangeController extends GetxController {
   }
 
   bool get canSubmit {
+    if (isConversionMode.value) {
+      return fromCurrency.value != null &&
+          toCurrency.value != null &&
+          amount.value > 0 &&
+          currentRate.value != null &&
+          !isSubmitting.value;
+    }
     return fromCurrency.value != null &&
         toCurrency.value != null &&
         amount.value > 0 &&
@@ -66,30 +88,55 @@ class ExchangeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Initialize with default currencies
     if (fromCurrency.value == null) {
-      fromCurrency.value = CurrencyData.popularCurrencies[0]; // USD
+      final localeManager = serviceLocator<LocaleManager>();
+      final userCurrency = localeManager.currentCurrency;
+      fromCurrency.value = CurrencyData.getCurrencyByCode(userCurrency)
+          ?? CurrencyData.allCurrencies.first;
+      toCurrency.value = _getDefaultToCurrency(fromCurrency.value!);
     }
     if (toCurrency.value == null) {
-      toCurrency.value = CurrencyData.popularCurrencies[2]; // GBP
+      toCurrency.value = _getDefaultToCurrency(fromCurrency.value!);
     }
-    // Immediately fetch the exchange rate for the default currencies
     _refreshRate();
-    // Load recipients
     loadRecipients();
+  }
+
+  Currency _getDefaultToCurrency(Currency from) {
+    const defaultToCode = {
+      'NGN': 'USD',
+      'USD': 'NGN',
+      'GBP': 'USD',
+      'EUR': 'USD',
+      'GHS': 'USD',
+      'KES': 'USD',
+      'ZAR': 'USD',
+      'UGX': 'USD',
+      'TZS': 'USD',
+      'XOF': 'USD',
+    };
+    final toCode = defaultToCode[from.code] ?? 'USD';
+    return CurrencyData.getCurrencyByCode(toCode)
+        ?? CurrencyData.allCurrencies[1]; // fallback to USD (index 1)
+  }
+
+  @override
+  void onClose() {
+    _rateDebouncer.dispose();
+    super.onClose();
   }
 
   // Methods
   void setFromCurrency(Currency currency) {
     fromCurrency.value = currency;
     errorMessage.value = '';
-    _refreshRate();
+    _debouncedRefreshRate();
   }
 
   void setToCurrency(Currency currency) {
     toCurrency.value = currency;
     errorMessage.value = '';
-    _refreshRate();
+    _debouncedRefreshRate();
   }
 
   void swapCurrencies() {
@@ -103,7 +150,7 @@ class ExchangeController extends GetxController {
   void setAmount(double newAmount) {
     amount.value = newAmount;
     errorMessage.value = '';
-    _refreshRate();
+    _debouncedRefreshRate();
   }
 
   void setSelectedRecipient(Recipient? recipient) {
@@ -111,14 +158,23 @@ class ExchangeController extends GetxController {
     errorMessage.value = '';
   }
 
+  void setExchangeMode(bool isConversion) {
+    isConversionMode.value = isConversion;
+    if (isConversion) {
+      selectedRecipient.value = null;
+    }
+  }
+
+  void _debouncedRefreshRate() {
+    _rateDebouncer.run(_refreshRate);
+  }
+
   Future<void> _refreshRate() async {
-    // Check if currencies are set
     if (fromCurrency.value == null || toCurrency.value == null) {
       currentRate.value = null;
       return;
     }
 
-    // Check if currencies are the same
     if (fromCurrency.value!.code == toCurrency.value!.code) {
       currentRate.value = null;
       errorMessage.value = 'Please select different currencies for exchange';
@@ -132,6 +188,7 @@ class ExchangeController extends GetxController {
       final result = await _repository.getExchangeRate(
         fromCurrency: fromCurrency.value!.code,
         toCurrency: toCurrency.value!.code,
+        amount: amount.value > 0 ? amount.value : null,
       );
 
       result.fold(
@@ -140,13 +197,7 @@ class ExchangeController extends GetxController {
           currentRate.value = null;
         },
         (rate) {
-          currentRate.value = ExchangeRate(
-            fromCurrency: rate.fromCurrency,
-            toCurrency: rate.toCurrency,
-            rate: rate.rate,
-            timestamp: rate.timestamp,
-            fees: _calculateFees(amount.value),
-          );
+          currentRate.value = rate;
         },
       );
     } catch (e) {
@@ -174,18 +225,31 @@ class ExchangeController extends GetxController {
     }
   }
 
+  /// Submit an international transfer
   Future<bool> submitTransfer() async {
     if (!canSubmit) return false;
 
     isSubmitting.value = true;
     errorMessage.value = '';
 
+    final idempotencyKey = _uuid.v4();
+    final recipient = selectedRecipient.value!;
+
     try {
       final result = await _repository.initiateInternationalTransfer(
         fromCurrency: fromCurrency.value!.code,
         toCurrency: toCurrency.value!.code,
         amount: amount.value,
-        recipientId: selectedRecipient.value!.id,
+        recipientId: recipient.id,
+        verificationToken: verificationToken.value,
+        idempotencyKey: idempotencyKey,
+        rateId: currentRate.value?.rateId,
+        recipientName: recipient.name,
+        recipientAccountNumber: recipient.accountNumber,
+        recipientBankName: recipient.bankName,
+        recipientSwiftCode: recipient.swiftCode,
+        recipientCountry: recipient.countryCode,
+        recipientEmail: recipient.email,
       );
 
       return result.fold(
@@ -196,6 +260,7 @@ class ExchangeController extends GetxController {
         },
         (transaction) {
           lastTransaction.value = transaction;
+          transactionId.value = transaction.id;
           isSubmitting.value = false;
           return true;
         },
@@ -207,11 +272,97 @@ class ExchangeController extends GetxController {
     }
   }
 
+  /// Submit a wallet-to-wallet conversion
+  Future<bool> submitConversion() async {
+    if (fromCurrency.value == null ||
+        toCurrency.value == null ||
+        amount.value <= 0 ||
+        currentRate.value == null) return false;
+
+    isSubmitting.value = true;
+    errorMessage.value = '';
+
+    final idempotencyKey = _uuid.v4();
+
+    try {
+      final result = await _repository.convertCurrency(
+        fromCurrency: fromCurrency.value!.code,
+        toCurrency: toCurrency.value!.code,
+        amount: amount.value,
+        verificationToken: verificationToken.value,
+        idempotencyKey: idempotencyKey,
+        rateId: currentRate.value?.rateId,
+      );
+
+      return result.fold(
+        (failure) {
+          errorMessage.value = failure.message;
+          isSubmitting.value = false;
+          return false;
+        },
+        (transaction) {
+          lastTransaction.value = transaction;
+          transactionId.value = transaction.id;
+          isSubmitting.value = false;
+          return true;
+        },
+      );
+    } catch (e) {
+      errorMessage.value = 'Failed to convert currency';
+      isSubmitting.value = false;
+      return false;
+    }
+  }
+
+  /// Poll transaction status until completed or failed
+  Future<CurrencyTransaction?> pollTransactionStatus({
+    int maxAttempts = 20,
+    Duration interval = const Duration(seconds: 2),
+  }) async {
+    if (transactionId.value.isEmpty && lastTransaction.value == null) {
+      return null;
+    }
+
+    final txId = transactionId.value.isNotEmpty
+        ? transactionId.value
+        : lastTransaction.value!.id;
+
+    for (int attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        final result = await _repository.getTransactionStatus(
+          transactionId: txId,
+        );
+
+        final transaction = result.fold(
+          (failure) => null,
+          (tx) => tx,
+        );
+
+        if (transaction != null) {
+          lastTransaction.value = transaction;
+
+          if (transaction.status == TransactionStatus.completed ||
+              transaction.status == TransactionStatus.failed) {
+            return transaction;
+          }
+        }
+      } catch (e) {
+        // Continue polling on error
+      }
+
+      if (attempt < maxAttempts - 1) {
+        await Future.delayed(interval);
+      }
+    }
+
+    // Return last known state after max attempts
+    return lastTransaction.value;
+  }
+
   void clearError() {
     errorMessage.value = '';
   }
 
-  // Verification token methods
   void setVerificationToken(String token) {
     verificationToken.value = token;
   }
@@ -228,15 +379,6 @@ class ExchangeController extends GetxController {
     lastTransaction.value = null;
     verificationToken.value = '';
     transactionId.value = '';
-  }
-
-  double _calculateFees(double amount) {
-    // Simple fee calculation: 1% of amount with minimum $2 and maximum $50
-    const feePercentage = 0.01;
-    final fee = amount * feePercentage;
-    const minFee = 2.0;
-    const maxFee = 50.0;
-    return fee.clamp(minFee, maxFee);
   }
 
   // Transaction history methods
@@ -289,11 +431,8 @@ class ExchangeController extends GetxController {
     isLoadingRecipients.value = true;
 
     try {
-      // TODO: Replace with actual repository call when backend is ready
-      // For now, use demo data
       await Future.delayed(const Duration(milliseconds: 500));
-
-      recipients.value = _createDemoRecipients();
+      recipients.value = [];
     } catch (e) {
       errorMessage.value = 'Failed to load recipients';
     } finally {
@@ -301,14 +440,8 @@ class ExchangeController extends GetxController {
     }
   }
 
-  List<Recipient> _createDemoRecipients() {
-    // TODO: Wire to saved recipients API
-    return [];
-  }
-
   // Repeat transaction functionality
   void repeatTransaction(CurrencyTransaction transaction, TextEditingController amountController) {
-    // Find currencies from the transaction
     final fromCurr = CurrencyData.allCurrencies.firstWhereOrNull(
       (c) => c.code == transaction.fromCurrency,
     );
@@ -317,15 +450,12 @@ class ExchangeController extends GetxController {
     );
 
     if (fromCurr != null && toCurr != null) {
-      // Set currencies
       setFromCurrency(fromCurr);
       setToCurrency(toCurr);
 
-      // Set amount and update text controller
       setAmount(transaction.fromAmount);
       amountController.text = transaction.fromAmount.toStringAsFixed(2);
 
-      // Set recipient if available
       final recipient = recipients.firstWhereOrNull(
         (r) => r.name == transaction.recipientName,
       );
@@ -333,7 +463,6 @@ class ExchangeController extends GetxController {
         setSelectedRecipient(recipient);
       }
 
-      // Show success message
       Get.snackbar(
         'Transaction Repeated',
         'Previous transaction details have been loaded. You can modify them before continuing.',
@@ -346,7 +475,6 @@ class ExchangeController extends GetxController {
   }
 
   void repeatTransactionFromHistory(CurrencyTransaction transaction) {
-    // Find currencies from the transaction
     final fromCurr = CurrencyData.allCurrencies.firstWhereOrNull(
       (c) => c.code == transaction.fromCurrency,
     );
@@ -355,14 +483,10 @@ class ExchangeController extends GetxController {
     );
 
     if (fromCurr != null && toCurr != null) {
-      // Set currencies
       setFromCurrency(fromCurr);
       setToCurrency(toCurr);
-
-      // Set amount
       setAmount(transaction.fromAmount);
 
-      // Set recipient if available
       final recipient = recipients.firstWhereOrNull(
         (r) => r.name == transaction.recipientName,
       );
@@ -370,7 +494,6 @@ class ExchangeController extends GetxController {
         setSelectedRecipient(recipient);
       }
 
-      // Show success message
       Get.snackbar(
         'Transaction Repeated',
         'Previous transaction details have been loaded.',
@@ -392,26 +515,22 @@ class ExchangeController extends GetxController {
     isLoadingContacts.value = true;
 
     try {
-      // Request permission to access contacts
       if (!await fc.FlutterContacts.requestPermission()) {
         errorMessage.value = 'Contact permission denied';
         isLoadingContacts.value = false;
         return;
       }
 
-      // Fetch all contacts with photo and properties
       final contacts = await fc.FlutterContacts.getContacts(
         withProperties: true,
         withPhoto: true,
       );
 
-      // Convert to DeviceContact models
       deviceContacts.value = contacts
           .map((contact) => DeviceContact.fromFlutterContact(contact))
           .where((contact) => contact.email != null || contact.phoneNumber != null)
           .toList();
 
-      // Sort by name
       deviceContacts.sort((a, b) => a.name.compareTo(b.name));
     } catch (e) {
       errorMessage.value = 'Failed to load contacts: ${e.toString()}';
@@ -420,7 +539,6 @@ class ExchangeController extends GetxController {
     }
   }
 
-  // Convert device contact to recipient for international transfer
   Recipient createRecipientFromContact(DeviceContact contact) {
     final now = DateTime.now();
     return Recipient(
@@ -428,9 +546,9 @@ class ExchangeController extends GetxController {
       name: contact.name,
       email: contact.email ?? '',
       phone: contact.phoneNumber,
-      accountNumber: '', // Will be filled by user in next step
-      bankName: '', // Will be filled by user in next step
-      countryCode: '', // Will be filled by user in next step
+      accountNumber: '',
+      bankName: '',
+      countryCode: '',
       currency: toCurrency.value?.code ?? 'USD',
       createdAt: now,
       type: RecipientType.contact,
@@ -438,7 +556,6 @@ class ExchangeController extends GetxController {
     );
   }
 
-  // Select contact and convert to recipient
   void selectDeviceContact(DeviceContact contact) {
     final recipient = createRecipientFromContact(contact);
     selectedRecipient.value = recipient;

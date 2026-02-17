@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import '../../domain/entities/recipient_entity.dart';
 import '../controllers/exchange_controller.dart';
 import 'exchange_confirmation_screen.dart';
-import 'package:lazervault/src/features/recipients/presentation/widgets/add_recipient.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 class ExchangeRecipientScreen extends StatefulWidget {
   const ExchangeRecipientScreen({super.key});
@@ -299,8 +299,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         child: InkWell(
           borderRadius: BorderRadius.circular(16.r),
           onTap: () {
-            // Navigate to the Add Recipient screen
-            Get.to(() => const AddRecipient());
+            // Navigate to the Add Recipient screen (named route provides BlocProvider<RecipientCubit>)
+            Get.toNamed(AppRoutes.addRecipient);
           },
           child: Padding(
             padding: EdgeInsets.all(20.w),

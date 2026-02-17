@@ -10,6 +10,7 @@ import '../../domain/entities/transaction_entity.dart';
 import '../controllers/exchange_controller.dart';
 import 'widgets/currency_selector_sheet.dart';
 import 'exchange_recipient_screen.dart';
+import 'exchange_confirmation_screen.dart';
 import 'exchange_history_screen.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
@@ -83,6 +84,8 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                       child: Column(
                         children: [
                           SizedBox(height: 8.h),
+                          _buildModeToggle(controller),
+                          SizedBox(height: 16.h),
                           _buildExchangeCard(controller),
                           SizedBox(height: 20.h),
                           // Always show rate info (even when loading)
@@ -153,14 +156,17 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                   ),
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  'Send money worldwide',
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Obx(() {
+                  final isConversion = Get.find<ExchangeController>().isConversionMode.value;
+                  return Text(
+                    isConversion ? 'Convert between your wallets' : 'Send money worldwide',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -256,7 +262,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
 
           // To Currency
           _buildCurrencyInput(
-            label: 'They receive',
+            label: controller.isConversionMode.value ? 'You receive' : 'They receive',
             currency: controller.toCurrency.value,
             amount: controller.convertedAmount,
             onCurrencyTap: () => _showCurrencySelector(false),
@@ -575,12 +581,92 @@ class _ExchangeScreenState extends State<ExchangeScreen>
     );
   }
 
+  Widget _buildModeToggle(ExchangeController controller) {
+    final isConversion = controller.isConversionMode.value;
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => controller.setExchangeMode(true),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: isConversion ? const Color(0xFF3B82F6) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.swap_horiz,
+                      color: isConversion ? Colors.white : const Color(0xFF9CA3AF),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'Convert',
+                      style: GoogleFonts.inter(
+                        color: isConversion ? Colors.white : const Color(0xFF9CA3AF),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => controller.setExchangeMode(false),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: !isConversion ? const Color(0xFF3B82F6) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.send,
+                      color: !isConversion ? Colors.white : const Color(0xFF9CA3AF),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'Send Abroad',
+                      style: GoogleFonts.inter(
+                        color: !isConversion ? Colors.white : const Color(0xFF9CA3AF),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottomButton(ExchangeController controller) {
     final bool canContinue = controller.amount.value > 0 &&
         controller.fromCurrency.value != null &&
         controller.toCurrency.value != null &&
         controller.fromCurrency.value?.code != controller.toCurrency.value?.code &&
         controller.currentRate.value != null;
+
+    final isConversion = controller.isConversionMode.value;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -614,15 +700,20 @@ class _ExchangeScreenState extends State<ExchangeScreen>
             borderRadius: BorderRadius.circular(16.r),
             onTap: canContinue
                 ? () {
-                    // Navigate to recipient selection screen
-                    Get.to(() => const ExchangeRecipientScreen());
+                    if (isConversion) {
+                      // Conversion mode: skip recipient, go straight to confirmation
+                      Get.to(() => const ExchangeConfirmationScreen());
+                    } else {
+                      // Send abroad mode: navigate to recipient selection screen
+                      Get.to(() => const ExchangeRecipientScreen());
+                    }
                   }
                 : null,
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: Center(
                 child: Text(
-                  'Continue',
+                  isConversion ? 'Convert Currency' : 'Continue',
                   style: GoogleFonts.inter(
                     color: canContinue ? Colors.white : const Color(0xFF9CA3AF),
                     fontSize: 16.sp,

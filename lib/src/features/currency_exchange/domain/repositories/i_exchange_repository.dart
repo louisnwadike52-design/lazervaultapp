@@ -7,6 +7,7 @@ abstract class IExchangeRepository {
   Future<Either<Failure, ExchangeRate>> getExchangeRate({
     required String fromCurrency,
     required String toCurrency,
+    double? amount,
   });
 
   /// Initiate an international transfer
@@ -15,7 +16,33 @@ abstract class IExchangeRepository {
     required String toCurrency,
     required double amount,
     required String recipientId,
+    required String verificationToken,
+    required String idempotencyKey,
+    String? rateId,
+    String? purposeOfPayment,
+    String? recipientName,
+    String? recipientAccountNumber,
+    String? recipientBankName,
+    String? recipientBankCode,
+    String? recipientSwiftCode,
+    String? recipientCountry,
+    String? recipientEmail,
     String? notes,
+  });
+
+  /// Convert currency between user's own wallets
+  Future<Either<Failure, CurrencyTransaction>> convertCurrency({
+    required String fromCurrency,
+    required String toCurrency,
+    required double amount,
+    required String verificationToken,
+    required String idempotencyKey,
+    String? rateId,
+  });
+
+  /// Get the status of an exchange transaction
+  Future<Either<Failure, CurrencyTransaction>> getTransactionStatus({
+    required String transactionId,
   });
 
   /// Get recent exchange transactions
@@ -23,6 +50,9 @@ abstract class IExchangeRepository {
     int? limit,
     int? offset,
   });
+
+  /// Get supported currencies for exchange
+  Future<Either<Failure, List<SupportedCurrencyInfo>>> getSupportedCurrencies();
 }
 
 class ExchangeRate {
@@ -31,6 +61,9 @@ class ExchangeRate {
   final double rate;
   final DateTime timestamp;
   final double fees;
+  final double feePercentage;
+  final int rateValidSeconds;
+  final String rateId;
 
   ExchangeRate({
     required this.fromCurrency,
@@ -38,6 +71,9 @@ class ExchangeRate {
     required this.rate,
     required this.timestamp,
     this.fees = 0.0,
+    this.feePercentage = 0.0,
+    this.rateValidSeconds = 60,
+    this.rateId = '',
   });
 
   double calculateToAmount(double fromAmount) {
@@ -47,4 +83,26 @@ class ExchangeRate {
   double calculateTotalCost(double fromAmount) {
     return fromAmount + fees;
   }
+}
+
+class SupportedCurrencyInfo {
+  final String code;
+  final String name;
+  final String symbol;
+  final String country;
+  final bool supportsConversion;
+  final bool supportsInternational;
+  final double minAmount;
+  final double maxAmount;
+
+  SupportedCurrencyInfo({
+    required this.code,
+    required this.name,
+    required this.symbol,
+    required this.country,
+    required this.supportsConversion,
+    required this.supportsInternational,
+    required this.minAmount,
+    required this.maxAmount,
+  });
 }

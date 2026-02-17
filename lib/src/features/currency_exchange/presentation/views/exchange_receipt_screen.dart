@@ -57,10 +57,11 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
         child: GetX<ExchangeController>(
           builder: (controller) {
             final transaction = controller.lastTransaction.value;
+            final isConversion = controller.isConversionMode.value;
 
             return Column(
               children: [
-                _buildHeader(),
+                _buildHeader(isConversion),
                 Expanded(
                   child: FadeTransition(
                     opacity: _fadeAnimation,
@@ -75,7 +76,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
                           ),
                           SizedBox(height: 24.h),
                           Text(
-                            'Transfer Successful!',
+                            isConversion ? 'Conversion Successful!' : 'Transfer Successful!',
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 28.sp,
@@ -85,7 +86,9 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
                           SizedBox(height: 12.h),
                           if (transaction != null) ...[
                             Text(
-                              'Your money is on its way to ${transaction.recipient.name}',
+                              isConversion
+                                  ? 'Your ${transaction.fromCurrency} has been converted to ${transaction.toCurrency}'
+                                  : 'Your money is on its way to ${transaction.recipient.name}',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF9CA3AF),
                                 fontSize: 16.sp,
@@ -93,9 +96,9 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
                               textAlign: TextAlign.center,
                             ),
                             SizedBox(height: 32.h),
-                            _buildSuccessDetails(controller, transaction),
+                            _buildSuccessDetails(controller, transaction, isConversion),
                             SizedBox(height: 24.h),
-                            _buildTransactionDetails(controller, transaction),
+                            _buildTransactionDetails(controller, transaction, isConversion),
                           ],
                           SizedBox(height: 32.h),
                         ],
@@ -112,7 +115,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isConversion) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -127,7 +130,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
         ),
       ),
       child: Text(
-        'Transfer Complete',
+        isConversion ? 'Conversion Complete' : 'Transfer Complete',
         style: GoogleFonts.inter(
           color: Colors.white,
           fontSize: 20.sp,
@@ -162,7 +165,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
     );
   }
 
-  Widget _buildSuccessDetails(ExchangeController controller, transaction) {
+  Widget _buildSuccessDetails(ExchangeController controller, transaction, bool isConversion) {
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
@@ -187,11 +190,13 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
         children: [
           _buildDetailRow(
             'Transaction ID',
-            transaction.id.substring(0, 16) + '...',
+            transaction.id.length > 16
+                ? '${transaction.id.substring(0, 16)}...'
+                : transaction.id,
             isWhite: true,
           ),
           _buildDetailRow(
-            'Amount Sent',
+            isConversion ? 'Amount Converted' : 'Amount Sent',
             '${controller.fromCurrency.value?.symbol}${transaction.fromAmount.toStringAsFixed(2)} ${transaction.fromCurrency}',
             isWhite: true,
           ),
@@ -200,14 +205,15 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
             '${controller.toCurrency.value?.symbol}${transaction.toAmount.toStringAsFixed(2)} ${transaction.toCurrency}',
             isWhite: true,
           ),
-          _buildDetailRow(
-            'Recipient',
-            transaction.recipient.name,
-            isWhite: true,
-          ),
+          if (!isConversion)
+            _buildDetailRow(
+              'Recipient',
+              transaction.recipient.name,
+              isWhite: true,
+            ),
           _buildDetailRow(
             'Estimated Arrival',
-            '1-3 business days',
+            isConversion ? 'Instant' : '1-3 business days',
             isWhite: true,
           ),
         ],
@@ -215,7 +221,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
     );
   }
 
-  Widget _buildTransactionDetails(ExchangeController controller, transaction) {
+  Widget _buildTransactionDetails(ExchangeController controller, transaction, bool isConversion) {
     final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
 
     return Container(
@@ -253,21 +259,34 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
             '1 ${transaction.fromCurrency} = ${transaction.exchangeRate.toStringAsFixed(4)} ${transaction.toCurrency}',
           ),
           _buildDetailRow(
-            'Transfer Fee',
+            isConversion ? 'Conversion Fee' : 'Transfer Fee',
             '${controller.fromCurrency.value?.symbol}${transaction.fees.toStringAsFixed(2)}',
           ),
           _buildDetailRow(
-            'Bank Name',
-            transaction.recipient.bankName,
+            'Type',
+            isConversion ? 'Wallet Conversion' : 'International Transfer',
           ),
-          _buildDetailRow(
-            'Account Number',
-            transaction.recipient.accountNumber,
-          ),
-          if (transaction.recipient.swiftCode != null)
+          if (!isConversion) ...[
             _buildDetailRow(
-              'SWIFT Code',
-              transaction.recipient.swiftCode!,
+              'Bank Name',
+              transaction.recipient.bankName,
+            ),
+            _buildDetailRow(
+              'Account Number',
+              transaction.recipient.accountNumber,
+            ),
+            if (transaction.recipient.swiftCode != null &&
+                transaction.recipient.swiftCode!.isNotEmpty)
+              _buildDetailRow(
+                'SWIFT Code',
+                transaction.recipient.swiftCode!,
+              ),
+          ],
+          if (transaction.referenceNumber != null &&
+              transaction.referenceNumber!.isNotEmpty)
+            _buildDetailRow(
+              'Reference',
+              transaction.referenceNumber!,
             ),
           Divider(color: const Color(0xFF2D2D2D), height: 24.h),
           Row(

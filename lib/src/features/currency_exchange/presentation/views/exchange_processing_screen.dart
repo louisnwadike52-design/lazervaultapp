@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 
+import '../../domain/entities/transaction_entity.dart';
 import '../controllers/exchange_controller.dart';
 import 'exchange_receipt_screen.dart';
 
@@ -19,12 +20,15 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
   late AnimationController _processingController;
   late Animation<double> _rotationAnimation;
   late Animation<double> _scaleAnimation;
+  String _statusMessage = 'Processing your transfer...';
+  bool _hasError = false;
+  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
-    _simulateProcessing();
+    _pollTransactionStatus();
   }
 
   void _setupAnimations() {
@@ -44,15 +48,54 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
     _processingController.repeat();
   }
 
-  void _simulateProcessing() async {
-    // Simulate processing time - in real implementation,
-    // this would poll the transaction status
-    await Future.delayed(const Duration(seconds: 3));
+  void _pollTransactionStatus() async {
+    final controller = Get.find<ExchangeController>();
 
-    if (mounted) {
-      _processingController.stop();
+    // For wallet conversions, the backend completes synchronously
+    // so we may already have a completed transaction
+    if (controller.lastTransaction.value != null &&
+        controller.lastTransaction.value!.status == TransactionStatus.completed) {
+      if (mounted) {
+        _processingController.stop();
+        Get.off(() => const ExchangeReceiptScreen());
+      }
+      return;
+    }
 
-      // Navigate to receipt screen
+    // Poll for transaction status
+    final result = await controller.pollTransactionStatus(
+      maxAttempts: 20,
+      interval: const Duration(seconds: 2),
+    );
+
+    if (!mounted) return;
+
+    _processingController.stop();
+
+    if (result == null) {
+      // Timeout or no transaction ID
+      setState(() {
+        _hasError = true;
+        _errorMessage = 'Unable to confirm transaction status. Please check your transaction history.';
+      });
+      return;
+    }
+
+    if (result.status == TransactionStatus.completed) {
+      Get.off(() => const ExchangeReceiptScreen());
+    } else if (result.status == TransactionStatus.failed) {
+      setState(() {
+        _hasError = true;
+        _errorMessage = result.failureReason?.isNotEmpty == true
+            ? result.failureReason!
+            : 'Transaction failed. Please try again.';
+      });
+    } else {
+      // Still processing after max attempts
+      setState(() {
+        _statusMessage = 'Still processing...';
+      });
+      // Navigate to receipt with current status
       Get.off(() => const ExchangeReceiptScreen());
     }
   }
@@ -72,9 +115,11 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
           builder: (controller) {
             return Column(
               children: [
-                _buildHeader(),
+                _buildHeader(controller),
                 Expanded(
-                  child: _buildProcessingContent(controller),
+                  child: _hasError
+                      ? _buildErrorContent()
+                      : _buildProcessingContent(controller),
                 ),
               ],
             );
@@ -84,7 +129,8 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ExchangeController controller) {
+    final isConversion = controller.isConversionMode.value;
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -101,7 +147,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
       child: Column(
         children: [
           Text(
-            'Processing Transfer...',
+            isConversion ? 'Converting Currency...' : 'Processing Transfer...',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 20.sp,
@@ -110,7 +156,9 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
           ),
           SizedBox(height: 4.h),
           Text(
-            'Please wait while we process your transfer',
+            isConversion
+                ? 'Please wait while we convert your currency'
+                : 'Please wait while we process your transfer',
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.8),
               fontSize: 12.sp,
@@ -122,6 +170,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
   }
 
   Widget _buildProcessingContent(ExchangeController controller) {
+    final isConversion = controller.isConversionMode.value;
     return Center(
       child: ScaleTransition(
         scale: _scaleAnimation,
@@ -164,7 +213,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
 
             // Processing Text
             Text(
-              'Processing your transfer...',
+              _statusMessage,
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 24.sp,
@@ -181,7 +230,9 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
               child: Column(
                 children: [
                   Text(
-                    'Sending ${controller.fromCurrency.value?.symbol}${controller.amount.value.toStringAsFixed(2)} to',
+                    isConversion
+                        ? 'Converting ${controller.fromCurrency.value?.symbol}${controller.amount.value.toStringAsFixed(2)}'
+                        : 'Sending ${controller.fromCurrency.value?.symbol}${controller.amount.value.toStringAsFixed(2)} to',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF9CA3AF),
                       fontSize: 16.sp,
@@ -191,7 +242,9 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    controller.selectedRecipient.value?.name ?? 'Recipient',
+                    isConversion
+                        ? '${controller.fromCurrency.value?.code} → ${controller.toCurrency.value?.code}'
+                        : controller.selectedRecipient.value?.name ?? 'Recipient',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 18.sp,
@@ -267,6 +320,72 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorContent() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100.w,
+              height: 100.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.error_outline,
+                color: const Color(0xFFEF4444),
+                size: 50.sp,
+              ),
+            ),
+            SizedBox(height: 32.h),
+            Text(
+              'Transfer Failed',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              _errorMessage,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 16.sp,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 40.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Get.back(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                ),
+                child: Text(
+                  'Go Back',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],

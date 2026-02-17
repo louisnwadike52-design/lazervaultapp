@@ -96,6 +96,16 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Contactless Payment Gateway');
   }
 
+  /// Creates Exchange Service gRPC channel (Currency Exchange, International Transfers)
+  /// gRPC Port: 50081
+  static ClientChannel createExchangeChannel() {
+    final host = dotenv.env['EXCHANGE_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['EXCHANGE_GRPC_PORT'] ?? '50081');
+
+    print("💱 Creating Exchange Service Channel → $host:$port");
+    return _createChannel(host, port, 'Exchange Service');
+  }
+
   /// Creates Business Gateway gRPC channel (Payroll, Business Services)
   /// gRPC Port: 50079
   static ClientChannel createBusinessChannel() {
