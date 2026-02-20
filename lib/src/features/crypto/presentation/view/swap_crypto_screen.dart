@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../cubit/crypto_cubit.dart';
+import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import 'crypto_confirmation_screen.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -33,152 +36,16 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   Crypto? _toCrypto;
   bool _isFromAmountActive = true;
   bool _isLoading = false;
-  
-  // Mock holdings data
-  final List<CryptoHolding> _mockHoldings = [
-    CryptoHolding(
-      id: 'holding_1',
-      cryptoId: 'bitcoin',
-      cryptoName: 'Bitcoin',
-      cryptoSymbol: 'BTC',
-      quantity: 0.125,
-      averagePrice: 45000.0,
-      currentPrice: 67000.0,
-      totalValue: 8375.0,
-      totalGainLoss: 2750.0,
-      totalGainLossPercentage: 48.89,
-      purchaseDate: DateTime.now().subtract(const Duration(days: 30)),
-      lastUpdated: DateTime.now(),
-    ),
-    CryptoHolding(
-      id: 'holding_2',
-      cryptoId: 'ethereum',
-      cryptoName: 'Ethereum',
-      cryptoSymbol: 'ETH',
-      quantity: 2.5,
-      averagePrice: 2800.0,
-      currentPrice: 3100.0,
-      totalValue: 7750.0,
-      totalGainLoss: 750.0,
-      totalGainLossPercentage: 10.71,
-      purchaseDate: DateTime.now().subtract(const Duration(days: 45)),
-      lastUpdated: DateTime.now(),
-    ),
-    CryptoHolding(
-      id: 'holding_3',
-      cryptoId: 'solana',
-      cryptoName: 'Solana',
-      cryptoSymbol: 'SOL',
-      quantity: 45.0,
-      averagePrice: 120.0,
-      currentPrice: 157.0,
-      totalValue: 7065.0,
-      totalGainLoss: 1665.0,
-      totalGainLossPercentage: 30.83,
-      purchaseDate: DateTime.now().subtract(const Duration(days: 60)),
-      lastUpdated: DateTime.now(),
-    ),
-  ];
 
-  // Mock available cryptos for swapping
-  final List<Crypto> _availableCryptos = [
-    Crypto(
-      id: 'bitcoin',
-      name: 'Bitcoin',
-      symbol: 'BTC',
-      image: 'default.png',
-      currentPrice: 67000.0,
-      priceChange24h: 1250.0,
-      priceChangePercentage24h: 1.9,
-      marketCap: 1320000000000.0,
-      marketCapRank: 1,
-      totalVolume: 28000000000.0,
-      high24h: 68500.0,
-      low24h: 65200.0,
-      circulatingSupply: 19700000.0,
-      lastUpdated: DateTime.now(),
-    ),
-    Crypto(
-      id: 'ethereum',
-      name: 'Ethereum',
-      symbol: 'ETH',
-      image: 'default.png',
-      currentPrice: 3100.0,
-      priceChange24h: -45.0,
-      priceChangePercentage24h: -1.4,
-      marketCap: 373000000000.0,
-      marketCapRank: 2,
-      totalVolume: 14000000000.0,
-      high24h: 3200.0,
-      low24h: 3050.0,
-      circulatingSupply: 120280000.0,
-      lastUpdated: DateTime.now(),
-    ),
-    Crypto(
-      id: 'solana',
-      name: 'Solana',
-      symbol: 'SOL',
-      image: 'default.png',
-      currentPrice: 157.0,
-      priceChange24h: 8.5,
-      priceChangePercentage24h: 5.7,
-      marketCap: 73000000000.0,
-      marketCapRank: 5,
-      totalVolume: 2500000000.0,
-      high24h: 165.0,
-      low24h: 152.0,
-      circulatingSupply: 465000000.0,
-      lastUpdated: DateTime.now(),
-    ),
-    Crypto(
-      id: 'cardano',
-      name: 'Cardano',
-      symbol: 'ADA',
-      image: 'default.png',
-      currentPrice: 0.89,
-      priceChange24h: 0.03,
-      priceChangePercentage24h: 3.5,
-      marketCap: 31000000000.0,
-      marketCapRank: 8,
-      totalVolume: 850000000.0,
-      high24h: 0.92,
-      low24h: 0.86,
-      circulatingSupply: 35000000000.0,
-      lastUpdated: DateTime.now(),
-    ),
-    Crypto(
-      id: 'polkadot',
-      name: 'Polkadot',
-      symbol: 'DOT',
-      image: 'default.png',
-      currentPrice: 12.45,
-      priceChange24h: -0.25,
-      priceChangePercentage24h: -2.0,
-      marketCap: 15000000000.0,
-      marketCapRank: 12,
-      totalVolume: 420000000.0,
-      high24h: 12.85,
-      low24h: 12.20,
-      circulatingSupply: 1200000000.0,
-      lastUpdated: DateTime.now(),
-    ),
-    Crypto(
-      id: 'chainlink',
-      name: 'Chainlink',
-      symbol: 'LINK',
-      image: 'default.png',
-      currentPrice: 18.75,
-      priceChange24h: 0.85,
-      priceChangePercentage24h: 4.7,
-      marketCap: 11000000000.0,
-      marketCapRank: 15,
-      totalVolume: 650000000.0,
-      high24h: 19.20,
-      low24h: 18.40,
-      circulatingSupply: 586000000.0,
-      lastUpdated: DateTime.now(),
-    ),
-  ];
+  List<CryptoHolding> get _holdings {
+    final state = context.read<CryptoCubit>().state;
+    return state is CryptosLoaded ? state.holdings : [];
+  }
+
+  List<Crypto> get _availableCryptos {
+    final state = context.read<CryptoCubit>().state;
+    return state is CryptosLoaded ? state.cryptos : [];
+  }
 
   @override
   void initState() {
@@ -188,6 +55,12 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     _fromAmountController.addListener(_onFromAmountChanged);
     _toAmountController.addListener(_onToAmountChanged);
     _setupAnimations();
+
+    // Load crypto data if not already loaded
+    final cubit = context.read<CryptoCubit>();
+    if (cubit.state is! CryptosLoaded) {
+      cubit.loadCryptos();
+    }
   }
 
   void _setupAnimations() {
@@ -1092,7 +965,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
         final tempToCrypto = _toCrypto;
         
         // Find if user has holdings of the target crypto
-        final existingHolding = _mockHoldings.firstWhere(
+        final existingHolding = _holdings.firstWhere(
           (holding) => holding.cryptoSymbol.toLowerCase() == tempToCrypto!.symbol.toLowerCase(),
           orElse: () => CryptoHolding(
             id: 'temp_${tempToCrypto!.id}',
@@ -1198,10 +1071,10 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
             Expanded(
               child: ListView.builder(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
-                itemCount: isFrom ? _mockHoldings.length : _availableCryptos.length,
+                itemCount: isFrom ? _holdings.length : _availableCryptos.length,
                 itemBuilder: (context, index) {
                   if (isFrom) {
-                    final holding = _mockHoldings[index];
+                    final holding = _holdings[index];
                     return _buildHoldingOption(holding);
                   } else {
                     final crypto = _availableCryptos[index];
@@ -1419,37 +1292,33 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   void _processSwapOrder() {
     if (_fromHolding == null || _toCrypto == null || !_hasValidAmount) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Create transaction details
+    final fee = (_fromAmount * _fromHolding!.currentPrice) * 0.005; // 0.5% fee for swaps
+    final totalFiatValue = _fromAmount * _fromHolding!.currentPrice;
 
-    // Simulate processing delay
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _isLoading = false;
-      });
+    final transactionDetails = CryptoTransactionDetails(
+      type: CryptoTransactionType.swap,
+      cryptoName: _toCrypto!.name,
+      cryptoSymbol: _toCrypto!.symbol,
+      cryptoAmount: _toAmount.toStringAsFixed(6),
+      pricePerUnit: _toCrypto!.currentPrice,
+      fiatAmount: totalFiatValue,
+      networkFee: fee * 0.3,
+      tradingFee: fee * 0.7,
+      totalAmount: totalFiatValue,
+      paymentMethod: 'Crypto Wallet',
+      fromCrypto: _fromHolding!.cryptoSymbol,
+      toCrypto: _toCrypto!.symbol,
+      fromCryptoId: _fromHolding!.cryptoId,
+      toCryptoId: _toCrypto!.id,
+      cryptoQuantity: _fromAmount,
+    );
 
-      // Create transaction details
-      final fee = (_fromAmount * _fromHolding!.currentPrice) * 0.005; // 0.5% fee for swaps
-      final totalGbpValue = _fromAmount * _fromHolding!.currentPrice;
-      
-      final transactionDetails = CryptoTransactionDetails(
-        type: CryptoTransactionType.swap,
-        cryptoName: _toCrypto!.name,
-        cryptoSymbol: _toCrypto!.symbol,
-        cryptoAmount: _toAmount.toStringAsFixed(6),
-        pricePerUnit: _toCrypto!.currentPrice,
-        fiatAmount: totalGbpValue,
-        networkFee: fee * 0.3, // 30% of total fee for network
-        tradingFee: fee * 0.7, // 70% of total fee for LazerVault
-        totalAmount: totalGbpValue,
-        paymentMethod: 'Crypto Wallet', // Internal swap
-        fromCrypto: _fromHolding!.cryptoSymbol,
-        toCrypto: _toCrypto!.symbol,
-      );
-
-      // Navigate to confirmation screen
-      Get.to(() => CryptoConfirmationScreen(transactionDetails: transactionDetails));
-    });
+    // Navigate to confirmation screen with CryptoCubit
+    final cryptoCubit = context.read<CryptoCubit>();
+    Get.to(() => BlocProvider.value(
+      value: cryptoCubit,
+      child: CryptoConfirmationScreen(transactionDetails: transactionDetails),
+    ));
   }
 } 

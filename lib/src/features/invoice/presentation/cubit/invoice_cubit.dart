@@ -298,6 +298,29 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     }
   }
 
+  // Pay invoice service fee (required before creating an invoice)
+  // NOTE: This method is stubbed out as the backend proto doesn't support this endpoint
+  Future<void> payServiceFee({String? accountId, String? verificationToken, String? transactionId}) async {
+    try {
+      if (isClosed) return;
+      emit(const InvoiceServiceFeeProcessing());
+
+      // TODO: Re-implement when backend proto adds support
+      // For now, just mark as paid with a dummy reference
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (isClosed) return;
+
+      emit(InvoiceServiceFeePaid(
+        serviceFeeRef: 'sf-${const Uuid().v4().substring(0, 8)}',
+        newBalance: 0,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(InvoiceError(message: 'Failed to pay service fee: ${e.toString()}'));
+    }
+  }
+
   // Create new invoice
   Future<void> createInvoice({
     required String title,
@@ -316,6 +339,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     String currency = 'NGN',
     String? payerLogoUrl,
     String? recipientLogoUrl,
+    String? serviceFeeRef,
   }) async {
     // Store current form state to restore if error occurs
     final previousFormState = state is InvoiceFormState ? state as InvoiceFormState : null;
@@ -360,7 +384,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         recipientLogoUrl: recipientLogoUrl,
       );
 
-      final createdInvoice = await repository.createInvoice(invoice);
+      final createdInvoice = await repository.createInvoice(invoice, serviceFeeRef: serviceFeeRef);
       if (isClosed) return;
 
       // Invalidate cache after successful creation

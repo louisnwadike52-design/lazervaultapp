@@ -5,6 +5,7 @@ import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/network/grpc_client.dart';
 import '../../../../../core/services/secure_storage_service.dart';
+import '../../../../../core/utils/api_headers.dart';
 import '../../../../generated/ai_scan.pb.dart' as pb;
 import '../../domain/entities/scan_entities.dart';
 import '../../domain/exceptions/scan_exceptions.dart';
@@ -45,6 +46,16 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
     required this.secureStorage,
     required this.chatGatewayBaseUrl,
   });
+
+  /// Build HTTP headers with all required metadata
+  Future<Map<String, String>> _getHeaders({String? overrideAccessToken}) async {
+    final headers = await ApiHeaders.build(secureStorage: secureStorage);
+    // Override access token if provided (for bank details scan with specific token)
+    if (overrideAccessToken != null && overrideAccessToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $overrideAccessToken';
+    }
+    return headers;
+  }
 
   @override
   Future<ScanSessionModel> createScanSession(ScanType scanType, String userId) async {
@@ -264,13 +275,11 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
 
       // Send POST request to chat gateway with timeout
       final uri = Uri.parse('$chatGatewayBaseUrl/scan/bank-details');
+      final headers = await _getHeaders(overrideAccessToken: accessToken);
       final response = await httpClient
           .post(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: headers,
         body: requestBody,
       )
           .timeout(
@@ -432,13 +441,11 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
           chatGatewayBaseUrl.replaceAll('3011', '8080'); // TODO: Use proper config
       final uri = Uri.parse('$paymentServiceUrl/api/v1/payments/bank-details');
 
+      final headers = await _getHeaders();
       final response = await httpClient
           .post(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: headers,
         body: requestBody,
       )
           .timeout(

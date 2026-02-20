@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 import '../../domain/entities/account_verification_result.dart';
 
 /// Custom exceptions for account verification.
@@ -63,14 +64,14 @@ abstract class RecipientVerificationRemoteDataSource {
 class RecipientVerificationRemoteDataSourceImpl
     implements RecipientVerificationRemoteDataSource {
   final Dio dio;
-  final FlutterSecureStorage storage;
+  final SecureStorageService secureStorage;
   final String baseUrl;
 
   RecipientVerificationRemoteDataSourceImpl({
     required this.baseUrl,
+    required this.secureStorage,
     String? authToken,
-  })  : storage = const FlutterSecureStorage(),
-        dio = Dio(BaseOptions(
+  })  : dio = Dio(BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
@@ -92,11 +93,21 @@ class RecipientVerificationRemoteDataSourceImpl
     ));
   }
 
-  /// Update authorization headers with current auth token.
-  Future<void> _updateAuthHeaders() async {
-    final token = await storage.read(key: 'auth_token');
+  /// Update authorization and metadata headers with current auth token.
+  Future<void> _updateHeaders() async {
+    final token = await secureStorage.getAccessToken();
     if (token != null && token.isNotEmpty) {
       dio.options.headers['Authorization'] = 'Bearer $token';
+    }
+
+    // Add service name and request ID
+    dio.options.headers['X-Service-Name'] = 'lazervault-flutter-recipients';
+    dio.options.headers['X-Request-ID'] = ApiHeaders.generateRequestIdWithPrefix('recipient');
+
+    // Add user ID
+    final userId = await secureStorage.getUserId();
+    if (userId != null && userId.isNotEmpty) {
+      dio.options.headers['X-User-Id'] = userId;
     }
   }
 
@@ -106,7 +117,7 @@ class RecipientVerificationRemoteDataSourceImpl
     required String accountNumber,
     String country = 'NG',
   }) async {
-    await _updateAuthHeaders();
+    await _updateHeaders();
 
     try {
       final response = await dio.post(
@@ -213,7 +224,7 @@ class RecipientVerificationRemoteDataSourceImpl
   Future<List<Map<String, String>>> getSupportedBanks({
     String country = 'NG',
   }) async {
-    await _updateAuthHeaders();
+    await _updateHeaders();
 
     try {
       final response = await dio.get(

@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import '../entities/profile_entity.dart';
 import '../entities/phone_verification_entity.dart';
 import '../usecases/sign_up_usecase.dart';
@@ -43,7 +44,30 @@ abstract class IAuthRepository {
 
   Future<Either<Failure, ProfileEntity>> signInWithApple();
 
-  // Password reset methods
+  // Password reset methods (supports both email and SMS)
+  /// Request password reset via email or SMS
+  /// Returns PasswordResetResult with delivery method and masked contact
+  Future<Either<Failure, PasswordResetResult>> requestPasswordResetV2({
+    String? email,
+    String? phone,
+    auth_enum.PasswordResetDeliveryMethod? deliveryMethod,
+  });
+
+  /// Verify password reset code (OTP for SMS or token for email)
+  /// Returns PasswordResetVerificationResult with reset token
+  Future<Either<Failure, PasswordResetVerificationResult>> verifyPasswordResetCode({
+    required String contact,
+    required String code,
+    required auth_enum.PasswordResetDeliveryMethod deliveryMethod,
+  });
+
+  /// Reset password using verified reset token
+  Future<Either<Failure, void>> resetPasswordWithToken({
+    required String resetToken,
+    required String newPassword,
+  });
+
+  // Legacy password reset methods (kept for backward compatibility)
   Future<Either<Failure, void>> requestPasswordReset({
     required String email,
   });
@@ -138,5 +162,41 @@ class VirtualAccountInfo {
     required this.accountName,
     required this.currency,
     required this.provider,
+  });
+}
+
+/// Result of password reset request
+class PasswordResetResult {
+  final bool success;
+  final String message;
+  final String deliveryMethod; // 'email' or 'sms'
+  final String maskedContact; // Masked email or phone
+  final int expiresInSeconds;
+  final String? resetToken; // For email flow (direct token)
+  final bool userFound; // Whether the email/phone was actually registered
+
+  PasswordResetResult({
+    required this.success,
+    required this.message,
+    required this.deliveryMethod,
+    required this.maskedContact,
+    required this.expiresInSeconds,
+    this.resetToken,
+    this.userFound = true, // Default to true for backward compatibility
+  });
+}
+
+/// Result of password reset code verification
+class PasswordResetVerificationResult {
+  final bool success;
+  final String message;
+  final String resetToken; // Use this to call resetPasswordWithToken
+  final int expiresInSeconds;
+
+  PasswordResetVerificationResult({
+    required this.success,
+    required this.message,
+    required this.resetToken,
+    required this.expiresInSeconds,
   });
 } 

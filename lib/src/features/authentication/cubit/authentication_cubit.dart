@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/error/failure.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,8 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/config/country_config.dart';
+import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
+import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import '../domain/usecases/login_usecase.dart';
 import '../domain/usecases/login_with_passcode_usecase.dart';
 import '../domain/usecases/register_passcode_usecase.dart';
@@ -46,6 +50,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final VerifyIdentityUseCase _verifyIdentityUseCase;
   final ValidateTokenUseCase _validateTokenUseCase;
   final CreateVirtualAccountUseCase? _createVirtualAccountUseCase;
+  final IAuthRepository _authRepository;
   final FlutterSecureStorage _storage;
   final CurrencySyncService _currencySyncService;
   final AccountManager _accountManager;
@@ -69,6 +74,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required VerifyIdentityUseCase verifyIdentity,
     required ValidateTokenUseCase validateToken,
     CreateVirtualAccountUseCase? createVirtualAccount,
+    required IAuthRepository authRepository,
     FlutterSecureStorage? storage,
     required CurrencySyncService currencySyncService,
     required AccountManager accountManager,
@@ -87,6 +93,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         _verifyIdentityUseCase = verifyIdentity,
         _validateTokenUseCase = validateToken,
         _createVirtualAccountUseCase = createVirtualAccount,
+        _authRepository = authRepository,
         _storage = storage ?? const FlutterSecureStorage(),
         _currencySyncService = currencySyncService,
         _accountManager = accountManager,
@@ -497,6 +504,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is ResetPasswordInProgress) {
       final currentState = state as ResetPasswordInProgress;
       emit(currentState.copyWith(newPassword: password, clearError: true));
+    }
+  }
+
+  void resetPasswordTokenChanged(String token) {
+    if (state is ResetPasswordInProgress) {
+      final currentState = state as ResetPasswordInProgress;
+      emit(currentState.copyWith(token: token, clearError: true));
     }
   }
 
@@ -2211,21 +2225,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   // ========== Password Recovery Verification Methods ==========
-  // TODO: Implement with proper use cases
-
-  Future<void> verifyPasswordResetCode(String email, String code) async {
-    // Placeholder - needs use case implementation
-    emit(const PasswordRecoveryVerificationInProgress());
-    await Future.delayed(const Duration(seconds: 1));
-    emit(AuthenticationFailure('Password reset code verification not yet implemented'));
-  }
-
-  Future<void> resendPasswordResetCode(String email, String deliveryMethod) async {
-    // Placeholder - needs use case implementation
-    emit(const PasswordRecoveryResendInProgress());
-    await Future.delayed(const Duration(seconds: 1));
-    emit(AuthenticationFailure('Resend code not yet implemented'));
-  }
+  // V2 implementations are below in the "Password Reset V2" section
 
   // ========== Facial Recognition Methods ==========
   // TODO: Implement with proper use cases
@@ -2330,5 +2330,112 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (isClosed) return;
     _currentProfile = profile;
     emit(AuthenticationAuthenticated(profile));
+  }
+
+  // ===== Password Reset V2 (Email/SMS Support) =====
+
+  /// Request password reset via email or SMS
+  Future<Either<Failure, PasswordResetResult>> requestPasswordResetV2({
+    String? email,
+    String? phone,
+    auth_enum.PasswordResetDeliveryMethod? deliveryMethod,
+  }) async {
+    if (isClosed) {
+      return Left(ServerFailure(message: 'System error', statusCode: 500));
+    }
+
+    emit(ForgotPasswordInProgress(isLoading: true));
+
+    try {
+      final result = await _authRepository.requestPasswordResetV2(
+        email: email,
+        phone: phone,
+        deliveryMethod: deliveryMethod,
+      );
+
+      result.fold(
+        (failure) => emit(AuthenticationError(failure.message)),
+        (_) => emit(const PasswordResetEmailSent()),
+      );
+
+      return result;
+    } catch (e) {
+      emit(AuthenticationError(e.toString()));
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  /// Verify password reset code (OTP for SMS or token for email)
+  Future<Either<Failure, PasswordResetVerificationResult>> verifyPasswordResetCode({
+    required String contact,
+    required String code,
+    required String deliveryMethod,
+  }) async {
+    if (isClosed) {
+      return Left(ServerFailure(message: 'System error', statusCode: 500));
+    }
+
+    try {
+      final result = await _authRepository.verifyPasswordResetCode(
+        contact: contact,
+        code: code,
+        deliveryMethod: _parseDeliveryMethod(deliveryMethod),
+      );
+
+      result.fold(
+        (failure) => emit(AuthenticationError(failure.message)),
+        (_) {},
+      );
+
+      return result;
+    } catch (e) {
+      emit(AuthenticationError(e.toString()));
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  /// Reset password using verified reset token
+  Future<void> resetPasswordWithToken({
+    required String resetToken,
+    required String newPassword,
+  }) async {
+    if (isClosed) return;
+
+    emit(ResetPasswordInProgress(isLoading: true));
+
+    try {
+      final result = await _authRepository.resetPasswordWithToken(
+        resetToken: resetToken,
+        newPassword: newPassword,
+      );
+
+      result.fold(
+        (failure) {
+          emit(AuthenticationError(failure.message));
+          _showErrorSnackbar('Error', failure.message);
+        },
+        (_) {
+          emit(const PasswordResetSuccess());
+          _showSuccessSnackbar('Success', 'Password reset successfully');
+        },
+      );
+    } catch (e) {
+      emit(AuthenticationError(e.toString()));
+      _showErrorSnackbar('Error', e.toString());
+    }
+  }
+
+  /// Parse delivery method string to enum
+  auth_enum.PasswordResetDeliveryMethod _parseDeliveryMethod(String? method) {
+    if (method == null || method == 'unspecified') {
+      return auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED;
+    }
+    if (method == 'email') {
+      return auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_EMAIL;
+    }
+    if (method == 'sms') {
+      return auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_SMS;
+    }
+    return auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED;
   }
 }

@@ -55,6 +55,8 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.unknown;
       case AppServiceName.expenses:
         return TransactionServiceType.unknown;
+      case AppServiceName.idPay:
+        return TransactionServiceType.unknown;
     }
   }
 }

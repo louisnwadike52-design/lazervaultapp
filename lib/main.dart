@@ -24,6 +24,7 @@ import 'package:lazervault/src/features/recipients/data/datasources/recipient_ve
 import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/contacts/presentation/cubit/contact_sync_cubit.dart';
+import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -308,6 +309,9 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider<ContactSyncCubit>(
           create: (_) => serviceLocator<ContactSyncCubit>(),
+        ),
+        BlocProvider<MultiCountryCubit>(
+          create: (_) => serviceLocator<MultiCountryCubit>(),
         ),
       ],
       child: ScreenUtilInit(

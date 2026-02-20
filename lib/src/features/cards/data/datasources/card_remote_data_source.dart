@@ -72,6 +72,43 @@ abstract class ICardRemoteDataSource {
   Future<CardModel> setDefaultCard({
     required String cardUuid,
   });
+
+  /// Request a physical card
+  Future<CardModel> requestPhysicalCard({
+    required int accountId,
+    String? nickname,
+    String? currency,
+    String? billingAddress,
+    String? shippingAddress,
+  });
+
+  /// Set card PIN
+  Future<void> setCardPIN({
+    required String cardUuid,
+    required String pin,
+  });
+
+  /// Reveal card PIN
+  Future<String> revealCardPIN({
+    required String cardUuid,
+  });
+
+  /// Reveal full card details
+  Future<CardModel> revealFullCardDetails({
+    required String cardUuid,
+  });
+
+  /// Fund a card
+  Future<CardModel> fundCard({
+    required String cardUuid,
+    required double amount,
+  });
+
+  /// Withdraw from card
+  Future<CardModel> withdrawFromCard({
+    required String cardUuid,
+    required double amount,
+  });
 }
 
 /// Card remote data source implementation using gRPC
@@ -330,6 +367,141 @@ class CardRemoteDataSourceImpl implements ICardRemoteDataSource {
       return CardModel.fromProto(response.card);
     } catch (e) {
       throw Exception('Failed to set default card: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<CardModel> requestPhysicalCard({
+    required int accountId,
+    String? nickname,
+    String? currency,
+    String? billingAddress,
+    String? shippingAddress,
+  }) async {
+    try {
+      final request = pb.RequestPhysicalCardRequest()
+        ..accountId = Int64(accountId);
+
+      if (nickname != null && nickname.isNotEmpty) {
+        request.cardNickname = nickname;
+      }
+      if (currency != null && currency.isNotEmpty) {
+        request.currency = currency;
+      }
+      if (billingAddress != null && billingAddress.isNotEmpty) {
+        request.billingAddress = billingAddress;
+      }
+      if (shippingAddress != null && shippingAddress.isNotEmpty) {
+        request.shippingAddress = shippingAddress;
+      }
+
+      final callOptions = await grpcClient.callOptions;
+      final response = await grpcClient.accountCardClient.requestPhysicalCard(
+        request,
+        options: callOptions,
+      );
+
+      return CardModel.fromProto(response.card);
+    } catch (e) {
+      throw Exception('Failed to request physical card: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> setCardPIN({
+    required String cardUuid,
+    required String pin,
+  }) async {
+    try {
+      final request = pb.SetCardPINRequest()
+        ..cardUuid = cardUuid
+        ..pin = pin;
+
+      final callOptions = await grpcClient.callOptions;
+      await grpcClient.accountCardClient.setCardPIN(
+        request,
+        options: callOptions,
+      );
+    } catch (e) {
+      throw Exception('Failed to set card PIN: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<String> revealCardPIN({required String cardUuid}) async {
+    try {
+      final request = pb.RevealCardPINRequest()..cardUuid = cardUuid;
+
+      final callOptions = await grpcClient.callOptions;
+      final response = await grpcClient.accountCardClient.revealCardPIN(
+        request,
+        options: callOptions,
+      );
+
+      return response.cardPin;
+    } catch (e) {
+      throw Exception('Failed to reveal card PIN: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<CardModel> revealFullCardDetails({required String cardUuid}) async {
+    try {
+      final request = pb.RevealFullCardDetailsRequest()..cardUuid = cardUuid;
+
+      final callOptions = await grpcClient.callOptions;
+      final response = await grpcClient.accountCardClient.revealFullCardDetails(
+        request,
+        options: callOptions,
+      );
+
+      return CardModel.fromProto(response.card);
+    } catch (e) {
+      throw Exception('Failed to reveal card details: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<CardModel> fundCard({
+    required String cardUuid,
+    required double amount,
+  }) async {
+    try {
+      final request = pb.FundCardRequest()
+        ..cardUuid = cardUuid
+        ..amount = amount;
+
+      final callOptions = await grpcClient.callOptions;
+      final response = await grpcClient.accountCardClient.fundCard(
+        request,
+        options: callOptions,
+      );
+
+      return CardModel.fromProto(response.card);
+    } catch (e) {
+      throw Exception('Failed to fund card: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<CardModel> withdrawFromCard({
+    required String cardUuid,
+    required double amount,
+  }) async {
+    try {
+      final request = pb.WithdrawFromCardRequest()
+        ..cardUuid = cardUuid
+        ..amount = amount;
+
+      final callOptions = await grpcClient.callOptions;
+      final response = await grpcClient.accountCardClient.withdrawFromCard(
+        request,
+        options: callOptions,
+      );
+
+      return CardModel.fromProto(response.card);
+    } catch (e) {
+      throw Exception('Failed to withdraw from card: ${e.toString()}');
     }
   }
 }

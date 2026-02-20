@@ -1,17 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 
 /// Data source for OCR bank details scanning via Chat Agent Gateway.
 class BankScanDataSource {
   final Dio dio;
-  final FlutterSecureStorage storage;
+  final SecureStorageService secureStorage;
 
   BankScanDataSource({
     required String baseUrl,
-  })  : storage = const FlutterSecureStorage(),
-        dio = Dio(BaseOptions(
+    required this.secureStorage,
+  }) : dio = Dio(BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 60),
@@ -19,10 +20,20 @@ class BankScanDataSource {
           headers: {'Content-Type': 'application/json'},
         ));
 
-  Future<void> _updateAuthHeaders() async {
-    final token = await storage.read(key: 'auth_token');
+  Future<void> _updateHeaders() async {
+    final token = await secureStorage.getAccessToken();
     if (token != null && token.isNotEmpty) {
       dio.options.headers['Authorization'] = 'Bearer $token';
+    }
+
+    // Add service name and request ID
+    dio.options.headers['X-Service-Name'] = 'lazervault-flutter-bank-scan';
+    dio.options.headers['X-Request-ID'] = ApiHeaders.generateRequestIdWithPrefix('bank-scan');
+
+    // Add user ID
+    final userId = await secureStorage.getUserId();
+    if (userId != null && userId.isNotEmpty) {
+      dio.options.headers['X-User-Id'] = userId;
     }
   }
 
@@ -38,7 +49,7 @@ class BankScanDataSource {
     required String userId,
     String locale = 'en-NG',
   }) async {
-    await _updateAuthHeaders();
+    await _updateHeaders();
 
     // Read and compress image to base64
     final bytes = await imageFile.readAsBytes();

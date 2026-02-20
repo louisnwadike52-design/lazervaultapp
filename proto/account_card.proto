@@ -47,8 +47,12 @@ message AccountCard {
     google.protobuf.Timestamp last_used_at = 22;
     google.protobuf.Timestamp created_at = 23;
     google.protobuf.Timestamp updated_at = 24;
-    string card_number = 25; // Full number (only for creation response, encrypted)
-    string cvv = 26; // CVV (only for creation response, encrypted)
+    string card_number = 25; // Full number (only for creation response or reveal)
+    string cvv = 26; // CVV (only for creation response or reveal)
+    string card_pin = 27; // Card PIN (only for reveal response)
+    string shipping_address = 28; // JSON address for physical cards
+    string shipping_status = 29; // ordered, shipped, delivered
+    string tracking_number = 30;
 }
 
 // Card transaction message
@@ -216,6 +220,68 @@ message SetDefaultCardResponse {
     AccountCard card = 1;
 }
 
+// Request physical card
+message RequestPhysicalCardRequest {
+    uint64 account_id = 1;
+    string card_nickname = 2;
+    string currency = 3;
+    string billing_address = 4;
+    string shipping_address = 5; // JSON: {street, city, state, postal_code, country}
+}
+
+message RequestPhysicalCardResponse {
+    AccountCard card = 1;
+}
+
+// Set card PIN
+message SetCardPINRequest {
+    string card_uuid = 1;
+    string pin = 2; // 4-digit PIN
+}
+
+message SetCardPINResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// Reveal card PIN (requires transaction PIN verification upstream)
+message RevealCardPINRequest {
+    string card_uuid = 1;
+}
+
+message RevealCardPINResponse {
+    string card_pin = 1;
+}
+
+// Reveal full card details (requires transaction PIN verification upstream)
+message RevealFullCardDetailsRequest {
+    string card_uuid = 1;
+}
+
+message RevealFullCardDetailsResponse {
+    AccountCard card = 1; // Includes card_number, cvv, card_pin
+}
+
+// Fund card request
+message FundCardRequest {
+    string card_uuid = 1;
+    double amount = 2;
+}
+
+message FundCardResponse {
+    AccountCard card = 1;
+}
+
+// Withdraw from card request
+message WithdrawFromCardRequest {
+    string card_uuid = 1;
+    double amount = 2;
+}
+
+message WithdrawFromCardResponse {
+    AccountCard card = 1;
+}
+
 // AccountCard Service Definition
 service AccountCardService {
     // Create a new virtual card
@@ -344,6 +410,76 @@ service AccountCardService {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
             summary: "Set Default Card";
             description: "Sets a card as the default payment method.";
+        };
+    }
+
+    // Request a physical card
+    rpc RequestPhysicalCard(RequestPhysicalCardRequest) returns (RequestPhysicalCardResponse) {
+        option (google.api.http) = {
+            post: "/v1/cards/physical";
+            body: "*";
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Request Physical Card";
+            description: "Requests a physical debit card to be shipped.";
+        };
+    }
+
+    // Set card PIN
+    rpc SetCardPIN(SetCardPINRequest) returns (SetCardPINResponse) {
+        option (google.api.http) = {
+            post: "/v1/cards/{card_uuid}/pin";
+            body: "*";
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Set Card PIN";
+            description: "Sets or updates the PIN for a card.";
+        };
+    }
+
+    // Reveal card PIN
+    rpc RevealCardPIN(RevealCardPINRequest) returns (RevealCardPINResponse) {
+        option (google.api.http) = {
+            get: "/v1/cards/{card_uuid}/pin";
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Reveal Card PIN";
+            description: "Reveals the card PIN. Requires transaction PIN verification.";
+        };
+    }
+
+    // Reveal full card details (number, CVV, PIN)
+    rpc RevealFullCardDetails(RevealFullCardDetailsRequest) returns (RevealFullCardDetailsResponse) {
+        option (google.api.http) = {
+            get: "/v1/cards/{card_uuid}/reveal";
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Reveal Full Card Details";
+            description: "Reveals full card number, CVV, and PIN. Requires transaction PIN verification.";
+        };
+    }
+
+    // Fund a card
+    rpc FundCard(FundCardRequest) returns (FundCardResponse) {
+        option (google.api.http) = {
+            post: "/v1/cards/{card_uuid}/fund";
+            body: "*";
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Fund Card";
+            description: "Adds funds to a virtual card.";
+        };
+    }
+
+    // Withdraw from a card
+    rpc WithdrawFromCard(WithdrawFromCardRequest) returns (WithdrawFromCardResponse) {
+        option (google.api.http) = {
+            post: "/v1/cards/{card_uuid}/withdraw";
+            body: "*";
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "Withdraw From Card";
+            description: "Withdraws funds from a virtual card back to account.";
         };
     }
 }

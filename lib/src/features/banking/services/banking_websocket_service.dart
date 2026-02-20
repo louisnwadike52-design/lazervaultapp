@@ -6,6 +6,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 
 /// Banking status event received from WebSocket
 class BankingStatusEvent {
@@ -72,12 +75,31 @@ class BankingWebSocketService {
   Timer? _pingTimer;
   bool _isConnected = false;
   bool _useSSE = false;
+  final SecureStorageService _secureStorage;
+  final AccountManager? _accountManager;
+
+  BankingWebSocketService({
+    required SecureStorageService secureStorage,
+    AccountManager? accountManager,
+  })  : _secureStorage = secureStorage,
+        _accountManager = accountManager;
 
   /// Stream of banking status events
   Stream<BankingStatusEvent> get bankingUpdates => _eventController.stream;
 
   /// Stream of connection state changes
   Stream<BankingWebSocketConnectionState> get connectionState => _connectionController.stream;
+
+  /// Build WebSocket headers with auth and metadata
+  Future<Map<String, String>> _buildHeaders(String accessToken) async {
+    final headers = await ApiHeaders.buildWebSocketHeaders(
+      secureStorage: _secureStorage,
+      accountManager: _accountManager,
+    );
+    // Override with explicit access token
+    headers['Authorization'] = 'Bearer $accessToken';
+    return headers;
+  }
 
   /// Check if currently connected
   bool get isConnected => _isConnected;
@@ -131,11 +153,10 @@ class BankingWebSocketService {
         protocols: ['token', accessToken],
       );
     } else {
+      final headers = await _buildHeaders(accessToken);
       _channel = IOWebSocketChannel.connect(
         wsUrl,
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: headers,
       );
     }
     _useSSE = false;
@@ -177,7 +198,9 @@ class BankingWebSocketService {
     final request = http.Request('GET', sseUrl);
     request.headers['Accept'] = 'text/event-stream';
     request.headers['Cache-Control'] = 'no-cache';
-    request.headers['Authorization'] = 'Bearer $accessToken';
+
+    final headers = await _buildHeaders(accessToken);
+    request.headers.addAll(headers);
 
     final response = await _httpClient!.send(request);
 

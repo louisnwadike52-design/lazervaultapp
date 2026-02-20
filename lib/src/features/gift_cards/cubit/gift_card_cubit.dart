@@ -160,6 +160,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     String? countryCode,
     String? idempotencyKey,
     int quantity = 1,
+    String? providerName,
   }) async {
     try {
       // Validate purchase request before processing
@@ -231,11 +232,20 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         countryCode: countryCode,
         idempotencyKey: effectiveIdempotencyKey,
         quantity: quantity,
+        providerName: providerName,
       );
       if (isClosed) return;
 
       result.fold(
         (failure) {
+          // Provider mismatch error - user should refresh brands
+          if (failure.message.contains('Provider mismatch') ||
+              failure.message.contains('provider mismatch')) {
+            emit(GiftCardPurchaseError(
+              'Gift card catalog has been updated. Please go back and browse brands again, then retry your purchase.',
+            ));
+            return;
+          }
           if (failure.message.contains('Insufficient funds')) {
             emit(GiftCardInsufficientFunds(
               required: amount,
@@ -586,6 +596,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     String? currency,
     List<String>? images,
     String? idempotencyKey,
+    String? providerName,
   }) async {
     try {
       // Generate idempotency key if not provided
@@ -617,11 +628,20 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         currency: currency,
         images: images,
         idempotencyKey: effectiveIdempotencyKey,
+        providerName: providerName,
       );
       if (isClosed) return;
 
       result.fold(
         (failure) {
+          // Provider mismatch error - user should refresh sellable cards
+          if (failure.message.contains('Provider mismatch') ||
+              failure.message.contains('provider mismatch')) {
+            emit(const SellError(
+              'Sellable cards catalog has been updated. Please go back and check available card types again, then retry your sell.',
+            ));
+            return;
+          }
           if (failure.message.contains('Invalid transaction PIN')) {
             emit(const SellError('Invalid transaction PIN'));
           } else if (failure.message.contains('unavailable')) {

@@ -71,11 +71,15 @@ class GrpcCallOptionsHelper {
       }
     }
 
-    // Add user country metadata for provider routing (e.g., Bamboo for NG, IBKR for others)
+    // Add user country and currency metadata for provider routing and multi-currency support
     if (localeManager != null) {
       final country = localeManager!.currentCountry;
       if (country.isNotEmpty) {
         metadata['x-user-country'] = country;
+      }
+      final currency = localeManager!.currentCurrency;
+      if (currency.isNotEmpty) {
+        metadata['x-currency'] = currency;
       }
     }
 

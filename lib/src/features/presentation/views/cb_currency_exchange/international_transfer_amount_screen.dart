@@ -670,7 +670,7 @@ class _InternationalTransferAmountScreenState extends State<InternationalTransfe
           ),
           SizedBox(height: 8.h),
           Text(
-            'Exchange rate: 1 $_fromCurrency = ${_exchangeRate.toStringAsFixed(4)} $_toCurrency',
+            'Exchange rate: 1 $_fromCurrency = ${_exchangeRate >= 0.01 ? _exchangeRate.toStringAsFixed(4) : _exchangeRate.toStringAsFixed(6)} $_toCurrency',
             style: GoogleFonts.inter(
               color: Colors.grey[400],
               fontSize: 12.sp,

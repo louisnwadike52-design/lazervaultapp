@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/country_locale_bottom_sheet.dart';
+import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 
 // Dashboard header with notifications bottomsheet - clean white background
 class DashboardHeader extends StatelessWidget {
@@ -98,6 +99,13 @@ class DashboardHeader extends StatelessWidget {
               await context.read<ProfileCubit>().setActiveCountry(
                 selectedCountry.countryCode,
               );
+
+              // Update active locale on the server via MultiCountryCubit
+              if (context.mounted) {
+                context.read<MultiCountryCubit>().setActiveLocale(
+                  selectedCountry.locale,
+                );
+              }
 
               if (!context.mounted) return;
 

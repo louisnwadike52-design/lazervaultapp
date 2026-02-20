@@ -178,6 +178,20 @@ class InvoicePaymentSuccess extends InvoiceState {
   List<Object?> get props => [message, invoice];
 }
 
+class InvoiceServiceFeeProcessing extends InvoiceState {
+  const InvoiceServiceFeeProcessing();
+}
+
+class InvoiceServiceFeePaid extends InvoiceState {
+  final String serviceFeeRef;
+  final double newBalance;
+
+  const InvoiceServiceFeePaid({required this.serviceFeeRef, required this.newBalance});
+
+  @override
+  List<Object?> get props => [serviceFeeRef, newBalance];
+}
+
 class InvoiceUnlockProcessing extends InvoiceState {
   final String invoiceId;
 

@@ -8,6 +8,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/entities/auto_recharge_entity.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import '../cubit/beneficiary_cubit.dart';
 import '../cubit/beneficiary_state.dart';
@@ -977,7 +979,7 @@ class _AddBeneficiaryBottomSheetState extends State<_AddBeneficiaryBottomSheet> 
         : MeterType.prepaid;
 
     // Find provider from loaded providers
-    final providersResult = await widget.electricityBillCubit.repository.getProviders(country: 'NG');
+    final providersResult = await widget.electricityBillCubit.repository.getProviders(country: serviceLocator<LocaleManager>().currentCountry);
     String providerId = '';
     providersResult.fold((_) {}, (providers) {
       final matched = providers.where(

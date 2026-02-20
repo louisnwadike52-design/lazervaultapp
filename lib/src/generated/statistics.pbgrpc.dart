@@ -177,6 +177,14 @@ class StatisticsServiceClient extends $grpc.Client {
       '/pb.StatisticsService/GetComprehensiveFinancialSummary',
       ($0.GetComprehensiveFinancialSummaryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetComprehensiveFinancialSummaryResponse.fromBuffer(value));
+  static final _$validateCategoryBudget = $grpc.ClientMethod<$0.ValidateCategoryBudgetRequest, $0.ValidateCategoryBudgetResponse>(
+      '/pb.StatisticsService/ValidateCategoryBudget',
+      ($0.ValidateCategoryBudgetRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ValidateCategoryBudgetResponse.fromBuffer(value));
+  static final _$getServiceCategories = $grpc.ClientMethod<$0.GetServiceCategoriesRequest, $0.GetServiceCategoriesResponse>(
+      '/pb.StatisticsService/GetServiceCategories',
+      ($0.GetServiceCategoriesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetServiceCategoriesResponse.fromBuffer(value));
 
   StatisticsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -338,6 +346,14 @@ class StatisticsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetComprehensiveFinancialSummaryResponse> getComprehensiveFinancialSummary($0.GetComprehensiveFinancialSummaryRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getComprehensiveFinancialSummary, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ValidateCategoryBudgetResponse> validateCategoryBudget($0.ValidateCategoryBudgetRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$validateCategoryBudget, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetServiceCategoriesResponse> getServiceCategories($0.GetServiceCategoriesRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getServiceCategories, request, options: options);
   }
 }
 
@@ -619,6 +635,20 @@ abstract class StatisticsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetComprehensiveFinancialSummaryRequest.fromBuffer(value),
         ($0.GetComprehensiveFinancialSummaryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ValidateCategoryBudgetRequest, $0.ValidateCategoryBudgetResponse>(
+        'ValidateCategoryBudget',
+        validateCategoryBudget_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ValidateCategoryBudgetRequest.fromBuffer(value),
+        ($0.ValidateCategoryBudgetResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetServiceCategoriesRequest, $0.GetServiceCategoriesResponse>(
+        'GetServiceCategories',
+        getServiceCategories_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetServiceCategoriesRequest.fromBuffer(value),
+        ($0.GetServiceCategoriesResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateExpenseResponse> createExpense_Pre($grpc.ServiceCall call, $async.Future<$0.CreateExpenseRequest> request) async {
@@ -777,6 +807,14 @@ abstract class StatisticsServiceBase extends $grpc.Service {
     return getComprehensiveFinancialSummary(call, await request);
   }
 
+  $async.Future<$0.ValidateCategoryBudgetResponse> validateCategoryBudget_Pre($grpc.ServiceCall call, $async.Future<$0.ValidateCategoryBudgetRequest> request) async {
+    return validateCategoryBudget(call, await request);
+  }
+
+  $async.Future<$0.GetServiceCategoriesResponse> getServiceCategories_Pre($grpc.ServiceCall call, $async.Future<$0.GetServiceCategoriesRequest> request) async {
+    return getServiceCategories(call, await request);
+  }
+
   $async.Future<$0.CreateExpenseResponse> createExpense($grpc.ServiceCall call, $0.CreateExpenseRequest request);
   $async.Future<$0.GetExpensesResponse> getExpenses($grpc.ServiceCall call, $0.GetExpensesRequest request);
   $async.Future<$0.GetExpenseByIdResponse> getExpenseById($grpc.ServiceCall call, $0.GetExpenseByIdRequest request);
@@ -816,4 +854,6 @@ abstract class StatisticsServiceBase extends $grpc.Service {
   $async.Future<$0.GetTrackedIncomeTransactionsResponse> getTrackedIncomeTransactions($grpc.ServiceCall call, $0.GetTrackedIncomeTransactionsRequest request);
   $async.Future<$0.GetTrackedExpenditureTransactionsResponse> getTrackedExpenditureTransactions($grpc.ServiceCall call, $0.GetTrackedExpenditureTransactionsRequest request);
   $async.Future<$0.GetComprehensiveFinancialSummaryResponse> getComprehensiveFinancialSummary($grpc.ServiceCall call, $0.GetComprehensiveFinancialSummaryRequest request);
+  $async.Future<$0.ValidateCategoryBudgetResponse> validateCategoryBudget($grpc.ServiceCall call, $0.ValidateCategoryBudgetRequest request);
+  $async.Future<$0.GetServiceCategoriesResponse> getServiceCategories($grpc.ServiceCall call, $0.GetServiceCategoriesRequest request);
 }

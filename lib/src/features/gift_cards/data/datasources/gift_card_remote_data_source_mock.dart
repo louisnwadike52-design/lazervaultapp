@@ -58,6 +58,7 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     String? countryCode,
     String? idempotencyKey,
     int quantity = 1,
+    String? providerName,
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
@@ -234,6 +235,7 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     String? currency,
     List<String>? images,
     String? idempotencyKey,
+    String? providerName,
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();

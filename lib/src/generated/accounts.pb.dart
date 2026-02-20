@@ -8633,6 +8633,317 @@ class TransferFromPlatformWalletResponse extends $pb.GeneratedMessage {
   void clearWalletNewBalance() => clearField(7);
 }
 
+/// CreditPlatformWallet - Credit-only (internal fee settlement after fund hold capture)
+class CreditPlatformWalletRequest extends $pb.GeneratedMessage {
+  factory CreditPlatformWalletRequest({
+    $core.String? walletCode,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? reference,
+    $core.String? category,
+    $core.String? description,
+    $core.String? metadata,
+    $core.String? serviceName,
+    $core.String? idempotencyKey,
+    $core.String? sourceAccountId,
+    $core.String? sourceUserId,
+    $core.String? sourcePaymentId,
+  }) {
+    final $result = create();
+    if (walletCode != null) {
+      $result.walletCode = walletCode;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (reference != null) {
+      $result.reference = reference;
+    }
+    if (category != null) {
+      $result.category = category;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (metadata != null) {
+      $result.metadata = metadata;
+    }
+    if (serviceName != null) {
+      $result.serviceName = serviceName;
+    }
+    if (idempotencyKey != null) {
+      $result.idempotencyKey = idempotencyKey;
+    }
+    if (sourceAccountId != null) {
+      $result.sourceAccountId = sourceAccountId;
+    }
+    if (sourceUserId != null) {
+      $result.sourceUserId = sourceUserId;
+    }
+    if (sourcePaymentId != null) {
+      $result.sourcePaymentId = sourcePaymentId;
+    }
+    return $result;
+  }
+  CreditPlatformWalletRequest._() : super();
+  factory CreditPlatformWalletRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreditPlatformWalletRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditPlatformWalletRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'walletCode')
+    ..aInt64(2, _omitFieldNames ? '' : 'amount')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'reference')
+    ..aOS(5, _omitFieldNames ? '' : 'category')
+    ..aOS(6, _omitFieldNames ? '' : 'description')
+    ..aOS(7, _omitFieldNames ? '' : 'metadata')
+    ..aOS(8, _omitFieldNames ? '' : 'serviceName')
+    ..aOS(9, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(10, _omitFieldNames ? '' : 'sourceAccountId')
+    ..aOS(11, _omitFieldNames ? '' : 'sourceUserId')
+    ..aOS(12, _omitFieldNames ? '' : 'sourcePaymentId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreditPlatformWalletRequest clone() => CreditPlatformWalletRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreditPlatformWalletRequest copyWith(void Function(CreditPlatformWalletRequest) updates) => super.copyWith((message) => updates(message as CreditPlatformWalletRequest)) as CreditPlatformWalletRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreditPlatformWalletRequest create() => CreditPlatformWalletRequest._();
+  CreditPlatformWalletRequest createEmptyInstance() => create();
+  static $pb.PbList<CreditPlatformWalletRequest> createRepeated() => $pb.PbList<CreditPlatformWalletRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreditPlatformWalletRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreditPlatformWalletRequest>(create);
+  static CreditPlatformWalletRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get walletCode => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set walletCode($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasWalletCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWalletCode() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get reference => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set reference($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasReference() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReference() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get category => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set category($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCategory() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCategory() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get description => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set description($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDescription() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDescription() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get metadata => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set metadata($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasMetadata() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMetadata() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get serviceName => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set serviceName($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasServiceName() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearServiceName() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get idempotencyKey => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set idempotencyKey($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasIdempotencyKey() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIdempotencyKey() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get sourceAccountId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set sourceAccountId($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasSourceAccountId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearSourceAccountId() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get sourceUserId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set sourceUserId($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasSourceUserId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearSourceUserId() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get sourcePaymentId => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set sourcePaymentId($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasSourcePaymentId() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearSourcePaymentId() => clearField(12);
+}
+
+class CreditPlatformWalletResponse extends $pb.GeneratedMessage {
+  factory CreditPlatformWalletResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? platformTransactionId,
+    $fixnum.Int64? walletNewBalance,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (errorCode != null) {
+      $result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      $result.errorMessage = errorMessage;
+    }
+    if (platformTransactionId != null) {
+      $result.platformTransactionId = platformTransactionId;
+    }
+    if (walletNewBalance != null) {
+      $result.walletNewBalance = walletNewBalance;
+    }
+    return $result;
+  }
+  CreditPlatformWalletResponse._() : super();
+  factory CreditPlatformWalletResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreditPlatformWalletResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreditPlatformWalletResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOS(4, _omitFieldNames ? '' : 'platformTransactionId')
+    ..aInt64(5, _omitFieldNames ? '' : 'walletNewBalance')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreditPlatformWalletResponse clone() => CreditPlatformWalletResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreditPlatformWalletResponse copyWith(void Function(CreditPlatformWalletResponse) updates) => super.copyWith((message) => updates(message as CreditPlatformWalletResponse)) as CreditPlatformWalletResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreditPlatformWalletResponse create() => CreditPlatformWalletResponse._();
+  CreditPlatformWalletResponse createEmptyInstance() => create();
+  static $pb.PbList<CreditPlatformWalletResponse> createRepeated() => $pb.PbList<CreditPlatformWalletResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreditPlatformWalletResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreditPlatformWalletResponse>(create);
+  static CreditPlatformWalletResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get platformTransactionId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set platformTransactionId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPlatformTransactionId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPlatformTransactionId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get walletNewBalance => $_getI64(4);
+  @$pb.TagNumber(5)
+  set walletNewBalance($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasWalletNewBalance() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearWalletNewBalance() => clearField(5);
+}
+
 /// GetPlatformWallet - Get wallet by ID or code
 class GetPlatformWalletRequest extends $pb.GeneratedMessage {
   factory GetPlatformWalletRequest({
@@ -10496,6 +10807,950 @@ class ReorderCategoriesResponse extends $pb.GeneratedMessage {
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
   void clearSuccess() => clearField(1);
+}
+
+/// Update spending limits request
+class UpdateSpendingLimitsRequest extends $pb.GeneratedMessage {
+  factory UpdateSpendingLimitsRequest({
+    $core.String? accountId,
+    $core.double? dailyLimit,
+    $core.double? monthlyLimit,
+    $core.double? singleTransactionLimit,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (dailyLimit != null) {
+      $result.dailyLimit = dailyLimit;
+    }
+    if (monthlyLimit != null) {
+      $result.monthlyLimit = monthlyLimit;
+    }
+    if (singleTransactionLimit != null) {
+      $result.singleTransactionLimit = singleTransactionLimit;
+    }
+    return $result;
+  }
+  UpdateSpendingLimitsRequest._() : super();
+  factory UpdateSpendingLimitsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSpendingLimitsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSpendingLimitsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'dailyLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'monthlyLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'singleTransactionLimit', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSpendingLimitsRequest clone() => UpdateSpendingLimitsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSpendingLimitsRequest copyWith(void Function(UpdateSpendingLimitsRequest) updates) => super.copyWith((message) => updates(message as UpdateSpendingLimitsRequest)) as UpdateSpendingLimitsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateSpendingLimitsRequest create() => UpdateSpendingLimitsRequest._();
+  UpdateSpendingLimitsRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateSpendingLimitsRequest> createRepeated() => $pb.PbList<UpdateSpendingLimitsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateSpendingLimitsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSpendingLimitsRequest>(create);
+  static UpdateSpendingLimitsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get dailyLimit => $_getN(1);
+  @$pb.TagNumber(2)
+  set dailyLimit($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDailyLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDailyLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get monthlyLimit => $_getN(2);
+  @$pb.TagNumber(3)
+  set monthlyLimit($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMonthlyLimit() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMonthlyLimit() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get singleTransactionLimit => $_getN(3);
+  @$pb.TagNumber(4)
+  set singleTransactionLimit($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSingleTransactionLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSingleTransactionLimit() => clearField(4);
+}
+
+class UpdateSpendingLimitsResponse extends $pb.GeneratedMessage {
+  factory UpdateSpendingLimitsResponse({
+    Account? account,
+  }) {
+    final $result = create();
+    if (account != null) {
+      $result.account = account;
+    }
+    return $result;
+  }
+  UpdateSpendingLimitsResponse._() : super();
+  factory UpdateSpendingLimitsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSpendingLimitsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSpendingLimitsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOM<Account>(1, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSpendingLimitsResponse clone() => UpdateSpendingLimitsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSpendingLimitsResponse copyWith(void Function(UpdateSpendingLimitsResponse) updates) => super.copyWith((message) => updates(message as UpdateSpendingLimitsResponse)) as UpdateSpendingLimitsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateSpendingLimitsResponse create() => UpdateSpendingLimitsResponse._();
+  UpdateSpendingLimitsResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateSpendingLimitsResponse> createRepeated() => $pb.PbList<UpdateSpendingLimitsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateSpendingLimitsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSpendingLimitsResponse>(create);
+  static UpdateSpendingLimitsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+}
+
+/// Reveal PIN request
+class RevealPINRequest extends $pb.GeneratedMessage {
+  factory RevealPINRequest({
+    $core.String? accountId,
+    $core.String? transactionPin,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (transactionPin != null) {
+      $result.transactionPin = transactionPin;
+    }
+    return $result;
+  }
+  RevealPINRequest._() : super();
+  factory RevealPINRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RevealPINRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RevealPINRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'transactionPin')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RevealPINRequest clone() => RevealPINRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RevealPINRequest copyWith(void Function(RevealPINRequest) updates) => super.copyWith((message) => updates(message as RevealPINRequest)) as RevealPINRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RevealPINRequest create() => RevealPINRequest._();
+  RevealPINRequest createEmptyInstance() => create();
+  static $pb.PbList<RevealPINRequest> createRepeated() => $pb.PbList<RevealPINRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RevealPINRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RevealPINRequest>(create);
+  static RevealPINRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get transactionPin => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set transactionPin($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTransactionPin() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTransactionPin() => clearField(2);
+}
+
+class RevealPINResponse extends $pb.GeneratedMessage {
+  factory RevealPINResponse({
+    $core.String? pin,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (pin != null) {
+      $result.pin = pin;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  RevealPINResponse._() : super();
+  factory RevealPINResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RevealPINResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RevealPINResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'pin')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RevealPINResponse clone() => RevealPINResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RevealPINResponse copyWith(void Function(RevealPINResponse) updates) => super.copyWith((message) => updates(message as RevealPINResponse)) as RevealPINResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RevealPINResponse create() => RevealPINResponse._();
+  RevealPINResponse createEmptyInstance() => create();
+  static $pb.PbList<RevealPINResponse> createRepeated() => $pb.PbList<RevealPINResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RevealPINResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RevealPINResponse>(create);
+  static RevealPINResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get pin => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set pin($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPin() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPin() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+/// Reveal card details request
+class RevealCardDetailsRequest extends $pb.GeneratedMessage {
+  factory RevealCardDetailsRequest({
+    $core.String? accountId,
+    $core.String? transactionPin,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (transactionPin != null) {
+      $result.transactionPin = transactionPin;
+    }
+    return $result;
+  }
+  RevealCardDetailsRequest._() : super();
+  factory RevealCardDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RevealCardDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RevealCardDetailsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'transactionPin')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RevealCardDetailsRequest clone() => RevealCardDetailsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RevealCardDetailsRequest copyWith(void Function(RevealCardDetailsRequest) updates) => super.copyWith((message) => updates(message as RevealCardDetailsRequest)) as RevealCardDetailsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RevealCardDetailsRequest create() => RevealCardDetailsRequest._();
+  RevealCardDetailsRequest createEmptyInstance() => create();
+  static $pb.PbList<RevealCardDetailsRequest> createRepeated() => $pb.PbList<RevealCardDetailsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RevealCardDetailsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RevealCardDetailsRequest>(create);
+  static RevealCardDetailsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get transactionPin => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set transactionPin($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTransactionPin() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTransactionPin() => clearField(2);
+}
+
+class RevealCardDetailsResponse extends $pb.GeneratedMessage {
+  factory RevealCardDetailsResponse({
+    $core.String? cardNumber,
+    $core.String? cardHolderName,
+    $core.String? expiryDate,
+    $core.String? cvv,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (cardNumber != null) {
+      $result.cardNumber = cardNumber;
+    }
+    if (cardHolderName != null) {
+      $result.cardHolderName = cardHolderName;
+    }
+    if (expiryDate != null) {
+      $result.expiryDate = expiryDate;
+    }
+    if (cvv != null) {
+      $result.cvv = cvv;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  RevealCardDetailsResponse._() : super();
+  factory RevealCardDetailsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RevealCardDetailsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RevealCardDetailsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardNumber')
+    ..aOS(2, _omitFieldNames ? '' : 'cardHolderName')
+    ..aOS(3, _omitFieldNames ? '' : 'expiryDate')
+    ..aOS(4, _omitFieldNames ? '' : 'cvv')
+    ..aOS(5, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RevealCardDetailsResponse clone() => RevealCardDetailsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RevealCardDetailsResponse copyWith(void Function(RevealCardDetailsResponse) updates) => super.copyWith((message) => updates(message as RevealCardDetailsResponse)) as RevealCardDetailsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RevealCardDetailsResponse create() => RevealCardDetailsResponse._();
+  RevealCardDetailsResponse createEmptyInstance() => create();
+  static $pb.PbList<RevealCardDetailsResponse> createRepeated() => $pb.PbList<RevealCardDetailsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RevealCardDetailsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RevealCardDetailsResponse>(create);
+  static RevealCardDetailsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get cardNumber => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set cardNumber($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCardNumber() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCardNumber() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get cardHolderName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set cardHolderName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCardHolderName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCardHolderName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get expiryDate => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set expiryDate($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasExpiryDate() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearExpiryDate() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get cvv => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set cvv($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCvv() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCvv() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get message => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set message($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasMessage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMessage() => clearField(5);
+}
+
+/// Generate statement request
+class GenerateStatementRequest extends $pb.GeneratedMessage {
+  factory GenerateStatementRequest({
+    $core.String? accountId,
+    $fixnum.Int64? startDate,
+    $fixnum.Int64? endDate,
+    $core.String? format,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    if (format != null) {
+      $result.format = format;
+    }
+    return $result;
+  }
+  GenerateStatementRequest._() : super();
+  factory GenerateStatementRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateStatementRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateStatementRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aInt64(2, _omitFieldNames ? '' : 'startDate')
+    ..aInt64(3, _omitFieldNames ? '' : 'endDate')
+    ..aOS(4, _omitFieldNames ? '' : 'format')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateStatementRequest clone() => GenerateStatementRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateStatementRequest copyWith(void Function(GenerateStatementRequest) updates) => super.copyWith((message) => updates(message as GenerateStatementRequest)) as GenerateStatementRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateStatementRequest create() => GenerateStatementRequest._();
+  GenerateStatementRequest createEmptyInstance() => create();
+  static $pb.PbList<GenerateStatementRequest> createRepeated() => $pb.PbList<GenerateStatementRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateStatementRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateStatementRequest>(create);
+  static GenerateStatementRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get startDate => $_getI64(1);
+  @$pb.TagNumber(2)
+  set startDate($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStartDate() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStartDate() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get endDate => $_getI64(2);
+  @$pb.TagNumber(3)
+  set endDate($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEndDate() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEndDate() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get format => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set format($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFormat() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFormat() => clearField(4);
+}
+
+class GenerateStatementResponse extends $pb.GeneratedMessage {
+  factory GenerateStatementResponse({
+    $core.String? documentId,
+    $core.String? downloadUrl,
+    $fixnum.Int64? validUntil,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (documentId != null) {
+      $result.documentId = documentId;
+    }
+    if (downloadUrl != null) {
+      $result.downloadUrl = downloadUrl;
+    }
+    if (validUntil != null) {
+      $result.validUntil = validUntil;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  GenerateStatementResponse._() : super();
+  factory GenerateStatementResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateStatementResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateStatementResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'documentId')
+    ..aOS(2, _omitFieldNames ? '' : 'downloadUrl')
+    ..aInt64(3, _omitFieldNames ? '' : 'validUntil')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateStatementResponse clone() => GenerateStatementResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateStatementResponse copyWith(void Function(GenerateStatementResponse) updates) => super.copyWith((message) => updates(message as GenerateStatementResponse)) as GenerateStatementResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateStatementResponse create() => GenerateStatementResponse._();
+  GenerateStatementResponse createEmptyInstance() => create();
+  static $pb.PbList<GenerateStatementResponse> createRepeated() => $pb.PbList<GenerateStatementResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateStatementResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateStatementResponse>(create);
+  static GenerateStatementResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get documentId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set documentId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDocumentId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDocumentId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get downloadUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set downloadUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDownloadUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDownloadUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get validUntil => $_getI64(2);
+  @$pb.TagNumber(3)
+  set validUntil($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasValidUntil() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearValidUntil() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+}
+
+/// Generate account confirmation request
+class GenerateAccountConfirmationRequest extends $pb.GeneratedMessage {
+  factory GenerateAccountConfirmationRequest({
+    $core.String? accountId,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    return $result;
+  }
+  GenerateAccountConfirmationRequest._() : super();
+  factory GenerateAccountConfirmationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateAccountConfirmationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateAccountConfirmationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateAccountConfirmationRequest clone() => GenerateAccountConfirmationRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateAccountConfirmationRequest copyWith(void Function(GenerateAccountConfirmationRequest) updates) => super.copyWith((message) => updates(message as GenerateAccountConfirmationRequest)) as GenerateAccountConfirmationRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateAccountConfirmationRequest create() => GenerateAccountConfirmationRequest._();
+  GenerateAccountConfirmationRequest createEmptyInstance() => create();
+  static $pb.PbList<GenerateAccountConfirmationRequest> createRepeated() => $pb.PbList<GenerateAccountConfirmationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateAccountConfirmationRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateAccountConfirmationRequest>(create);
+  static GenerateAccountConfirmationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+}
+
+class GenerateAccountConfirmationResponse extends $pb.GeneratedMessage {
+  factory GenerateAccountConfirmationResponse({
+    $core.String? documentId,
+    $core.String? downloadUrl,
+    $fixnum.Int64? validUntil,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (documentId != null) {
+      $result.documentId = documentId;
+    }
+    if (downloadUrl != null) {
+      $result.downloadUrl = downloadUrl;
+    }
+    if (validUntil != null) {
+      $result.validUntil = validUntil;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  GenerateAccountConfirmationResponse._() : super();
+  factory GenerateAccountConfirmationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateAccountConfirmationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateAccountConfirmationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'documentId')
+    ..aOS(2, _omitFieldNames ? '' : 'downloadUrl')
+    ..aInt64(3, _omitFieldNames ? '' : 'validUntil')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateAccountConfirmationResponse clone() => GenerateAccountConfirmationResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateAccountConfirmationResponse copyWith(void Function(GenerateAccountConfirmationResponse) updates) => super.copyWith((message) => updates(message as GenerateAccountConfirmationResponse)) as GenerateAccountConfirmationResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateAccountConfirmationResponse create() => GenerateAccountConfirmationResponse._();
+  GenerateAccountConfirmationResponse createEmptyInstance() => create();
+  static $pb.PbList<GenerateAccountConfirmationResponse> createRepeated() => $pb.PbList<GenerateAccountConfirmationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateAccountConfirmationResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateAccountConfirmationResponse>(create);
+  static GenerateAccountConfirmationResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get documentId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set documentId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDocumentId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDocumentId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get downloadUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set downloadUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDownloadUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDownloadUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get validUntil => $_getI64(2);
+  @$pb.TagNumber(3)
+  set validUntil($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasValidUntil() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearValidUntil() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+}
+
+/// Generate proof of funds request
+class GenerateProofOfFundsRequest extends $pb.GeneratedMessage {
+  factory GenerateProofOfFundsRequest({
+    $core.String? accountId,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    return $result;
+  }
+  GenerateProofOfFundsRequest._() : super();
+  factory GenerateProofOfFundsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateProofOfFundsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateProofOfFundsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateProofOfFundsRequest clone() => GenerateProofOfFundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateProofOfFundsRequest copyWith(void Function(GenerateProofOfFundsRequest) updates) => super.copyWith((message) => updates(message as GenerateProofOfFundsRequest)) as GenerateProofOfFundsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateProofOfFundsRequest create() => GenerateProofOfFundsRequest._();
+  GenerateProofOfFundsRequest createEmptyInstance() => create();
+  static $pb.PbList<GenerateProofOfFundsRequest> createRepeated() => $pb.PbList<GenerateProofOfFundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateProofOfFundsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateProofOfFundsRequest>(create);
+  static GenerateProofOfFundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+}
+
+class GenerateProofOfFundsResponse extends $pb.GeneratedMessage {
+  factory GenerateProofOfFundsResponse({
+    $core.String? documentId,
+    $core.String? downloadUrl,
+    $fixnum.Int64? validUntil,
+    $core.double? currentBalance,
+    $core.String? currency,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (documentId != null) {
+      $result.documentId = documentId;
+    }
+    if (downloadUrl != null) {
+      $result.downloadUrl = downloadUrl;
+    }
+    if (validUntil != null) {
+      $result.validUntil = validUntil;
+    }
+    if (currentBalance != null) {
+      $result.currentBalance = currentBalance;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  GenerateProofOfFundsResponse._() : super();
+  factory GenerateProofOfFundsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateProofOfFundsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateProofOfFundsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'documentId')
+    ..aOS(2, _omitFieldNames ? '' : 'downloadUrl')
+    ..aInt64(3, _omitFieldNames ? '' : 'validUntil')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'currentBalance', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..aOS(6, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateProofOfFundsResponse clone() => GenerateProofOfFundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateProofOfFundsResponse copyWith(void Function(GenerateProofOfFundsResponse) updates) => super.copyWith((message) => updates(message as GenerateProofOfFundsResponse)) as GenerateProofOfFundsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateProofOfFundsResponse create() => GenerateProofOfFundsResponse._();
+  GenerateProofOfFundsResponse createEmptyInstance() => create();
+  static $pb.PbList<GenerateProofOfFundsResponse> createRepeated() => $pb.PbList<GenerateProofOfFundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateProofOfFundsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateProofOfFundsResponse>(create);
+  static GenerateProofOfFundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get documentId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set documentId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDocumentId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDocumentId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get downloadUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set downloadUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDownloadUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDownloadUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get validUntil => $_getI64(2);
+  @$pb.TagNumber(3)
+  set validUntil($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasValidUntil() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearValidUntil() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get currentBalance => $_getN(3);
+  @$pb.TagNumber(4)
+  set currentBalance($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrentBalance() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrentBalance() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get message => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set message($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasMessage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMessage() => clearField(6);
 }
 
 

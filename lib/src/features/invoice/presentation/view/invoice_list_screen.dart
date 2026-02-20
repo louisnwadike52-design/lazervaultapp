@@ -430,7 +430,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _navigateToCreate() {
-    Get.toNamed(AppRoutes.createInvoice);
+    Get.toNamed(AppRoutes.invoicePayment, arguments: {'isPrePayment': true});
   }
 
   void _navigateToDetails(Invoice invoice) {

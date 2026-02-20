@@ -1106,35 +1106,30 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   void _processSellOrder() {
     if (_selectedHolding == null || !_hasValidAmount) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Create transaction details
+    final fee = _fiatAmount * 0.015; // 1.5% fee
+    final netProceeds = _fiatAmount - fee;
 
-    // Simulate processing delay
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _isLoading = false;
-      });
+    final transactionDetails = CryptoTransactionDetails(
+      type: CryptoTransactionType.sell,
+      cryptoName: _selectedHolding!.cryptoName,
+      cryptoSymbol: _selectedHolding!.cryptoSymbol,
+      cryptoAmount: _cryptoAmount.toStringAsFixed(6),
+      pricePerUnit: _selectedHolding!.currentPrice,
+      fiatAmount: netProceeds,
+      networkFee: fee * 0.3,
+      tradingFee: fee * 0.7,
+      totalAmount: netProceeds,
+      paymentMethod: 'Bank Transfer',
+      cryptoId: _selectedHolding!.cryptoId,
+      cryptoQuantity: _cryptoAmount,
+    );
 
-      // Create transaction details
-      final fee = _fiatAmount * 0.015; // 1.5% fee
-      final netProceeds = _fiatAmount - fee;
-      
-      final transactionDetails = CryptoTransactionDetails(
-        type: CryptoTransactionType.sell,
-        cryptoName: _selectedHolding!.cryptoName,
-        cryptoSymbol: _selectedHolding!.cryptoSymbol,
-        cryptoAmount: _cryptoAmount.toStringAsFixed(6),
-        pricePerUnit: _selectedHolding!.currentPrice,
-        fiatAmount: netProceeds,
-        networkFee: fee * 0.3, // 30% of total fee for network
-        tradingFee: fee * 0.7, // 70% of total fee for LazerVault
-        totalAmount: netProceeds,
-        paymentMethod: 'Bank Transfer', // Default for sells
-      );
-
-      // Navigate to confirmation screen
-      Get.to(() => CryptoConfirmationScreen(transactionDetails: transactionDetails));
-    });
+    // Navigate to confirmation screen with CryptoCubit
+    final cryptoCubit = context.read<CryptoCubit>();
+    Get.to(() => BlocProvider.value(
+      value: cryptoCubit,
+      child: CryptoConfirmationScreen(transactionDetails: transactionDetails),
+    ));
   }
 } 

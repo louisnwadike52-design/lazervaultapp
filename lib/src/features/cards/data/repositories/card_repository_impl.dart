@@ -183,4 +183,102 @@ class CardRepositoryImpl implements ICardRepository {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
     }
   }
+
+  @override
+  Future<Either<Failure, Card>> requestPhysicalCard({
+    required int accountId,
+    String? nickname,
+    String? currency,
+    String? billingAddress,
+    String? shippingAddress,
+  }) async {
+    try {
+      final card = await remoteDataSource.requestPhysicalCard(
+        accountId: accountId,
+        nickname: nickname,
+        currency: currency,
+        billingAddress: billingAddress,
+        shippingAddress: shippingAddress,
+      );
+      return Right(card);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> setCardPIN({
+    required String cardUuid,
+    required String pin,
+  }) async {
+    try {
+      await remoteDataSource.setCardPIN(
+        cardUuid: cardUuid,
+        pin: pin,
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> revealCardPIN({
+    required String cardUuid,
+  }) async {
+    try {
+      final pin = await remoteDataSource.revealCardPIN(
+        cardUuid: cardUuid,
+      );
+      return Right(pin);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Card>> revealFullCardDetails({
+    required String cardUuid,
+  }) async {
+    try {
+      final card = await remoteDataSource.revealFullCardDetails(
+        cardUuid: cardUuid,
+      );
+      return Right(card);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Card>> fundCard({
+    required String cardUuid,
+    required double amount,
+  }) async {
+    try {
+      final card = await remoteDataSource.fundCard(
+        cardUuid: cardUuid,
+        amount: amount,
+      );
+      return Right(card);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Card>> withdrawFromCard({
+    required String cardUuid,
+    required double amount,
+  }) async {
+    try {
+      final card = await remoteDataSource.withdrawFromCard(
+        cardUuid: cardUuid,
+        amount: amount,
+      );
+      return Right(card);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
 }

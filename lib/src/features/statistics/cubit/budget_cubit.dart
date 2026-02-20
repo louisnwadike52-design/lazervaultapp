@@ -5,6 +5,9 @@ import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 
 /// Cubit for managing budget state
+///
+/// Note: BudgetRepository routes through investment-gateway (port 50072)
+/// which proxies gRPC calls to statistics-service (port 50069)
 class BudgetCubit extends Cubit<BudgetState> {
   final BudgetRepository _budgetRepository;
   final BudgetAIService _budgetAIService;

@@ -651,6 +651,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           denomination: _selectedDenomination!,
           transactionId: transactionId,
           verificationToken: verificationToken,
+          providerName: _selectedCard!.providerName.isNotEmpty ? _selectedCard!.providerName : null,
         );
       },
     );

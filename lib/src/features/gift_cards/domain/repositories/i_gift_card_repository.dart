@@ -22,6 +22,7 @@ abstract class IGiftCardRepository {
     String? countryCode,
     String? idempotencyKey,
     int quantity,
+    String? providerName,
   });
 
   Future<Either<Failure, List<GiftCard>>> getUserGiftCards({
@@ -80,6 +81,7 @@ abstract class IGiftCardRepository {
     String? currency,
     List<String>? images,
     String? idempotencyKey,
+    String? providerName,
   });
 
   Future<Either<Failure, GiftCardSale>> getSellStatus(String saleId);

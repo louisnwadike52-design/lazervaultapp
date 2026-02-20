@@ -103,5 +103,24 @@ class TimeFrame extends $pb.ProtobufEnum {
   const TimeFrame._($core.int v, $core.String n) : super(v, n);
 }
 
+class AlertType extends $pb.ProtobufEnum {
+  static const AlertType ALERT_TYPE_UNSPECIFIED = AlertType._(0, _omitEnumNames ? '' : 'ALERT_TYPE_UNSPECIFIED');
+  static const AlertType ALERT_TYPE_PRICE_ABOVE = AlertType._(1, _omitEnumNames ? '' : 'ALERT_TYPE_PRICE_ABOVE');
+  static const AlertType ALERT_TYPE_PRICE_BELOW = AlertType._(2, _omitEnumNames ? '' : 'ALERT_TYPE_PRICE_BELOW');
+  static const AlertType ALERT_TYPE_PERCENT_CHANGE = AlertType._(3, _omitEnumNames ? '' : 'ALERT_TYPE_PERCENT_CHANGE');
+
+  static const $core.List<AlertType> values = <AlertType> [
+    ALERT_TYPE_UNSPECIFIED,
+    ALERT_TYPE_PRICE_ABOVE,
+    ALERT_TYPE_PRICE_BELOW,
+    ALERT_TYPE_PERCENT_CHANGE,
+  ];
+
+  static final $core.Map<$core.int, AlertType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static AlertType? valueOf($core.int value) => _byValue[value];
+
+  const AlertType._($core.int v, $core.String n) : super(v, n);
+}
+
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

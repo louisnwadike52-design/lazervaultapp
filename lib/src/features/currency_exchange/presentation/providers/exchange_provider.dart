@@ -164,6 +164,8 @@ class ExchangeProvider extends ChangeNotifier {
         toCurrency: _toCurrency!.code,
         amount: _amount,
         recipientId: _selectedRecipient!.id,
+        verificationToken: '',
+        idempotencyKey: 'exchange-${DateTime.now().millisecondsSinceEpoch}',
       );
 
       return result.fold(

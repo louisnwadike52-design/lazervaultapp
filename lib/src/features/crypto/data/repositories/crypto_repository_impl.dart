@@ -196,6 +196,38 @@ class CryptoRepositoryImpl implements CryptoRepository {
   }
 
   @override
+  Future<CryptoTransaction> convertCrypto({
+    required String fromCryptoId,
+    required String toCryptoId,
+    required double amount,
+    required String transactionPin,
+    String? fiatCurrency,
+  }) async {
+    final response = await grpcClient.convertCrypto(
+      fromCryptoId: fromCryptoId,
+      toCryptoId: toCryptoId,
+      amount: amount,
+      transactionPin: transactionPin,
+    );
+
+    final fromCrypto = await getCryptoById(fromCryptoId);
+
+    return CryptoTransaction(
+      id: response.transactionId,
+      cryptoId: toCryptoId,
+      cryptoSymbol: fromCrypto.symbol,
+      cryptoName: fromCrypto.name,
+      type: TransactionType.swap,
+      quantity: response.fromAmount,
+      price: response.rate > 0 ? response.rate : (response.toAmount / (response.fromAmount > 0 ? response.fromAmount : 1)),
+      totalAmount: response.toAmount,
+      fees: response.fee,
+      timestamp: DateTime.now(),
+      status: response.status,
+    );
+  }
+
+  @override
   Future<List<CryptoTransaction>> getTransactions() async {
     // Fetch real transactions from backend via gRPC
     try {

@@ -12,9 +12,13 @@ import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/account_carousel.dart';
-import '../widgets/card_details_bottom_sheet.dart';
+import 'package:lazervault/src/features/account_actions/presentation/widgets/account_actions_bottom_sheet.dart';
+import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
 import '../widgets/empty_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
+import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.dart';
 
 // Wrapper Widget to Provide the Cubit
 class DashboardCardSummary extends StatelessWidget {
@@ -142,10 +146,15 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
     }
   }
 
-  // Method to show the extracted bottom sheet widget
+  // Method to show the account actions bottom sheet widget
   void _showCardDetailsSheet(Map<String, dynamic> accountArgs) {
+    final accountId = accountArgs['id']?.toString() ?? accountArgs['uuid']?.toString() ?? '';
+
     Get.bottomSheet(
-      CardDetailsBottomSheet(accountArgs: accountArgs),
+      BlocProvider.value(
+        value: serviceLocator<AccountActionsCubit>(),
+        child: AccountActionsBottomSheet(accountArgs: accountArgs),
+      ),
       isScrollControlled: true,
       enableDrag: true,
       isDismissible: true,
@@ -167,6 +176,19 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
 
     return MultiBlocListener(
       listeners: [
+        // Listen for multi-country account creation events
+        BlocListener<MultiCountryCubit, MultiCountryState>(
+          listener: (context, state) {
+            if (state is LocaleAccountCreated) {
+              LVSnackbar.showSuccess(
+                title: 'Account Created',
+                message: state.message,
+              );
+              // Refresh account summaries to show the new account
+              _fetchData();
+            }
+          },
+        ),
         // Listen for WebSocket balance updates
         // Note: The AccountCarousel handles real-time balance updates directly
         // via animated counters - NO server refresh needed, WebSocket is the source of truth
@@ -283,7 +305,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                         : (state as AccountBalanceUpdated).accountSummaries;
                     // Check if user has no accounts (non-Nigeria or accounts not yet created)
                     if (accountSummaries.isEmpty) {
-                      final isNigeriaUser = EmptyAccountState.isCountrySupported(countryCode);
+                      final isSupported = EmptyAccountState.isCountrySupported(countryCode);
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 4.w),
                         child: SizedBox(
@@ -291,7 +313,8 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                           height: 200.h,
                           child: EmptyAccountState(
                             countryCode: countryCode,
-                            isVirtualAccountSupported: isNigeriaUser,
+                            isVirtualAccountSupported: isSupported,
+                            onAccountCreated: () => _fetchData(),
                             onNotifyMe: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(

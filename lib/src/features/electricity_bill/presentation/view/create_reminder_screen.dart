@@ -9,6 +9,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/electricity_bill/domain/entities/beneficiary_entity.dart';
 import 'package:lazervault/src/features/electricity_bill/domain/entities/bill_payment_entity.dart';
 import 'package:lazervault/src/features/electricity_bill/domain/entities/reminder_entity.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/electricity_bill/domain/repositories/electricity_bill_repository.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/beneficiary_cubit.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/beneficiary_state.dart';
@@ -948,7 +950,7 @@ class _ReminderAddBeneficiarySheetState extends State<_ReminderAddBeneficiaryShe
         ? MeterType.postpaid
         : MeterType.prepaid;
 
-    final providersResult = await widget.electricityBillCubit.repository.getProviders(country: 'NG');
+    final providersResult = await widget.electricityBillCubit.repository.getProviders(country: serviceLocator<LocaleManager>().currentCountry);
     String providerId = '';
     providersResult.fold((_) {}, (providers) {
       final matched = providers.where(

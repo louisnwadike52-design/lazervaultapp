@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 
 /// AI-powered budget insights response
 class BudgetAIInsightsResponse {
@@ -168,15 +170,15 @@ class CategoryInsightItem {
 class BudgetAIService {
   final Dio _dio;
   final String _baseUrl;
-  final Future<String> Function() _getAccessToken;
+  final SecureStorageService _secureStorage;
 
   BudgetAIService({
     required Dio dio,
     required String baseUrl,
-    required Future<String> Function() getAccessToken,
+    required SecureStorageService secureStorage,
   })  : _dio = dio,
         _baseUrl = baseUrl,
-        _getAccessToken = getAccessToken;
+        _secureStorage = secureStorage;
 
   /// Generate AI insights for budget planning
   Future<BudgetAIInsightsResponse> getAIInsights({
@@ -193,7 +195,7 @@ class BudgetAIService {
     List<Map<String, dynamic>> failedTransactions = const [],
   }) async {
     try {
-      final accessToken = await _getAccessToken();
+      final headers = await ApiHeaders.build(secureStorage: _secureStorage);
 
       final response = await _dio.post(
         '$_baseUrl/api/budget/ai-insights',
@@ -211,10 +213,7 @@ class BudgetAIService {
           'months_of_data': monthsOfData,
         },
         options: Options(
-          headers: {
-            'Authorization': 'Bearer $accessToken',
-            'Content-Type': 'application/json',
-          },
+          headers: headers,
           sendTimeout: const Duration(seconds: 60),
           receiveTimeout: const Duration(seconds: 60),
         ),

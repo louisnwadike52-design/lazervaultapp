@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'grpc_ai_chat_service.dart'; // Import the interface from gRPC file
 
@@ -12,6 +13,8 @@ class HttpAiChatDataSource implements IAiChatDataSource {
   final SecureStorageService _secureStorageService;
   final AccountManager? _accountManager;
   final LocaleManager? _localeManager;
+
+  static const String _serviceName = 'lazervault-flutter-ai-chat';
 
   HttpAiChatDataSource({
     required Dio dio,
@@ -43,13 +46,26 @@ class HttpAiChatDataSource implements IAiChatDataSource {
 
     print('AI Chat: BaseUrl after config: ${_dio.options.baseUrl}');
 
-    // Add auth interceptor
+    // Add auth interceptor with all required headers
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        // Get access token
         final token = await _secureStorageService.getAccessToken();
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
         }
+
+        // Add X-User-Id
+        final userId = await _secureStorageService.getUserId();
+        if (userId != null && userId.isNotEmpty) {
+          options.headers['X-User-Id'] = userId;
+        }
+
+        // Add X-Service-Name
+        options.headers['X-Service-Name'] = _serviceName;
+
+        // Add X-Request-ID (unique per request)
+        options.headers['X-Request-ID'] = ApiHeaders.generateRequestIdWithPrefix('ai-chat');
 
         // Add account context headers
         final accountId = _accountManager?.activeAccountId;
@@ -57,11 +73,14 @@ class HttpAiChatDataSource implements IAiChatDataSource {
           options.headers['X-Account-Id'] = accountId;
         }
 
+        // Add country headers
         final country = _localeManager?.currentCountry;
         if (country != null && country.isNotEmpty) {
+          options.headers['X-Country'] = country;
           options.headers['X-User-Country'] = country;
         }
 
+        // Add currency header
         final currency = _localeManager?.currentCurrency;
         if (currency != null && currency.isNotEmpty) {
           options.headers['X-Currency'] = currency;

@@ -1689,14 +1689,21 @@ class ResendPhoneVerificationResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(2);
 }
 
-/// ===== Password Reset =====
 class ForgotPasswordRequest extends $pb.GeneratedMessage {
   factory ForgotPasswordRequest({
     $core.String? email,
+    $core.String? phone,
+    PasswordResetDeliveryMethod? deliveryMethod,
   }) {
     final $result = create();
     if (email != null) {
       $result.email = email;
+    }
+    if (phone != null) {
+      $result.phone = phone;
+    }
+    if (deliveryMethod != null) {
+      $result.deliveryMethod = deliveryMethod;
     }
     return $result;
   }
@@ -1706,6 +1713,8 @@ class ForgotPasswordRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ForgotPasswordRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'email')
+    ..aOS(2, _omitFieldNames ? '' : 'phone')
+    ..e<PasswordResetDeliveryMethod>(3, _omitFieldNames ? '' : 'deliveryMethod', $pb.PbFieldType.OE, defaultOrMaker: PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED, valueOf: PasswordResetDeliveryMethod.valueOf, enumValues: PasswordResetDeliveryMethod.values)
     ..hasRequiredFields = false
   ;
 
@@ -1738,15 +1747,53 @@ class ForgotPasswordRequest extends $pb.GeneratedMessage {
   $core.bool hasEmail() => $_has(0);
   @$pb.TagNumber(1)
   void clearEmail() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get phone => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set phone($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPhone() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPhone() => clearField(2);
+
+  @$pb.TagNumber(3)
+  PasswordResetDeliveryMethod get deliveryMethod => $_getN(2);
+  @$pb.TagNumber(3)
+  set deliveryMethod(PasswordResetDeliveryMethod v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDeliveryMethod() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDeliveryMethod() => clearField(3);
 }
 
 class ForgotPasswordResponse extends $pb.GeneratedMessage {
   factory ForgotPasswordResponse({
     $core.String? message,
+    $core.bool? success,
+    $core.String? deliveryMethod,
+    $core.String? maskedContact,
+    $fixnum.Int64? expiresInSeconds,
+    $core.bool? userFound,
   }) {
     final $result = create();
     if (message != null) {
       $result.message = message;
+    }
+    if (success != null) {
+      $result.success = success;
+    }
+    if (deliveryMethod != null) {
+      $result.deliveryMethod = deliveryMethod;
+    }
+    if (maskedContact != null) {
+      $result.maskedContact = maskedContact;
+    }
+    if (expiresInSeconds != null) {
+      $result.expiresInSeconds = expiresInSeconds;
+    }
+    if (userFound != null) {
+      $result.userFound = userFound;
     }
     return $result;
   }
@@ -1756,6 +1803,11 @@ class ForgotPasswordResponse extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ForgotPasswordResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'message')
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'deliveryMethod')
+    ..aOS(4, _omitFieldNames ? '' : 'maskedContact')
+    ..aInt64(5, _omitFieldNames ? '' : 'expiresInSeconds')
+    ..aOB(6, _omitFieldNames ? '' : 'userFound')
     ..hasRequiredFields = false
   ;
 
@@ -1788,16 +1840,231 @@ class ForgotPasswordResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(0);
   @$pb.TagNumber(1)
   void clearMessage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get success => $_getBF(1);
+  @$pb.TagNumber(2)
+  set success($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSuccess() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSuccess() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get deliveryMethod => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set deliveryMethod($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDeliveryMethod() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDeliveryMethod() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get maskedContact => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set maskedContact($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMaskedContact() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMaskedContact() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get expiresInSeconds => $_getI64(4);
+  @$pb.TagNumber(5)
+  set expiresInSeconds($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasExpiresInSeconds() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearExpiresInSeconds() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get userFound => $_getBF(5);
+  @$pb.TagNumber(6)
+  set userFound($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasUserFound() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearUserFound() => clearField(6);
+}
+
+class VerifyPasswordResetCodeRequest extends $pb.GeneratedMessage {
+  factory VerifyPasswordResetCodeRequest({
+    $core.String? contact,
+    $core.String? code,
+    PasswordResetDeliveryMethod? deliveryMethod,
+  }) {
+    final $result = create();
+    if (contact != null) {
+      $result.contact = contact;
+    }
+    if (code != null) {
+      $result.code = code;
+    }
+    if (deliveryMethod != null) {
+      $result.deliveryMethod = deliveryMethod;
+    }
+    return $result;
+  }
+  VerifyPasswordResetCodeRequest._() : super();
+  factory VerifyPasswordResetCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyPasswordResetCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPasswordResetCodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contact')
+    ..aOS(2, _omitFieldNames ? '' : 'code')
+    ..e<PasswordResetDeliveryMethod>(3, _omitFieldNames ? '' : 'deliveryMethod', $pb.PbFieldType.OE, defaultOrMaker: PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED, valueOf: PasswordResetDeliveryMethod.valueOf, enumValues: PasswordResetDeliveryMethod.values)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyPasswordResetCodeRequest clone() => VerifyPasswordResetCodeRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyPasswordResetCodeRequest copyWith(void Function(VerifyPasswordResetCodeRequest) updates) => super.copyWith((message) => updates(message as VerifyPasswordResetCodeRequest)) as VerifyPasswordResetCodeRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static VerifyPasswordResetCodeRequest create() => VerifyPasswordResetCodeRequest._();
+  VerifyPasswordResetCodeRequest createEmptyInstance() => create();
+  static $pb.PbList<VerifyPasswordResetCodeRequest> createRepeated() => $pb.PbList<VerifyPasswordResetCodeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyPasswordResetCodeRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyPasswordResetCodeRequest>(create);
+  static VerifyPasswordResetCodeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contact => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contact($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasContact() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContact() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get code => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set code($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  PasswordResetDeliveryMethod get deliveryMethod => $_getN(2);
+  @$pb.TagNumber(3)
+  set deliveryMethod(PasswordResetDeliveryMethod v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDeliveryMethod() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDeliveryMethod() => clearField(3);
+}
+
+class VerifyPasswordResetCodeResponse extends $pb.GeneratedMessage {
+  factory VerifyPasswordResetCodeResponse({
+    $core.bool? success,
+    $core.String? message,
+    $core.String? resetToken,
+    $fixnum.Int64? expiresInSeconds,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (resetToken != null) {
+      $result.resetToken = resetToken;
+    }
+    if (expiresInSeconds != null) {
+      $result.expiresInSeconds = expiresInSeconds;
+    }
+    return $result;
+  }
+  VerifyPasswordResetCodeResponse._() : super();
+  factory VerifyPasswordResetCodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyPasswordResetCodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPasswordResetCodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOS(3, _omitFieldNames ? '' : 'resetToken')
+    ..aInt64(4, _omitFieldNames ? '' : 'expiresInSeconds')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyPasswordResetCodeResponse clone() => VerifyPasswordResetCodeResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyPasswordResetCodeResponse copyWith(void Function(VerifyPasswordResetCodeResponse) updates) => super.copyWith((message) => updates(message as VerifyPasswordResetCodeResponse)) as VerifyPasswordResetCodeResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static VerifyPasswordResetCodeResponse create() => VerifyPasswordResetCodeResponse._();
+  VerifyPasswordResetCodeResponse createEmptyInstance() => create();
+  static $pb.PbList<VerifyPasswordResetCodeResponse> createRepeated() => $pb.PbList<VerifyPasswordResetCodeResponse>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyPasswordResetCodeResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyPasswordResetCodeResponse>(create);
+  static VerifyPasswordResetCodeResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get resetToken => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set resetToken($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasResetToken() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearResetToken() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get expiresInSeconds => $_getI64(3);
+  @$pb.TagNumber(4)
+  set expiresInSeconds($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasExpiresInSeconds() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearExpiresInSeconds() => clearField(4);
 }
 
 class ResetPasswordRequest extends $pb.GeneratedMessage {
   factory ResetPasswordRequest({
-    $core.String? token,
+    $core.String? resetToken,
     $core.String? newPassword,
   }) {
     final $result = create();
-    if (token != null) {
-      $result.token = token;
+    if (resetToken != null) {
+      $result.resetToken = resetToken;
     }
     if (newPassword != null) {
       $result.newPassword = newPassword;
@@ -1809,7 +2076,7 @@ class ResetPasswordRequest extends $pb.GeneratedMessage {
   factory ResetPasswordRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResetPasswordRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'token')
+    ..aOS(1, _omitFieldNames ? '' : 'resetToken')
     ..aOS(2, _omitFieldNames ? '' : 'newPassword')
     ..hasRequiredFields = false
   ;
@@ -1836,13 +2103,13 @@ class ResetPasswordRequest extends $pb.GeneratedMessage {
   static ResetPasswordRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get token => $_getSZ(0);
+  $core.String get resetToken => $_getSZ(0);
   @$pb.TagNumber(1)
-  set token($core.String v) { $_setString(0, v); }
+  set resetToken($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasToken() => $_has(0);
+  $core.bool hasResetToken() => $_has(0);
   @$pb.TagNumber(1)
-  void clearToken() => clearField(1);
+  void clearResetToken() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get newPassword => $_getSZ(1);
@@ -7820,6 +8087,7 @@ class UserLookupResult extends $pb.GeneratedMessage {
     $core.String? phoneNumber,
     $core.String? email,
     $core.String? primaryAccountId,
+    $core.String? countryCode,
   }) {
     final $result = create();
     if (userId != null) {
@@ -7849,6 +8117,9 @@ class UserLookupResult extends $pb.GeneratedMessage {
     if (primaryAccountId != null) {
       $result.primaryAccountId = primaryAccountId;
     }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
     return $result;
   }
   UserLookupResult._() : super();
@@ -7865,6 +8136,7 @@ class UserLookupResult extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'phoneNumber')
     ..aOS(8, _omitFieldNames ? '' : 'email')
     ..aOS(9, _omitFieldNames ? '' : 'primaryAccountId')
+    ..aOS(10, _omitFieldNames ? '' : 'countryCode')
     ..hasRequiredFields = false
   ;
 
@@ -7969,6 +8241,15 @@ class UserLookupResult extends $pb.GeneratedMessage {
   $core.bool hasPrimaryAccountId() => $_has(8);
   @$pb.TagNumber(9)
   void clearPrimaryAccountId() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get countryCode => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set countryCode($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCountryCode() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCountryCode() => clearField(10);
 }
 
 /// Search users by multiple fields request
@@ -7977,6 +8258,7 @@ class UserSearchRequest extends $pb.GeneratedMessage {
     $core.String? query,
     $core.int? limit,
     $core.String? searchType,
+    $core.String? countryCode,
   }) {
     final $result = create();
     if (query != null) {
@@ -7988,6 +8270,9 @@ class UserSearchRequest extends $pb.GeneratedMessage {
     if (searchType != null) {
       $result.searchType = searchType;
     }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
     return $result;
   }
   UserSearchRequest._() : super();
@@ -7998,6 +8283,7 @@ class UserSearchRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'query')
     ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'searchType')
+    ..aOS(4, _omitFieldNames ? '' : 'countryCode')
     ..hasRequiredFields = false
   ;
 
@@ -8048,6 +8334,15 @@ class UserSearchRequest extends $pb.GeneratedMessage {
   $core.bool hasSearchType() => $_has(2);
   @$pb.TagNumber(3)
   void clearSearchType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get countryCode => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set countryCode($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCountryCode() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCountryCode() => clearField(4);
 }
 
 /// Search users response

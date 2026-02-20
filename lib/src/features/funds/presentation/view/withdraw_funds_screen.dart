@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -69,20 +70,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
     }
   }
 
-  /// Get country code from selected card or auth state
+  /// Get country code from selected card or active locale
   String _getCountryFromCard() {
     // Try to get country from selected card
     if (widget.selectedCard.containsKey('countryCode')) {
       return widget.selectedCard['countryCode'] as String;
     }
-    // Fall back to auth state
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationAuthenticated) {
-      return 'NG';
-    } else if (authState is AuthenticationSuccess) {
-      return 'NG';
-    }
-    return 'NG';
+    // Fall back to active locale country
+    return serviceLocator<LocaleManager>().currentCountry;
   }
 
   /// Get a consistent color for a bank based on its name

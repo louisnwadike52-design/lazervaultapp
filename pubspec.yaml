@@ -61,6 +61,7 @@ dependencies:
   flutter_slidable: ^3.0.0
   csv: ^6.0.0
   pin_code_fields: ^8.0.1
+  pinput: ^5.0.0
   pdf: ^3.11.1
   printing: ^5.13.4
   barcode: ^2.2.9

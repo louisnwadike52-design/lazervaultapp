@@ -1182,35 +1182,30 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   void _processBuyOrder() {
     if (_selectedCrypto == null || _isLoading) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Create transaction details
+    final fee = _fiatAmount * 0.015; // 1.5% fee
+    final total = _fiatAmount + fee;
 
-    // Simulate processing delay
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _isLoading = false;
-      });
+    final transactionDetails = CryptoTransactionDetails(
+      type: CryptoTransactionType.buy,
+      cryptoName: _selectedCrypto!.name,
+      cryptoSymbol: _selectedCrypto!.symbol,
+      cryptoAmount: _cryptoAmount.toStringAsFixed(6),
+      pricePerUnit: _selectedCrypto!.currentPrice,
+      fiatAmount: _fiatAmount,
+      networkFee: fee * 0.3,
+      tradingFee: fee * 0.7,
+      totalAmount: total,
+      paymentMethod: _selectedPaymentMethod,
+      cryptoId: _selectedCrypto!.id,
+      cryptoQuantity: _cryptoAmount,
+    );
 
-      // Create transaction details
-      final fee = _fiatAmount * 0.015; // 1.5% fee
-      final total = _fiatAmount + fee;
-      
-      final transactionDetails = CryptoTransactionDetails(
-        type: CryptoTransactionType.buy,
-        cryptoName: _selectedCrypto!.name,
-        cryptoSymbol: _selectedCrypto!.symbol,
-        cryptoAmount: _cryptoAmount.toStringAsFixed(6),
-        pricePerUnit: _selectedCrypto!.currentPrice,
-        fiatAmount: _fiatAmount,
-        networkFee: fee * 0.3, // 30% of total fee for network
-        tradingFee: fee * 0.7, // 70% of total fee for LazerVault
-        totalAmount: total,
-        paymentMethod: _selectedPaymentMethod,
-      );
-
-      // Navigate to confirmation screen
-      Get.to(() => CryptoConfirmationScreen(transactionDetails: transactionDetails));
-    });
+    // Navigate to confirmation screen with CryptoCubit
+    final cryptoCubit = context.read<CryptoCubit>();
+    Get.to(() => BlocProvider.value(
+      value: cryptoCubit,
+      child: CryptoConfirmationScreen(transactionDetails: transactionDetails),
+    ));
   }
 } 

@@ -230,6 +230,9 @@ class GiftCardBrand extends Equatable {
   final double discountPercentage;
   final String currencyCode;
   final String redemptionInstructions;
+  /// Provider that supplies this gift card brand (e.g., "reloadly", "prestmit")
+  /// Used to ensure provider consistency between listing and purchase.
+  final String providerName;
 
   const GiftCardBrand({
     required this.id,
@@ -248,6 +251,7 @@ class GiftCardBrand extends Equatable {
     this.discountPercentage = 0.0,
     this.currencyCode = '',
     this.redemptionInstructions = '',
+    this.providerName = '',
   });
 
   @override
@@ -268,6 +272,7 @@ class GiftCardBrand extends Equatable {
     discountPercentage,
     currencyCode,
     redemptionInstructions,
+    providerName,
   ];
 
   Map<String, dynamic> toJson() {
@@ -288,6 +293,7 @@ class GiftCardBrand extends Equatable {
       'discountPercentage': discountPercentage,
       'currencyCode': currencyCode,
       'redemptionInstructions': redemptionInstructions,
+      'providerName': providerName,
     };
   }
 
@@ -313,6 +319,7 @@ class GiftCardBrand extends Equatable {
       discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
       currencyCode: json['currencyCode'] as String? ?? '',
       redemptionInstructions: json['redemptionInstructions'] as String? ?? '',
+      providerName: json['providerName'] as String? ?? '',
     );
   }
 }
@@ -442,6 +449,9 @@ class SellableCard extends Equatable {
   final List<String> currencies;
   final double minDenomination;
   final double maxDenomination;
+  /// Provider that handles this card type (e.g., "reloadly", "prestmit")
+  /// Used to ensure provider consistency between listing and sell.
+  final String providerName;
 
   const SellableCard({
     required this.cardType,
@@ -452,12 +462,14 @@ class SellableCard extends Equatable {
     this.currencies = const [],
     this.minDenomination = 0.0,
     this.maxDenomination = 0.0,
+    this.providerName = '',
   });
 
   @override
   List<Object?> get props => [
     cardType, displayName, logoUrl, category,
     denominations, currencies, minDenomination, maxDenomination,
+    providerName,
   ];
 }
 

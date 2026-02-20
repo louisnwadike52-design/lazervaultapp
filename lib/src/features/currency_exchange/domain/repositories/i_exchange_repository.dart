@@ -83,6 +83,23 @@ class ExchangeRate {
   double calculateTotalCost(double fromAmount) {
     return fromAmount + fees;
   }
+
+  /// Format rate for display: "1 FROM = X.XX TO"
+  /// Always shows the rate in the direction the user selected.
+  /// For very small rates (e.g., 0.00065 for NGN→USD), uses more decimal places
+  /// so users can see the actual conversion rate for their source currency.
+  String formatForDisplay() {
+    if (rate >= 0.01) {
+      return '1 $fromCurrency = ${rate.toStringAsFixed(4)} $toCurrency';
+    }
+    // For very small rates, show more decimal places for precision
+    return '1 $fromCurrency = ${rate.toStringAsFixed(6)} $toCurrency';
+  }
+
+  /// Whether this rate has expired based on its validity window.
+  bool get isExpired {
+    return DateTime.now().difference(timestamp).inSeconds > rateValidSeconds;
+  }
 }
 
 class SupportedCurrencyInfo {

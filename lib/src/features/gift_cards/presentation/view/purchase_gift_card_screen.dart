@@ -498,6 +498,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       verificationToken: verificationToken,
       productId: widget.brand.productId > 0 ? widget.brand.productId : null,
       countryCode: widget.brand.countryCode.isNotEmpty ? widget.brand.countryCode : null,
+      providerName: widget.brand.providerName.isNotEmpty ? widget.brand.providerName : null,
     );
   }
 

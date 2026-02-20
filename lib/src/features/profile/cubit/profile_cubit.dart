@@ -32,12 +32,16 @@ class ProfileCubit extends Cubit<ProfileState> {
         // Emit ProfileLoaded so the UI is unblocked
         emit(ProfileLoaded(user: user, preferences: preferences));
 
-        // Best-effort sync: persist activeCountry from LocaleManager
-        // without going through state-emitting updatePreferences(),
-        // so a backend failure doesn't clobber the ProfileLoaded state.
-        if (preferences.activeCountry.isEmpty) {
+        final localeManager = serviceLocator<LocaleManager>();
+
+        if (preferences.activeCountry.isNotEmpty) {
+          // User has a saved active country preference — use it.
+          // This overrides the signup-country reset done by AuthenticationCubit._saveSession().
+          localeManager.resetToCountry(preferences.activeCountry);
+        } else {
+          // No saved preference — persist the current locale (signup country)
+          // to the backend so it's available on next login.
           try {
-            final localeManager = serviceLocator<LocaleManager>();
             final countryFromLocale = localeManager.currentCountry;
             if (countryFromLocale.isNotEmpty) {
               final result = await _repository.updatePreferences(

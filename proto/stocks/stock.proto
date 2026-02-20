@@ -439,6 +439,106 @@ message RemoveStockFromWatchlistResponse {
 }
 
 // ============================================================================
+// MARKET STATUS - REQUEST/RESPONSE MESSAGES
+// ============================================================================
+
+// Get Market Status
+message GetMarketStatusRequest {
+  // No parameters needed
+}
+
+message GetMarketStatusResponse {
+  bool is_open = 1;
+  string trading_session = 2; // "regular", "pre_market", "after_hours", "closed"
+  google.protobuf.Timestamp next_open = 3;
+  google.protobuf.Timestamp next_close = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// ============================================================================
+// MARKET NEWS - REQUEST/RESPONSE MESSAGES
+// ============================================================================
+
+message MarketNewsMessage {
+  string id = 1;
+  string headline = 2;
+  string summary = 3;
+  string source = 4;
+  string url = 5;
+  repeated string symbols = 6;
+  google.protobuf.Timestamp published_at = 7;
+  string image_url = 8;
+}
+
+message GetMarketNewsRequest {
+  repeated string symbols = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message GetMarketNewsResponse {
+  repeated MarketNewsMessage articles = 1;
+}
+
+// ============================================================================
+// PRICE ALERTS - REQUEST/RESPONSE MESSAGES
+// ============================================================================
+
+enum AlertType {
+  ALERT_TYPE_UNSPECIFIED = 0;
+  ALERT_TYPE_PRICE_ABOVE = 1;
+  ALERT_TYPE_PRICE_BELOW = 2;
+  ALERT_TYPE_PERCENT_CHANGE = 3;
+}
+
+message PriceAlertMessage {
+  string id = 1;
+  string symbol = 2;
+  AlertType type = 3;
+  double target_value = 4;
+  bool is_active = 5;
+  bool is_triggered = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp triggered_at = 8;
+}
+
+message CreatePriceAlertRequest {
+  string symbol = 1;
+  AlertType type = 2;
+  double target_value = 3;
+}
+
+message CreatePriceAlertResponse {
+  PriceAlertMessage alert = 1;
+}
+
+message GetPriceAlertsRequest {
+  // User ID from auth token
+}
+
+message GetPriceAlertsResponse {
+  repeated PriceAlertMessage alerts = 1;
+}
+
+message UpdatePriceAlertRequest {
+  string alert_id = 1;
+  double target_value = 2;
+  bool is_active = 3;
+}
+
+message UpdatePriceAlertResponse {
+  PriceAlertMessage alert = 1;
+}
+
+message DeletePriceAlertRequest {
+  string alert_id = 1;
+}
+
+message DeletePriceAlertResponse {
+  string message = 1;
+}
+
+// ============================================================================
 // SERVICES
 // ============================================================================
 
@@ -489,6 +589,44 @@ service StockService {
   rpc GetTopLosers(GetTopLosersRequest) returns (GetTopLosersResponse) {
     option (google.api.http) = {
       get: "/api/v1/stocks/losers"
+    };
+  }
+
+  rpc GetMarketStatus(GetMarketStatusRequest) returns (GetMarketStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/stocks/market/status"
+    };
+  }
+
+  rpc GetMarketNews(GetMarketNewsRequest) returns (GetMarketNewsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/stocks/market/news"
+    };
+  }
+
+  rpc CreatePriceAlert(CreatePriceAlertRequest) returns (CreatePriceAlertResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/stocks/alerts"
+      body: "*"
+    };
+  }
+
+  rpc GetPriceAlerts(GetPriceAlertsRequest) returns (GetPriceAlertsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/stocks/alerts"
+    };
+  }
+
+  rpc UpdatePriceAlert(UpdatePriceAlertRequest) returns (UpdatePriceAlertResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/stocks/alerts/{alert_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeletePriceAlert(DeletePriceAlertRequest) returns (DeletePriceAlertResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/stocks/alerts/{alert_id}"
     };
   }
 }

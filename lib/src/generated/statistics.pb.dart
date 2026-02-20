@@ -11,6 +11,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
@@ -325,6 +326,7 @@ class BudgetMessage extends $pb.GeneratedMessage {
     BudgetStatus? status,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
+    BudgetEnforcementMode? enforcementMode,
     $1.Timestamp? createdAt,
     $1.Timestamp? updatedAt,
   }) {
@@ -374,6 +376,9 @@ class BudgetMessage extends $pb.GeneratedMessage {
     if (alertThreshold != null) {
       $result.alertThreshold = alertThreshold;
     }
+    if (enforcementMode != null) {
+      $result.enforcementMode = enforcementMode;
+    }
     if (createdAt != null) {
       $result.createdAt = createdAt;
     }
@@ -402,8 +407,9 @@ class BudgetMessage extends $pb.GeneratedMessage {
     ..e<BudgetStatus>(13, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BudgetStatus.BUDGET_STATUS_UNSPECIFIED, valueOf: BudgetStatus.valueOf, enumValues: BudgetStatus.values)
     ..aOB(14, _omitFieldNames ? '' : 'enableAlerts')
     ..a<$core.double>(15, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..e<BudgetEnforcementMode>(16, _omitFieldNames ? '' : 'enforcementMode', $pb.PbFieldType.OE, defaultOrMaker: BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_UNSPECIFIED, valueOf: BudgetEnforcementMode.valueOf, enumValues: BudgetEnforcementMode.values)
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -568,26 +574,35 @@ class BudgetMessage extends $pb.GeneratedMessage {
   void clearAlertThreshold() => clearField(15);
 
   @$pb.TagNumber(16)
-  $1.Timestamp get createdAt => $_getN(15);
+  BudgetEnforcementMode get enforcementMode => $_getN(15);
   @$pb.TagNumber(16)
-  set createdAt($1.Timestamp v) { setField(16, v); }
+  set enforcementMode(BudgetEnforcementMode v) { setField(16, v); }
   @$pb.TagNumber(16)
-  $core.bool hasCreatedAt() => $_has(15);
+  $core.bool hasEnforcementMode() => $_has(15);
   @$pb.TagNumber(16)
-  void clearCreatedAt() => clearField(16);
-  @$pb.TagNumber(16)
-  $1.Timestamp ensureCreatedAt() => $_ensure(15);
+  void clearEnforcementMode() => clearField(16);
 
   @$pb.TagNumber(17)
-  $1.Timestamp get updatedAt => $_getN(16);
+  $1.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(17)
-  set updatedAt($1.Timestamp v) { setField(17, v); }
+  set createdAt($1.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
-  $core.bool hasUpdatedAt() => $_has(16);
+  $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(17)
-  void clearUpdatedAt() => clearField(17);
+  void clearCreatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(16);
+  $1.Timestamp ensureCreatedAt() => $_ensure(16);
+
+  @$pb.TagNumber(18)
+  $1.Timestamp get updatedAt => $_getN(17);
+  @$pb.TagNumber(18)
+  set updatedAt($1.Timestamp v) { setField(18, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasUpdatedAt() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearUpdatedAt() => clearField(18);
+  @$pb.TagNumber(18)
+  $1.Timestamp ensureUpdatedAt() => $_ensure(17);
 }
 
 /// Alert Messages
@@ -2563,6 +2578,7 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
     $1.Timestamp? endDate,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
+    BudgetEnforcementMode? enforcementMode,
   }) {
     final $result = create();
     if (name != null) {
@@ -2592,6 +2608,9 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
     if (alertThreshold != null) {
       $result.alertThreshold = alertThreshold;
     }
+    if (enforcementMode != null) {
+      $result.enforcementMode = enforcementMode;
+    }
     return $result;
   }
   CreateBudgetRequest._() : super();
@@ -2608,6 +2627,7 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..aOB(8, _omitFieldNames ? '' : 'enableAlerts')
     ..a<$core.double>(9, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
+    ..e<BudgetEnforcementMode>(10, _omitFieldNames ? '' : 'enforcementMode', $pb.PbFieldType.OE, defaultOrMaker: BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_UNSPECIFIED, valueOf: BudgetEnforcementMode.valueOf, enumValues: BudgetEnforcementMode.values)
     ..hasRequiredFields = false
   ;
 
@@ -2716,6 +2736,15 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
   $core.bool hasAlertThreshold() => $_has(8);
   @$pb.TagNumber(9)
   void clearAlertThreshold() => clearField(9);
+
+  @$pb.TagNumber(10)
+  BudgetEnforcementMode get enforcementMode => $_getN(9);
+  @$pb.TagNumber(10)
+  set enforcementMode(BudgetEnforcementMode v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasEnforcementMode() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearEnforcementMode() => clearField(10);
 }
 
 class CreateBudgetResponse extends $pb.GeneratedMessage {
@@ -3098,6 +3127,7 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
     $1.Timestamp? endDate,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
+    BudgetEnforcementMode? enforcementMode,
   }) {
     final $result = create();
     if (budgetId != null) {
@@ -3124,6 +3154,9 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
     if (alertThreshold != null) {
       $result.alertThreshold = alertThreshold;
     }
+    if (enforcementMode != null) {
+      $result.enforcementMode = enforcementMode;
+    }
     return $result;
   }
   UpdateBudgetRequest._() : super();
@@ -3139,6 +3172,7 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
     ..aOB(7, _omitFieldNames ? '' : 'enableAlerts')
     ..a<$core.double>(8, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
+    ..e<BudgetEnforcementMode>(9, _omitFieldNames ? '' : 'enforcementMode', $pb.PbFieldType.OE, defaultOrMaker: BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_UNSPECIFIED, valueOf: BudgetEnforcementMode.valueOf, enumValues: BudgetEnforcementMode.values)
     ..hasRequiredFields = false
   ;
 
@@ -3238,6 +3272,15 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
   $core.bool hasAlertThreshold() => $_has(7);
   @$pb.TagNumber(8)
   void clearAlertThreshold() => clearField(8);
+
+  @$pb.TagNumber(9)
+  BudgetEnforcementMode get enforcementMode => $_getN(8);
+  @$pb.TagNumber(9)
+  set enforcementMode(BudgetEnforcementMode v) { setField(9, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasEnforcementMode() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearEnforcementMode() => clearField(9);
 }
 
 class UpdateBudgetResponse extends $pb.GeneratedMessage {
@@ -11134,6 +11177,664 @@ class ComprehensiveExpenditureData extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(4)
   $core.Map<$core.String, $core.double> get expenditureBreakdown => $_getMap(3);
+}
+
+/// Validate Category Budget Request/Response
+class ValidateCategoryBudgetRequest extends $pb.GeneratedMessage {
+  factory ValidateCategoryBudgetRequest({
+    $core.String? userId,
+    $core.int? budgetCategory,
+    $fixnum.Int64? amountMinor,
+    $core.String? currency,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (budgetCategory != null) {
+      $result.budgetCategory = budgetCategory;
+    }
+    if (amountMinor != null) {
+      $result.amountMinor = amountMinor;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    return $result;
+  }
+  ValidateCategoryBudgetRequest._() : super();
+  factory ValidateCategoryBudgetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ValidateCategoryBudgetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateCategoryBudgetRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'budgetCategory', $pb.PbFieldType.O3)
+    ..aInt64(3, _omitFieldNames ? '' : 'amountMinor')
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ValidateCategoryBudgetRequest clone() => ValidateCategoryBudgetRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ValidateCategoryBudgetRequest copyWith(void Function(ValidateCategoryBudgetRequest) updates) => super.copyWith((message) => updates(message as ValidateCategoryBudgetRequest)) as ValidateCategoryBudgetRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ValidateCategoryBudgetRequest create() => ValidateCategoryBudgetRequest._();
+  ValidateCategoryBudgetRequest createEmptyInstance() => create();
+  static $pb.PbList<ValidateCategoryBudgetRequest> createRepeated() => $pb.PbList<ValidateCategoryBudgetRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ValidateCategoryBudgetRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ValidateCategoryBudgetRequest>(create);
+  static ValidateCategoryBudgetRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get budgetCategory => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set budgetCategory($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBudgetCategory() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBudgetCategory() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get amountMinor => $_getI64(2);
+  @$pb.TagNumber(3)
+  set amountMinor($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmountMinor() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmountMinor() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => clearField(4);
+}
+
+class ValidateCategoryBudgetResponse extends $pb.GeneratedMessage {
+  factory ValidateCategoryBudgetResponse({
+    $core.bool? allowed,
+    $core.String? reason,
+    $core.double? currentSpent,
+    $core.double? budgetLimit,
+    $core.double? percentageUsed,
+    $core.double? remaining,
+    $core.Iterable<BudgetInfo>? matchingBudgets,
+  }) {
+    final $result = create();
+    if (allowed != null) {
+      $result.allowed = allowed;
+    }
+    if (reason != null) {
+      $result.reason = reason;
+    }
+    if (currentSpent != null) {
+      $result.currentSpent = currentSpent;
+    }
+    if (budgetLimit != null) {
+      $result.budgetLimit = budgetLimit;
+    }
+    if (percentageUsed != null) {
+      $result.percentageUsed = percentageUsed;
+    }
+    if (remaining != null) {
+      $result.remaining = remaining;
+    }
+    if (matchingBudgets != null) {
+      $result.matchingBudgets.addAll(matchingBudgets);
+    }
+    return $result;
+  }
+  ValidateCategoryBudgetResponse._() : super();
+  factory ValidateCategoryBudgetResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ValidateCategoryBudgetResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateCategoryBudgetResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'allowed')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'currentSpent', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'budgetLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'percentageUsed', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'remaining', $pb.PbFieldType.OD)
+    ..pc<BudgetInfo>(7, _omitFieldNames ? '' : 'matchingBudgets', $pb.PbFieldType.PM, subBuilder: BudgetInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ValidateCategoryBudgetResponse clone() => ValidateCategoryBudgetResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ValidateCategoryBudgetResponse copyWith(void Function(ValidateCategoryBudgetResponse) updates) => super.copyWith((message) => updates(message as ValidateCategoryBudgetResponse)) as ValidateCategoryBudgetResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ValidateCategoryBudgetResponse create() => ValidateCategoryBudgetResponse._();
+  ValidateCategoryBudgetResponse createEmptyInstance() => create();
+  static $pb.PbList<ValidateCategoryBudgetResponse> createRepeated() => $pb.PbList<ValidateCategoryBudgetResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ValidateCategoryBudgetResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ValidateCategoryBudgetResponse>(create);
+  static ValidateCategoryBudgetResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get allowed => $_getBF(0);
+  @$pb.TagNumber(1)
+  set allowed($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAllowed() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAllowed() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get currentSpent => $_getN(2);
+  @$pb.TagNumber(3)
+  set currentSpent($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCurrentSpent() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrentSpent() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get budgetLimit => $_getN(3);
+  @$pb.TagNumber(4)
+  set budgetLimit($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasBudgetLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearBudgetLimit() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get percentageUsed => $_getN(4);
+  @$pb.TagNumber(5)
+  set percentageUsed($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPercentageUsed() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPercentageUsed() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get remaining => $_getN(5);
+  @$pb.TagNumber(6)
+  set remaining($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasRemaining() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRemaining() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.List<BudgetInfo> get matchingBudgets => $_getList(6);
+}
+
+class BudgetInfo extends $pb.GeneratedMessage {
+  factory BudgetInfo({
+    $core.String? budgetId,
+    $core.String? budgetName,
+    $core.double? amount,
+    $core.double? spent,
+    $core.double? percentage,
+    $core.int? daysRemaining,
+    $1.Timestamp? startDate,
+    $1.Timestamp? endDate,
+    $core.String? currency,
+  }) {
+    final $result = create();
+    if (budgetId != null) {
+      $result.budgetId = budgetId;
+    }
+    if (budgetName != null) {
+      $result.budgetName = budgetName;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (spent != null) {
+      $result.spent = spent;
+    }
+    if (percentage != null) {
+      $result.percentage = percentage;
+    }
+    if (daysRemaining != null) {
+      $result.daysRemaining = daysRemaining;
+    }
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    return $result;
+  }
+  BudgetInfo._() : super();
+  factory BudgetInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BudgetInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BudgetInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'budgetId')
+    ..aOS(2, _omitFieldNames ? '' : 'budgetName')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'spent', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'percentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'daysRemaining', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'startDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'endDate', subBuilder: $1.Timestamp.create)
+    ..aOS(9, _omitFieldNames ? '' : 'currency')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BudgetInfo clone() => BudgetInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BudgetInfo copyWith(void Function(BudgetInfo) updates) => super.copyWith((message) => updates(message as BudgetInfo)) as BudgetInfo;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BudgetInfo create() => BudgetInfo._();
+  BudgetInfo createEmptyInstance() => create();
+  static $pb.PbList<BudgetInfo> createRepeated() => $pb.PbList<BudgetInfo>();
+  @$core.pragma('dart2js:noInline')
+  static BudgetInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BudgetInfo>(create);
+  static BudgetInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get budgetId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set budgetId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBudgetId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBudgetId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get budgetName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set budgetName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBudgetName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBudgetName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get spent => $_getN(3);
+  @$pb.TagNumber(4)
+  set spent($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSpent() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSpent() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get percentage => $_getN(4);
+  @$pb.TagNumber(5)
+  set percentage($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPercentage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPercentage() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get daysRemaining => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set daysRemaining($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDaysRemaining() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDaysRemaining() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $1.Timestamp get startDate => $_getN(6);
+  @$pb.TagNumber(7)
+  set startDate($1.Timestamp v) { setField(7, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasStartDate() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearStartDate() => clearField(7);
+  @$pb.TagNumber(7)
+  $1.Timestamp ensureStartDate() => $_ensure(6);
+
+  @$pb.TagNumber(8)
+  $1.Timestamp get endDate => $_getN(7);
+  @$pb.TagNumber(8)
+  set endDate($1.Timestamp v) { setField(8, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasEndDate() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearEndDate() => clearField(8);
+  @$pb.TagNumber(8)
+  $1.Timestamp ensureEndDate() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  $core.String get currency => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set currency($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasCurrency() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCurrency() => clearField(9);
+}
+
+/// Get Service Categories Request/Response
+class GetServiceCategoriesRequest extends $pb.GeneratedMessage {
+  factory GetServiceCategoriesRequest({
+    $core.String? serviceName,
+    $core.bool? activeOnly,
+  }) {
+    final $result = create();
+    if (serviceName != null) {
+      $result.serviceName = serviceName;
+    }
+    if (activeOnly != null) {
+      $result.activeOnly = activeOnly;
+    }
+    return $result;
+  }
+  GetServiceCategoriesRequest._() : super();
+  factory GetServiceCategoriesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetServiceCategoriesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetServiceCategoriesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'serviceName')
+    ..aOB(2, _omitFieldNames ? '' : 'activeOnly')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetServiceCategoriesRequest clone() => GetServiceCategoriesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetServiceCategoriesRequest copyWith(void Function(GetServiceCategoriesRequest) updates) => super.copyWith((message) => updates(message as GetServiceCategoriesRequest)) as GetServiceCategoriesRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetServiceCategoriesRequest create() => GetServiceCategoriesRequest._();
+  GetServiceCategoriesRequest createEmptyInstance() => create();
+  static $pb.PbList<GetServiceCategoriesRequest> createRepeated() => $pb.PbList<GetServiceCategoriesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetServiceCategoriesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetServiceCategoriesRequest>(create);
+  static GetServiceCategoriesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get serviceName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set serviceName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasServiceName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearServiceName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get activeOnly => $_getBF(1);
+  @$pb.TagNumber(2)
+  set activeOnly($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasActiveOnly() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearActiveOnly() => clearField(2);
+}
+
+class GetServiceCategoriesResponse extends $pb.GeneratedMessage {
+  factory GetServiceCategoriesResponse({
+    $core.Iterable<ServiceCategoryItem>? categories,
+    $core.bool? success,
+  }) {
+    final $result = create();
+    if (categories != null) {
+      $result.categories.addAll(categories);
+    }
+    if (success != null) {
+      $result.success = success;
+    }
+    return $result;
+  }
+  GetServiceCategoriesResponse._() : super();
+  factory GetServiceCategoriesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetServiceCategoriesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetServiceCategoriesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<ServiceCategoryItem>(1, _omitFieldNames ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: ServiceCategoryItem.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetServiceCategoriesResponse clone() => GetServiceCategoriesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetServiceCategoriesResponse copyWith(void Function(GetServiceCategoriesResponse) updates) => super.copyWith((message) => updates(message as GetServiceCategoriesResponse)) as GetServiceCategoriesResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetServiceCategoriesResponse create() => GetServiceCategoriesResponse._();
+  GetServiceCategoriesResponse createEmptyInstance() => create();
+  static $pb.PbList<GetServiceCategoriesResponse> createRepeated() => $pb.PbList<GetServiceCategoriesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetServiceCategoriesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetServiceCategoriesResponse>(create);
+  static GetServiceCategoriesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<ServiceCategoryItem> get categories => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get success => $_getBF(1);
+  @$pb.TagNumber(2)
+  set success($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSuccess() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSuccess() => clearField(2);
+}
+
+class ServiceCategoryItem extends $pb.GeneratedMessage {
+  factory ServiceCategoryItem({
+    $core.String? id,
+    $core.String? serviceName,
+    $core.String? subCategoryName,
+    $core.int? budgetCategory,
+    $core.String? displayName,
+    $core.String? icon,
+    $core.String? color,
+    $core.bool? isActive,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (serviceName != null) {
+      $result.serviceName = serviceName;
+    }
+    if (subCategoryName != null) {
+      $result.subCategoryName = subCategoryName;
+    }
+    if (budgetCategory != null) {
+      $result.budgetCategory = budgetCategory;
+    }
+    if (displayName != null) {
+      $result.displayName = displayName;
+    }
+    if (icon != null) {
+      $result.icon = icon;
+    }
+    if (color != null) {
+      $result.color = color;
+    }
+    if (isActive != null) {
+      $result.isActive = isActive;
+    }
+    return $result;
+  }
+  ServiceCategoryItem._() : super();
+  factory ServiceCategoryItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ServiceCategoryItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ServiceCategoryItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'serviceName')
+    ..aOS(3, _omitFieldNames ? '' : 'subCategoryName')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'budgetCategory', $pb.PbFieldType.O3)
+    ..aOS(5, _omitFieldNames ? '' : 'displayName')
+    ..aOS(6, _omitFieldNames ? '' : 'icon')
+    ..aOS(7, _omitFieldNames ? '' : 'color')
+    ..aOB(8, _omitFieldNames ? '' : 'isActive')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ServiceCategoryItem clone() => ServiceCategoryItem()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ServiceCategoryItem copyWith(void Function(ServiceCategoryItem) updates) => super.copyWith((message) => updates(message as ServiceCategoryItem)) as ServiceCategoryItem;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ServiceCategoryItem create() => ServiceCategoryItem._();
+  ServiceCategoryItem createEmptyInstance() => create();
+  static $pb.PbList<ServiceCategoryItem> createRepeated() => $pb.PbList<ServiceCategoryItem>();
+  @$core.pragma('dart2js:noInline')
+  static ServiceCategoryItem getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ServiceCategoryItem>(create);
+  static ServiceCategoryItem? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get serviceName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set serviceName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasServiceName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearServiceName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get subCategoryName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set subCategoryName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSubCategoryName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSubCategoryName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get budgetCategory => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set budgetCategory($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasBudgetCategory() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearBudgetCategory() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get displayName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set displayName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDisplayName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDisplayName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get icon => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set icon($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasIcon() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearIcon() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get color => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set color($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasColor() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearColor() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.bool get isActive => $_getBF(7);
+  @$pb.TagNumber(8)
+  set isActive($core.bool v) { $_setBool(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasIsActive() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIsActive() => clearField(8);
 }
 
 

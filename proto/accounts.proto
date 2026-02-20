@@ -294,6 +294,20 @@ service AccountsService {
     };
   }
 
+  // CreditPlatformWallet - Credit platform wallet only (internal settlement, no user debit)
+  // Used when user funds were already captured via fund hold and fee needs to be allocated to revenue.
+  rpc CreditPlatformWallet(CreditPlatformWalletRequest) returns (CreditPlatformWalletResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/platform-wallets/credit"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Credit Platform Wallet";
+      description: "Credit a platform wallet without debiting any user account. Used for internal fee settlement after fund hold capture. Service-to-service only.";
+      tags: ["Platform Wallet Operations"];
+    };
+  }
+
   // GetPlatformWallet - Get platform wallet by ID or code
   rpc GetPlatformWallet(GetPlatformWalletRequest) returns (GetPlatformWalletResponse) {
     option (google.api.http) = {
@@ -610,6 +624,92 @@ service AccountsService {
       summary: "Reorder Categories";
       description: "Batch update display order of categories via drag-and-drop";
       tags: ["Categories"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // ===== ACCOUNT MANAGEMENT ACTIONS (Card Settings) =====
+
+  // Update spending limits for an account
+  rpc UpdateSpendingLimits(UpdateSpendingLimitsRequest) returns (UpdateSpendingLimitsResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/accounts/{account_id}/limits"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Spending Limits";
+      description: "Update daily, monthly, and single transaction spending limits";
+      tags: ["Account Management"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Reveal card PIN (with authentication via transaction PIN)
+  rpc RevealPIN(RevealPINRequest) returns (RevealPINResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/pin/reveal"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reveal PIN";
+      description: "Reveal card PIN after verifying user's transaction PIN";
+      tags: ["Account Management"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Reveal full card details (number, expiry, CVV) with authentication
+  rpc RevealCardDetails(RevealCardDetailsRequest) returns (RevealCardDetailsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/card-details/reveal"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reveal Card Details";
+      description: "Reveal full card details after verifying user's transaction PIN";
+      tags: ["Account Management"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Generate account statement PDF
+  rpc GenerateStatement(GenerateStatementRequest) returns (GenerateStatementResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/statements"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Generate Statement";
+      description: "Generate account statement PDF for download";
+      tags: ["Documents"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Generate account confirmation letter
+  rpc GenerateAccountConfirmation(GenerateAccountConfirmationRequest) returns (GenerateAccountConfirmationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/confirmation"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Generate Account Confirmation";
+      description: "Generate account confirmation letter PDF";
+      tags: ["Documents"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Generate proof of funds document
+  rpc GenerateProofOfFunds(GenerateProofOfFundsRequest) returns (GenerateProofOfFundsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/proof-of-funds"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Generate Proof of Funds";
+      description: "Generate proof of funds document PDF";
+      tags: ["Documents"];
       security: { security_requirement: { key: "bearer"; } };
     };
   }
@@ -1334,6 +1434,30 @@ message TransferFromPlatformWalletResponse {
   int64 wallet_new_balance = 7;
 }
 
+// CreditPlatformWallet - Credit-only (internal fee settlement after fund hold capture)
+message CreditPlatformWalletRequest {
+  string wallet_code = 1;               // Platform wallet code (e.g., "REVENUE")
+  int64 amount = 2;                     // Amount in minor units (kobo/cents)
+  string currency = 3;                  // Currency code (e.g., "NGN")
+  string reference = 4;                 // Unique reference for this settlement
+  string category = 5;                  // e.g., "electricity_service_fee"
+  string description = 6;              // Human-readable description
+  string metadata = 7;                  // JSON metadata
+  string service_name = 8;             // Calling service identifier
+  string idempotency_key = 9;          // Idempotency key for dedup
+  string source_account_id = 10;       // User account the funds originated from (audit trail)
+  string source_user_id = 11;          // User who was charged (audit trail)
+  string source_payment_id = 12;       // Payment/transaction that generated this fee (audit trail)
+}
+
+message CreditPlatformWalletResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string platform_transaction_id = 4;   // Platform wallet transaction ID
+  int64 wallet_new_balance = 5;         // Platform wallet new balance in minor units
+}
+
 // GetPlatformWallet - Get wallet by ID or code
 message GetPlatformWalletRequest {
   string wallet_id = 1;                 // UUID (optional if wallet_code is set)
@@ -1498,4 +1622,84 @@ message ReorderCategoriesRequest {
 
 message ReorderCategoriesResponse {
   bool success = 1;
+}
+
+// ===== ACCOUNT MANAGEMENT ACTION MESSAGES =====
+
+// Update spending limits request
+message UpdateSpendingLimitsRequest {
+  string account_id = 1;
+  optional double daily_limit = 2;           // Daily spending limit (0 = no limit)
+  optional double monthly_limit = 3;         // Monthly spending limit (0 = no limit)
+  optional double single_transaction_limit = 4; // Single transaction limit (0 = no limit)
+}
+
+message UpdateSpendingLimitsResponse {
+  Account account = 1;                       // Updated account with new limits
+}
+
+// Reveal PIN request
+message RevealPINRequest {
+  string account_id = 1;
+  string transaction_pin = 2;                 // User's transaction PIN for verification
+}
+
+message RevealPINResponse {
+  string pin = 1;                            // The card PIN (4 digits)
+  string message = 2;                        // Optional message
+}
+
+// Reveal card details request
+message RevealCardDetailsRequest {
+  string account_id = 1;
+  string transaction_pin = 2;                 // User's transaction PIN for verification
+}
+
+message RevealCardDetailsResponse {
+  string card_number = 1;                    // Full card number (16 digits)
+  string card_holder_name = 2;               // Cardholder name
+  string expiry_date = 3;                     // Expiry date (MM/YY)
+  string cvv = 4;                            // CVV/CVC (3 digits)
+  string message = 5;                        // Optional message
+}
+
+// Generate statement request
+message GenerateStatementRequest {
+  string account_id = 1;
+  int64 start_date = 2;                      // Unix timestamp
+  int64 end_date = 3;                        // Unix timestamp
+  string format = 4;                         // "PDF" or "CSV"
+}
+
+message GenerateStatementResponse {
+  string document_id = 1;                    // Unique document ID
+  string download_url = 2;                   // URL to download the document
+  int64 valid_until = 3;                     // Unix timestamp when document expires
+  string message = 4;                        // Optional message
+}
+
+// Generate account confirmation request
+message GenerateAccountConfirmationRequest {
+  string account_id = 1;
+}
+
+message GenerateAccountConfirmationResponse {
+  string document_id = 1;                    // Unique document ID
+  string download_url = 2;                   // URL to download the document
+  int64 valid_until = 3;                     // Unix timestamp when document expires
+  string message = 4;                        // Optional message
+}
+
+// Generate proof of funds request
+message GenerateProofOfFundsRequest {
+  string account_id = 1;
+}
+
+message GenerateProofOfFundsResponse {
+  string document_id = 1;                    // Unique document ID
+  string download_url = 2;                   // URL to download the document
+  int64 valid_until = 3;                     // Unix timestamp when document expires
+  double current_balance = 4;                // Current account balance
+  string currency = 5;                       // Account currency
+  string message = 6;                        // Optional message
 }

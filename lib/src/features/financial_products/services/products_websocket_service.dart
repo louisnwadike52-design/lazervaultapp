@@ -6,6 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 
 /// Products status event received from WebSocket
 class ProductsStatusEvent {
@@ -63,6 +65,11 @@ class ProductsWebSocketService {
   Timer? _pingTimer;
   bool _isConnected = false;
   bool _useSSE = false;
+  final SecureStorageService _secureStorage;
+
+  ProductsWebSocketService({
+    required SecureStorageService secureStorage,
+  }) : _secureStorage = secureStorage;
 
   /// Stream of products status events
   Stream<ProductsStatusEvent> get productsUpdates => _eventController.stream;
@@ -72,6 +79,16 @@ class ProductsWebSocketService {
 
   /// Check if currently connected
   bool get isConnected => _isConnected;
+
+  /// Build WebSocket headers with auth and metadata
+  Future<Map<String, String>> _buildHeaders(String accessToken) async {
+    final headers = await ApiHeaders.buildWebSocketHeaders(
+      secureStorage: _secureStorage,
+    );
+    // Override with explicit access token
+    headers['Authorization'] = 'Bearer $accessToken';
+    return headers;
+  }
 
   /// Connect to the real-time updates server
   /// Attempts WebSocket first, falls back to SSE if WebSocket fails
@@ -122,11 +139,10 @@ class ProductsWebSocketService {
         protocols: ['token', accessToken],
       );
     } else {
+      final headers = await _buildHeaders(accessToken);
       _channel = IOWebSocketChannel.connect(
         wsUrl,
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: headers,
       );
     }
     _useSSE = false;
@@ -168,7 +184,9 @@ class ProductsWebSocketService {
     final request = http.Request('GET', sseUrl);
     request.headers['Accept'] = 'text/event-stream';
     request.headers['Cache-Control'] = 'no-cache';
-    request.headers['Authorization'] = 'Bearer $accessToken';
+
+    final headers = await _buildHeaders(accessToken);
+    request.headers.addAll(headers);
 
     final response = await _httpClient!.send(request);
 

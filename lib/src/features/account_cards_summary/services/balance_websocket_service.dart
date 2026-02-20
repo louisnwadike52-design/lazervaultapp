@@ -6,6 +6,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 
 /// Balance update event received from WebSocket
 class BalanceUpdateEvent {
@@ -81,6 +84,14 @@ class BalanceWebSocketService {
   Timer? _pingTimer;
   bool _isConnected = false;
   bool _useSSE = false; // Flag to track if using SSE instead of WebSocket
+  final SecureStorageService _secureStorage;
+  final AccountManager? _accountManager;
+
+  BalanceWebSocketService({
+    required SecureStorageService secureStorage,
+    AccountManager? accountManager,
+  })  : _secureStorage = secureStorage,
+        _accountManager = accountManager;
 
   /// Stream of balance update events
   Stream<BalanceUpdateEvent> get balanceUpdates => _eventController.stream;
@@ -90,6 +101,17 @@ class BalanceWebSocketService {
 
   /// Check if currently connected
   bool get isConnected => _isConnected;
+
+  /// Build WebSocket headers with auth and metadata
+  Future<Map<String, String>> _buildHeaders(String accessToken) async {
+    final headers = await ApiHeaders.buildWebSocketHeaders(
+      secureStorage: _secureStorage,
+      accountManager: _accountManager,
+    );
+    // Override with explicit access token
+    headers['Authorization'] = 'Bearer $accessToken';
+    return headers;
+  }
 
   /// Connect to the real-time updates server
   /// Attempts WebSocket first, falls back to SSE if WebSocket fails
@@ -139,6 +161,9 @@ class BalanceWebSocketService {
 
     print('BalanceWebSocketService: Connecting via WebSocket to $wsUrl');
 
+    // Build headers with all required metadata
+    final headers = await _buildHeaders(accessToken);
+
     // Create WebSocket channel with proper auth
     if (kIsWeb) {
       // Web: Use Sec-WebSocket-Protocol to pass token (browsers don't allow custom headers)
@@ -151,9 +176,7 @@ class BalanceWebSocketService {
       // Mobile/Desktop: Use IOWebSocketChannel with Authorization header (secure)
       _channel = IOWebSocketChannel.connect(
         wsUrl,
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: headers,
       );
     }
     _useSSE = false;
@@ -199,12 +222,14 @@ class BalanceWebSocketService {
     _httpClient = http.Client();
     _useSSE = true;
 
+    // Build headers with all required metadata
+    final headers = await _buildHeaders(accessToken);
+
     // Make streaming HTTP request for SSE with Authorization header
     final request = http.Request('GET', sseUrl);
     request.headers['Accept'] = 'text/event-stream';
     request.headers['Cache-Control'] = 'no-cache';
-    // SECURITY: Pass token in Authorization header instead of URL
-    request.headers['Authorization'] = 'Bearer $accessToken';
+    request.headers.addAll(headers);
 
     final response = await _httpClient!.send(request);
 

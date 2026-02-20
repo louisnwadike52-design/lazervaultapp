@@ -265,9 +265,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
 
           return Column(
             children: [
-              // --- Back Button ---
+              // --- Back Button (hidden on BVN/NIN verification page) ---
               Visibility(
-                visible: currentPage > 0, // Use destructured value
+                visible: currentPage > 0 && currentPage != 3,
                 child: Padding(
                   padding: EdgeInsets.only(top: 50.0.h),
                   child: Row(children: [

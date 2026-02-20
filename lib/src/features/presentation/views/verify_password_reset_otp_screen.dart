@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lazervault/src/features/widgets/create_new_password.dart';
+import 'package:lazervault/src/features/widgets/verify_password_reset_otp.dart';
 
-
-class CreateNewPasswordScreen extends StatefulWidget {
-  const CreateNewPasswordScreen({super.key});
+class VerifyPasswordResetOTPScreen extends StatefulWidget {
+  const VerifyPasswordResetOTPScreen({super.key});
 
   @override
-  State<CreateNewPasswordScreen> createState() =>
-      _CreateNewPasswordScreenState();
+  State<VerifyPasswordResetOTPScreen> createState() => _VerifyPasswordResetOTPScreenState();
 }
 
-class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
+class _VerifyPasswordResetOTPScreenState extends State<VerifyPasswordResetOTPScreen> {
 
   @override
   void initState() {
@@ -37,11 +35,11 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/images/bg/up-down-curve-bg-shrinked.png"),
+            image: AssetImage("assets/images/bg/up-down-curve-bg.png"),
             fit: BoxFit.cover,
           ),
         ),
-        child: CreateNewPassword(),
+        child: const VerifyPasswordResetOTP(),
       ),
     );
   }

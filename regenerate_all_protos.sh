@@ -32,14 +32,15 @@ protoc --dart_out=grpc:lib/src/generated \
   ../microservices/auth-service/auth-microservice/proto/auth.proto \
   ../microservices/auth-service/auth-microservice/proto/transaction_pin.proto
 
-# Generate accounts.proto and family_accounts.proto
+# Generate accounts.proto, family_accounts.proto, and multi_country.proto
 echo "Generating Dart code from accounts proto files..."
 protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/accounts-service/accounts-microservice/proto \
   -Iproto \
   -I../microservices/shared/proto \
   ../microservices/accounts-service/accounts-microservice/proto/accounts.proto \
-  ../microservices/accounts-service/accounts-microservice/proto/family_accounts.proto
+  ../microservices/accounts-service/accounts-microservice/proto/family_accounts.proto \
+  ../microservices/accounts-service/accounts-microservice/proto/multi_country.proto
 
 # Generate voice-biometrics.proto
 echo "Generating Dart code from voice-biometrics.proto..."
@@ -102,6 +103,22 @@ protoc --dart_out=grpc:lib/src/generated \
   -Iproto \
   -I../microservices/shared/proto \
   proto/ai_chat.proto
+
+# Generate investments.proto (from investments microservice)
+echo "Generating Dart code from investments.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/investments-service/investments-microservice/proto \
+  -Iproto \
+  -I../microservices/shared/proto \
+  ../microservices/investments-service/investments-microservice/proto/investments.proto
+
+# Generate stocks/stock.proto
+echo "Generating Dart code from stocks/stock.proto..."
+mkdir -p lib/src/generated/stocks
+protoc --dart_out=grpc:lib/src/generated \
+  -Iproto \
+  -I../microservices/shared/proto \
+  proto/stocks/stock.proto
 
 # Generate remaining local proto files (batch - some may fail due to unsupported annotations)
 echo "Generating Dart code from other local proto files..."

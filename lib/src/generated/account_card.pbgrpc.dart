@@ -65,6 +65,30 @@ class AccountCardServiceClient extends $grpc.Client {
       '/pb.AccountCardService/SetDefaultCard',
       ($0.SetDefaultCardRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.SetDefaultCardResponse.fromBuffer(value));
+  static final _$requestPhysicalCard = $grpc.ClientMethod<$0.RequestPhysicalCardRequest, $0.RequestPhysicalCardResponse>(
+      '/pb.AccountCardService/RequestPhysicalCard',
+      ($0.RequestPhysicalCardRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RequestPhysicalCardResponse.fromBuffer(value));
+  static final _$setCardPIN = $grpc.ClientMethod<$0.SetCardPINRequest, $0.SetCardPINResponse>(
+      '/pb.AccountCardService/SetCardPIN',
+      ($0.SetCardPINRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.SetCardPINResponse.fromBuffer(value));
+  static final _$revealCardPIN = $grpc.ClientMethod<$0.RevealCardPINRequest, $0.RevealCardPINResponse>(
+      '/pb.AccountCardService/RevealCardPIN',
+      ($0.RevealCardPINRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RevealCardPINResponse.fromBuffer(value));
+  static final _$revealFullCardDetails = $grpc.ClientMethod<$0.RevealFullCardDetailsRequest, $0.RevealFullCardDetailsResponse>(
+      '/pb.AccountCardService/RevealFullCardDetails',
+      ($0.RevealFullCardDetailsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RevealFullCardDetailsResponse.fromBuffer(value));
+  static final _$fundCard = $grpc.ClientMethod<$0.FundCardRequest, $0.FundCardResponse>(
+      '/pb.AccountCardService/FundCard',
+      ($0.FundCardRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.FundCardResponse.fromBuffer(value));
+  static final _$withdrawFromCard = $grpc.ClientMethod<$0.WithdrawFromCardRequest, $0.WithdrawFromCardResponse>(
+      '/pb.AccountCardService/WithdrawFromCard',
+      ($0.WithdrawFromCardRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.WithdrawFromCardResponse.fromBuffer(value));
 
   AccountCardServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -114,6 +138,30 @@ class AccountCardServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.SetDefaultCardResponse> setDefaultCard($0.SetDefaultCardRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$setDefaultCard, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RequestPhysicalCardResponse> requestPhysicalCard($0.RequestPhysicalCardRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$requestPhysicalCard, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SetCardPINResponse> setCardPIN($0.SetCardPINRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$setCardPIN, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RevealCardPINResponse> revealCardPIN($0.RevealCardPINRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$revealCardPIN, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RevealFullCardDetailsResponse> revealFullCardDetails($0.RevealFullCardDetailsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$revealFullCardDetails, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.FundCardResponse> fundCard($0.FundCardRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$fundCard, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.WithdrawFromCardResponse> withdrawFromCard($0.WithdrawFromCardRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$withdrawFromCard, request, options: options);
   }
 }
 
@@ -199,6 +247,48 @@ abstract class AccountCardServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.SetDefaultCardRequest.fromBuffer(value),
         ($0.SetDefaultCardResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RequestPhysicalCardRequest, $0.RequestPhysicalCardResponse>(
+        'RequestPhysicalCard',
+        requestPhysicalCard_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RequestPhysicalCardRequest.fromBuffer(value),
+        ($0.RequestPhysicalCardResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SetCardPINRequest, $0.SetCardPINResponse>(
+        'SetCardPIN',
+        setCardPIN_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.SetCardPINRequest.fromBuffer(value),
+        ($0.SetCardPINResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RevealCardPINRequest, $0.RevealCardPINResponse>(
+        'RevealCardPIN',
+        revealCardPIN_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RevealCardPINRequest.fromBuffer(value),
+        ($0.RevealCardPINResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RevealFullCardDetailsRequest, $0.RevealFullCardDetailsResponse>(
+        'RevealFullCardDetails',
+        revealFullCardDetails_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RevealFullCardDetailsRequest.fromBuffer(value),
+        ($0.RevealFullCardDetailsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.FundCardRequest, $0.FundCardResponse>(
+        'FundCard',
+        fundCard_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.FundCardRequest.fromBuffer(value),
+        ($0.FundCardResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.WithdrawFromCardRequest, $0.WithdrawFromCardResponse>(
+        'WithdrawFromCard',
+        withdrawFromCard_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.WithdrawFromCardRequest.fromBuffer(value),
+        ($0.WithdrawFromCardResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateVirtualCardResponse> createVirtualCard_Pre($grpc.ServiceCall call, $async.Future<$0.CreateVirtualCardRequest> request) async {
@@ -245,6 +335,30 @@ abstract class AccountCardServiceBase extends $grpc.Service {
     return setDefaultCard(call, await request);
   }
 
+  $async.Future<$0.RequestPhysicalCardResponse> requestPhysicalCard_Pre($grpc.ServiceCall call, $async.Future<$0.RequestPhysicalCardRequest> request) async {
+    return requestPhysicalCard(call, await request);
+  }
+
+  $async.Future<$0.SetCardPINResponse> setCardPIN_Pre($grpc.ServiceCall call, $async.Future<$0.SetCardPINRequest> request) async {
+    return setCardPIN(call, await request);
+  }
+
+  $async.Future<$0.RevealCardPINResponse> revealCardPIN_Pre($grpc.ServiceCall call, $async.Future<$0.RevealCardPINRequest> request) async {
+    return revealCardPIN(call, await request);
+  }
+
+  $async.Future<$0.RevealFullCardDetailsResponse> revealFullCardDetails_Pre($grpc.ServiceCall call, $async.Future<$0.RevealFullCardDetailsRequest> request) async {
+    return revealFullCardDetails(call, await request);
+  }
+
+  $async.Future<$0.FundCardResponse> fundCard_Pre($grpc.ServiceCall call, $async.Future<$0.FundCardRequest> request) async {
+    return fundCard(call, await request);
+  }
+
+  $async.Future<$0.WithdrawFromCardResponse> withdrawFromCard_Pre($grpc.ServiceCall call, $async.Future<$0.WithdrawFromCardRequest> request) async {
+    return withdrawFromCard(call, await request);
+  }
+
   $async.Future<$0.CreateVirtualCardResponse> createVirtualCard($grpc.ServiceCall call, $0.CreateVirtualCardRequest request);
   $async.Future<$0.CreateDisposableCardResponse> createDisposableCard($grpc.ServiceCall call, $0.CreateDisposableCardRequest request);
   $async.Future<$0.GetUserCardsResponse> getUserCards($grpc.ServiceCall call, $0.GetUserCardsRequest request);
@@ -256,4 +370,10 @@ abstract class AccountCardServiceBase extends $grpc.Service {
   $async.Future<$0.UpdateCardSpendingLimitResponse> updateCardSpendingLimit($grpc.ServiceCall call, $0.UpdateCardSpendingLimitRequest request);
   $async.Future<$0.GetCardTransactionsResponse> getCardTransactions($grpc.ServiceCall call, $0.GetCardTransactionsRequest request);
   $async.Future<$0.SetDefaultCardResponse> setDefaultCard($grpc.ServiceCall call, $0.SetDefaultCardRequest request);
+  $async.Future<$0.RequestPhysicalCardResponse> requestPhysicalCard($grpc.ServiceCall call, $0.RequestPhysicalCardRequest request);
+  $async.Future<$0.SetCardPINResponse> setCardPIN($grpc.ServiceCall call, $0.SetCardPINRequest request);
+  $async.Future<$0.RevealCardPINResponse> revealCardPIN($grpc.ServiceCall call, $0.RevealCardPINRequest request);
+  $async.Future<$0.RevealFullCardDetailsResponse> revealFullCardDetails($grpc.ServiceCall call, $0.RevealFullCardDetailsRequest request);
+  $async.Future<$0.FundCardResponse> fundCard($grpc.ServiceCall call, $0.FundCardRequest request);
+  $async.Future<$0.WithdrawFromCardResponse> withdrawFromCard($grpc.ServiceCall call, $0.WithdrawFromCardRequest request);
 }

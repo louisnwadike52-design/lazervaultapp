@@ -70,4 +70,41 @@ abstract class ICardRepository {
   Future<Either<Failure, Card>> setDefaultCard({
     required String cardUuid,
   });
+
+  /// Request a physical card
+  Future<Either<Failure, Card>> requestPhysicalCard({
+    required int accountId,
+    String? nickname,
+    String? currency,
+    String? billingAddress,
+    String? shippingAddress,
+  });
+
+  /// Set card PIN
+  Future<Either<Failure, void>> setCardPIN({
+    required String cardUuid,
+    required String pin,
+  });
+
+  /// Reveal card PIN (requires transaction PIN verification)
+  Future<Either<Failure, String>> revealCardPIN({
+    required String cardUuid,
+  });
+
+  /// Reveal full card details (number, CVV)
+  Future<Either<Failure, Card>> revealFullCardDetails({
+    required String cardUuid,
+  });
+
+  /// Fund a card from account balance
+  Future<Either<Failure, Card>> fundCard({
+    required String cardUuid,
+    required double amount,
+  });
+
+  /// Withdraw from card to account balance
+  Future<Either<Failure, Card>> withdrawFromCard({
+    required String cardUuid,
+    required double amount,
+  });
 }

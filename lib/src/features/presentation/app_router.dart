@@ -55,8 +55,9 @@ import 'package:lazervault/src/features/presentation/views/languages_screen.dart
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
-import 'package:lazervault/src/features/authentication/presentation/views/password_recovery_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
+import 'package:lazervault/src/features/presentation/views/verify_password_reset_otp_screen.dart';
+import 'package:lazervault/src/features/widgets/verify_password_reset_otp.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
@@ -80,6 +81,7 @@ import 'package:lazervault/src/features/authentication/presentation/views/two_fa
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_settings_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_home_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stocks_landing_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_amount_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_payment_screen.dart';
@@ -88,9 +90,8 @@ import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_rec
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
-// Portfolio temporarily disabled
-// import 'package:lazervault/src/features/portfolio/presentation/view/portfolio_details_screen.dart';
-// import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
+import 'package:lazervault/src/features/portfolio/presentation/view/portfolio_details_screen.dart';
+import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import '../../../core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/modern_onboarding_screen.dart';
 import '../../../main.dart' show AuthCheckScreen;
@@ -483,7 +484,7 @@ class AppRouter {
       name: AppRoutes.stocks,
       page: () => BlocProvider(
         create: (context) => serviceLocator<StockCubit>(),
-        child: const StocksHomeScreen(),
+        child: const StocksLandingScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -492,12 +493,14 @@ class AppRouter {
       page: () => serviceLocator<InvestmentsScreen>(),
       transition: Transition.rightToLeft,
     ),
-    // Portfolio temporarily disabled
-    // GetPage(
-    //   name: AppRoutes.portfolioDetails,
-    //   page: () => const PortfolioDetailsScreen(),
-    //   transition: Transition.rightToLeft,
-    // ),
+    GetPage(
+      name: AppRoutes.portfolioDetails,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PortfolioCubit>()..loadPortfolio(),
+        child: const PortfolioDetailsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
     GetPage(
       name: AppRoutes.giftCards,
       page: () => BlocProvider(
@@ -565,6 +568,11 @@ class AppRouter {
     GetPage(
       name: AppRoutes.createInvoice,
       page: () {
+        String? serviceFeeRef;
+        final args = Get.arguments;
+        if (args is Map<String, dynamic>) {
+          serviceFeeRef = args['serviceFeeRef'] as String?;
+        }
         return MultiBlocProvider(
           providers: [
             BlocProvider(
@@ -574,7 +582,7 @@ class AppRouter {
               create: (_) => CreateInvoiceCubit(),
             ),
           ],
-          child: const CreateInvoiceCarousel(),
+          child: CreateInvoiceCarousel(serviceFeeRef: serviceFeeRef),
         );
       },
       transition: Transition.rightToLeft,
@@ -618,13 +626,24 @@ class AppRouter {
     GetPage(
       name: AppRoutes.invoicePayment,
       page: () {
-        final invoice = Get.arguments as Invoice;
+        final args = Get.arguments;
+        Invoice? invoice;
+        bool isPrePayment = false;
+        if (args is Invoice) {
+          invoice = args;
+        } else if (args is Map<String, dynamic>) {
+          isPrePayment = args['isPrePayment'] as bool? ?? false;
+          invoice = args['invoice'] as Invoice?;
+        }
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<InvoiceCubit>()),
             BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
-          child: InvoicePaymentScreen(invoice: invoice),
+          child: InvoicePaymentScreen(
+            invoice: invoice,
+            isPrePayment: isPrePayment,
+          ),
         );
       },
       transition: Transition.rightToLeft,
@@ -825,19 +844,13 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.passwordRecoveryVerification,
-      page: () {
-        final args = Get.arguments as Map<String, dynamic>;
-        return PasswordRecoveryVerificationScreen(
-          email: args['email'] as String,
-          deliveryMethod: args['deliveryMethod'] as String? ?? 'SMS',
-        );
-      },
+      name: AppRoutes.createNewPassword,
+      page: () => serviceLocator<CreateNewPasswordScreen>(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.createNewPassword,
-      page: () => serviceLocator<CreateNewPasswordScreen>(),
+      name: AppRoutes.verifyPasswordResetOTP,
+      page: () => const VerifyPasswordResetOTPScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(

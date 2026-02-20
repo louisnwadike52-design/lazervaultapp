@@ -54,6 +54,7 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     String? countryCode,
     String? idempotencyKey,
     int quantity = 1,
+    String? providerName,
   }) async {
     try {
       final request = pb.BuyGiftCardRequest(
@@ -69,6 +70,7 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         countryCode: countryCode ?? '',
         idempotencyKey: idempotencyKey ?? '',
         quantity: quantity,
+        providerName: providerName ?? '',
       );
 
       if (productId != null && productId > 0) {
@@ -92,6 +94,12 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         throw Exception('Gift card brand not found');
       } else if (e.code == StatusCode.unavailable) {
         throw Exception('Gift card service temporarily unavailable');
+      }
+      // Provider mismatch error handling
+      if (e.code == StatusCode.failedPrecondition &&
+          e.message != null &&
+          e.message!.toLowerCase().contains('provider mismatch')) {
+        throw Exception('Provider mismatch: Gift card catalog has been updated. Please browse brands again and try your purchase.');
       }
       throw Exception('Purchase failed: ${e.message}');
     } catch (e) {
@@ -345,6 +353,7 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     String? currency,
     List<String>? images,
     String? idempotencyKey,
+    String? providerName,
   }) async {
     try {
       final request = pb.SellGiftCardRequest(
@@ -356,6 +365,7 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         verificationToken: verificationToken,
         currency: currency ?? 'USD',
         idempotencyKey: idempotencyKey ?? '',
+        providerName: providerName ?? '',
       );
 
       if (images != null && images.isNotEmpty) {
@@ -375,6 +385,12 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         throw Exception('Invalid transaction PIN');
       } else if (e.code == StatusCode.unavailable) {
         throw Exception('Sell service temporarily unavailable');
+      }
+      // Provider mismatch error handling
+      if (e.code == StatusCode.failedPrecondition &&
+          e.message != null &&
+          e.message!.toLowerCase().contains('provider mismatch')) {
+        throw Exception('Provider mismatch: Sellable cards catalog has been updated. Please check available card types again and try your sell.');
       }
       throw Exception('Sell failed: ${e.message}');
     } catch (e) {

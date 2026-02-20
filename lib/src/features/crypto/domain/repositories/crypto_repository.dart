@@ -31,6 +31,13 @@ abstract class CryptoRepository {
     required String transactionPin,
     String? fiatCurrency,
   });
+  Future<CryptoTransaction> convertCrypto({
+    required String fromCryptoId,
+    required String toCryptoId,
+    required double amount,
+    required String transactionPin,
+    String? fiatCurrency,
+  });
   Future<List<CryptoTransaction>> getTransactions();
   Future<void> toggleFavorite(String cryptoId);
 } 
