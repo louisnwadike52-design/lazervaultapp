@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -9,12 +10,18 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_state.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
+import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
 
 /// Withdrawal Flow Screen - Standard fintech withdrawal flow
 /// Flow: Recipient Selection → Amount Entry → Review → PIN Auth → Processing → Success/Failure
@@ -40,6 +47,10 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   double _amount = 0;
   String _narration = '';
   bool _isNewRecipient = false;
+  bool _isProcessingWithdrawal = false;
+
+  // Amount entry
+  final _amountController = TextEditingController();
 
   // New recipient form
   final _bankNameController = TextEditingController();
@@ -55,12 +66,49 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   bool _isVerifyingAccount = false;
   String? _banksError;
 
+  // Linked accounts from Open Banking
+  List<Map<String, dynamic>> _linkedAccounts = [];
+  bool _isLoadingLinkedAccounts = false;
+
+  // Fee from backend
+  double _calculatedFee = 0;
+  bool _isCalculatingFee = false;
+  bool _feeCalculated = false;
+
+  /// Get currency from selected account
+  String get _currency {
+    final currency = widget.selectedAccount['currency'] as String? ?? 'NGN';
+    return currency.toUpperCase();
+  }
+
+  /// Get currency symbol for display
+  String get _currencySymbol {
+    switch (_currency) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      case 'GHS':
+        return '₵';
+      case 'KES':
+        return 'KSh';
+      case 'ZAR':
+        return 'R';
+      default:
+        return _currency;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _loadBanks();
     _loadRecipients();
+    _loadLinkedAccounts();
   }
 
   Future<void> _loadBanks() async {
@@ -69,12 +117,44 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
       _banksError = null;
     });
 
-    // Use local banks data only - no API calls
+    final country = serviceLocator<LocaleManager>().currentCountry;
+
+    // Try backend API first, fallback to local BanksData
     try {
-      final banks = BanksData.getBanksForCountry('NG');
+      final bankingClient = serviceLocator<banking_grpc.BankingServiceClient>();
+      final callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final response = await bankingClient.getBanks(
+        banking_pb.GetBanksRequest(country: country),
+        options: callOptions,
+      );
+
+      if (mounted && response.banks.isNotEmpty) {
+        setState(() {
+          _banksList = response.banks
+              .where((bank) => bank.isActive)
+              .map((bank) => <String, dynamic>{
+                    'code': bank.code,
+                    'name': bank.name,
+                    'nipCode': bank.nipCode,
+                    'icon': Icons.account_balance,
+                  })
+              .toList();
+          _banksList.sort((a, b) =>
+              (a['name'] as String).compareTo(b['name'] as String));
+          _isLoadingBanks = false;
+        });
+        return;
+      }
+    } catch (e) {
+      debugPrint('Backend getBanks failed, falling back to local data: $e');
+    }
+
+    // Fallback to local BanksData
+    try {
+      final banks = BanksData.getBanksForCountry(country);
       if (mounted) {
         setState(() {
-          _banksList = banks.map((bank) => {
+          _banksList = banks.map((bank) => <String, dynamic>{
             'code': bank['code'],
             'name': bank['name'],
             'icon': Icons.account_balance,
@@ -85,7 +165,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _banksError = e.toString();
+          _banksError = 'Failed to load banks. Please try again.';
           _isLoadingBanks = false;
         });
       }
@@ -114,17 +194,106 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
     }
   }
 
-  void _nextStep() {
-    if (_currentStep < 4) {
-      setState(() => _currentStep++);
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+  Future<void> _loadLinkedAccounts() async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+
+    setState(() => _isLoadingLinkedAccounts = true);
+
+    try {
+      await serviceLocator<OpenBankingCubit>().fetchLinkedAccounts(
+        userId: authState.profile.user.id,
+        accessToken: authState.profile.session.accessToken,
       );
+    } catch (e) {
+      debugPrint('Failed to load linked accounts: $e');
+    }
+
+    if (mounted) {
+      setState(() => _isLoadingLinkedAccounts = false);
     }
   }
 
+  Future<void> _calculateFee() async {
+    if (_amount <= 0) return;
+
+    setState(() {
+      _isCalculatingFee = true;
+      _feeCalculated = false;
+    });
+
+    try {
+      final bankingClient = serviceLocator<banking_grpc.BankingServiceClient>();
+      final callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      // Amount in minor units (kobo/cents)
+      final amountMinor = (_amount * 100).round();
+      final response = await bankingClient.calculateWithdrawalFee(
+        banking_pb.CalculateWithdrawalFeeRequest(amount: Int64(amountMinor)),
+        options: callOptions,
+      );
+
+      if (mounted && response.success) {
+        setState(() {
+          // Fee returned in minor units, convert to major
+          _calculatedFee = response.fee.toDouble() / 100;
+          _isCalculatingFee = false;
+          _feeCalculated = true;
+        });
+        return;
+      }
+    } catch (e) {
+      debugPrint('Backend fee calculation failed: $e');
+    }
+
+    // Fee calculation failed - set to 0 and let user proceed
+    if (mounted) {
+      setState(() {
+        _calculatedFee = 0;
+        _isCalculatingFee = false;
+        _feeCalculated = false;
+      });
+    }
+  }
+
+  /// Safely get the first character of a name for avatar display
+  String _safeInitial(String? name) {
+    if (name == null || name.isEmpty) return '?';
+    return name.substring(0, 1).toUpperCase();
+  }
+
+  /// Safely parse a numeric value from dynamic map data
+  double _safeDouble(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  void _nextStep() {
+    // Guard: don't advance if on processing step
+    if (_currentStep >= 4) return;
+
+    // Validate current step before advancing
+    if (_currentStep == 0 && _selectedRecipient == null) return;
+    if (_currentStep == 1 && (_amount <= 0)) return;
+
+    // Reset fee calculation when leaving amount step (amount may have changed)
+    if (_currentStep == 1) {
+      _feeCalculated = false;
+      _calculatedFee = 0;
+    }
+
+    setState(() => _currentStep++);
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
   void _previousStep() {
+    // Block back navigation during processing
+    if (_currentStep == 4 || _isProcessingWithdrawal) return;
+
     if (_currentStep > 0) {
       setState(() => _currentStep--);
       _pageController.previousPage(
@@ -139,6 +308,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _amountController.dispose();
     _bankNameController.dispose();
     _accountNumberController.dispose();
     _accountNameController.dispose();
@@ -156,9 +326,32 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
         BlocProvider.value(
           value: context.read<AccountVerificationCubit>(),
         ),
+        BlocProvider.value(
+          value: serviceLocator<OpenBankingCubit>(),
+        ),
       ],
       child: MultiBlocListener(
         listeners: [
+          BlocListener<OpenBankingCubit, OpenBankingState>(
+            listener: (context, state) {
+              if (state is LinkedAccountsLoaded) {
+                setState(() {
+                  _linkedAccounts = state.accounts
+                      .where((a) => a.isActive)
+                      .map((a) => <String, dynamic>{
+                            'id': a.id,
+                            'name': a.accountName,
+                            'bank': a.bankName,
+                            'bankCode': a.bankCode,
+                            'accountNumber': a.accountNumber,
+                            'isLinkedAccount': true,
+                          })
+                      .toList();
+                  _isLoadingLinkedAccounts = false;
+                });
+              }
+            },
+          ),
           BlocListener<RecipientCubit, RecipientState>(
             listener: (context, state) {
               if (state is RecipientLoaded) {
@@ -368,6 +561,46 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                 ],
               ),
             ),
+          // Linked bank accounts
+          if (!_isNewRecipient && _linkedAccounts.isNotEmpty) ...[
+            SizedBox(height: 24.h),
+            Text(
+              'Linked Bank Accounts',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            ..._linkedAccounts.map((a) => _buildLinkedAccountCard(a)),
+          ],
+
+          if (!_isNewRecipient && _isLoadingLinkedAccounts)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 16.w,
+                    height: 16.h,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.orange,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'Loading linked accounts...',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           SizedBox(height: 24.h),
 
           // New recipient option
@@ -457,10 +690,8 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   }
 
   Widget _buildBalanceHeader() {
-    final currency = widget.selectedAccount['currency'] ?? 'NGN';
-    final currencySymbol = currency == 'NGN' ? '₦' : '£';
-    final balance = widget.selectedAccount['balance'] ?? 0.0;
-    final availableBalance = widget.selectedAccount['availableBalance'] ?? balance;
+    final balance = _safeDouble(widget.selectedAccount['balance']);
+    final availableBalance = _safeDouble(widget.selectedAccount['availableBalance'] ?? widget.selectedAccount['balance']);
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -486,7 +717,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
           ),
           SizedBox(height: 4.h),
           Text(
-            '$currencySymbol${availableBalance.toStringAsFixed(2)}',
+            '$_currencySymbol${availableBalance.toStringAsFixed(2)}',
             style: TextStyle(
               color: Colors.white,
               fontSize: 28.sp,
@@ -502,7 +733,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                 borderRadius: BorderRadius.circular(4.r),
               ),
               child: Text(
-                '$currencySymbol${(balance - availableBalance).toStringAsFixed(2)} on hold',
+                '$_currencySymbol${(balance - availableBalance).toStringAsFixed(2)} on hold',
                 style: TextStyle(
                   color: Colors.orange,
                   fontSize: 11.sp,
@@ -551,7 +782,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
               ),
               child: Center(
                 child: Text(
-                  recipient['name'].toString().substring(0, 1).toUpperCase(),
+                  _safeInitial(recipient['name']?.toString()),
                   style: TextStyle(
                     color: Colors.orange,
                     fontSize: 20.sp,
@@ -566,7 +797,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    recipient['name'],
+                    recipient['name']?.toString() ?? 'Unknown',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16.sp,
@@ -575,7 +806,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    '${recipient['bank']} • ${_maskAccountNumber(recipient['accountNumber'])}',
+                    '${recipient['bank'] ?? 'Unknown Bank'} • ${_maskAccountNumber(recipient['accountNumber']?.toString() ?? '')}',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 12.sp,
@@ -597,6 +828,102 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   String _maskAccountNumber(String accountNumber) {
     if (accountNumber.length <= 4) return accountNumber;
     return '****${accountNumber.substring(accountNumber.length - 4)}';
+  }
+
+  Widget _buildLinkedAccountCard(Map<String, dynamic> account) {
+    final isSelected = _selectedRecipient?['id'] == account['id'];
+
+    return GestureDetector(
+      onTap: () {
+        setState(() => _selectedRecipient = account);
+        Future.delayed(const Duration(milliseconds: 200), _nextStep);
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Colors.orange.withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isSelected
+                ? Colors.orange
+                : Colors.white.withValues(alpha: 0.1),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48.w,
+              height: 48.h,
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.link,
+                  color: Colors.green,
+                  size: 24.sp,
+                ),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          account['name'] ?? 'Linked Account',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        child: Text(
+                          'Linked',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    '${account['bank']} • ${_maskAccountNumber(account['accountNumber'] ?? '')}',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildNewRecipientForm() {
@@ -816,7 +1143,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
           bankCode: _selectedBankCode!,
           accountNumber: accountNumber,
           bankName: bankName,
-          country: 'NG',
+          country: serviceLocator<LocaleManager>().currentCountry,
         );
   }
 
@@ -847,137 +1174,26 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        maxChildSize: 0.9,
-        minChildSize: 0.5,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 12.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Select Bank',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (_isLoadingBanks)
-                    Padding(
-                      padding: EdgeInsets.only(left: 8.w),
-                      child: SizedBox(
-                        width: 16.w,
-                        height: 16.h,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            if (_banksError != null)
-              Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red, size: 20.sp),
-                      SizedBox(width: 8.w),
-                      Expanded(
-                        child: Text(
-                          'Failed to load banks',
-                          style: TextStyle(color: Colors.red, fontSize: 14.sp),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _loadBanks();
-                        },
-                        child: Text('Retry', style: TextStyle(color: Colors.orange)),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            Expanded(
-              child: _isLoadingBanks
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(color: Colors.orange),
-                          SizedBox(height: 16.h),
-                          Text(
-                            'Loading banks...',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : _banksList.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No banks available',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: scrollController,
-                          itemCount: _banksList.length,
-                          itemBuilder: (context, index) {
-                            final bank = _banksList[index];
-                            return ListTile(
-                              leading: Icon(
-                                bank['icon'] ?? Icons.account_balance,
-                                color: Colors.white.withValues(alpha: 0.7),
-                              ),
-                              title: Text(
-                                bank['name'],
-                                style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  _bankNameController.text = bank['name'];
-                                  _selectedBankCode = bank['code'];
-                                  // Clear verification when bank changes
-                                  _accountNameController.clear();
-                                });
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
-                        ),
-            ),
-          ],
-        ),
+      builder: (sheetContext) => _BankSelectionSheet(
+        banksList: _banksList,
+        isLoadingBanks: _isLoadingBanks,
+        banksError: _banksError,
+        onBankSelected: (bank) {
+          setState(() {
+            _bankNameController.text = bank['name'] as String? ?? '';
+            _selectedBankCode = bank['code'] as String?;
+            // Clear verification when bank changes
+            _accountNameController.clear();
+          });
+          // Auto-verify if account number already entered
+          if (_accountNumberController.text.length == 10 && _selectedBankCode != null) {
+            _verifyAccount();
+          }
+        },
+        onRetryLoad: () {
+          Navigator.pop(sheetContext);
+          _loadBanks();
+        },
       ),
     );
   }
@@ -986,10 +1202,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   // STEP 2: Amount Entry
   // =====================================================
   Widget _buildAmountEntryStep() {
-    final currency = widget.selectedAccount['currency'] ?? 'NGN';
-    final currencySymbol = currency == 'NGN' ? '₦' : '£';
-    final availableBalance = widget.selectedAccount['availableBalance'] ??
-        widget.selectedAccount['balance'] ?? 0.0;
+    final availableBalance = _safeDouble(widget.selectedAccount['availableBalance'] ?? widget.selectedAccount['balance']);
     final exceedsBalance = _amount > availableBalance;
 
     return SingleChildScrollView(
@@ -1016,7 +1229,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        _selectedRecipient!['name'].toString().substring(0, 1).toUpperCase(),
+                        _safeInitial(_selectedRecipient?['name']?.toString()),
                         style: TextStyle(
                           color: Colors.orange,
                           fontSize: 18.sp,
@@ -1038,7 +1251,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                           ),
                         ),
                         Text(
-                          _selectedRecipient!['name'],
+                          _selectedRecipient?['name']?.toString() ?? 'Unknown',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16.sp,
@@ -1090,7 +1303,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      currencySymbol,
+                      _currencySymbol,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 32.sp,
@@ -1100,6 +1313,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                     SizedBox(width: 8.w),
                     Expanded(
                       child: TextField(
+                        controller: _amountController,
                         style: TextStyle(
                           color: exceedsBalance ? Colors.red : Colors.white,
                           fontSize: 48.sp,
@@ -1153,7 +1367,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
 
           // Available balance
           Text(
-            'Available: $currencySymbol${availableBalance.toStringAsFixed(2)}',
+            'Available: $_currencySymbol${availableBalance.toStringAsFixed(2)}',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.6),
               fontSize: 14.sp,
@@ -1165,10 +1379,10 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildQuickAmountButton(currencySymbol, 1000),
-              _buildQuickAmountButton(currencySymbol, 5000),
-              _buildQuickAmountButton(currencySymbol, 10000),
-              _buildQuickAmountButton(currencySymbol, 50000),
+              _buildQuickAmountButton(_currencySymbol, 1000),
+              _buildQuickAmountButton(_currencySymbol, 5000),
+              _buildQuickAmountButton(_currencySymbol, 10000),
+              _buildQuickAmountButton(_currencySymbol, 50000),
             ],
           ),
           SizedBox(height: 24.h),
@@ -1237,7 +1451,10 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
     final isDisabled = amount > availableBalance;
 
     return GestureDetector(
-      onTap: isDisabled ? null : () => setState(() => _amount = amount.toDouble()),
+      onTap: isDisabled ? null : () => setState(() {
+        _amount = amount.toDouble();
+        _amountController.text = amount.toString();
+      }),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
@@ -1267,37 +1484,12 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   // STEP 3: Review
   // =====================================================
   Widget _buildReviewStep() {
-    final currency = widget.selectedAccount['currency'] ?? 'NGN';
-    final currencySymbol = currency == 'NGN' ? '₦' : '£';
-
-    // Calculate transfer fee dynamically based on amount and currency
-    // For NG: flat fee for small amounts, percentage for larger amounts
-    // For GBP: percentage-based fee
-    double fee;
-    if (currency == 'NGN') {
-      // Nigerian Naira fee structure
-      if (_amount <= 5000) {
-        fee = 10.0; // Minimum fee for small transfers
-      } else if (_amount <= 50000) {
-        fee = 25.0;
-      } else {
-        fee = _amount * 0.001; // 0.1% for larger transfers
-      }
-    } else {
-      // GBP and other currencies: percentage-based
-      fee = _amount * 0.005; // 0.5% fee
+    // Calculate fee from backend on first display
+    if (!_feeCalculated && !_isCalculatingFee && _amount > 0) {
+      _calculateFee();
     }
 
-    // Ensure fee doesn't exceed maximum cap
-    const maxFeeNGN = 100.0;
-    const maxFeeGBP = 5.0;
-    if (currency == 'NGN' && fee > maxFeeNGN) {
-      fee = maxFeeNGN;
-    } else if (currency != 'NGN' && fee > maxFeeGBP) {
-      fee = maxFeeGBP;
-    }
-
-    final total = _amount + fee;
+    final total = _amount + _calculatedFee;
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.w),
@@ -1338,7 +1530,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  '$currencySymbol${_amount.toStringAsFixed(2)}',
+                  '$_currencySymbol${_amount.toStringAsFixed(2)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 36.sp,
@@ -1360,9 +1552,20 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
 
           // Transaction details
           _buildReviewSection('Transaction Details', [
-            {'label': 'Amount', 'value': '$currencySymbol${_amount.toStringAsFixed(2)}'},
-            {'label': 'Transfer Fee', 'value': '$currencySymbol${fee.toStringAsFixed(2)}'},
-            {'label': 'Total Debit', 'value': '$currencySymbol${total.toStringAsFixed(2)}', 'isTotal': true},
+            {'label': 'Amount', 'value': '$_currencySymbol${_amount.toStringAsFixed(2)}'},
+            {
+              'label': 'Transfer Fee',
+              'value': _isCalculatingFee
+                  ? 'Calculating...'
+                  : '$_currencySymbol${_calculatedFee.toStringAsFixed(2)}',
+            },
+            {
+              'label': 'Total Debit',
+              'value': _isCalculatingFee
+                  ? 'Calculating...'
+                  : '$_currencySymbol${total.toStringAsFixed(2)}',
+              'isTotal': true,
+            },
             if (_narration.isNotEmpty) {'label': 'Narration', 'value': _narration},
           ]),
           SizedBox(height: 32.h),
@@ -1371,22 +1574,46 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _nextStep,
+              onPressed: _isCalculatingFee ? null : _nextStep,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: _isCalculatingFee
+                    ? Colors.grey.shade700
+                    : Colors.orange,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: Text(
-                'Confirm & Enter PIN',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: _isCalculatingFee
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 16.w,
+                          height: 16.h,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'Calculating fees...',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
+                      'Confirm & Enter PIN',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -1454,6 +1681,9 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   }
 
   void _initiateWithdrawal(BuildContext context, String pin) {
+    // Guard: prevent double submission
+    if (_isProcessingWithdrawal) return;
+
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       Get.snackbar(
@@ -1466,16 +1696,70 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
       return;
     }
 
+    // Validate recipient fields
+    final recipientName = _selectedRecipient?['name']?.toString() ?? '';
+    final recipientBank = _selectedRecipient?['bank']?.toString() ?? '';
+    final recipientAccount = _selectedRecipient?['accountNumber']?.toString() ?? '';
+    final recipientBankCode = _selectedRecipient?['bankCode']?.toString() ?? '';
+
+    if (recipientAccount.isEmpty || recipientBank.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Invalid recipient details. Please go back and select a recipient.',
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    // Validate total vs balance
+    final availableBalance = _safeDouble(
+      widget.selectedAccount['availableBalance'] ?? widget.selectedAccount['balance'],
+    );
+    final total = _amount + _calculatedFee;
+    if (total > availableBalance) {
+      Get.snackbar(
+        'Insufficient Balance',
+        'Total amount ($_currencySymbol${total.toStringAsFixed(2)}) exceeds available balance.',
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    // Safe accountId parsing
+    final rawAccountId = widget.selectedAccount['id'];
+    final int accountId;
+    if (rawAccountId is int) {
+      accountId = rawAccountId;
+    } else {
+      final parsed = int.tryParse(rawAccountId?.toString() ?? '');
+      if (parsed == null) {
+        Get.snackbar(
+          'Error',
+          'Invalid account. Please try again.',
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+      accountId = parsed;
+    }
+
+    setState(() => _isProcessingWithdrawal = true);
+
     final accessToken = authState.profile.session.accessToken;
-    final accountId = widget.selectedAccount['id'];
-    final currency = widget.selectedAccount['currency'] ?? 'NGN';
 
     context.read<WithdrawalCubit>().initiateWithdrawal(
-      sourceAccountId: accountId is int ? accountId : int.parse(accountId.toString()),
+      sourceAccountId: accountId,
       amount: _amount,
-      currency: currency,
-      targetBankName: _selectedRecipient?['bank'] ?? '',
-      targetAccountNumber: _selectedRecipient?['accountNumber'] ?? '',
+      currency: _currency,
+      targetBankName: recipientBank,
+      targetAccountNumber: recipientAccount,
+      targetSortCode: recipientBankCode,
       accessToken: accessToken,
     );
 
@@ -1514,8 +1798,8 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
 
             return _WithdrawalProcessingView(
               amount: _amount,
-              currency: widget.selectedAccount['currency'] ?? 'NGN',
-              recipientName: _selectedRecipient?['name'] ?? '',
+              currency: _currency,
+              recipientName: _selectedRecipient?['name']?.toString() ?? '',
               isCompleted: isCompleted,
               isFailed: isFailed,
               failureMessage: withdrawalState is WithdrawalFailure
@@ -1524,6 +1808,20 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
               onDone: () {
                 Navigator.of(context).popUntil((route) => route.isFirst);
               },
+              onRetry: isFailed
+                  ? () {
+                      // Reset processing state and go back to PIN step
+                      setState(() {
+                        _isProcessingWithdrawal = false;
+                        _currentStep = 3;
+                      });
+                      _pageController.animateToPage(
+                        3,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  : null,
             );
           },
         );
@@ -1544,11 +1842,13 @@ class _PinEntryWidget extends StatefulWidget {
 
 class _PinEntryWidgetState extends State<_PinEntryWidget> {
   String _pin = '';
+  bool _pinSubmitted = false;
 
   void _addDigit(String digit) {
-    if (_pin.length < 4) {
+    if (_pin.length < 4 && !_pinSubmitted) {
       setState(() => _pin += digit);
       if (_pin.length == 4) {
+        _pinSubmitted = true;
         widget.onPinComplete(_pin);
       }
     }
@@ -1700,6 +2000,7 @@ class _WithdrawalProcessingView extends StatefulWidget {
   final bool isFailed;
   final String? failureMessage;
   final VoidCallback onDone;
+  final VoidCallback? onRetry;
 
   const _WithdrawalProcessingView({
     required this.amount,
@@ -1709,6 +2010,7 @@ class _WithdrawalProcessingView extends StatefulWidget {
     required this.isFailed,
     this.failureMessage,
     required this.onDone,
+    this.onRetry,
   });
 
   @override
@@ -1719,6 +2021,27 @@ class _WithdrawalProcessingViewState extends State<_WithdrawalProcessingView>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+
+  static String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      case 'GHS':
+        return '₵';
+      case 'KES':
+        return 'KSh';
+      case 'ZAR':
+        return 'R';
+      default:
+        return currency;
+    }
+  }
 
   @override
   void initState() {
@@ -1741,7 +2064,7 @@ class _WithdrawalProcessingViewState extends State<_WithdrawalProcessingView>
 
   @override
   Widget build(BuildContext context) {
-    final currencySymbol = widget.currency == 'NGN' ? '₦' : '£';
+    final currencySymbol = _getCurrencySymbol(widget.currency);
 
     Color statusColor;
     IconData statusIcon;
@@ -1883,14 +2206,40 @@ class _WithdrawalProcessingViewState extends State<_WithdrawalProcessingView>
 
             SizedBox(height: 48.h),
 
-            // Done button (only show when finished)
-            if (widget.isCompleted || widget.isFailed)
+            // Action buttons (only show when finished)
+            if (widget.isCompleted || widget.isFailed) ...[
+              if (widget.isFailed && widget.onRetry != null)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: widget.onRetry,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      'Try Again',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              if (widget.isFailed && widget.onRetry != null)
+                SizedBox(height: 12.h),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: widget.onDone,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: statusColor,
+                    backgroundColor: widget.isFailed && widget.onRetry != null
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : statusColor,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
@@ -1898,7 +2247,7 @@ class _WithdrawalProcessingViewState extends State<_WithdrawalProcessingView>
                     ),
                   ),
                   child: Text(
-                    widget.isCompleted ? 'Done' : 'Try Again',
+                    widget.isCompleted ? 'Done' : 'Go Home',
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
@@ -1906,8 +2255,214 @@ class _WithdrawalProcessingViewState extends State<_WithdrawalProcessingView>
                   ),
                 ),
               ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Bank selection bottom sheet widget for withdrawal flow
+class _BankSelectionSheet extends StatefulWidget {
+  final List<Map<String, dynamic>> banksList;
+  final bool isLoadingBanks;
+  final String? banksError;
+  final void Function(Map<String, dynamic> bank) onBankSelected;
+  final VoidCallback onRetryLoad;
+
+  const _BankSelectionSheet({
+    required this.banksList,
+    required this.isLoadingBanks,
+    this.banksError,
+    required this.onBankSelected,
+    required this.onRetryLoad,
+  });
+
+  @override
+  State<_BankSelectionSheet> createState() => _BankSelectionSheetState();
+}
+
+class _BankSelectionSheetState extends State<_BankSelectionSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _filteredBanks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredBanks = widget.banksList;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterBanks(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredBanks = widget.banksList;
+      } else {
+        _filteredBanks = widget.banksList.where((bank) {
+          final name = (bank['name'] as String? ?? '').toLowerCase();
+          final code = (bank['code'] as String? ?? '').toLowerCase();
+          return name.contains(query.toLowerCase()) ||
+              code.contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.7,
+      padding: EdgeInsets.only(top: 16.h),
+      child: Column(
+        children: [
+          // Handle bar
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Text(
+              'Select Bank',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+
+          // Search field
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                decoration: InputDecoration(
+                  hintText: 'Search banks...',
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 14.sp,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Colors.white.withValues(alpha: 0.4),
+                    size: 20.sp,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 14.h),
+                ),
+                onChanged: _filterBanks,
+              ),
+            ),
+          ),
+          SizedBox(height: 12.h),
+
+          // Content
+          Expanded(
+            child: widget.isLoadingBanks
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.orange),
+                  )
+                : widget.banksError != null
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.banksError!,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 14.sp,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 16.h),
+                            ElevatedButton(
+                              onPressed: widget.onRetryLoad,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 24.w),
+                        itemCount: _filteredBanks.length,
+                        itemBuilder: (context, index) {
+                          final bank = _filteredBanks[index];
+                          final name = bank['name'] as String? ?? '';
+                          return InkWell(
+                            onTap: () {
+                              widget.onBankSelected(bank);
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(10.r),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 14.h,
+                              ),
+                              margin: EdgeInsets.only(bottom: 4.h),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 36.w,
+                                    height: 36.w,
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        name.isNotEmpty ? name[0] : '?',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.orange,
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: Text(
+                                      name,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14.sp,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
       ),
     );
   }

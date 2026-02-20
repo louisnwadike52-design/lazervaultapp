@@ -46,6 +46,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     String? countryCode,
     String? idempotencyKey,
     int quantity = 1,
+    String? providerName,
   }) async {
     try {
       final giftCard = await RetryPolicy.critical.execute(
@@ -63,6 +64,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           countryCode: countryCode,
           idempotencyKey: idempotencyKey,
           quantity: quantity,
+          providerName: providerName,
         ),
       );
 
@@ -233,6 +235,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     String? currency,
     List<String>? images,
     String? idempotencyKey,
+    String? providerName,
   }) async {
     try {
       final sale = await RetryPolicy.critical.execute(
@@ -246,6 +249,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           currency: currency,
           images: images,
           idempotencyKey: idempotencyKey,
+          providerName: providerName,
         ),
       );
       return Right(sale);

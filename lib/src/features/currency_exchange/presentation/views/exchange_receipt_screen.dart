@@ -256,12 +256,15 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
           ),
           _buildDetailRow(
             'Exchange Rate',
-            '1 ${transaction.fromCurrency} = ${transaction.exchangeRate.toStringAsFixed(4)} ${transaction.toCurrency}',
+            _formatTransactionRate(transaction.exchangeRate, transaction.fromCurrency, transaction.toCurrency),
           ),
-          _buildDetailRow(
-            isConversion ? 'Conversion Fee' : 'Transfer Fee',
-            '${controller.fromCurrency.value?.symbol}${transaction.fees.toStringAsFixed(2)}',
-          ),
+          if (controller.featureConfig.showServiceFee)
+            _buildDetailRow(
+              isConversion ? 'Conversion Fee' : 'Transfer Fee',
+              '${controller.fromCurrency.value?.symbol}${transaction.fees.toStringAsFixed(2)}',
+            )
+          else
+            _buildDetailRow('Service Fee', 'Free'),
           _buildDetailRow(
             'Type',
             isConversion ? 'Wallet Conversion' : 'International Transfer',
@@ -301,7 +304,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
                 ),
               ),
               Text(
-                '${controller.fromCurrency.value?.symbol}${transaction.totalCost.toStringAsFixed(2)}',
+                '${controller.fromCurrency.value?.symbol}${controller.featureConfig.showServiceFee ? transaction.totalCost.toStringAsFixed(2) : transaction.fromAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 16.sp,
@@ -452,5 +455,14 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
 
     // Navigate to home
     Get.offAllNamed(AppRoutes.dashboard);
+  }
+
+  /// Format rate for display on receipt, always showing "1 FROM = X TO" format.
+  String _formatTransactionRate(double rate, String fromCurrency, String toCurrency) {
+    if (rate >= 0.01) {
+      return '1 $fromCurrency = ${rate.toStringAsFixed(4)} $toCurrency';
+    }
+    // For very small rates, show more decimal places for precision
+    return '1 $fromCurrency = ${rate.toStringAsFixed(6)} $toCurrency';
   }
 }

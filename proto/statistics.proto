@@ -270,6 +270,20 @@ service StatisticsService {
       get: "/v1/statistics/comprehensive/summary"
     };
   }
+
+  // Service Category & Budget Validation
+  rpc ValidateCategoryBudget(ValidateCategoryBudgetRequest) returns (ValidateCategoryBudgetResponse) {
+    option (google.api.http) = {
+      post: "/v1/statistics/validate-budget"
+      body: "*"
+    };
+  }
+
+  rpc GetServiceCategories(GetServiceCategoriesRequest) returns (GetServiceCategoriesResponse) {
+    option (google.api.http) = {
+      get: "/v1/statistics/service-categories/{service_name}"
+    };
+  }
 }
 
 // ========================================
@@ -335,8 +349,9 @@ message BudgetMessage {
   BudgetStatus status = 13;
   bool enable_alerts = 14;
   double alert_threshold = 15; // percentage (e.g., 80 for 80%)
-  google.protobuf.Timestamp created_at = 16;
-  google.protobuf.Timestamp updated_at = 17;
+  BudgetEnforcementMode enforcement_mode = 16; // strict or flexible
+  google.protobuf.Timestamp created_at = 17;
+  google.protobuf.Timestamp updated_at = 18;
 }
 
 enum BudgetPeriod {
@@ -356,6 +371,13 @@ enum BudgetStatus {
   BUDGET_STATUS_NEAR_LIMIT = 3;
   BUDGET_STATUS_INACTIVE = 4;
   BUDGET_STATUS_COMPLETED = 5;
+}
+
+// BudgetEnforcementMode determines how budget limits are enforced
+enum BudgetEnforcementMode {
+  BUDGET_ENFORCEMENT_MODE_UNSPECIFIED = 0;
+  BUDGET_ENFORCEMENT_MODE_FLEXIBLE = 1;  // Allow transactions over budget with warning
+  BUDGET_ENFORCEMENT_MODE_STRICT = 2;    // Block transactions when budget exceeded
 }
 
 // Alert Messages
@@ -532,6 +554,7 @@ message CreateBudgetRequest {
   google.protobuf.Timestamp end_date = 7;
   bool enable_alerts = 8;
   double alert_threshold = 9;
+  BudgetEnforcementMode enforcement_mode = 10; // strict or flexible (default: flexible)
 }
 
 message CreateBudgetResponse {
@@ -572,6 +595,7 @@ message UpdateBudgetRequest {
   google.protobuf.Timestamp end_date = 6;
   bool enable_alerts = 7;
   double alert_threshold = 8;
+  BudgetEnforcementMode enforcement_mode = 9; // strict or flexible
 }
 
 message UpdateBudgetResponse {
@@ -1280,4 +1304,60 @@ message ComprehensiveExpenditureData {
   double tracked_expenditure = 2; // from expenditure_transactions table (automatic tracking)
   double total_expenditure = 3;
   map<string, double> expenditure_breakdown = 4; // breakdown by expense type
+}
+
+// ========================================
+// SERVICE CATEGORY & BUDGET VALIDATION MESSAGES
+// ========================================
+
+// Validate Category Budget Request/Response
+message ValidateCategoryBudgetRequest {
+  string user_id = 1;           // User ID (extracted from JWT typically, but can be passed explicitly for internal calls)
+  int32 budget_category = 2;    // ExpenseCategory enum value
+  int64 amount_minor = 3;       // Amount in minor units (kobo)
+  string currency = 4;          // Currency code (e.g., "NGN")
+}
+
+message ValidateCategoryBudgetResponse {
+  bool allowed = 1;             // Whether the transaction is allowed
+  string reason = 2;            // Reason if not allowed: "budget_exceeded", "near_limit", "approaching_limit", "no_budget_set", "no_active_budget", "within_budget"
+  double current_spent = 3;     // Current amount spent (major units)
+  double budget_limit = 4;      // Budget limit (major units)
+  double percentage_used = 5;   // Percentage of budget used
+  double remaining = 6;         // Remaining amount (major units)
+  repeated BudgetInfo matching_budgets = 7;  // Matching budgets with details
+}
+
+message BudgetInfo {
+  string budget_id = 1;
+  string budget_name = 2;
+  double amount = 3;            // Budget limit (major units)
+  double spent = 4;             // Amount spent (major units)
+  double percentage = 5;        // Percentage used
+  int32 days_remaining = 6;     // Days remaining in budget period
+  google.protobuf.Timestamp start_date = 7;
+  google.protobuf.Timestamp end_date = 8;
+  string currency = 9;
+}
+
+// Get Service Categories Request/Response
+message GetServiceCategoriesRequest {
+  string service_name = 1;      // "transfer", "bill_payment", "investment", etc.
+  bool active_only = 2;         // Only return active categories (default: true)
+}
+
+message GetServiceCategoriesResponse {
+  repeated ServiceCategoryItem categories = 1;
+  bool success = 2;
+}
+
+message ServiceCategoryItem {
+  string id = 1;                // UUID of the mapping
+  string service_name = 2;      // "transfer", "bill_payment", etc.
+  string sub_category_name = 3; // "food", "airtime", etc.
+  int32 budget_category = 4;    // ExpenseCategory enum value
+  string display_name = 5;      // "Food Transfer", "Airtime Top-up", etc.
+  string icon = 6;              // Icon name for UI
+  string color = 7;             // Hex color for UI
+  bool is_active = 8;           // Whether the category is active
 }

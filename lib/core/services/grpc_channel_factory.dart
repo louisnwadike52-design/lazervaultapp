@@ -97,12 +97,12 @@ class GrpcChannelFactory {
   }
 
   /// Creates Exchange Service gRPC channel (Currency Exchange, International Transfers)
-  /// gRPC Port: 50081
+  /// Routes through Core Gateway (port 50070) per architecture rules
   static ClientChannel createExchangeChannel() {
-    final host = dotenv.env['EXCHANGE_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['EXCHANGE_GRPC_PORT'] ?? '50081');
+    final host = dotenv.env['CORE_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['CORE_GRPC_PORT'] ?? '50070');
 
-    print("💱 Creating Exchange Service Channel → $host:$port");
+    print("💱 Creating Exchange Service Channel (via Core Gateway) → $host:$port");
     return _createChannel(host, port, 'Exchange Service');
   }
 

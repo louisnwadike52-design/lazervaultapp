@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 import '../../domain/entities/linked_bank_account.dart';
 import '../../domain/entities/deposit.dart';
 import '../../domain/entities/withdrawal.dart';
@@ -15,11 +17,13 @@ import '../network/resilient_client.dart';
 class OpenBankingRemoteDataSource {
   final ResilientBankingClient _client;
   final String _baseUrl;
+  final SecureStorageService _secureStorage;
   final void Function(RequestEvent)? onRequestEvent;
 
   OpenBankingRemoteDataSource({
     ResilientBankingClient? client,
     String? baseUrl,
+    required SecureStorageService secureStorage,
     this.onRequestEvent,
   })  : _client = client ??
             ResilientBankingClient(
@@ -30,13 +34,15 @@ class OpenBankingRemoteDataSource {
               ),
               timeout: const Duration(seconds: 30),
             ),
-        _baseUrl = baseUrl ?? _getBaseUrl();
+        _baseUrl = baseUrl ?? _getBaseUrl(),
+        _secureStorage = secureStorage;
 
   /// Create with custom retry configuration
   factory OpenBankingRemoteDataSource.withConfig({
     required RetryConfig retryConfig,
     Duration timeout = const Duration(seconds: 30),
     String? baseUrl,
+    required SecureStorageService secureStorage,
     void Function(RequestEvent)? onRequestEvent,
   }) {
     return OpenBankingRemoteDataSource(
@@ -46,6 +52,7 @@ class OpenBankingRemoteDataSource {
         onEvent: onRequestEvent,
       ),
       baseUrl: baseUrl,
+      secureStorage: secureStorage,
       onRequestEvent: onRequestEvent,
     );
   }
@@ -55,11 +62,9 @@ class OpenBankingRemoteDataSource {
     return '$host/api/v1';
   }
 
-  Map<String, String> _getHeaders(String? accessToken) {
-    return {
-      'Content-Type': 'application/json',
-      if (accessToken != null) 'Authorization': 'Bearer $accessToken',
-    };
+  /// Build headers with all required metadata
+  Future<Map<String, String>> _getHeaders() async {
+    return ApiHeaders.build(secureStorage: _secureStorage);
   }
 
   /// Check if service is available (circuit breaker not open)
@@ -80,7 +85,7 @@ class OpenBankingRemoteDataSource {
   Future<Map<String, String>> getConnectWidgetConfig(String accessToken) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/open-banking/connect-config'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();
@@ -105,7 +110,7 @@ class OpenBankingRemoteDataSource {
     // Use shorter retry for linking as user is waiting
     final response = await _client.post(
       Uri.parse('$_baseUrl/open-banking/link'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'user_id': userId,
         'code': code,
@@ -129,7 +134,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/users/$userId/linked-accounts'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();
@@ -147,7 +152,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/linked-accounts/$accountId'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();
@@ -163,7 +168,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.delete(
       Uri.parse('$_baseUrl/linked-accounts/$accountId?user_id=$userId'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       // No retry for delete operations
       retryConfig: RetryConfig.none,
     );
@@ -180,7 +185,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.post(
       Uri.parse('$_baseUrl/linked-accounts/$accountId/set-default'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       body: jsonEncode({'user_id': userId}),
     );
 
@@ -196,7 +201,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.post(
       Uri.parse('$_baseUrl/linked-accounts/$accountId/refresh-balance'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       body: jsonEncode({'user_id': userId}),
     );
 
@@ -213,7 +218,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.post(
       Uri.parse('$_baseUrl/linked-accounts/$accountId/reauthorize'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       body: jsonEncode({'user_id': userId}),
     );
 
@@ -244,7 +249,7 @@ class OpenBankingRemoteDataSource {
     // Idempotency key prevents duplicate debits on retry
     final response = await _client.post(
       Uri.parse('$_baseUrl/deposits'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'user_id': userId,
         'linked_account_id': linkedAccountId,
@@ -274,7 +279,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/deposits/$depositId?user_id=$userId'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();
@@ -291,7 +296,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/users/$userId/deposits?limit=$limit&offset=$offset'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();
@@ -311,7 +316,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.post(
       Uri.parse('$_baseUrl/deposits/$depositId/cancel'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       body: jsonEncode({'user_id': userId}),
       // No retry for cancel - might result in partial state
       retryConfig: RetryConfig.none,
@@ -328,7 +333,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/deposits/calculate-fee?amount=$amountInKobo'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();
@@ -347,7 +352,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/banks'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       // Aggressive retry - banks list is essential
       retryConfig: RetryConfig.aggressive,
     );
@@ -369,7 +374,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.post(
       Uri.parse('$_baseUrl/banks/resolve-account'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'account_number': accountNumber,
         'bank_code': bankCode,
@@ -407,7 +412,7 @@ class OpenBankingRemoteDataSource {
     // Idempotency key prevents duplicate debits on retry
     final response = await _client.post(
       Uri.parse('$_baseUrl/withdrawals'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'user_id': userId,
         'source_account_id': sourceAccountId,
@@ -439,7 +444,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/withdrawals/$withdrawalId?user_id=$userId'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();
@@ -456,7 +461,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/users/$userId/withdrawals?limit=$limit&offset=$offset'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();
@@ -475,7 +480,7 @@ class OpenBankingRemoteDataSource {
   }) async {
     final response = await _client.get(
       Uri.parse('$_baseUrl/withdrawals/calculate-fee?amount=$amountInKobo'),
-      headers: _getHeaders(accessToken),
+      headers: await _getHeaders(),
     );
 
     final data = response.parseJsonOrThrow();

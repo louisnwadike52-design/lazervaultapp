@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -1305,8 +1306,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 final recipientToSave = _recipient!.copyWith(
                   id: '0',
                   isSaved: true,
-                  countryCode: _recipient!.countryCode ?? 'NG',
-                  currency: _recipient!.currency ?? 'NGN',
+                  countryCode: _recipient!.countryCode ?? serviceLocator<LocaleManager>().currentCountry,
+                  currency: _recipient!.currency ?? serviceLocator<LocaleManager>().currentCurrency,
                 );
                 final addRecipientUseCase = serviceLocator<AddRecipientUseCase>();
                 addRecipientUseCase(

@@ -148,8 +148,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String otpVerification = '/auth/otp-verification';
   static const String enableBiometricAccess = '/auth/enable-biometric-access';
   static const String passwordRecovery = '/auth/password-recovery';
-  static const String passwordRecoveryVerification = '/auth/password-recovery-verification';
   static const String createNewPassword = '/auth/create-new-password';
+  static const String verifyPasswordResetOTP = '/auth/verify-password-reset-otp';
   static const String selectCountry = '/auth/select-country';
   static const String facialBiometricVerification =
       '/auth/facial-biometric-verification';
@@ -367,6 +367,8 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String cardCreationReceipt = '/cards/receipt';
   static const String cardsList = '/cards/list';
   static const String cardDetails = '/cards/details';
+  static const String requestPhysicalCard = '/cards/physical';
+  static const String cardPinSetup = '/cards/pin-setup';
 
   // Lock Funds Routes
   static const String lockFunds = '/lock-funds';

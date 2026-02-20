@@ -15,6 +15,7 @@ import 'crypto_detail_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/voice_grpc_client.dart';
+import 'buy_crypto_screen.dart';
 import 'sell_crypto_screen.dart';
 import 'swap_crypto_screen.dart';
 import 'price_alerts_screen.dart';
@@ -368,15 +369,25 @@ class _CryptoScreenState extends State<CryptoScreen>
   Widget _buildQuickActionButton(String label, IconData icon, Color color) {
     return GestureDetector(
       onTap: () {
+        final cryptoCubit = context.read<CryptoCubit>();
         switch (label) {
           case 'Buy':
-            Get.toNamed(AppRoutes.buyCrypto);
+            Get.to(() => BlocProvider.value(
+              value: cryptoCubit,
+              child: const BuyCryptoScreen(),
+            ));
             break;
           case 'Sell':
-            Get.to(() => const SellCryptoScreen());
+            Get.to(() => BlocProvider.value(
+              value: cryptoCubit,
+              child: const SellCryptoScreen(),
+            ));
             break;
           case 'Swap':
-            Get.to(() => const SwapCryptoScreen());
+            Get.to(() => BlocProvider.value(
+              value: cryptoCubit,
+              child: const SwapCryptoScreen(),
+            ));
             break;
         }
       },

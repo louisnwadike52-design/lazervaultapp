@@ -112,6 +112,7 @@ class GiftCardBrandModel extends GiftCardBrand {
     super.discountPercentage,
     super.currencyCode,
     super.redemptionInstructions,
+    super.providerName,
   });
 
   factory GiftCardBrandModel.fromProto(pb.GiftCardBrand proto) {
@@ -137,6 +138,7 @@ class GiftCardBrandModel extends GiftCardBrand {
       discountPercentage: proto.discountPercentage,
       currencyCode: proto.currencyCode,
       redemptionInstructions: proto.redemptionInstructions,
+      providerName: proto.providerName,
     );
   }
 
@@ -162,6 +164,7 @@ class GiftCardBrandModel extends GiftCardBrand {
       discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
       currencyCode: json['currencyCode'] as String? ?? '',
       redemptionInstructions: json['redemptionInstructions'] as String? ?? '',
+      providerName: json['providerName'] as String? ?? '',
     );
   }
 }
@@ -194,6 +197,7 @@ class SellableCardModel extends SellableCard {
     super.currencies,
     super.minDenomination,
     super.maxDenomination,
+    super.providerName,
   });
 
   factory SellableCardModel.fromProto(pb.SellableCard proto) {
@@ -206,6 +210,7 @@ class SellableCardModel extends SellableCard {
       currencies: proto.currencies.toList(),
       minDenomination: proto.minDenomination,
       maxDenomination: proto.maxDenomination,
+      providerName: proto.providerName,
     );
   }
 }

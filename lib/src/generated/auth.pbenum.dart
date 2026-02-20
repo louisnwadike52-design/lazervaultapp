@@ -30,6 +30,24 @@ class PrimaryContactType extends $pb.ProtobufEnum {
   const PrimaryContactType._($core.int v, $core.String n) : super(v, n);
 }
 
+/// Delivery method for password reset
+class PasswordResetDeliveryMethod extends $pb.ProtobufEnum {
+  static const PasswordResetDeliveryMethod DELIVERY_METHOD_UNSPECIFIED = PasswordResetDeliveryMethod._(0, _omitEnumNames ? '' : 'DELIVERY_METHOD_UNSPECIFIED');
+  static const PasswordResetDeliveryMethod DELIVERY_METHOD_EMAIL = PasswordResetDeliveryMethod._(1, _omitEnumNames ? '' : 'DELIVERY_METHOD_EMAIL');
+  static const PasswordResetDeliveryMethod DELIVERY_METHOD_SMS = PasswordResetDeliveryMethod._(2, _omitEnumNames ? '' : 'DELIVERY_METHOD_SMS');
+
+  static const $core.List<PasswordResetDeliveryMethod> values = <PasswordResetDeliveryMethod> [
+    DELIVERY_METHOD_UNSPECIFIED,
+    DELIVERY_METHOD_EMAIL,
+    DELIVERY_METHOD_SMS,
+  ];
+
+  static final $core.Map<$core.int, PasswordResetDeliveryMethod> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static PasswordResetDeliveryMethod? valueOf($core.int value) => _byValue[value];
+
+  const PasswordResetDeliveryMethod._($core.int v, $core.String n) : super(v, n);
+}
+
 /// Signup status values
 class SignupStatus extends $pb.ProtobufEnum {
   static const SignupStatus SIGNUP_STATUS_UNSPECIFIED = SignupStatus._(0, _omitEnumNames ? '' : 'SIGNUP_STATUS_UNSPECIFIED');

@@ -56,7 +56,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
-  Future<Invoice> createInvoice(Invoice invoice) async {
+  Future<Invoice> createInvoice(Invoice invoice, {String? serviceFeeRef}) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.CreateInvoiceRequest()

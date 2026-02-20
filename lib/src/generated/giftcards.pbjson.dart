@@ -81,6 +81,7 @@ const GiftCardBrand$json = {
     {'1': 'max_amount', '3': 8, '4': 1, '5': 1, '10': 'maxAmount'},
     {'1': 'is_active', '3': 9, '4': 1, '5': 8, '10': 'isActive'},
     {'1': 'terms_and_conditions', '3': 10, '4': 1, '5': 9, '10': 'termsAndConditions'},
+    {'1': 'provider_name', '3': 17, '4': 1, '5': 9, '10': 'providerName'},
     {'1': 'product_id', '3': 11, '4': 1, '5': 3, '10': 'productId'},
     {'1': 'country_code', '3': 12, '4': 1, '5': 9, '10': 'countryCode'},
     {'1': 'fixed_denominations', '3': 13, '4': 3, '5': 11, '6': '.giftcards.GiftCardDenomination', '10': 'fixedDenominations'},
@@ -97,13 +98,13 @@ final $typed_data.Uint8List giftCardBrandDescriptor = $convert.base64Decode(
     'ZXNjcmlwdGlvbhgFIAEoCVILZGVzY3JpcHRpb24SJAoNZGVub21pbmF0aW9ucxgGIAMoAVINZG'
     'Vub21pbmF0aW9ucxIdCgptaW5fYW1vdW50GAcgASgBUgltaW5BbW91bnQSHQoKbWF4X2Ftb3Vu'
     'dBgIIAEoAVIJbWF4QW1vdW50EhsKCWlzX2FjdGl2ZRgJIAEoCFIIaXNBY3RpdmUSMAoUdGVybX'
-    'NfYW5kX2NvbmRpdGlvbnMYCiABKAlSEnRlcm1zQW5kQ29uZGl0aW9ucxIdCgpwcm9kdWN0X2lk'
-    'GAsgASgDUglwcm9kdWN0SWQSIQoMY291bnRyeV9jb2RlGAwgASgJUgtjb3VudHJ5Q29kZRJQCh'
-    'NmaXhlZF9kZW5vbWluYXRpb25zGA0gAygLMh8uZ2lmdGNhcmRzLkdpZnRDYXJkRGVub21pbmF0'
-    'aW9uUhJmaXhlZERlbm9taW5hdGlvbnMSLwoTZGlzY291bnRfcGVyY2VudGFnZRgOIAEoAVISZG'
-    'lzY291bnRQZXJjZW50YWdlEiMKDWN1cnJlbmN5X2NvZGUYDyABKAlSDGN1cnJlbmN5Q29kZRI3'
-    'ChdyZWRlbXB0aW9uX2luc3RydWN0aW9ucxgQIAEoCVIWcmVkZW1wdGlvbkluc3RydWN0aW9ucw'
-    '==');
+    'NfYW5kX2NvbmRpdGlvbnMYCiABKAlSEnRlcm1zQW5kQ29uZGl0aW9ucxIjCg1wcm92aWRlcl9u'
+    'YW1lGBEgASgJUgxwcm92aWRlck5hbWUSHQoKcHJvZHVjdF9pZBgLIAEoA1IJcHJvZHVjdElkEi'
+    'EKDGNvdW50cnlfY29kZRgMIAEoCVILY291bnRyeUNvZGUSUAoTZml4ZWRfZGVub21pbmF0aW9u'
+    'cxgNIAMoCzIfLmdpZnRjYXJkcy5HaWZ0Q2FyZERlbm9taW5hdGlvblISZml4ZWREZW5vbWluYX'
+    'Rpb25zEi8KE2Rpc2NvdW50X3BlcmNlbnRhZ2UYDiABKAFSEmRpc2NvdW50UGVyY2VudGFnZRIj'
+    'Cg1jdXJyZW5jeV9jb2RlGA8gASgJUgxjdXJyZW5jeUNvZGUSNwoXcmVkZW1wdGlvbl9pbnN0cn'
+    'VjdGlvbnMYECABKAlSFnJlZGVtcHRpb25JbnN0cnVjdGlvbnM=');
 
 @$core.Deprecated('Use giftCardDenominationDescriptor instead')
 const GiftCardDenomination$json = {
@@ -160,6 +161,7 @@ const BuyGiftCardRequest$json = {
     {'1': 'gift_message', '3': 6, '4': 1, '5': 9, '10': 'giftMessage'},
     {'1': 'transaction_id', '3': 7, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'verification_token', '3': 8, '4': 1, '5': 9, '10': 'verificationToken'},
+    {'1': 'provider_name', '3': 15, '4': 1, '5': 9, '10': 'providerName'},
     {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'sender_name', '3': 10, '4': 1, '5': 9, '10': 'senderName'},
     {'1': 'recipient_phone', '3': 11, '4': 1, '5': 9, '10': 'recipientPhone'},
@@ -176,11 +178,11 @@ final $typed_data.Uint8List buyGiftCardRequestDescriptor = $convert.base64Decode
     'aWVudF9lbWFpbBgEIAEoCVIOcmVjaXBpZW50RW1haWwSJQoOcmVjaXBpZW50X25hbWUYBSABKA'
     'lSDXJlY2lwaWVudE5hbWUSIQoMZ2lmdF9tZXNzYWdlGAYgASgJUgtnaWZ0TWVzc2FnZRIlCg50'
     'cmFuc2FjdGlvbl9pZBgHIAEoCVINdHJhbnNhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW'
-    '4YCCABKAlSEXZlcmlmaWNhdGlvblRva2VuEicKD2lkZW1wb3RlbmN5X2tleRgJIAEoCVIOaWRl'
-    'bXBvdGVuY3lLZXkSHwoLc2VuZGVyX25hbWUYCiABKAlSCnNlbmRlck5hbWUSJwoPcmVjaXBpZW'
-    '50X3Bob25lGAsgASgJUg5yZWNpcGllbnRQaG9uZRIdCgpwcm9kdWN0X2lkGAwgASgDUglwcm9k'
-    'dWN0SWQSIQoMY291bnRyeV9jb2RlGA0gASgJUgtjb3VudHJ5Q29kZRIaCghxdWFudGl0eRgOIA'
-    'EoBVIIcXVhbnRpdHk=');
+    '4YCCABKAlSEXZlcmlmaWNhdGlvblRva2VuEiMKDXByb3ZpZGVyX25hbWUYDyABKAlSDHByb3Zp'
+    'ZGVyTmFtZRInCg9pZGVtcG90ZW5jeV9rZXkYCSABKAlSDmlkZW1wb3RlbmN5S2V5Eh8KC3Nlbm'
+    'Rlcl9uYW1lGAogASgJUgpzZW5kZXJOYW1lEicKD3JlY2lwaWVudF9waG9uZRgLIAEoCVIOcmVj'
+    'aXBpZW50UGhvbmUSHQoKcHJvZHVjdF9pZBgMIAEoA1IJcHJvZHVjdElkEiEKDGNvdW50cnlfY2'
+    '9kZRgNIAEoCVILY291bnRyeUNvZGUSGgoIcXVhbnRpdHkYDiABKAVSCHF1YW50aXR5');
 
 @$core.Deprecated('Use buyGiftCardResponseDescriptor instead')
 const BuyGiftCardResponse$json = {
@@ -435,6 +437,7 @@ const SellableCard$json = {
     {'1': 'currencies', '3': 6, '4': 3, '5': 9, '10': 'currencies'},
     {'1': 'min_denomination', '3': 7, '4': 1, '5': 1, '10': 'minDenomination'},
     {'1': 'max_denomination', '3': 8, '4': 1, '5': 1, '10': 'maxDenomination'},
+    {'1': 'provider_name', '3': 9, '4': 1, '5': 9, '10': 'providerName'},
   ],
 };
 
@@ -445,7 +448,7 @@ final $typed_data.Uint8List sellableCardDescriptor = $convert.base64Decode(
     'dGVnb3J5GAQgASgJUghjYXRlZ29yeRIkCg1kZW5vbWluYXRpb25zGAUgAygBUg1kZW5vbWluYX'
     'Rpb25zEh4KCmN1cnJlbmNpZXMYBiADKAlSCmN1cnJlbmNpZXMSKQoQbWluX2Rlbm9taW5hdGlv'
     'bhgHIAEoAVIPbWluRGVub21pbmF0aW9uEikKEG1heF9kZW5vbWluYXRpb24YCCABKAFSD21heE'
-    'Rlbm9taW5hdGlvbg==');
+    'Rlbm9taW5hdGlvbhIjCg1wcm92aWRlcl9uYW1lGAkgASgJUgxwcm92aWRlck5hbWU=');
 
 @$core.Deprecated('Use sellRateDescriptor instead')
 const SellRate$json = {
@@ -571,6 +574,7 @@ const SellGiftCardRequest$json = {
     {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'transaction_id', '3': 8, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'verification_token', '3': 9, '4': 1, '5': 9, '10': 'verificationToken'},
+    {'1': 'provider_name', '3': 10, '4': 1, '5': 9, '10': 'providerName'},
   ],
 };
 
@@ -581,7 +585,8 @@ final $typed_data.Uint8List sellGiftCardRequestDescriptor = $convert.base64Decod
     'IgoMZGVub21pbmF0aW9uGAQgASgBUgxkZW5vbWluYXRpb24SGgoIY3VycmVuY3kYBSABKAlSCG'
     'N1cnJlbmN5EhYKBmltYWdlcxgGIAMoCVIGaW1hZ2VzEicKD2lkZW1wb3RlbmN5X2tleRgHIAEo'
     'CVIOaWRlbXBvdGVuY3lLZXkSJQoOdHJhbnNhY3Rpb25faWQYCCABKAlSDXRyYW5zYWN0aW9uSW'
-    'QSLQoSdmVyaWZpY2F0aW9uX3Rva2VuGAkgASgJUhF2ZXJpZmljYXRpb25Ub2tlbg==');
+    'QSLQoSdmVyaWZpY2F0aW9uX3Rva2VuGAkgASgJUhF2ZXJpZmljYXRpb25Ub2tlbhIjCg1wcm92'
+    'aWRlcl9uYW1lGAogASgJUgxwcm92aWRlck5hbWU=');
 
 @$core.Deprecated('Use sellGiftCardResponseDescriptor instead')
 const SellGiftCardResponse$json = {

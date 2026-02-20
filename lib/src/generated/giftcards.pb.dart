@@ -447,6 +447,7 @@ class GiftCardBrand extends $pb.GeneratedMessage {
     $core.double? discountPercentage,
     $core.String? currencyCode,
     $core.String? redemptionInstructions,
+    $core.String? providerName,
   }) {
     final $result = create();
     if (id != null) {
@@ -497,6 +498,9 @@ class GiftCardBrand extends $pb.GeneratedMessage {
     if (redemptionInstructions != null) {
       $result.redemptionInstructions = redemptionInstructions;
     }
+    if (providerName != null) {
+      $result.providerName = providerName;
+    }
     return $result;
   }
   GiftCardBrand._() : super();
@@ -520,6 +524,7 @@ class GiftCardBrand extends $pb.GeneratedMessage {
     ..a<$core.double>(14, _omitFieldNames ? '' : 'discountPercentage', $pb.PbFieldType.OD)
     ..aOS(15, _omitFieldNames ? '' : 'currencyCode')
     ..aOS(16, _omitFieldNames ? '' : 'redemptionInstructions')
+    ..aOS(17, _omitFieldNames ? '' : 'providerName')
     ..hasRequiredFields = false
   ;
 
@@ -676,6 +681,16 @@ class GiftCardBrand extends $pb.GeneratedMessage {
   $core.bool hasRedemptionInstructions() => $_has(15);
   @$pb.TagNumber(16)
   void clearRedemptionInstructions() => clearField(16);
+
+  /// Provider consistency tracking
+  @$pb.TagNumber(17)
+  $core.String get providerName => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set providerName($core.String v) { $_setString(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasProviderName() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearProviderName() => clearField(17);
 }
 
 /// Fixed denomination from Reloadly
@@ -951,6 +966,7 @@ class BuyGiftCardRequest extends $pb.GeneratedMessage {
     $fixnum.Int64? productId,
     $core.String? countryCode,
     $core.int? quantity,
+    $core.String? providerName,
   }) {
     final $result = create();
     if (accountId != null) {
@@ -995,6 +1011,9 @@ class BuyGiftCardRequest extends $pb.GeneratedMessage {
     if (quantity != null) {
       $result.quantity = quantity;
     }
+    if (providerName != null) {
+      $result.providerName = providerName;
+    }
     return $result;
   }
   BuyGiftCardRequest._() : super();
@@ -1016,6 +1035,7 @@ class BuyGiftCardRequest extends $pb.GeneratedMessage {
     ..aInt64(12, _omitFieldNames ? '' : 'productId')
     ..aOS(13, _omitFieldNames ? '' : 'countryCode')
     ..a<$core.int>(14, _omitFieldNames ? '' : 'quantity', $pb.PbFieldType.O3)
+    ..aOS(15, _omitFieldNames ? '' : 'providerName')
     ..hasRequiredFields = false
   ;
 
@@ -1167,6 +1187,16 @@ class BuyGiftCardRequest extends $pb.GeneratedMessage {
   $core.bool hasQuantity() => $_has(13);
   @$pb.TagNumber(14)
   void clearQuantity() => clearField(14);
+
+  /// Provider consistency - MUST match the provider from GetGiftCardBrands response
+  @$pb.TagNumber(15)
+  $core.String get providerName => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set providerName($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasProviderName() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearProviderName() => clearField(15);
 }
 
 class BuyGiftCardResponse extends $pb.GeneratedMessage {
@@ -2378,6 +2408,7 @@ class SellableCard extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? currencies,
     $core.double? minDenomination,
     $core.double? maxDenomination,
+    $core.String? providerName,
   }) {
     final $result = create();
     if (cardType != null) {
@@ -2404,6 +2435,9 @@ class SellableCard extends $pb.GeneratedMessage {
     if (maxDenomination != null) {
       $result.maxDenomination = maxDenomination;
     }
+    if (providerName != null) {
+      $result.providerName = providerName;
+    }
     return $result;
   }
   SellableCard._() : super();
@@ -2419,6 +2453,7 @@ class SellableCard extends $pb.GeneratedMessage {
     ..pPS(6, _omitFieldNames ? '' : 'currencies')
     ..a<$core.double>(7, _omitFieldNames ? '' : 'minDenomination', $pb.PbFieldType.OD)
     ..a<$core.double>(8, _omitFieldNames ? '' : 'maxDenomination', $pb.PbFieldType.OD)
+    ..aOS(9, _omitFieldNames ? '' : 'providerName')
     ..hasRequiredFields = false
   ;
 
@@ -2502,6 +2537,15 @@ class SellableCard extends $pb.GeneratedMessage {
   $core.bool hasMaxDenomination() => $_has(7);
   @$pb.TagNumber(8)
   void clearMaxDenomination() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get providerName => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set providerName($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasProviderName() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearProviderName() => clearField(9);
 }
 
 class SellRate extends $pb.GeneratedMessage {
@@ -3144,6 +3188,7 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
     $core.String? idempotencyKey,
     $core.String? transactionId,
     $core.String? verificationToken,
+    $core.String? providerName,
   }) {
     final $result = create();
     if (cardType != null) {
@@ -3173,6 +3218,9 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
     if (verificationToken != null) {
       $result.verificationToken = verificationToken;
     }
+    if (providerName != null) {
+      $result.providerName = providerName;
+    }
     return $result;
   }
   SellGiftCardRequest._() : super();
@@ -3189,6 +3237,7 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'idempotencyKey')
     ..aOS(8, _omitFieldNames ? '' : 'transactionId')
     ..aOS(9, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(10, _omitFieldNames ? '' : 'providerName')
     ..hasRequiredFields = false
   ;
 
@@ -3287,6 +3336,15 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
   $core.bool hasVerificationToken() => $_has(8);
   @$pb.TagNumber(9)
   void clearVerificationToken() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get providerName => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set providerName($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasProviderName() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearProviderName() => clearField(10);
 }
 
 class SellGiftCardResponse extends $pb.GeneratedMessage {

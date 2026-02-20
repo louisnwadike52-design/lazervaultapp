@@ -97,6 +97,10 @@ class AccountsServiceClient extends $grpc.Client {
       '/accounts.AccountsService/TransferFromPlatformWallet',
       ($0.TransferFromPlatformWalletRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.TransferFromPlatformWalletResponse.fromBuffer(value));
+  static final _$creditPlatformWallet = $grpc.ClientMethod<$0.CreditPlatformWalletRequest, $0.CreditPlatformWalletResponse>(
+      '/accounts.AccountsService/CreditPlatformWallet',
+      ($0.CreditPlatformWalletRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreditPlatformWalletResponse.fromBuffer(value));
   static final _$getPlatformWallet = $grpc.ClientMethod<$0.GetPlatformWalletRequest, $0.GetPlatformWalletResponse>(
       '/accounts.AccountsService/GetPlatformWallet',
       ($0.GetPlatformWalletRequest value) => value.writeToBuffer(),
@@ -193,6 +197,30 @@ class AccountsServiceClient extends $grpc.Client {
       '/accounts.AccountsService/ReorderCategories',
       ($0.ReorderCategoriesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.ReorderCategoriesResponse.fromBuffer(value));
+  static final _$updateSpendingLimits = $grpc.ClientMethod<$0.UpdateSpendingLimitsRequest, $0.UpdateSpendingLimitsResponse>(
+      '/accounts.AccountsService/UpdateSpendingLimits',
+      ($0.UpdateSpendingLimitsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateSpendingLimitsResponse.fromBuffer(value));
+  static final _$revealPIN = $grpc.ClientMethod<$0.RevealPINRequest, $0.RevealPINResponse>(
+      '/accounts.AccountsService/RevealPIN',
+      ($0.RevealPINRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RevealPINResponse.fromBuffer(value));
+  static final _$revealCardDetails = $grpc.ClientMethod<$0.RevealCardDetailsRequest, $0.RevealCardDetailsResponse>(
+      '/accounts.AccountsService/RevealCardDetails',
+      ($0.RevealCardDetailsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RevealCardDetailsResponse.fromBuffer(value));
+  static final _$generateStatement = $grpc.ClientMethod<$0.GenerateStatementRequest, $0.GenerateStatementResponse>(
+      '/accounts.AccountsService/GenerateStatement',
+      ($0.GenerateStatementRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GenerateStatementResponse.fromBuffer(value));
+  static final _$generateAccountConfirmation = $grpc.ClientMethod<$0.GenerateAccountConfirmationRequest, $0.GenerateAccountConfirmationResponse>(
+      '/accounts.AccountsService/GenerateAccountConfirmation',
+      ($0.GenerateAccountConfirmationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GenerateAccountConfirmationResponse.fromBuffer(value));
+  static final _$generateProofOfFunds = $grpc.ClientMethod<$0.GenerateProofOfFundsRequest, $0.GenerateProofOfFundsResponse>(
+      '/accounts.AccountsService/GenerateProofOfFunds',
+      ($0.GenerateProofOfFundsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GenerateProofOfFundsResponse.fromBuffer(value));
 
   AccountsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -274,6 +302,10 @@ class AccountsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.TransferFromPlatformWalletResponse> transferFromPlatformWallet($0.TransferFromPlatformWalletRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$transferFromPlatformWallet, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreditPlatformWalletResponse> creditPlatformWallet($0.CreditPlatformWalletRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$creditPlatformWallet, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GetPlatformWalletResponse> getPlatformWallet($0.GetPlatformWalletRequest request, {$grpc.CallOptions? options}) {
@@ -370,6 +402,30 @@ class AccountsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.ReorderCategoriesResponse> reorderCategories($0.ReorderCategoriesRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$reorderCategories, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateSpendingLimitsResponse> updateSpendingLimits($0.UpdateSpendingLimitsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateSpendingLimits, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RevealPINResponse> revealPIN($0.RevealPINRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$revealPIN, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RevealCardDetailsResponse> revealCardDetails($0.RevealCardDetailsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$revealCardDetails, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GenerateStatementResponse> generateStatement($0.GenerateStatementRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$generateStatement, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GenerateAccountConfirmationResponse> generateAccountConfirmation($0.GenerateAccountConfirmationRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$generateAccountConfirmation, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GenerateProofOfFundsResponse> generateProofOfFunds($0.GenerateProofOfFundsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$generateProofOfFunds, request, options: options);
   }
 }
 
@@ -511,6 +567,13 @@ abstract class AccountsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.TransferFromPlatformWalletRequest.fromBuffer(value),
         ($0.TransferFromPlatformWalletResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreditPlatformWalletRequest, $0.CreditPlatformWalletResponse>(
+        'CreditPlatformWallet',
+        creditPlatformWallet_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CreditPlatformWalletRequest.fromBuffer(value),
+        ($0.CreditPlatformWalletResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetPlatformWalletRequest, $0.GetPlatformWalletResponse>(
         'GetPlatformWallet',
         getPlatformWallet_Pre,
@@ -679,6 +742,48 @@ abstract class AccountsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.ReorderCategoriesRequest.fromBuffer(value),
         ($0.ReorderCategoriesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateSpendingLimitsRequest, $0.UpdateSpendingLimitsResponse>(
+        'UpdateSpendingLimits',
+        updateSpendingLimits_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UpdateSpendingLimitsRequest.fromBuffer(value),
+        ($0.UpdateSpendingLimitsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RevealPINRequest, $0.RevealPINResponse>(
+        'RevealPIN',
+        revealPIN_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RevealPINRequest.fromBuffer(value),
+        ($0.RevealPINResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RevealCardDetailsRequest, $0.RevealCardDetailsResponse>(
+        'RevealCardDetails',
+        revealCardDetails_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RevealCardDetailsRequest.fromBuffer(value),
+        ($0.RevealCardDetailsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateStatementRequest, $0.GenerateStatementResponse>(
+        'GenerateStatement',
+        generateStatement_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GenerateStatementRequest.fromBuffer(value),
+        ($0.GenerateStatementResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateAccountConfirmationRequest, $0.GenerateAccountConfirmationResponse>(
+        'GenerateAccountConfirmation',
+        generateAccountConfirmation_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GenerateAccountConfirmationRequest.fromBuffer(value),
+        ($0.GenerateAccountConfirmationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateProofOfFundsRequest, $0.GenerateProofOfFundsResponse>(
+        'GenerateProofOfFunds',
+        generateProofOfFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GenerateProofOfFundsRequest.fromBuffer(value),
+        ($0.GenerateProofOfFundsResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateAccountResponse> createAccount_Pre($grpc.ServiceCall call, $async.Future<$0.CreateAccountRequest> request) async {
@@ -755,6 +860,10 @@ abstract class AccountsServiceBase extends $grpc.Service {
 
   $async.Future<$0.TransferFromPlatformWalletResponse> transferFromPlatformWallet_Pre($grpc.ServiceCall call, $async.Future<$0.TransferFromPlatformWalletRequest> request) async {
     return transferFromPlatformWallet(call, await request);
+  }
+
+  $async.Future<$0.CreditPlatformWalletResponse> creditPlatformWallet_Pre($grpc.ServiceCall call, $async.Future<$0.CreditPlatformWalletRequest> request) async {
+    return creditPlatformWallet(call, await request);
   }
 
   $async.Future<$0.GetPlatformWalletResponse> getPlatformWallet_Pre($grpc.ServiceCall call, $async.Future<$0.GetPlatformWalletRequest> request) async {
@@ -853,6 +962,30 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return reorderCategories(call, await request);
   }
 
+  $async.Future<$0.UpdateSpendingLimitsResponse> updateSpendingLimits_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateSpendingLimitsRequest> request) async {
+    return updateSpendingLimits(call, await request);
+  }
+
+  $async.Future<$0.RevealPINResponse> revealPIN_Pre($grpc.ServiceCall call, $async.Future<$0.RevealPINRequest> request) async {
+    return revealPIN(call, await request);
+  }
+
+  $async.Future<$0.RevealCardDetailsResponse> revealCardDetails_Pre($grpc.ServiceCall call, $async.Future<$0.RevealCardDetailsRequest> request) async {
+    return revealCardDetails(call, await request);
+  }
+
+  $async.Future<$0.GenerateStatementResponse> generateStatement_Pre($grpc.ServiceCall call, $async.Future<$0.GenerateStatementRequest> request) async {
+    return generateStatement(call, await request);
+  }
+
+  $async.Future<$0.GenerateAccountConfirmationResponse> generateAccountConfirmation_Pre($grpc.ServiceCall call, $async.Future<$0.GenerateAccountConfirmationRequest> request) async {
+    return generateAccountConfirmation(call, await request);
+  }
+
+  $async.Future<$0.GenerateProofOfFundsResponse> generateProofOfFunds_Pre($grpc.ServiceCall call, $async.Future<$0.GenerateProofOfFundsRequest> request) async {
+    return generateProofOfFunds(call, await request);
+  }
+
   $async.Future<$0.CreateAccountResponse> createAccount($grpc.ServiceCall call, $0.CreateAccountRequest request);
   $async.Future<$0.GetAccountsResponse> getAccounts($grpc.ServiceCall call, $0.GetAccountsRequest request);
   $async.Future<$0.GetUserAccountsResponse> getUserAccounts($grpc.ServiceCall call, $0.GetUserAccountsRequest request);
@@ -872,6 +1005,7 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.ReleaseHoldResponse> releaseHold($grpc.ServiceCall call, $0.ReleaseHoldRequest request);
   $async.Future<$0.TransferToPlatformWalletResponse> transferToPlatformWallet($grpc.ServiceCall call, $0.TransferToPlatformWalletRequest request);
   $async.Future<$0.TransferFromPlatformWalletResponse> transferFromPlatformWallet($grpc.ServiceCall call, $0.TransferFromPlatformWalletRequest request);
+  $async.Future<$0.CreditPlatformWalletResponse> creditPlatformWallet($grpc.ServiceCall call, $0.CreditPlatformWalletRequest request);
   $async.Future<$0.GetPlatformWalletResponse> getPlatformWallet($grpc.ServiceCall call, $0.GetPlatformWalletRequest request);
   $async.Future<$0.GetPlatformWalletTransactionsResponse> getPlatformWalletTransactions($grpc.ServiceCall call, $0.GetPlatformWalletTransactionsRequest request);
   $async.Future<$0.GetAccountByNumberResponse> getAccountByNumber($grpc.ServiceCall call, $0.GetAccountByNumberRequest request);
@@ -896,4 +1030,10 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.GetUserCategoryMappingsResponse> getUserCategoryMappings($grpc.ServiceCall call, $0.GetUserCategoryMappingsRequest request);
   $async.Future<$0.UpdateUserCategoryMappingResponse> updateUserCategoryMapping($grpc.ServiceCall call, $0.UpdateUserCategoryMappingRequest request);
   $async.Future<$0.ReorderCategoriesResponse> reorderCategories($grpc.ServiceCall call, $0.ReorderCategoriesRequest request);
+  $async.Future<$0.UpdateSpendingLimitsResponse> updateSpendingLimits($grpc.ServiceCall call, $0.UpdateSpendingLimitsRequest request);
+  $async.Future<$0.RevealPINResponse> revealPIN($grpc.ServiceCall call, $0.RevealPINRequest request);
+  $async.Future<$0.RevealCardDetailsResponse> revealCardDetails($grpc.ServiceCall call, $0.RevealCardDetailsRequest request);
+  $async.Future<$0.GenerateStatementResponse> generateStatement($grpc.ServiceCall call, $0.GenerateStatementRequest request);
+  $async.Future<$0.GenerateAccountConfirmationResponse> generateAccountConfirmation($grpc.ServiceCall call, $0.GenerateAccountConfirmationRequest request);
+  $async.Future<$0.GenerateProofOfFundsResponse> generateProofOfFunds($grpc.ServiceCall call, $0.GenerateProofOfFundsRequest request);
 }

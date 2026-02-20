@@ -13,6 +13,7 @@ abstract class DataBundlesRemoteDataSource {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String countryCode = 'NG',
   });
 }
 
@@ -43,6 +44,7 @@ class DataBundlesRemoteDataSourceImpl implements DataBundlesRemoteDataSource {
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String countryCode = 'NG',
   }) async {
     final request = pb.BuyDataRequest()
       ..phoneNumber = phoneNumber
@@ -52,7 +54,7 @@ class DataBundlesRemoteDataSourceImpl implements DataBundlesRemoteDataSource {
       ..transactionId = transactionId
       ..verificationToken = verificationToken
       ..idempotencyKey = idempotencyKey
-      ..countryCode = 'NG';
+      ..countryCode = countryCode;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.utilityPaymentsClient.buyData(

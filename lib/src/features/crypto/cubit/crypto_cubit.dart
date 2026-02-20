@@ -250,6 +250,72 @@ class CryptoCubit extends Cubit<CryptoState> {
     }
   }
 
+  Future<void> convertCrypto({
+    required String fromCryptoId,
+    required String toCryptoId,
+    required double amount,
+    required String transactionPin,
+    String? fiatCurrency,
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: fromCryptoId,
+        type: TransactionType.swap,
+        quantity: amount,
+        price: 0,
+        step: CryptoProcessingStep.validatingPin,
+        progress: 0.2,
+      ));
+
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: fromCryptoId,
+        type: TransactionType.swap,
+        quantity: amount,
+        price: 0,
+        step: CryptoProcessingStep.fetchingRate,
+        progress: 0.4,
+      ));
+
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: fromCryptoId,
+        type: TransactionType.swap,
+        quantity: amount,
+        price: 0,
+        step: CryptoProcessingStep.executingOrder,
+        progress: 0.6,
+      ));
+
+      final transaction = await repository.convertCrypto(
+        fromCryptoId: fromCryptoId,
+        toCryptoId: toCryptoId,
+        amount: amount,
+        transactionPin: transactionPin,
+        fiatCurrency: fiatCurrency,
+      );
+
+      if (isClosed) return;
+      emit(CryptoTransactionProcessing(
+        cryptoId: fromCryptoId,
+        type: TransactionType.swap,
+        quantity: amount,
+        price: 0,
+        step: CryptoProcessingStep.confirmingTransaction,
+        progress: 0.8,
+      ));
+
+      if (isClosed) return;
+      emit(CryptoTransactionSuccess(transaction: transaction));
+
+      await loadCryptos();
+    } catch (e) {
+      if (isClosed) return;
+      emit(CryptoError(message: e.toString()));
+    }
+  }
+
   Future<void> createWatchlist(String name, String description) async {
     try {
       final watchlist = await repository.createWatchlist(name, description);

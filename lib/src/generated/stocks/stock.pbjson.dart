@@ -89,6 +89,23 @@ final $typed_data.Uint8List timeFrameDescriptor = $convert.base64Decode(
     'M00QBBIRCg1USU1FX0ZSQU1FXzZNEAUSEQoNVElNRV9GUkFNRV8xWRAGEhEKDVRJTUVfRlJBTU'
     'VfNVkQBxISCg5USU1FX0ZSQU1FX0FMTBAI');
 
+@$core.Deprecated('Use alertTypeDescriptor instead')
+const AlertType$json = {
+  '1': 'AlertType',
+  '2': [
+    {'1': 'ALERT_TYPE_UNSPECIFIED', '2': 0},
+    {'1': 'ALERT_TYPE_PRICE_ABOVE', '2': 1},
+    {'1': 'ALERT_TYPE_PRICE_BELOW', '2': 2},
+    {'1': 'ALERT_TYPE_PERCENT_CHANGE', '2': 3},
+  ],
+};
+
+/// Descriptor for `AlertType`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List alertTypeDescriptor = $convert.base64Decode(
+    'CglBbGVydFR5cGUSGgoWQUxFUlRfVFlQRV9VTlNQRUNJRklFRBAAEhoKFkFMRVJUX1RZUEVfUF'
+    'JJQ0VfQUJPVkUQARIaChZBTEVSVF9UWVBFX1BSSUNFX0JFTE9XEAISHQoZQUxFUlRfVFlQRV9Q'
+    'RVJDRU5UX0NIQU5HRRAD');
+
 @$core.Deprecated('Use pricePointDescriptor instead')
 const PricePoint$json = {
   '1': 'PricePoint',
@@ -986,4 +1003,212 @@ final $typed_data.Uint8List removeStockFromWatchlistResponseDescriptor = $conver
     'CiBSZW1vdmVTdG9ja0Zyb21XYXRjaGxpc3RSZXNwb25zZRI4Cgl3YXRjaGxpc3QYASABKAsyGi'
     '5zdG9ja3NwYi5XYXRjaGxpc3RNZXNzYWdlUgl3YXRjaGxpc3QSGAoHbWVzc2FnZRgCIAEoCVIH'
     'bWVzc2FnZQ==');
+
+@$core.Deprecated('Use getMarketStatusRequestDescriptor instead')
+const GetMarketStatusRequest$json = {
+  '1': 'GetMarketStatusRequest',
+};
+
+/// Descriptor for `GetMarketStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMarketStatusRequestDescriptor = $convert.base64Decode(
+    'ChZHZXRNYXJrZXRTdGF0dXNSZXF1ZXN0');
+
+@$core.Deprecated('Use getMarketStatusResponseDescriptor instead')
+const GetMarketStatusResponse$json = {
+  '1': 'GetMarketStatusResponse',
+  '2': [
+    {'1': 'is_open', '3': 1, '4': 1, '5': 8, '10': 'isOpen'},
+    {'1': 'trading_session', '3': 2, '4': 1, '5': 9, '10': 'tradingSession'},
+    {'1': 'next_open', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'nextOpen'},
+    {'1': 'next_close', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'nextClose'},
+    {'1': 'timestamp', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
+  ],
+};
+
+/// Descriptor for `GetMarketStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMarketStatusResponseDescriptor = $convert.base64Decode(
+    'ChdHZXRNYXJrZXRTdGF0dXNSZXNwb25zZRIXCgdpc19vcGVuGAEgASgIUgZpc09wZW4SJwoPdH'
+    'JhZGluZ19zZXNzaW9uGAIgASgJUg50cmFkaW5nU2Vzc2lvbhI3CgluZXh0X29wZW4YAyABKAsy'
+    'Gi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghuZXh0T3BlbhI5CgpuZXh0X2Nsb3NlGAQgAS'
+    'gLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJbmV4dENsb3NlEjgKCXRpbWVzdGFtcBgF'
+    'IAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXRpbWVzdGFtcA==');
+
+@$core.Deprecated('Use marketNewsMessageDescriptor instead')
+const MarketNewsMessage$json = {
+  '1': 'MarketNewsMessage',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'headline', '3': 2, '4': 1, '5': 9, '10': 'headline'},
+    {'1': 'summary', '3': 3, '4': 1, '5': 9, '10': 'summary'},
+    {'1': 'source', '3': 4, '4': 1, '5': 9, '10': 'source'},
+    {'1': 'url', '3': 5, '4': 1, '5': 9, '10': 'url'},
+    {'1': 'symbols', '3': 6, '4': 3, '5': 9, '10': 'symbols'},
+    {'1': 'published_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'publishedAt'},
+    {'1': 'image_url', '3': 8, '4': 1, '5': 9, '10': 'imageUrl'},
+  ],
+};
+
+/// Descriptor for `MarketNewsMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List marketNewsMessageDescriptor = $convert.base64Decode(
+    'ChFNYXJrZXROZXdzTWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSGgoIaGVhZGxpbmUYAiABKAlSCG'
+    'hlYWRsaW5lEhgKB3N1bW1hcnkYAyABKAlSB3N1bW1hcnkSFgoGc291cmNlGAQgASgJUgZzb3Vy'
+    'Y2USEAoDdXJsGAUgASgJUgN1cmwSGAoHc3ltYm9scxgGIAMoCVIHc3ltYm9scxI9CgxwdWJsaX'
+    'NoZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtwdWJsaXNoZWRBdBIb'
+    'CglpbWFnZV91cmwYCCABKAlSCGltYWdlVXJs');
+
+@$core.Deprecated('Use getMarketNewsRequestDescriptor instead')
+const GetMarketNewsRequest$json = {
+  '1': 'GetMarketNewsRequest',
+  '2': [
+    {'1': 'symbols', '3': 1, '4': 3, '5': 9, '10': 'symbols'},
+    {'1': 'page', '3': 2, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `GetMarketNewsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMarketNewsRequestDescriptor = $convert.base64Decode(
+    'ChRHZXRNYXJrZXROZXdzUmVxdWVzdBIYCgdzeW1ib2xzGAEgAygJUgdzeW1ib2xzEhIKBHBhZ2'
+    'UYAiABKAVSBHBhZ2USFAoFbGltaXQYAyABKAVSBWxpbWl0');
+
+@$core.Deprecated('Use getMarketNewsResponseDescriptor instead')
+const GetMarketNewsResponse$json = {
+  '1': 'GetMarketNewsResponse',
+  '2': [
+    {'1': 'articles', '3': 1, '4': 3, '5': 11, '6': '.stockspb.MarketNewsMessage', '10': 'articles'},
+  ],
+};
+
+/// Descriptor for `GetMarketNewsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMarketNewsResponseDescriptor = $convert.base64Decode(
+    'ChVHZXRNYXJrZXROZXdzUmVzcG9uc2USNwoIYXJ0aWNsZXMYASADKAsyGy5zdG9ja3NwYi5NYX'
+    'JrZXROZXdzTWVzc2FnZVIIYXJ0aWNsZXM=');
+
+@$core.Deprecated('Use priceAlertMessageDescriptor instead')
+const PriceAlertMessage$json = {
+  '1': 'PriceAlertMessage',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'symbol', '3': 2, '4': 1, '5': 9, '10': 'symbol'},
+    {'1': 'type', '3': 3, '4': 1, '5': 14, '6': '.stockspb.AlertType', '10': 'type'},
+    {'1': 'target_value', '3': 4, '4': 1, '5': 1, '10': 'targetValue'},
+    {'1': 'is_active', '3': 5, '4': 1, '5': 8, '10': 'isActive'},
+    {'1': 'is_triggered', '3': 6, '4': 1, '5': 8, '10': 'isTriggered'},
+    {'1': 'created_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'triggered_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'triggeredAt'},
+  ],
+};
+
+/// Descriptor for `PriceAlertMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List priceAlertMessageDescriptor = $convert.base64Decode(
+    'ChFQcmljZUFsZXJ0TWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSFgoGc3ltYm9sGAIgASgJUgZzeW'
+    '1ib2wSJwoEdHlwZRgDIAEoDjITLnN0b2Nrc3BiLkFsZXJ0VHlwZVIEdHlwZRIhCgx0YXJnZXRf'
+    'dmFsdWUYBCABKAFSC3RhcmdldFZhbHVlEhsKCWlzX2FjdGl2ZRgFIAEoCFIIaXNBY3RpdmUSIQ'
+    'oMaXNfdHJpZ2dlcmVkGAYgASgIUgtpc1RyaWdnZXJlZBI5CgpjcmVhdGVkX2F0GAcgASgLMhou'
+    'Z29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0Ej0KDHRyaWdnZXJlZF9hdBgIIA'
+    'EoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSC3RyaWdnZXJlZEF0');
+
+@$core.Deprecated('Use createPriceAlertRequestDescriptor instead')
+const CreatePriceAlertRequest$json = {
+  '1': 'CreatePriceAlertRequest',
+  '2': [
+    {'1': 'symbol', '3': 1, '4': 1, '5': 9, '10': 'symbol'},
+    {'1': 'type', '3': 2, '4': 1, '5': 14, '6': '.stockspb.AlertType', '10': 'type'},
+    {'1': 'target_value', '3': 3, '4': 1, '5': 1, '10': 'targetValue'},
+  ],
+};
+
+/// Descriptor for `CreatePriceAlertRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createPriceAlertRequestDescriptor = $convert.base64Decode(
+    'ChdDcmVhdGVQcmljZUFsZXJ0UmVxdWVzdBIWCgZzeW1ib2wYASABKAlSBnN5bWJvbBInCgR0eX'
+    'BlGAIgASgOMhMuc3RvY2tzcGIuQWxlcnRUeXBlUgR0eXBlEiEKDHRhcmdldF92YWx1ZRgDIAEo'
+    'AVILdGFyZ2V0VmFsdWU=');
+
+@$core.Deprecated('Use createPriceAlertResponseDescriptor instead')
+const CreatePriceAlertResponse$json = {
+  '1': 'CreatePriceAlertResponse',
+  '2': [
+    {'1': 'alert', '3': 1, '4': 1, '5': 11, '6': '.stockspb.PriceAlertMessage', '10': 'alert'},
+  ],
+};
+
+/// Descriptor for `CreatePriceAlertResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createPriceAlertResponseDescriptor = $convert.base64Decode(
+    'ChhDcmVhdGVQcmljZUFsZXJ0UmVzcG9uc2USMQoFYWxlcnQYASABKAsyGy5zdG9ja3NwYi5Qcm'
+    'ljZUFsZXJ0TWVzc2FnZVIFYWxlcnQ=');
+
+@$core.Deprecated('Use getPriceAlertsRequestDescriptor instead')
+const GetPriceAlertsRequest$json = {
+  '1': 'GetPriceAlertsRequest',
+};
+
+/// Descriptor for `GetPriceAlertsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPriceAlertsRequestDescriptor = $convert.base64Decode(
+    'ChVHZXRQcmljZUFsZXJ0c1JlcXVlc3Q=');
+
+@$core.Deprecated('Use getPriceAlertsResponseDescriptor instead')
+const GetPriceAlertsResponse$json = {
+  '1': 'GetPriceAlertsResponse',
+  '2': [
+    {'1': 'alerts', '3': 1, '4': 3, '5': 11, '6': '.stockspb.PriceAlertMessage', '10': 'alerts'},
+  ],
+};
+
+/// Descriptor for `GetPriceAlertsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPriceAlertsResponseDescriptor = $convert.base64Decode(
+    'ChZHZXRQcmljZUFsZXJ0c1Jlc3BvbnNlEjMKBmFsZXJ0cxgBIAMoCzIbLnN0b2Nrc3BiLlByaW'
+    'NlQWxlcnRNZXNzYWdlUgZhbGVydHM=');
+
+@$core.Deprecated('Use updatePriceAlertRequestDescriptor instead')
+const UpdatePriceAlertRequest$json = {
+  '1': 'UpdatePriceAlertRequest',
+  '2': [
+    {'1': 'alert_id', '3': 1, '4': 1, '5': 9, '10': 'alertId'},
+    {'1': 'target_value', '3': 2, '4': 1, '5': 1, '10': 'targetValue'},
+    {'1': 'is_active', '3': 3, '4': 1, '5': 8, '10': 'isActive'},
+  ],
+};
+
+/// Descriptor for `UpdatePriceAlertRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updatePriceAlertRequestDescriptor = $convert.base64Decode(
+    'ChdVcGRhdGVQcmljZUFsZXJ0UmVxdWVzdBIZCghhbGVydF9pZBgBIAEoCVIHYWxlcnRJZBIhCg'
+    'x0YXJnZXRfdmFsdWUYAiABKAFSC3RhcmdldFZhbHVlEhsKCWlzX2FjdGl2ZRgDIAEoCFIIaXNB'
+    'Y3RpdmU=');
+
+@$core.Deprecated('Use updatePriceAlertResponseDescriptor instead')
+const UpdatePriceAlertResponse$json = {
+  '1': 'UpdatePriceAlertResponse',
+  '2': [
+    {'1': 'alert', '3': 1, '4': 1, '5': 11, '6': '.stockspb.PriceAlertMessage', '10': 'alert'},
+  ],
+};
+
+/// Descriptor for `UpdatePriceAlertResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updatePriceAlertResponseDescriptor = $convert.base64Decode(
+    'ChhVcGRhdGVQcmljZUFsZXJ0UmVzcG9uc2USMQoFYWxlcnQYASABKAsyGy5zdG9ja3NwYi5Qcm'
+    'ljZUFsZXJ0TWVzc2FnZVIFYWxlcnQ=');
+
+@$core.Deprecated('Use deletePriceAlertRequestDescriptor instead')
+const DeletePriceAlertRequest$json = {
+  '1': 'DeletePriceAlertRequest',
+  '2': [
+    {'1': 'alert_id', '3': 1, '4': 1, '5': 9, '10': 'alertId'},
+  ],
+};
+
+/// Descriptor for `DeletePriceAlertRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deletePriceAlertRequestDescriptor = $convert.base64Decode(
+    'ChdEZWxldGVQcmljZUFsZXJ0UmVxdWVzdBIZCghhbGVydF9pZBgBIAEoCVIHYWxlcnRJZA==');
+
+@$core.Deprecated('Use deletePriceAlertResponseDescriptor instead')
+const DeletePriceAlertResponse$json = {
+  '1': 'DeletePriceAlertResponse',
+  '2': [
+    {'1': 'message', '3': 1, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DeletePriceAlertResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deletePriceAlertResponseDescriptor = $convert.base64Decode(
+    'ChhEZWxldGVQcmljZUFsZXJ0UmVzcG9uc2USGAoHbWVzc2FnZRgBIAEoCVIHbWVzc2FnZQ==');
 

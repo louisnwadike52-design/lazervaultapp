@@ -1530,6 +1530,56 @@ final $typed_data.Uint8List transferFromPlatformWalletResponseDescriptor = $conv
     'b3JtVHJhbnNhY3Rpb25JZBIoChB1c2VyX25ld19iYWxhbmNlGAYgASgDUg51c2VyTmV3QmFsYW'
     '5jZRIsChJ3YWxsZXRfbmV3X2JhbGFuY2UYByABKANSEHdhbGxldE5ld0JhbGFuY2U=');
 
+@$core.Deprecated('Use creditPlatformWalletRequestDescriptor instead')
+const CreditPlatformWalletRequest$json = {
+  '1': 'CreditPlatformWalletRequest',
+  '2': [
+    {'1': 'wallet_code', '3': 1, '4': 1, '5': 9, '10': 'walletCode'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'reference', '3': 4, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'category', '3': 5, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'description', '3': 6, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'metadata', '3': 7, '4': 1, '5': 9, '10': 'metadata'},
+    {'1': 'service_name', '3': 8, '4': 1, '5': 9, '10': 'serviceName'},
+    {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'source_account_id', '3': 10, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    {'1': 'source_user_id', '3': 11, '4': 1, '5': 9, '10': 'sourceUserId'},
+    {'1': 'source_payment_id', '3': 12, '4': 1, '5': 9, '10': 'sourcePaymentId'},
+  ],
+};
+
+/// Descriptor for `CreditPlatformWalletRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditPlatformWalletRequestDescriptor = $convert.base64Decode(
+    'ChtDcmVkaXRQbGF0Zm9ybVdhbGxldFJlcXVlc3QSHwoLd2FsbGV0X2NvZGUYASABKAlSCndhbG'
+    'xldENvZGUSFgoGYW1vdW50GAIgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYAyABKAlSCGN1cnJl'
+    'bmN5EhwKCXJlZmVyZW5jZRgEIAEoCVIJcmVmZXJlbmNlEhoKCGNhdGVnb3J5GAUgASgJUghjYX'
+    'RlZ29yeRIgCgtkZXNjcmlwdGlvbhgGIAEoCVILZGVzY3JpcHRpb24SGgoIbWV0YWRhdGEYByAB'
+    'KAlSCG1ldGFkYXRhEiEKDHNlcnZpY2VfbmFtZRgIIAEoCVILc2VydmljZU5hbWUSJwoPaWRlbX'
+    'BvdGVuY3lfa2V5GAkgASgJUg5pZGVtcG90ZW5jeUtleRIqChFzb3VyY2VfYWNjb3VudF9pZBgK'
+    'IAEoCVIPc291cmNlQWNjb3VudElkEiQKDnNvdXJjZV91c2VyX2lkGAsgASgJUgxzb3VyY2VVc2'
+    'VySWQSKgoRc291cmNlX3BheW1lbnRfaWQYDCABKAlSD3NvdXJjZVBheW1lbnRJZA==');
+
+@$core.Deprecated('Use creditPlatformWalletResponseDescriptor instead')
+const CreditPlatformWalletResponse$json = {
+  '1': 'CreditPlatformWalletResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'platform_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'platformTransactionId'},
+    {'1': 'wallet_new_balance', '3': 5, '4': 1, '5': 3, '10': 'walletNewBalance'},
+  ],
+};
+
+/// Descriptor for `CreditPlatformWalletResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditPlatformWalletResponseDescriptor = $convert.base64Decode(
+    'ChxDcmVkaXRQbGF0Zm9ybVdhbGxldFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlS'
+    'DGVycm9yTWVzc2FnZRI2ChdwbGF0Zm9ybV90cmFuc2FjdGlvbl9pZBgEIAEoCVIVcGxhdGZvcm'
+    '1UcmFuc2FjdGlvbklkEiwKEndhbGxldF9uZXdfYmFsYW5jZRgFIAEoA1IQd2FsbGV0TmV3QmFs'
+    'YW5jZQ==');
+
 @$core.Deprecated('Use getPlatformWalletRequestDescriptor instead')
 const GetPlatformWalletRequest$json = {
   '1': 'GetPlatformWalletRequest',
@@ -1921,4 +1971,200 @@ const ReorderCategoriesResponse$json = {
 /// Descriptor for `ReorderCategoriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List reorderCategoriesResponseDescriptor = $convert.base64Decode(
     'ChlSZW9yZGVyQ2F0ZWdvcmllc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3M=');
+
+@$core.Deprecated('Use updateSpendingLimitsRequestDescriptor instead')
+const UpdateSpendingLimitsRequest$json = {
+  '1': 'UpdateSpendingLimitsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'daily_limit', '3': 2, '4': 1, '5': 1, '9': 0, '10': 'dailyLimit', '17': true},
+    {'1': 'monthly_limit', '3': 3, '4': 1, '5': 1, '9': 1, '10': 'monthlyLimit', '17': true},
+    {'1': 'single_transaction_limit', '3': 4, '4': 1, '5': 1, '9': 2, '10': 'singleTransactionLimit', '17': true},
+  ],
+  '8': [
+    {'1': '_daily_limit'},
+    {'1': '_monthly_limit'},
+    {'1': '_single_transaction_limit'},
+  ],
+};
+
+/// Descriptor for `UpdateSpendingLimitsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSpendingLimitsRequestDescriptor = $convert.base64Decode(
+    'ChtVcGRhdGVTcGVuZGluZ0xpbWl0c1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
+    'VudElkEiQKC2RhaWx5X2xpbWl0GAIgASgBSABSCmRhaWx5TGltaXSIAQESKAoNbW9udGhseV9s'
+    'aW1pdBgDIAEoAUgBUgxtb250aGx5TGltaXSIAQESPQoYc2luZ2xlX3RyYW5zYWN0aW9uX2xpbW'
+    'l0GAQgASgBSAJSFnNpbmdsZVRyYW5zYWN0aW9uTGltaXSIAQFCDgoMX2RhaWx5X2xpbWl0QhAK'
+    'Dl9tb250aGx5X2xpbWl0QhsKGV9zaW5nbGVfdHJhbnNhY3Rpb25fbGltaXQ=');
+
+@$core.Deprecated('Use updateSpendingLimitsResponseDescriptor instead')
+const UpdateSpendingLimitsResponse$json = {
+  '1': 'UpdateSpendingLimitsResponse',
+  '2': [
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
+  ],
+};
+
+/// Descriptor for `UpdateSpendingLimitsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSpendingLimitsResponseDescriptor = $convert.base64Decode(
+    'ChxVcGRhdGVTcGVuZGluZ0xpbWl0c1Jlc3BvbnNlEisKB2FjY291bnQYASABKAsyES5hY2NvdW'
+    '50cy5BY2NvdW50UgdhY2NvdW50');
+
+@$core.Deprecated('Use revealPINRequestDescriptor instead')
+const RevealPINRequest$json = {
+  '1': 'RevealPINRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'transaction_pin', '3': 2, '4': 1, '5': 9, '10': 'transactionPin'},
+  ],
+};
+
+/// Descriptor for `RevealPINRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List revealPINRequestDescriptor = $convert.base64Decode(
+    'ChBSZXZlYWxQSU5SZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZBInCg90cm'
+    'Fuc2FjdGlvbl9waW4YAiABKAlSDnRyYW5zYWN0aW9uUGlu');
+
+@$core.Deprecated('Use revealPINResponseDescriptor instead')
+const RevealPINResponse$json = {
+  '1': 'RevealPINResponse',
+  '2': [
+    {'1': 'pin', '3': 1, '4': 1, '5': 9, '10': 'pin'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `RevealPINResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List revealPINResponseDescriptor = $convert.base64Decode(
+    'ChFSZXZlYWxQSU5SZXNwb25zZRIQCgNwaW4YASABKAlSA3BpbhIYCgdtZXNzYWdlGAIgASgJUg'
+    'dtZXNzYWdl');
+
+@$core.Deprecated('Use revealCardDetailsRequestDescriptor instead')
+const RevealCardDetailsRequest$json = {
+  '1': 'RevealCardDetailsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'transaction_pin', '3': 2, '4': 1, '5': 9, '10': 'transactionPin'},
+  ],
+};
+
+/// Descriptor for `RevealCardDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List revealCardDetailsRequestDescriptor = $convert.base64Decode(
+    'ChhSZXZlYWxDYXJkRGV0YWlsc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudE'
+    'lkEicKD3RyYW5zYWN0aW9uX3BpbhgCIAEoCVIOdHJhbnNhY3Rpb25QaW4=');
+
+@$core.Deprecated('Use revealCardDetailsResponseDescriptor instead')
+const RevealCardDetailsResponse$json = {
+  '1': 'RevealCardDetailsResponse',
+  '2': [
+    {'1': 'card_number', '3': 1, '4': 1, '5': 9, '10': 'cardNumber'},
+    {'1': 'card_holder_name', '3': 2, '4': 1, '5': 9, '10': 'cardHolderName'},
+    {'1': 'expiry_date', '3': 3, '4': 1, '5': 9, '10': 'expiryDate'},
+    {'1': 'cvv', '3': 4, '4': 1, '5': 9, '10': 'cvv'},
+    {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `RevealCardDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List revealCardDetailsResponseDescriptor = $convert.base64Decode(
+    'ChlSZXZlYWxDYXJkRGV0YWlsc1Jlc3BvbnNlEh8KC2NhcmRfbnVtYmVyGAEgASgJUgpjYXJkTn'
+    'VtYmVyEigKEGNhcmRfaG9sZGVyX25hbWUYAiABKAlSDmNhcmRIb2xkZXJOYW1lEh8KC2V4cGly'
+    'eV9kYXRlGAMgASgJUgpleHBpcnlEYXRlEhAKA2N2dhgEIAEoCVIDY3Z2EhgKB21lc3NhZ2UYBS'
+    'ABKAlSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use generateStatementRequestDescriptor instead')
+const GenerateStatementRequest$json = {
+  '1': 'GenerateStatementRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'start_date', '3': 2, '4': 1, '5': 3, '10': 'startDate'},
+    {'1': 'end_date', '3': 3, '4': 1, '5': 3, '10': 'endDate'},
+    {'1': 'format', '3': 4, '4': 1, '5': 9, '10': 'format'},
+  ],
+};
+
+/// Descriptor for `GenerateStatementRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List generateStatementRequestDescriptor = $convert.base64Decode(
+    'ChhHZW5lcmF0ZVN0YXRlbWVudFJlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudE'
+    'lkEh0KCnN0YXJ0X2RhdGUYAiABKANSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgDIAEoA1IHZW5k'
+    'RGF0ZRIWCgZmb3JtYXQYBCABKAlSBmZvcm1hdA==');
+
+@$core.Deprecated('Use generateStatementResponseDescriptor instead')
+const GenerateStatementResponse$json = {
+  '1': 'GenerateStatementResponse',
+  '2': [
+    {'1': 'document_id', '3': 1, '4': 1, '5': 9, '10': 'documentId'},
+    {'1': 'download_url', '3': 2, '4': 1, '5': 9, '10': 'downloadUrl'},
+    {'1': 'valid_until', '3': 3, '4': 1, '5': 3, '10': 'validUntil'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `GenerateStatementResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List generateStatementResponseDescriptor = $convert.base64Decode(
+    'ChlHZW5lcmF0ZVN0YXRlbWVudFJlc3BvbnNlEh8KC2RvY3VtZW50X2lkGAEgASgJUgpkb2N1bW'
+    'VudElkEiEKDGRvd25sb2FkX3VybBgCIAEoCVILZG93bmxvYWRVcmwSHwoLdmFsaWRfdW50aWwY'
+    'AyABKANSCnZhbGlkVW50aWwSGAoHbWVzc2FnZRgEIAEoCVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use generateAccountConfirmationRequestDescriptor instead')
+const GenerateAccountConfirmationRequest$json = {
+  '1': 'GenerateAccountConfirmationRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+  ],
+};
+
+/// Descriptor for `GenerateAccountConfirmationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List generateAccountConfirmationRequestDescriptor = $convert.base64Decode(
+    'CiJHZW5lcmF0ZUFjY291bnRDb25maXJtYXRpb25SZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKA'
+    'lSCWFjY291bnRJZA==');
+
+@$core.Deprecated('Use generateAccountConfirmationResponseDescriptor instead')
+const GenerateAccountConfirmationResponse$json = {
+  '1': 'GenerateAccountConfirmationResponse',
+  '2': [
+    {'1': 'document_id', '3': 1, '4': 1, '5': 9, '10': 'documentId'},
+    {'1': 'download_url', '3': 2, '4': 1, '5': 9, '10': 'downloadUrl'},
+    {'1': 'valid_until', '3': 3, '4': 1, '5': 3, '10': 'validUntil'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `GenerateAccountConfirmationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List generateAccountConfirmationResponseDescriptor = $convert.base64Decode(
+    'CiNHZW5lcmF0ZUFjY291bnRDb25maXJtYXRpb25SZXNwb25zZRIfCgtkb2N1bWVudF9pZBgBIA'
+    'EoCVIKZG9jdW1lbnRJZBIhCgxkb3dubG9hZF91cmwYAiABKAlSC2Rvd25sb2FkVXJsEh8KC3Zh'
+    'bGlkX3VudGlsGAMgASgDUgp2YWxpZFVudGlsEhgKB21lc3NhZ2UYBCABKAlSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use generateProofOfFundsRequestDescriptor instead')
+const GenerateProofOfFundsRequest$json = {
+  '1': 'GenerateProofOfFundsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+  ],
+};
+
+/// Descriptor for `GenerateProofOfFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List generateProofOfFundsRequestDescriptor = $convert.base64Decode(
+    'ChtHZW5lcmF0ZVByb29mT2ZGdW5kc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
+    'VudElk');
+
+@$core.Deprecated('Use generateProofOfFundsResponseDescriptor instead')
+const GenerateProofOfFundsResponse$json = {
+  '1': 'GenerateProofOfFundsResponse',
+  '2': [
+    {'1': 'document_id', '3': 1, '4': 1, '5': 9, '10': 'documentId'},
+    {'1': 'download_url', '3': 2, '4': 1, '5': 9, '10': 'downloadUrl'},
+    {'1': 'valid_until', '3': 3, '4': 1, '5': 3, '10': 'validUntil'},
+    {'1': 'current_balance', '3': 4, '4': 1, '5': 1, '10': 'currentBalance'},
+    {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `GenerateProofOfFundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List generateProofOfFundsResponseDescriptor = $convert.base64Decode(
+    'ChxHZW5lcmF0ZVByb29mT2ZGdW5kc1Jlc3BvbnNlEh8KC2RvY3VtZW50X2lkGAEgASgJUgpkb2'
+    'N1bWVudElkEiEKDGRvd25sb2FkX3VybBgCIAEoCVILZG93bmxvYWRVcmwSHwoLdmFsaWRfdW50'
+    'aWwYAyABKANSCnZhbGlkVW50aWwSJwoPY3VycmVudF9iYWxhbmNlGAQgASgBUg5jdXJyZW50Qm'
+    'FsYW5jZRIaCghjdXJyZW5jeRgFIAEoCVIIY3VycmVuY3kSGAoHbWVzc2FnZRgGIAEoCVIHbWVz'
+    'c2FnZQ==');
 

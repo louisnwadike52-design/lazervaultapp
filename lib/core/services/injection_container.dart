@@ -125,7 +125,13 @@ import 'package:lazervault/src/generated/exchange.pbgrpc.dart';
 import 'package:lazervault/src/generated/voice-biometrics.pbgrpc.dart';
 import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
 import 'package:lazervault/src/generated/statistics.pbgrpc.dart' as statistics_grpc;
+// Account Actions Imports
+import 'package:lazervault/src/features/account_actions/domain/repositories/i_account_actions_repository.dart';
+import 'package:lazervault/src/features/account_actions/data/repositories/account_actions_repository_impl.dart';
+import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
+// End Account Actions Imports
 import 'package:lazervault/src/features/currency_exchange/data/repositories/exchange_repository_impl.dart';
+import 'package:lazervault/src/features/currency_exchange/domain/exchange_feature_config.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/src/features/voice_enrollment/data/voice_enrollment_repository_impl.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
@@ -187,6 +193,10 @@ import 'package:lazervault/src/features/account_cards_summary/domain/repositorie
 import 'package:lazervault/src/features/account_cards_summary/domain/usecases/get_account_summaries_usecase.dart';
 import 'package:lazervault/src/generated/account.pbgrpc.dart' as account_grpc;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
+import 'package:lazervault/src/generated/multi_country.pbgrpc.dart' as multi_country_grpc;
+import 'package:lazervault/src/features/multi_country/domain/repositories/i_multi_country_repository.dart';
+import 'package:lazervault/src/features/multi_country/data/repositories/multi_country_repository_impl.dart';
+import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawal_usecase.dart';
 
 // Open Banking (Mono) Imports
@@ -441,6 +451,12 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart' as family_accounts_grpc;
 import 'package:dio/dio.dart';
 
+// Lifestyle Imports
+import 'package:lazervault/src/features/lifestyle/data/datasources/lifestyle_remote_datasource.dart';
+import 'package:lazervault/src/features/lifestyle/data/repositories/lifestyle_repository_impl.dart';
+import 'package:lazervault/src/features/lifestyle/domain/repositories/i_lifestyle_repository.dart';
+import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
+
 // Insurance Imports
 import 'package:lazervault/src/features/insurance/data/datasources/insurance_remote_datasource.dart';
 import 'package:lazervault/src/features/insurance/data/repositories/insurance_repository_impl.dart';
@@ -493,15 +509,28 @@ import 'package:lazervault/src/features/autosave/domain/usecases/get_autosave_tr
 import 'package:lazervault/src/features/autosave/domain/usecases/get_autosave_statistics_usecase.dart';
 import 'package:lazervault/src/features/autosave/domain/usecases/trigger_autosave_usecase.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
-// Cards temporarily disabled due to compilation errors
+// Cards Imports
 import 'package:lazervault/src/features/cards/data/datasources/card_remote_data_source.dart';
 import 'package:lazervault/src/features/cards/data/repositories/card_repository_impl.dart';
 import 'package:lazervault/src/features/cards/domain/repositories/i_card_repository.dart';
 import 'package:lazervault/src/features/cards/domain/usecases/create_virtual_card_usecase.dart';
 import 'package:lazervault/src/features/cards/domain/usecases/create_disposable_card_usecase.dart';
 import 'package:lazervault/src/features/cards/domain/usecases/get_user_cards_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/get_card_details_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/freeze_card_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/unfreeze_card_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/cancel_card_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/update_card_nickname_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/update_card_spending_limit_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/set_default_card_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/request_physical_card_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/set_card_pin_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/reveal_card_pin_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/reveal_card_details_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/fund_card_usecase.dart';
+import 'package:lazervault/src/features/cards/domain/usecases/withdraw_from_card_usecase.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart';
-// End Auto-Save Imports
+// End Cards Imports
 
 // Transaction History Imports
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
@@ -889,6 +918,7 @@ Future<void> init() async {
         verifyIdentity: serviceLocator<VerifyIdentityUseCase>(),
         validateToken: serviceLocator<ValidateTokenUseCase>(),
         createVirtualAccount: serviceLocator<CreateVirtualAccountUseCase>(),
+        authRepository: serviceLocator<IAuthRepository>(),
         storage: serviceLocator<FlutterSecureStorage>(),
         currencySyncService: serviceLocator<CurrencySyncService>(),
         accountManager: serviceLocator<AccountManager>(),
@@ -1008,12 +1038,37 @@ Future<void> init() async {
     () => ExchangeServiceClient(serviceLocator<ClientChannel>(instanceName: 'exchangeChannel')),
   );
 
+  // Exchange Feature Config
+  serviceLocator.registerLazySingleton<ExchangeFeatureConfig>(
+    () => const ExchangeFeatureConfig(),
+  );
+
   // Repositories
   serviceLocator.registerLazySingleton<IExchangeRepository>(
     () => ExchangeRepositoryImpl(
       exchangeClient: serviceLocator<ExchangeServiceClient>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
+  );
+
+  // ================== Feature: Multi-Country ==================
+
+  // gRPC Client - routes through core-gateway (default channel)
+  serviceLocator.registerLazySingleton<multi_country_grpc.MultiCountryAccountServiceClient>(
+    () => multi_country_grpc.MultiCountryAccountServiceClient(serviceLocator<ClientChannel>()),
+  );
+
+  // Repository
+  serviceLocator.registerLazySingleton<IMultiCountryRepository>(
+    () => MultiCountryRepositoryImpl(
+      serviceLocator<multi_country_grpc.MultiCountryAccountServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Cubit
+  serviceLocator.registerFactory<MultiCountryCubit>(
+    () => MultiCountryCubit(serviceLocator<IMultiCountryRepository>()),
   );
 
   // ================== Feature: Referral ==================
@@ -1087,7 +1142,10 @@ Future<void> init() async {
 
   // Blocs/Cubits
   // WebSocket Balance Update Service (register before cubit that depends on it)
-  serviceLocator.registerLazySingleton(() => BalanceWebSocketService());
+  serviceLocator.registerLazySingleton(() => BalanceWebSocketService(
+    secureStorage: serviceLocator<SecureStorageService>(),
+    accountManager: serviceLocator<AccountManager>(),
+  ));
 
   serviceLocator.registerFactory<AccountCardsSummaryCubit>(() => AccountCardsSummaryCubit(
     serviceLocator<GetAccountSummariesUseCase>(),
@@ -1096,7 +1154,10 @@ Future<void> init() async {
     wsService: serviceLocator<BalanceWebSocketService>(),
   ));
   serviceLocator.registerLazySingleton(() => BalanceWebSocketCubit(serviceLocator<BalanceWebSocketService>()));
-  serviceLocator.registerLazySingleton(() => BankingWebSocketService());
+  serviceLocator.registerLazySingleton(() => BankingWebSocketService(
+    secureStorage: serviceLocator<SecureStorageService>(),
+    accountManager: serviceLocator<AccountManager>(),
+  ));
 
 
   // ================== Feature: Card Settings ==================
@@ -1120,6 +1181,9 @@ Future<void> init() async {
     serviceLocator<UpdateAccountStatusUseCase>(),
   ));
 
+
+  // ================== Feature: Account Actions ==================
+  // Registered below near line ~2766 (requires account_grpc, accounts_grpc, SecureStorageService)
 
   // ================== Feature: Recipients ==================
 
@@ -1171,7 +1235,9 @@ Future<void> init() async {
 
   // Data Sources - REST (legacy, kept for fallback)
   serviceLocator.registerLazySingleton<OpenBankingRemoteDataSource>(
-    () => OpenBankingRemoteDataSource(),
+    () => OpenBankingRemoteDataSource(
+      secureStorage: serviceLocator<SecureStorageService>(),
+    ),
   );
 
   // Data Sources - gRPC (preferred for deposits)
@@ -2258,7 +2324,9 @@ Future<void> init() async {
     ),
   );
 
-  // Budget Feature - Budget Repository, AI Service, and Cubit
+  // Budget Feature - Budget Repository (via investment gateway gRPC proxy)
+  // Note: StatisticsServiceClient is registered to use investmentChannel (port 50072)
+  // which proxies gRPC calls to statistics-service (port 50069)
   serviceLocator.registerLazySingleton<BudgetRepository>(
     () => BudgetRepository(
       grpcClient: serviceLocator<statistics_grpc.StatisticsServiceClient>(),
@@ -2270,10 +2338,7 @@ Future<void> init() async {
     () => BudgetAIService(
       dio: serviceLocator<Dio>(),
       baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
-      getAccessToken: () async {
-        final token = await serviceLocator<SecureStorageService>().getAccessToken();
-        return token ?? '';
-      },
+      secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
   serviceLocator.registerLazySingleton<BudgetCubit>(
@@ -2286,9 +2351,17 @@ Future<void> init() async {
 
   // ================== Feature: Cards ==================
 
+  // Cards use Banking Gateway (port 50077) — create dedicated GrpcClient on bankingChannel
+  final cardGrpcClient = GrpcClient(
+    channel: serviceLocator<ClientChannel>(instanceName: 'bankingChannel'),
+    secureStorage: serviceLocator<FlutterSecureStorage>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
+  await cardGrpcClient.initialize();
+
   // Data Sources
   serviceLocator.registerLazySingleton<ICardRemoteDataSource>(
-    () => CardRemoteDataSourceImpl(grpcClient: serviceLocator<GrpcClient>()),
+    () => CardRemoteDataSourceImpl(grpcClient: cardGrpcClient),
   );
   // Repositories
   serviceLocator.registerLazySingleton<ICardRepository>(
@@ -2299,6 +2372,19 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => CreateVirtualCardUseCase(serviceLocator<ICardRepository>()));
   serviceLocator.registerLazySingleton(() => CreateDisposableCardUseCase(serviceLocator<ICardRepository>()));
   serviceLocator.registerLazySingleton(() => GetUserCardsUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => GetCardDetailsUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => FreezeCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => UnfreezeCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => CancelCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateCardNicknameUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateCardSpendingLimitUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => SetDefaultCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => RequestPhysicalCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => SetCardPINUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => RevealCardPINUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => RevealCardDetailsUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => FundCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(() => WithdrawFromCardUseCase(serviceLocator<ICardRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory<CardCubit>(
@@ -2306,6 +2392,19 @@ Future<void> init() async {
       createVirtualCardUseCase: serviceLocator<CreateVirtualCardUseCase>(),
       createDisposableCardUseCase: serviceLocator<CreateDisposableCardUseCase>(),
       getUserCardsUseCase: serviceLocator<GetUserCardsUseCase>(),
+      getCardDetailsUseCase: serviceLocator<GetCardDetailsUseCase>(),
+      freezeCardUseCase: serviceLocator<FreezeCardUseCase>(),
+      unfreezeCardUseCase: serviceLocator<UnfreezeCardUseCase>(),
+      cancelCardUseCase: serviceLocator<CancelCardUseCase>(),
+      updateCardNicknameUseCase: serviceLocator<UpdateCardNicknameUseCase>(),
+      updateCardSpendingLimitUseCase: serviceLocator<UpdateCardSpendingLimitUseCase>(),
+      setDefaultCardUseCase: serviceLocator<SetDefaultCardUseCase>(),
+      requestPhysicalCardUseCase: serviceLocator<RequestPhysicalCardUseCase>(),
+      setCardPINUseCase: serviceLocator<SetCardPINUseCase>(),
+      revealCardPINUseCase: serviceLocator<RevealCardPINUseCase>(),
+      revealCardDetailsUseCase: serviceLocator<RevealCardDetailsUseCase>(),
+      fundCardUseCase: serviceLocator<FundCardUseCase>(),
+      withdrawFromCardUseCase: serviceLocator<WithdrawFromCardUseCase>(),
     ),
   );
 
@@ -2645,6 +2744,47 @@ Future<void> init() async {
     accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
     callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
   ));
+
+  // ================== Feature: Account Actions ==================
+  // Manages card/account actions: freeze/unfreeze, security settings, limits, documents
+
+  // Repository
+  serviceLocator.registerLazySingleton<IAccountActionsRepository>(
+    () => AccountActionsRepositoryImpl(
+      accountClient: serviceLocator<account_grpc.AccountServiceClient>(),
+      accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
+      secureStorage: serviceLocator<SecureStorageService>(),
+    ),
+  );
+
+  // Cubit - Factory for fresh instances per account
+  serviceLocator.registerFactory<AccountActionsCubit>(
+    () => AccountActionsCubit(
+      serviceLocator<IAccountActionsRepository>(),
+    ),
+  );
+
+  // ================== Feature: Lifestyle ==================
+  // Travel aggregation: flights, hotels, tours via lifestyle-gateway
+
+  // Data Source (HTTP via Dio to lifestyle-gateway)
+  serviceLocator.registerLazySingleton<LifestyleRemoteDataSource>(
+    () => LifestyleRemoteDataSource(Dio(BaseOptions(
+      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? 'http://10.0.2.2:8088',
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+    ))),
+  );
+
+  // Repository
+  serviceLocator.registerLazySingleton<ILifestyleRepository>(
+    () => LifestyleRepositoryImpl(serviceLocator<LifestyleRemoteDataSource>()),
+  );
+
+  // Cubit
+  serviceLocator.registerFactory<LifestyleCubit>(
+    () => LifestyleCubit(serviceLocator<ILifestyleRepository>()),
+  );
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

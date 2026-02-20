@@ -24,6 +24,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:share_plus/share_plus.dart';
@@ -2561,7 +2562,10 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
       // Step 4: Call OCR endpoint
       final gatewayUrl = dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011';
-      final dataSource = BankScanDataSource(baseUrl: gatewayUrl);
+      final dataSource = BankScanDataSource(
+        baseUrl: gatewayUrl,
+        secureStorage: GetIt.I<SecureStorageService>(),
+      );
 
       final result = await dataSource.scanBankDetails(
         imageFile: File(image.path),

@@ -149,7 +149,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
       backgroundColor: InvoiceThemeColors.primaryBackground,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Get.toNamed(AppRoutes.createInvoice);
+          await Get.toNamed(AppRoutes.invoicePayment, arguments: {'isPrePayment': true});
           if (context.mounted) {
             context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
             context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);

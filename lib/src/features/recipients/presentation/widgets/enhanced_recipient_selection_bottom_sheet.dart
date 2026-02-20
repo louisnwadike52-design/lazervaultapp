@@ -151,14 +151,15 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       _searchQuery = _searchController.text;
     });
 
-    // Trigger lazertag search when on that tab, or when query starts with @
-    if (widget.allowLazertagUsers &&
-        (_currentTab == RecipientSelectionTab.lazertag ||
-            _searchQuery.startsWith('@'))) {
+    // Always trigger platform-wide search when query is long enough,
+    // regardless of tab. This enables two-tier search: saved first, platform fallback.
+    if (widget.allowLazertagUsers && _searchQuery.replaceAll('@', '').replaceAll('\$', '').trim().length >= 2) {
       _searchDebounce?.cancel();
       _searchDebounce = Timer(const Duration(milliseconds: 300), () {
         _searchLazertagUsers(_searchQuery);
       });
+    } else if (_searchQuery.replaceAll('@', '').replaceAll('\$', '').trim().length < 2) {
+      setState(() => _lazertagResults = []);
     }
   }
 
@@ -630,37 +631,83 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
           );
         } else if (state is RecipientLoaded) {
           final filteredRecipients = _filterRecipients(state.recipients);
-          
-          if (filteredRecipients.isEmpty) {
+
+          if (filteredRecipients.isEmpty && _searchQuery.isEmpty) {
             return _buildEmptyState(
-              icon: _searchQuery.isNotEmpty ? Icons.search_off : Icons.people_outline,
-              title: _searchQuery.isNotEmpty 
-                ? 'No recipients found'
-                : 'No saved recipients',
-              subtitle: _searchQuery.isNotEmpty 
-                ? 'Try searching with @username for LazerTag users'
-                : 'Add your first recipient to get started',
-              actionText: _searchQuery.isEmpty ? 'Add Recipient' : null,
-              onAction: _searchQuery.isEmpty ? () {
+              icon: Icons.people_outline,
+              title: 'No saved recipients',
+              subtitle: 'Add your first recipient to get started',
+              actionText: 'Add Recipient',
+              onAction: () {
                 Get.back();
                 Get.toNamed(AppRoutes.addRecipient);
-              } : null,
+              },
             );
           }
-          
-          return ListView.builder(
+
+          // Two-tier search: saved recipients first, then platform fallback
+          final hasSavedMatches = filteredRecipients.isNotEmpty;
+          final hasPlatformResults = _lazertagResults.isNotEmpty && _searchQuery.isNotEmpty;
+
+          if (!hasSavedMatches && !hasPlatformResults && _searchQuery.isNotEmpty) {
+            if (_isLoadingLazertag) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+              );
+            }
+            return _buildEmptyState(
+              icon: Icons.search_off,
+              title: 'No recipients found',
+              subtitle: 'No saved recipients or LazerVault users match "$_searchQuery"',
+            );
+          }
+
+          // Build combined list: saved recipients + platform fallback
+          return ListView(
             controller: scrollController,
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-            itemCount: filteredRecipients.length,
-            itemBuilder: (context, index) {
-              final recipient = filteredRecipients[index];
-              return _buildRecipientItem(recipient);
-            },
+            children: [
+              // Show saved recipients first
+              if (hasSavedMatches) ...[
+                if (hasPlatformResults) Padding(
+                  padding: EdgeInsets.only(bottom: 8.h, left: 4.w),
+                  child: Text(
+                    'Saved Recipients',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ...filteredRecipients.map((r) => _buildRecipientItem(r)),
+              ],
+              // Show platform results as fallback
+              if (hasPlatformResults) ...[
+                Padding(
+                  padding: EdgeInsets.only(top: hasSavedMatches ? 16.h : 0, bottom: 8.h, left: 4.w),
+                  child: Text(
+                    hasSavedMatches ? 'Also on LazerVault' : 'Found on LazerVault',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ..._lazertagResults.map((user) => _buildLazertagUserItem(user)),
+              ],
+              if (!hasSavedMatches && !hasPlatformResults && _isLoadingLazertag)
+                const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator(color: Color(0xFF4E03D0))),
+                ),
+            ],
           );
         } else if (state is RecipientError) {
           return _buildErrorState(state.message);
         }
-        
+
         return const SizedBox();
       },
     );

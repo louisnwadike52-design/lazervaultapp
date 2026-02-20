@@ -76,6 +76,12 @@ class InvoiceTextStyles {
         color: InvoiceThemeColors.textWhite,
       );
 
+  static TextStyle get header18 => GoogleFonts.inter(
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w600,
+        color: InvoiceThemeColors.textWhite,
+      );
+
   // Body Text
   static TextStyle get body16 => GoogleFonts.inter(
         fontSize: 16.sp,

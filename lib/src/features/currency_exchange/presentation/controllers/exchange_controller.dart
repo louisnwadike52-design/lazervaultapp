@@ -8,6 +8,7 @@ import '../../data/currency_data.dart';
 import '../../domain/entities/currency_entity.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/entities/recipient_entity.dart';
+import '../../domain/exchange_feature_config.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
@@ -16,9 +17,12 @@ import 'package:lazervault/core/services/injection_container.dart';
 
 class ExchangeController extends GetxController {
   final IExchangeRepository _repository;
+  final ExchangeFeatureConfig featureConfig;
 
-  ExchangeController({required IExchangeRepository repository})
-      : _repository = repository;
+  ExchangeController({
+    required IExchangeRepository repository,
+    this.featureConfig = const ExchangeFeatureConfig(),
+  }) : _repository = repository;
 
   // Observable state
   final Rx<Currency?> fromCurrency = Rx<Currency?>(null);
@@ -229,6 +233,15 @@ class ExchangeController extends GetxController {
   Future<bool> submitTransfer() async {
     if (!canSubmit) return false;
 
+    // Refresh rate if expired
+    if (currentRate.value != null && currentRate.value!.isExpired) {
+      await _refreshRate();
+      if (currentRate.value == null) {
+        errorMessage.value = 'Exchange rate expired. Please try again.';
+        return false;
+      }
+    }
+
     isSubmitting.value = true;
     errorMessage.value = '';
 
@@ -278,6 +291,21 @@ class ExchangeController extends GetxController {
         toCurrency.value == null ||
         amount.value <= 0 ||
         currentRate.value == null) return false;
+
+    // Validate same currency
+    if (fromCurrency.value!.code == toCurrency.value!.code) {
+      errorMessage.value = 'Source and destination currencies must be different';
+      return false;
+    }
+
+    // Refresh rate if expired
+    if (currentRate.value!.isExpired) {
+      await _refreshRate();
+      if (currentRate.value == null) {
+        errorMessage.value = 'Exchange rate expired. Please try again.';
+        return false;
+      }
+    }
 
     isSubmitting.value = true;
     errorMessage.value = '';

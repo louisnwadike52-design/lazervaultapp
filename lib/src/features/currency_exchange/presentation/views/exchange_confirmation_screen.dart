@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../controllers/exchange_controller.dart';
 import 'exchange_processing_screen.dart';
+import 'exchange_receipt_screen.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 
@@ -61,6 +62,20 @@ class _ExchangeConfirmationScreenState
     final controller = Get.find<ExchangeController>();
     final isConversion = controller.isConversionMode.value;
 
+    // Check if rate has expired and refresh if needed
+    if (controller.currentRate.value != null && controller.currentRate.value!.isExpired) {
+      Get.snackbar(
+        'Rate Expired',
+        'Refreshing exchange rate...',
+        backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+      // Rate will refresh automatically via controller
+      return;
+    }
+
     // Get exchange details for PIN validation
     final fromCurrency = controller.fromCurrency.value!.code;
     final toCurrency = controller.toCurrency.value!.code;
@@ -70,24 +85,29 @@ class _ExchangeConfirmationScreenState
     final txType = isConversion ? 'currency_conversion' : 'currency_exchange';
     final transactionId = '${txType}_${DateTime.now().millisecondsSinceEpoch}_${fromCurrency}_to_$toCurrency';
 
-    // Validate PIN before processing
-    final success = await validateTransactionPin(
-      context: context,
-      transactionId: transactionId,
-      transactionType: txType,
-      amount: amount,
-      currency: fromCurrency,
-      title: isConversion ? 'Confirm Currency Conversion' : 'Confirm Currency Exchange',
-      message: isConversion
-          ? 'Confirm conversion of $amount $fromCurrency to $toCurrency?'
-          : 'Confirm exchange of $amount $fromCurrency to $toCurrency?',
-      onPinValidated: (verificationToken) async {
-        _executeExchangeWithToken(transactionId, verificationToken, controller);
-      },
-    );
+    if (controller.featureConfig.requireTransactionPin) {
+      // Validate PIN before processing
+      final success = await validateTransactionPin(
+        context: context,
+        transactionId: transactionId,
+        transactionType: txType,
+        amount: amount,
+        currency: fromCurrency,
+        title: isConversion ? 'Confirm Currency Conversion' : 'Confirm Currency Exchange',
+        message: isConversion
+            ? 'Confirm conversion of $amount $fromCurrency to $toCurrency?'
+            : 'Confirm exchange of $amount $fromCurrency to $toCurrency?',
+        onPinValidated: (verificationToken) async {
+          _executeExchangeWithToken(transactionId, verificationToken, controller);
+        },
+      );
 
-    if (!success) {
-      // PIN validation failed or was cancelled
+      if (!success) {
+        // PIN validation failed or was cancelled
+      }
+    } else {
+      // No PIN required — submit directly with empty token
+      _executeExchangeWithToken(transactionId, '', controller);
     }
   }
 
@@ -110,8 +130,15 @@ class _ExchangeConfirmationScreenState
     }
 
     if (success) {
-      // Navigate to processing screen
-      Get.off(() => const ExchangeProcessingScreen());
+      // For wallet conversions (instant), skip processing and go to receipt
+      if (controller.isConversionMode.value &&
+          controller.lastTransaction.value != null &&
+          controller.lastTransaction.value!.isCompleted) {
+        Get.off(() => const ExchangeReceiptScreen());
+      } else {
+        // For international transfers or pending conversions, show processing
+        Get.off(() => const ExchangeProcessingScreen());
+      }
     } else {
       // Show error dialog
       Get.dialog(
@@ -344,7 +371,7 @@ class _ExchangeConfirmationScreenState
                 ),
                 SizedBox(width: 12.w),
                 Text(
-                  '${fromCurrency.symbol}${controller.totalCost.toStringAsFixed(2)}',
+                  '${fromCurrency.symbol}${controller.featureConfig.showServiceFee ? controller.totalCost.toStringAsFixed(2) : controller.amount.value.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 16.sp,
@@ -515,6 +542,9 @@ class _ExchangeConfirmationScreenState
 
   Widget _buildTransactionDetails(ExchangeController controller) {
     final isConversion = controller.isConversionMode.value;
+    final showFee = controller.featureConfig.showServiceFee;
+    final fromSymbol = controller.fromCurrency.value?.symbol ?? '';
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -543,12 +573,15 @@ class _ExchangeConfirmationScreenState
           SizedBox(height: 16.h),
           _buildDetailRow(
             'Exchange Rate',
-            '1 ${controller.fromCurrency.value?.code} = ${controller.currentRate.value?.rate.toStringAsFixed(4)} ${controller.toCurrency.value?.code}',
+            controller.currentRate.value?.formatForDisplay() ?? '---',
           ),
-          _buildDetailRow(
-            'Transfer Fee',
-            '${controller.fromCurrency.value?.symbol}${controller.fees.toStringAsFixed(2)}',
-          ),
+          if (showFee)
+            _buildDetailRow(
+              'Transfer Fee',
+              '$fromSymbol${controller.fees.toStringAsFixed(2)}',
+            )
+          else
+            _buildDetailRow('Service Fee', 'Free'),
           _buildDetailRow(
             'Estimated Arrival',
             isConversion ? 'Instant' : '1-3 business days',
@@ -570,7 +603,7 @@ class _ExchangeConfirmationScreenState
                 ),
               ),
               Text(
-                '${controller.fromCurrency.value?.symbol}${controller.totalCost.toStringAsFixed(2)}',
+                '$fromSymbol${showFee ? controller.totalCost.toStringAsFixed(2) : controller.amount.value.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 16.sp,

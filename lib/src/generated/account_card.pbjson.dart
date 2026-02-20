@@ -43,6 +43,10 @@ const AccountCard$json = {
     {'1': 'updated_at', '3': 24, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
     {'1': 'card_number', '3': 25, '4': 1, '5': 9, '10': 'cardNumber'},
     {'1': 'cvv', '3': 26, '4': 1, '5': 9, '10': 'cvv'},
+    {'1': 'card_pin', '3': 27, '4': 1, '5': 9, '10': 'cardPin'},
+    {'1': 'shipping_address', '3': 28, '4': 1, '5': 9, '10': 'shippingAddress'},
+    {'1': 'shipping_status', '3': 29, '4': 1, '5': 9, '10': 'shippingStatus'},
+    {'1': 'tracking_number', '3': 30, '4': 1, '5': 9, '10': 'trackingNumber'},
   ],
 };
 
@@ -64,7 +68,10 @@ final $typed_data.Uint8List accountCardDescriptor = $convert.base64Decode(
     'xlLnByb3RvYnVmLlRpbWVzdGFtcFIKbGFzdFVzZWRBdBI5CgpjcmVhdGVkX2F0GBcgASgLMhou'
     'Z29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYGCABKA'
     'syGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSHwoLY2FyZF9udW1iZXIY'
-    'GSABKAlSCmNhcmROdW1iZXISEAoDY3Z2GBogASgJUgNjdnY=');
+    'GSABKAlSCmNhcmROdW1iZXISEAoDY3Z2GBogASgJUgNjdnYSGQoIY2FyZF9waW4YGyABKAlSB2'
+    'NhcmRQaW4SKQoQc2hpcHBpbmdfYWRkcmVzcxgcIAEoCVIPc2hpcHBpbmdBZGRyZXNzEicKD3No'
+    'aXBwaW5nX3N0YXR1cxgdIAEoCVIOc2hpcHBpbmdTdGF0dXMSJwoPdHJhY2tpbmdfbnVtYmVyGB'
+    '4gASgJUg50cmFja2luZ051bWJlcg==');
 
 @$core.Deprecated('Use cardTransactionDescriptor instead')
 const CardTransaction$json = {
@@ -443,4 +450,168 @@ const SetDefaultCardResponse$json = {
 final $typed_data.Uint8List setDefaultCardResponseDescriptor = $convert.base64Decode(
     'ChZTZXREZWZhdWx0Q2FyZFJlc3BvbnNlEiMKBGNhcmQYASABKAsyDy5wYi5BY2NvdW50Q2FyZF'
     'IEY2FyZA==');
+
+@$core.Deprecated('Use requestPhysicalCardRequestDescriptor instead')
+const RequestPhysicalCardRequest$json = {
+  '1': 'RequestPhysicalCardRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 4, '10': 'accountId'},
+    {'1': 'card_nickname', '3': 2, '4': 1, '5': 9, '10': 'cardNickname'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'billing_address', '3': 4, '4': 1, '5': 9, '10': 'billingAddress'},
+    {'1': 'shipping_address', '3': 5, '4': 1, '5': 9, '10': 'shippingAddress'},
+  ],
+};
+
+/// Descriptor for `RequestPhysicalCardRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List requestPhysicalCardRequestDescriptor = $convert.base64Decode(
+    'ChpSZXF1ZXN0UGh5c2ljYWxDYXJkUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgEUglhY2NvdW'
+    '50SWQSIwoNY2FyZF9uaWNrbmFtZRgCIAEoCVIMY2FyZE5pY2tuYW1lEhoKCGN1cnJlbmN5GAMg'
+    'ASgJUghjdXJyZW5jeRInCg9iaWxsaW5nX2FkZHJlc3MYBCABKAlSDmJpbGxpbmdBZGRyZXNzEi'
+    'kKEHNoaXBwaW5nX2FkZHJlc3MYBSABKAlSD3NoaXBwaW5nQWRkcmVzcw==');
+
+@$core.Deprecated('Use requestPhysicalCardResponseDescriptor instead')
+const RequestPhysicalCardResponse$json = {
+  '1': 'RequestPhysicalCardResponse',
+  '2': [
+    {'1': 'card', '3': 1, '4': 1, '5': 11, '6': '.pb.AccountCard', '10': 'card'},
+  ],
+};
+
+/// Descriptor for `RequestPhysicalCardResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List requestPhysicalCardResponseDescriptor = $convert.base64Decode(
+    'ChtSZXF1ZXN0UGh5c2ljYWxDYXJkUmVzcG9uc2USIwoEY2FyZBgBIAEoCzIPLnBiLkFjY291bn'
+    'RDYXJkUgRjYXJk');
+
+@$core.Deprecated('Use setCardPINRequestDescriptor instead')
+const SetCardPINRequest$json = {
+  '1': 'SetCardPINRequest',
+  '2': [
+    {'1': 'card_uuid', '3': 1, '4': 1, '5': 9, '10': 'cardUuid'},
+    {'1': 'pin', '3': 2, '4': 1, '5': 9, '10': 'pin'},
+  ],
+};
+
+/// Descriptor for `SetCardPINRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setCardPINRequestDescriptor = $convert.base64Decode(
+    'ChFTZXRDYXJkUElOUmVxdWVzdBIbCgljYXJkX3V1aWQYASABKAlSCGNhcmRVdWlkEhAKA3Bpbh'
+    'gCIAEoCVIDcGlu');
+
+@$core.Deprecated('Use setCardPINResponseDescriptor instead')
+const SetCardPINResponse$json = {
+  '1': 'SetCardPINResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SetCardPINResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setCardPINResponseDescriptor = $convert.base64Decode(
+    'ChJTZXRDYXJkUElOUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYW'
+    'dlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use revealCardPINRequestDescriptor instead')
+const RevealCardPINRequest$json = {
+  '1': 'RevealCardPINRequest',
+  '2': [
+    {'1': 'card_uuid', '3': 1, '4': 1, '5': 9, '10': 'cardUuid'},
+  ],
+};
+
+/// Descriptor for `RevealCardPINRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List revealCardPINRequestDescriptor = $convert.base64Decode(
+    'ChRSZXZlYWxDYXJkUElOUmVxdWVzdBIbCgljYXJkX3V1aWQYASABKAlSCGNhcmRVdWlk');
+
+@$core.Deprecated('Use revealCardPINResponseDescriptor instead')
+const RevealCardPINResponse$json = {
+  '1': 'RevealCardPINResponse',
+  '2': [
+    {'1': 'card_pin', '3': 1, '4': 1, '5': 9, '10': 'cardPin'},
+  ],
+};
+
+/// Descriptor for `RevealCardPINResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List revealCardPINResponseDescriptor = $convert.base64Decode(
+    'ChVSZXZlYWxDYXJkUElOUmVzcG9uc2USGQoIY2FyZF9waW4YASABKAlSB2NhcmRQaW4=');
+
+@$core.Deprecated('Use revealFullCardDetailsRequestDescriptor instead')
+const RevealFullCardDetailsRequest$json = {
+  '1': 'RevealFullCardDetailsRequest',
+  '2': [
+    {'1': 'card_uuid', '3': 1, '4': 1, '5': 9, '10': 'cardUuid'},
+  ],
+};
+
+/// Descriptor for `RevealFullCardDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List revealFullCardDetailsRequestDescriptor = $convert.base64Decode(
+    'ChxSZXZlYWxGdWxsQ2FyZERldGFpbHNSZXF1ZXN0EhsKCWNhcmRfdXVpZBgBIAEoCVIIY2FyZF'
+    'V1aWQ=');
+
+@$core.Deprecated('Use revealFullCardDetailsResponseDescriptor instead')
+const RevealFullCardDetailsResponse$json = {
+  '1': 'RevealFullCardDetailsResponse',
+  '2': [
+    {'1': 'card', '3': 1, '4': 1, '5': 11, '6': '.pb.AccountCard', '10': 'card'},
+  ],
+};
+
+/// Descriptor for `RevealFullCardDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List revealFullCardDetailsResponseDescriptor = $convert.base64Decode(
+    'Ch1SZXZlYWxGdWxsQ2FyZERldGFpbHNSZXNwb25zZRIjCgRjYXJkGAEgASgLMg8ucGIuQWNjb3'
+    'VudENhcmRSBGNhcmQ=');
+
+@$core.Deprecated('Use fundCardRequestDescriptor instead')
+const FundCardRequest$json = {
+  '1': 'FundCardRequest',
+  '2': [
+    {'1': 'card_uuid', '3': 1, '4': 1, '5': 9, '10': 'cardUuid'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `FundCardRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List fundCardRequestDescriptor = $convert.base64Decode(
+    'Cg9GdW5kQ2FyZFJlcXVlc3QSGwoJY2FyZF91dWlkGAEgASgJUghjYXJkVXVpZBIWCgZhbW91bn'
+    'QYAiABKAFSBmFtb3VudA==');
+
+@$core.Deprecated('Use fundCardResponseDescriptor instead')
+const FundCardResponse$json = {
+  '1': 'FundCardResponse',
+  '2': [
+    {'1': 'card', '3': 1, '4': 1, '5': 11, '6': '.pb.AccountCard', '10': 'card'},
+  ],
+};
+
+/// Descriptor for `FundCardResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List fundCardResponseDescriptor = $convert.base64Decode(
+    'ChBGdW5kQ2FyZFJlc3BvbnNlEiMKBGNhcmQYASABKAsyDy5wYi5BY2NvdW50Q2FyZFIEY2FyZA'
+    '==');
+
+@$core.Deprecated('Use withdrawFromCardRequestDescriptor instead')
+const WithdrawFromCardRequest$json = {
+  '1': 'WithdrawFromCardRequest',
+  '2': [
+    {'1': 'card_uuid', '3': 1, '4': 1, '5': 9, '10': 'cardUuid'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `WithdrawFromCardRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List withdrawFromCardRequestDescriptor = $convert.base64Decode(
+    'ChdXaXRoZHJhd0Zyb21DYXJkUmVxdWVzdBIbCgljYXJkX3V1aWQYASABKAlSCGNhcmRVdWlkEh'
+    'YKBmFtb3VudBgCIAEoAVIGYW1vdW50');
+
+@$core.Deprecated('Use withdrawFromCardResponseDescriptor instead')
+const WithdrawFromCardResponse$json = {
+  '1': 'WithdrawFromCardResponse',
+  '2': [
+    {'1': 'card', '3': 1, '4': 1, '5': 11, '6': '.pb.AccountCard', '10': 'card'},
+  ],
+};
+
+/// Descriptor for `WithdrawFromCardResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List withdrawFromCardResponseDescriptor = $convert.base64Decode(
+    'ChhXaXRoZHJhd0Zyb21DYXJkUmVzcG9uc2USIwoEY2FyZBgBIAEoCzIPLnBiLkFjY291bnRDYX'
+    'JkUgRjYXJk');
 

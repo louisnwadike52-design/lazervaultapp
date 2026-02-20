@@ -468,8 +468,11 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
             _buildDetailRow('From', '${transaction.fromAmount.toStringAsFixed(2)} ${transaction.fromCurrency}'),
             _buildDetailRow('To', '${transaction.toAmount.toStringAsFixed(2)} ${transaction.toCurrency}'),
             _buildDetailRow('Recipient', transaction.recipientName),
-            _buildDetailRow('Exchange Rate', transaction.exchangeRate.toStringAsFixed(4)),
-            _buildDetailRow('Fee', '${transaction.fee.toStringAsFixed(2)} ${transaction.fromCurrency}'),
+            _buildDetailRow('Exchange Rate', _formatRate(transaction.exchangeRate, transaction.fromCurrency, transaction.toCurrency)),
+            if (controller.featureConfig.showServiceFee)
+              _buildDetailRow('Fee', '${transaction.fee.toStringAsFixed(2)} ${transaction.fromCurrency}')
+            else
+              _buildDetailRow('Service Fee', 'Free'),
             _buildDetailRow('Status', transaction.statusString),
             _buildDetailRow('Date', DateFormat('MMM dd, yyyy hh:mm a').format(transaction.timestamp)),
             SizedBox(height: 24.h),
@@ -532,6 +535,15 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
         ],
       ),
     );
+  }
+
+  String _formatRate(double rate, String fromCurrency, String toCurrency) {
+    // Always show "1 FROM = X TO" format for consistency
+    if (rate >= 0.01) {
+      return '1 $fromCurrency = ${rate.toStringAsFixed(4)} $toCurrency';
+    }
+    // For very small rates, show more decimal places for precision
+    return '1 $fromCurrency = ${rate.toStringAsFixed(6)} $toCurrency';
   }
 
   Color _getStatusColor(String status) {

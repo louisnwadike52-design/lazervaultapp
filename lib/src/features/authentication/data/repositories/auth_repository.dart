@@ -331,30 +331,28 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Either<Failure, void>> requestPasswordReset({required String email}) async {
     try {
-      final request = auth_req_resp.RequestPasswordResetRequest(email: email);
-      print('Sending gRPC RequestPasswordReset request for email: $email');
+      // Use ForgotPassword RPC which sends a reset token via email
+      final request = auth_req_resp.ForgotPasswordRequest(email: email);
+      print('Sending gRPC ForgotPassword request for email: $email');
 
-      final response = await _authServiceClient.requestPasswordReset(request);
+      // Get CallOptions with auth and account metadata
+      final options = await _callOptionsHelper.withAuth();
+      // We ignore the response for security reasons (don't reveal if email exists)
+      await _authServiceClient.forgotPassword(request, options: options);
 
-      if (response.success) {
-        print('Password reset email sent successfully');
-        return const Right(null);
-      } else {
-        print('Password reset request failed: ${response.msg}');
-        return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to send password reset email.',
-          statusCode: 400,
-        ));
-      }
+      // ForgotPassword always returns success (security: don't reveal if email exists)
+      print('Password reset email sent successfully');
+      return const Right(null);
     } on GrpcError catch (e) {
-      print('gRPC Error during requestPasswordReset: ${e.codeName} - ${e.message}');
-      return Left(ServerFailure(
-        message: e.message ?? 'Failed to send password reset email.',
-        statusCode: e.code,
-      ));
+      // For security, still return success even on gRPC error
+      // This prevents email enumeration
+      print('gRPC Error during forgotPassword: ${e.codeName} - ${e.message}');
+      // Still return Right to prevent email enumeration
+      return const Right(null);
     } catch (e) {
-      print('Unexpected error during requestPasswordReset: $e');
-      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+      print('Unexpected error during forgotPassword: $e');
+      // Still return Right to prevent email enumeration
+      return const Right(null);
     }
   }
 
@@ -366,12 +364,14 @@ class AuthRepositoryImpl implements IAuthRepository {
   }) async {
     try {
       final request = auth_req_resp.ResetPasswordRequest(
-        token: token,
+        resetToken: token, // proto uses resetToken, not token
         newPassword: newPassword,
       );
-      print('Sending gRPC ResetPassword request');
+      print('Sending gRPC ResetPassword request with token: ${token.length > 8 ? token.substring(0, 8) : token}...');
 
-      final response = await _authServiceClient.resetPassword(request);
+      // Get CallOptions with auth and account metadata
+      final options = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.resetPassword(request, options: options);
 
       if (response.success) {
         print('Password reset successful');
@@ -386,11 +386,149 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during resetPassword: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to reset password.',
+        message: e.message ?? 'Failed to reset password. The reset token may be invalid or expired.',
         statusCode: e.code,
       ));
     } catch (e) {
       print('Unexpected error during resetPassword: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PasswordResetResult>> requestPasswordResetV2({
+    String? email,
+    String? phone,
+    auth_enum.PasswordResetDeliveryMethod? deliveryMethod,
+  }) async {
+    try {
+      final request = auth_req_resp.ForgotPasswordRequest(
+        email: email ?? '',
+        phone: phone ?? '',
+        deliveryMethod: deliveryMethod ?? auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED,
+      );
+      print('Sending gRPC ForgotPasswordV2 request: email=$email, phone=$phone, deliveryMethod=$deliveryMethod');
+
+      // Get CallOptions with auth and account metadata
+      // Note: For password reset, user may not be logged in, but we pass headers if available
+      final options = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.forgotPassword(request, options: options);
+
+      print('Password reset response: success=${response.success}, userFound=${response.hasUserFound() ? response.userFound : false}, deliveryMethod=${response.deliveryMethod}, maskedContact=${response.maskedContact}');
+
+      return Right(PasswordResetResult(
+        success: response.success,
+        message: response.message,
+        deliveryMethod: response.deliveryMethod,
+        maskedContact: response.maskedContact,
+        expiresInSeconds: response.hasExpiresInSeconds() ? response.expiresInSeconds.toInt() : 900,
+        resetToken: null, // resetToken is only returned after verifying the code, not in ForgotPasswordResponse
+        userFound: response.hasUserFound() ? response.userFound : true, // Default to true for backward compatibility
+      ));
+    } on GrpcError catch (e) {
+      print('gRPC Error during forgotPassword: ${e.codeName} - ${e.message}');
+      // For security, still return a "success" response to prevent enumeration
+      return Right(PasswordResetResult(
+        success: true,
+        message: 'If the contact exists, a reset code has been sent',
+        deliveryMethod: 'unknown',
+        maskedContact: '',
+        expiresInSeconds: 0,
+        userFound: false, // Likely not found when gRPC error occurs
+      ));
+    } catch (e) {
+      print('Unexpected error during forgotPassword: $e');
+      // Still return success to prevent enumeration
+      return Right(PasswordResetResult(
+        success: true,
+        message: 'If the contact exists, a reset code has been sent',
+        deliveryMethod: 'unknown',
+        maskedContact: '',
+        expiresInSeconds: 0,
+        userFound: false, // Likely not found on exception
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PasswordResetVerificationResult>> verifyPasswordResetCode({
+    required String contact,
+    required String code,
+    required auth_enum.PasswordResetDeliveryMethod deliveryMethod,
+  }) async {
+    try {
+      final request = auth_req_resp.VerifyPasswordResetCodeRequest(
+        contact: contact,
+        code: code,
+        deliveryMethod: deliveryMethod,
+      );
+      print('Sending gRPC VerifyPasswordResetCode request: contact=$contact, deliveryMethod=$deliveryMethod');
+
+      // Get CallOptions with auth and account metadata
+      final options = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.verifyPasswordResetCode(request, options: options);
+
+      print('Verify response: success=${response.success}, resetToken=${response.resetToken.isNotEmpty ? response.resetToken.substring(0, 8) : "empty"}...');
+
+      if (response.success) {
+        return Right(PasswordResetVerificationResult(
+          success: true,
+          message: response.message,
+          resetToken: response.resetToken,
+          expiresInSeconds: response.hasExpiresInSeconds() ? response.expiresInSeconds.toInt() : 900,
+        ));
+      } else {
+        return Left(ServerFailure(
+          message: response.message.isNotEmpty ? response.message : 'Failed to verify code',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during verifyPasswordResetCode: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to verify code. Please try again.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during verifyPasswordResetCode: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resetPasswordWithToken({
+    required String resetToken,
+    required String newPassword,
+  }) async {
+    try {
+      final request = auth_req_resp.ResetPasswordRequest(
+        resetToken: resetToken,
+        newPassword: newPassword,
+      );
+      print('Sending gRPC ResetPasswordWithToken request with token: ${resetToken.substring(0, 8)}...');
+
+      // Get CallOptions with auth and account metadata
+      final options = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.resetPassword(request, options: options);
+
+      if (response.success) {
+        print('Password reset successful');
+        return const Right(null);
+      } else {
+        print('Password reset failed: ${response.msg}');
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Failed to reset password.',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during resetPasswordWithToken: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to reset password. The reset token may be invalid or expired.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during resetPasswordWithToken: $e');
       return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
     }
   }

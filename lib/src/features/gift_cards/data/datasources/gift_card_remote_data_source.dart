@@ -20,6 +20,7 @@ abstract class IGiftCardRemoteDataSource {
     String? countryCode,
     String? idempotencyKey,
     int quantity,
+    String? providerName,
   });
 
   Future<List<GiftCardModel>> getUserGiftCards({
@@ -78,6 +79,7 @@ abstract class IGiftCardRemoteDataSource {
     String? currency,
     List<String>? images,
     String? idempotencyKey,
+    String? providerName,
   });
 
   Future<GiftCardSaleModel> getSellStatus(String saleId);

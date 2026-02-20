@@ -39,6 +39,10 @@ class _AccountCarouselState extends State<AccountCarousel> {
   int _currentIndex = 0;
   final AccountManager _accountManager = serviceLocator<AccountManager>();
 
+  // Store cubit reference early to avoid context.read() in delayed callbacks
+  // (accessing context after Element is defunct causes crashes)
+  late final AccountCardsSummaryCubit _cubit;
+
   // Track real-time balance updates per account
   final Map<String, double> _realtimeBalances = {};
 
@@ -73,6 +77,10 @@ class _AccountCarouselState extends State<AccountCarousel> {
   @override
   void initState() {
     super.initState();
+    // Capture cubit reference now while context is guaranteed valid.
+    // This avoids context.read() in Future.delayed callbacks where the
+    // Element may already be defunct.
+    _cubit = context.read<AccountCardsSummaryCubit>();
     // Initialize carousel to show the active account if one is selected
     _initializeCarouselPosition();
     // Set the first account as active if none is selected
@@ -87,8 +95,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
   void _checkForPendingAnimation() {
     Future.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
-      final cubit = context.read<AccountCardsSummaryCubit>();
-      final animations = cubit.getPendingAnimations();
+      final animations = _cubit.getPendingAnimations();
       if (animations.isEmpty) return;
 
       // Phase 1: Set _realtimeBalances to "from" values (shows old balance)
@@ -110,7 +117,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
         // After animation completes (~3s duration), consume the update so entities reflect reality
         Future.delayed(const Duration(seconds: 3), () {
           if (!mounted) return;
-          cubit.markBalanceUpdateConsumed();
+          _cubit.markBalanceUpdateConsumed();
         });
       });
     });
@@ -224,7 +231,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
       // After animation completes (~3s), consume so entities reflect the new balance
       Future.delayed(const Duration(seconds: 3), () {
         if (!mounted) return;
-        context.read<AccountCardsSummaryCubit>().markBalanceUpdateConsumed();
+        _cubit.markBalanceUpdateConsumed();
       });
     } else {
       // Dashboard is not visible — buffer with from→to for two-phase animation on return.
@@ -269,7 +276,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
       // After animation completes, consume so entities reflect reality
       Future.delayed(const Duration(seconds: 3), () {
         if (!mounted) return;
-        context.read<AccountCardsSummaryCubit>().markBalanceUpdateConsumed();
+        _cubit.markBalanceUpdateConsumed();
       });
 
       debugPrint('AccountCarousel: Applied pending balance updates (two-phase animation)');

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 import '../models/stock_model.dart';
 import '../../domain/entities/stock_entity.dart';
 import 'stock_remote_data_source.dart';
@@ -17,15 +18,9 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
     required this.secureStorage,
   });
 
-  /// Get headers with current access token from secure storage
+  /// Get headers with current access token and all required metadata
   Future<Map<String, String>> get _headers async {
-    final accessToken = await secureStorage.getAccessToken();
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      if (accessToken != null && accessToken.isNotEmpty)
-        'Authorization': 'Bearer $accessToken',
-    };
+    return ApiHeaders.build(secureStorage: secureStorage);
   }
 
   @override

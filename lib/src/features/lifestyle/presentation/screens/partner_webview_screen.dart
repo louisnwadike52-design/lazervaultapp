@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// WebView wrapper for partner lifestyle services
@@ -38,22 +41,26 @@ class _PartnerWebViewScreenState extends State<PartnerWebViewScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
+            if (!mounted) return;
             setState(() {
               _isLoading = true;
               _hasError = false;
             });
           },
           onProgress: (int progress) {
+            if (!mounted) return;
             setState(() {
               _loadingProgress = progress;
             });
           },
           onPageFinished: (String url) {
+            if (!mounted) return;
             setState(() {
               _isLoading = false;
             });
           },
           onWebResourceError: (WebResourceError error) {
+            if (!mounted) return;
             setState(() {
               _hasError = true;
               _isLoading = false;
@@ -204,15 +211,27 @@ class _PartnerWebViewScreenState extends State<PartnerWebViewScreen> {
   void _handleMenuAction(String action) {
     switch (action) {
       case 'share':
-        // Implement sharing
-        break;
+        SharePlus.instance.share(ShareParams(
+          text: '${widget.title}\n${widget.url}',
+        ));
       case 'copy':
-        // Implement copy link
-        break;
+        Clipboard.setData(ClipboardData(text: widget.url));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Link copied to clipboard'),
+              backgroundColor: Color(0xFF10B981),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
     }
   }
 
   Future<void> _openInExternalBrowser() async {
-    // Open in external browser
+    final uri = Uri.parse(widget.url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }

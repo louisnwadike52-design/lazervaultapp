@@ -31,7 +31,9 @@ import '../../domain/repositories/invoice_repository.dart';
 /// Screen 2: Items & Amounts (required) + optional Tax/Discount/Notes via chips
 /// Screen 3: Review & Confirm
 class CreateInvoiceCarousel extends StatefulWidget {
-  const CreateInvoiceCarousel({super.key});
+  final String? serviceFeeRef;
+
+  const CreateInvoiceCarousel({super.key, this.serviceFeeRef});
 
   @override
   State<CreateInvoiceCarousel> createState() => _CreateInvoiceCarouselState();
@@ -259,6 +261,7 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         currency: invoice.currency,
         payerLogoUrl: invoice.payerLogoUrl,
         recipientLogoUrl: invoice.recipientLogoUrl,
+        serviceFeeRef: widget.serviceFeeRef,
       );
 
       final resultState = await stateCompleter.future.timeout(
@@ -290,7 +293,7 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       // Reload invoices in background for the home screen
       invoiceCubit.loadInvoices();
 
-      Get.offNamed(AppRoutes.invoicePayment, arguments: createdInvoice);
+      Get.offNamed(AppRoutes.invoiceProcessing, arguments: createdInvoice);
     } catch (e) {
       _showErrorSnackBar('Failed to create invoice: ${e.toString()}');
     }

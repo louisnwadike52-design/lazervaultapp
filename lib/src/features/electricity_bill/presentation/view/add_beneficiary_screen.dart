@@ -7,6 +7,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/provider_entity.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import '../cubit/electricity_bill_cubit.dart';
@@ -39,7 +41,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ElectricityBillCubit>().getProviders(country: 'NG');
+    context.read<ElectricityBillCubit>().getProviders(country: serviceLocator<LocaleManager>().currentCountry);
     _prefillPhone();
   }
 

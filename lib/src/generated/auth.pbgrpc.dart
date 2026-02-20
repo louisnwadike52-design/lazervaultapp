@@ -49,6 +49,10 @@ class AuthServiceClient extends $grpc.Client {
       '/auth.AuthService/ForgotPassword',
       ($0.ForgotPasswordRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.ForgotPasswordResponse.fromBuffer(value));
+  static final _$verifyPasswordResetCode = $grpc.ClientMethod<$0.VerifyPasswordResetCodeRequest, $0.VerifyPasswordResetCodeResponse>(
+      '/auth.AuthService/VerifyPasswordResetCode',
+      ($0.VerifyPasswordResetCodeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.VerifyPasswordResetCodeResponse.fromBuffer(value));
   static final _$resetPassword = $grpc.ClientMethod<$0.ResetPasswordRequest, $0.ResetPasswordResponse>(
       '/auth.AuthService/ResetPassword',
       ($0.ResetPasswordRequest value) => value.writeToBuffer(),
@@ -250,6 +254,10 @@ class AuthServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.ForgotPasswordResponse> forgotPassword($0.ForgotPasswordRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$forgotPassword, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.VerifyPasswordResetCodeResponse> verifyPasswordResetCode($0.VerifyPasswordResetCodeRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$verifyPasswordResetCode, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.ResetPasswordResponse> resetPassword($0.ResetPasswordRequest request, {$grpc.CallOptions? options}) {
@@ -475,6 +483,13 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.ForgotPasswordRequest.fromBuffer(value),
         ($0.ForgotPasswordResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.VerifyPasswordResetCodeRequest, $0.VerifyPasswordResetCodeResponse>(
+        'VerifyPasswordResetCode',
+        verifyPasswordResetCode_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.VerifyPasswordResetCodeRequest.fromBuffer(value),
+        ($0.VerifyPasswordResetCodeResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.ResetPasswordRequest, $0.ResetPasswordResponse>(
         'ResetPassword',
         resetPassword_Pre,
@@ -799,6 +814,10 @@ abstract class AuthServiceBase extends $grpc.Service {
     return forgotPassword(call, await request);
   }
 
+  $async.Future<$0.VerifyPasswordResetCodeResponse> verifyPasswordResetCode_Pre($grpc.ServiceCall call, $async.Future<$0.VerifyPasswordResetCodeRequest> request) async {
+    return verifyPasswordResetCode(call, await request);
+  }
+
   $async.Future<$0.ResetPasswordResponse> resetPassword_Pre($grpc.ServiceCall call, $async.Future<$0.ResetPasswordRequest> request) async {
     return resetPassword(call, await request);
   }
@@ -974,6 +993,7 @@ abstract class AuthServiceBase extends $grpc.Service {
   $async.Future<$0.VerifyEmailResponse> verifyEmail($grpc.ServiceCall call, $0.VerifyEmailRequest request);
   $async.Future<$0.VerifyPhoneResponse> verifyPhone($grpc.ServiceCall call, $0.VerifyPhoneRequest request);
   $async.Future<$0.ForgotPasswordResponse> forgotPassword($grpc.ServiceCall call, $0.ForgotPasswordRequest request);
+  $async.Future<$0.VerifyPasswordResetCodeResponse> verifyPasswordResetCode($grpc.ServiceCall call, $0.VerifyPasswordResetCodeRequest request);
   $async.Future<$0.ResetPasswordResponse> resetPassword($grpc.ServiceCall call, $0.ResetPasswordRequest request);
   $async.Future<$0.GetMeResponse> getMe($grpc.ServiceCall call, $0.GetMeRequest request);
   $async.Future<$0.UpdateProfileResponse> updateProfile($grpc.ServiceCall call, $0.UpdateProfileRequest request);

@@ -106,6 +106,24 @@ class BudgetStatus extends $pb.ProtobufEnum {
   const BudgetStatus._($core.int v, $core.String n) : super(v, n);
 }
 
+/// BudgetEnforcementMode determines how budget limits are enforced
+class BudgetEnforcementMode extends $pb.ProtobufEnum {
+  static const BudgetEnforcementMode BUDGET_ENFORCEMENT_MODE_UNSPECIFIED = BudgetEnforcementMode._(0, _omitEnumNames ? '' : 'BUDGET_ENFORCEMENT_MODE_UNSPECIFIED');
+  static const BudgetEnforcementMode BUDGET_ENFORCEMENT_MODE_FLEXIBLE = BudgetEnforcementMode._(1, _omitEnumNames ? '' : 'BUDGET_ENFORCEMENT_MODE_FLEXIBLE');
+  static const BudgetEnforcementMode BUDGET_ENFORCEMENT_MODE_STRICT = BudgetEnforcementMode._(2, _omitEnumNames ? '' : 'BUDGET_ENFORCEMENT_MODE_STRICT');
+
+  static const $core.List<BudgetEnforcementMode> values = <BudgetEnforcementMode> [
+    BUDGET_ENFORCEMENT_MODE_UNSPECIFIED,
+    BUDGET_ENFORCEMENT_MODE_FLEXIBLE,
+    BUDGET_ENFORCEMENT_MODE_STRICT,
+  ];
+
+  static final $core.Map<$core.int, BudgetEnforcementMode> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static BudgetEnforcementMode? valueOf($core.int value) => _byValue[value];
+
+  const BudgetEnforcementMode._($core.int v, $core.String n) : super(v, n);
+}
+
 class AlertType extends $pb.ProtobufEnum {
   static const AlertType ALERT_TYPE_UNSPECIFIED = AlertType._(0, _omitEnumNames ? '' : 'ALERT_TYPE_UNSPECIFIED');
   static const AlertType ALERT_TYPE_THRESHOLD_REACHED = AlertType._(1, _omitEnumNames ? '' : 'ALERT_TYPE_THRESHOLD_REACHED');

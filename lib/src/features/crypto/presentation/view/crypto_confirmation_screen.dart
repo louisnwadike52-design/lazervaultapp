@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
@@ -7,6 +8,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import '../../cubit/crypto_cubit.dart';
+import '../../cubit/crypto_state.dart';
+import '../../domain/entities/crypto_entity.dart';
 import 'crypto_receipt_screen.dart';
 
 class CryptoConfirmationScreen extends StatefulWidget {
@@ -139,22 +143,65 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           _processingController.repeat();
         }
 
-        // Simulate backend trade execution
-        await Future.delayed(const Duration(seconds: 3));
+        final cubit = context.read<CryptoCubit>();
+        final quantity = details.cryptoQuantity ?? (double.tryParse(details.cryptoAmount) ?? 0.0);
+
+        // Execute real backend call based on transaction type
+        switch (details.type) {
+          case CryptoTransactionType.buy:
+            await cubit.buyCrypto(
+              cryptoId: details.cryptoId ?? details.cryptoSymbol.toLowerCase(),
+              quantity: quantity,
+              price: details.pricePerUnit,
+              transactionPin: verificationToken,
+            );
+            break;
+          case CryptoTransactionType.sell:
+            await cubit.sellCrypto(
+              cryptoId: details.cryptoId ?? details.cryptoSymbol.toLowerCase(),
+              quantity: quantity,
+              price: details.pricePerUnit,
+              transactionPin: verificationToken,
+            );
+            break;
+          case CryptoTransactionType.swap:
+            await cubit.convertCrypto(
+              fromCryptoId: details.fromCryptoId ?? details.fromCrypto?.toLowerCase() ?? '',
+              toCryptoId: details.toCryptoId ?? details.toCrypto?.toLowerCase() ?? '',
+              amount: quantity,
+              transactionPin: verificationToken,
+            );
+            break;
+        }
 
         _processingController.stop();
 
-        if (mounted) {
-          setState(() {
-            _isProcessing = false;
-            _isCompleted = true;
-            _transactionId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
-          });
+        // Check cubit state for result
+        final state = cubit.state;
+        if (state is CryptoTransactionSuccess) {
+          if (mounted) {
+            setState(() {
+              _isProcessing = false;
+              _isCompleted = true;
+              _transactionId = state.transaction.id;
+            });
+          }
+          await Future.delayed(const Duration(seconds: 1));
+          if (mounted) _viewReceipt();
+        } else if (state is CryptoError) {
+          if (mounted) {
+            setState(() {
+              _isProcessing = false;
+            });
+            Get.snackbar(
+              'Transaction Failed',
+              state.message,
+              backgroundColor: Colors.red.withValues(alpha: 0.9),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
+          }
         }
-
-        // Navigate to receipt after brief success display
-        await Future.delayed(const Duration(seconds: 1));
-        if (mounted) _viewReceipt();
       },
     );
 
@@ -872,6 +919,10 @@ class CryptoTransactionDetails {
   final String paymentMethod;
   final String? fromCrypto; // For swaps
   final String? toCrypto; // For swaps
+  final String? cryptoId; // Backend crypto ID
+  final String? fromCryptoId; // For swaps - source crypto ID
+  final String? toCryptoId; // For swaps - target crypto ID
+  final double? cryptoQuantity; // Parsed numeric quantity
 
   const CryptoTransactionDetails({
     required this.type,
@@ -886,6 +937,10 @@ class CryptoTransactionDetails {
     required this.paymentMethod,
     this.fromCrypto,
     this.toCrypto,
+    this.cryptoId,
+    this.fromCryptoId,
+    this.toCryptoId,
+    this.cryptoQuantity,
   });
 }
 

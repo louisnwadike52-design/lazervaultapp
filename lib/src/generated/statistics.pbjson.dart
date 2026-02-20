@@ -92,6 +92,22 @@ final $typed_data.Uint8List budgetStatusDescriptor = $convert.base64Decode(
     'VEFUVVNfTkVBUl9MSU1JVBADEhoKFkJVREdFVF9TVEFUVVNfSU5BQ1RJVkUQBBIbChdCVURHRV'
     'RfU1RBVFVTX0NPTVBMRVRFRBAF');
 
+@$core.Deprecated('Use budgetEnforcementModeDescriptor instead')
+const BudgetEnforcementMode$json = {
+  '1': 'BudgetEnforcementMode',
+  '2': [
+    {'1': 'BUDGET_ENFORCEMENT_MODE_UNSPECIFIED', '2': 0},
+    {'1': 'BUDGET_ENFORCEMENT_MODE_FLEXIBLE', '2': 1},
+    {'1': 'BUDGET_ENFORCEMENT_MODE_STRICT', '2': 2},
+  ],
+};
+
+/// Descriptor for `BudgetEnforcementMode`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List budgetEnforcementModeDescriptor = $convert.base64Decode(
+    'ChVCdWRnZXRFbmZvcmNlbWVudE1vZGUSJwojQlVER0VUX0VORk9SQ0VNRU5UX01PREVfVU5TUE'
+    'VDSUZJRUQQABIkCiBCVURHRVRfRU5GT1JDRU1FTlRfTU9ERV9GTEVYSUJMRRABEiIKHkJVREdF'
+    'VF9FTkZPUkNFTUVOVF9NT0RFX1NUUklDVBAC');
+
 @$core.Deprecated('Use alertTypeDescriptor instead')
 const AlertType$json = {
   '1': 'AlertType',
@@ -283,8 +299,9 @@ const BudgetMessage$json = {
     {'1': 'status', '3': 13, '4': 1, '5': 14, '6': '.pb.BudgetStatus', '10': 'status'},
     {'1': 'enable_alerts', '3': 14, '4': 1, '5': 8, '10': 'enableAlerts'},
     {'1': 'alert_threshold', '3': 15, '4': 1, '5': 1, '10': 'alertThreshold'},
-    {'1': 'created_at', '3': 16, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 17, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {'1': 'enforcement_mode', '3': 16, '4': 1, '5': 14, '6': '.pb.BudgetEnforcementMode', '10': 'enforcementMode'},
+    {'1': 'created_at', '3': 17, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -300,9 +317,10 @@ final $typed_data.Uint8List budgetMessageDescriptor = $convert.base64Decode(
     'gLIAEoAVIPcmVtYWluaW5nQW1vdW50EicKD3BlcmNlbnRhZ2VfdXNlZBgMIAEoAVIOcGVyY2Vu'
     'dGFnZVVzZWQSKAoGc3RhdHVzGA0gASgOMhAucGIuQnVkZ2V0U3RhdHVzUgZzdGF0dXMSIwoNZW'
     '5hYmxlX2FsZXJ0cxgOIAEoCFIMZW5hYmxlQWxlcnRzEicKD2FsZXJ0X3RocmVzaG9sZBgPIAEo'
-    'AVIOYWxlcnRUaHJlc2hvbGQSOQoKY3JlYXRlZF9hdBgQIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi'
-    '5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GBEgASgLMhouZ29vZ2xlLnByb3Rv'
-    'YnVmLlRpbWVzdGFtcFIJdXBkYXRlZEF0');
+    'AVIOYWxlcnRUaHJlc2hvbGQSRAoQZW5mb3JjZW1lbnRfbW9kZRgQIAEoDjIZLnBiLkJ1ZGdldE'
+    'VuZm9yY2VtZW50TW9kZVIPZW5mb3JjZW1lbnRNb2RlEjkKCmNyZWF0ZWRfYXQYESABKAsyGi5n'
+    'b29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSOQoKdXBkYXRlZF9hdBgSIAEoCz'
+    'IaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdA==');
 
 @$core.Deprecated('Use budgetAlertMessageDescriptor instead')
 const BudgetAlertMessage$json = {
@@ -659,6 +677,7 @@ const CreateBudgetRequest$json = {
     {'1': 'end_date', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
     {'1': 'enable_alerts', '3': 8, '4': 1, '5': 8, '10': 'enableAlerts'},
     {'1': 'alert_threshold', '3': 9, '4': 1, '5': 1, '10': 'alertThreshold'},
+    {'1': 'enforcement_mode', '3': 10, '4': 1, '5': 14, '6': '.pb.BudgetEnforcementMode', '10': 'enforcementMode'},
   ],
 };
 
@@ -670,7 +689,9 @@ final $typed_data.Uint8List createBudgetRequestDescriptor = $convert.base64Decod
     'RnZXRQZXJpb2RSBnBlcmlvZBI5CgpzdGFydF9kYXRlGAYgASgLMhouZ29vZ2xlLnByb3RvYnVm'
     'LlRpbWVzdGFtcFIJc3RhcnREYXRlEjUKCGVuZF9kYXRlGAcgASgLMhouZ29vZ2xlLnByb3RvYn'
     'VmLlRpbWVzdGFtcFIHZW5kRGF0ZRIjCg1lbmFibGVfYWxlcnRzGAggASgIUgxlbmFibGVBbGVy'
-    'dHMSJwoPYWxlcnRfdGhyZXNob2xkGAkgASgBUg5hbGVydFRocmVzaG9sZA==');
+    'dHMSJwoPYWxlcnRfdGhyZXNob2xkGAkgASgBUg5hbGVydFRocmVzaG9sZBJEChBlbmZvcmNlbW'
+    'VudF9tb2RlGAogASgOMhkucGIuQnVkZ2V0RW5mb3JjZW1lbnRNb2RlUg9lbmZvcmNlbWVudE1v'
+    'ZGU=');
 
 @$core.Deprecated('Use createBudgetResponseDescriptor instead')
 const CreateBudgetResponse$json = {
@@ -762,6 +783,7 @@ const UpdateBudgetRequest$json = {
     {'1': 'end_date', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
     {'1': 'enable_alerts', '3': 7, '4': 1, '5': 8, '10': 'enableAlerts'},
     {'1': 'alert_threshold', '3': 8, '4': 1, '5': 1, '10': 'alertThreshold'},
+    {'1': 'enforcement_mode', '3': 9, '4': 1, '5': 14, '6': '.pb.BudgetEnforcementMode', '10': 'enforcementMode'},
   ],
 };
 
@@ -772,7 +794,9 @@ final $typed_data.Uint8List updateBudgetRequestDescriptor = $convert.base64Decod
     'EC5wYi5CdWRnZXRQZXJpb2RSBnBlcmlvZBI5CgpzdGFydF9kYXRlGAUgASgLMhouZ29vZ2xlLn'
     'Byb3RvYnVmLlRpbWVzdGFtcFIJc3RhcnREYXRlEjUKCGVuZF9kYXRlGAYgASgLMhouZ29vZ2xl'
     'LnByb3RvYnVmLlRpbWVzdGFtcFIHZW5kRGF0ZRIjCg1lbmFibGVfYWxlcnRzGAcgASgIUgxlbm'
-    'FibGVBbGVydHMSJwoPYWxlcnRfdGhyZXNob2xkGAggASgBUg5hbGVydFRocmVzaG9sZA==');
+    'FibGVBbGVydHMSJwoPYWxlcnRfdGhyZXNob2xkGAggASgBUg5hbGVydFRocmVzaG9sZBJEChBl'
+    'bmZvcmNlbWVudF9tb2RlGAkgASgOMhkucGIuQnVkZ2V0RW5mb3JjZW1lbnRNb2RlUg9lbmZvcm'
+    'NlbWVudE1vZGU=');
 
 @$core.Deprecated('Use updateBudgetResponseDescriptor instead')
 const UpdateBudgetResponse$json = {
@@ -2348,4 +2372,121 @@ final $typed_data.Uint8List comprehensiveExpenditureDataDescriptor = $convert.ba
     'dHVyZURhdGEuRXhwZW5kaXR1cmVCcmVha2Rvd25FbnRyeVIUZXhwZW5kaXR1cmVCcmVha2Rvd2'
     '4aRwoZRXhwZW5kaXR1cmVCcmVha2Rvd25FbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1'
     'ZRgCIAEoAVIFdmFsdWU6AjgB');
+
+@$core.Deprecated('Use validateCategoryBudgetRequestDescriptor instead')
+const ValidateCategoryBudgetRequest$json = {
+  '1': 'ValidateCategoryBudgetRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'budget_category', '3': 2, '4': 1, '5': 5, '10': 'budgetCategory'},
+    {'1': 'amount_minor', '3': 3, '4': 1, '5': 3, '10': 'amountMinor'},
+    {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+  ],
+};
+
+/// Descriptor for `ValidateCategoryBudgetRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List validateCategoryBudgetRequestDescriptor = $convert.base64Decode(
+    'Ch1WYWxpZGF0ZUNhdGVnb3J5QnVkZ2V0UmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySW'
+    'QSJwoPYnVkZ2V0X2NhdGVnb3J5GAIgASgFUg5idWRnZXRDYXRlZ29yeRIhCgxhbW91bnRfbWlu'
+    'b3IYAyABKANSC2Ftb3VudE1pbm9yEhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeQ==');
+
+@$core.Deprecated('Use validateCategoryBudgetResponseDescriptor instead')
+const ValidateCategoryBudgetResponse$json = {
+  '1': 'ValidateCategoryBudgetResponse',
+  '2': [
+    {'1': 'allowed', '3': 1, '4': 1, '5': 8, '10': 'allowed'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+    {'1': 'current_spent', '3': 3, '4': 1, '5': 1, '10': 'currentSpent'},
+    {'1': 'budget_limit', '3': 4, '4': 1, '5': 1, '10': 'budgetLimit'},
+    {'1': 'percentage_used', '3': 5, '4': 1, '5': 1, '10': 'percentageUsed'},
+    {'1': 'remaining', '3': 6, '4': 1, '5': 1, '10': 'remaining'},
+    {'1': 'matching_budgets', '3': 7, '4': 3, '5': 11, '6': '.pb.BudgetInfo', '10': 'matchingBudgets'},
+  ],
+};
+
+/// Descriptor for `ValidateCategoryBudgetResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List validateCategoryBudgetResponseDescriptor = $convert.base64Decode(
+    'Ch5WYWxpZGF0ZUNhdGVnb3J5QnVkZ2V0UmVzcG9uc2USGAoHYWxsb3dlZBgBIAEoCFIHYWxsb3'
+    'dlZBIWCgZyZWFzb24YAiABKAlSBnJlYXNvbhIjCg1jdXJyZW50X3NwZW50GAMgASgBUgxjdXJy'
+    'ZW50U3BlbnQSIQoMYnVkZ2V0X2xpbWl0GAQgASgBUgtidWRnZXRMaW1pdBInCg9wZXJjZW50YW'
+    'dlX3VzZWQYBSABKAFSDnBlcmNlbnRhZ2VVc2VkEhwKCXJlbWFpbmluZxgGIAEoAVIJcmVtYWlu'
+    'aW5nEjkKEG1hdGNoaW5nX2J1ZGdldHMYByADKAsyDi5wYi5CdWRnZXRJbmZvUg9tYXRjaGluZ0'
+    'J1ZGdldHM=');
+
+@$core.Deprecated('Use budgetInfoDescriptor instead')
+const BudgetInfo$json = {
+  '1': 'BudgetInfo',
+  '2': [
+    {'1': 'budget_id', '3': 1, '4': 1, '5': 9, '10': 'budgetId'},
+    {'1': 'budget_name', '3': 2, '4': 1, '5': 9, '10': 'budgetName'},
+    {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'spent', '3': 4, '4': 1, '5': 1, '10': 'spent'},
+    {'1': 'percentage', '3': 5, '4': 1, '5': 1, '10': 'percentage'},
+    {'1': 'days_remaining', '3': 6, '4': 1, '5': 5, '10': 'daysRemaining'},
+    {'1': 'start_date', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    {'1': 'end_date', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+    {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
+  ],
+};
+
+/// Descriptor for `BudgetInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List budgetInfoDescriptor = $convert.base64Decode(
+    'CgpCdWRnZXRJbmZvEhsKCWJ1ZGdldF9pZBgBIAEoCVIIYnVkZ2V0SWQSHwoLYnVkZ2V0X25hbW'
+    'UYAiABKAlSCmJ1ZGdldE5hbWUSFgoGYW1vdW50GAMgASgBUgZhbW91bnQSFAoFc3BlbnQYBCAB'
+    'KAFSBXNwZW50Eh4KCnBlcmNlbnRhZ2UYBSABKAFSCnBlcmNlbnRhZ2USJQoOZGF5c19yZW1haW'
+    '5pbmcYBiABKAVSDWRheXNSZW1haW5pbmcSOQoKc3RhcnRfZGF0ZRgHIAEoCzIaLmdvb2dsZS5w'
+    'cm90b2J1Zi5UaW1lc3RhbXBSCXN0YXJ0RGF0ZRI1CghlbmRfZGF0ZRgIIAEoCzIaLmdvb2dsZS'
+    '5wcm90b2J1Zi5UaW1lc3RhbXBSB2VuZERhdGUSGgoIY3VycmVuY3kYCSABKAlSCGN1cnJlbmN5');
+
+@$core.Deprecated('Use getServiceCategoriesRequestDescriptor instead')
+const GetServiceCategoriesRequest$json = {
+  '1': 'GetServiceCategoriesRequest',
+  '2': [
+    {'1': 'service_name', '3': 1, '4': 1, '5': 9, '10': 'serviceName'},
+    {'1': 'active_only', '3': 2, '4': 1, '5': 8, '10': 'activeOnly'},
+  ],
+};
+
+/// Descriptor for `GetServiceCategoriesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getServiceCategoriesRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRTZXJ2aWNlQ2F0ZWdvcmllc1JlcXVlc3QSIQoMc2VydmljZV9uYW1lGAEgASgJUgtzZX'
+    'J2aWNlTmFtZRIfCgthY3RpdmVfb25seRgCIAEoCFIKYWN0aXZlT25seQ==');
+
+@$core.Deprecated('Use getServiceCategoriesResponseDescriptor instead')
+const GetServiceCategoriesResponse$json = {
+  '1': 'GetServiceCategoriesResponse',
+  '2': [
+    {'1': 'categories', '3': 1, '4': 3, '5': 11, '6': '.pb.ServiceCategoryItem', '10': 'categories'},
+    {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `GetServiceCategoriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getServiceCategoriesResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRTZXJ2aWNlQ2F0ZWdvcmllc1Jlc3BvbnNlEjcKCmNhdGVnb3JpZXMYASADKAsyFy5wYi'
+    '5TZXJ2aWNlQ2F0ZWdvcnlJdGVtUgpjYXRlZ29yaWVzEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nl'
+    'c3M=');
+
+@$core.Deprecated('Use serviceCategoryItemDescriptor instead')
+const ServiceCategoryItem$json = {
+  '1': 'ServiceCategoryItem',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'service_name', '3': 2, '4': 1, '5': 9, '10': 'serviceName'},
+    {'1': 'sub_category_name', '3': 3, '4': 1, '5': 9, '10': 'subCategoryName'},
+    {'1': 'budget_category', '3': 4, '4': 1, '5': 5, '10': 'budgetCategory'},
+    {'1': 'display_name', '3': 5, '4': 1, '5': 9, '10': 'displayName'},
+    {'1': 'icon', '3': 6, '4': 1, '5': 9, '10': 'icon'},
+    {'1': 'color', '3': 7, '4': 1, '5': 9, '10': 'color'},
+    {'1': 'is_active', '3': 8, '4': 1, '5': 8, '10': 'isActive'},
+  ],
+};
+
+/// Descriptor for `ServiceCategoryItem`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List serviceCategoryItemDescriptor = $convert.base64Decode(
+    'ChNTZXJ2aWNlQ2F0ZWdvcnlJdGVtEg4KAmlkGAEgASgJUgJpZBIhCgxzZXJ2aWNlX25hbWUYAi'
+    'ABKAlSC3NlcnZpY2VOYW1lEioKEXN1Yl9jYXRlZ29yeV9uYW1lGAMgASgJUg9zdWJDYXRlZ29y'
+    'eU5hbWUSJwoPYnVkZ2V0X2NhdGVnb3J5GAQgASgFUg5idWRnZXRDYXRlZ29yeRIhCgxkaXNwbG'
+    'F5X25hbWUYBSABKAlSC2Rpc3BsYXlOYW1lEhIKBGljb24YBiABKAlSBGljb24SFAoFY29sb3IY'
+    'ByABKAlSBWNvbG9yEhsKCWlzX2FjdGl2ZRgIIAEoCFIIaXNBY3RpdmU=');
 

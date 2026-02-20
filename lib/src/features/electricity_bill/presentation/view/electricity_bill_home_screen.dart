@@ -12,6 +12,8 @@ import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class ElectricityBillHomeScreen extends StatefulWidget {
@@ -35,7 +37,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ElectricityBillCubit>().getProviders(country: 'NG');
+    context.read<ElectricityBillCubit>().getProviders(country: serviceLocator<LocaleManager>().currentCountry);
     context.read<BeneficiaryCubit>().getBeneficiaries();
   }
 
@@ -46,7 +48,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
   }
 
   Future<void> _onRefresh() async {
-    context.read<ElectricityBillCubit>().getProviders(country: 'NG');
+    context.read<ElectricityBillCubit>().getProviders(country: serviceLocator<LocaleManager>().currentCountry);
     context.read<BeneficiaryCubit>().getBeneficiaries();
   }
 
@@ -179,7 +181,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
           id: '',
           providerCode: result.providerCode,
           providerName: result.providerName,
-          country: 'NG',
+          country: serviceLocator<LocaleManager>().currentCountry,
           isActive: true,
           minAmount: result.minAmount,
           maxAmount: result.maxAmount,

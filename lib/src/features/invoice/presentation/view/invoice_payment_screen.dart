@@ -20,13 +20,15 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart' show AuthenticationSuccess;
 
 class InvoicePaymentScreen extends StatefulWidget {
-  final Invoice invoice;
+  final Invoice? invoice;
   final double serviceFee;
+  final bool isPrePayment;
 
   const InvoicePaymentScreen({
     super.key,
-    required this.invoice,
+    this.invoice,
     this.serviceFee = 99.99,
+    this.isPrePayment = false,
   });
 
   @override
@@ -104,7 +106,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     },
   ];
 
-  String get _currencySymbol => _getCurrencySymbol(widget.invoice.currency);
+  String get _currencySymbol => _getCurrencySymbol(widget.invoice?.currency ?? 'NGN');
 
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
@@ -170,7 +172,10 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
   Widget build(BuildContext context) {
     return BlocListener<InvoiceCubit, InvoiceState>(
       listener: (context, state) {
-        if (state is InvoiceUnlockSuccess) {
+        if (state is InvoiceServiceFeePaid) {
+          setState(() => _isProcessingPayment = false);
+          Get.offNamed(AppRoutes.createInvoice, arguments: {'serviceFeeRef': state.serviceFeeRef});
+        } else if (state is InvoiceUnlockSuccess) {
           setState(() => _isProcessingPayment = false);
           Get.offNamed(AppRoutes.invoiceProcessing, arguments: state.invoice ?? widget.invoice);
         } else if (state is InvoiceError) {
@@ -248,7 +253,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pay Invoice',
+                  widget.isPrePayment ? 'Service Fee' : 'Pay Invoice',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -257,7 +262,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Complete your payment securely',
+                  widget.isPrePayment ? 'Pay service fee to create an invoice' : 'Complete your payment securely',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
@@ -1068,16 +1073,15 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     HapticFeedback.mediumImpact();
 
     // Use TransactionPinMixin for proper PIN verification
-    final idPrefix = widget.invoice.id.length >= 8
-        ? widget.invoice.id.substring(0, 8)
-        : widget.invoice.id;
-    final transactionId = 'INV-PAY-$idPrefix';
+    final transactionId = widget.isPrePayment
+        ? 'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}'
+        : 'INV-PAY-${(widget.invoice!.id.length >= 8 ? widget.invoice!.id.substring(0, 8) : widget.invoice!.id)}';
     final pinResult = await validatePinOnly(
       context: context,
       transactionId: transactionId,
-      transactionType: 'invoice_payment',
+      transactionType: widget.isPrePayment ? 'invoice_service_fee' : 'invoice_payment',
       amount: widget.serviceFee,
-      currency: widget.invoice.currency,
+      currency: widget.invoice?.currency ?? 'NGN',
     );
 
     if (pinResult == null || !pinResult.success) return;
@@ -1093,11 +1097,20 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
 
     // BlocListener handles navigation on success and error display on failure
     final cubit = context.read<InvoiceCubit>();
-    await cubit.unlockInvoice(
-      widget.invoice.id,
-      accountId: _selectedAccountId.isNotEmpty ? _selectedAccountId : null,
-      verificationToken: pinResult.verificationToken,
-      transactionId: transactionId,
-    );
+
+    if (widget.isPrePayment) {
+      await cubit.payServiceFee(
+        accountId: _selectedAccountId.isNotEmpty ? _selectedAccountId : null,
+        verificationToken: pinResult.verificationToken,
+        transactionId: transactionId,
+      );
+    } else {
+      await cubit.unlockInvoice(
+        widget.invoice!.id,
+        accountId: _selectedAccountId.isNotEmpty ? _selectedAccountId : null,
+        verificationToken: pinResult.verificationToken,
+        transactionId: transactionId,
+      );
+    }
   }
 }

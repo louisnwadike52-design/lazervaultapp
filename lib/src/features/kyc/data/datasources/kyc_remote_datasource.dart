@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/errors/exceptions.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/api_headers.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 
 
@@ -10,12 +12,19 @@ class KYCRemoteDataSource {
   final http.Client client;
   final String baseUrl;
   final FlutterSecureStorage storage;
+  final SecureStorageService secureStorage;
 
   KYCRemoteDataSource({
     required this.client,
     required this.baseUrl,
+    required this.secureStorage,
     FlutterSecureStorage? storage,
   }) : storage = storage ?? const FlutterSecureStorage();
+
+  /// Build headers with all required metadata
+  Future<Map<String, String>> _getHeaders() async {
+    return ApiHeaders.build(secureStorage: secureStorage);
+  }
 
   /// Get KYC status from API
   Future<Map<String, dynamic>> getKYCStatus(String userId) async {
@@ -102,7 +111,7 @@ class KYCRemoteDataSource {
   /// Uses the auth-service /api/v1/auth/verify-identity endpoint
   Future<Map<String, dynamic>> verifyID(IDVerificationRequest request) async {
     // Get auth token from secure storage
-    final token = await storage.read(key: 'auth_token');
+    final token = await secureStorage.getAccessToken();
     if (token == null || token.isEmpty) {
       throw APIException(
         message: 'Authentication token not found. Please log in again.',
@@ -115,10 +124,7 @@ class KYCRemoteDataSource {
 
     final response = await client.post(
       Uri.parse('$baseUrl/api/v1/auth/verify-identity'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: await _getHeaders(),
       body: jsonEncode({
         'identity_type': identityType,
         'identity_number': request.idNumber,

@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/grpc/grpc_channel_manager.dart';
-import 'package:lazervault/src/generated/stocks/stock.pbgrpc.dart' hide OrderType, OrderSide, OrderStatus, PricePoint;
+import 'package:lazervault/src/generated/stocks/stock.pbgrpc.dart' hide OrderType, OrderSide, OrderStatus, PricePoint, AlertType;
 import 'package:lazervault/src/generated/stocks/stock.pbenum.dart' as stockspb_enums;
+import 'package:lazervault/src/generated/investments.pbgrpc.dart' as investmentspb;
 import '../models/stock_model.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../domain/entities/price_point.dart';
@@ -16,6 +17,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   late final StocksPortfolioServiceClient _portfolioClient;
   late final OrderServiceClient _orderClient;
   late final WatchlistServiceClient _watchlistClient;
+  late final investmentspb.InvestmentsServiceClient _investmentsClient;
 
   StockRemoteDataSourceGrpcImpl({
     required this.channelManager,
@@ -24,6 +26,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     _portfolioClient = StocksPortfolioServiceClient(channelManager.channel);
     _orderClient = OrderServiceClient(channelManager.channel);
     _watchlistClient = WatchlistServiceClient(channelManager.channel);
+    _investmentsClient = investmentspb.InvestmentsServiceClient(channelManager.channel);
   }
 
   @override
@@ -462,7 +465,6 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     }
   }
 
-  // Not yet implemented in microservice - return empty lists
   @override
   Future<List<MarketNewsModel>> getMarketNews({
     NewsCategory? category,
@@ -470,17 +472,91 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     int page = 1,
     int limit = 20,
   }) async {
-    return [];
+    try {
+      final request = investmentspb.GetMarketNewsRequest(
+        limit: limit,
+        page: page,
+      );
+      if (category != null) {
+        request.category = category.toString().split('.').last;
+      }
+      if (symbols != null && symbols.isNotEmpty) {
+        request.symbols.addAll(symbols);
+      }
+
+      final response = await _investmentsClient.getMarketNews(
+        request,
+        options: channelManager.getCallOptions(),
+      );
+
+      return response.articles.map((article) => MarketNewsModel(
+        id: article.id,
+        title: article.title,
+        summary: article.summary,
+        content: article.content,
+        source: article.source,
+        imageUrl: article.imageUrl,
+        relatedSymbols: List<String>.from(article.relatedSymbols),
+        publishedAt: article.publishedAt.isNotEmpty
+            ? DateTime.tryParse(article.publishedAt) ?? DateTime.now()
+            : DateTime.now(),
+        url: article.url,
+        category: NewsCategory.values.firstWhere(
+          (e) => e.toString().split('.').last == article.category,
+          orElse: () => NewsCategory.market,
+        ),
+        readTime: article.readTime > 0 ? article.readTime : 5,
+      )).toList();
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching market news via gRPC: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<List<SectorPerformanceModel>> getSectorPerformance() async {
-    return [];
+    try {
+      final request = investmentspb.GetSectorPerformanceRequest();
+
+      final response = await _investmentsClient.getSectorPerformance(
+        request,
+        options: channelManager.getCallOptions(),
+      );
+
+      return response.sectors.map((sector) => SectorPerformanceModel(
+        sector: sector.sector,
+        change: sector.change,
+        changePercent: sector.changePercent,
+        marketCap: sector.marketCap,
+        topStocks: List<String>.from(sector.topStocks),
+      )).toList();
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching sector performance via gRPC: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<List<StockAlertModel>> getAlerts() async {
-    return [];
+    try {
+      final request = investmentspb.GetPriceAlertsRequest();
+
+      final response = await _investmentsClient.getPriceAlerts(
+        request,
+        options: channelManager.getCallOptions(),
+      );
+
+      return response.alerts.map((alert) => _convertPriceAlertToModel(alert)).toList();
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching price alerts via gRPC: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -490,7 +566,26 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     required double targetValue,
     required AlertCondition condition,
   }) async {
-    throw Exception('Price alerts are coming soon');
+    try {
+      final request = investmentspb.CreatePriceAlertRequest(
+        symbol: symbol,
+        alertType: type.toString().split('.').last,
+        targetValue: targetValue,
+        condition: condition.toString().split('.').last,
+      );
+
+      final response = await _investmentsClient.createPriceAlert(
+        request,
+        options: channelManager.getCallOptions(),
+      );
+
+      return _convertPriceAlertToModel(response.alert);
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error creating price alert via gRPC: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -501,27 +596,183 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
     AlertCondition? condition,
     bool? isActive,
   }) async {
-    throw Exception('Price alerts are coming soon');
+    try {
+      final request = investmentspb.UpdatePriceAlertRequest(
+        alertId: alertId,
+      );
+      if (type != null) {
+        request.alertType = type.toString().split('.').last;
+      }
+      if (targetValue != null) {
+        request.targetValue = targetValue;
+      }
+      if (condition != null) {
+        request.condition = condition.toString().split('.').last;
+      }
+      if (isActive != null) {
+        request.isActive = isActive;
+      }
+
+      final response = await _investmentsClient.updatePriceAlert(
+        request,
+        options: channelManager.getCallOptions(),
+      );
+
+      return _convertPriceAlertToModel(response.alert);
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error updating price alert via gRPC: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<void> deleteAlert(String alertId) async {
-    throw Exception('Price alerts are coming soon');
+    try {
+      final request = investmentspb.DeletePriceAlertRequest(
+        alertId: alertId,
+      );
+
+      await _investmentsClient.deletePriceAlert(
+        request,
+        options: channelManager.getCallOptions(),
+      );
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error deleting price alert via gRPC: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<StockAnalysisModel> getStockAnalysis(String symbol) async {
-    // Return a basic analysis based on available stock data
-    return StockAnalysisModel(
-      symbol: symbol,
-      rating: AnalysisRating.hold,
-      targetPrice: 0,
-      stopLoss: 0,
-      technicalIndicators: [],
-      fundamentalMetrics: [],
-      summary: 'Detailed analysis is coming soon.',
-      lastUpdated: DateTime.now(),
-    );
+    try {
+      final stock = await getStockDetails(symbol);
+
+      // Derive rating from fundamental metrics
+      AnalysisRating rating = AnalysisRating.hold;
+      if (stock.peRatio > 0 && stock.peRatio < 15 && stock.changePercent > 0) {
+        rating = AnalysisRating.buy;
+      } else if (stock.peRatio > 0 && stock.peRatio < 10) {
+        rating = AnalysisRating.strongBuy;
+      } else if (stock.peRatio > 40 && stock.changePercent < -2) {
+        rating = AnalysisRating.sell;
+      }
+
+      // Calculate target price from 52-week data
+      final targetPrice = stock.weekHigh52 > 0
+          ? stock.currentPrice + (stock.weekHigh52 - stock.currentPrice) * 0.5
+          : stock.currentPrice * 1.1;
+
+      // Calculate stop loss from 52-week low
+      final stopLoss = stock.weekLow52 > 0
+          ? stock.weekLow52
+          : stock.currentPrice * 0.9;
+
+      // Build fundamental metrics from available data
+      final fundamentalMetrics = <FundamentalMetric>[];
+      if (stock.peRatio > 0) {
+        fundamentalMetrics.add(FundamentalMetric(
+          name: 'P/E Ratio',
+          value: stock.peRatio,
+          unit: 'x',
+          description: stock.peRatio < 20 ? 'Below average — potentially undervalued' : 'Above average — higher growth expectations',
+        ));
+      }
+      if (stock.dividendYield > 0) {
+        fundamentalMetrics.add(FundamentalMetric(
+          name: 'Dividend Yield',
+          value: stock.dividendYield,
+          unit: '%',
+          description: '${stock.dividendYield.toStringAsFixed(2)}% annual yield',
+        ));
+      }
+      if (stock.eps > 0) {
+        fundamentalMetrics.add(FundamentalMetric(
+          name: 'EPS',
+          value: stock.eps,
+          unit: 'USD',
+          description: 'Earnings per share: \$${stock.eps.toStringAsFixed(2)}',
+        ));
+      }
+      if (stock.marketCap > 0) {
+        final capLabel = stock.marketCap >= 200e9
+            ? 'Mega Cap'
+            : stock.marketCap >= 10e9
+                ? 'Large Cap'
+                : stock.marketCap >= 2e9
+                    ? 'Mid Cap'
+                    : 'Small Cap';
+        fundamentalMetrics.add(FundamentalMetric(
+          name: 'Market Cap',
+          value: stock.marketCap,
+          unit: 'USD',
+          description: capLabel,
+        ));
+      }
+
+      // Build technical indicators
+      final technicalIndicators = <TechnicalIndicator>[];
+      if (stock.beta > 0) {
+        technicalIndicators.add(TechnicalIndicator(
+          name: 'Beta',
+          value: stock.beta,
+          signal: stock.beta > 1.2 ? 'High volatility' : stock.beta < 0.8 ? 'Low volatility' : 'Average volatility',
+          description: 'Measures price volatility relative to the market (1.0 = market average)',
+        ));
+      }
+      if (stock.weekHigh52 > 0 && stock.weekLow52 > 0) {
+        final range = stock.weekHigh52 - stock.weekLow52;
+        final position = range > 0 ? (stock.currentPrice - stock.weekLow52) / range : 0.5;
+        technicalIndicators.add(TechnicalIndicator(
+          name: '52-Week Range Position',
+          value: position * 100,
+          signal: position > 0.8 ? 'Near 52-week high' : position < 0.2 ? 'Near 52-week low' : 'Mid-range',
+          description: 'Current price position within the 52-week trading range',
+        ));
+      }
+      if (stock.volume > 0 && stock.avgVolume > 0) {
+        final volumeRatio = stock.volume / stock.avgVolume;
+        technicalIndicators.add(TechnicalIndicator(
+          name: 'Volume Ratio',
+          value: volumeRatio,
+          signal: volumeRatio > 1.5 ? 'High activity' : volumeRatio < 0.5 ? 'Low activity' : 'Normal activity',
+          description: 'Today\'s volume compared to the average daily volume',
+        ));
+      }
+
+      // Build summary
+      final sectorInfo = stock.sector.isNotEmpty ? ' in the ${stock.sector} sector' : '';
+      final industryInfo = stock.industry.isNotEmpty ? ' (${stock.industry})' : '';
+      final summary = '${stock.name}$sectorInfo$industryInfo is currently trading at \$${stock.currentPrice.toStringAsFixed(2)} '
+          'with a ${stock.changePercent >= 0 ? "+" : ""}${stock.changePercent.toStringAsFixed(2)}% daily change. '
+          '52-week range: \$${stock.weekLow52.toStringAsFixed(2)} - \$${stock.weekHigh52.toStringAsFixed(2)}.';
+
+      return StockAnalysisModel(
+        symbol: symbol,
+        rating: rating,
+        targetPrice: targetPrice,
+        stopLoss: stopLoss,
+        technicalIndicators: technicalIndicators,
+        fundamentalMetrics: fundamentalMetrics,
+        summary: summary,
+        lastUpdated: DateTime.now(),
+      );
+    } catch (e) {
+      // Fallback to basic analysis if stock details fail
+      return StockAnalysisModel(
+        symbol: symbol,
+        rating: AnalysisRating.hold,
+        targetPrice: 0,
+        stopLoss: 0,
+        technicalIndicators: [],
+        fundamentalMetrics: [],
+        summary: 'Unable to load analysis data. Please try again later.',
+        lastUpdated: DateTime.now(),
+      );
+    }
   }
 
   @override
@@ -570,25 +821,192 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
 
   @override
   Future<Map<String, dynamic>> getMarketStatus() async {
+    // US market hours: 9:30 AM - 4:00 PM ET, Monday-Friday
+    // Pre-market: 4:00 AM - 9:30 AM ET
+    // After-hours: 4:00 PM - 8:00 PM ET
+    final now = DateTime.now().toUtc();
+    // ET is UTC-5 (EST) or UTC-4 (EDT). Use approximate offset.
+    final month = now.month;
+    final etOffset = (month >= 3 && month <= 10) ? -4 : -5; // Rough EDT/EST
+    final etNow = now.add(Duration(hours: etOffset));
+
+    final hour = etNow.hour;
+    final minute = etNow.minute;
+    final weekday = etNow.weekday; // 1=Mon, 7=Sun
+    final timeMinutes = hour * 60 + minute;
+
+    final isWeekday = weekday >= 1 && weekday <= 5;
+    final regularOpen = 9 * 60 + 30; // 9:30 AM
+    final regularClose = 16 * 60; // 4:00 PM
+    final preMarketOpen = 4 * 60; // 4:00 AM
+    final afterHoursClose = 20 * 60; // 8:00 PM
+
+    String tradingSession;
+    bool marketOpen;
+    DateTime sessionStartTime;
+    DateTime sessionEndTime;
+
+    if (!isWeekday) {
+      tradingSession = 'closed';
+      marketOpen = false;
+      // Next Monday
+      final daysUntilMonday = weekday == 6 ? 2 : 1;
+      final nextMonday = DateTime(etNow.year, etNow.month, etNow.day + daysUntilMonday, 9, 30);
+      sessionStartTime = nextMonday;
+      sessionEndTime = nextMonday.add(const Duration(hours: 6, minutes: 30));
+    } else if (timeMinutes >= regularOpen && timeMinutes < regularClose) {
+      tradingSession = 'regular';
+      marketOpen = true;
+      sessionStartTime = DateTime(etNow.year, etNow.month, etNow.day, 9, 30);
+      sessionEndTime = DateTime(etNow.year, etNow.month, etNow.day, 16, 0);
+    } else if (timeMinutes >= preMarketOpen && timeMinutes < regularOpen) {
+      tradingSession = 'pre_market';
+      marketOpen = false;
+      sessionStartTime = DateTime(etNow.year, etNow.month, etNow.day, 4, 0);
+      sessionEndTime = DateTime(etNow.year, etNow.month, etNow.day, 9, 30);
+    } else if (timeMinutes >= regularClose && timeMinutes < afterHoursClose) {
+      tradingSession = 'after_hours';
+      marketOpen = false;
+      sessionStartTime = DateTime(etNow.year, etNow.month, etNow.day, 16, 0);
+      sessionEndTime = DateTime(etNow.year, etNow.month, etNow.day, 20, 0);
+    } else {
+      tradingSession = 'closed';
+      marketOpen = false;
+      sessionStartTime = DateTime(etNow.year, etNow.month, etNow.day, 9, 30);
+      sessionEndTime = DateTime(etNow.year, etNow.month, etNow.day, 16, 0);
+    }
+
     return {
-      'marketOpen': true,
-      'tradingSession': 'regular',
-      'sessionStartTime': DateTime.now().subtract(const Duration(hours: 1)),
-      'sessionEndTime': DateTime.now().add(const Duration(hours: 3)),
+      'marketOpen': marketOpen,
+      'tradingSession': tradingSession,
+      'sessionStartTime': sessionStartTime,
+      'sessionEndTime': sessionEndTime,
     };
   }
 
   @override
   Future<List<StockModel>> getEarningsCalendar({DateTime? date}) async {
-    return [];
+    try {
+      final request = investmentspb.GetEarningsCalendarRequest();
+      if (date != null) {
+        request.startDate = date.toIso8601String().split('T').first;
+        request.endDate = date.add(const Duration(days: 7)).toIso8601String().split('T').first;
+      }
+
+      final response = await _investmentsClient.getEarningsCalendar(
+        request,
+        options: channelManager.getCallOptions(),
+      );
+
+      return response.events.map((event) => StockModel(
+        symbol: event.symbol,
+        name: event.name,
+        currentPrice: 0,
+        previousClose: 0,
+        change: 0,
+        changePercent: 0,
+        dayHigh: 0,
+        dayLow: 0,
+        volume: 0,
+        marketCap: 0,
+        peRatio: 0,
+        dividendYield: 0,
+        sector: '',
+        industry: '',
+        logoUrl: '',
+        priceHistory: const [],
+        lastUpdated: DateTime.now(),
+        weekHigh52: 0,
+        weekLow52: 0,
+        avgVolume: 0,
+        beta: 0,
+        eps: event.epsEstimate,
+        description: 'Q${event.fiscalQuarter} earnings on ${event.reportDate}',
+        exchange: '',
+        currency: 'USD',
+      )).toList();
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching earnings calendar via gRPC: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<List<StockModel>> getDividendCalendar({DateTime? date}) async {
-    return [];
+    try {
+      final request = investmentspb.GetDividendCalendarRequest();
+      if (date != null) {
+        request.startDate = date.toIso8601String().split('T').first;
+        request.endDate = date.add(const Duration(days: 7)).toIso8601String().split('T').first;
+      }
+
+      final response = await _investmentsClient.getDividendCalendar(
+        request,
+        options: channelManager.getCallOptions(),
+      );
+
+      return response.events.map((event) => StockModel(
+        symbol: event.symbol,
+        name: event.name,
+        currentPrice: 0,
+        previousClose: 0,
+        change: 0,
+        changePercent: 0,
+        dayHigh: 0,
+        dayLow: 0,
+        volume: 0,
+        marketCap: 0,
+        peRatio: 0,
+        dividendYield: event.yield,
+        sector: '',
+        industry: '',
+        logoUrl: '',
+        priceHistory: const [],
+        lastUpdated: DateTime.now(),
+        weekHigh52: 0,
+        weekLow52: 0,
+        avgVolume: 0,
+        beta: 0,
+        eps: event.amount,
+        description: 'Ex-date: ${event.exDate}, Payment: ${event.paymentDate}',
+        exchange: '',
+        currency: 'USD',
+      )).toList();
+    } on GrpcError catch (e) {
+      throw Exception('gRPC Error: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching dividend calendar via gRPC: $e');
+      rethrow;
+    }
   }
 
   // Helper conversion methods
+  StockAlertModel _convertPriceAlertToModel(investmentspb.PriceAlertInfo alert) {
+    return StockAlertModel(
+      id: alert.id,
+      symbol: alert.symbol,
+      type: AlertType.values.firstWhere(
+        (e) => e.toString().split('.').last == alert.alertType,
+        orElse: () => AlertType.price,
+      ),
+      condition: AlertCondition.values.firstWhere(
+        (e) => e.toString().split('.').last == alert.condition,
+        orElse: () => AlertCondition.above,
+      ),
+      targetValue: alert.targetValue,
+      message: alert.message.isNotEmpty ? alert.message : null,
+      isActive: alert.isActive,
+      createdAt: alert.createdAt.isNotEmpty
+          ? DateTime.tryParse(alert.createdAt) ?? DateTime.now()
+          : DateTime.now(),
+      triggeredAt: alert.triggeredAt.isNotEmpty
+          ? DateTime.tryParse(alert.triggeredAt)
+          : null,
+    );
+  }
+
   StockModel _convertStockMessageToModel(StockMessage msg) {
     return StockModel(
       symbol: msg.symbol,

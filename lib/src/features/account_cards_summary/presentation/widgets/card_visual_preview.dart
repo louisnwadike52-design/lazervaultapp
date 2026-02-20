@@ -86,11 +86,19 @@ class CardVisualPreview extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 4.h),
-                Row( 
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'JOHN DOE', // Placeholder
+                      // Get cardholder name from args, fallback to accountNumber if not available
+                      (accountArgs["cardHolderName"] as String? ??
+                       accountArgs["name"] as String? ??
+                       accountArgs["holderName"] as String? ??
+                       accountArgs["accountNumber"] as String).toUpperCase().substring(0,
+                         (accountArgs["cardHolderName"] as String? ??
+                          accountArgs["name"] as String? ??
+                          accountArgs["holderName"] as String? ??
+                          accountArgs["accountNumber"] as String).length > 13 ? 13 : null),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14.sp,
@@ -98,7 +106,10 @@ class CardVisualPreview extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '12/25', // Placeholder
+                      // Get expiry from args, fallback to default
+                      (accountArgs["expiry"] as String? ??
+                       accountArgs["expiryDate"] as String? ??
+                       '12/25'),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14.sp,

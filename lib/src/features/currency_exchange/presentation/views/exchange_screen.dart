@@ -439,6 +439,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
     final fromCode = controller.fromCurrency.value?.code ?? 'USD';
     final toCode = controller.toCurrency.value?.code ?? 'GBP';
     final fromSymbol = controller.fromCurrency.value?.symbol ?? '\$';
+    final showFee = controller.featureConfig.showServiceFee;
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -461,22 +462,33 @@ class _ExchangeScreenState extends State<ExchangeScreen>
             isLoading
                 ? 'Loading...'
                 : hasRate
-                    ? '1 $fromCode = ${controller.currentRate.value!.rate.toStringAsFixed(4)} $toCode'
+                    ? controller.currentRate.value!.formatForDisplay()
                     : '1 $fromCode = --- $toCode',
             Icons.sync_alt,
             isLoading: isLoading,
           ),
-          SizedBox(height: 12.h),
-          _buildInfoRow(
-            'Transfer Fee',
-            isLoading
-                ? 'Loading...'
-                : hasRate
-                    ? '$fromSymbol${controller.fees.toStringAsFixed(2)}'
-                    : '${fromSymbol}0.00',
-            Icons.receipt,
-            isLoading: isLoading,
-          ),
+          if (showFee) ...[
+            SizedBox(height: 12.h),
+            _buildInfoRow(
+              'Transfer Fee',
+              isLoading
+                  ? 'Loading...'
+                  : hasRate
+                      ? '$fromSymbol${controller.fees.toStringAsFixed(2)}'
+                      : '${fromSymbol}0.00',
+              Icons.receipt,
+              isLoading: isLoading,
+            ),
+          ] else ...[
+            SizedBox(height: 12.h),
+            _buildInfoRow(
+              'Service Fee',
+              'Free',
+              Icons.check_circle_outline,
+              isLoading: false,
+              valueColor: const Color(0xFF10B981),
+            ),
+          ],
           Divider(color: const Color(0xFF2D2D2D), height: 24.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -500,7 +512,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                     )
                   : Text(
                       hasRate
-                          ? '$fromSymbol${controller.totalCost.toStringAsFixed(2)}'
+                          ? '$fromSymbol${showFee ? controller.totalCost.toStringAsFixed(2) : controller.amount.value.toStringAsFixed(2)}'
                           : '${fromSymbol}0.00',
                       style: GoogleFonts.inter(
                         color: Colors.white,
@@ -515,7 +527,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
     );
   }
 
-  Widget _buildInfoRow(String label, String value, IconData icon, {bool isLoading = false}) {
+  Widget _buildInfoRow(String label, String value, IconData icon, {bool isLoading = false, Color? valueColor}) {
     return Row(
       children: [
         Icon(icon, color: const Color(0xFF3B82F6), size: 20.sp),
@@ -541,7 +553,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
             : Text(
                 value,
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: valueColor ?? Colors.white,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),

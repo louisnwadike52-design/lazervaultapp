@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/src/features/widgets/service_categories.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -26,54 +27,83 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/failed_t
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
 /// Maps category names from backend to display-friendly names.
-/// The backend now returns meaningful names (e.g., "P2P Transfers", "Gift Cards")
-/// but this function handles legacy/fallback values and raw service names.
-String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
-  // Backend display names (pass through as-is since they're already friendly)
-  'p2p transfers' || 'bank transfers' || 'international transfers' ||
-  'gift cards' || 'bills & utilities' ||
-  'service fees' || 'tagpay' || 'invoices' || 'investments' ||
-  'payroll' || 'crowdfunding' || 'deposits' || 'withdrawals' ||
-  'reversals' || 'transfers' || 'banking' || 'payments' ||
-  'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
+/// Uses ServiceCategories for service subcategory mappings where available.
+String _friendlyCategoryName(String raw, {String? serviceName}) {
+  // First try to find in ServiceCategories by subcategory name
+  final normalized = raw.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
+  final serviceCat = ServiceCategories.getBySubCategory(normalized);
+  if (serviceCat != null) {
+    return serviceCat.displayName;
+  }
 
-  // PiggyVault (Lock Funds) — savings product
-  'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'PiggyVault',
-  'autosave' => 'AutoSave',
-  'savings & products' => 'Savings & Products',
+  // Legacy mappings for backward compatibility
+  return switch (raw.toLowerCase()) {
+    'p2p transfers' || 'bank transfers' || 'international transfers' => raw,
+    'gift cards' || 'bills & utilities' => raw,
+    'service fees' || 'tagpay' || 'invoices' => raw,
+    'payroll' || 'crowdfunding' || 'deposits' || 'withdrawals' => raw,
+    'reversals' || 'transfers' || 'banking' || 'payments' => raw,
+    'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
 
-  // Legacy raw category values (from older transactions)
-  'transfer' || 'c2c_transfer' => 'P2P Transfers',
-  'domestic_transfer' => 'Bank Transfers',
-  'international_transfer' => 'International Transfers',
-  'deposit' => 'Deposits',
-  'withdrawal' => 'Withdrawals',
-  'fee' => 'Service Fees',
-  'reversal' => 'Reversals',
-  'payment' || 'invoice_payment' => 'Payments',
-  'tag-pay' => 'TagPay',
-  'invoice' => 'Invoices',
-  'giftcards' || 'gift-cards' || 'gift_card' => 'Gift Cards',
-  'airtime' || 'bill_payment' => 'Bills & Utilities',
-  'investment' || 'investments' => 'Investments',
+    'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'PiggyVault',
+    'autosave' => 'AutoSave',
+    'savings & products' => 'Savings & Products',
 
-  // Raw service names (fallback if somehow still passed through)
-  'core-payments-service' || 'core-payments' => 'Transfers',
-  'banking-service' => 'Banking',
-  'invoice-service' => 'Invoices',
-  'giftcards-service' => 'Gift Cards',
-  'utility-payments-service' => 'Bills & Utilities',
-  'tag-pay-service' => 'TagPay',
-  'financial-products-service' => 'Savings & Products',
-  'investments-service' => 'Investments',
-  'payroll-service' => 'Payroll',
-  'crowdfund-service' => 'Crowdfunding',
-  'accounts-service' => 'Other',
+    'transfer' || 'c2c_transfer' => 'P2P Transfers',
+    'domestic_transfer' => 'Bank Transfers',
+    'international_transfer' => 'International Transfers',
+    'deposit' => 'Deposits',
+    'withdrawal' => 'Withdrawals',
+    'fee' => 'Service Fees',
+    'reversal' => 'Reversals',
+    'payment' || 'invoice_payment' => 'Payments',
+    'tag-pay' => 'TagPay',
+    'invoice' => 'Invoices',
+    'giftcards' || 'gift-cards' || 'gift_card' => 'Gift Cards',
+    'airtime' => 'Airtime',
+    'bill_payment' => 'Bill Payments',
+    'investment' || 'investments' => 'Investments',
 
-  // Fallback: capitalize and clean up
-  _ => raw.replaceAll('-', ' ').replaceAll('_', ' ').split(' ').map((w) =>
-      w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
-};
+    'core-payments-service' || 'core-payments' => 'Transfers',
+    'banking-service' => 'Banking',
+    'invoice-service' => 'Invoices',
+    'giftcards-service' => 'Gift Cards',
+    'utility-payments-service' => 'Bills & Utilities',
+    'tag-pay-service' => 'TagPay',
+    'financial-products-service' => 'Savings & Products',
+    'investments-service' => 'Investments',
+    'payroll-service' => 'Payroll',
+    'crowdfund-service' => 'Crowdfunding',
+    'accounts-service' => 'Other',
+
+    _ => raw.replaceAll('-', ' ').replaceAll('_', ' ').split(' ').map((w) =>
+        w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
+  };
+}
+
+/// Get category color from service categories or fallback
+Color _getCategoryColor(String categoryName, {String? serviceName}) {
+  final normalized = categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
+  final serviceCat = ServiceCategories.getBySubCategory(normalized);
+  if (serviceCat != null) {
+    return serviceCat.color;
+  }
+
+  // Legacy colors
+  return switch (normalized) {
+    'p2p_transfers' || 'transfer' => const Color(0xFF4A90E2),
+    'bank_transfers' || 'domestic_transfer' => const Color(0xFFE2844A),
+    'international_transfers' => const Color(0xFF4AE28D),
+    'bills_&_utilities' || 'bill_payment' => const Color(0xFFE24A67),
+    'gift_cards' => const Color(0xFF9B4AE2),
+    'tagpay' => const Color(0xFFE2E24A),
+    'invoices' => const Color(0xFFE2E24A),
+    'investments' || 'investment' => const Color(0xFF4AE2D4),
+    'payroll' => const Color(0xFFE24ABB),
+    'crowdfunding' => const Color(0xFF4AE28D),
+    _ => const Color(0xFF6B7280),
+  };
+}
 
 class Statistics extends StatefulWidget {
   const Statistics({super.key});
@@ -85,15 +115,6 @@ class Statistics extends StatefulWidget {
 class _StatisticsState extends State<Statistics> {
   final List<String> timePeriods = ["Week", "Month", "Quarter", "Year"];
   String selectedPeriod = "Month";
-
-  final List<Color> categoryColors = [
-    const Color(0xFF4A90E2),
-    const Color(0xFFE2844A),
-    const Color(0xFF4AE28D),
-    const Color(0xFFE24A67),
-    const Color(0xFF9B4AE2),
-    const Color(0xFFE2E24A),
-  ];
 
   bool showIncome = true;
   bool _isSyncing = false;
@@ -141,7 +162,6 @@ class _StatisticsState extends State<Statistics> {
           // Continue syncing remaining accounts even if one fails
         }
       }
-      // Re-fetch to get updated data
       if (mounted) {
         await cubit.fetchLinkedAccounts(userId: _userId, accessToken: _accessToken);
       }
@@ -198,32 +218,47 @@ class _StatisticsState extends State<Statistics> {
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeader(),
                   SizedBox(height: 16.h),
+
+                  // ==================== OVERVIEW SECTION ====================
+                  _buildSectionHeader('Overview'),
+                  SizedBox(height: 12.h),
                   _buildQuickStats(state),
                   SizedBox(height: 12.h),
                   _buildPerformanceAlert(state),
                   SizedBox(height: 16.h),
+
+                  // ==================== INSIGHTS SECTION ====================
+                  _buildSectionHeader('Insights'),
+                  SizedBox(height: 12.h),
                   _buildFinancialHealthScore(state),
                   SizedBox(height: 12.h),
                   _buildCashFlowInsights(state),
                   SizedBox(height: 16.h),
+
+                  // ==================== QUICK ACTIONS SECTION ====================
+                  _buildSectionHeader('Quick Actions'),
+                  SizedBox(height: 12.h),
                   _buildFeatureGrid(state),
                   SizedBox(height: 16.h),
-                  _buildOpenBankingSection(),
-                  SizedBox(height: 16.h),
-                  _buildPeriodSelector(),
-                  SizedBox(height: 16.h),
+
+                  // ==================== ANALYTICS SECTION ====================
+                  _buildSectionHeader('Analytics', trailing: _buildPeriodSelector()),
+                  SizedBox(height: 12.h),
                   _buildSpendingChart(state),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 12.h),
                   _buildMonthlyTrendChart(state),
                   SizedBox(height: 16.h),
-                  _buildBudgetSection(),
+
+                  // ==================== CATEGORY BREAKDOWN SECTION ====================
+                  _buildCategoryAnalysisSection(state),
                   SizedBox(height: 16.h),
-                  _buildFailedTransactionsSection(state),
-                  _buildToggleSection(),
-                  showIncome ? _buildIncomeAnalysis(state) : _buildExpenseAnalysis(state),
+
+                  // ==================== MANAGEMENT SECTION ====================
+                  _buildManagementSection(state),
                   SizedBox(height: 100.h),
                 ],
               ),
@@ -231,6 +266,26 @@ class _StatisticsState extends State<Statistics> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSectionHeader(String title, {Widget? trailing}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (trailing != null) Expanded(child: trailing),
+        ],
+      ),
     );
   }
 
@@ -410,42 +465,22 @@ class _StatisticsState extends State<Statistics> {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(6.w),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Icon(Icons.analytics_outlined, color: Colors.white, size: 18.sp),
-                  ),
-                  SizedBox(width: 10.w),
-                  Text(
-                    'Financial Overview',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                padding: EdgeInsets.all(6.w),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20.r),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: Text(
-                  selectedPeriod,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Icon(Icons.analytics_outlined, color: Colors.white, size: 18.sp),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                'Financial Overview',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -511,28 +546,26 @@ class _StatisticsState extends State<Statistics> {
       }
     }
 
-    // Don't show if no income data
     if (totalIncome <= 0) return const SizedBox.shrink();
 
-    // Determine alert type
     String emoji;
     String message;
     Color borderColor;
 
     if (expenseChange > 20) {
-      emoji = '\u{1F534}'; // red circle
+      emoji = '\u{1F534}';
       message = 'Spending up ${expenseChange.toStringAsFixed(0)}% vs last period';
       borderColor = const Color(0xFFEF4444).withValues(alpha: 0.3);
     } else if (savingsRate >= 20) {
-      emoji = '\u{1F389}'; // party popper
+      emoji = '\u{1F389}';
       message = 'Great job! You\'re saving ${savingsRate.toStringAsFixed(0)}% this month';
       borderColor = const Color(0xFF10B981).withValues(alpha: 0.3);
     } else if (savingsRate >= 10) {
-      emoji = '\u{1F4AA}'; // flexed bicep
+      emoji = '\u{1F4AA}';
       message = 'Good progress \u2014 you saved ${savingsRate.toStringAsFixed(0)}% this month';
       borderColor = const Color(0xFF3B82F6).withValues(alpha: 0.3);
     } else {
-      emoji = '\u{26A0}\u{FE0F}'; // warning
+      emoji = '\u{26A0}\u{FE0F}';
       message = 'Heads up \u2014 only ${savingsRate.toStringAsFixed(0)}% saved this month';
       borderColor = const Color(0xFFFB923C).withValues(alpha: 0.3);
     }
@@ -545,10 +578,7 @@ class _StatisticsState extends State<Statistics> {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: borderColor,
-            width: 1,
-          ),
+          border: Border.all(color: borderColor, width: 1),
         ),
         child: Row(
           children: [
@@ -564,17 +594,9 @@ class _StatisticsState extends State<Statistics> {
                 ),
               ),
             ),
-            Icon(
-              Icons.auto_awesome,
-              color: const Color(0xFF8B5CF6),
-              size: 18.sp,
-            ),
+            Icon(Icons.auto_awesome, color: const Color(0xFF8B5CF6), size: 18.sp),
             SizedBox(width: 4.w),
-            Icon(
-              Icons.chevron_right,
-              color: const Color(0xFF9CA3AF),
-              size: 18.sp,
-            ),
+            Icon(Icons.chevron_right, color: const Color(0xFF9CA3AF), size: 18.sp),
           ],
         ),
       ),
@@ -591,7 +613,6 @@ class _StatisticsState extends State<Statistics> {
 
     final current = analytics.currentPeriod;
 
-    // Don't show if user has zero activity
     if (current.totalIncome <= 0 && current.totalExpenses <= 0) {
       return const SizedBox.shrink();
     }
@@ -607,15 +628,18 @@ class _StatisticsState extends State<Statistics> {
               .toList();
         }
 
-        return FinancialHealthScoreCard(
-          data: FinancialHealthData(
-            totalIncome: current.totalIncome,
-            totalExpenses: current.totalExpenses,
-            incomeChangePercent: analytics.incomeChangePercent,
-            expenseChangePercent: analytics.expenseChangePercent,
-            budgetItems: budgetItems,
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: FinancialHealthScoreCard(
+            data: FinancialHealthData(
+              totalIncome: current.totalIncome,
+              totalExpenses: current.totalExpenses,
+              incomeChangePercent: analytics.incomeChangePercent,
+              expenseChangePercent: analytics.expenseChangePercent,
+              budgetItems: budgetItems,
+            ),
+            onTap: () => Get.toNamed(AppRoutes.budgetAIInsights),
           ),
-          onTap: () => Get.toNamed(AppRoutes.budgetAIInsights),
         );
       },
     );
@@ -634,7 +658,6 @@ class _StatisticsState extends State<Statistics> {
       return const SizedBox.shrink();
     }
 
-    // Get daily average from expense time series (falls back to manual calculation)
     double dailyAverage = 0;
     if (state.expenseTimeSeries != null && state.expenseTimeSeries!.dailyAverage > 0) {
       dailyAverage = state.expenseTimeSeries!.dailyAverage;
@@ -643,7 +666,6 @@ class _StatisticsState extends State<Statistics> {
       dailyAverage = current.totalExpenses / elapsed;
     }
 
-    // Build top categories from expense breakdown
     List<({String name, double amount, double percentage})> topCategories = [];
     if (state.categoryAnalytics != null) {
       topCategories = state.categoryAnalytics!.expenseCategories
@@ -653,23 +675,25 @@ class _StatisticsState extends State<Statistics> {
                 percentage: c.percentage,
               ))
           .toList();
-      // Already sorted by amount desc from backend, just take top 3
       if (topCategories.length > 3) {
         topCategories = topCategories.sublist(0, 3);
       }
     }
 
-    return CashFlowInsightsCard(
-      data: CashFlowData(
-        totalIncome: current.totalIncome,
-        totalExpenses: current.totalExpenses,
-        dailyAverage: dailyAverage,
-        expenseChangePercent: analytics.expenseChangePercent,
-        period: state.currentPeriod,
-        periodStart: state.startDate,
-        periodEnd: state.endDate,
-        topCategories: topCategories,
-        transactionCount: current.transactionCount,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: CashFlowInsightsCard(
+        data: CashFlowData(
+          totalIncome: current.totalIncome,
+          totalExpenses: current.totalExpenses,
+          dailyAverage: dailyAverage,
+          expenseChangePercent: analytics.expenseChangePercent,
+          period: state.currentPeriod,
+          periodStart: state.startDate,
+          periodEnd: state.endDate,
+          topCategories: topCategories,
+          transactionCount: current.transactionCount,
+        ),
       ),
     );
   }
@@ -678,7 +702,7 @@ class _StatisticsState extends State<Statistics> {
     final features = [
       _FeatureItem(
         title: 'Budgets',
-        description: 'Manage your budgets',
+        description: 'Manage budgets',
         icon: Icons.account_balance_wallet,
         color: const Color(0xFF3B82F6),
         route: AppRoutes.budgetList,
@@ -692,7 +716,7 @@ class _StatisticsState extends State<Statistics> {
       ),
       _FeatureItem(
         title: 'Goals',
-        description: 'Track financial goals',
+        description: 'Track goals',
         icon: Icons.flag,
         color: const Color(0xFF10B981),
         route: AppRoutes.financialGoals,
@@ -703,13 +727,6 @@ class _StatisticsState extends State<Statistics> {
         icon: Icons.receipt_long,
         color: const Color(0xFFF59E0B),
         route: AppRoutes.recurringBills,
-      ),
-      _FeatureItem(
-        title: 'Reminders',
-        description: 'Budget alerts',
-        icon: Icons.notifications_active,
-        color: const Color(0xFFEF4444),
-        route: AppRoutes.budgetReminders,
       ),
       _FeatureItem(
         title: 'Spending',
@@ -724,14 +741,6 @@ class _StatisticsState extends State<Statistics> {
         icon: Icons.category,
         color: const Color(0xFF06B6D4),
         route: AppRoutes.categoryManagement,
-      ),
-      _FeatureItem(
-        title: 'Linked Banks',
-        description: 'Open banking',
-        icon: Icons.account_balance,
-        color: const Color(0xFF9B4AE2),
-        route: AppRoutes.openBankingConnect,
-        arguments: {'userId': _userId, 'accessToken': _accessToken},
       ),
     ];
 
@@ -752,157 +761,9 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildOpenBankingSection() {
-    return BlocBuilder<OpenBankingCubit, OpenBankingState>(
-      buildWhen: (prev, curr) =>
-          curr is LinkedAccountsLoaded ||
-          curr is OpenBankingInitial ||
-          curr is OpenBankingError,
-      builder: (context, state) {
-        final isConnected = state is LinkedAccountsLoaded && state.accounts.isNotEmpty;
-        final linkedAccounts = state is LinkedAccountsLoaded ? state.accounts : <LinkedBankAccount>[];
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          child: OpenBankingStatusCard(
-            isConnected: isConnected,
-            isSyncing: _isSyncing,
-            linkedAccounts: linkedAccounts,
-            onConnectBank: () => Get.toNamed(
-              AppRoutes.openBankingConnect,
-              arguments: {'userId': _userId, 'accessToken': _accessToken},
-            ),
-            onSync: () => _syncLinkedAccounts(linkedAccounts),
-            onViewAll: () => Get.toNamed(
-              AppRoutes.openBankingConnect,
-              arguments: {'userId': _userId, 'accessToken': _accessToken},
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBudgetSection() {
-    return BlocBuilder<BudgetCubit, BudgetState>(
-      buildWhen: (prev, curr) =>
-          curr is BudgetProgressLoaded ||
-          curr is BudgetInitial ||
-          curr is BudgetLoading,
-      builder: (context, state) {
-        if (state is BudgetInitial) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.read<BudgetCubit>().loadBudgetProgress();
-          });
-          return const SizedBox.shrink();
-        }
-
-        if (state is BudgetLoading) {
-          return Container(
-            margin: EdgeInsets.all(16.r),
-            height: 180.h,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(color: Color(0xFF10B981), strokeWidth: 2.5),
-                  SizedBox(height: 12.h),
-                  Text(
-                    'Loading budgets...',
-                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        if (state is BudgetProgressLoaded) {
-          final progressData = state;
-
-          return Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 3.w,
-                          height: 20.h,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981),
-                            borderRadius: BorderRadius.circular(2.r),
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Your Budgets',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () => Get.toNamed(AppRoutes.budgetList),
-                      child: Text(
-                        'See All',
-                        style: TextStyle(
-                          color: const Color(0xFF10B981),
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 12.h),
-              SizedBox(
-                height: 160.h,
-                child: progressData.items.isNotEmpty
-                    ? ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: 16.w),
-                        itemCount: progressData.items.length.clamp(0, 5),
-                        itemBuilder: (context, index) {
-                          final item = progressData.items[index];
-                          return _BudgetPreviewCard(
-                            name: item.budgetName.isNotEmpty ? item.budgetName : 'Budget ${index + 1}',
-                            spent: item.spentAmount,
-                            budget: item.budgetAmount,
-                            percentage: item.percentageUsed,
-                            onTap: () => Get.toNamed(AppRoutes.budgetList),
-                          );
-                        },
-                      )
-                    : _EmptyBudgetsCard(onTap: () => Get.toNamed(AppRoutes.createBudget)),
-              ),
-            ],
-          );
-        }
-
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
   Widget _buildPeriodSelector() {
-    return Container(
-      height: 40.h,
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
+    return SizedBox(
+      height: 32.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: timePeriods.length,
@@ -916,29 +777,20 @@ class _StatisticsState extends State<Statistics> {
                   );
             },
             child: Container(
-              margin: EdgeInsets.only(right: 12.w),
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              margin: EdgeInsets.only(right: 8.w),
+              padding: EdgeInsets.symmetric(horizontal: 14.w),
               decoration: BoxDecoration(
                 color: isSelected
                     ? const Color(0xFF10B981)
                     : const Color(0xFF2D2D3F),
-                borderRadius: BorderRadius.circular(20.r),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
+                borderRadius: BorderRadius.circular(16.r),
               ),
               alignment: Alignment.center,
               child: Text(
                 timePeriods[index],
                 style: TextStyle(
                   color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
-                  fontSize: 14.sp,
+                  fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
@@ -965,8 +817,8 @@ class _StatisticsState extends State<Statistics> {
       return GestureDetector(
         onTap: () => Get.toNamed(AppRoutes.statisticsSpendingDetail),
         child: Container(
-          height: 200.h,
-          margin: EdgeInsets.all(16.r),
+          height: 180.h,
+          margin: EdgeInsets.symmetric(horizontal: 16.w),
           padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -1008,7 +860,7 @@ class _StatisticsState extends State<Statistics> {
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.statisticsSpendingDetail),
       child: Container(
-        margin: EdgeInsets.all(16.r),
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -1017,45 +869,25 @@ class _StatisticsState extends State<Statistics> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Column(
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 3.w,
-                      height: 20.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
-                        borderRadius: BorderRadius.circular(2.r),
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Spending Overview',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Spending Overview',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   'See Details',
                   style: TextStyle(
                     color: const Color(0xFF10B981),
-                    fontSize: 14.sp,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1063,7 +895,7 @@ class _StatisticsState extends State<Statistics> {
             ),
             SizedBox(height: 16.h),
             SizedBox(
-              height: 140.h,
+              height: 120.h,
               child: LineChart(
                 LineChartData(
                   gridData: FlGridData(show: false),
@@ -1111,8 +943,8 @@ class _StatisticsState extends State<Statistics> {
       return GestureDetector(
         onTap: () => Get.toNamed(AppRoutes.statisticsMonthlyTrends),
         child: Container(
-          height: 280.h,
-          margin: EdgeInsets.all(16.r),
+          height: 200.h,
+          margin: EdgeInsets.symmetric(horizontal: 16.w),
           padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -1160,8 +992,8 @@ class _StatisticsState extends State<Statistics> {
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.statisticsMonthlyTrends),
       child: Container(
-        height: 300.h,
-        margin: EdgeInsets.all(16.r),
+        height: 240.h,
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -1170,39 +1002,32 @@ class _StatisticsState extends State<Statistics> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 3.w,
-                  height: 20.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981),
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
-                ),
-                SizedBox(width: 8.w),
                 Text(
                   'Monthly Trends',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18.sp,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'See Details',
+                  style: TextStyle(
+                    color: const Color(0xFF10B981),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
             Expanded(
               child: BarChart(
                 BarChartData(
@@ -1221,7 +1046,7 @@ class _StatisticsState extends State<Statistics> {
                           }
                           return Text(
                             monthlyPoints[index].monthLabel,
-                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp),
                           );
                         },
                         reservedSize: 28,
@@ -1230,13 +1055,18 @@ class _StatisticsState extends State<Statistics> {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
+                        reservedSize: 40,
                         getTitlesWidget: (value, meta) {
+                          final compactValue = value >= 1000000
+                              ? '${(value / 1000000).toStringAsFixed(1)}M'
+                              : value >= 1000
+                                  ? '${(value / 1000).toStringAsFixed(0)}K'
+                                  : '${value.toInt()}';
                           return Text(
-                            '${CurrencySymbols.currentSymbol}${value.toInt()}',
-                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                            compactValue,
+                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 10.sp),
                           );
                         },
-                        reservedSize: 40,
                       ),
                     ),
                     topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -1262,13 +1092,13 @@ class _StatisticsState extends State<Statistics> {
                         BarChartRodData(
                           toY: monthlyPoints[index].income,
                           color: Colors.green[300],
-                          width: 12.w,
+                          width: 10.w,
                           borderRadius: BorderRadius.circular(2.r),
                         ),
                         BarChartRodData(
                           toY: monthlyPoints[index].expenses,
                           color: Colors.red[300],
-                          width: 12.w,
+                          width: 10.w,
                           borderRadius: BorderRadius.circular(2.r),
                         ),
                       ],
@@ -1292,6 +1122,87 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
+  Widget _buildCategoryAnalysisSection(StatisticsState state) {
+    if (state is! StatisticsLoaded) {
+      return const SizedBox.shrink();
+    }
+
+    final catAnalytics = state.categoryAnalytics;
+    final hasIncome = catAnalytics != null && catAnalytics.incomeCategories.isNotEmpty;
+    final hasExpense = catAnalytics != null && catAnalytics.expenseCategories.isNotEmpty;
+
+    if (!hasIncome && !hasExpense) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Category Breakdown'),
+        SizedBox(height: 12.h),
+        _buildToggleSection(),
+        SizedBox(height: 12.h),
+        showIncome && hasIncome
+            ? _buildIncomeAnalysis(state)
+            : (!showIncome && hasExpense ? _buildExpenseAnalysis(state) : const SizedBox.shrink()),
+      ],
+    );
+  }
+
+  Widget _buildManagementSection(StatisticsState state) {
+    // Only show management items if they have content
+    final hasFailedTransactions = state is StatisticsLoaded &&
+        state.failedTransactions != null &&
+        state.failedTransactions!.transactions.isNotEmpty;
+
+    final hasLinkedAccounts = context.read<OpenBankingCubit>().state is LinkedAccountsLoaded &&
+        (context.read<OpenBankingCubit>().state as LinkedAccountsLoaded).accounts.isNotEmpty;
+
+    if (!hasFailedTransactions && !hasLinkedAccounts) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Management'),
+        SizedBox(height: 12.h),
+        if (hasLinkedAccounts) _buildOpenBankingSection(),
+        if (hasFailedTransactions) _buildFailedTransactionsSection(state),
+      ],
+    );
+  }
+
+  Widget _buildOpenBankingSection() {
+    return BlocBuilder<OpenBankingCubit, OpenBankingState>(
+      buildWhen: (prev, curr) =>
+          curr is LinkedAccountsLoaded ||
+          curr is OpenBankingInitial ||
+          curr is OpenBankingError,
+      builder: (context, state) {
+        final isConnected = state is LinkedAccountsLoaded && state.accounts.isNotEmpty;
+        final linkedAccounts = state is LinkedAccountsLoaded ? state.accounts : <LinkedBankAccount>[];
+        return Padding(
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: OpenBankingStatusCard(
+            isConnected: isConnected,
+            isSyncing: _isSyncing,
+            linkedAccounts: linkedAccounts,
+            onConnectBank: () => Get.toNamed(
+              AppRoutes.openBankingConnect,
+              arguments: {'userId': _userId, 'accessToken': _accessToken},
+            ),
+            onSync: () => _syncLinkedAccounts(linkedAccounts),
+            onViewAll: () => Get.toNamed(
+              AppRoutes.openBankingConnect,
+              arguments: {'userId': _userId, 'accessToken': _accessToken},
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildFailedTransactionsSection(StatisticsState state) {
     if (state is! StatisticsLoaded || state.failedTransactions == null) {
       return const SizedBox.shrink();
@@ -1299,12 +1210,7 @@ class _StatisticsState extends State<Statistics> {
     final transactions = state.failedTransactions!.transactions;
     if (transactions.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      children: [
-        FailedTransactionsCard(transactions: transactions),
-        SizedBox(height: 16.h),
-      ],
-    );
+    return FailedTransactionsCard(transactions: transactions);
   }
 
   Widget _buildToggleSection() {
@@ -1316,61 +1222,43 @@ class _StatisticsState extends State<Statistics> {
             child: GestureDetector(
               onTap: () => setState(() => showIncome = true),
               child: Container(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
+                padding: EdgeInsets.symmetric(vertical: 10.h),
                 decoration: BoxDecoration(
                   color: showIncome
                       ? const Color(0xFF10B981)
                       : const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: showIncome
-                      ? [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
                   'Income',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16.sp,
+                    fontSize: 14.sp,
                     fontWeight: showIncome ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: GestureDetector(
               onTap: () => setState(() => showIncome = false),
               child: Container(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
+                padding: EdgeInsets.symmetric(vertical: 10.h),
                 decoration: BoxDecoration(
                   color: !showIncome
                       ? const Color(0xFF10B981)
                       : const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: !showIncome
-                      ? [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
                   'Expenses',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16.sp,
+                    fontSize: 14.sp,
                     fontWeight: !showIncome ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
@@ -1392,40 +1280,7 @@ class _StatisticsState extends State<Statistics> {
       return _buildIncomeCategoryAnalytics(catAnalytics);
     }
 
-    return Container(
-      margin: EdgeInsets.all(16.r),
-      padding: EdgeInsets.all(24.r),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(Icons.trending_up, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 28.r),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'No income data available',
-            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'Income will appear after transactions',
-            style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildIncomeCategoryAnalytics(accounts_pb.GetCategoryAnalyticsResponse catAnalytics) {
@@ -1438,7 +1293,7 @@ class _StatisticsState extends State<Statistics> {
         arguments: {'type': 'income'},
       ),
       child: Container(
-        margin: EdgeInsets.all(16.r),
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -1447,13 +1302,6 @@ class _StatisticsState extends State<Statistics> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1461,38 +1309,25 @@ class _StatisticsState extends State<Statistics> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 3.w,
-                      height: 20.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
-                        borderRadius: BorderRadius.circular(2.r),
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Income Breakdown',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Income Breakdown',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   CurrencySymbols.formatAmount(totalIncome),
                   style: TextStyle(
                     color: Colors.green[300],
-                    fontSize: 16.sp,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
             AspectRatio(
               aspectRatio: 1.3,
               child: PieChart(
@@ -1503,17 +1338,13 @@ class _StatisticsState extends State<Statistics> {
                 ),
               ),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
             Column(
-              children: categories.asMap().entries.map((entry) {
-                final index = entry.key;
-                final cat = entry.value;
-                return _ExpandableCategoryItem(
+              children: categories.map((cat) {
+                return _CategoryItem(
                   categoryName: cat.categoryName,
                   amount: cat.amount,
                   total: totalIncome,
-                  color: categoryColors[index % categoryColors.length],
-                  subCategories: cat.subCategories,
                 );
               }).toList(),
             ),
@@ -1539,7 +1370,7 @@ class _StatisticsState extends State<Statistics> {
           arguments: {'type': 'expense'},
         ),
         child: Container(
-          margin: EdgeInsets.all(16.r),
+          margin: EdgeInsets.symmetric(horizontal: 16.w),
           padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -1548,13 +1379,6 @@ class _StatisticsState extends State<Statistics> {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1562,38 +1386,25 @@ class _StatisticsState extends State<Statistics> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 3.w,
-                        height: 20.h,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(2.r),
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'Expense Analysis',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Expense Breakdown',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     CurrencySymbols.formatAmount(totalExpenses),
                     style: TextStyle(
                       color: Colors.red[300],
-                      fontSize: 16.sp,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 16.h),
               if (categories.isNotEmpty)
                 AspectRatio(
                   aspectRatio: 1.3,
@@ -1605,17 +1416,13 @@ class _StatisticsState extends State<Statistics> {
                     ),
                   ),
                 ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 16.h),
               Column(
-                children: categories.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final cat = entry.value;
-                  return _ExpandableCategoryItem(
+                children: categories.map((cat) {
+                  return _CategoryItem(
                     categoryName: cat.categoryName,
                     amount: cat.amount,
                     total: totalExpenses,
-                    color: categoryColors[index % categoryColors.length],
-                    subCategories: cat.subCategories,
                   );
                 }).toList(),
               ),
@@ -1625,40 +1432,7 @@ class _StatisticsState extends State<Statistics> {
       );
     }
 
-    return Container(
-      margin: EdgeInsets.all(16.r),
-      padding: EdgeInsets.all(24.r),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(Icons.trending_down, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 28.r),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'No expense analysis data available',
-            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'Expenses will appear after transactions',
-            style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   List<PieChartSectionData> _generateCategoryBreakdownSections(
@@ -1668,13 +1442,14 @@ class _StatisticsState extends State<Statistics> {
     if (total == 0 || categories.isEmpty) return [];
 
     return categories.asMap().entries.map((entry) {
-      final index = entry.key;
       final cat = entry.value;
       final percentage = cat.percentage > 0
           ? cat.percentage.roundToDouble()
           : (cat.amount / total * 100).roundToDouble();
+      // Use service category color if available, otherwise fallback to default colors
+      final categoryColor = _getCategoryColor(cat.categoryName);
       return PieChartSectionData(
-        color: categoryColors[index % categoryColors.length],
+        color: categoryColor,
         value: cat.amount,
         title: '$percentage%',
         radius: 50,
@@ -1712,7 +1487,6 @@ class _StatisticsState extends State<Statistics> {
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
         children: [
-          // Header shimmer
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
             child: Row(
@@ -1737,7 +1511,6 @@ class _StatisticsState extends State<Statistics> {
               ],
             ),
           ),
-          // Quick stats shimmer
           Container(
             height: 160.h,
             margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -1754,7 +1527,6 @@ class _StatisticsState extends State<Statistics> {
             ),
           ),
           SizedBox(height: 16.h),
-          // Feature grid shimmer
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: GridView.builder(
@@ -1776,8 +1548,7 @@ class _StatisticsState extends State<Statistics> {
             ),
           ),
           SizedBox(height: 16.h),
-          // Chart shimmer blocks
-          ...[200.0, 300.0, 160.0].map((h) => Container(
+          ...[180.0, 240.0, 160.0].map((h) => Container(
                 height: h.h,
                 margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
@@ -1791,10 +1562,12 @@ class _StatisticsState extends State<Statistics> {
   }
 }
 
+// ==================== WIDGET CLASSES ====================
+
 class _FeatureCard extends StatelessWidget {
   final _FeatureItem feature;
 
-  const _FeatureCard({required this.feature, super.key});
+  const _FeatureCard({required this.feature});
 
   @override
   Widget build(BuildContext context) {
@@ -1881,7 +1654,6 @@ class _QuickStatCard extends StatelessWidget {
     required this.color,
     required this.trend,
     this.isPositive = true,
-    super.key,
   });
 
   @override
@@ -1943,319 +1715,82 @@ class _QuickStatCard extends StatelessWidget {
   }
 }
 
-class _BudgetPreviewCard extends StatelessWidget {
-  final String name;
-  final double spent;
-  final double budget;
-  final double percentage;
-  final VoidCallback onTap;
-
-  const _BudgetPreviewCard({
-    required this.name,
-    required this.spent,
-    required this.budget,
-    required this.percentage,
-    required this.onTap,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isOverBudget = percentage >= 90;
-    final progressColor = isOverBudget
-        ? const Color(0xFFEF4444)
-        : percentage >= 70
-            ? const Color(0xFFF59E0B)
-            : const Color(0xFF10B981);
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 140.w,
-        margin: EdgeInsets.only(right: 12.w),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: progressColor.withValues(alpha: 0.1),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              name,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            Text(
-              CurrencySymbols.formatAmount(spent),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              'of ${CurrencySymbols.formatAmount(budget)}',
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 12.sp,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            LinearProgressIndicator(
-              value: percentage.clamp(0, 100) / 100,
-              backgroundColor: const Color(0xFF2D2D2D),
-              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-              minHeight: 6.h,
-              borderRadius: BorderRadius.circular(3.r),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              '${percentage.toStringAsFixed(0)}% used',
-              style: TextStyle(
-                color: progressColor,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyBudgetsCard extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _EmptyBudgetsCard({required this.onTap, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 140.w,
-        margin: EdgeInsets.only(right: 12.w),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add_circle_outline,
-              color: const Color(0xFF10B981),
-              size: 32.sp,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Create Budget',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              'Get Started',
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 11.sp,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ExpandableCategoryItem extends StatefulWidget {
+class _CategoryItem extends StatelessWidget {
   final String categoryName;
   final double amount;
   final double total;
-  final Color color;
-  final List<accounts_pb.SubCategoryItem> subCategories;
 
-  const _ExpandableCategoryItem({
+  const _CategoryItem({
     required this.categoryName,
     required this.amount,
     required this.total,
-    required this.color,
-    required this.subCategories,
   });
 
   @override
-  State<_ExpandableCategoryItem> createState() => _ExpandableCategoryItemState();
-}
-
-class _ExpandableCategoryItemState extends State<_ExpandableCategoryItem> {
-  bool _expanded = false;
-
-  @override
   Widget build(BuildContext context) {
-    final safeTotal = widget.total > 0 ? widget.total : 1.0;
-    final percentage = (widget.amount / safeTotal * 100).toStringAsFixed(1);
-    final displayName = _friendlyCategoryName(widget.categoryName);
-    final hasSubCategories = widget.subCategories.isNotEmpty;
+    final safeTotal = total > 0 ? total : 1.0;
+    final percentage = (amount / safeTotal * 100).toStringAsFixed(1);
+    final displayName = _friendlyCategoryName(categoryName);
+    final categoryColor = _getCategoryColor(categoryName);
+    final categoryIcon = ServiceCategories.getIcon(categoryName);
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: EdgeInsets.only(bottom: 10.h),
       child: Column(
         children: [
-          // Main category row
-          GestureDetector(
-            onTap: hasSubCategories ? () => setState(() => _expanded = !_expanded) : null,
-            behavior: HitTestBehavior.opaque,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 12.w,
-                        height: 12.w,
-                        decoration: BoxDecoration(
-                          color: widget.color,
-                          shape: BoxShape.circle,
-                        ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28.w,
+                      height: 28.w,
+                      decoration: BoxDecoration(
+                        color: categoryColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6.r),
                       ),
-                      SizedBox(width: 8.w),
-                      Flexible(
-                        child: Text(
-                          displayName,
-                          style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 14.sp),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      child: Icon(
+                        categoryIcon,
+                        color: categoryColor,
+                        size: 16.sp,
                       ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        '$percentage%',
-                        style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                    ),
+                    SizedBox(width: 10.w),
+                    Flexible(
+                      child: Text(
+                        displayName,
+                        style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 13.sp),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (hasSubCategories) ...[
-                        SizedBox(width: 4.w),
-                        Icon(
-                          _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                          color: const Color(0xFF9CA3AF),
-                          size: 16.sp,
-                        ),
-                      ],
-                    ],
-                  ),
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      '$percentage%',
+                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                    ),
+                  ],
                 ),
-                Text(
-                  CurrencySymbols.formatAmount(widget.amount),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              Text(
+                CurrencySymbols.formatAmount(amount),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 6.h),
           LinearProgressIndicator(
-            value: (widget.amount / safeTotal).clamp(0.0, 1.0),
+            value: (amount / safeTotal).clamp(0.0, 1.0),
             backgroundColor: Colors.white10,
-            valueColor: AlwaysStoppedAnimation<Color>(widget.color),
-            minHeight: 4.h,
+            valueColor: AlwaysStoppedAnimation<Color>(categoryColor),
+            minHeight: 3.h,
             borderRadius: BorderRadius.circular(2.r),
           ),
-          // Expanded sub-categories
-          if (_expanded && hasSubCategories)
-            Container(
-              margin: EdgeInsets.only(top: 8.h),
-              padding: EdgeInsets.only(left: 20.w),
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: widget.color.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-              ),
-              child: Column(
-                children: widget.subCategories.map((sub) {
-                  final subPct = widget.amount > 0
-                      ? (sub.amount / widget.amount * 100).toStringAsFixed(1)
-                      : '0.0';
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 6.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 6.w,
-                                height: 6.w,
-                                decoration: BoxDecoration(
-                                  color: widget.color.withValues(alpha: 0.6),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              SizedBox(width: 8.w),
-                              Flexible(
-                                child: Text(
-                                  sub.name,
-                                  style: TextStyle(
-                                    color: const Color(0xFF9CA3AF),
-                                    fontSize: 12.sp,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              SizedBox(width: 6.w),
-                              Text(
-                                '$subPct%',
-                                style: TextStyle(
-                                  color: const Color(0xFF6B7280),
-                                  fontSize: 11.sp,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          CurrencySymbols.formatAmount(sub.amount),
-                          style: TextStyle(
-                            color: const Color(0xFFD1D5DB),
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
         ],
       ),
     );

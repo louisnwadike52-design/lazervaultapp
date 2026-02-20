@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
+import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_state.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
@@ -18,6 +23,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late PortfolioCubit _portfolioCubit;
 
   final List<InvestmentOption> investmentOptions = [
     InvestmentOption(
@@ -37,7 +43,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       description: 'Diversified portfolios with lower risk',
       icon: Icons.pie_chart,
       color: const Color(0xFF2196F3),
-      route: null, // Will be implemented later
+      route: null, // Coming soon
       isPopular: false,
       expectedReturn: '6-10%',
       riskLevel: 'Low-Medium',
@@ -48,7 +54,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       description: 'Let experts manage your investments',
       icon: Icons.account_balance,
       color: const Color(0xFF9C27B0),
-      route: null, // Will be implemented later
+      route: null, // Coming soon
       isPopular: false,
       expectedReturn: '5-9%',
       riskLevel: 'Low',
@@ -59,21 +65,10 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       description: 'Stable returns with lower volatility',
       icon: Icons.security,
       color: const Color(0xFF607D8B),
-      route: null, // Will be implemented later
+      route: null, // Coming soon
       isPopular: false,
       expectedReturn: '3-6%',
       riskLevel: 'Low',
-    ),
-    InvestmentOption(
-      title: 'Crypto',
-      subtitle: 'Digital currencies',
-      description: 'Bitcoin, Ethereum and other cryptocurrencies',
-      icon: Icons.currency_bitcoin,
-      color: const Color(0xFFFF9800),
-      route: AppRoutes.crypto,
-      isPopular: true,
-      expectedReturn: '15-30%',
-      riskLevel: 'High',
     ),
     InvestmentOption(
       title: 'Real Estate',
@@ -81,7 +76,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       description: 'Invest in real estate through REITs',
       icon: Icons.home,
       color: const Color(0xFF795548),
-      route: null, // Will be implemented later
+      route: null, // Coming soon
       isPopular: false,
       expectedReturn: '7-11%',
       riskLevel: 'Medium',
@@ -105,18 +100,20 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
     _animationController.forward();
+    _portfolioCubit = serviceLocator<PortfolioCubit>()..loadSummary();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _portfolioCubit.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       body: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
@@ -158,8 +155,9 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
         icon: Container(
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2746),
-            borderRadius: BorderRadius.circular(12.r),            boxShadow: [
+            color: InvoiceThemeColors.secondaryBackground,
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 8,
@@ -169,7 +167,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           ),
           child: Icon(
             Icons.arrow_back,
-            color: Colors.white,
+            color: InvoiceThemeColors.textWhite,
             size: 20.sp,
           ),
         ),
@@ -177,11 +175,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       ),
       title: Text(
         'Investments',
-        style: GoogleFonts.inter(
-          fontSize: 20.sp,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
+        style: InvoiceTextStyles.header20,
       ),
       centerTitle: true,
       floating: true,
@@ -206,14 +200,14 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2196F3),
-            const Color(0xFF74B9FF),
+            InvoiceThemeColors.primaryPurple,
+            InvoiceThemeColors.alternativePurple,
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2196F3).withValues(alpha: 0.3),
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -243,35 +237,42 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                   children: [
                     Text(
                       'Start Your Investment Journey',
-                      style: GoogleFonts.inter(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: InvoiceTextStyles.header16,
                     ),
                     SizedBox(height: 4.h),
                     Text(
                       'Choose from various investment options',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.8),
-                      ),
+                      style: InvoiceTextStyles.small12,
                     ),
-                                    ServiceVoiceButton(
-                    serviceName: 'stocks',
-                  ),
-],
+                  ],
                 ),
+              ),
+              ServiceVoiceButton(
+                serviceName: 'stocks',
               ),
             ],
           ),
           SizedBox(height: 20.h),
-          Row(
-            children: [
-              _buildStatCard('Portfolio Value', '\$0', Icons.account_balance_wallet),
-              SizedBox(width: 12.w),
-              _buildStatCard('Total Return', '+\$0', Icons.trending_up),
-            ],
+          BlocBuilder<PortfolioCubit, PortfolioState>(
+            bloc: _portfolioCubit,
+            builder: (context, state) {
+              String portfolioValue = '--';
+              String totalReturn = '--';
+              if (state is PortfolioSummaryLoaded) {
+                portfolioValue = state.summary.formattedTotalValue;
+                totalReturn = state.summary.formattedGainLoss;
+              } else if (state is PortfolioLoaded) {
+                portfolioValue = state.portfolio.summary.formattedTotalValue;
+                totalReturn = state.portfolio.summary.formattedGainLoss;
+              }
+              return Row(
+                children: [
+                  _buildStatCard('Portfolio Value', portfolioValue, Icons.account_balance_wallet),
+                  SizedBox(width: 12.w),
+                  _buildStatCard('Total Return', totalReturn, Icons.trending_up),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -286,37 +287,29 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               icon,
-              color: Colors.white.withValues(alpha: 0.8),
+              color: InvoiceThemeColors.textWhite.withValues(alpha: 0.8),
               size: 16.sp,
             ),
             SizedBox(height: 8.h),
             Text(
               value,
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: InvoiceTextStyles.body14Medium,
             ),
             Text(
               title,
-              style: GoogleFonts.inter(
-                fontSize: 10.sp,
-                color: Colors.white.withValues(alpha: 0.7),
-              ),
+              style: InvoiceTextStyles.tiny10,
             ),
           ],
         ),
@@ -326,7 +319,11 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
 
   Widget _buildPopularSection() {
     final popularOptions = investmentOptions.where((option) => option.isPopular).toList();
-    
+
+    if (popularOptions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -340,11 +337,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             SizedBox(width: 8.w),
             Text(
               'Popular Investments',
-              style: GoogleFonts.inter(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: InvoiceTextStyles.header18,
             ),
           ],
         ),
@@ -378,7 +371,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
         ),
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2746),
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: option.color.withValues(alpha: 0.3),
@@ -419,11 +412,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                   ),
                   child: Text(
                     'Popular',
-                    style: GoogleFonts.inter(
-                      fontSize: 8.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.amber,
-                    ),
+                    style: InvoiceTextStyles.tiny10,
                   ),
                 ),
               ],
@@ -431,20 +420,13 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             SizedBox(height: 16.h),
             Text(
               option.title,
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: InvoiceTextStyles.header16,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             Text(
               option.subtitle,
-              style: GoogleFonts.inter(
-                fontSize: 11.sp,
-                color: Colors.white.withValues(alpha: 0.7),
-              ),
+              style: InvoiceTextStyles.small11,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -454,7 +436,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                 spacing: 4.w,
                 runSpacing: 4.h,
                 children: [
-                  _buildMetricChip(option.expectedReturn, Colors.green),
+                  _buildMetricChip(option.expectedReturn, InvoiceThemeColors.successGreen),
                   _buildMetricChip(option.riskLevel, _getRiskColor(option.riskLevel)),
                 ],
               ),
@@ -471,11 +453,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       children: [
         Text(
           'All Investment Options',
-          style: GoogleFonts.inter(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: InvoiceTextStyles.header18,
         ),
         SizedBox(height: 16.h),
         ListView.builder(
@@ -500,8 +478,9 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2746),
-          borderRadius: BorderRadius.circular(16.r),          boxShadow: [
+          color: InvoiceThemeColors.secondaryBackground,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
@@ -533,11 +512,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                       Expanded(
                         child: Text(
                           option.title,
-                          style: GoogleFonts.inter(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: InvoiceTextStyles.header16,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -550,24 +525,38 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                           size: 16.sp,
                         ),
                       ],
+                      if (option.route == null) ...[
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8.r),
+                            border: Border.all(
+                              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Text(
+                            'Coming Soon',
+                            style: InvoiceTextStyles.tiny10.copyWith(
+                              color: InvoiceThemeColors.primaryPurple,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   Text(
                     option.subtitle,
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
+                    style: InvoiceTextStyles.small12,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4.h),
                   Text(
                     option.description,
-                    style: GoogleFonts.inter(
-                      fontSize: 11.sp,
-                      color: Colors.white.withValues(alpha: 0.5),
-                    ),
+                    style: InvoiceTextStyles.small11,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -576,7 +565,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                     spacing: 8.w,
                     runSpacing: 4.h,
                     children: [
-                      _buildMetricChip('${option.expectedReturn} return', Colors.green),
+                      _buildMetricChip('${option.expectedReturn} return', InvoiceThemeColors.successGreen),
                       _buildMetricChip(option.riskLevel, _getRiskColor(option.riskLevel)),
                     ],
                   ),
@@ -585,7 +574,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withValues(alpha: 0.4),
+              color: InvoiceThemeColors.textGray600,
               size: 16.sp,
             ),
           ],
@@ -607,9 +596,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       ),
       child: Text(
         text,
-        style: GoogleFonts.inter(
-          fontSize: 9.sp,
-          fontWeight: FontWeight.w600,
+        style: InvoiceTextStyles.tiny10.copyWith(
           color: color,
         ),
         maxLines: 1,
@@ -621,15 +608,15 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
   Color _getRiskColor(String riskLevel) {
     switch (riskLevel.toLowerCase()) {
       case 'low':
-        return Colors.green;
+        return InvoiceThemeColors.successGreen;
       case 'low-medium':
         return Colors.lime;
       case 'medium':
-        return Colors.orange;
+        return InvoiceThemeColors.warningOrange;
       case 'high':
-        return Colors.red;
+        return InvoiceThemeColors.errorRed;
       default:
-        return Colors.grey;
+        return InvoiceThemeColors.textGray500;
     }
   }
 
@@ -644,59 +631,50 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           child: Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2746),
+              color: InvoiceThemeColors.secondaryBackground,
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.construction,
-                  color: Colors.orange,
+                  Icons.upcoming_outlined,
+                  color: InvoiceThemeColors.primaryPurple,
                   size: 48.sp,
                 ),
                 SizedBox(height: 16.h),
                 Text(
                   'Coming Soon',
-                  style: GoogleFonts.inter(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: InvoiceTextStyles.header20,
                 ),
                 SizedBox(height: 8.h),
                 Text(
                   '${option.title} investments will be available soon!',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
+                  style: InvoiceTextStyles.body14,
                 ),
                 SizedBox(height: 20.h),
-                ElevatedButton(
-                  onPressed: () => Get.back(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C5CE7),
-                    padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: InvoiceThemeColors.primaryPurple,
+                      padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Got it',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                    child: Text(
+                      'Got it',
+                      style: InvoiceTextStyles.button14,
                     ),
                   ),
                 ),

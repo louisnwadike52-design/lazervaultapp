@@ -103,6 +103,48 @@ class CardActionSuccess extends CardState {
   List<Object?> get props => [message];
 }
 
+/// Card PIN revealed state
+class CardPINRevealed extends CardState {
+  final String pin;
+
+  const CardPINRevealed(this.pin);
+
+  @override
+  List<Object?> get props => [pin];
+}
+
+/// Card full details revealed state (includes card number, CVV)
+class CardDetailsRevealed extends CardState {
+  final Card card;
+
+  const CardDetailsRevealed(this.card);
+
+  @override
+  List<Object?> get props => [card];
+}
+
+/// Card funded state
+class CardFunded extends CardState {
+  final Card card;
+  final double amount;
+
+  const CardFunded({required this.card, required this.amount});
+
+  @override
+  List<Object?> get props => [card, amount];
+}
+
+/// Card withdrawal state
+class CardWithdrawn extends CardState {
+  final Card card;
+  final double amount;
+
+  const CardWithdrawn({required this.card, required this.amount});
+
+  @override
+  List<Object?> get props => [card, amount];
+}
+
 /// Error state
 class CardError extends CardState {
   final String message;

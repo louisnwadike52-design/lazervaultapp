@@ -7,7 +7,7 @@ abstract class InvoiceRepository {
   Future<List<Invoice>> getInvoicesTaggedToUser(String userId);
   Future<List<Invoice>> getInvoicesByStatus(InvoiceStatus status);
   Future<Invoice?> getInvoiceById(String id);
-  Future<Invoice> createInvoice(Invoice invoice);
+  Future<Invoice> createInvoice(Invoice invoice, {String? serviceFeeRef});
   Future<Invoice> updateInvoice(Invoice invoice);
   Future<void> deleteInvoice(String id);
 
@@ -85,6 +85,21 @@ class InvoiceUser {
 }
 
 // Response model for tag users operation
+// Result from paying the invoice service fee
+class ServiceFeeResult {
+  final String serviceFeeRef;
+  final double newBalance;
+  final double feeAmount;
+  final String message;
+
+  ServiceFeeResult({
+    required this.serviceFeeRef,
+    required this.newBalance,
+    required this.feeAmount,
+    required this.message,
+  });
+}
+
 class TagUsersResponse {
   final bool success;
   final List<String> taggedUserIds;
