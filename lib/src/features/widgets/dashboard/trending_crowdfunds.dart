@@ -217,7 +217,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               setState(() => _isNavigating = true);
               Get.toNamed(
                 AppRoutes.crowdfundDetails,
-                arguments: {'crowdfundId': crowdfund.id},
+                arguments: crowdfund.id,
               )?.then((_) {
                 if (mounted) setState(() => _isNavigating = false);
               });

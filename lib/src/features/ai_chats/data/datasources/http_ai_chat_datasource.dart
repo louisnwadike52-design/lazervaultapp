@@ -86,6 +86,12 @@ class HttpAiChatDataSource implements IAiChatDataSource {
           options.headers['X-Currency'] = currency;
         }
 
+        // Add locale header (BCP 47 format, e.g. en-NG)
+        final locale = _localeManager?.currentLocale;
+        if (locale != null && locale.isNotEmpty) {
+          options.headers['X-Locale'] = locale;
+        }
+
         return handler.next(options);
       },
       onError: (error, handler) {
@@ -129,6 +135,7 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       final emojiUsage = prefs.getBool('ai_chat_settings_emoji_usage') ?? true;
 
       // Build request body matching Chat Agent Gateway's ChatMessage model
+      final locale = _localeManager?.currentLocale ?? 'en-NG';
       final requestBody = {
         'message': query,
         'session_id': sessionId ?? _generateSessionId(),
@@ -136,6 +143,7 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         'access_token': accessToken,
         'source_context': sourceContext ?? 'dashboard',
         'language': language ?? 'en',
+        'locale': locale,
         'account_id': accountId,
         'user_country': country,
         'currency': currency,
@@ -176,12 +184,18 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       final effectiveSessionId = sessionId ?? '';
       final token = await _secureStorageService.getAccessToken() ?? '';
 
+      final activeLocale = _localeManager?.currentLocale ?? '';
       final queryParams = <String, dynamic>{
         'user_id': userId,
         'access_token': token,
         'limit': 50,
         'offset': 0,
       };
+
+      // Filter history by active locale
+      if (activeLocale.isNotEmpty) {
+        queryParams['locale'] = activeLocale;
+      }
 
       // Only include session_id if provided (backend treats empty as "all")
       if (effectiveSessionId.isNotEmpty) {

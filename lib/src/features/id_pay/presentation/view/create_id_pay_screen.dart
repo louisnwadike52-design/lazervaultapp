@@ -3,9 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../../domain/entities/id_pay_entity.dart';
+import '../../domain/entities/id_pay_organization_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 
@@ -35,6 +41,11 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
   String _selectedCurrency = 'NGN';
   final TextEditingController _customExpiryController = TextEditingController();
 
+  // Organization (for business accounts)
+  List<IDPayOrganizationEntity> _organizations = [];
+  String? _selectedOrganizationId;
+  bool _isBusinessAccount = false;
+
   static const Map<String, int> _expiryOptions = {
     '15min': 15,
     '1hr': 60,
@@ -46,6 +57,34 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
   };
 
   static const List<String> _currencies = ['NGN', 'USD', 'GBP', 'EUR'];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBusinessAccountAndLoadOrgs();
+  }
+
+  void _checkBusinessAccountAndLoadOrgs() {
+    final activeId = GetIt.I<AccountManager>().activeAccountId;
+    if (activeId == null) return;
+    try {
+      final cubitState = context.read<AccountCardsSummaryCubit>().state;
+      if (cubitState is AccountCardsSummaryLoaded) {
+        final activeAccount = cubitState.accountSummaries.firstWhere(
+          (a) => a.id == activeId,
+          orElse: () => cubitState.accountSummaries.first,
+        );
+        if (activeAccount.accountTypeEnum == VirtualAccountType.business) {
+          _isBusinessAccount = true;
+          context.read<IDPayCubit>().loadOrganizationsQuietly(
+            accountId: activeId,
+          ).then((orgs) {
+            if (mounted) setState(() => _organizations = orgs);
+          });
+        }
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -112,6 +151,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           : null,
       validityMinutes: _validityMinutes,
       neverExpires: _neverExpires,
+      organizationId: _selectedOrganizationId,
     );
   }
 
@@ -718,6 +758,73 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               ),
             ),
           ),
+          if (_isBusinessAccount && _organizations.isNotEmpty) ...[
+            SizedBox(height: 20.h),
+            Text(
+              'Organization (optional)',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String?>(
+                  value: _selectedOrganizationId,
+                  isExpanded: true,
+                  dropdownColor: const Color(0xFF1F1F1F),
+                  hint: Text(
+                    'No organization',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 15.sp,
+                    ),
+                  ),
+                  icon: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: const Color(0xFF9CA3AF),
+                    size: 20.sp,
+                  ),
+                  items: [
+                    DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text(
+                        'No organization',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    ..._organizations.map((org) {
+                      return DropdownMenuItem<String?>(
+                        value: org.id,
+                        child: Text(
+                          org.name,
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                  onChanged: (value) {
+                    setState(() => _selectedOrganizationId = value);
+                  },
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -798,6 +905,16 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                   SizedBox(height: 16.h),
                   _buildReviewRow(
                       'Description', _descriptionController.text.trim()),
+                ],
+                if (_selectedOrganizationId != null) ...[
+                  SizedBox(height: 16.h),
+                  _buildReviewRow(
+                    'Organization',
+                    _organizations
+                        .where((o) => o.id == _selectedOrganizationId)
+                        .map((o) => o.name)
+                        .firstOrNull ?? 'Unknown',
+                  ),
                 ],
               ],
             ),

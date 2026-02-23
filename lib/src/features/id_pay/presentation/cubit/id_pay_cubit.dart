@@ -295,6 +295,25 @@ class IDPayCubit extends Cubit<IDPayState> {
     );
   }
 
+  /// Load organizations without emitting loading state.
+  /// Used for populating dropdowns without disrupting the main UI flow.
+  Future<List<IDPayOrganizationEntity>> loadOrganizationsQuietly({
+    required String accountId,
+  }) async {
+    final result = await repository.getMyOrganizations(
+      accountId: accountId,
+      limit: 100,
+      offset: 0,
+    );
+    return result.fold(
+      (_) => <IDPayOrganizationEntity>[],
+      (data) {
+        _cachedOrganizations = data.$1;
+        return data.$1;
+      },
+    );
+  }
+
   void reset() {
     if (isClosed) return;
     emit(IDPayInitial());

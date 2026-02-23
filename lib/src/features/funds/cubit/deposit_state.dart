@@ -26,6 +26,44 @@ class DepositFailure extends DepositState {
   List<Object?> get props => [message, statusCode];
 }
 
+/// Emitted when deposit requires user to complete payment on a hosted page (Flutterwave Standard)
+class DepositRequiresAuthorization extends DepositState {
+  final String paymentUrl;
+  final String depositId;
+  final String provider;
+  const DepositRequiresAuthorization({
+    required this.paymentUrl,
+    required this.depositId,
+    required this.provider,
+  });
+  @override
+  List<Object?> get props => [paymentUrl, depositId, provider];
+}
+
+/// Emitted when a simulated test deposit succeeds instantly
+class SimulateDepositSuccess extends DepositState {
+  final DepositDetails depositDetails;
+  const SimulateDepositSuccess(this.depositDetails);
+  @override
+  List<Object?> get props => [depositDetails];
+}
+
+/// Emitted when deposit methods are loaded for a country
+class DepositMethodsLoaded extends DepositState {
+  final List<DepositMethodInfo> methods;
+  final String countryCode;
+  final String currency;
+  final String provider;
+  const DepositMethodsLoaded({
+    required this.methods,
+    required this.countryCode,
+    required this.currency,
+    required this.provider,
+  });
+  @override
+  List<Object?> get props => [methods, countryCode, currency, provider];
+}
+
 class DepositWebSocketCompleted extends DepositState {
   final String reference;
   final String status;

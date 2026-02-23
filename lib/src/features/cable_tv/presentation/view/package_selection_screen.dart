@@ -26,7 +26,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
     super.initState();
     final args = Get.arguments as Map<String, dynamic>;
     final provider = args['provider'] as CableTVProviderEntity;
-    context.read<CableTVCubit>().getPackages(providerId: provider.id);
+    context.read<CableTVCubit>().getPackages(providerId: provider.serviceId);
   }
 
   @override
@@ -147,7 +147,7 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                     }
 
                     if (state is CableTVError) {
-                      return _buildErrorState(state.message, provider.id);
+                      return _buildErrorState(state.message, provider.serviceId);
                     }
 
                     if (state is TVPackagesLoaded) {

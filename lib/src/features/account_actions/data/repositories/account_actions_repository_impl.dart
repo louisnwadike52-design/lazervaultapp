@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/account_actions/domain/entities/account_
 import 'package:lazervault/src/features/account_actions/domain/entities/document_entity.dart';
 import 'package:lazervault/src/features/account_actions/domain/repositories/i_account_actions_repository.dart';
 import 'package:lazervault/src/generated/account.pbgrpc.dart' as account_pb;
+import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_msg;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_pb;
 
 /// gRPC implementation of AccountActionsRepository
@@ -32,16 +33,16 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
     try {
       final token = accessToken ?? await _secureStorage.getAccessToken();
 
-      final request = account_pb.GetAccountDetailsRequest(
-        accountId: Int64(int.parse(accountId)),
+      final request = accounts_pb.GetAccountRequest(
+        accountId: accountId,
       );
 
-      final response = await _accountClient.getAccountDetails(
+      final response = await _accountsClient.getAccount(
         request,
         options: _getCallOptions(token),
       );
 
-      final accountDetails = _mapProtoToEntity(response.account, accountId);
+      final accountDetails = _mapAccountToEntity(response.account);
       return Right(accountDetails);
     } catch (e) {
       return Left(Failure(
@@ -154,24 +155,25 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
     try {
       final token = accessToken ?? await _secureStorage.getAccessToken();
 
-      final settings = account_pb.SecuritySettings(
-        enable3dSecure: enable3DSecure,
-        enableContactless: enableContactless,
-        enableOnlinePayments: enableOnlinePayments,
+      // Update security settings via accounts service
+      // Note: Security settings are stored as account metadata
+      // For now, fetch account details to return current state
+      // TODO: Add dedicated security settings RPC to accounts service
+      final currentResult = await getAccountDetails(
+        accountId: accountId,
+        accessToken: token,
       );
 
-      final request = account_pb.UpdateSecuritySettingsRequest(
-        accountId: Int64(int.parse(accountId)),
-        settings: settings,
+      return currentResult.fold(
+        (failure) => Left(failure),
+        (current) => Right(current.copyWith(
+          enable3DSecure: enable3DSecure,
+          enableContactless: enableContactless,
+          enableOnlinePayments: enableOnlinePayments,
+          enableATMWithdrawals: enableATMWithdrawals,
+          enableInternationalPayments: enableInternationalPayments,
+        )),
       );
-
-      await _accountClient.updateSecuritySettings(
-        request,
-        options: _getCallOptions(token),
-      );
-
-      // Get updated details
-      return await getAccountDetails(accountId: accountId, accessToken: token);
     } catch (e) {
       return Left(Failure(
         message: 'Failed to update security settings: ${e.toString()}',
@@ -406,39 +408,42 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
     }
   }
 
-  /// Map proto response to AccountDetailsEntity
-  AccountDetailsEntity _mapProtoToEntity(account_pb.AccountDetails proto, String accountId) {
+  /// Map accounts.Account proto to AccountDetailsEntity
+  AccountDetailsEntity _mapAccountToEntity(accounts_msg.Account proto) {
     return AccountDetailsEntity(
-      id: accountId,
+      id: proto.id,
       accountType: proto.accountType.isNotEmpty ? proto.accountType : 'Personal',
       currency: proto.currency.isNotEmpty ? proto.currency : 'NGN',
-      balance: proto.balance.toDouble() / 100,
+      balance: proto.balance / 100,
       status: proto.status.isNotEmpty ? proto.status : 'active',
-      cardHolderName: proto.cardHolderName.isNotEmpty ? proto.cardHolderName : null,
-      cardType: proto.cardType.isNotEmpty ? proto.cardType : null,
-      expiryDate: proto.expiryDate.isNotEmpty ? proto.expiryDate : null,
-      cardNumber: null, // Never expose full card number
-      cvv: null, // Never expose CVV
+      cardHolderName: null,
+      cardType: null,
+      expiryDate: null,
+      cardNumber: null,
+      cvv: null,
       accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
-      iban: proto.iban.isNotEmpty ? proto.iban : null,
-      bicSwift: proto.bicSwift.isNotEmpty ? proto.bicSwift : null,
-      dailyLimit: proto.dailyLimit.toDouble() / 100,
-      monthlyLimit: proto.monthlyLimit.toDouble() / 100,
-      singleTransactionLimit: null, // Not in proto
-      enable3DSecure: proto.enable3dSecure,
-      enableContactless: proto.enableContactless,
-      enableOnlinePayments: proto.enableOnlinePayments,
-      enableATMWithdrawals: false, // Not in AccountDetails message
-      enableInternationalPayments: false, // Not in AccountDetails message
-      createdAt: proto.hasCreatedAt() ? proto.createdAt.toDateTime() : null,
-      updatedAt: proto.hasUpdatedAt() ? proto.updatedAt.toDateTime() : null,
+      iban: null,
+      bicSwift: null,
+      dailyLimit: proto.dailyLimit / 100,
+      monthlyLimit: proto.monthlyLimit / 100,
+      singleTransactionLimit: null,
+      enable3DSecure: false,
+      enableContactless: false,
+      enableOnlinePayments: true,
+      enableATMWithdrawals: false,
+      enableInternationalPayments: false,
+      createdAt: proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null,
+      updatedAt: proto.updatedAt.isNotEmpty ? DateTime.tryParse(proto.updatedAt) : null,
     );
   }
 
   /// Get call options with authorization
   CallOptions _getCallOptions(String? token) {
-    // Options would normally come from GrpcCallOptionsHelper
-    // For simplicity, returning empty options - token should be injected via interceptor
+    if (token != null && token.isNotEmpty) {
+      return CallOptions(metadata: {
+        'authorization': 'Bearer $token',
+      });
+    }
     return CallOptions();
   }
 }

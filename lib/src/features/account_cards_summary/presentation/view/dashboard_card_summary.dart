@@ -331,17 +331,9 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                       );
                     }
 
-                    // Check if there's a family account in the summaries
-                    final hasFamilyAccount = accountSummaries.any(
-                      (account) => account.isFamilyAccount,
-                    );
-
-                    // Show family setup card for users without family account
-                    // Since signup is now Nigeria-only, all users can set up family accounts
                     return AccountCarousel(
                       accountSummaries: accountSummaries,
                       onShowDetails: _showCardDetailsSheet,
-                      showFamilySetupCard: !hasFamilyAccount, // Show setup card for all users without family account
                     );
                   }
                   return SizedBox(

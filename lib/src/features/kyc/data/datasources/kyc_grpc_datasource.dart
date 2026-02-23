@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/errors/exceptions.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_proto;
@@ -10,61 +13,106 @@ class KYCGrpcDataSource {
 
   KYCGrpcDataSource({required this.authClient});
 
-  /// Verify ID (BVN, NIN, etc.) via gRPC
+  /// Verify ID (BVN, NIN, Ghana Card, UK Passport, SSN, etc.) via gRPC
   /// Uses AuthService.verifyIdentity gRPC method
+  /// Handles both synchronous (BVN/NIN/Ghana Card/SSN) and async (UK Passport/US State ID) flows
   Future<Map<String, dynamic>> verifyID(IDVerificationRequest request) async {
     // Map IDType enum to proto IdentityType
-    final identityType = request.idType == IDType.bvn
-        ? auth_proto.IdentityType.IDENTITY_TYPE_BVN
-        : auth_proto.IdentityType.IDENTITY_TYPE_NIN;
+    final identityType = _mapIDTypeToProto(request.idType);
 
-    // Create gRPC request
+    // Create gRPC request with all fields
     final grpcRequest = auth_proto.VerifyIdentityRequest()
       ..identityType = identityType
       ..identityNumber = request.idNumber
-      ..dateOfBirth = request.dateOfBirth;
+      ..dateOfBirth = request.dateOfBirth
+      ..firstName = request.firstName
+      ..lastName = request.lastName
+      ..phoneNumber = request.phoneNumber;
+
+    // Set country code if determinable from ID type
+    final countryCode = _resolveCountryCode(request.idType);
+    if (countryCode.isNotEmpty) {
+      grpcRequest.countryCode = countryCode;
+    }
 
     try {
-      // Make gRPC call (call options with auth token added by caller)
-      final response = await authClient.verifyIdentity(grpcRequest);
+      // Make gRPC call with 45s timeout (providers may take time)
+      final response = await authClient.verifyIdentity(
+        grpcRequest,
+        options: CallOptions(timeout: const Duration(seconds: 45)),
+      );
 
-      // Check if verification was successful
-      if (!response.success || !response.verified) {
+      // Check for async verification (Onfido/Persona - returns session URL)
+      final hasSessionUrl = response.hasSessionUrl() && response.sessionUrl.isNotEmpty;
+      final isPending = response.hasStatus() && response.status == 'pending';
+
+      // For async flows, don't require verified=true
+      if (!response.success && !hasSessionUrl) {
         throw APIException(
           message: response.errorMessage.isNotEmpty ? response.errorMessage : 'ID verification failed',
           statusCode: 422,
         );
       }
 
+      // Determine status from response
+      String status = 'in_progress';
+      if (response.hasStatus() && response.status.isNotEmpty) {
+        status = response.status;
+      } else if (response.verified) {
+        status = 'approved';
+      }
+
+      // Determine tier from status (don't hardcode — respect server response)
+      KYCTier currentTier;
+      if (response.verified) {
+        currentTier = KYCTier.tier2;
+      } else if (isPending || hasSessionUrl) {
+        currentTier = KYCTier.tier1; // Still tier1 until async completes
+      } else {
+        currentTier = KYCTier.tier1;
+      }
+
       // Return success response
       return {
         'success': response.success,
         'verified': response.verified,
-        'status': response.verified ? 'approved' : 'in_progress',
-        'current_tier': KYCTier.tier2,
-        'message': response.errorMessage.isNotEmpty ? response.errorMessage : 'ID verified successfully',
+        'status': status,
+        'current_tier': currentTier,
+        'message': response.errorMessage.isNotEmpty
+            ? response.errorMessage
+            : (isPending ? 'Verification in progress' : 'ID verified successfully'),
         'reference': response.hasIdentity() && response.identity.hasPhoneNumber()
             ? _maskPhoneNumber(response.identity.phoneNumber)
             : null,
         'identity_type': identityType.toString().split('.').last,
+        // Async verification fields
+        if (response.hasVerificationId()) 'verification_id': response.verificationId,
+        if (hasSessionUrl) 'session_url': response.sessionUrl,
+        if (response.hasSessionToken() && response.sessionToken.isNotEmpty)
+          'session_token': response.sessionToken,
       };
     } on GrpcError catch (e) {
-      // Handle gRPC errors
+      // Handle gRPC-specific errors
       final message = e.toString();
-      if (message.contains('Unauthenticated') || message.contains('401')) {
+      if (e.code == StatusCode.unauthenticated || message.contains('Unauthenticated')) {
         throw APIException(
           message: 'Session expired. Please log in again.',
           statusCode: 401,
         );
-      } else if (message.contains('InvalidArgument') || message.contains('400')) {
+      } else if (e.code == StatusCode.invalidArgument || message.contains('InvalidArgument')) {
         throw APIException(
-          message: 'Invalid ID details provided. Please check and try again.',
+          message: e.message ?? 'Invalid ID details provided. Please check and try again.',
           statusCode: 422,
         );
-      } else if (message.contains('AlreadyExists')) {
+      } else if (e.code == StatusCode.alreadyExists || message.contains('AlreadyExists')) {
         throw APIException(
           message: 'This ID has already been used for another account.',
           statusCode: 409,
+        );
+      } else if (e.code == StatusCode.deadlineExceeded) {
+        throw APIException(
+          message: 'Verification is taking longer than expected. Please try again.',
+          statusCode: 504,
         );
       } else {
         throw APIException(
@@ -72,6 +120,95 @@ class KYCGrpcDataSource {
           statusCode: 500,
         );
       }
+    } on TimeoutException {
+      throw APIException(
+        message: 'Verification timed out. Please check your connection and try again.',
+        statusCode: 504,
+      );
+    } on SocketException {
+      throw APIException(
+        message: 'No internet connection. Please check your network and try again.',
+        statusCode: 503,
+      );
+    } catch (e) {
+      // Catch any other unexpected exceptions
+      throw APIException(
+        message: 'An unexpected error occurred. Please try again.',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// Map IDType enum to proto IdentityType
+  auth_proto.IdentityType _mapIDTypeToProto(IDType idType) {
+    switch (idType) {
+      case IDType.bvn:
+        return auth_proto.IdentityType.IDENTITY_TYPE_BVN;
+      case IDType.nin:
+        return auth_proto.IdentityType.IDENTITY_TYPE_NIN;
+      case IDType.ghanaCard:
+        return auth_proto.IdentityType.IDENTITY_TYPE_GHANA_CARD;
+      case IDType.kenyaNationalId:
+        return auth_proto.IdentityType.IDENTITY_TYPE_KENYA_NATIONAL_ID;
+      case IDType.kraPin:
+        return auth_proto.IdentityType.IDENTITY_TYPE_KRA_PIN;
+      case IDType.saIdCard:
+        return auth_proto.IdentityType.IDENTITY_TYPE_SA_ID;
+      case IDType.saPassport:
+        return auth_proto.IdentityType.IDENTITY_TYPE_SA_PASSPORT;
+      case IDType.ukPassport:
+        return auth_proto.IdentityType.IDENTITY_TYPE_UK_PASSPORT;
+      case IDType.ukDrivingLicense:
+        return auth_proto.IdentityType.IDENTITY_TYPE_UK_DRIVING_LICENSE;
+      case IDType.usSsn:
+        return auth_proto.IdentityType.IDENTITY_TYPE_US_SSN;
+      case IDType.usStateId:
+        return auth_proto.IdentityType.IDENTITY_TYPE_US_STATE_ID;
+      case IDType.usPassport:
+        return auth_proto.IdentityType.IDENTITY_TYPE_US_PASSPORT;
+      case IDType.driversLicense:
+        return auth_proto.IdentityType.IDENTITY_TYPE_DRIVERS_LICENSE;
+      case IDType.internationalPassport:
+        return auth_proto.IdentityType.IDENTITY_TYPE_INTERNATIONAL_PASSPORT;
+      case IDType.votersCard:
+        throw APIException(
+          message: "Voter's Card verification is not yet available. Please use BVN or NIN instead.",
+          statusCode: 422,
+        );
+      default:
+        throw APIException(
+          message: 'Unsupported ID type: ${idType.name}',
+          statusCode: 422,
+        );
+    }
+  }
+
+  /// Resolve country code from ID type for the proto request
+  String _resolveCountryCode(IDType idType) {
+    switch (idType) {
+      case IDType.bvn:
+      case IDType.nin:
+      case IDType.votersCard:
+      case IDType.driversLicense:
+      case IDType.internationalPassport:
+        return 'NG';
+      case IDType.ghanaCard:
+        return 'GH';
+      case IDType.kenyaNationalId:
+      case IDType.kraPin:
+        return 'KE';
+      case IDType.saIdCard:
+      case IDType.saPassport:
+        return 'ZA';
+      case IDType.ukPassport:
+      case IDType.ukDrivingLicense:
+        return 'GB';
+      case IDType.usSsn:
+      case IDType.usStateId:
+      case IDType.usPassport:
+        return 'US';
+      default:
+        return '';
     }
   }
 
@@ -301,9 +438,19 @@ class KYCGrpcDataSource {
         return auth_proto.DocumentType.DOCUMENT_TYPE_BVN;
       case IDType.nin:
         return auth_proto.DocumentType.DOCUMENT_TYPE_NIN;
+      case IDType.ghanaCard:
+      case IDType.kenyaNationalId:
+      case IDType.kraPin:
+      case IDType.saIdCard:
+        return auth_proto.DocumentType.DOCUMENT_TYPE_NIN; // National ID equivalent
       case IDType.driversLicense:
+      case IDType.ukDrivingLicense:
+      case IDType.usStateId:
         return auth_proto.DocumentType.DOCUMENT_TYPE_DRIVERS_LICENSE;
       case IDType.internationalPassport:
+      case IDType.ukPassport:
+      case IDType.usPassport:
+      case IDType.saPassport:
         return auth_proto.DocumentType.DOCUMENT_TYPE_PASSPORT;
       case IDType.votersCard:
         return auth_proto.DocumentType.DOCUMENT_TYPE_VOTERS_CARD;
@@ -350,7 +497,11 @@ class KYCGrpcDataSource {
 
   /// Mask phone number for display (e.g., 0812****5678)
   String _maskPhoneNumber(String phoneNumber) {
-    if (phoneNumber.length <= 4) return phoneNumber;
+    if (phoneNumber.length <= 8) {
+      // For short numbers, mask all but first 2 and last 2
+      if (phoneNumber.length <= 4) return '****';
+      return '${phoneNumber.substring(0, 2)}${'*' * (phoneNumber.length - 4)}${phoneNumber.substring(phoneNumber.length - 2)}';
+    }
     return '${phoneNumber.substring(0, 4)}****${phoneNumber.substring(phoneNumber.length - 4)}';
   }
 }

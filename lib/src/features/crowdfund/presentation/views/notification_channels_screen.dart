@@ -73,7 +73,11 @@ class _NotificationChannelsScreenState
       ),
       body: BlocConsumer<CrowdfundCubit, CrowdfundState>(
         listener: (context, state) {
-          if (state is NotificationChannelConnected) {
+          if (state is NotificationChannelsLoaded) {
+            setState(() {
+              _channels = List.from(state.channels);
+            });
+          } else if (state is NotificationChannelConnected) {
             setState(() {
               _channels.add(state.channel);
             });
@@ -130,10 +134,6 @@ class _NotificationChannelsScreenState
             return const Center(
               child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
             );
-          }
-
-          if (state is NotificationChannelsLoaded) {
-            _channels = List.from(state.channels);
           }
 
           if (state is CrowdfundError && _channels.isEmpty) {

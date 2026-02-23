@@ -60,6 +60,8 @@ message InitiateDepositRequest {
   uint64 amount = 2;
   string currency = 3;          // Currency code (e.g., GBP) - must match account
   string source_bank_name = 4 [json_name = "source_bank_name"]; // Name of the originating bank
+  string country_code = 5 [json_name = "country_code"]; // "NG", "GH", "KE", "ZA", "US", "GB"
+  string locale = 6;            // BCP 47 locale (e.g., "en-GH", "en-KE")
 }
 
 // Response after initiating a deposit (acknowledgement)
@@ -67,6 +69,10 @@ message InitiateDepositResponse {
   string deposit_id = 1 [json_name = "deposit_id"]; // The unique ID of the initiated deposit record
   DepositStatus status = 2;                       // Initial status (should be PENDING)
   string message = 3;                             // Confirmation message (e.g., "Deposit initiated, processing asynchronously.")
+  bool requires_authorization = 4 [json_name = "requires_authorization"]; // True for Flutterwave Standard
+  string payment_url = 5 [json_name = "payment_url"];           // Flutterwave hosted checkout URL
+  string provider = 6;              // "mono", "flutterwave"
+  string country_code = 7 [json_name = "country_code"];
 }
 
 // Request to get details of a specific deposit transaction
@@ -92,6 +98,39 @@ message GetDepositDetailsResponse {
 
   // Updated account details are included only if the deposit status is COMPLETED.
   AccountDetails updated_account = 13 [json_name = "updated_account"];
+}
+
+// Request to simulate a test deposit (sandbox only)
+message SimulateTestDepositRequest {
+  string destination_account_id = 1 [json_name = "destination_account_id"];
+  uint64 amount = 2;
+  string currency = 3;
+  string country_code = 4 [json_name = "country_code"];
+}
+
+// Request to get available deposit methods for a country
+message GetDepositMethodsRequest {
+  string country_code = 1 [json_name = "country_code"];
+  string currency = 2;
+}
+
+// Response containing available deposit methods
+message GetDepositMethodsResponse {
+  repeated DepositMethod methods = 1;
+  string country_code = 2 [json_name = "country_code"];
+  string currency = 3;
+  string provider = 4;
+}
+
+// A single deposit method available for a country
+message DepositMethod {
+  string id = 1;               // "mobile_money", "card", "bank_transfer", "mpesa"
+  string name = 2;             // "Mobile Money"
+  string description = 3;     // "Pay with MTN, Vodafone or Tigo"
+  string icon = 4;             // Icon name for Flutter
+  string fee_description = 5 [json_name = "fee_description"]; // "1.5%"
+  string processing_time = 6 [json_name = "processing_time"]; // "Instant"
+  bool available = 7;
 }
 
 // Service for handling deposits (asynchronous)
@@ -126,6 +165,37 @@ service DepositService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Get Deposit Details"
       description: "Retrieves the current status and details of a specific deposit transaction by its ID."
+      tags: ["Deposits"]
+      security: {
+         security_requirement: { key: "bearer" }
+      }
+    };
+  }
+
+  // Simulate a test deposit (sandbox only)
+  rpc SimulateTestDeposit (SimulateTestDepositRequest) returns (InitiateDepositResponse) {
+    option (google.api.http) = {
+      post: "/v1/deposits/simulate"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Simulate Test Deposit"
+      description: "Simulates a deposit for sandbox testing. Creates record and immediately credits account."
+      tags: ["Deposits"]
+      security: {
+         security_requirement: { key: "bearer" }
+      }
+    };
+  }
+
+  // Get available deposit methods for a country
+  rpc GetDepositMethods (GetDepositMethodsRequest) returns (GetDepositMethodsResponse) {
+    option (google.api.http) = {
+      get: "/v1/deposits/methods"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Deposit Methods"
+      description: "Returns available deposit methods for a given country and currency."
       tags: ["Deposits"]
       security: {
          security_requirement: { key: "bearer" }

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Step 2: Select payment method
 class AddFundsPaymentMethodScreen extends StatefulWidget {
   final String selectedMethod;
+  final String currency;
   final Function(String, Map<String, String>) onChanged;
 
   const AddFundsPaymentMethodScreen({
     super.key,
     required this.selectedMethod,
+    this.currency = 'USD',
     required this.onChanged,
   });
 
@@ -21,7 +24,7 @@ class _AddFundsPaymentMethodScreenState extends State<AddFundsPaymentMethodScree
   late String _selectedMethod;
   final Map<String, String> _paymentDetails = {};
 
-  final List<Map<String, dynamic>> _paymentMethods = [
+  List<Map<String, dynamic>> get _paymentMethods => [
     {
       'name': 'Bank Transfer',
       'icon': Icons.account_balance,
@@ -41,7 +44,7 @@ class _AddFundsPaymentMethodScreenState extends State<AddFundsPaymentMethodScree
       'icon': Icons.payment,
       'description': 'Direct wire transfer to your account',
       'processingTime': '1-2 business days',
-      'fee': '\$15 fee',
+      'fee': '${CurrencySymbols.getSymbol(widget.currency)}15 fee',
     },
     {
       'name': 'Apple Pay',

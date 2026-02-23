@@ -17,6 +17,7 @@ import 'add_funds_carousel.dart';
 import 'withdraw_funds_carousel.dart';
 import 'portfolio_rebalance_carousel.dart';
 import 'portfolio_analytics_screen.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 
 class StocksScreen extends StatefulWidget {
   const StocksScreen({super.key});
@@ -32,7 +33,16 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   late ScrollController _tabScrollController;
   
   final TextEditingController _searchController = TextEditingController();
-  final List<String> _sectors = ['All', 'Technology', 'Healthcare', 'Finance', 'Energy', 'Consumer'];
+
+  static const _usSectors = ['All', 'Technology', 'Healthcare', 'Finance', 'Energy', 'Consumer'];
+  static const _ngSectors = ['All', 'Banking', 'Oil & Gas', 'Consumer Goods', 'Telecom', 'Industrial'];
+
+  List<String> get _sectors {
+    if (_selectedMarket == 'NGX' || _selectedMarket == 'NG') return _ngSectors;
+    return _usSectors;
+  }
+
+  String _selectedMarket = 'US';
   String _selectedSector = 'All';
   int _selectedTab = 0;
   bool _showGainers = true;
@@ -217,22 +227,23 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
         child: Row(
           children: [
             Container(
-              height: 40.h,
-              width: 40.w,
+              height: 36.h,
+              width: 36.w,
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: IconButton(
+                padding: EdgeInsets.zero,
                 onPressed: () => Get.offAllNamed(AppRoutes.investments),
                 icon: Icon(
                   Icons.arrow_back,
                   color: Colors.white,
-                  size: 20.sp,
+                  size: 18.sp,
                 ),
               ),
             ),
-            SizedBox(width: 16.w),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,7 +252,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                     'Stocks',
                     style: GoogleFonts.inter(
                       color: Colors.white,
-                      fontSize: 24.sp,
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -249,62 +260,156 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                     'Trade with confidence',
                     style: GoogleFonts.inter(
                       color: Colors.grey[400],
-                      fontSize: 12.sp,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ],
               ),
             ),
             Container(
-              height: 40.h,
-              width: 40.w,
+              height: 36.h,
+              width: 36.w,
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: IconButton(
+                padding: EdgeInsets.zero,
                 onPressed: () => _showVoiceSheet(),
                 icon: Icon(
                   Icons.mic,
                   color: Colors.white,
-                  size: 20.sp,
+                  size: 18.sp,
                 ),
               ),
             ),
-            SizedBox(width: 8.w),
+            SizedBox(width: 6.w),
             Container(
-              height: 40.h,
-              width: 40.w,
+              height: 36.h,
+              width: 36.w,
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: IconButton(
+                padding: EdgeInsets.zero,
                 onPressed: () => _showAIChatBottomSheet(),
                 icon: Icon(
                   Icons.chat_bubble_outline,
                   color: Colors.white,
-                  size: 20.sp,
+                  size: 18.sp,
                 ),
               ),
             ),
-            SizedBox(width: 8.w),
+            SizedBox(width: 6.w),
             Container(
-              height: 40.h,
-              width: 40.w,
+              height: 36.h,
+              width: 36.w,
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: IconButton(
+                padding: EdgeInsets.zero,
                 onPressed: () => _showSearchDialog(),
                 icon: Icon(
                   Icons.search,
                   color: Colors.white,
-                  size: 20.sp,
+                  size: 18.sp,
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMarketPicker() {
+    final markets = [
+      {'code': 'US', 'label': 'NYSE', 'flag': '\u{1F1FA}\u{1F1F8}'},
+      {'code': 'NGX', 'label': 'NGX', 'flag': '\u{1F1F3}\u{1F1EC}'},
+    ];
+    final current = markets.firstWhere(
+      (m) => m['code'] == _selectedMarket,
+      orElse: () => markets.first,
+    );
+
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: const Color(0xFF1A1A2E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          builder: (_) => Padding(
+            padding: EdgeInsets.all(20.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Select Market',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                ...markets.map((m) => ListTile(
+                  leading: Text(m['flag']!, style: TextStyle(fontSize: 24.sp)),
+                  title: Text(
+                    m['label']!,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  trailing: _selectedMarket == m['code']
+                      ? Icon(Icons.check_circle, color: Colors.blue, size: 20.sp)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _selectedMarket = m['code']!;
+                      _selectedSector = 'All';
+                    });
+                    context.read<StockCubit>().setMarket(m['code']);
+                    context.read<StockCubit>().loadStocks();
+                    context.read<StockCubit>().loadTopMovers();
+                    Navigator.pop(context);
+                  },
+                )),
+                SizedBox(height: 16.h),
+              ],
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          color: Colors.blue.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(current['flag']!, style: TextStyle(fontSize: 12.sp)),
+            SizedBox(width: 4.w),
+            Text(
+              current['label']!,
+              style: GoogleFonts.inter(
+                color: Colors.blue[300],
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: 2.w),
+            Icon(Icons.arrow_drop_down, color: Colors.blue[300], size: 16.sp),
           ],
         ),
       ),
@@ -350,20 +455,26 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        'LIVE',
-                        style: GoogleFonts.inter(
-                          color: Colors.green,
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w600,
+                    Row(
+                      children: [
+                        _buildMarketPicker(),
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            'LIVE',
+                            style: GoogleFonts.inter(
+                              color: Colors.green,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -985,35 +1096,53 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16.r),
-                    child: CachedNetworkImage(
-                      imageUrl: stock.logoUrl,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.grey[200]!, Colors.grey[300]!],
+                    child: stock.logoUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: stock.logoUrl,
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.grey[200]!, Colors.grey[300]!],
+                              ),
+                            ),
+                            child: Icon(Icons.business, color: Colors.grey[600], size: 24.sp),
                           ),
-                        ),
-                        child: Icon(Icons.business, color: Colors.grey[600], size: 24.sp),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.grey[200]!, Colors.grey[300]!],
+                          errorWidget: (context, url, error) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.grey[200]!, Colors.grey[300]!],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                stock.symbol[0],
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey[700],
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            stock.symbol[0],
-                            style: GoogleFonts.inter(
-                              color: Colors.grey[700],
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.w700,
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.grey[200]!, Colors.grey[300]!],
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              stock.symbol[0],
+                              style: GoogleFonts.inter(
+                                color: Colors.grey[700],
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
                   ),
                 ),
                 SizedBox(width: 16.w),
@@ -1087,7 +1216,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '\$${stock.currentPrice.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18.sp,
@@ -1275,7 +1404,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ),
                     SizedBox(height: 4.h),
           Text(
-            '\$${portfolio.totalValue.toStringAsFixed(2)}',
+            CurrencySymbols.formatAmountWithCurrency(portfolio.totalValue, 'USD'),
             style: GoogleFonts.inter(
               color: Colors.white,
                         fontSize: 36.sp,
@@ -1294,7 +1423,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
               Expanded(
                 child: _buildPortfolioMetric(
                   'Total Return',
-                  '\$${portfolio.totalReturn.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(portfolio.totalReturn, 'USD'),
                   '${portfolio.totalReturnPercent >= 0 ? '+' : ''}${portfolio.totalReturnPercent.toStringAsFixed(2)}%',
                   portfolio.totalReturnPercent >= 0,
                   Icons.trending_up,
@@ -1304,7 +1433,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
               Expanded(
                 child: _buildPortfolioMetric(
                   'Today\'s Change',
-                  '\$${portfolio.dayChange.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(portfolio.dayChange, 'USD'),
                   '${portfolio.dayChangePercent >= 0 ? '+' : ''}${portfolio.dayChangePercent.toStringAsFixed(2)}%',
                   portfolio.dayChangePercent >= 0,
                   Icons.today,
@@ -1318,7 +1447,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
               Expanded(
                 child: _buildPortfolioMetric(
                   'Available Cash',
-                  '\$${portfolio.availableCash.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(portfolio.availableCash, 'USD'),
                   'Ready to invest',
                   true,
                   Icons.account_balance,
@@ -1328,7 +1457,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
               Expanded(
                 child: _buildPortfolioMetric(
                   'Total Invested',
-                  '\$${portfolio.totalInvested.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(portfolio.totalInvested, 'USD'),
                   'In positions',
                   true,
                   Icons.pie_chart,
@@ -1752,7 +1881,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '\$${holding.totalValue.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(holding.totalValue, 'USD'),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18.sp,
@@ -1896,10 +2025,10 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       final worst = sorted.last;
       bestSymbol = best.symbol;
       bestChange = '${best.totalReturnPercent >= 0 ? '+' : ''}${best.totalReturnPercent.toStringAsFixed(1)}%';
-      bestValue = '\$${best.totalValue.toStringAsFixed(0)}';
+      bestValue = CurrencySymbols.formatAmountWithCurrency(best.totalValue, 'USD');
       worstSymbol = worst.symbol;
       worstChange = '${worst.totalReturnPercent >= 0 ? '+' : ''}${worst.totalReturnPercent.toStringAsFixed(1)}%';
-      worstValue = '\$${worst.totalValue.toStringAsFixed(0)}';
+      worstValue = CurrencySymbols.formatAmountWithCurrency(worst.totalValue, 'USD');
     }
 
     return Row(
@@ -2335,7 +2464,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                   ),
                 ),
                 Text(
-                  '\$${holding.totalValue.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(holding.totalValue, 'USD'),
                   style: GoogleFonts.inter(
                     color: Colors.grey[400],
                     fontSize: 12.sp,
@@ -3232,22 +3361,28 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
         children: [
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-            child: CachedNetworkImage(
-              imageUrl: article.imageUrl,
-              height: 150.h,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                height: 150.h,
-                color: Colors.grey[800],
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              errorWidget: (context, url, error) => Container(
-                height: 150.h,
-                color: Colors.grey[800],
-                child: Icon(Icons.image, color: Colors.grey[600]),
-              ),
-            ),
+            child: article.imageUrl.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: article.imageUrl,
+                  height: 150.h,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    height: 150.h,
+                    color: Colors.grey[800],
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    height: 150.h,
+                    color: Colors.grey[800],
+                    child: Icon(Icons.image, color: Colors.grey[600]),
+                  ),
+                )
+              : Container(
+                  height: 150.h,
+                  color: Colors.grey[800],
+                  child: Icon(Icons.image, color: Colors.grey[600]),
+                ),
           ),
           Padding(
             padding: EdgeInsets.all(16.w),
@@ -4571,7 +4706,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                       _buildTrendingStock(
                         top3[i].name,
                         top3[i].symbol,
-                        '\$${top3[i].currentPrice.toStringAsFixed(2)}',
+                        CurrencySymbols.formatAmountWithCurrency(top3[i].currentPrice, top3[i].currency),
                         top3[i].changePercent,
                         trendingColors[i % trendingColors.length],
                       ),
@@ -4655,50 +4790,71 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12.r),
-                    child: CachedNetworkImage(
-                      imageUrl: logoUrl,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              iconColor.withValues(alpha: 0.2),
-                              iconColor.withValues(alpha: 0.1),
-                            ],
+                    child: logoUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: logoUrl,
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  iconColor.withValues(alpha: 0.2),
+                                  iconColor.withValues(alpha: 0.1),
+                                ],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                symbol[0],
+                                style: GoogleFonts.inter(
+                                  color: iconColor,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            symbol[0],
-                            style: GoogleFonts.inter(
-                              color: iconColor,
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w800,
+                          errorWidget: (context, url, error) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  iconColor.withValues(alpha: 0.2),
+                                  iconColor.withValues(alpha: 0.1),
+                                ],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                symbol[0],
+                                style: GoogleFonts.inter(
+                                  color: iconColor,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                iconColor.withValues(alpha: 0.2),
+                                iconColor.withValues(alpha: 0.1),
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              symbol[0],
+                              style: GoogleFonts.inter(
+                                color: iconColor,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              iconColor.withValues(alpha: 0.2),
-                              iconColor.withValues(alpha: 0.1),
-                            ],
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            symbol[0],
-                            style: GoogleFonts.inter(
-                              color: iconColor,
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -5063,7 +5219,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       return top4.map((stock) => _buildMoverCard(
         stock.symbol,
         stock.name,
-        '\$${stock.currentPrice.toStringAsFixed(2)}',
+        CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
         stock.changePercent,
         Icons.trending_up,
       )).toList();
@@ -5092,7 +5248,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       return top4.map((stock) => _buildMoverCard(
         stock.symbol,
         stock.name,
-        '\$${stock.currentPrice.toStringAsFixed(2)}',
+        CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
         stock.changePercent,
         Icons.trending_down,
       )).toList();
@@ -5414,44 +5570,62 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16.r),
-                    child: CachedNetworkImage(
-                      imageUrl: logoUrl,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue.withValues(alpha: 0.2), Colors.blue.withValues(alpha: 0.1)],
+                    child: logoUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: logoUrl,
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.blue.withValues(alpha: 0.2), Colors.blue.withValues(alpha: 0.1)],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                symbol[0],
+                                style: GoogleFonts.inter(
+                                  color: Colors.blue,
+                                  fontSize: 24.sp,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            symbol[0],
-                            style: GoogleFonts.inter(
-                              color: Colors.blue,
-                              fontSize: 24.sp,
-                              fontWeight: FontWeight.w800,
+                          errorWidget: (context, url, error) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.blue.withValues(alpha: 0.2), Colors.blue.withValues(alpha: 0.1)],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                symbol[0],
+                                style: GoogleFonts.inter(
+                                  color: Colors.blue,
+                                  fontSize: 24.sp,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.blue.withValues(alpha: 0.2), Colors.blue.withValues(alpha: 0.1)],
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              symbol[0],
+                              style: GoogleFonts.inter(
+                                color: Colors.blue,
+                                fontSize: 24.sp,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue.withValues(alpha: 0.2), Colors.blue.withValues(alpha: 0.1)],
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            symbol[0],
-                            style: GoogleFonts.inter(
-                              color: Colors.blue,
-                              fontSize: 24.sp,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
                 SizedBox(width: 16.w),

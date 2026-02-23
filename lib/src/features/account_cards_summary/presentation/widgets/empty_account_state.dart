@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.dart';
 
@@ -28,13 +29,11 @@ class EmptyAccountState extends StatelessWidget {
     this.onAccountCreated,
   });
 
-  /// Supported multi-country locales (matches backend Flutterwave locales)
-  static const _supportedCountries = {'NG', 'US', 'GB', 'GH', 'KE', 'ZA'};
-
-  /// Check if the country supports account creation
+  /// Check if the country supports account creation.
+  /// Uses CountryLocales as the single source of truth.
   static bool isCountrySupported(String? countryCode) {
     if (countryCode == null) return false;
-    return _supportedCountries.contains(countryCode.toUpperCase());
+    return CountryLocales.findByCountryCode(countryCode) != null;
   }
 
   /// Convert country code to locale string (e.g., "NG" -> "en-NG")
@@ -42,17 +41,9 @@ class EmptyAccountState extends StatelessWidget {
     return 'en-${countryCode.toUpperCase()}';
   }
 
-  /// Get currency for country code
+  /// Get currency for country code using CountryLocales as the single source of truth.
   static String _currencyForCountry(String countryCode) {
-    const currencyMap = {
-      'NG': 'NGN',
-      'US': 'USD',
-      'GB': 'GBP',
-      'GH': 'GHS',
-      'KE': 'KES',
-      'ZA': 'ZAR',
-    };
-    return currencyMap[countryCode.toUpperCase()] ?? countryCode;
+    return CountryLocales.findByCountryCode(countryCode)?.currency ?? countryCode;
   }
 
   @override

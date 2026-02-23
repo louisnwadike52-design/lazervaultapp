@@ -169,7 +169,7 @@ class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.r),
-                      borderSide: BorderSide(color: Colors.grey[200]!, width: 1),
+                      borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.r),
@@ -242,12 +242,6 @@ class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
               ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08)
               : Colors.grey[50],
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: isSelected
-                ? const Color.fromARGB(255, 78, 3, 208)
-                : Colors.grey[200]!,
-            width: isSelected ? 2 : 1,
-          ),
         ),
         child: Row(
           children: [
@@ -258,7 +252,6 @@ class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.grey[200]!, width: 1),
               ),
               child: Center(
                 child: Text(

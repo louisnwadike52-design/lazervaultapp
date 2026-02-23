@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/services/account_manager.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
@@ -121,25 +126,29 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
               ),
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              Get.toNamed(AppRoutes.idPayOrganizations,
-                  arguments: {'accountId': ''});
-            },
-            child: Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(22.r),
-              ),
-              child: Icon(
-                Icons.business_outlined,
-                color: const Color(0xFF3B82F6),
-                size: 20.sp,
+          if (_isBusinessAccount()) ...[
+            GestureDetector(
+              onTap: () {
+                final accountId =
+                    GetIt.I<AccountManager>().activeAccountId ?? '';
+                Get.toNamed(AppRoutes.idPayOrganizations,
+                    arguments: {'accountId': accountId});
+              },
+              child: Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(22.r),
+                ),
+                child: Icon(
+                  Icons.business_outlined,
+                  color: const Color(0xFF3B82F6),
+                  size: 20.sp,
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -597,6 +606,22 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
         ),
       ),
     );
+  }
+
+  bool _isBusinessAccount() {
+    final activeId = GetIt.I<AccountManager>().activeAccountId;
+    if (activeId == null) return false;
+    try {
+      final cubitState = context.read<AccountCardsSummaryCubit>().state;
+      if (cubitState is AccountCardsSummaryLoaded) {
+        final activeAccount = cubitState.accountSummaries.firstWhere(
+          (a) => a.id == activeId,
+          orElse: () => cubitState.accountSummaries.first,
+        );
+        return activeAccount.accountTypeEnum == VirtualAccountType.business;
+      }
+    } catch (_) {}
+    return false;
   }
 
   String _currencySymbol(String currency) {

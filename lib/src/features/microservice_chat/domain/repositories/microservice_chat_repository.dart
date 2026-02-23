@@ -10,11 +10,13 @@ abstract class MicroserviceChatRepository {
     required String accessToken,
     required String sourceContext,
     String language,
+    String locale,
   });
 
   Future<Either<Failure, List<MicroserviceChatMessageEntity>>> getHistory({
     required String sourceContext,
     required String sessionId,
     required String accessToken,
+    String? locale,
   });
 }

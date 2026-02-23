@@ -12,11 +12,13 @@ class LoadMicroserviceChatHistoryUseCase {
     required String sourceContext,
     required String sessionId,
     required String accessToken,
+    String? locale,
   }) {
     return repository.getHistory(
       sourceContext: sourceContext,
       sessionId: sessionId,
       accessToken: accessToken,
+      locale: locale,
     );
   }
 }

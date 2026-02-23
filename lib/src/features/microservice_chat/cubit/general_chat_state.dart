@@ -16,6 +16,11 @@ class GeneralChatInitial extends GeneralChatState {
   const GeneralChatInitial({super.messages});
 }
 
+/// History loading state (shows existing messages while loading more from backend)
+class GeneralChatHistoryLoading extends GeneralChatState {
+  const GeneralChatHistoryLoading({super.messages});
+}
+
 /// Loading state
 class GeneralChatLoading extends GeneralChatState {
   const GeneralChatLoading({super.messages});

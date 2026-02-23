@@ -11699,6 +11699,7 @@ class ServiceCategoryItem extends $pb.GeneratedMessage {
     $core.String? icon,
     $core.String? color,
     $core.bool? isActive,
+    $core.bool? isCustom,
   }) {
     final $result = create();
     if (id != null) {
@@ -11725,6 +11726,9 @@ class ServiceCategoryItem extends $pb.GeneratedMessage {
     if (isActive != null) {
       $result.isActive = isActive;
     }
+    if (isCustom != null) {
+      $result.isCustom = isCustom;
+    }
     return $result;
   }
   ServiceCategoryItem._() : super();
@@ -11740,6 +11744,7 @@ class ServiceCategoryItem extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'icon')
     ..aOS(7, _omitFieldNames ? '' : 'color')
     ..aOB(8, _omitFieldNames ? '' : 'isActive')
+    ..aOB(9, _omitFieldNames ? '' : 'isCustom')
     ..hasRequiredFields = false
   ;
 
@@ -11835,6 +11840,316 @@ class ServiceCategoryItem extends $pb.GeneratedMessage {
   $core.bool hasIsActive() => $_has(7);
   @$pb.TagNumber(8)
   void clearIsActive() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get isCustom => $_getBF(8);
+  @$pb.TagNumber(9)
+  set isCustom($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasIsCustom() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIsCustom() => clearField(9);
+}
+
+/// Custom Category Messages
+class CreateCustomCategoryRequest extends $pb.GeneratedMessage {
+  factory CreateCustomCategoryRequest({
+    $core.String? serviceName,
+    $core.String? displayName,
+    $core.int? budgetCategory,
+    $core.String? icon,
+    $core.String? color,
+  }) {
+    final $result = create();
+    if (serviceName != null) {
+      $result.serviceName = serviceName;
+    }
+    if (displayName != null) {
+      $result.displayName = displayName;
+    }
+    if (budgetCategory != null) {
+      $result.budgetCategory = budgetCategory;
+    }
+    if (icon != null) {
+      $result.icon = icon;
+    }
+    if (color != null) {
+      $result.color = color;
+    }
+    return $result;
+  }
+  CreateCustomCategoryRequest._() : super();
+  factory CreateCustomCategoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateCustomCategoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateCustomCategoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'serviceName')
+    ..aOS(2, _omitFieldNames ? '' : 'displayName')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'budgetCategory', $pb.PbFieldType.O3)
+    ..aOS(4, _omitFieldNames ? '' : 'icon')
+    ..aOS(5, _omitFieldNames ? '' : 'color')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateCustomCategoryRequest clone() => CreateCustomCategoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateCustomCategoryRequest copyWith(void Function(CreateCustomCategoryRequest) updates) => super.copyWith((message) => updates(message as CreateCustomCategoryRequest)) as CreateCustomCategoryRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateCustomCategoryRequest create() => CreateCustomCategoryRequest._();
+  CreateCustomCategoryRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateCustomCategoryRequest> createRepeated() => $pb.PbList<CreateCustomCategoryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateCustomCategoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateCustomCategoryRequest>(create);
+  static CreateCustomCategoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get serviceName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set serviceName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasServiceName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearServiceName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get displayName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set displayName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDisplayName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDisplayName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get budgetCategory => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set budgetCategory($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBudgetCategory() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBudgetCategory() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get icon => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set icon($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIcon() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIcon() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get color => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set color($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasColor() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearColor() => clearField(5);
+}
+
+class CreateCustomCategoryResponse extends $pb.GeneratedMessage {
+  factory CreateCustomCategoryResponse({
+    $core.bool? success,
+    $core.String? message,
+    ServiceCategoryItem? category,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (category != null) {
+      $result.category = category;
+    }
+    return $result;
+  }
+  CreateCustomCategoryResponse._() : super();
+  factory CreateCustomCategoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateCustomCategoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateCustomCategoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<ServiceCategoryItem>(3, _omitFieldNames ? '' : 'category', subBuilder: ServiceCategoryItem.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateCustomCategoryResponse clone() => CreateCustomCategoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateCustomCategoryResponse copyWith(void Function(CreateCustomCategoryResponse) updates) => super.copyWith((message) => updates(message as CreateCustomCategoryResponse)) as CreateCustomCategoryResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateCustomCategoryResponse create() => CreateCustomCategoryResponse._();
+  CreateCustomCategoryResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateCustomCategoryResponse> createRepeated() => $pb.PbList<CreateCustomCategoryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateCustomCategoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateCustomCategoryResponse>(create);
+  static CreateCustomCategoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  ServiceCategoryItem get category => $_getN(2);
+  @$pb.TagNumber(3)
+  set category(ServiceCategoryItem v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCategory() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCategory() => clearField(3);
+  @$pb.TagNumber(3)
+  ServiceCategoryItem ensureCategory() => $_ensure(2);
+}
+
+class DeleteCustomCategoryRequest extends $pb.GeneratedMessage {
+  factory DeleteCustomCategoryRequest({
+    $core.String? categoryId,
+  }) {
+    final $result = create();
+    if (categoryId != null) {
+      $result.categoryId = categoryId;
+    }
+    return $result;
+  }
+  DeleteCustomCategoryRequest._() : super();
+  factory DeleteCustomCategoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteCustomCategoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteCustomCategoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'categoryId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteCustomCategoryRequest clone() => DeleteCustomCategoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteCustomCategoryRequest copyWith(void Function(DeleteCustomCategoryRequest) updates) => super.copyWith((message) => updates(message as DeleteCustomCategoryRequest)) as DeleteCustomCategoryRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeleteCustomCategoryRequest create() => DeleteCustomCategoryRequest._();
+  DeleteCustomCategoryRequest createEmptyInstance() => create();
+  static $pb.PbList<DeleteCustomCategoryRequest> createRepeated() => $pb.PbList<DeleteCustomCategoryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteCustomCategoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteCustomCategoryRequest>(create);
+  static DeleteCustomCategoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get categoryId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set categoryId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCategoryId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCategoryId() => clearField(1);
+}
+
+class DeleteCustomCategoryResponse extends $pb.GeneratedMessage {
+  factory DeleteCustomCategoryResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  DeleteCustomCategoryResponse._() : super();
+  factory DeleteCustomCategoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteCustomCategoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteCustomCategoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteCustomCategoryResponse clone() => DeleteCustomCategoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteCustomCategoryResponse copyWith(void Function(DeleteCustomCategoryResponse) updates) => super.copyWith((message) => updates(message as DeleteCustomCategoryResponse)) as DeleteCustomCategoryResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeleteCustomCategoryResponse create() => DeleteCustomCategoryResponse._();
+  DeleteCustomCategoryResponse createEmptyInstance() => create();
+  static $pb.PbList<DeleteCustomCategoryResponse> createRepeated() => $pb.PbList<DeleteCustomCategoryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteCustomCategoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteCustomCategoryResponse>(create);
+  static DeleteCustomCategoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
 }
 
 

@@ -20,6 +20,7 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
   final int _passcodeLength = 6;
   bool _skipped = false;
   bool get _fromLoginFlow => (Get.arguments as Map<String, dynamic>?)?['fromLoginFlow'] == true;
+  bool get _hasTransactionPin => (Get.arguments as Map<String, dynamic>?)?['hasTransactionPin'] == true;
 
   @override
   void initState() {
@@ -62,6 +63,13 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
         if (state is AuthenticationSuccess) {
           if (_skipped) {
             // Skip was pressed, go directly to dashboard
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                Get.offAllNamed(AppRoutes.dashboard);
+              }
+            });
+          } else if (_fromLoginFlow && _hasTransactionPin) {
+            // Login flow and user already has PIN — go straight to dashboard
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 Get.offAllNamed(AppRoutes.dashboard);

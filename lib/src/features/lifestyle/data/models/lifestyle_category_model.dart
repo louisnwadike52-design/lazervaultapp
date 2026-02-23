@@ -18,7 +18,7 @@ class LifestyleCategoryModel extends LifestyleCategory {
       icon: json['icon'] as String? ?? '',
       available: json['available'] as bool? ?? false,
       providers: (json['providers'] as List<dynamic>?)
-              ?.map((e) => e as String)
+              ?.whereType<String>()
               .toList() ??
           [],
     );

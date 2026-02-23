@@ -1,6 +1,10 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 
 /// Service Category Model
 /// Represents a category that can be selected for transactions
@@ -12,6 +16,7 @@ class ServiceCategory {
   final String displayName;     // "Food Transfer", "Airtime Top-up"
   final String iconName;        // Icon identifier
   final Color color;            // Display color
+  final bool isCustom;          // True if user-created
 
   const ServiceCategory({
     required this.id,
@@ -21,6 +26,7 @@ class ServiceCategory {
     required this.displayName,
     required this.iconName,
     required this.color,
+    this.isCustom = false,
   });
 
   /// Create from proto
@@ -33,6 +39,7 @@ class ServiceCategory {
       displayName: proto.displayName,
       iconName: proto.icon.isNotEmpty ? proto.icon : _defaultIconForCategory(proto.subCategoryName),
       color: _colorFromHex(proto.color.isNotEmpty ? proto.color : '#3B82F6'),
+      isCustom: proto.isCustom,
     );
   }
 
@@ -60,19 +67,26 @@ class ServiceCategory {
   }
 
   static Color _colorFromHex(String hex) {
-    final buffer = StringBuffer();
-    if (hex.startsWith('#')) {
-      buffer.write(hex.replaceFirst('#', ''));
-    } else {
-      buffer.write(hex);
+    try {
+      var cleaned = hex.startsWith('#') ? hex.substring(1) : hex;
+      // Expand 3-char hex to 6-char (e.g., "F00" -> "FF0000")
+      if (cleaned.length == 3) {
+        cleaned = cleaned[0] * 2 + cleaned[1] * 2 + cleaned[2] * 2;
+      }
+      if (cleaned.length == 6) {
+        cleaned = 'FF$cleaned';
+      }
+      // Validate hex chars only
+      if (!RegExp(r'^[0-9A-Fa-f]{8}$').hasMatch(cleaned)) {
+        return const Color(0xFF3B82F6);
+      }
+      return Color(int.parse(cleaned, radix: 16));
+    } catch (_) {
+      return const Color(0xFF3B82F6); // Default blue on any parse error
     }
-    if (buffer.length == 6) {
-      buffer.write('FF');
-    }
-    return Color(int.parse(buffer.toString(), radix: 16));
   }
 
-  IconData _iconDataFromString(String iconStr) {
+  static IconData _iconDataFromString(String iconStr) {
     final iconMap = {
       'restaurant': Icons.restaurant,
       'shopping_bag': Icons.shopping_bag,
@@ -88,11 +102,12 @@ class ServiceCategory {
       'school': Icons.school,
       'trending_up': Icons.trending_up,
       'category': Icons.category,
+      'currency_bitcoin': Icons.currency_bitcoin,
     };
     return iconMap[iconStr] ?? Icons.category;
   }
 
-  /// Common transfer categories
+  /// Common transfer categories (fallback when backend unreachable)
   static const commonTransferCategories = [
     ServiceCategory(
       id: 'cat-food',
@@ -161,9 +176,10 @@ class ServiceCategory {
 }
 
 /// Category Selection Bottom Sheet
-/// Displays a list of categories for user selection
-class CategorySelectionBottomSheet extends StatelessWidget {
-  final String serviceName;    // "transfer", "bill_payment", etc.
+/// Displays a grid of categories for user selection
+/// When "Other" is tapped, shows a text field to create a custom category
+class CategorySelectionBottomSheet extends StatefulWidget {
+  final String serviceName;
   final Function(ServiceCategory) onSelected;
   final List<ServiceCategory>? categories;
   final ServiceCategory? selectedCategory;
@@ -177,8 +193,45 @@ class CategorySelectionBottomSheet extends StatelessWidget {
   });
 
   @override
+  State<CategorySelectionBottomSheet> createState() =>
+      _CategorySelectionBottomSheetState();
+
+  /// Show the bottom sheet
+  static Future<ServiceCategory?> show(
+    BuildContext context, {
+    required String serviceName,
+    List<ServiceCategory>? categories,
+    ServiceCategory? selectedCategory,
+  }) {
+    return showModalBottomSheet<ServiceCategory>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => CategorySelectionBottomSheet(
+        serviceName: serviceName,
+        categories: categories,
+        selectedCategory: selectedCategory,
+        onSelected: (category) => Navigator.pop(context, category),
+      ),
+    );
+  }
+}
+
+class _CategorySelectionBottomSheetState
+    extends State<CategorySelectionBottomSheet> {
+  bool _showCustomInput = false;
+  final TextEditingController _customNameController = TextEditingController();
+  bool _isCreating = false;
+
+  @override
+  void dispose() {
+    _customNameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final items = categories ?? ServiceCategory.commonTransferCategories;
+    final items = widget.categories ?? ServiceCategory.commonTransferCategories;
 
     return Container(
       decoration: BoxDecoration(
@@ -210,7 +263,7 @@ class CategorySelectionBottomSheet extends StatelessWidget {
                 ),
                 SizedBox(width: 12.w),
                 Text(
-                  'Select Category',
+                  _showCustomInput ? 'New Category' : 'Select Category',
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -219,94 +272,214 @@ class CategorySelectionBottomSheet extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: Colors.white, size: 20.sp),
+                  onPressed: () {
+                    if (_showCustomInput) {
+                      setState(() => _showCustomInput = false);
+                    } else {
+                      Navigator.pop(context);
+                    }
+                  },
+                  icon: Icon(
+                    _showCustomInput ? Icons.arrow_back : Icons.close,
+                    color: Colors.white,
+                    size: 20.sp,
+                  ),
                 ),
               ],
             ),
           ),
-          // Categories Grid
-          Flexible(
-            child: GridView.builder(
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 1,
-                crossAxisSpacing: 12.w,
-                mainAxisSpacing: 12.h,
-              ),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final category = items[index];
-                final isSelected = selectedCategory?.id == category.id;
+          if (_showCustomInput)
+            _buildCustomCategoryInput()
+          else ...[
+            // Categories Grid
+            Flexible(
+              child: GridView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 1,
+                  crossAxisSpacing: 12.w,
+                  mainAxisSpacing: 12.h,
+                ),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final category = items[index];
+                  final isSelected = widget.selectedCategory?.id == category.id;
 
-                return GestureDetector(
-                  onTap: () {
-                    onSelected(category);
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? category.color.withValues(alpha: 0.2)
-                          : const Color(0xFF2D2D2D),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: isSelected ? category.color : Colors.transparent,
-                        width: 2,
+                  return GestureDetector(
+                    onTap: () {
+                      if (category.subCategoryName == 'other') {
+                        setState(() => _showCustomInput = true);
+                        return;
+                      }
+                      widget.onSelected(category);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? category.color.withValues(alpha: 0.2)
+                            : const Color(0xFF2D2D2D),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: isSelected ? category.color : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            category.iconData,
+                            color: isSelected ? category.color : const Color(0xFF9CA3AF),
+                            size: 24.sp,
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            category.displayName,
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w500,
+                              color: isSelected ? category.color : Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          category.iconData,
-                          color: isSelected ? category.color : const Color(0xFF9CA3AF),
-                          size: 24.sp,
-                        ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          category.displayName,
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w500,
-                            color: isSelected ? category.color : Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
+          ],
           SizedBox(height: 20.h),
         ],
       ),
     );
   }
 
-  /// Show the bottom sheet
-  static Future<ServiceCategory?> show(
-    BuildContext context, {
-    required String serviceName,
-    List<ServiceCategory>? categories,
-    ServiceCategory? selectedCategory,
-  }) {
-    return showModalBottomSheet<ServiceCategory>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => CategorySelectionBottomSheet(
-        serviceName: serviceName,
-        categories: categories,
-        selectedCategory: selectedCategory,
-        onSelected: (category) => Navigator.pop(context, category),
+  Widget _buildCustomCategoryInput() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Enter a name for your custom category',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          TextField(
+            controller: _customNameController,
+            autofocus: true,
+            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+            decoration: InputDecoration(
+              hintText: 'e.g., Gym Membership',
+              hintStyle: TextStyle(color: const Color(0xFF6B7280), fontSize: 16.sp),
+              filled: true,
+              fillColor: const Color(0xFF2D2D2D),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            ),
+            textCapitalization: TextCapitalization.words,
+            onSubmitted: (_) => _createCustomCategory(),
+          ),
+          SizedBox(height: 16.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isCreating ? null : _createCustomCategory,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              child: _isCreating
+                  ? SizedBox(
+                      height: 20.h,
+                      width: 20.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Create Category',
+                      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    ),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Future<void> _createCustomCategory() async {
+    final name = _customNameController.text.trim();
+    if (name.isEmpty) {
+      // Show feedback for empty name
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter a category name'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Dismiss keyboard before async work
+    FocusScope.of(context).unfocus();
+    setState(() => _isCreating = true);
+
+    try {
+      final budgetCubit = context.read<BudgetCubit>();
+      final created = await budgetCubit.createCustomCategory(
+        serviceName: widget.serviceName,
+        displayName: name,
+      );
+
+      if (created != null && mounted) {
+        widget.onSelected(created);
+      } else if (mounted) {
+        // Fallback: create a local-only category
+        widget.onSelected(_buildLocalCategory(name));
+      }
+    } catch (e) {
+      developer.log('Failed to create custom category', name: 'CategorySelection', error: e);
+      if (mounted) {
+        // Fallback on error
+        widget.onSelected(_buildLocalCategory(name));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCreating = false);
+      }
+    }
+  }
+
+  ServiceCategory _buildLocalCategory(String name) {
+    return ServiceCategory(
+      id: 'custom-${DateTime.now().millisecondsSinceEpoch}',
+      serviceName: widget.serviceName,
+      subCategoryName: name.toLowerCase().replaceAll(' ', '_'),
+      budgetCategory: 16,
+      displayName: name,
+      iconName: 'category',
+      color: const Color(0xFF95A5A6),
+      isCustom: true,
     );
   }
 }

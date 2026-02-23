@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../../../domain/entities/stock_entity.dart';
 
@@ -111,7 +112,7 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '\$${widget.stock.currentPrice.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
                       style: GoogleFonts.inter(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,

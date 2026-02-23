@@ -29,7 +29,7 @@ class HotelResultModel extends HotelResult {
       imageUrl: json['image_url'] as String? ?? '',
       affiliateUrl: json['affiliate_url'] as String? ?? '',
       amenities: (json['amenities'] as List<dynamic>?)
-              ?.map((e) => e as String)
+              ?.whereType<String>()
               .toList() ??
           [],
       provider: json['provider'] as String? ?? '',

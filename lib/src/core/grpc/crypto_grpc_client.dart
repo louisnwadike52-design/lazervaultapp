@@ -1,4 +1,5 @@
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import '../../generated/crypto.pbgrpc.dart';
 
 /// Wrapper class for Crypto gRPC client
@@ -6,13 +7,22 @@ import '../../generated/crypto.pbgrpc.dart';
 /// Uses the Investment Gateway (8090) injected from injection_container
 class CryptoGrpcClient {
   final ClientChannel _channel;
+  final GrpcCallOptionsHelper _callOptionsHelper;
   late CryptoServiceClient _client;
 
   /// Accepts an injected ClientChannel (Investment Gateway from injection_container)
-  /// This ensures all crypto services go through the proper API gateway
-  CryptoGrpcClient({required ClientChannel channel}) : _channel = channel {
+  /// and GrpcCallOptionsHelper for automatic JWT authentication.
+  CryptoGrpcClient({
+    required ClientChannel channel,
+    required GrpcCallOptionsHelper callOptionsHelper,
+  })  : _channel = channel,
+        _callOptionsHelper = callOptionsHelper {
     _client = CryptoServiceClient(_channel);
   }
+
+  // ============================================================
+  // PUBLIC MARKET DATA (no auth required)
+  // ============================================================
 
   /// Get list of cryptocurrencies
   ///
@@ -122,17 +132,18 @@ class CryptoGrpcClient {
   }
 
   // ============================================================
-  // WALLET & TRANSACTION OPERATIONS
-  // These methods connect to the crypto microservice backend
+  // AUTHENTICATED WALLET & TRANSACTION OPERATIONS
+  // These methods require JWT auth via GrpcCallOptionsHelper
   // ============================================================
 
   /// Get user's crypto holdings
   ///
   /// Returns list of user's cryptocurrency holdings with current values
   Future<GetCryptoHoldingsResponse> getHoldings() async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetCryptoHoldingsRequest();
-      final response = await _client.getCryptoHoldings(request);
+      final response = await _client.getCryptoHoldings(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -147,11 +158,12 @@ class CryptoGrpcClient {
     int limit = 50,
     int offset = 0,
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetCryptoTransactionsRequest()
         ..limit = limit
         ..offset = offset;
-      final response = await _client.getCryptoTransactions(request);
+      final response = await _client.getCryptoTransactions(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -170,6 +182,7 @@ class CryptoGrpcClient {
     String transactionPin = '',
     String idempotencyKey = '',
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = BuyCryptoRequest()
         ..cryptoId = cryptoId
@@ -177,7 +190,7 @@ class CryptoGrpcClient {
         ..fiatCurrency = fiatCurrency
         ..transactionPin = transactionPin
         ..idempotencyKey = idempotencyKey;
-      final response = await _client.buyCrypto(request);
+      final response = await _client.buyCrypto(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -196,6 +209,7 @@ class CryptoGrpcClient {
     String transactionPin = '',
     String idempotencyKey = '',
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = SellCryptoRequest()
         ..cryptoId = cryptoId
@@ -203,7 +217,7 @@ class CryptoGrpcClient {
         ..fiatCurrency = fiatCurrency
         ..transactionPin = transactionPin
         ..idempotencyKey = idempotencyKey;
-      final response = await _client.sellCrypto(request);
+      final response = await _client.sellCrypto(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -222,6 +236,7 @@ class CryptoGrpcClient {
     String transactionPin = '',
     String idempotencyKey = '',
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = ConvertCryptoRequest()
         ..fromCryptoId = fromCryptoId
@@ -229,7 +244,7 @@ class CryptoGrpcClient {
         ..fromAmount = amount
         ..transactionPin = transactionPin
         ..idempotencyKey = idempotencyKey;
-      final response = await _client.convertCrypto(request);
+      final response = await _client.convertCrypto(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -238,9 +253,10 @@ class CryptoGrpcClient {
 
   /// Get user's crypto wallets
   Future<GetWalletsResponse> getWallets() async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetWalletsRequest();
-      final response = await _client.getWallets(request);
+      final response = await _client.getWallets(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -255,11 +271,12 @@ class CryptoGrpcClient {
     required String cryptoId,
     String? walletType,
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = CreateWalletRequest()
         ..cryptoId = cryptoId
         ..walletType = walletType ?? 'default';
-      final response = await _client.createWallet(request);
+      final response = await _client.createWallet(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -272,10 +289,11 @@ class CryptoGrpcClient {
   Future<GetWalletBalanceResponse> getWalletBalance({
     required String walletId,
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetWalletBalanceRequest()
         ..walletId = walletId;
-      final response = await _client.getWalletBalance(request);
+      final response = await _client.getWalletBalance(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -283,7 +301,7 @@ class CryptoGrpcClient {
   }
 
   // ============================================================
-  // WATCHLIST OPERATIONS
+  // AUTHENTICATED WATCHLIST OPERATIONS
   // ============================================================
 
   /// Create a new watchlist
@@ -291,11 +309,12 @@ class CryptoGrpcClient {
     required String name,
     String description = '',
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = CreateWatchlistRequest()
         ..name = name
         ..description = description;
-      final response = await _client.createWatchlist(request);
+      final response = await _client.createWatchlist(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -304,9 +323,10 @@ class CryptoGrpcClient {
 
   /// Get user's watchlists
   Future<GetWatchlistsResponse> getWatchlists() async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetWatchlistsRequest();
-      final response = await _client.getWatchlists(request);
+      final response = await _client.getWatchlists(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -318,11 +338,12 @@ class CryptoGrpcClient {
     required String watchlistId,
     required String cryptoId,
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = AddToWatchlistRequest()
         ..watchlistId = watchlistId
         ..cryptoId = cryptoId;
-      final response = await _client.addToWatchlist(request);
+      final response = await _client.addToWatchlist(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -334,11 +355,12 @@ class CryptoGrpcClient {
     required String watchlistId,
     required String cryptoId,
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = RemoveFromWatchlistRequest()
         ..watchlistId = watchlistId
         ..cryptoId = cryptoId;
-      final response = await _client.removeFromWatchlist(request);
+      final response = await _client.removeFromWatchlist(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -349,10 +371,11 @@ class CryptoGrpcClient {
   Future<DeleteWatchlistResponse> deleteWatchlist({
     required String watchlistId,
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = DeleteWatchlistRequest()
         ..watchlistId = watchlistId;
-      final response = await _client.deleteWatchlist(request);
+      final response = await _client.deleteWatchlist(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -364,11 +387,12 @@ class CryptoGrpcClient {
     required String cryptoId,
     required String fiatCurrency,
   }) async {
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetExchangeRateRequest()
         ..cryptoId = cryptoId
         ..fiatCurrency = fiatCurrency;
-      final response = await _client.getExchangeRate(request);
+      final response = await _client.getExchangeRate(request, options: options);
       return response;
     } catch (e) {
       rethrow;

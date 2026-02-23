@@ -18,6 +18,10 @@ class StockCubit extends Cubit<StockState> {
   final IStockRepository repository;
   final SWRCacheManager? cacheManager;
 
+  String? _selectedMarket;
+
+  String? get selectedMarket => _selectedMarket;
+
   StockCubit({
     required this.getStocksUseCase,
     required this.getPortfolioUseCase,
@@ -26,6 +30,10 @@ class StockCubit extends Cubit<StockState> {
     required this.repository,
     this.cacheManager,
   }) : super(StockInitial());
+
+  void setMarket(String? market) {
+    _selectedMarket = market;
+  }
 
   // Stock Data Methods
   Future<void> loadStocks({

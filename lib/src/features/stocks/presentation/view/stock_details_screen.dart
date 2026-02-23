@@ -12,6 +12,7 @@ import '../widgets/analyst_ratings_section.dart';
 import '../widgets/stock_events_section.dart';
 import '../widgets/advanced_chart_widget.dart';
 import 'create_stock_trade_carousel.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 
 class StockDetailsScreen extends StatefulWidget {
   final Stock stock;
@@ -105,6 +106,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                     ],
                 ),
               ),
+              _buildActionButtons(),
             ],
           ),
         ),
@@ -141,23 +143,37 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(50.r),
-                child: CachedNetworkImage(
-                  imageUrl: widget.stock.logoUrl,
-                  fit: BoxFit.contain,
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.red,
-                    child: Center(
-                      child: Text(
-                        widget.stock.symbol[0],
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w700,
+                child: widget.stock.logoUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: widget.stock.logoUrl,
+                      fit: BoxFit.contain,
+                      errorWidget: (context, url, error) => Container(
+                        color: const Color(0xFF2D2D2D),
+                        child: Center(
+                          child: Text(
+                            widget.stock.symbol[0],
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: const Color(0xFF2D2D2D),
+                      child: Center(
+                        child: Text(
+                          widget.stock.symbol[0],
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
               ),
             ),
             SizedBox(width: 12.w),
@@ -251,7 +267,6 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         children: [
           _buildPriceHeader(),
           _buildAdvancedChart(),
-          _buildActionButtons(),
           _buildAnalystRatingsSection(),
           _buildStatsSection(),
           _buildEventsSection(),
@@ -268,7 +283,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
           Text(
-                        '\$${widget.stock.currentPrice.toStringAsFixed(2)}',
+                        CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 32.sp,
@@ -497,7 +512,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
           SizedBox(height: 20.h),
           _buildStatItem('Market cap', _formatMarketCap(widget.stock.marketCap)),
           _buildStatItem('PE Ratio', widget.stock.peRatio.toStringAsFixed(2)),
-          _buildStatItem('EPS', '\$${widget.stock.eps.toStringAsFixed(2)}'),
+          _buildStatItem('EPS', CurrencySymbols.formatAmountWithCurrency(widget.stock.eps, widget.stock.currency)),
           _buildStatItem('Dividend yield', '${widget.stock.dividendYield.toStringAsFixed(2)}%'),
           _buildStatItem('Beta (5Y monthly)', widget.stock.beta.toStringAsFixed(2)),
         ],
@@ -1719,11 +1734,11 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
   // Helper methods
   String _formatMarketCap(double marketCap) {
     if (marketCap >= 1000000000000) {
-      return '\$${(marketCap / 1000000000000).toStringAsFixed(2)}T';
+      return '${CurrencySymbols.getSymbol(widget.stock.currency)}${(marketCap / 1000000000000).toStringAsFixed(2)}T';
     } else if (marketCap >= 1000000000) {
-      return '\$${(marketCap / 1000000000).toStringAsFixed(2)}B';
+      return '${CurrencySymbols.getSymbol(widget.stock.currency)}${(marketCap / 1000000000).toStringAsFixed(2)}B';
     }
-    return '\$${(marketCap / 1000000).toStringAsFixed(2)}M';
+    return '${CurrencySymbols.getSymbol(widget.stock.currency)}${(marketCap / 1000000).toStringAsFixed(2)}M';
   }
 
   void _toggleWatchlist() {

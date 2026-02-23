@@ -107,7 +107,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
+        color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       child: Column(
@@ -138,7 +138,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
         width: 40.w,
         height: 4.h,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.3),
+          color: const Color(0xFF4A4A4A),
           borderRadius: BorderRadius.circular(2.r),
         ),
       ),
@@ -156,30 +156,45 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
   }
 
   Widget _buildTabBar() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w),
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: true,
-        indicatorColor: const Color(0xFF3B82F6),
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
-        labelStyle: TextStyle(
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w600,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: EdgeInsets.only(left: 20.w),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: const Color(0xFF2D2D2D),
+              width: 1,
+            ),
+          ),
         ),
-        unselectedLabelStyle: TextStyle(
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w500,
+        child: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          indicatorColor: const Color(0xFF6366F1),
+          indicatorWeight: 2.5,
+          labelColor: const Color(0xFF6366F1),
+          unselectedLabelColor: const Color(0xFF9CA3AF),
+          labelStyle: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w500,
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          padding: EdgeInsets.zero,
+          labelPadding: EdgeInsets.symmetric(horizontal: 12.w),
+          tabs: const [
+            Tab(text: 'MANAGE CARD'),
+            Tab(text: 'SECURITY'),
+            Tab(text: 'LIMITS'),
+            Tab(text: 'DOCUMENTS'),
+            Tab(text: 'HELP'),
+          ],
         ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        tabs: const [
-          Tab(text: 'MANAGE CARD'),
-          Tab(text: 'SECURITY'),
-          Tab(text: 'LIMITS'),
-          Tab(text: 'DOCUMENTS'),
-          Tab(text: 'HELP'),
-        ],
       ),
     );
   }
@@ -288,7 +303,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
   void _showPINDialog(String pin, DateTime? expiresAt) {
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -309,10 +324,10 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
                 width: 48.w,
                 height: 56.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                   ),
                 ),
                 child: Center(
@@ -335,7 +350,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
             child: Text(
               'Done',
               style: TextStyle(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF6366F1),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -350,7 +365,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
   void _showCardDetailsDialog(CardDetailsRevealed state) {
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -375,7 +390,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
             Text(
               '⚠️ Keep this information secure. Never share with anyone.',
               style: TextStyle(
-                color: Colors.orange.withValues(alpha: 0.8),
+                color: const Color(0xFFD97706),
                 fontSize: 11.sp,
               ),
             ),
@@ -387,7 +402,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
             child: Text(
               'Done',
               style: TextStyle(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF6366F1),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -406,7 +421,7 @@ class _AccountActionsBottomSheetState extends State<AccountActionsBottomSheet>
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
+            color: const Color(0xFF9CA3AF),
             fontSize: 12.sp,
           ),
         ),

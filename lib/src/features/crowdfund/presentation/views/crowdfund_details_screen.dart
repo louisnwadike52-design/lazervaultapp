@@ -356,7 +356,6 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                       CrowdfundProgressIndicator(
                         progressPercentage: crowdfund.progressPercentage,
                         showMilestones: true,
-                        height: 8,
                       ),
                       SizedBox(height: 10.h),
                       Row(
@@ -583,7 +582,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                               : null,
                           child: creator.profilePicture == null
                               ? Text(
-                                  '${creator.firstName[0]}${creator.lastName[0]}',
+                                  creator.initials,
                                   style: TextStyle(
                                     color: const Color(0xFF4E03D0),
                                     fontSize: 24.sp,

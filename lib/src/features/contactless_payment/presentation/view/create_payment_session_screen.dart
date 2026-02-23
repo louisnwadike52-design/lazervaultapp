@@ -38,6 +38,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
     with SingleTickerProviderStateMixin {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _customCategoryController = TextEditingController();
   final _amountFocusNode = FocusNode();
   String _selectedCurrency = 'NGN';
   String? _selectedCategory;
@@ -48,7 +49,6 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  static const _currencies = ['NGN', 'USD', 'GBP', 'EUR', 'GHS', 'KES'];
   static const _categories = [
     ('Food', Icons.restaurant_rounded, Color(0xFFEF4444)),
     ('Transport', Icons.directions_car_rounded, Color(0xFF3B82F6)),
@@ -95,6 +95,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
   void dispose() {
     _amountController.dispose();
     _descriptionController.dispose();
+    _customCategoryController.dispose();
     _amountFocusNode.dispose();
     _animController.dispose();
     super.dispose();
@@ -125,10 +126,15 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
 
     setState(() => _isCreating = true);
 
+    final category = _selectedCategory == 'other' &&
+            _customCategoryController.text.trim().isNotEmpty
+        ? _customCategoryController.text.trim().toLowerCase()
+        : _selectedCategory;
+
     context.read<ContactlessPaymentCubit>().createPaymentSession(
           amount: _parsedAmount!,
           currency: _selectedCurrency,
-          category: _selectedCategory,
+          category: category,
           description: _descriptionController.text.isNotEmpty
               ? _descriptionController.text.trim()
               : null,
@@ -193,8 +199,6 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
                           children: [
                             SizedBox(height: 8.h),
                             _buildAmountSection(),
-                            SizedBox(height: 28.h),
-                            _buildCurrencySelector(),
                             SizedBox(height: 28.h),
                             _buildCategorySelector(),
                             SizedBox(height: 28.h),
@@ -369,62 +373,6 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
     );
   }
 
-  Widget _buildCurrencySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Currency',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Wrap(
-          spacing: 10.w,
-          runSpacing: 10.h,
-          children: _currencies.map((currency) {
-            final isSelected = _selectedCurrency == currency;
-            return GestureDetector(
-              onTap: () => setState(() => _selectedCurrency = currency),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding:
-                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                        )
-                      : null,
-                  color:
-                      isSelected ? null : Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.transparent
-                        : Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: Text(
-                  currency,
-                  style: GoogleFonts.inter(
-                    color:
-                        isSelected ? Colors.white : const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
   Widget _buildCategorySelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,6 +437,39 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
             );
           }).toList(),
         ),
+        if (_selectedCategory == 'other') ...[
+          SizedBox(height: 12.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: const Color(0xFF6B7280).withValues(alpha: 0.3),
+              ),
+            ),
+            child: TextField(
+              controller: _customCategoryController,
+              maxLength: 30,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Enter category name...',
+                hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+                  fontSize: 14.sp,
+                ),
+                border: InputBorder.none,
+                counterStyle: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 11.sp,
+                ),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

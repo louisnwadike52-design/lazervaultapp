@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
 
 class TrendingStocksCard extends StatelessWidget {
@@ -165,7 +166,7 @@ class TrendingStocksCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${stock.currentPrice.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 15.sp,

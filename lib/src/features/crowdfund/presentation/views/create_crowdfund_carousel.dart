@@ -200,7 +200,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
       _showErrorSnackBar('Please enter target amount');
       return false;
     }
-    final amount = double.tryParse(_targetAmountController.text.trim());
+    final amount = double.tryParse(_targetAmountController.text.trim().replaceAll(',', ''));
     if (amount == null || amount <= 0) {
       _showErrorSnackBar('Invalid amount');
       return false;
@@ -276,7 +276,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           story: _storyController.text.trim(),
-          targetAmount: double.parse(_targetAmountController.text.trim()),
+          targetAmount: double.tryParse(_targetAmountController.text.trim().replaceAll(',', '')) ?? 0,
           currency: _selectedCurrency,
           deadline: _selectedDeadline,
           category: _selectedCategory,

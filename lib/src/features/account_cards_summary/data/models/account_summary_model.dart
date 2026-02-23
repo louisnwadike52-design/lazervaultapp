@@ -47,7 +47,8 @@ class AccountSummaryModel extends AccountSummaryEntity {
 
     return AccountSummaryModel(
       id: accountId,
-      accountType: proto.accountType,
+      // Backend sends lowercase (e.g., "personal"), map to display name with capitalized initials
+      accountType: VirtualAccountType.fromString(proto.accountType).displayName,
       currency: proto.currency,
       // Convert Int64 balance (assuming minor units) to double (major units)
       // Adjust the division factor (e.g., 100) based on your currency setup

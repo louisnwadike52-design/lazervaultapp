@@ -28,6 +28,8 @@ class ServiceCategories {
   static const Color colorQrPayment = Color(0xFF9C27B0);
 
   /// All service categories with their mappings
+  /// Use BudgetCubit.loadServiceCategories() to fetch from backend instead.
+  @Deprecated('Use BudgetCubit.loadServiceCategories() for dynamic categories from backend')
   static const List<ServiceCategory> allCategories = [
     // Transfer subcategories
     ServiceCategory(

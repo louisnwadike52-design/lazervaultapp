@@ -324,8 +324,8 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
 
   void _proceedToNextStep() {
     if (_fromLoginFlow) {
-      // Login flow — go to face registration prompt or dashboard
-      _showFaceRegistrationPrompt();
+      // Login flow — go directly to dashboard (no face setup on login)
+      Get.offAllNamed(AppRoutes.dashboard);
       return;
     }
 
@@ -335,7 +335,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
       return;
     }
 
-    // Otherwise, this is signup flow - show face registration prompt or go to dashboard
+    // Signup flow — show face registration prompt
     _showFaceRegistrationPrompt();
   }
 

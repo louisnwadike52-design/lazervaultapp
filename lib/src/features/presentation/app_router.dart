@@ -33,10 +33,6 @@ import 'package:lazervault/src/features/gift_cards/presentation/view/sell_gift_c
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_sales_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
-import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_start_screen.dart';
-import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_amount_screen.dart';
-import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_recipient_screen.dart';
-import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_review_screen.dart';
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_method_selection_screen.dart';
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_amount_screen.dart';
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_review_screen.dart';
@@ -55,7 +51,7 @@ import 'package:lazervault/src/features/presentation/views/languages_screen.dart
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
-import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
+import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
 import 'package:lazervault/src/features/presentation/views/verify_password_reset_otp_screen.dart';
 import 'package:lazervault/src/features/widgets/verify_password_reset_otp.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
@@ -198,6 +194,9 @@ import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/b
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_receipt_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_history_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_detail_screen.dart';
+import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/presentation/view/recurring_transfers/recurring_transfers_list_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/recurring_transfers/recurring_transfer_detail_screen.dart';
 
 // Statistics imports
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
@@ -349,9 +348,14 @@ import 'package:lazervault/src/features/data_bundles/presentation/view/data_paym
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_payment_processing_screen.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_payment_receipt_screen.dart';
 
-// Currency Exchange imports
-import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_screen.dart';
-import 'package:lazervault/src/features/currency_exchange/presentation/bindings/exchange_binding.dart';
+// Currency Exchange imports (BLoC/Cubit)
+import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_home_screen.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_recipient_screen.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_processing_screen.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_receipt_screen.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_detail_screen.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_history_screen.dart';
 
 // Settings imports
 import 'package:lazervault/src/features/settings/presentation/view/privacy_policy_screen.dart';
@@ -704,7 +708,7 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.profileSettings,
-      page: () => serviceLocator<ProfileSettingsScreen>(),
+      page: () => const SettingsScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -972,8 +976,12 @@ class AppRouter {
             isFavorite: false,
           );
         }
-        return BlocProvider(
-          create: (_) => serviceLocator<TransferCubit>(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<TransferCubit>()),
+            BlocProvider(create: (_) => serviceLocator<RecurringTransferCubit>()),
+            BlocProvider.value(value: serviceLocator<BudgetCubit>()),
+          ],
           child: serviceLocator<InitiateSendFundsScreen>(param1: recipient),
         );
       },
@@ -1044,10 +1052,50 @@ class AppRouter {
       page: () => serviceLocator<CBCurrencyExchangeScreen>(),
       transition: Transition.leftToRightWithFade,
     ),
+    // Currency Exchange Routes (BLoC/Cubit)
     GetPage(
-      name: AppRoutes.currencyExchange,
-      page: () => const ExchangeScreen(),
-      binding: ExchangeBinding(),
+      name: AppRoutes.exchangeHome,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<ExchangeCubit>(),
+        child: const ExchangeHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.exchangeRecipient,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<ExchangeCubit>(),
+        child: const ExchangeRecipientScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.exchangeProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<ExchangeCubit>(),
+        child: const ExchangeProcessingScreen(),
+      ),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.exchangeReceipt,
+      page: () => const ExchangeReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.exchangeDetail,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<ExchangeCubit>(),
+        child: const ExchangeDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.exchangeHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<ExchangeCubit>(),
+        child: const ExchangeHistoryScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1120,26 +1168,7 @@ class AppRouter {
       ),
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.internationalTransferStart,
-      page: () => const InternationalTransferStartScreen(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.internationalTransferAmount,
-      page: () => const InternationalTransferAmountScreen(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.internationalTransferRecipient,
-      page: () => const InternationalTransferRecipientScreen(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.internationalTransferReview,
-      page: () => const InternationalTransferReviewScreen(),
-      transition: Transition.rightToLeft,
-    ),
+    // International transfer routes removed — now handled by /exchange/* flow
     GetPage(
       name: AppRoutes.depositMethodSelection,
       page: () => const DepositMethodSelectionScreen(),
@@ -1711,6 +1740,24 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => serviceLocator<BatchTransferCubit>(),
         child: const BatchTransferDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Recurring Transfer routes
+    GetPage(
+      name: AppRoutes.recurringTransfers,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<RecurringTransferCubit>(),
+        child: const RecurringTransfersListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.recurringTransferDetail,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<RecurringTransferCubit>(),
+        child: const RecurringTransferDetailScreen(),
       ),
       transition: Transition.rightToLeft,
     ),

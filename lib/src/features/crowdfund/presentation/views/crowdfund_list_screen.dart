@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../../core/utils/debouncer.dart';
+import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/crowdfund_card.dart';
-import 'crowdfund_details_screen.dart';
 
 class CrowdfundListScreen extends StatefulWidget {
   const CrowdfundListScreen({super.key});
@@ -21,6 +23,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   final Debouncer _searchDebouncer = Debouncer.search();
+  final ScrollController _browseScrollController = ScrollController();
   String _selectedFilter = 'All';
 
   static const _filters = ['All', 'Active', 'Completed', 'Cancelled'];
@@ -31,6 +34,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
     _searchController.addListener(_onSearchTextChanged);
+    _browseScrollController.addListener(_onBrowseScroll);
     _loadCrowdfunds();
   }
 
@@ -41,7 +45,18 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     _searchController.removeListener(_onSearchTextChanged);
     _searchController.dispose();
     _searchDebouncer.dispose();
+    _browseScrollController.removeListener(_onBrowseScroll);
+    _browseScrollController.dispose();
     super.dispose();
+  }
+
+  void _onBrowseScroll() {
+    if (_browseScrollController.position.pixels >=
+        _browseScrollController.position.maxScrollExtent - 200) {
+      context.read<CrowdfundCubit>().loadMoreCrowdfunds(
+            statusFilter: _statusParam,
+          );
+    }
   }
 
   void _onSearchTextChanged() {
@@ -323,25 +338,37 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               subtitle: _getEmptySubtitle(isBrowse: true),
             );
           }
+          final itemCount = state.crowdfunds.length +
+              (state.isLoadingMore || state.hasMore ? 1 : 0);
           return RefreshIndicator(
             onRefresh: _onRefresh,
             color: const Color(0xFF6366F1),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView.builder(
+              controller: _browseScrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              itemCount: state.crowdfunds.length,
+              itemCount: itemCount,
               itemBuilder: (context, index) {
+                if (index >= state.crowdfunds.length) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    child: Center(
+                      child: state.isLoadingMore
+                          ? const CircularProgressIndicator(
+                              color: Color(0xFF6366F1),
+                              strokeWidth: 2,
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  );
+                }
                 return CrowdfundCard(
                   crowdfund: state.crowdfunds[index],
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CrowdfundDetailsScreen(
-                          crowdfundId: state.crowdfunds[index].id,
-                        ),
-                      ),
+                    Get.toNamed(
+                      AppRoutes.crowdfundDetails,
+                      arguments: state.crowdfunds[index].id,
                     );
                   },
                 );
@@ -383,24 +410,14 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     );
   }
 
-  Widget _buildFundedCampaignsList(List<dynamic> donations) {
-    // Group donations by crowdfund to show unique campaigns
-    Map<String, dynamic> uniqueCampaigns = {};
-    for (var donation in donations) {
-      final crowdfund = donation.crowdfund;
-      if (crowdfund != null && !uniqueCampaigns.containsKey(crowdfund.id)) {
-        uniqueCampaigns[crowdfund.id] = {
-          'crowdfund': crowdfund,
-          'donations': [donation],
-          'totalDonated': donation.amount,
-        };
-      } else if (crowdfund != null) {
-        uniqueCampaigns[crowdfund.id]['donations'].add(donation);
-        uniqueCampaigns[crowdfund.id]['totalDonated'] += donation.amount;
-      }
+  Widget _buildFundedCampaignsList(List<CrowdfundDonation> donations) {
+    // Group donations by crowdfundId to show unique campaigns
+    final Map<String, List<CrowdfundDonation>> grouped = {};
+    for (final donation in donations) {
+      grouped.putIfAbsent(donation.crowdfundId, () => []).add(donation);
     }
 
-    final campaignList = uniqueCampaigns.values.toList();
+    final campaignIds = grouped.keys.toList();
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -411,17 +428,26 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        itemCount: campaignList.length,
+        itemCount: campaignIds.length,
         itemBuilder: (context, index) {
-          final item = campaignList[index];
-          final crowdfund = item['crowdfund'];
-          final totalDonated = item['totalDonated'];
-          final donationCount = item['donations'].length;
+          final crowdfundId = campaignIds[index];
+          final campaignDonations = grouped[crowdfundId]!;
+          final totalDonated = campaignDonations.fold<double>(
+            0.0,
+            (sum, d) => sum + d.amount,
+          );
+          final currency = campaignDonations.first.currency;
+          final donationCount = campaignDonations.length;
+          final latestDonation = campaignDonations.reduce(
+            (a, b) => a.donationDate.isAfter(b.donationDate) ? a : b,
+          );
 
           return _buildFundedCampaignCard(
-            crowdfund: crowdfund,
+            crowdfundId: crowdfundId,
             totalDonated: totalDonated,
+            currency: currency,
             donationCount: donationCount,
+            latestDate: latestDonation.donationDate,
           );
         },
       ),
@@ -429,19 +455,17 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   }
 
   Widget _buildFundedCampaignCard({
-    required dynamic crowdfund,
+    required String crowdfundId,
     required double totalDonated,
+    required String currency,
     required int donationCount,
+    required DateTime latestDate,
   }) {
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CrowdfundDetailsScreen(
-              crowdfundId: crowdfund.id,
-            ),
-          ),
+        Get.toNamed(
+          AppRoutes.crowdfundDetails,
+          arguments: crowdfundId,
         );
       },
       borderRadius: BorderRadius.circular(16.r),
@@ -466,12 +490,14 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  crowdfund.category,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF6366F1),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    'Campaign',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 Container(
@@ -492,125 +518,88 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
-            // Title
-            Text(
-              crowdfund.title,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w700,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: 8.h),
-            // Description
-            Text(
-              crowdfund.description,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 13.sp,
-                height: 1.4,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
             SizedBox(height: 16.h),
-            // Progress
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Contribution
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Your Contribution',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                    Text(
-                      '${crowdfund.currency} ${totalDonated.toStringAsFixed(2)}',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF6366F1),
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Your Contribution',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                  ),
                 ),
-                SizedBox(height: 4.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'of ${crowdfund.currency} ${crowdfund.targetAmount.toStringAsFixed(2)} goal',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF6B7280),
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                    Text(
-                      '${crowdfund.targetAmount > 0 ? (totalDonated / crowdfund.targetAmount * 100).toStringAsFixed(0) : '0'}%',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF6366F1),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8.h),
-                LinearProgressIndicator(
-                  value: crowdfund.targetAmount > 0
-                      ? (totalDonated / crowdfund.targetAmount).clamp(0.0, 1.0)
-                      : 0.0,
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF6366F1)),
-                  minHeight: 6.h,
-                ),
-                SizedBox(height: 12.h),
-                // Stats row
-                Row(
-                  children: [
-                    Icon(
-                      Icons.volunteer_activism,
-                      color: const Color(0xFF6B7280),
-                      size: 16.sp,
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      '$donationCount ${donationCount == 1 ? 'donation' : 'donations'}',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                    SizedBox(width: 16.w),
-                    Icon(
-                      Icons.people,
-                      color: const Color(0xFF6B7280),
-                      size: 16.sp,
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      '${crowdfund.donorCount} total',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ],
+                Text(
+                  '$currency ${totalDonated.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6366F1),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
+            ),
+            SizedBox(height: 12.h),
+            // Stats row
+            Row(
+              children: [
+                Icon(
+                  Icons.volunteer_activism,
+                  color: const Color(0xFF6B7280),
+                  size: 16.sp,
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  '$donationCount ${donationCount == 1 ? 'donation' : 'donations'}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.access_time,
+                  color: const Color(0xFF6B7280),
+                  size: 16.sp,
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  _formatDate(latestDate),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            // View details hint
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                'Tap to view details',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6366F1),
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inDays == 0) return 'Today';
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w ago';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   // ---------------------------------------------------------------------------

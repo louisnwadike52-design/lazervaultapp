@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
 import '../../domain/entities/airtime_transaction.dart';
@@ -58,12 +59,23 @@ class RecentTransactionsCard extends StatelessWidget {
           SizedBox(height: 16.h),
           
           BlocBuilder<AirtimeCubit, AirtimeState>(
+            buildWhen: (previous, current) {
+              return current is AirtimeTransactionHistoryLoaded ||
+                  current is AirtimeTransactionHistoryLoading ||
+                  current is AirtimeInitial ||
+                  (current is AirtimeError &&
+                      previous is AirtimeTransactionHistoryLoading);
+            },
             builder: (context, state) {
               if (state is AirtimeTransactionHistoryLoaded) {
                 if (state.transactions.isEmpty) {
                   return _buildEmptyState();
                 }
-                return _buildTransactionsList(state.transactions.take(3).toList());
+                return _buildTransactionsList(
+                    state.transactions.take(3).toList());
+              }
+              if (state is AirtimeError) {
+                return _buildErrorState(context, state.message);
               }
               return _buildLoadingState();
             },
@@ -233,6 +245,46 @@ class RecentTransactionsCard extends StatelessWidget {
               fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String message) {
+    return Container(
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 40.sp,
+            color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'Failed to load transactions',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.6),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          GestureDetector(
+            onTap: () {
+              final userId =
+                  context.read<AuthenticationCubit>().userId ?? '';
+              context.read<AirtimeCubit>().loadTransactionHistory(userId);
+            },
+            child: Text(
+              'Tap to retry',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: const Color(0xFF3B82F6),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

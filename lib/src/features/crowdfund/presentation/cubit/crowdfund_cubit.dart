@@ -127,6 +127,47 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     }
   }
 
+  /// Load next page of crowdfunds (append to existing list)
+  Future<void> loadMoreCrowdfunds({
+    int pageSize = 20,
+    String? statusFilter,
+    String? categoryFilter,
+    bool myCrowdfundsOnly = false,
+  }) async {
+    final currentState = state;
+    if (currentState is! CrowdfundLoaded ||
+        currentState.isLoadingMore ||
+        !currentState.hasMore) {
+      return;
+    }
+
+    try {
+      if (isClosed) return;
+      final nextPage = currentState.currentPage + 1;
+      emit(currentState.copyWith(isLoadingMore: true));
+
+      final crowdfunds = await listCrowdfundsUseCase(
+        page: nextPage,
+        pageSize: pageSize,
+        statusFilter: statusFilter,
+        categoryFilter: categoryFilter,
+        myCrowdfundsOnly: myCrowdfundsOnly,
+      );
+
+      if (isClosed) return;
+      emit(CrowdfundLoaded(
+        crowdfunds: [...currentState.crowdfunds, ...crowdfunds],
+        totalCount: currentState.totalCount + crowdfunds.length,
+        currentPage: nextPage,
+        hasMore: crowdfunds.length >= pageSize,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      // On error, revert to previous state without loading indicator
+      emit(currentState.copyWith(isLoadingMore: false));
+    }
+  }
+
   /// Search crowdfunds by query (SWR cached)
   Future<void> searchCrowdfunds({
     required String query,

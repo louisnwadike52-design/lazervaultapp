@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 class CountryPickerDialog extends StatefulWidget {
   final String currentCountry;
@@ -44,14 +45,38 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
   }
 
   void _handleSave() {
+    // No-op if user selected the same country they already had
+    if (_selectedCountry == widget.currentCountry &&
+        _selectedCurrency == widget.currentCurrency) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    // Look up the CountryLocale to get the country code
+    final countryLocale = CountryLocales.all.firstWhere(
+      (c) => c.countryName == _selectedCountry,
+      orElse: () => CountryLocales.all.first,
+    );
+    final countryCode = countryLocale.countryCode;
+
+    // Update user profile on the backend
     context.read<ProfileCubit>().updateUserProfile(
           country: _selectedCountry,
           currency: _selectedCurrency,
         );
 
+    // Update LocaleManager so gRPC headers (x-locale, x-currency, x-user-country) reflect the new country
+    final localeManager = serviceLocator<LocaleManager>();
+    localeManager.setCountry(countryCode);
+
+    // Persist the active country to preferences
+    context.read<ProfileCubit>().updatePreferences(
+          activeCountry: countryCode,
+        );
+
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(countryCode);
       }
     });
   }

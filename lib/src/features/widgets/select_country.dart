@@ -21,20 +21,15 @@ class _SelectCountryState extends State<SelectCountry> {
   final TextEditingController _selectedCountryController =
       TextEditingController();
 
-  // Country data with dialing codes and ISO country codes for locale mapping
-  // Nigeria is first as it's the default and primary supported country
-  List<Map<String, String>> countries = [
-    {"name": "Nigeria", "code": "+234", "flag": "🇳🇬", "countryCode": "NG"},
-    {"name": "United States", "code": "+1", "flag": "🇺🇸", "countryCode": "US"},
-    {"name": "United Kingdom", "code": "+44", "flag": "🇬🇧", "countryCode": "GB"},
-    {"name": "Canada", "code": "+1", "flag": "🇨🇦", "countryCode": "CA"},
-    {"name": "India", "code": "+91", "flag": "🇮🇳", "countryCode": "IN"},
-    {"name": "Germany", "code": "+49", "flag": "🇩🇪", "countryCode": "DE"},
-    {"name": "France", "code": "+33", "flag": "🇫🇷", "countryCode": "FR"},
-    {"name": "South Africa", "code": "+27", "flag": "🇿🇦", "countryCode": "ZA"},
-    {"name": "Australia", "code": "+61", "flag": "🇦🇺", "countryCode": "AU"},
-    {"name": "Japan", "code": "+81", "flag": "🇯🇵", "countryCode": "JP"},
-  ];
+  // Country data derived from CountryLocales to stay in sync with backend
+  List<Map<String, String>> countries = CountryLocales.all
+      .map((c) => <String, String>{
+        "name": c.countryName,
+        "code": c.dialCode,
+        "flag": c.flag,
+        "countryCode": c.countryCode,
+      })
+      .toList();
 
   List<Map<String, String>> filteredCountries = [];
   List<Map<String, String>> selectedCountries = [];

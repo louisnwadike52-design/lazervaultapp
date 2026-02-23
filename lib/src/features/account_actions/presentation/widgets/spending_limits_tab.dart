@@ -50,7 +50,7 @@ class SpendingLimitsTab extends StatelessWidget {
                   child: Text(
                     'Set limits to control your spending. Transactions above these limits will be declined.',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 13.sp,
                     ),
                   ),
@@ -122,11 +122,8 @@ class SpendingLimitsTab extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
@@ -160,7 +157,7 @@ class SpendingLimitsTab extends StatelessWidget {
                     Text(
                       hasLimit ? '$currencySymbol${limit.toStringAsFixed(2)}' : placeholder,
                       style: TextStyle(
-                        color: hasLimit ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                        color: hasLimit ? Colors.white : const Color(0xFF9CA3AF),
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -168,7 +165,7 @@ class SpendingLimitsTab extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: const Color(0xFF9CA3AF),
                         fontSize: 11.sp,
                       ),
                     ),
@@ -177,7 +174,7 @@ class SpendingLimitsTab extends StatelessWidget {
               ),
               Icon(
                 Icons.edit_outlined,
-                color: Colors.white.withValues(alpha: 0.5),
+                color: const Color(0xFF9CA3AF),
                 size: 20.sp,
               ),
             ],
@@ -209,7 +206,7 @@ class SpendingLimitsTab extends StatelessWidget {
         Container(
           height: 8.h,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: const Color(0xFF2D2D2D),
             borderRadius: BorderRadius.circular(4.r),
           ),
           child: FractionallySizedBox(
@@ -235,14 +232,14 @@ class SpendingLimitsTab extends StatelessWidget {
             Text(
               '${_getCurrencySymbol()}${balance.toStringAsFixed(2)} spent',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 12.sp,
               ),
             ),
             Text(
               '${_getCurrencySymbol()}${dailyLimit.toStringAsFixed(2)} limit',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 12.sp,
               ),
             ),
@@ -261,7 +258,7 @@ class SpendingLimitsTab extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -280,7 +277,7 @@ class SpendingLimitsTab extends StatelessWidget {
             Text(
               'Enter 0 to remove the limit.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 12.sp,
               ),
             ),
@@ -288,7 +285,7 @@ class SpendingLimitsTab extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(
@@ -315,7 +312,7 @@ class SpendingLimitsTab extends StatelessWidget {
                         border: InputBorder.none,
                         hintText: '0.00',
                         hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: const Color(0xFF4A4A4A),
                         ),
                       ),
                     ),
@@ -331,7 +328,7 @@ class SpendingLimitsTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),

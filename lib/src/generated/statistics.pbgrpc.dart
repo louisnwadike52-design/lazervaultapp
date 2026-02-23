@@ -185,6 +185,14 @@ class StatisticsServiceClient extends $grpc.Client {
       '/pb.StatisticsService/GetServiceCategories',
       ($0.GetServiceCategoriesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetServiceCategoriesResponse.fromBuffer(value));
+  static final _$createCustomCategory = $grpc.ClientMethod<$0.CreateCustomCategoryRequest, $0.CreateCustomCategoryResponse>(
+      '/pb.StatisticsService/CreateCustomCategory',
+      ($0.CreateCustomCategoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreateCustomCategoryResponse.fromBuffer(value));
+  static final _$deleteCustomCategory = $grpc.ClientMethod<$0.DeleteCustomCategoryRequest, $0.DeleteCustomCategoryResponse>(
+      '/pb.StatisticsService/DeleteCustomCategory',
+      ($0.DeleteCustomCategoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.DeleteCustomCategoryResponse.fromBuffer(value));
 
   StatisticsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -354,6 +362,14 @@ class StatisticsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetServiceCategoriesResponse> getServiceCategories($0.GetServiceCategoriesRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getServiceCategories, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateCustomCategoryResponse> createCustomCategory($0.CreateCustomCategoryRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createCustomCategory, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteCustomCategoryResponse> deleteCustomCategory($0.DeleteCustomCategoryRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deleteCustomCategory, request, options: options);
   }
 }
 
@@ -649,6 +665,20 @@ abstract class StatisticsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetServiceCategoriesRequest.fromBuffer(value),
         ($0.GetServiceCategoriesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateCustomCategoryRequest, $0.CreateCustomCategoryResponse>(
+        'CreateCustomCategory',
+        createCustomCategory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CreateCustomCategoryRequest.fromBuffer(value),
+        ($0.CreateCustomCategoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteCustomCategoryRequest, $0.DeleteCustomCategoryResponse>(
+        'DeleteCustomCategory',
+        deleteCustomCategory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.DeleteCustomCategoryRequest.fromBuffer(value),
+        ($0.DeleteCustomCategoryResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateExpenseResponse> createExpense_Pre($grpc.ServiceCall call, $async.Future<$0.CreateExpenseRequest> request) async {
@@ -815,6 +845,14 @@ abstract class StatisticsServiceBase extends $grpc.Service {
     return getServiceCategories(call, await request);
   }
 
+  $async.Future<$0.CreateCustomCategoryResponse> createCustomCategory_Pre($grpc.ServiceCall call, $async.Future<$0.CreateCustomCategoryRequest> request) async {
+    return createCustomCategory(call, await request);
+  }
+
+  $async.Future<$0.DeleteCustomCategoryResponse> deleteCustomCategory_Pre($grpc.ServiceCall call, $async.Future<$0.DeleteCustomCategoryRequest> request) async {
+    return deleteCustomCategory(call, await request);
+  }
+
   $async.Future<$0.CreateExpenseResponse> createExpense($grpc.ServiceCall call, $0.CreateExpenseRequest request);
   $async.Future<$0.GetExpensesResponse> getExpenses($grpc.ServiceCall call, $0.GetExpensesRequest request);
   $async.Future<$0.GetExpenseByIdResponse> getExpenseById($grpc.ServiceCall call, $0.GetExpenseByIdRequest request);
@@ -856,4 +894,6 @@ abstract class StatisticsServiceBase extends $grpc.Service {
   $async.Future<$0.GetComprehensiveFinancialSummaryResponse> getComprehensiveFinancialSummary($grpc.ServiceCall call, $0.GetComprehensiveFinancialSummaryRequest request);
   $async.Future<$0.ValidateCategoryBudgetResponse> validateCategoryBudget($grpc.ServiceCall call, $0.ValidateCategoryBudgetRequest request);
   $async.Future<$0.GetServiceCategoriesResponse> getServiceCategories($grpc.ServiceCall call, $0.GetServiceCategoriesRequest request);
+  $async.Future<$0.CreateCustomCategoryResponse> createCustomCategory($grpc.ServiceCall call, $0.CreateCustomCategoryRequest request);
+  $async.Future<$0.DeleteCustomCategoryResponse> deleteCustomCategory($grpc.ServiceCall call, $0.DeleteCustomCategoryRequest request);
 }

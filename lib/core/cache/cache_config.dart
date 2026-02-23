@@ -213,6 +213,20 @@ class CacheConfig {
     cacheTime: Duration(hours: 24),
   );
 
+  /// Configuration for exchange transaction history.
+  /// Short stale time (2 min) as exchanges complete quickly, 12 hour cache.
+  static const exchangeHistory = CacheConfig(
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(hours: 12),
+  );
+
+  /// Configuration for supported exchange currencies.
+  /// Longer stale time (30 min) as supported currencies change infrequently.
+  static const supportedCurrencies = CacheConfig(
+    staleTime: Duration(minutes: 30),
+    cacheTime: Duration(hours: 24),
+  );
+
   @override
   String toString() =>
       'CacheConfig(staleTime: $staleTime, cacheTime: $cacheTime)';

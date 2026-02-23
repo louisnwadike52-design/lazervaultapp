@@ -43,7 +43,7 @@ class DocumentsTab extends StatelessWidget {
                   child: Text(
                     'Download official documents for your records. Statements are generated in PDF format.',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 13.sp,
                     ),
                   ),
@@ -111,7 +111,7 @@ class DocumentsTab extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
@@ -126,7 +126,7 @@ class DocumentsTab extends StatelessWidget {
                   child: Text(
                     'Statements are available for the last 12 months. For older statements, please contact support.',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 12.sp,
                       height: 1.5,
                     ),
@@ -156,11 +156,8 @@ class DocumentsTab extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
@@ -194,7 +191,7 @@ class DocumentsTab extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
                       ),
                     ),
@@ -237,7 +234,7 @@ class DocumentsTab extends StatelessWidget {
       StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            backgroundColor: const Color(0xFF1E1E1E),
+            backgroundColor: const Color(0xFF1A1A1A),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.r),
             ),
@@ -256,7 +253,7 @@ class DocumentsTab extends StatelessWidget {
                 Text(
                   'Select date range for your statement (max 12 months):',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 13.sp,
                   ),
                 ),
@@ -326,7 +323,7 @@ class DocumentsTab extends StatelessWidget {
                 child: Text(
                   'Cancel',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
                   ),
                 ),
@@ -408,7 +405,7 @@ class DocumentsTab extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -427,7 +424,7 @@ class DocumentsTab extends StatelessWidget {
             Text(
               'This document confirms your current account balance. It\'s valid for 30 days from the date of issue.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -443,7 +440,7 @@ class DocumentsTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -482,7 +479,7 @@ class DocumentsTab extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
+            color: const Color(0xFF9CA3AF),
             fontSize: 13.sp,
           ),
         ),

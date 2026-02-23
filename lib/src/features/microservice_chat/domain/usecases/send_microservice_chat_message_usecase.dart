@@ -14,6 +14,7 @@ class SendMicroserviceChatMessageUseCase {
     required String accessToken,
     required String sourceContext,
     String language = 'en',
+    String locale = 'en-NG',
   }) {
     return repository.processMessage(
       message: message,
@@ -22,6 +23,7 @@ class SendMicroserviceChatMessageUseCase {
       accessToken: accessToken,
       sourceContext: sourceContext,
       language: language,
+      locale: locale,
     );
   }
 }

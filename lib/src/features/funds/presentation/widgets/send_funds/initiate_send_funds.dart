@@ -20,6 +20,13 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
+import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
+import 'package:lazervault/src/features/widgets/category_selection.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:uuid/uuid.dart';
 
 class InitiateSendFunds extends StatefulWidget {
@@ -45,7 +52,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       ''; // Stores amount as string of MINOR units (e.g., "2000" for £20.00)
   // final double maxAmount = 15358.00; // TODO: Get max from selected card/account later
   int selectedCardIndex = 0;
-  String? selectedCategory;
+  ServiceCategory? selectedCategory;
+  List<ServiceCategory> _availableCategories = ServiceCategory.commonTransferCategories;
   final TextEditingController _referenceController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   bool _isConfirmingTransfer = false; // State for dialog loading
@@ -76,17 +84,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
   final List<int> quickAmounts = [50, 100, 200, 500]; // Major units for display
 
-  final List<String> categories = [
-    'Food & Drinks',
-    'Shopping',
-    'Transportation',
-    'Entertainment',
-    'Bills & Utilities',
-    'Others'
-  ];
+  // Categories loaded from backend via BudgetCubit.loadServiceCategories
 
   DateTime? scheduledDate;
   // TimeOfDay? scheduledTime; // Removed as DateTime handles both
+
+  bool _isRecurringEnabled = false;
+  RecurringTransferConfig? _recurringConfig;
+
+  // Tracks whether we're waiting for both transfer + recurring setup to complete
+  // before navigating to receipt. Prevents recurring error being lost during navigation.
+  bool _recurringSetupPending = false;
+  bool _transferSucceeded = false;
+  TransferSuccess? _pendingTransferSuccess;
 
   // --- Fetch Accounts on Init ---
   @override
@@ -156,6 +166,26 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           _showTransferConfirmation(currentState);
         });
       }
+    }
+
+    // Load categories from backend
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final budgetCubit = context.read<BudgetCubit>();
+      final categories = await budgetCubit.loadServiceCategories('transfer');
+      if (mounted && categories.isNotEmpty) {
+        setState(() {
+          _availableCategories = categories;
+        });
+      }
+    } on ProviderNotFoundException catch (_) {
+      // BudgetCubit not in tree — keep fallback categories
+    } catch (e) {
+      debugPrint('Failed to load categories: $e');
+      // Keep fallback categories
     }
   }
 
@@ -422,75 +452,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     );
   }
 
-  void _showCategoryPicker() {
-    Get.bottomSheet(
-      Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
-              blurRadius: 15,
-              spreadRadius: 2,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              decoration: BoxDecoration(
-                border: Border(
-                    bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
-              ),
-              child: const Center(
-                child: Text(
-                  'Select Category',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              constraints: BoxConstraints(maxHeight: 300.h),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    onTap: () {
-                      setState(() => selectedCategory = categories[index]);
-                      Get.back();
-                    },
-                    leading: const Icon(
-                      Icons.category_outlined,
-                      color: Colors.white70,
-                    ),
-                    title: Text(
-                      categories[index],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                    hoverColor: Colors.white.withValues(alpha: 0.1),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: Colors.black.withValues(alpha: 0.7),
-      isDismissible: true,
-      enableDrag: true,
+  void _showCategoryPicker() async {
+    final result = await CategorySelectionBottomSheet.show(
+      context,
+      serviceName: 'transfer',
+      categories: _availableCategories,
+      selectedCategory: selectedCategory,
     );
+    if (result != null && mounted) {
+      setState(() => selectedCategory = result);
+    }
   }
 
   void _showSchedulePicker() async {
@@ -561,6 +532,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         if (potentialDateTime.isAfter(DateTime.now())) {
           setState(() {
             scheduledDate = potentialDateTime;
+            // Mutual exclusivity: clear recurring config when scheduling
+            _isRecurringEnabled = false;
+            _recurringConfig = null;
           });
         } else {
           Get.snackbar('Invalid Time', 'Scheduled time must be in the future.',
@@ -835,7 +809,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                               if (selectedCategory != null)
                                 _buildConfirmationRow(
                                   'Category',
-                                  selectedCategory!,
+                                  selectedCategory!.displayName,
                                   '',
                                 ),
                               _buildConfirmationRow(
@@ -949,6 +923,84 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                               ),
                             ),
                           ),
+                        // Recurring payment toggle
+                        if (scheduledDate == null)
+                          StatefulBuilder(
+                            builder: (context, setRecurringState) {
+                              return Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.h),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.repeat,
+                                        color: _isRecurringEnabled
+                                            ? const Color(0xFF3B82F6)
+                                            : const Color(0xFF9CA3AF),
+                                        size: 20.sp,
+                                      ),
+                                      SizedBox(width: 10.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Make Recurring',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14.sp,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            if (_isRecurringEnabled && _recurringConfig != null)
+                                              Text(
+                                                _recurringConfig!.summary,
+                                                style: TextStyle(
+                                                  color: const Color(0xFF3B82F6),
+                                                  fontSize: 12.sp,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Switch(
+                                        value: _isRecurringEnabled,
+                                        activeColor: const Color(0xFF3B82F6),
+                                        onChanged: (value) {
+                                          if (value) {
+                                            showModalBottomSheet(
+                                              context: dialogContext,
+                                              isScrollControlled: true,
+                                              backgroundColor: Colors.transparent,
+                                              builder: (_) => RecurringTransferModal(
+                                                initialConfig: _recurringConfig,
+                                                onConfigured: (config) {
+                                                  setRecurringState(() {
+                                                    _isRecurringEnabled = true;
+                                                    _recurringConfig = config;
+                                                  });
+                                                },
+                                              ),
+                                            );
+                                          } else {
+                                            setRecurringState(() {
+                                              _isRecurringEnabled = false;
+                                              _recurringConfig = null;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                       ],
                     ),
                   ),
@@ -1053,9 +1105,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                       ),
                                     )
                                   : Text(
-                                      scheduledDate != null
-                                          ? 'Schedule Transfer'
-                                          : 'Send Now',
+                                      _isRecurringEnabled
+                                          ? 'Set Up Recurring'
+                                          : scheduledDate != null
+                                              ? 'Schedule Transfer'
+                                              : 'Send Now',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16.sp,
@@ -1161,7 +1215,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
     final reference = _referenceController.text.trim();
     final narration = selectedCategory != null
-        ? '$selectedCategory: ${reference.isNotEmpty ? reference : "Transfer"}'
+        ? '${selectedCategory!.displayName}: ${reference.isNotEmpty ? reference : "Transfer"}'
         : (reference.isNotEmpty ? reference : 'Transfer');
 
     // Get recipient account number
@@ -1169,7 +1223,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // For external transfers: use accountNumber which is the external bank account number
     final toAccountNumber = _recipient!.accountNumber;
 
-    // Unified call to sendFunds (works for both internal and external)
+    // Execute the immediate transfer first
     print("_executeTransferWithPin: Calling TransferCubit.sendFunds...");
     print("_executeTransferWithPin: fromAccountId=$fromAccountId, toAccountNumber=$toAccountNumber, amount=$amountMajor");
     context.read<TransferCubit>().sendFunds(
@@ -1182,6 +1236,105 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       scheduledAt: scheduledDate,
     );
     print("_executeTransferWithPin: Transfer initiated.");
+
+    // If recurring is enabled, also create the recurring transfer rule
+    if (_isRecurringEnabled && _recurringConfig != null) {
+      print("_executeTransferWithPin: Setting up recurring transfer...");
+      _recurringSetupPending = true;
+      _transferSucceeded = false;
+      _pendingTransferSuccess = null;
+      context.read<RecurringTransferCubit>().createRecurringTransfer(
+        fromAccountId: fromAccountId,
+        toAccountNumber: toAccountNumber,
+        recipientName: _recipient!.name,
+        recipientBankCode: _recipient!.sortCode,
+        recipientBankName: _recipient!.bankName,
+        amount: amountMajor,
+        description: narration,
+        frequency: _recurringConfig!.frequency,
+        scheduleDay: _recurringConfig!.scheduleDay,
+        scheduleTime: _recurringConfig!.scheduleTimeString,
+        endDate: _recurringConfig!.endDate?.toIso8601String(),
+        transactionId: transactionId,
+        verificationToken: verificationToken,
+      );
+      print("_executeTransferWithPin: Recurring transfer setup initiated.");
+    }
+  }
+
+  /// Navigate to receipt screen after transfer success.
+  /// Called immediately if no recurring setup, or deferred until recurring resolves.
+  void _navigateToReceipt(BuildContext context, TransferSuccess transferState) {
+    if (!mounted) return;
+
+    final accountState = context.read<AccountCardsSummaryCubit>().state;
+    final summaries = switch (accountState) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+
+    double transferAmount = 0.0;
+    try {
+      transferAmount = transferState.response.amount.toDouble() / 100.0;
+    } catch (_) {}
+    double transferFee = transferState.response.fee.toDouble() / 100.0;
+    double totalAmount = transferState.response.totalAmount.toDouble() / 100.0;
+    if (transferFee == 0.0) {
+      final lastFeeState = context.read<TransferCubit>().lastFeeLoaded;
+      if (lastFeeState != null) {
+        transferFee = lastFeeState.fee / 100.0;
+      }
+    }
+    if (totalAmount == 0 && transferAmount > 0) {
+      totalAmount = transferAmount + transferFee;
+    }
+
+    String sourceAccountInfo = 'Unknown Card';
+    String senderCurrency = 'NGN';
+    String sourceAccountName = '';
+    if (summaries.isNotEmpty && selectedCardIndex < summaries.length) {
+      final selectedAccount = summaries[selectedCardIndex];
+      sourceAccountInfo = '${selectedAccount.accountType} •••• ${selectedAccount.accountNumberLast4}';
+      senderCurrency = selectedAccount.currency;
+      sourceAccountName = selectedAccount.accountName ?? '';
+    }
+
+    String recipientAccountMasked = _recipient!.accountNumber.length > 4
+        ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
+        : _recipient!.accountNumber;
+
+    final transferDetails = {
+      'amount': transferAmount,
+      'fee': transferFee,
+      'totalAmount': totalAmount,
+      'recipientName': _recipient!.name,
+      'recipientAccountMasked': recipientAccountMasked,
+      'recipientBankName': _recipient!.bankName,
+      'sourceAccountInfo': sourceAccountInfo,
+      'sourceAccountName': sourceAccountName,
+      'currency': senderCurrency,
+      'transferId': transferState.response.transferId.toString(),
+      'timestamp': transferState.response.createdAt,
+      'category': selectedCategory?.displayName,
+      'reference': _referenceController.text.trim().isNotEmpty
+          ? _referenceController.text.trim()
+          : null,
+      'status': transferState.response.status,
+      'network': _recipient!.bankName == 'LazerVault'
+          ? 'LazerVault Internal Transfer'
+          : 'External Bank Transfer',
+      'transferType': _recipient!.bankName == 'LazerVault'
+          ? 'Internal Transfer'
+          : 'Domestic Transfer',
+      if (scheduledDate != null) 'scheduledAt': scheduledDate,
+    };
+
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
+      }
+    });
   }
 
   // Confirmation Row Helper (Minor Adjustments)
@@ -1265,7 +1418,33 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     //     BlocProvider.value(value: context.read<AccountCardsSummaryCubit>()),
     //   ],
     // child: BlocConsumer<TransferCubit, TransferState>(
-    return BlocConsumer<TransferCubit, TransferState>(
+    return BlocListener<RecurringTransferCubit, RecurringTransferState>(
+      listener: (context, recurringState) {
+        if (recurringState is RecurringTransferCreated) {
+          _recurringSetupPending = false;
+          Get.snackbar('Recurring Payment Set', recurringState.message,
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 4));
+          // If transfer already succeeded and was waiting for recurring, navigate now
+          if (_transferSucceeded && _pendingTransferSuccess != null) {
+            _navigateToReceipt(context, _pendingTransferSuccess!);
+          }
+        } else if (recurringState is RecurringTransferError) {
+          _recurringSetupPending = false;
+          Get.snackbar('Recurring Payment Failed', recurringState.message,
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 5));
+          // Transfer succeeded but recurring failed — still navigate to receipt
+          if (_transferSucceeded && _pendingTransferSuccess != null) {
+            _navigateToReceipt(context, _pendingTransferSuccess!);
+          }
+        }
+      },
+      child: BlocConsumer<TransferCubit, TransferState>(
       // Now directly consumes the cubit from context
       listener: (context, transferState) {
         // Access AccountCardsSummaryCubit state inside the listener
@@ -1405,7 +1584,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               'transferId':
                   transferState.response.transferId.toString(),
               'timestamp': transferState.response.createdAt,
-              'category': selectedCategory,
+              'category': selectedCategory?.displayName,
               'reference': _referenceController.text.trim().isNotEmpty
                   ? _referenceController.text.trim()
                   : null,
@@ -1426,13 +1605,28 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               if (mounted) {
                 // Pop the PIN bottom sheet
                 Navigator.of(context).pop();
-                // Navigate directly to receipt (skip processing screen)
-                Future.delayed(const Duration(milliseconds: 200), () {
-                  if (mounted) {
-                    Get.offAllNamed(AppRoutes.transferProof,
-                        arguments: transferDetails);
-                  }
-                });
+
+                // If recurring setup is still pending, defer navigation
+                // until recurring resolves (success or error) so the user sees the result
+                if (_recurringSetupPending) {
+                  _transferSucceeded = true;
+                  _pendingTransferSuccess = transferState;
+                  // Safety timeout: if recurring takes >10s, navigate anyway
+                  Future.delayed(const Duration(seconds: 10), () {
+                    if (_recurringSetupPending && mounted) {
+                      _recurringSetupPending = false;
+                      _navigateToReceipt(context, transferState);
+                    }
+                  });
+                } else {
+                  // No recurring or already resolved — navigate immediately
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                    if (mounted) {
+                      Get.offAllNamed(AppRoutes.transferProof,
+                          arguments: transferDetails);
+                    }
+                  });
+                }
               }
             });
           } catch (e, stackTrace) {
@@ -1853,15 +2047,17 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(
-                                            Icons.category_outlined,
-                                            color: Colors.white70,
+                                          Icon(
+                                            selectedCategory?.iconData ?? Icons.category_outlined,
+                                            color: selectedCategory != null
+                                                ? selectedCategory!.color
+                                                : Colors.white70,
                                             size: 20,
                                           ),
                                           SizedBox(width: 8.w),
                                           Expanded(
                                             child: Text(
-                                              selectedCategory ??
+                                              selectedCategory?.displayName ??
                                                   'Select Category',
                                               style: TextStyle(
                                                 color: selectedCategory != null
@@ -2053,6 +2249,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           },
         );
       },
+    ),
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 
@@ -333,35 +334,53 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16.r),
-              child: CachedNetworkImage(
-                imageUrl: _selectedStock!.logoUrl,
-                fit: BoxFit.contain,
-                placeholder: (context, url) => Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.grey[200]!, Colors.grey[300]!],
+              child: _selectedStock!.logoUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: _selectedStock!.logoUrl,
+                    fit: BoxFit.contain,
+                    placeholder: (context, url) => Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.grey[200]!, Colors.grey[300]!],
+                        ),
+                      ),
+                      child: Icon(Icons.business, color: Colors.grey[600], size: 24.sp),
                     ),
-                  ),
-                  child: Icon(Icons.business, color: Colors.grey[600], size: 24.sp),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.grey[200]!, Colors.grey[300]!],
+                    errorWidget: (context, url, error) => Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.grey[200]!, Colors.grey[300]!],
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _selectedStock!.symbol[0],
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[700],
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      _selectedStock!.symbol[0],
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[700],
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w700,
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.grey[200]!, Colors.grey[300]!],
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        _selectedStock!.symbol[0],
+                        style: GoogleFonts.inter(
+                          color: Colors.grey[700],
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
             ),
           ),
           SizedBox(width: 16.w),
@@ -416,7 +435,7 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '\$${_selectedStock!.currentPrice.toStringAsFixed(2)}',
+                CurrencySymbols.formatAmountWithCurrency(_selectedStock!.currentPrice, _selectedStock!.currency),
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 18.sp,
@@ -532,7 +551,7 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
       child: Row(
         children: [
           Expanded(
-            child: _buildToggleButton('Amount (\$)', true),
+            child: _buildToggleButton('Amount (${_selectedStock != null ? CurrencySymbols.getSymbol(_selectedStock!.currency) : '\$'})', true),
           ),
           Expanded(
             child: _buildToggleButton('Shares', false),
@@ -624,7 +643,7 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
               ),
-              prefixText: _isAmountMode ? '\$ ' : '',
+              prefixText: _isAmountMode ? '${_selectedStock != null ? CurrencySymbols.getSymbol(_selectedStock!.currency) : '\$'} ' : '',
               prefixStyle: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 24.sp,
@@ -638,7 +657,7 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
           Text(
             _isAmountMode 
                 ? 'Approximately $_currentShares shares'
-                : 'Approximately \$${_currentAmount.toStringAsFixed(2)}',
+                : 'Approximately ${CurrencySymbols.formatAmountWithCurrency(_currentAmount, _selectedStock?.currency ?? 'USD')}',
             style: GoogleFonts.inter(
               color: Colors.grey[400],
               fontSize: 14.sp,
@@ -694,7 +713,7 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
               ),
-              prefixText: '\$ ',
+              prefixText: '${_selectedStock != null ? CurrencySymbols.getSymbol(_selectedStock!.currency) : '\$'} ',
               prefixStyle: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 20.sp,
@@ -706,7 +725,7 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
           ),
           SizedBox(height: 8.h),
           Text(
-            'Current market price: \$${_selectedStock?.currentPrice.toStringAsFixed(2) ?? '0.00'}',
+            'Current market price: ${_selectedStock != null ? CurrencySymbols.formatAmountWithCurrency(_selectedStock!.currentPrice, _selectedStock!.currency) : '0.00'}',
             style: GoogleFonts.inter(
               color: Colors.grey[400],
               fontSize: 14.sp,
@@ -759,7 +778,7 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
         
                 ),
                 child: Text(
-                  '\$${amount.toStringAsFixed(0)}',
+                  '${CurrencySymbols.getSymbol(_selectedStock?.currency ?? 'USD')}${amount.toStringAsFixed(0)}',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -810,11 +829,11 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
           SizedBox(height: 16.h),
           _buildSummaryRow('Order Type', '${_orderType.toString().split('.').last.toUpperCase()} ${_tradeType.toUpperCase()}'),
           _buildSummaryRow('Shares', _currentShares.toString()),
-          _buildSummaryRow('Price per Share', '\$${(_orderType == OrderType.market ? _selectedStock?.currentPrice ?? 0.0 : double.tryParse(_priceController.text) ?? 0.0).toStringAsFixed(2)}'),
-          _buildSummaryRow('Subtotal', '\$${_currentAmount.toStringAsFixed(2)}'),
-          _buildSummaryRow('Estimated Fees', '\$${_estimatedFees.toStringAsFixed(2)}'),
+          _buildSummaryRow('Price per Share', CurrencySymbols.formatAmountWithCurrency(_orderType == OrderType.market ? _selectedStock?.currentPrice ?? 0.0 : double.tryParse(_priceController.text) ?? 0.0, _selectedStock?.currency ?? 'USD')),
+          _buildSummaryRow('Subtotal', CurrencySymbols.formatAmountWithCurrency(_currentAmount, _selectedStock?.currency ?? 'USD')),
+          _buildSummaryRow('Estimated Fees', CurrencySymbols.formatAmountWithCurrency(_estimatedFees, _selectedStock?.currency ?? 'USD')),
           Divider(color: Colors.grey[600], height: 24.h),
-          _buildSummaryRow('Estimated Total', '\$${_estimatedTotal.toStringAsFixed(2)}', isTotal: true),
+          _buildSummaryRow('Estimated Total', CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD'), isTotal: true),
         ],
       ),
     );

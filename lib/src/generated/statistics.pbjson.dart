@@ -2479,6 +2479,7 @@ const ServiceCategoryItem$json = {
     {'1': 'icon', '3': 6, '4': 1, '5': 9, '10': 'icon'},
     {'1': 'color', '3': 7, '4': 1, '5': 9, '10': 'color'},
     {'1': 'is_active', '3': 8, '4': 1, '5': 8, '10': 'isActive'},
+    {'1': 'is_custom', '3': 9, '4': 1, '5': 8, '10': 'isCustom'},
   ],
 };
 
@@ -2488,5 +2489,68 @@ final $typed_data.Uint8List serviceCategoryItemDescriptor = $convert.base64Decod
     'ABKAlSC3NlcnZpY2VOYW1lEioKEXN1Yl9jYXRlZ29yeV9uYW1lGAMgASgJUg9zdWJDYXRlZ29y'
     'eU5hbWUSJwoPYnVkZ2V0X2NhdGVnb3J5GAQgASgFUg5idWRnZXRDYXRlZ29yeRIhCgxkaXNwbG'
     'F5X25hbWUYBSABKAlSC2Rpc3BsYXlOYW1lEhIKBGljb24YBiABKAlSBGljb24SFAoFY29sb3IY'
-    'ByABKAlSBWNvbG9yEhsKCWlzX2FjdGl2ZRgIIAEoCFIIaXNBY3RpdmU=');
+    'ByABKAlSBWNvbG9yEhsKCWlzX2FjdGl2ZRgIIAEoCFIIaXNBY3RpdmUSGwoJaXNfY3VzdG9tGA'
+    'kgASgIUghpc0N1c3RvbQ==');
+
+@$core.Deprecated('Use createCustomCategoryRequestDescriptor instead')
+const CreateCustomCategoryRequest$json = {
+  '1': 'CreateCustomCategoryRequest',
+  '2': [
+    {'1': 'service_name', '3': 1, '4': 1, '5': 9, '10': 'serviceName'},
+    {'1': 'display_name', '3': 2, '4': 1, '5': 9, '10': 'displayName'},
+    {'1': 'budget_category', '3': 3, '4': 1, '5': 5, '10': 'budgetCategory'},
+    {'1': 'icon', '3': 4, '4': 1, '5': 9, '10': 'icon'},
+    {'1': 'color', '3': 5, '4': 1, '5': 9, '10': 'color'},
+  ],
+};
+
+/// Descriptor for `CreateCustomCategoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createCustomCategoryRequestDescriptor = $convert.base64Decode(
+    'ChtDcmVhdGVDdXN0b21DYXRlZ29yeVJlcXVlc3QSIQoMc2VydmljZV9uYW1lGAEgASgJUgtzZX'
+    'J2aWNlTmFtZRIhCgxkaXNwbGF5X25hbWUYAiABKAlSC2Rpc3BsYXlOYW1lEicKD2J1ZGdldF9j'
+    'YXRlZ29yeRgDIAEoBVIOYnVkZ2V0Q2F0ZWdvcnkSEgoEaWNvbhgEIAEoCVIEaWNvbhIUCgVjb2'
+    'xvchgFIAEoCVIFY29sb3I=');
+
+@$core.Deprecated('Use createCustomCategoryResponseDescriptor instead')
+const CreateCustomCategoryResponse$json = {
+  '1': 'CreateCustomCategoryResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'category', '3': 3, '4': 1, '5': 11, '6': '.pb.ServiceCategoryItem', '10': 'category'},
+  ],
+};
+
+/// Descriptor for `CreateCustomCategoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createCustomCategoryResponseDescriptor = $convert.base64Decode(
+    'ChxDcmVhdGVDdXN0b21DYXRlZ29yeVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIzCghjYXRlZ29yeRgDIAEoCzIXLnBiLlNlcnZp'
+    'Y2VDYXRlZ29yeUl0ZW1SCGNhdGVnb3J5');
+
+@$core.Deprecated('Use deleteCustomCategoryRequestDescriptor instead')
+const DeleteCustomCategoryRequest$json = {
+  '1': 'DeleteCustomCategoryRequest',
+  '2': [
+    {'1': 'category_id', '3': 1, '4': 1, '5': 9, '10': 'categoryId'},
+  ],
+};
+
+/// Descriptor for `DeleteCustomCategoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteCustomCategoryRequestDescriptor = $convert.base64Decode(
+    'ChtEZWxldGVDdXN0b21DYXRlZ29yeVJlcXVlc3QSHwoLY2F0ZWdvcnlfaWQYASABKAlSCmNhdG'
+    'Vnb3J5SWQ=');
+
+@$core.Deprecated('Use deleteCustomCategoryResponseDescriptor instead')
+const DeleteCustomCategoryResponse$json = {
+  '1': 'DeleteCustomCategoryResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DeleteCustomCategoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteCustomCategoryResponseDescriptor = $convert.base64Decode(
+    'ChxEZWxldGVDdXN0b21DYXRlZ29yeVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 

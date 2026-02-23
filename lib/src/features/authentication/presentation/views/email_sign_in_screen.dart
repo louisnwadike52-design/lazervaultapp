@@ -4,13 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/data/app_data.dart';
-import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
-import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
-import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
@@ -50,18 +47,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       final loginMethod = await _storage.read(key: 'login_method');
       final storedEmail = await _storage.read(key: 'stored_email');
       final userEmail = await _storage.read(key: 'user_email');
-      final storedPasscode = await _storage.read(key: 'user_passcode');
 
       final hasEmail = (storedEmail != null && storedEmail.isNotEmpty) ||
                        (userEmail != null && userEmail.isNotEmpty);
 
       if (mounted) {
         setState(() {
-          // Show passcode option if:
-          // 1. Login method is set to passcode OR a passcode is stored locally
-          // AND there's a stored email (either key)
-          _hasPasscodeSetup = (loginMethod == 'passcode' || storedPasscode != null) &&
-                             hasEmail;
+          _hasPasscodeSetup = loginMethod == 'passcode' && hasEmail;
         });
       }
     } catch (e) {
@@ -86,9 +78,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     final arguments = Get.arguments as Map<String, dynamic>?;
     final fromForgotPasscode = arguments?['fromForgotPasscode'] == true;
 
-    return BlocProvider(
-      create: (context) => serviceLocator<IdentityCubit>(),
-      child: Scaffold(
+    return Scaffold(
         extendBodyBehindAppBar: true,
         body: Stack(
         children: [
@@ -100,87 +90,62 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               ),
             ),
           ),
-          MultiBlocListener(
-            listeners: [
-              BlocListener<AuthenticationCubit, AuthenticationState>(
-                listener: (context, state) async {
-                  switch (state) {
-                  case AuthenticationSuccess(profile: final profile):
-                    // Load user profile after successful authentication
-                    context.read<ProfileCubit>().getUserProfile();
+          BlocListener<AuthenticationCubit, AuthenticationState>(
+            listener: (context, state) async {
+              switch (state) {
+              case AuthenticationSuccess(profile: final profile):
+                // Load user profile after successful authentication
+                context.read<ProfileCubit>().getUserProfile();
 
-                    // Update local storage with latest email and name for passcode login screen
-                    // IMPORTANT: Await these writes to ensure they complete before navigation
-                    await _storage.write(key: 'stored_email', value: profile.user.email);
-                    await _storage.write(key: 'user_first_name', value: profile.user.firstName);
-                    await _storage.write(key: 'user_avatar_url', value: profile.user.profilePicture ?? '');
+                // Update local storage with latest email and name for passcode login screen
+                await _storage.write(key: 'stored_email', value: profile.user.email);
+                await _storage.write(key: 'user_first_name', value: profile.user.firstName);
+                await _storage.write(key: 'user_avatar_url', value: profile.user.profilePicture ?? '');
 
-                    Get.snackbar(
-                      'Success',
-                      'Login Successful!',
-                      snackPosition: SnackPosition.TOP,
-                      backgroundColor: Colors.green,
-                      colorText: Colors.white,
-                      margin: EdgeInsets.all(15.w),
-                      borderRadius: 10.r,
-                    );
+                Get.snackbar(
+                  'Success',
+                  'Login Successful!',
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(15.w),
+                  borderRadius: 10.r,
+                );
 
-                    // Handle navigation based on scenario
-                    if (fromForgotPasscode) {
-                      // Always go to passcode setup when resetting
-                      Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {'fromLoginFlow': true});
-                    } else {
-                      // Always check backend for passcode status (never rely on local storage)
-                      print('🔐 Checking backend for passcode status...');
-                      context.read<IdentityCubit>().checkPasscodeExists();
-                    }
-                    break;
-                  case AuthenticationFailure(message: final msg):
-                    Get.snackbar(
-                      'Login Error',
-                      msg,
-                      snackPosition: SnackPosition.TOP,
-                      backgroundColor: Colors.redAccent,
-                      colorText: Colors.white,
-                      margin: EdgeInsets.all(15.w),
-                      borderRadius: 10.r,
-                    );
-                    break;
-                    default:
-                      break;
-                  }
-                },
-              ),
-              BlocListener<IdentityCubit, IdentityState>(
-                listener: (context, state) async {
-                  if (state is PasscodeExistsChecked) {
-                    if (state.exists) {
-                      // User has passcode on backend - save login method locally
-                      // so next app restart routes to passcode login
-                      await _storage.write(key: 'login_method', value: 'passcode');
-                      Get.offAllNamed(AppRoutes.dashboard);
-                    } else {
-                      // No passcode set, prompt to set up
-                      Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {'fromLoginFlow': true});
-                    }
-                  } else if (state is IdentityError) {
-                    // API error checking passcode - show error and retry, or default to passcode setup
-                    print('🔐 Error checking passcode status from backend: ${state.message}');
-                    Get.snackbar(
-                      'Error',
-                      'Could not verify passcode status. Please set up a passcode.',
-                      snackPosition: SnackPosition.TOP,
-                      backgroundColor: Colors.orange,
-                      colorText: Colors.white,
-                      margin: EdgeInsets.all(15.w),
-                      borderRadius: 10.r,
-                    );
-                    // Default to passcode setup on error (safe default)
-                    Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {'fromLoginFlow': true});
-                  }
-                },
-              ),
-            ],
+                if (fromForgotPasscode) {
+                  // Always go to passcode setup when resetting
+                  Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {'fromLoginFlow': true});
+                  break;
+                }
+
+                // Backend is source of truth — use login response data
+                if (profile.user.hasPasscode) {
+                  // Passcode already set — persist login method and go to dashboard
+                  await _storage.write(key: 'login_method', value: 'passcode');
+                  Get.offAllNamed(AppRoutes.dashboard);
+                } else {
+                  // No passcode — route to setup, pass hasTransactionPin for downstream
+                  Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
+                    'fromLoginFlow': true,
+                    'hasTransactionPin': profile.user.hasTransactionPin,
+                  });
+                }
+                break;
+              case AuthenticationFailure(message: final msg):
+                Get.snackbar(
+                  'Login Error',
+                  msg,
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.redAccent,
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(15.w),
+                  borderRadius: 10.r,
+                );
+                break;
+                default:
+                  break;
+              }
+            },
             child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
               builder: (context, state) {
                 final isLoading = state is AuthenticationLoading;
@@ -337,7 +302,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             ),
           ),
         ],
-      ),
       ),
     );
   }

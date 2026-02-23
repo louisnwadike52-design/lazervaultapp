@@ -31,16 +31,38 @@ class CrowdfundLoaded extends CrowdfundState {
   final int totalCount;
   final int currentPage;
   final bool isStale;
+  final bool hasMore;
+  final bool isLoadingMore;
 
   const CrowdfundLoaded({
     required this.crowdfunds,
     this.totalCount = 0,
     this.currentPage = 1,
     this.isStale = false,
+    this.hasMore = true,
+    this.isLoadingMore = false,
   });
 
+  CrowdfundLoaded copyWith({
+    List<Crowdfund>? crowdfunds,
+    int? totalCount,
+    int? currentPage,
+    bool? isStale,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return CrowdfundLoaded(
+      crowdfunds: crowdfunds ?? this.crowdfunds,
+      totalCount: totalCount ?? this.totalCount,
+      currentPage: currentPage ?? this.currentPage,
+      isStale: isStale ?? this.isStale,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
+
   @override
-  List<Object?> get props => [crowdfunds, totalCount, currentPage, isStale];
+  List<Object?> get props => [crowdfunds, totalCount, currentPage, isStale, hasMore, isLoadingMore];
 }
 
 /// Single crowdfund details loaded with donations

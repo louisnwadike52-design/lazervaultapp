@@ -101,11 +101,35 @@ class IdentityType extends $pb.ProtobufEnum {
   static const IdentityType IDENTITY_TYPE_UNSPECIFIED = IdentityType._(0, _omitEnumNames ? '' : 'IDENTITY_TYPE_UNSPECIFIED');
   static const IdentityType IDENTITY_TYPE_BVN = IdentityType._(1, _omitEnumNames ? '' : 'IDENTITY_TYPE_BVN');
   static const IdentityType IDENTITY_TYPE_NIN = IdentityType._(2, _omitEnumNames ? '' : 'IDENTITY_TYPE_NIN');
+  static const IdentityType IDENTITY_TYPE_GHANA_CARD = IdentityType._(3, _omitEnumNames ? '' : 'IDENTITY_TYPE_GHANA_CARD');
+  static const IdentityType IDENTITY_TYPE_KENYA_NATIONAL_ID = IdentityType._(4, _omitEnumNames ? '' : 'IDENTITY_TYPE_KENYA_NATIONAL_ID');
+  static const IdentityType IDENTITY_TYPE_KRA_PIN = IdentityType._(5, _omitEnumNames ? '' : 'IDENTITY_TYPE_KRA_PIN');
+  static const IdentityType IDENTITY_TYPE_SA_ID = IdentityType._(6, _omitEnumNames ? '' : 'IDENTITY_TYPE_SA_ID');
+  static const IdentityType IDENTITY_TYPE_SA_PASSPORT = IdentityType._(7, _omitEnumNames ? '' : 'IDENTITY_TYPE_SA_PASSPORT');
+  static const IdentityType IDENTITY_TYPE_UK_PASSPORT = IdentityType._(8, _omitEnumNames ? '' : 'IDENTITY_TYPE_UK_PASSPORT');
+  static const IdentityType IDENTITY_TYPE_UK_DRIVING_LICENSE = IdentityType._(9, _omitEnumNames ? '' : 'IDENTITY_TYPE_UK_DRIVING_LICENSE');
+  static const IdentityType IDENTITY_TYPE_US_SSN = IdentityType._(10, _omitEnumNames ? '' : 'IDENTITY_TYPE_US_SSN');
+  static const IdentityType IDENTITY_TYPE_US_STATE_ID = IdentityType._(11, _omitEnumNames ? '' : 'IDENTITY_TYPE_US_STATE_ID');
+  static const IdentityType IDENTITY_TYPE_US_PASSPORT = IdentityType._(12, _omitEnumNames ? '' : 'IDENTITY_TYPE_US_PASSPORT');
+  static const IdentityType IDENTITY_TYPE_DRIVERS_LICENSE = IdentityType._(13, _omitEnumNames ? '' : 'IDENTITY_TYPE_DRIVERS_LICENSE');
+  static const IdentityType IDENTITY_TYPE_INTERNATIONAL_PASSPORT = IdentityType._(14, _omitEnumNames ? '' : 'IDENTITY_TYPE_INTERNATIONAL_PASSPORT');
 
   static const $core.List<IdentityType> values = <IdentityType> [
     IDENTITY_TYPE_UNSPECIFIED,
     IDENTITY_TYPE_BVN,
     IDENTITY_TYPE_NIN,
+    IDENTITY_TYPE_GHANA_CARD,
+    IDENTITY_TYPE_KENYA_NATIONAL_ID,
+    IDENTITY_TYPE_KRA_PIN,
+    IDENTITY_TYPE_SA_ID,
+    IDENTITY_TYPE_SA_PASSPORT,
+    IDENTITY_TYPE_UK_PASSPORT,
+    IDENTITY_TYPE_UK_DRIVING_LICENSE,
+    IDENTITY_TYPE_US_SSN,
+    IDENTITY_TYPE_US_STATE_ID,
+    IDENTITY_TYPE_US_PASSPORT,
+    IDENTITY_TYPE_DRIVERS_LICENSE,
+    IDENTITY_TYPE_INTERNATIONAL_PASSPORT,
   ];
 
   static final $core.Map<$core.int, IdentityType> _byValue = $pb.ProtobufEnum.initByValue(values);

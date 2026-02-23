@@ -161,22 +161,15 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   }
 
   /// Get currency code for locale (e.g., en-NG -> NGN, en-US -> USD)
+  /// Uses CountryLocales as the single source of truth.
   String _getCurrencyForLocale(String locale) {
     if (locale.contains('-')) {
       final countryCode = locale.split('-')[1].toUpperCase();
-      // Map common country codes to currency codes
-      final currencyMap = {
-        'NG': 'NGN',
-        'US': 'USD',
-        'GB': 'GBP',
-        'GH': 'GHS',
-        'KE': 'KES',
-        'ZA': 'ZAR',
-        'EU': 'EUR',
-        'CA': 'CAD',
-        'AU': 'AUD',
-      };
-      return currencyMap[countryCode] ?? countryCode;
+      final countryLocale = CountryLocales.findByCountryCode(countryCode);
+      if (countryLocale != null) {
+        return countryLocale.currency;
+      }
+      return countryCode; // Fallback to country code itself
     }
     return 'USD'; // Default fallback
   }

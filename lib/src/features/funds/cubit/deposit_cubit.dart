@@ -9,6 +9,7 @@ class DepositCubit extends Cubit<DepositState> {
   final InitiateDepositUseCase _initiateDepositUseCase;
   final BankingWebSocketService? _bankingWebSocketService;
   StreamSubscription<BankingStatusEvent>? _wsSubscription;
+  bool _isProcessing = false;
 
   DepositCubit(
     this._initiateDepositUseCase, {
@@ -21,9 +22,11 @@ class DepositCubit extends Cubit<DepositState> {
     required double amount,
     required String currency,
     required String sourceBankName,
+    String? countryCode,
     String? accessToken,
   }) async {
-    if (isClosed) return;
+    if (isClosed || _isProcessing) return;
+    _isProcessing = true;
     emit(DepositLoading());
 
     if (amount <= 0) {
@@ -38,19 +41,67 @@ class DepositCubit extends Cubit<DepositState> {
       return;
     }
 
-    if (sourceBankName.isEmpty) {
-      if (isClosed) return;
-      emit(const DepositFailure('Source bank must be selected'));
-      return;
-    }
-
     try {
       final result = await _initiateDepositUseCase.call(
         targetAccountId: targetAccountId,
         amount: amount,
         currency: currency,
         sourceBankName: sourceBankName,
+        countryCode: countryCode,
         accessToken: accessToken,
+      );
+
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          _isProcessing = false;
+          emit(DepositFailure(
+            failure.message,
+            statusCode: failure.statusCode,
+          ));
+        },
+        (depositDetails) {
+          _isProcessing = false;
+          if (depositDetails.requiresAuthorization &&
+              depositDetails.paymentUrl != null &&
+              depositDetails.paymentUrl!.isNotEmpty) {
+            // Flutterwave Standard: open hosted checkout
+            emit(DepositRequiresAuthorization(
+              paymentUrl: depositDetails.paymentUrl!,
+              depositId: depositDetails.depositId,
+              provider: depositDetails.provider ?? 'flutterwave',
+            ));
+            // Subscribe to WebSocket for completion callback
+            _subscribeToDepositUpdates(depositDetails.depositId);
+          } else {
+            emit(DepositSuccess(depositDetails));
+            _subscribeToDepositUpdates(depositDetails.depositId);
+          }
+        },
+      );
+    } catch (e) {
+      _isProcessing = false;
+      if (isClosed) return;
+      emit(DepositFailure('An unexpected error occurred: $e'));
+    }
+  }
+
+  /// Simulate a test deposit (sandbox only) — instant credit
+  Future<void> simulateTestDeposit({
+    required String destinationAccountId,
+    required double amount,
+    required String currency,
+    required String countryCode,
+  }) async {
+    if (isClosed) return;
+    emit(DepositLoading());
+
+    try {
+      final result = await _initiateDepositUseCase.simulateTestDeposit(
+        destinationAccountId: destinationAccountId,
+        amount: amount,
+        currency: currency,
+        countryCode: countryCode,
       );
 
       if (isClosed) return;
@@ -59,16 +110,52 @@ class DepositCubit extends Cubit<DepositState> {
           failure.message,
           statusCode: failure.statusCode,
         )),
-        (depositDetails) {
-          emit(DepositSuccess(depositDetails));
-          // Subscribe to WebSocket for real-time status updates
-          _subscribeToDepositUpdates(depositDetails.depositId);
-        },
+        (depositDetails) => emit(SimulateDepositSuccess(depositDetails)),
       );
     } catch (e) {
       if (isClosed) return;
       emit(DepositFailure('An unexpected error occurred: $e'));
     }
+  }
+
+  /// Fetch available deposit methods for a country
+  Future<void> loadDepositMethods({
+    required String countryCode,
+    required String currency,
+  }) async {
+    if (isClosed) return;
+    emit(DepositLoading());
+
+    try {
+      final result = await _initiateDepositUseCase.getDepositMethods(
+        countryCode: countryCode,
+        currency: currency,
+      );
+
+      if (isClosed) return;
+      result.fold(
+        (failure) => emit(DepositFailure(
+          failure.message,
+          statusCode: failure.statusCode,
+        )),
+        (methods) => emit(DepositMethodsLoaded(
+          methods: methods,
+          countryCode: countryCode,
+          currency: currency,
+          provider: methods.isNotEmpty ? 'flutterwave' : '',
+        )),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(DepositFailure('An unexpected error occurred: $e'));
+    }
+  }
+
+  /// Called when the Flutterwave WebView redirect is intercepted
+  void onPaymentCompleted(String depositId) {
+    // WebSocket subscription should already be active from initiateDeposit
+    // If not, subscribe now
+    _subscribeToDepositUpdates(depositId);
   }
 
   void _subscribeToDepositUpdates(String? depositReference) {

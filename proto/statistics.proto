@@ -284,6 +284,19 @@ service StatisticsService {
       get: "/v1/statistics/service-categories/{service_name}"
     };
   }
+
+  rpc CreateCustomCategory(CreateCustomCategoryRequest) returns (CreateCustomCategoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/statistics/categories/custom"
+      body: "*"
+    };
+  }
+
+  rpc DeleteCustomCategory(DeleteCustomCategoryRequest) returns (DeleteCustomCategoryResponse) {
+    option (google.api.http) = {
+      delete: "/v1/statistics/categories/custom/{category_id}"
+    };
+  }
 }
 
 // ========================================
@@ -1360,4 +1373,29 @@ message ServiceCategoryItem {
   string icon = 6;              // Icon name for UI
   string color = 7;             // Hex color for UI
   bool is_active = 8;           // Whether the category is active
+  bool is_custom = 9;           // True if user-created custom category
+}
+
+// Custom Category Messages
+message CreateCustomCategoryRequest {
+  string service_name = 1;      // "transfer", "bill_payment", etc.
+  string display_name = 2;      // User-provided display name
+  int32 budget_category = 3;    // Default: 16 (OTHER)
+  string icon = 4;              // Icon name (default: "category")
+  string color = 5;             // Hex color (default: "#95A5A6")
+}
+
+message CreateCustomCategoryResponse {
+  bool success = 1;
+  string message = 2;
+  ServiceCategoryItem category = 3;
+}
+
+message DeleteCustomCategoryRequest {
+  string category_id = 1;
+}
+
+message DeleteCustomCategoryResponse {
+  bool success = 1;
+  string message = 2;
 }

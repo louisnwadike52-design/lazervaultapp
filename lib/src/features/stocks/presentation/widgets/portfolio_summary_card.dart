@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
 
 class PortfolioSummaryCard extends StatelessWidget {
@@ -63,7 +64,7 @@ class PortfolioSummaryCard extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              '\$${totalValue.toStringAsFixed(2)}',
+              CurrencySymbols.formatAmountWithCurrency(totalValue, 'USD'),
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 32.sp,
@@ -94,7 +95,7 @@ class PortfolioSummaryCard extends StatelessWidget {
                       ),
                       SizedBox(width: 4.w),
                       Text(
-                        '\$${dayChange.abs().toStringAsFixed(2)}',
+                        CurrencySymbols.formatAmountWithCurrency(dayChange.abs(), 'USD'),
                         style: GoogleFonts.inter(
                           color: isPositive
                               ? const Color(0xFF10B981)
@@ -139,8 +140,8 @@ class PortfolioSummaryCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildStat('Holdings', portfolio!.holdings.length.toString()),
-                  _buildStat('Cash', '\$${portfolio!.availableCash.toStringAsFixed(2)}'),
-                  _buildStat('Invested', '\$${(totalValue - portfolio!.availableCash).toStringAsFixed(2)}'),
+                  _buildStat('Cash', CurrencySymbols.formatAmountWithCurrency(portfolio!.availableCash, 'USD')),
+                  _buildStat('Invested', CurrencySymbols.formatAmountWithCurrency(totalValue - portfolio!.availableCash, 'USD')),
                 ],
               ),
             ],

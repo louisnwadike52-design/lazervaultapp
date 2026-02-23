@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -217,6 +218,176 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
   void _initializeData() {
     final args = Get.arguments as Map<String, dynamic>;
     _currency = args['currency'] ?? {};
+    _populateFlutterwaveMethods();
+  }
+
+  /// Add Flutterwave deposit methods for non-NGN countries
+  void _populateFlutterwaveMethods() {
+    final countryCode = _currency['country_code'] as String? ?? '';
+    if (countryCode == 'NG' || countryCode.isEmpty) return; // NGN uses Mono
+
+    final List<Map<String, dynamic>> flutterwaveMethods = _getFlutterwaveMethodsForCountry(countryCode);
+    // Insert Flutterwave methods at the top of available methods
+    _availableMethods.insertAll(0, flutterwaveMethods);
+
+    // Add test deposit option in debug mode
+    if (kDebugMode) {
+      _availableMethods.add({
+        'id': 'test_deposit',
+        'name': 'Test Deposit',
+        'icon': Icons.science,
+        'description': 'Instant simulated deposit (sandbox)',
+        'isAvailable': true,
+        'processingTime': 'Instant',
+        'fee': 'Free',
+        'isRecommended': false,
+        'type': 'test_deposit',
+        'country_code': countryCode,
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> _getFlutterwaveMethodsForCountry(String countryCode) {
+    switch (countryCode) {
+      case 'GH':
+        return [
+          {
+            'id': 'flw_mobile_money_gh',
+            'name': 'Mobile Money',
+            'icon': Icons.phone_android,
+            'description': 'Pay with MTN, Vodafone or AirtelTigo',
+            'isAvailable': true,
+            'processingTime': 'Instant',
+            'fee': '1.5%',
+            'isRecommended': true,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+          {
+            'id': 'flw_card_gh',
+            'name': 'Card Payment',
+            'icon': Icons.credit_card,
+            'description': 'Visa, Mastercard',
+            'isAvailable': true,
+            'processingTime': 'Instant',
+            'fee': '1.5%',
+            'isRecommended': false,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+        ];
+      case 'KE':
+        return [
+          {
+            'id': 'flw_mpesa_ke',
+            'name': 'M-Pesa',
+            'icon': Icons.phone_android,
+            'description': 'Pay with M-Pesa',
+            'isAvailable': true,
+            'processingTime': 'Instant',
+            'fee': '1.5%',
+            'isRecommended': true,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+          {
+            'id': 'flw_card_ke',
+            'name': 'Card Payment',
+            'icon': Icons.credit_card,
+            'description': 'Visa, Mastercard',
+            'isAvailable': true,
+            'processingTime': 'Instant',
+            'fee': '1.5%',
+            'isRecommended': false,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+        ];
+      case 'ZA':
+        return [
+          {
+            'id': 'flw_card_za',
+            'name': 'Card Payment',
+            'icon': Icons.credit_card,
+            'description': 'Visa, Mastercard',
+            'isAvailable': true,
+            'processingTime': 'Instant',
+            'fee': '2%',
+            'isRecommended': true,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+          {
+            'id': 'flw_bank_za',
+            'name': 'Bank Transfer',
+            'icon': Icons.account_balance,
+            'description': 'Standard bank transfer',
+            'isAvailable': true,
+            'processingTime': '1-3 business days',
+            'fee': '2%',
+            'isRecommended': false,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+        ];
+      case 'US':
+        return [
+          {
+            'id': 'flw_card_us',
+            'name': 'Card Payment',
+            'icon': Icons.credit_card,
+            'description': 'Visa, Mastercard',
+            'isAvailable': true,
+            'processingTime': 'Instant',
+            'fee': '2%',
+            'isRecommended': true,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+        ];
+      case 'GB':
+        return [
+          {
+            'id': 'flw_card_gb',
+            'name': 'Card Payment',
+            'icon': Icons.credit_card,
+            'description': 'Visa, Mastercard',
+            'isAvailable': true,
+            'processingTime': 'Instant',
+            'fee': '2%',
+            'isRecommended': true,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+          {
+            'id': 'flw_bank_gb',
+            'name': 'Bank Transfer',
+            'icon': Icons.account_balance,
+            'description': 'Standard bank transfer',
+            'isAvailable': true,
+            'processingTime': '1-3 business days',
+            'fee': '2%',
+            'isRecommended': false,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+        ];
+      default:
+        return [
+          {
+            'id': 'flw_card_default',
+            'name': 'Card Payment',
+            'icon': Icons.credit_card,
+            'description': 'Visa, Mastercard',
+            'isAvailable': true,
+            'processingTime': 'Instant',
+            'fee': '2%',
+            'isRecommended': true,
+            'type': 'flutterwave',
+            'country_code': countryCode,
+          },
+        ];
+    }
   }
 
   void _setupAnimations() {

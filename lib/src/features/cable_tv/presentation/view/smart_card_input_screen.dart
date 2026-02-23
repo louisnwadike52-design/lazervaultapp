@@ -32,7 +32,7 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
       final provider = args['provider'] as CableTVProviderEntity;
 
       context.read<CableTVCubit>().validateSmartCard(
-            providerId: provider.id,
+            providerId: provider.serviceId,
             smartCardNumber: _smartCardController.text.trim(),
           );
     }

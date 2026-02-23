@@ -53,6 +53,11 @@ class CrowdfundCreator extends Equatable {
 
   String get fullName => '$firstName $lastName';
   String get displayName => username.isNotEmpty ? username : fullName;
+  String get initials {
+    final f = firstName.isNotEmpty ? firstName[0] : '';
+    final l = lastName.isNotEmpty ? lastName[0] : '';
+    return '$f$l'.toUpperCase();
+  }
 
   Map<String, dynamic> toJson() => {
         'userId': userId,
@@ -67,16 +72,16 @@ class CrowdfundCreator extends Equatable {
 
   factory CrowdfundCreator.fromJson(Map<String, dynamic> json) {
     return CrowdfundCreator(
-      userId: json['userId'] as int,
-      username: json['username'] as String,
-      firstName: json['firstName'] as String,
-      lastName: json['lastName'] as String,
+      userId: (json['userId'] as num?)?.toInt() ?? 0,
+      username: (json['username'] as String?) ?? '',
+      firstName: (json['firstName'] as String?) ?? '',
+      lastName: (json['lastName'] as String?) ?? '',
       profilePicture: json['profilePicture'] as String?,
-      verified: json['verified'] as bool,
+      verified: (json['verified'] as bool?) ?? false,
       verifiedAt: json['verifiedAt'] != null
-          ? DateTime.parse(json['verifiedAt'] as String)
+          ? DateTime.tryParse(json['verifiedAt'] as String)
           : null,
-      facialRecognitionEnabled: json['facialRecognitionEnabled'] as bool,
+      facialRecognitionEnabled: (json['facialRecognitionEnabled'] as bool?) ?? false,
     );
   }
 
@@ -149,9 +154,9 @@ class Crowdfund extends Equatable {
   bool get isExpired =>
       hasDeadline && DateTime.now().isAfter(deadline!);
   int get daysRemaining => hasDeadline
-      ? deadline!.difference(DateTime.now()).inDays
+      ? deadline!.difference(DateTime.now()).inDays.clamp(0, 999999)
       : 0;
-  double get amountRemaining => targetAmount - currentAmount;
+  double get amountRemaining => (targetAmount - currentAmount).clamp(0.0, double.infinity);
   bool get isTargetReached => currentAmount >= targetAmount;
 
   Map<String, dynamic> toJson() => {
@@ -189,7 +194,7 @@ class Crowdfund extends Equatable {
       currentAmount: (json['currentAmount'] as num).toDouble(),
       currency: json['currency'] as String,
       deadline: json['deadline'] != null
-          ? DateTime.parse(json['deadline'] as String)
+          ? DateTime.tryParse(json['deadline'] as String)
           : null,
       category: json['category'] as String,
       status: CrowdfundStatus.values.firstWhere(
@@ -203,8 +208,8 @@ class Crowdfund extends Equatable {
       ),
       donorCount: json['donorCount'] as int,
       progressPercentage: (json['progressPercentage'] as num).toDouble(),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
     );
   }
 
@@ -498,7 +503,7 @@ class CrowdfundReport extends Equatable {
           [],
       success: json['success'] as bool? ?? false,
       generatedAt: json['generated_at'] != null
-          ? DateTime.parse(json['generated_at'] as String)
+          ? (DateTime.tryParse(json['generated_at'] as String) ?? DateTime.now())
           : DateTime.now(),
       error: json['error'] as String?,
     );

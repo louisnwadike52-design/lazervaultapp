@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class PortfolioAnalyticsScreen extends StatefulWidget {
-  const PortfolioAnalyticsScreen({super.key});
+  final String currency;
+  const PortfolioAnalyticsScreen({super.key, this.currency = 'USD'});
 
   @override
   State<PortfolioAnalyticsScreen> createState() => _PortfolioAnalyticsScreenState();
@@ -254,7 +256,7 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '\$24,567.89',
+                      CurrencySymbols.formatAmountWithCurrency(24567.89, widget.currency),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 28.sp,
@@ -278,7 +280,7 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '+\$2,734.12',
+                      '+${CurrencySymbols.formatAmountWithCurrency(2734.12, widget.currency)}',
                       style: GoogleFonts.inter(
                         color: Colors.green,
                         fontSize: 20.sp,
@@ -449,7 +451,7 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
                       interval: 5000,
                       getTitlesWidget: (double value, TitleMeta meta) {
                         return Text(
-                          '\$${(value / 1000).toStringAsFixed(0)}K',
+                          '${CurrencySymbols.getSymbol(widget.currency)}${(value / 1000).toStringAsFixed(0)}K',
                           style: GoogleFonts.inter(
                             color: Colors.grey,
                             fontSize: 10.sp,
@@ -744,7 +746,7 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
             ],
           ),
           SizedBox(height: 20.h),
-          _buildRiskItem('Value at Risk (95%)', '\$1,234', 'Maximum potential loss'),
+          _buildRiskItem('Value at Risk (95%)', CurrencySymbols.formatAmountWithCurrency(1234, widget.currency), 'Maximum potential loss'),
           _buildRiskItem('Correlation to S&P 500', '0.78', 'Market correlation'),
           _buildRiskItem('Diversification Ratio', '8.5/10', 'Portfolio diversification'),
         ],

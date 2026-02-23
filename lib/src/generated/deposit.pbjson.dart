@@ -39,6 +39,8 @@ const InitiateDepositRequest$json = {
     {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'source_bank_name', '3': 4, '4': 1, '5': 9, '10': 'source_bank_name'},
+    {'1': 'country_code', '3': 5, '4': 1, '5': 9, '10': 'country_code'},
+    {'1': 'locale', '3': 6, '4': 1, '5': 9, '10': 'locale'},
   ],
   '7': {},
 };
@@ -47,9 +49,10 @@ const InitiateDepositRequest$json = {
 final $typed_data.Uint8List initiateDepositRequestDescriptor = $convert.base64Decode(
     'ChZJbml0aWF0ZURlcG9zaXRSZXF1ZXN0EiwKEXRhcmdldF9hY2NvdW50X2lkGAEgASgJUhF0YX'
     'JnZXRfYWNjb3VudF9pZBIWCgZhbW91bnQYAiABKARSBmFtb3VudBIaCghjdXJyZW5jeRgDIAEo'
-    'CVIIY3VycmVuY3kSKgoQc291cmNlX2JhbmtfbmFtZRgEIAEoCVIQc291cmNlX2JhbmtfbmFtZT'
-    'pAkkE9CjvSARF0YXJnZXRfYWNjb3VudF9pZNIBBmFtb3VudNIBCGN1cnJlbmN50gEQc291cmNl'
-    'X2JhbmtfbmFtZQ==');
+    'CVIIY3VycmVuY3kSKgoQc291cmNlX2JhbmtfbmFtZRgEIAEoCVIQc291cmNlX2JhbmtfbmFtZR'
+    'IiCgxjb3VudHJ5X2NvZGUYBSABKAlSDGNvdW50cnlfY29kZRIWCgZsb2NhbGUYBiABKAlSBmxv'
+    'Y2FsZTpAkkE9CjvSARF0YXJnZXRfYWNjb3VudF9pZNIBBmFtb3VudNIBCGN1cnJlbmN50gEQc2'
+    '91cmNlX2JhbmtfbmFtZQ==');
 
 @$core.Deprecated('Use initiateDepositResponseDescriptor instead')
 const InitiateDepositResponse$json = {
@@ -58,6 +61,10 @@ const InitiateDepositResponse$json = {
     {'1': 'deposit_id', '3': 1, '4': 1, '5': 9, '10': 'deposit_id'},
     {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.pb.DepositStatus', '10': 'status'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'requires_authorization', '3': 4, '4': 1, '5': 8, '10': 'requires_authorization'},
+    {'1': 'payment_url', '3': 5, '4': 1, '5': 9, '10': 'payment_url'},
+    {'1': 'provider', '3': 6, '4': 1, '5': 9, '10': 'provider'},
+    {'1': 'country_code', '3': 7, '4': 1, '5': 9, '10': 'country_code'},
   ],
 };
 
@@ -65,7 +72,10 @@ const InitiateDepositResponse$json = {
 final $typed_data.Uint8List initiateDepositResponseDescriptor = $convert.base64Decode(
     'ChdJbml0aWF0ZURlcG9zaXRSZXNwb25zZRIeCgpkZXBvc2l0X2lkGAEgASgJUgpkZXBvc2l0X2'
     'lkEikKBnN0YXR1cxgCIAEoDjIRLnBiLkRlcG9zaXRTdGF0dXNSBnN0YXR1cxIYCgdtZXNzYWdl'
-    'GAMgASgJUgdtZXNzYWdl');
+    'GAMgASgJUgdtZXNzYWdlEjYKFnJlcXVpcmVzX2F1dGhvcml6YXRpb24YBCABKAhSFnJlcXVpcm'
+    'VzX2F1dGhvcml6YXRpb24SIAoLcGF5bWVudF91cmwYBSABKAlSC3BheW1lbnRfdXJsEhoKCHBy'
+    'b3ZpZGVyGAYgASgJUghwcm92aWRlchIiCgxjb3VudHJ5X2NvZGUYByABKAlSDGNvdW50cnlfY2'
+    '9kZQ==');
 
 @$core.Deprecated('Use getDepositDetailsRequestDescriptor instead')
 const GetDepositDetailsRequest$json = {
@@ -114,4 +124,74 @@ final $typed_data.Uint8List getDepositDetailsResponseDescriptor = $convert.base6
     'x1cmVfcmVhc29uGAsgASgJUg5mYWlsdXJlX3JlYXNvbhI4ChdleHRlcm5hbF90cmFuc2FjdGlv'
     'bl9pZBgMIAEoCVIXZXh0ZXJuYWxfdHJhbnNhY3Rpb25faWQSPAoPdXBkYXRlZF9hY2NvdW50GA'
     '0gASgLMhIucGIuQWNjb3VudERldGFpbHNSD3VwZGF0ZWRfYWNjb3VudA==');
+
+@$core.Deprecated('Use simulateTestDepositRequestDescriptor instead')
+const SimulateTestDepositRequest$json = {
+  '1': 'SimulateTestDepositRequest',
+  '2': [
+    {'1': 'destination_account_id', '3': 1, '4': 1, '5': 9, '10': 'destination_account_id'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'country_code', '3': 4, '4': 1, '5': 9, '10': 'country_code'},
+  ],
+};
+
+/// Descriptor for `SimulateTestDepositRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List simulateTestDepositRequestDescriptor = $convert.base64Decode(
+    'ChpTaW11bGF0ZVRlc3REZXBvc2l0UmVxdWVzdBI2ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGA'
+    'EgASgJUhZkZXN0aW5hdGlvbl9hY2NvdW50X2lkEhYKBmFtb3VudBgCIAEoBFIGYW1vdW50EhoK'
+    'CGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIiCgxjb3VudHJ5X2NvZGUYBCABKAlSDGNvdW50cn'
+    'lfY29kZQ==');
+
+@$core.Deprecated('Use getDepositMethodsRequestDescriptor instead')
+const GetDepositMethodsRequest$json = {
+  '1': 'GetDepositMethodsRequest',
+  '2': [
+    {'1': 'country_code', '3': 1, '4': 1, '5': 9, '10': 'country_code'},
+    {'1': 'currency', '3': 2, '4': 1, '5': 9, '10': 'currency'},
+  ],
+};
+
+/// Descriptor for `GetDepositMethodsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDepositMethodsRequestDescriptor = $convert.base64Decode(
+    'ChhHZXREZXBvc2l0TWV0aG9kc1JlcXVlc3QSIgoMY291bnRyeV9jb2RlGAEgASgJUgxjb3VudH'
+    'J5X2NvZGUSGgoIY3VycmVuY3kYAiABKAlSCGN1cnJlbmN5');
+
+@$core.Deprecated('Use getDepositMethodsResponseDescriptor instead')
+const GetDepositMethodsResponse$json = {
+  '1': 'GetDepositMethodsResponse',
+  '2': [
+    {'1': 'methods', '3': 1, '4': 3, '5': 11, '6': '.pb.DepositMethod', '10': 'methods'},
+    {'1': 'country_code', '3': 2, '4': 1, '5': 9, '10': 'country_code'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'provider', '3': 4, '4': 1, '5': 9, '10': 'provider'},
+  ],
+};
+
+/// Descriptor for `GetDepositMethodsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDepositMethodsResponseDescriptor = $convert.base64Decode(
+    'ChlHZXREZXBvc2l0TWV0aG9kc1Jlc3BvbnNlEisKB21ldGhvZHMYASADKAsyES5wYi5EZXBvc2'
+    'l0TWV0aG9kUgdtZXRob2RzEiIKDGNvdW50cnlfY29kZRgCIAEoCVIMY291bnRyeV9jb2RlEhoK'
+    'CGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIaCghwcm92aWRlchgEIAEoCVIIcHJvdmlkZXI=');
+
+@$core.Deprecated('Use depositMethodDescriptor instead')
+const DepositMethod$json = {
+  '1': 'DepositMethod',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'icon', '3': 4, '4': 1, '5': 9, '10': 'icon'},
+    {'1': 'fee_description', '3': 5, '4': 1, '5': 9, '10': 'fee_description'},
+    {'1': 'processing_time', '3': 6, '4': 1, '5': 9, '10': 'processing_time'},
+    {'1': 'available', '3': 7, '4': 1, '5': 8, '10': 'available'},
+  ],
+};
+
+/// Descriptor for `DepositMethod`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List depositMethodDescriptor = $convert.base64Decode(
+    'Cg1EZXBvc2l0TWV0aG9kEg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEiAKC2'
+    'Rlc2NyaXB0aW9uGAMgASgJUgtkZXNjcmlwdGlvbhISCgRpY29uGAQgASgJUgRpY29uEigKD2Zl'
+    'ZV9kZXNjcmlwdGlvbhgFIAEoCVIPZmVlX2Rlc2NyaXB0aW9uEigKD3Byb2Nlc3NpbmdfdGltZR'
+    'gGIAEoCVIPcHJvY2Vzc2luZ190aW1lEhwKCWF2YWlsYWJsZRgHIAEoCFIJYXZhaWxhYmxl');
 

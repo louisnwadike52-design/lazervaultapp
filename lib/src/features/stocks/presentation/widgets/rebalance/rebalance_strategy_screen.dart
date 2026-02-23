@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../../view/portfolio_rebalance_carousel.dart';
 
@@ -127,7 +128,7 @@ class RebalanceStrategyScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        '\$${_totalBuyValue.toStringAsFixed(2)}',
+                        CurrencySymbols.formatAmountWithCurrency(_totalBuyValue, 'USD'),
                         style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w700,
@@ -162,7 +163,7 @@ class RebalanceStrategyScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        '\$${_totalSellValue.toStringAsFixed(2)}',
+                        CurrencySymbols.formatAmountWithCurrency(_totalSellValue, 'USD'),
                         style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w700,
@@ -259,7 +260,7 @@ class RebalanceStrategyScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '\$${trade.estimatedTotal.toStringAsFixed(2)}',
+                            CurrencySymbols.formatAmountWithCurrency(trade.estimatedTotal, 'USD'),
                             style: GoogleFonts.inter(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w700,
@@ -268,7 +269,7 @@ class RebalanceStrategyScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            '@\$${trade.estimatedPrice.toStringAsFixed(2)}',
+                            '@${CurrencySymbols.formatAmountWithCurrency(trade.estimatedPrice, 'USD')}',
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
                               color: Colors.grey[500],

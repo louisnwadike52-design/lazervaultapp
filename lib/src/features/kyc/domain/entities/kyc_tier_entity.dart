@@ -68,17 +68,17 @@ extension IDTypeExtension on IDType {
       case IDType.saIdCard:
         return 'Smart ID Card';
       case IDType.saPassport:
-        return 'Passport';
+        return 'SA Passport';
       case IDType.ukPassport:
-        return 'Passport';
+        return 'UK Passport';
       case IDType.ukDrivingLicense:
-        return "Driving License";
+        return "Driving Licence";
       case IDType.usSsn:
         return 'Social Security Number';
       case IDType.usStateId:
         return 'State ID';
       case IDType.usPassport:
-        return 'Passport';
+        return 'US Passport';
       default:
         return 'Unknown';
     }
@@ -341,16 +341,16 @@ class IDVerificationRequest extends Equatable {
   /// Create from JSON
   factory IDVerificationRequest.fromJson(Map<String, dynamic> json) {
     return IDVerificationRequest(
-      userId: json['user_id'] as String,
+      userId: (json['user_id'] as String?) ?? '',
       idType: IDType.values.firstWhere(
         (e) => e.name == json['id_type'],
         orElse: () => IDType.unknown,
       ),
-      idNumber: json['id_number'] as String,
-      firstName: json['first_name'] as String,
-      lastName: json['last_name'] as String,
-      dateOfBirth: json['date_of_birth'] as String,
-      phoneNumber: json['phone_number'] as String,
+      idNumber: (json['id_number'] as String?) ?? '',
+      firstName: (json['first_name'] as String?) ?? '',
+      lastName: (json['last_name'] as String?) ?? '',
+      dateOfBirth: (json['date_of_birth'] as String?) ?? '',
+      phoneNumber: (json['phone_number'] as String?) ?? '',
     );
   }
 }
@@ -451,6 +451,10 @@ class VerifyIDResponse extends Equatable {
   final KYCTier currentTier;
   final DateTime? verifiedAt;
   final String? reference;
+  // Async verification fields (Onfido/Persona)
+  final String? verificationId;
+  final String? sessionUrl;
+  final String? sessionToken;
 
   const VerifyIDResponse({
     required this.success,
@@ -459,8 +463,14 @@ class VerifyIDResponse extends Equatable {
     required this.currentTier,
     this.verifiedAt,
     this.reference,
+    this.verificationId,
+    this.sessionUrl,
+    this.sessionToken,
   });
 
   @override
-  List<Object?> get props => [success, message, status, currentTier, verifiedAt, reference];
+  List<Object?> get props => [
+        success, message, status, currentTier, verifiedAt, reference,
+        verificationId, sessionUrl, sessionToken,
+      ];
 }

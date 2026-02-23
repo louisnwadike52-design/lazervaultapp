@@ -53,9 +53,9 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, List<Stock>>> getTopMovers() async {
+  Future<Either<Failure, List<Stock>>> getTopMovers({String? market}) async {
     try {
-      final stocks = await remoteDataSource.getTopMovers();
+      final stocks = await remoteDataSource.getTopMovers(market: market);
       return Right(stocks);
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
@@ -63,9 +63,9 @@ class StockRepositoryImpl implements IStockRepository {
   }
 
   @override
-  Future<Either<Failure, List<Stock>>> searchStocks(String query) async {
+  Future<Either<Failure, List<Stock>>> searchStocks(String query, {String? market}) async {
     try {
-      final stocks = await remoteDataSource.searchStocks(query);
+      final stocks = await remoteDataSource.searchStocks(query, market: market);
       return Right(stocks);
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));

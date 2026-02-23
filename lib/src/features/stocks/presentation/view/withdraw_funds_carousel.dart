@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../widgets/funds/withdraw_funds_amount_screen.dart';
 import '../widgets/funds/withdraw_funds_method_screen.dart';
@@ -12,11 +13,13 @@ import 'withdraw_funds_processing_screen.dart';
 class WithdrawFundsCarousel extends StatefulWidget {
   final double? initialAmount;
   final double availableCash;
+  final String currency;
 
   const WithdrawFundsCarousel({
     super.key,
     this.initialAmount,
     required this.availableCash,
+    this.currency = 'USD',
   });
 
   @override
@@ -90,15 +93,15 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
     switch (_currentPage) {
       case 0: // Amount
         if (_amount <= 0) {
-          _showError('Please enter an amount greater than \$0');
+          _showError('Please enter an amount greater than ${CurrencySymbols.getSymbol(widget.currency)}0');
           return false;
         }
         if (_amount < 10) {
-          _showError('Minimum withdrawal amount is \$10');
+          _showError('Minimum withdrawal amount is ${CurrencySymbols.getSymbol(widget.currency)}10');
           return false;
         }
         if (_amount > widget.availableCash) {
-          _showError('Insufficient funds. Available: \$${widget.availableCash.toStringAsFixed(2)}');
+          _showError('Insufficient funds. Available: ${CurrencySymbols.formatAmountWithCurrency(widget.availableCash, widget.currency)}');
           return false;
         }
         return true;
@@ -228,6 +231,7 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
                 WithdrawFundsAmountScreen(
                   initialAmount: _amount,
                   availableCash: widget.availableCash,
+                  currency: widget.currency,
                   onChanged: (amount) {
                     setState(() {
                       _amount = amount;
@@ -237,6 +241,7 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
                 // Step 2: Withdrawal Method
                 WithdrawFundsMethodScreen(
                   selectedMethod: _withdrawMethod,
+                  currency: widget.currency,
                   onChanged: (method, details) {
                     setState(() {
                       _withdrawMethod = method;
@@ -250,6 +255,7 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
                   withdrawMethod: _withdrawMethod,
                   withdrawDetails: _withdrawDetails,
                   availableCash: widget.availableCash,
+                  currency: widget.currency,
                 ),
               ],
             ),

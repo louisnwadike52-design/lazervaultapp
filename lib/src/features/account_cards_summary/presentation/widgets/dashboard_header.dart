@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
@@ -48,11 +49,11 @@ class DashboardHeader extends StatelessWidget {
 
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20.r),
+              borderRadius: BorderRadius.circular(16.r),
               child: UniversalImageLoader(
                 imagePath: profileImagePath,
-                height: 40.h,
-                width: 40.w,
+                height: 32.h,
+                width: 32.w,
               ),
             ),
           ),
@@ -60,11 +61,13 @@ class DashboardHeader extends StatelessWidget {
         Spacer(),
         // Country Selector
         _buildCountrySelector(context),
-        SizedBox(width: 12.w),
+        SizedBox(width: 8.w),
         // Action Icons
         _buildIconButton(Icons.notifications_outlined, context),
-        SizedBox(width: 12.w),
+        SizedBox(width: 8.w),
         _buildIconButton(Icons.mic_rounded, context),
+        SizedBox(width: 8.w),
+        _buildIconButton(Icons.settings_outlined, context),
       ],
     );
   }
@@ -132,37 +135,33 @@ class DashboardHeader extends StatelessWidget {
             }
           },
           child: Container(
-            height: 40.h,
-            padding: EdgeInsets.symmetric(horizontal: 12.w),
+            height: 32.h,
+            padding: EdgeInsets.symmetric(horizontal: 10.w),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
+              borderRadius: BorderRadius.circular(16.r),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   countryLocale?.flag ?? _getCountryFlag(currentCountry),
-                  style: TextStyle(fontSize: 18.sp),
+                  style: TextStyle(fontSize: 14.sp),
                 ),
-                SizedBox(width: 8.w),
+                SizedBox(width: 6.w),
                 Text(
                   currentCountry,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14.sp,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(width: 4.w),
+                SizedBox(width: 2.w),
                 Icon(
                   Icons.keyboard_arrow_down_rounded,
                   color: Colors.white,
-                  size: 20.sp,
+                  size: 16.sp,
                 ),
               ],
             ),
@@ -195,31 +194,25 @@ class DashboardHeader extends StatelessWidget {
 
   Widget _buildIconButton(IconData icon, BuildContext context) {
     return Container(
-      width: 40.w,
-      height: 40.h,
+      width: 32.w,
+      height: 32.h,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.1),
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
       ),
       child: IconButton(
-        icon: Icon(icon, color: Colors.white, size: 20.sp),
+        icon: Icon(icon, color: Colors.white, size: 16.sp),
         onPressed: () {
           if (icon == Icons.notifications_outlined) {
             _showNotifications(context);
           } else if (icon == Icons.mic_rounded) {
             _showVoiceCommandSheet(context);
+          } else if (icon == Icons.settings_outlined) {
+            Get.toNamed(AppRoutes.profileSettings);
           }
         },
-        padding: EdgeInsets.zero, 
-        constraints: const BoxConstraints(), 
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
       ),
     );
   }

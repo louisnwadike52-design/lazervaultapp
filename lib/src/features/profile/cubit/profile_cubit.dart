@@ -34,31 +34,26 @@ class ProfileCubit extends Cubit<ProfileState> {
 
         final localeManager = serviceLocator<LocaleManager>();
 
-        if (preferences.activeCountry.isNotEmpty) {
-          // User has a saved active country preference — use it.
-          // This overrides the signup-country reset done by AuthenticationCubit._saveSession().
-          localeManager.resetToCountry(preferences.activeCountry);
-        } else {
-          // No saved preference — persist the current locale (signup country)
-          // to the backend so it's available on next login.
-          try {
-            final countryFromLocale = localeManager.currentCountry;
-            if (countryFromLocale.isNotEmpty) {
-              final result = await _repository.updatePreferences(
-                activeCountry: countryFromLocale,
-              );
-              result.fold(
-                (_) {}, // silently ignore failure
-                (updatedPrefs) {
-                  if (!isClosed && state is ProfileLoaded) {
-                    emit((state as ProfileLoaded).copyWith(preferences: updatedPrefs));
-                  }
-                },
-              );
-            }
-          } catch (e) {
-            // Silently fail - locale sync is best effort
+        // Sync registration country (set by _saveSession) to backend preference.
+        // Never override locale here — _saveSession already set it correctly.
+        try {
+          final countryFromLocale = localeManager.currentCountry;
+          if (countryFromLocale.isNotEmpty &&
+              countryFromLocale != preferences.activeCountry) {
+            final result = await _repository.updatePreferences(
+              activeCountry: countryFromLocale,
+            );
+            result.fold(
+              (_) {},
+              (updatedPrefs) {
+                if (!isClosed && state is ProfileLoaded) {
+                  emit((state as ProfileLoaded).copyWith(preferences: updatedPrefs));
+                }
+              },
+            );
           }
+        } catch (e) {
+          // Silently fail — locale sync is best effort
         }
       },
     );
@@ -100,6 +95,20 @@ class ProfileCubit extends Cubit<ProfileState> {
             preferences: currentState.preferences,
           ));
           emit(const ProfileUpdateSuccess('Profile updated successfully'));
+
+          // Keep LocaleManager in sync when country changes via profile update
+          if (user.country != null && user.country!.isNotEmpty) {
+            final localeManager = serviceLocator<LocaleManager>();
+            // user.country is a country name (e.g. "United Kingdom"), look up by name
+            try {
+              final countryLocale = CountryLocales.all.firstWhere(
+                (c) => c.countryName == user.country,
+              );
+              localeManager.setCountry(countryLocale.countryCode);
+            } catch (_) {
+              // Country not found in CountryLocales, skip sync
+            }
+          }
         }
       },
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../../view/portfolio_rebalance_carousel.dart';
 
@@ -107,9 +108,9 @@ class RebalanceReviewScreen extends StatelessWidget {
             _buildDivider(),
             _buildDetailRow('Total Trades', '${trades.length}'),
             _buildDivider(),
-            _buildDetailRow('Portfolio Value', '\$${totalValue.toStringAsFixed(2)}'),
+            _buildDetailRow('Portfolio Value', CurrencySymbols.formatAmountWithCurrency(totalValue, 'USD')),
             _buildDivider(),
-            _buildDetailRow('Estimated Fees', '\$${_estimatedFees.toStringAsFixed(2)}',
+            _buildDetailRow('Estimated Fees', CurrencySymbols.formatAmountWithCurrency(_estimatedFees, 'USD'),
                 valueColor: Colors.orange),
           ]),
 
@@ -155,7 +156,7 @@ class RebalanceReviewScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '${_netCashFlow >= 0 ? '+' : ''}\$${_netCashFlow.toStringAsFixed(2)}',
+                      '${_netCashFlow >= 0 ? '+' : ''}${CurrencySymbols.formatAmountWithCurrency(_netCashFlow.abs(), 'USD')}',
                       style: GoogleFonts.inter(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,
@@ -246,7 +247,7 @@ class RebalanceReviewScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            '${trade.sharesToTrade} shares @ \$${trade.estimatedPrice.toStringAsFixed(2)}',
+                            '${trade.sharesToTrade} shares @ ${CurrencySymbols.formatAmountWithCurrency(trade.estimatedPrice, 'USD')}',
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
                               color: Colors.grey[400],
@@ -257,7 +258,7 @@ class RebalanceReviewScreen extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    '${isBuy ? '-' : '+'}\$${trade.estimatedTotal.toStringAsFixed(2)}',
+                    '${isBuy ? '-' : '+'}${CurrencySymbols.formatAmountWithCurrency(trade.estimatedTotal, 'USD')}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,

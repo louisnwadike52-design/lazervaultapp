@@ -146,9 +146,10 @@ class LocaleManager {
       _countryController.add(countryLocale.countryCode);
       _currencyController.add(countryLocale.currency);
     } else {
-      // Fallback: derive locale as en-XX, currency stays default
+      // Unsupported country code — derive locale as en-XX, reset currency to default
       _localeController.add('en-${countryCode.toUpperCase()}');
       _countryController.add(countryCode.toUpperCase());
+      _currencyController.add(_defaultCurrency);
     }
   }
 
@@ -185,14 +186,14 @@ class CountryLocale {
   String get currencyDisplay => '$currency ($countryCode)';
 }
 
-/// Pre-defined country locales - only includes countries available during signup
+/// Pre-defined country locales - must match backend locales.go exactly.
 ///
-/// IMPORTANT: This list must match the countries in SelectCountry widget exactly.
-/// When adding/removing countries here, update SelectCountry too.
+/// IMPORTANT: This list must match the countries in SelectCountry widget and
+/// backend config/locales.go. When adding/removing countries, update all three.
 class CountryLocales {
-  /// Supported countries - matches the signup flow country selection
+  /// Supported countries - matches backend locales.go (6 countries)
   static const List<CountryLocale> all = [
-    // Nigeria (Primary supported country - first in signup list)
+    // Nigeria (Primary supported country)
     CountryLocale(
       countryCode: 'NG',
       countryName: 'Nigeria',
@@ -222,45 +223,25 @@ class CountryLocales {
       dialCode: '+44',
       currency: 'GBP',
     ),
-    // Canada
+    // Ghana
     CountryLocale(
-      countryCode: 'CA',
-      countryName: 'Canada',
+      countryCode: 'GH',
+      countryName: 'Ghana',
       languageCode: 'en',
-      locale: 'en-CA',
-      flag: '🇨🇦',
-      dialCode: '+1',
-      currency: 'CAD',
+      locale: 'en-GH',
+      flag: '🇬🇭',
+      dialCode: '+233',
+      currency: 'GHS',
     ),
-    // India
+    // Kenya
     CountryLocale(
-      countryCode: 'IN',
-      countryName: 'India',
+      countryCode: 'KE',
+      countryName: 'Kenya',
       languageCode: 'en',
-      locale: 'en-IN',
-      flag: '🇮🇳',
-      dialCode: '+91',
-      currency: 'INR',
-    ),
-    // Germany
-    CountryLocale(
-      countryCode: 'DE',
-      countryName: 'Germany',
-      languageCode: 'de',
-      locale: 'de-DE',
-      flag: '🇩🇪',
-      dialCode: '+49',
-      currency: 'EUR',
-    ),
-    // France
-    CountryLocale(
-      countryCode: 'FR',
-      countryName: 'France',
-      languageCode: 'fr',
-      locale: 'fr-FR',
-      flag: '🇫🇷',
-      dialCode: '+33',
-      currency: 'EUR',
+      locale: 'en-KE',
+      flag: '🇰🇪',
+      dialCode: '+254',
+      currency: 'KES',
     ),
     // South Africa
     CountryLocale(
@@ -271,26 +252,6 @@ class CountryLocales {
       flag: '🇿🇦',
       dialCode: '+27',
       currency: 'ZAR',
-    ),
-    // Australia
-    CountryLocale(
-      countryCode: 'AU',
-      countryName: 'Australia',
-      languageCode: 'en',
-      locale: 'en-AU',
-      flag: '🇦🇺',
-      dialCode: '+61',
-      currency: 'AUD',
-    ),
-    // Japan
-    CountryLocale(
-      countryCode: 'JP',
-      countryName: 'Japan',
-      languageCode: 'ja',
-      locale: 'ja-JP',
-      flag: '🇯🇵',
-      dialCode: '+81',
-      currency: 'JPY',
     ),
   ];
 

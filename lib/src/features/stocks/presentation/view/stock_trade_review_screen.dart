@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -104,7 +105,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
       amount: _estimatedTotal,
       currency: 'USD',
       title: 'Confirm ${_tradeType == 'buy' ? 'Buy' : 'Sell'} Order',
-      message: 'Confirm $_tradeType of $_shares shares of ${_selectedStock?.symbol ?? 'stock'} for \$${_estimatedTotal.toStringAsFixed(2)}?',
+      message: 'Confirm $_tradeType of $_shares shares of ${_selectedStock?.symbol ?? 'stock'} for ${CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD')}?',
       onPinValidated: (verificationToken) async {
         // PIN is valid, proceed with trade processing
         _executeTradeWithToken(transactionId, verificationToken);
@@ -520,7 +521,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\$${_selectedStock?.currentPrice.toStringAsFixed(2) ?? '0.00'}',
+                    _selectedStock != null ? CurrencySymbols.formatAmountWithCurrency(_selectedStock!.currentPrice, _selectedStock!.currency) : '0.00',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 16.sp,
@@ -541,8 +542,8 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           SizedBox(height: 20.h),
           _buildDetailRow('Order Type', _tradeType.capitalizeFirst ?? _tradeType),
           _buildDetailRow('Shares', _shares.toString()),
-          _buildDetailRow('Amount', '\$${_amount.toStringAsFixed(2)}'),
-          _buildDetailRow('Trading Fee', '\$${_fees.toStringAsFixed(2)}'),
+          _buildDetailRow('Amount', CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')),
+          _buildDetailRow('Trading Fee', CurrencySymbols.formatAmountWithCurrency(_fees, _selectedStock?.currency ?? 'USD')),
         ],
       ),
     );
@@ -647,12 +648,12 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('Trade Amount', '\$${_amount.toStringAsFixed(2)}'),
-          _buildSummaryRow('Trading Fee', '\$${_fees.toStringAsFixed(2)}'),
+          _buildSummaryRow('Trade Amount', CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')),
+          _buildSummaryRow('Trading Fee', CurrencySymbols.formatAmountWithCurrency(_fees, _selectedStock?.currency ?? 'USD')),
           Divider(color: Colors.grey[700], height: 24.h),
           _buildSummaryRow(
             'Total ${_tradeType == 'buy' ? 'Cost' : 'Proceeds'}',
-            '\$${_estimatedTotal.toStringAsFixed(2)}',
+            CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD'),
             isTotal: true,
           ),
         ],
@@ -687,7 +688,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           _buildDetailRow('Transaction ID', _transactionId),
           _buildDetailRow('Stock', _selectedStock?.symbol ?? 'N/A'),
           _buildDetailRow('Shares', _shares.toString()),
-          _buildDetailRow('Total Amount', '\$${_estimatedTotal.toStringAsFixed(2)}'),
+          _buildDetailRow('Total Amount', CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD')),
           _buildDetailRow('Status', 'Completed'),
           _buildDetailRow('Date', DateTime.now().toString().split(' ')[0]),
         ],

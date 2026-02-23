@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/flutterwave_payment_webview.dart';
 
 class DepositReviewScreen extends StatefulWidget {
   const DepositReviewScreen({super.key});
@@ -58,6 +61,7 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
   }
 
   void _processDeposit() async {
+    if (_isProcessing) return; // Prevent double-tap
     setState(() {
       _isProcessing = true;
     });
@@ -66,13 +70,17 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
       // Simulate processing time based on payment method
       final paymentType = _paymentMethod['type'] ?? '';
       int processingTime = 2; // Default 2 seconds
-      
+
       switch (paymentType) {
         case 'local_account':
           processingTime = 1; // Instant for local transfers
           break;
         case 'crypto':
           processingTime = 3; // Longer for crypto
+          break;
+        case 'flutterwave':
+        case 'test_deposit':
+          processingTime = 0; // Backend handles timing
           break;
         case 'digital_wallet':
           processingTime = 2;
@@ -82,11 +90,14 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
           break;
       }
 
-      await Future.delayed(Duration(seconds: processingTime));
+      if (processingTime > 0) {
+        await Future.delayed(Duration(seconds: processingTime));
+      }
 
       // Process the deposit based on payment method type
       await _executeDeposit();
 
+      if (!mounted) return;
       setState(() {
         _isProcessing = false;
         _isConfirmed = true;
@@ -94,6 +105,7 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
 
       // Navigate to success screen after a short delay
       Future.delayed(const Duration(seconds: 2), () {
+        if (!mounted) return;
         Get.offNamed(
           AppRoutes.depositSuccess,
           arguments: {
@@ -106,13 +118,14 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
       });
 
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isProcessing = false;
       });
-      
+
       Get.snackbar(
         'Deposit Failed',
-        'There was an error processing your deposit. Please try again.',
+        e.toString().replaceAll('Exception: ', ''),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
@@ -123,13 +136,19 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
 
   Future<void> _executeDeposit() async {
     final paymentType = _paymentMethod['type'] ?? '';
-    
+
     switch (paymentType) {
       case 'local_account':
         await _processLocalAccountTransfer();
         break;
       case 'crypto':
         await _processCryptoDeposit();
+        break;
+      case 'flutterwave':
+        await _processFlutterwaveDeposit();
+        break;
+      case 'test_deposit':
+        await _processTestDeposit();
         break;
       case 'digital_wallet':
       case 'bank_transfer':
@@ -139,24 +158,91 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
   }
 
   Future<void> _processLocalAccountTransfer() async {
-    // Simulate local account transfer
-    // In a real app, this would update account balances in the backend
     await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Update local currency balance (simulated)
     final currentBalance = _currency['balance'] ?? 0.0;
     _currency['balance'] = currentBalance + _amount;
   }
 
   Future<void> _processCryptoDeposit() async {
-    // Simulate crypto deposit processing
-    // In a real app, this would generate a crypto address and wait for confirmation
     await Future.delayed(const Duration(seconds: 1));
   }
 
   Future<void> _processRegularDeposit() async {
-    // Simulate regular payment processing
     await Future.delayed(const Duration(milliseconds: 800));
+  }
+
+  /// Process deposit via Flutterwave Standard (hosted checkout)
+  Future<void> _processFlutterwaveDeposit() async {
+    if (!GetIt.instance.isRegistered<IDepositRepository>()) {
+      throw Exception('Deposit service is not available. Please restart the app.');
+    }
+    final repo = GetIt.instance<IDepositRepository>();
+    final targetAccountId = (_currency['id'] ?? _currency['accountId'] ?? '') as String;
+    final currency = (_currency['code'] ?? _currency['currency'] ?? '') as String;
+    final countryCode = (_paymentMethod['country_code'] ?? _currency['country_code'] ?? '') as String;
+    final sourceBankName = (_paymentMethod['name'] ?? 'Flutterwave') as String;
+
+    if (targetAccountId.isEmpty || currency.isEmpty) {
+      throw Exception('Missing account or currency information');
+    }
+
+    final result = await repo.initiateDeposit(
+      targetAccountId: targetAccountId,
+      amount: _amount,
+      currency: currency,
+      sourceBankName: sourceBankName,
+      countryCode: countryCode,
+    );
+
+    await result.fold(
+      (failure) => throw Exception(failure.message),
+      (deposit) async {
+        if (deposit.requiresAuthorization &&
+            deposit.paymentUrl != null &&
+            deposit.paymentUrl!.isNotEmpty) {
+          // Open Flutterwave hosted checkout in WebView
+          if (!mounted) return;
+          final paymentResult = await showFlutterwavePaymentSheet(
+            context: context,
+            paymentUrl: deposit.paymentUrl!,
+            depositId: deposit.depositId,
+          );
+
+          if (!mounted) return;
+          if (!paymentResult.success) {
+            throw Exception(paymentResult.errorMessage ?? 'Payment was not completed');
+          }
+          // Payment completed on Flutterwave side — webhook will credit account
+        }
+      },
+    );
+  }
+
+  /// Process simulated test deposit (sandbox only — instant credit)
+  Future<void> _processTestDeposit() async {
+    if (!GetIt.instance.isRegistered<IDepositRepository>()) {
+      throw Exception('Deposit service is not available. Please restart the app.');
+    }
+    final repo = GetIt.instance<IDepositRepository>();
+    final targetAccountId = (_currency['id'] ?? _currency['accountId'] ?? '') as String;
+    final currency = (_currency['code'] ?? _currency['currency'] ?? '') as String;
+    final countryCode = (_paymentMethod['country_code'] ?? _currency['country_code'] ?? '') as String;
+
+    if (targetAccountId.isEmpty || currency.isEmpty) {
+      throw Exception('Missing account or currency information');
+    }
+
+    final result = await repo.simulateTestDeposit(
+      destinationAccountId: targetAccountId,
+      amount: _amount,
+      currency: currency,
+      countryCode: countryCode,
+    );
+
+    result.fold(
+      (failure) => throw Exception(failure.message),
+      (_) {}, // Instant success
+    );
   }
 
   String _generateTransactionId() {

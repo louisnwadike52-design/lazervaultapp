@@ -207,10 +207,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       await _storage.delete(key: _refreshTokenKey);
       await _storage.delete(key: _userIdKey);
       await _storage.delete(key: _userEmailKey);
-      // Keep 'stored_email' for passcode login after logout
-      await _storage.delete(key: 'user_first_name');
-      await _storage.delete(key: 'user_last_name');
-      await _storage.delete(key: 'user_avatar_url');
+      // Keep stored_email, user_first_name, user_last_name, user_avatar_url
+      // for passcode login screen greeting. Overwritten on next login via _saveSession().
       // Clear active account to prevent using stale account_id from previous user
       _accountManager.clearActiveAccount();
       _currentProfile = null;
@@ -312,57 +310,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         emit(AuthenticationInitial());
       }
     }
-  }
-
-  Future<void> signUpUser({
-    required String firstName,
-    required String lastName,
-    required String email,
-    required String password,
-    String? phoneNumber,
-  }) async {
-    if (isClosed) return;
-    emit(AuthenticationLoading());
-
-    // Get locale from LocaleManager (defaults to en-NG for Nigeria)
-    final localeManager = serviceLocator<LocaleManager>();
-    final locale = localeManager.currentLocale;
-
-    final result = await _signUpUseCase(
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      password: password,
-      primaryContact: SignupPrimaryContact.email,
-      phoneNumber: phoneNumber,
-      locale: locale, // Pass locale instead of countryCode/currencyCode
-    );
-
-    if (isClosed) return;
-    result.fold(
-      (failure) {
-        _showErrorSnackbar('Sign Up Failed', failure.message);
-        emit(AuthenticationFailure(
-          failure.message,
-          statusCode: failure.statusCode,
-        ));
-      },
-      (profile) async {
-        await _saveSession(profile);
-
-        // Clear the local signup draft as account is now created
-        // Backend will track progress from here
-        await clearSignupDraft();
-        await _signupStateService?.markAccountCreated();
-
-        // No "Account Created" snackbar here since email is not sent yet
-        // Email will be sent after ID verification/skip
-        // The "Email Sent" snackbar is shown when email verification screen loads
-
-        // Emit UserCreated state to proceed to next step
-        emit(UserCreated());
-      },
-    );
   }
 
   Future<void> signInWithGoogle() async {
@@ -654,6 +601,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // --- Logout ---
   Future<void> logout() async {
+    // Snapshot current user's email to stored_email before clearing session,
+    // so passcode login screen shows the correct user after logout.
+    final currentEmail = _currentProfile?.user.email;
+    if (currentEmail != null && currentEmail.isNotEmpty) {
+      await _storage.write(key: 'stored_email', value: currentEmail);
+    }
     await _clearSession();
     // Clear currency sync state on logout
     _currencySyncService.clear();
@@ -1607,6 +1560,32 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           }
         }
 
+        // Validate username if provided (optional field)
+        if (currentState.username.isNotEmpty) {
+          final cleanUsername = currentState.username.trim().replaceAll(RegExp(r'^@'), '');
+          if (cleanUsername.length < 3) {
+            const errorMsg = 'Username must be at least 3 characters';
+            _showErrorSnackbar('Validation Error', errorMsg);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: errorMsg));
+            return;
+          }
+          if (cleanUsername.length > 30) {
+            const errorMsg = 'Username must be at most 30 characters';
+            _showErrorSnackbar('Validation Error', errorMsg);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: errorMsg));
+            return;
+          }
+          if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(cleanUsername)) {
+            const errorMsg = 'Username can only contain letters, numbers, and underscores';
+            _showErrorSnackbar('Validation Error', errorMsg);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: errorMsg));
+            return;
+          }
+        }
+
         // Create account now to get auth token for BVN verification on page 3
         // This allows BVN verification to work since it requires an auth token
         if (isClosed) return;
@@ -1623,6 +1602,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             ? 'en-${currentState.countryCode.toUpperCase()}'
             : null;
 
+        // Clean username: strip @ prefix before sending to API (backend also does this)
+        final cleanedUsername = currentState.username.isNotEmpty
+            ? currentState.username.trim().replaceAll(RegExp(r'^@'), '')
+            : null;
+
         final signupResult = await _signUpUseCase(
           firstName: currentState.firstName,
           lastName: currentState.lastName,
@@ -1630,7 +1614,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           password: currentState.password,
           primaryContact: primaryContact,
           phoneNumber: currentState.phoneNumber.isEmpty ? null : currentState.phoneNumber,
-          username: currentState.username.isEmpty ? null : currentState.username,
+          username: cleanedUsername,
           referralCode: currentState.referralCode.isEmpty ? null : currentState.referralCode,
           locale: locale, // Pass locale instead of countryCode/currencyCode
           bvn: null, // BVN will be verified on next page

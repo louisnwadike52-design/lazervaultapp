@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../../../core/types/app_routes.dart';
 
 class PortfolioWithdrawScreen extends StatefulWidget {
-  const PortfolioWithdrawScreen({super.key});
+  final String currency;
+  const PortfolioWithdrawScreen({super.key, this.currency = 'USD'});
 
   @override
   State<PortfolioWithdrawScreen> createState() => _PortfolioWithdrawScreenState();
@@ -230,7 +232,7 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
           ),
           SizedBox(height: 16.h),
           Text(
-            '\$${_availableCash.toStringAsFixed(2)}',
+            CurrencySymbols.formatAmountWithCurrency(_availableCash, widget.currency),
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 36.sp,
@@ -287,7 +289,7 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
           child: Row(
             children: [
               Text(
-                '\$',
+                CurrencySymbols.getSymbol(widget.currency),
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 32.sp,
@@ -416,7 +418,7 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
         
         ),
         child: Text(
-          '\$${amount.toStringAsFixed(0)}',
+          '${CurrencySymbols.getSymbol(widget.currency)}${amount.toStringAsFixed(0)}',
           style: GoogleFonts.inter(
             color: isSelected && isAvailable ? Colors.white : 
                    isAvailable ? Colors.grey[300] : Colors.grey[600],
@@ -638,11 +640,11 @@ class _PortfolioWithdrawScreenState extends State<PortfolioWithdrawScreen> with 
             ),
           ),
           SizedBox(height: 16.h),
-          _buildSummaryRow('Withdrawal Amount', '\$${_selectedAmount.toStringAsFixed(2)}'),
+          _buildSummaryRow('Withdrawal Amount', CurrencySymbols.formatAmountWithCurrency(_selectedAmount, widget.currency)),
           if (fee > 0)
-            _buildSummaryRow('Processing Fee', '-\$${fee.toStringAsFixed(2)}'),
+            _buildSummaryRow('Processing Fee', '-${CurrencySymbols.formatAmountWithCurrency(fee, widget.currency)}'),
           Divider(color: Colors.white.withValues(alpha: 0.2)),
-          _buildSummaryRow('You\'ll Receive', '\$${total.toStringAsFixed(2)}', isTotal: true),
+          _buildSummaryRow('You\'ll Receive', CurrencySymbols.formatAmountWithCurrency(total, widget.currency), isTotal: true),
         ],
       ),
     );

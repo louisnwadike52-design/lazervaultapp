@@ -78,7 +78,7 @@ class CrowdfundCard extends StatelessWidget {
                           : null,
                       child: crowdfund.creator.profilePicture == null
                           ? Text(
-                              '${crowdfund.creator.firstName[0]}${crowdfund.creator.lastName[0]}',
+                              crowdfund.creator.initials,
                               style: TextStyle(
                                 color: const Color(0xFF6366F1),
                                 fontSize: 12.sp,
@@ -269,7 +269,6 @@ class CrowdfundCard extends StatelessWidget {
                 SizedBox(height: 12.h),
                 CrowdfundProgressIndicator(
                   progressPercentage: crowdfund.progressPercentage,
-                  height: 8,
                 ),
               ],
             ),

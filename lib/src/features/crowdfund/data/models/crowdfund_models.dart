@@ -3,6 +3,16 @@ import 'package:lazervault/src/generated/crowdfund.pb.dart' as pb;
 import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/entities/notification_channel_entities.dart';
 
+/// Safely decode JSON, returning null on malformed input
+Map<String, dynamic>? _safeJsonDecode(String json) {
+  try {
+    final result = jsonDecode(json);
+    return result is Map<String, dynamic> ? result : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 // ============================================================================
 // MODEL CLASSES
 // ============================================================================
@@ -75,7 +85,7 @@ class CrowdfundModel extends Crowdfund {
       status: _statusFromProto(proto.status),
       imageUrl: proto.imageUrl.isEmpty ? null : proto.imageUrl,
       visibility: _visibilityFromProto(proto.visibility),
-      metadata: proto.metadata.isEmpty ? null : jsonDecode(proto.metadata),
+      metadata: proto.metadata.isEmpty ? null : _safeJsonDecode(proto.metadata),
       donorCount: proto.donorCount,
       progressPercentage: proto.progressPercentage,
       createdAt: proto.createdAt.toDateTime(),
@@ -172,7 +182,7 @@ class CrowdfundDonationModel extends CrowdfundDonation {
       message: proto.message.isEmpty ? null : proto.message,
       isAnonymous: proto.isAnonymous,
       paymentMethod: proto.paymentMethod,
-      metadata: proto.metadata.isEmpty ? null : jsonDecode(proto.metadata),
+      metadata: proto.metadata.isEmpty ? null : _safeJsonDecode(proto.metadata),
     );
   }
 
@@ -224,7 +234,7 @@ class CrowdfundReceiptModel extends CrowdfundReceipt {
       generatedAt: proto.generatedAt.toDateTime(),
       receiptNumber: proto.receiptNumber,
       receiptData:
-          proto.receiptData.isEmpty ? null : jsonDecode(proto.receiptData),
+          proto.receiptData.isEmpty ? null : _safeJsonDecode(proto.receiptData),
     );
   }
 }
@@ -353,10 +363,10 @@ class NotificationChannelModel extends NotificationChannel {
       failureCount: proto.failureCount,
       lastError: proto.lastError.isEmpty ? null : proto.lastError,
       createdAt: proto.createdAt.isNotEmpty
-          ? DateTime.parse(proto.createdAt)
+          ? (DateTime.tryParse(proto.createdAt) ?? DateTime.now())
           : DateTime.now(),
       updatedAt: proto.updatedAt.isNotEmpty
-          ? DateTime.parse(proto.updatedAt)
+          ? (DateTime.tryParse(proto.updatedAt) ?? DateTime.now())
           : DateTime.now(),
     );
   }
