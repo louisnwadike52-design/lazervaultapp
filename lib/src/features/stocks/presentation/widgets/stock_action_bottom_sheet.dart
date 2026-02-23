@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_state.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 enum StockActionType { trending, movers, allStocks }
 
@@ -457,7 +458,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '\$${stock.currentPrice.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,
@@ -548,9 +549,9 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
 
   Widget _buildOrderItem(int index) {
     final orders = [
-      {'symbol': 'AAPL', 'type': 'BUY', 'shares': '10', 'price': '\$175.43', 'date': '2 days ago'},
-      {'symbol': 'MSFT', 'type': 'SELL', 'shares': '5', 'price': '\$378.85', 'date': '1 week ago'},
-      {'symbol': 'GOOGL', 'type': 'BUY', 'shares': '2', 'price': '\$2,847.63', 'date': '2 weeks ago'},
+      {'symbol': 'AAPL', 'type': 'BUY', 'shares': '10', 'price': CurrencySymbols.formatAmountWithCurrency(175.43, 'USD'), 'date': '2 days ago'},
+      {'symbol': 'MSFT', 'type': 'SELL', 'shares': '5', 'price': CurrencySymbols.formatAmountWithCurrency(378.85, 'USD'), 'date': '1 week ago'},
+      {'symbol': 'GOOGL', 'type': 'BUY', 'shares': '2', 'price': CurrencySymbols.formatAmountWithCurrency(2847.63, 'USD'), 'date': '2 weeks ago'},
     ];
     
     final order = orders[index];
@@ -733,7 +734,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                         ),
                       ),
                       Text(
-                        '\$${stock.currentPrice.toStringAsFixed(2)}',
+                        CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 16.sp,
@@ -903,7 +904,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                   Navigator.pop(context);
                   // Create a mock Stock object for repeat order
                   final symbol = order['symbol']!;
-                  final price = double.tryParse(order['price']!.replaceAll('\$', '')) ?? 100.0;
+                  final price = double.tryParse(order['price']!.replaceAll(RegExp(r'[^\d.]'), '')) ?? 100.0;
                   final stock = Stock(
                     symbol: symbol,
                     name: '$symbol Inc.',

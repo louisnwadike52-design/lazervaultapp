@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 
@@ -345,7 +346,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
                       ),
                     ),
                     Text(
-                      '$_shares shares • \$${_amount.toStringAsFixed(2)}',
+                      '$_shares shares • ${CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')}',
                       style: GoogleFonts.inter(
                         color: Colors.grey[400],
                         fontSize: 12.sp,
@@ -358,7 +359,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\$${_estimatedTotal.toStringAsFixed(2)}',
+                    CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD'),
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 18.sp,
@@ -530,7 +531,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${account['balance'].toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(account['balance'], account['currency'] ?? 'USD'),
                   style: GoogleFonts.inter(
                     color: hasEnoughBalance ? Colors.white : Colors.red,
                     fontSize: 14.sp,
@@ -582,7 +583,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
   Widget _buildCryptoCard(Map<String, dynamic> wallet) {
     final isSelected = _selectedCryptoWallet == wallet['id'];
     final hasEnoughBalance = wallet['usdValue'] >= _estimatedTotal;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _selectedCryptoWallet = wallet['id']),
       child: Container(
@@ -598,7 +599,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
+
         ),
         child: Row(
           children: [
@@ -647,7 +648,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${wallet['usdValue'].toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(wallet['usdValue'], 'USD'),
                   style: GoogleFonts.inter(
                     color: hasEnoughBalance ? Colors.white : Colors.red,
                     fontSize: 14.sp,
@@ -762,7 +763,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${wallet['usdValue'].toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(wallet['usdValue'], 'USD'),
                   style: GoogleFonts.inter(
                     color: hasEnoughBalance ? Colors.white : Colors.red,
                     fontSize: 14.sp,

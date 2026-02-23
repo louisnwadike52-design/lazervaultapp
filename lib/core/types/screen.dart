@@ -7,10 +7,9 @@ import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
-import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
+import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
@@ -101,7 +100,7 @@ class Screen {
       case ScreenName.inputPin:
         return InputPinScreen(recipient: param1 as User);
       case ScreenName.profileSettings:
-        return const ProfileSettingsScreen();
+        return const SettingsScreen();
       case ScreenName.myAccount:  
         return const MyAccountScreen();
       case ScreenName.languages:
@@ -149,10 +148,7 @@ class Screen {
       case ScreenName.currencyExchange:
         return const CBCurrencyExchangeScreen();
       case ScreenName.lifeStyle:
-        return BlocProvider(
-          create: (context) => serviceLocator<LifestyleCubit>()..loadCategories(),
-          child: const NewLifestyleScreen(),
-        );
+        return const NewLifestyleScreen();
       case ScreenName.crowdfund:
         return BlocProvider(
           create: (context) => serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),

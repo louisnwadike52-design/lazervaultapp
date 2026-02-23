@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
 import 'drawing_elements.dart';
 
@@ -8,12 +9,14 @@ class DrawingsPainter extends CustomPainter {
   final DrawingElement? currentDrawing;
   final DrawingElement? selectedDrawing;
   final List<StockPrice> priceHistory;
+  final String currency;
 
   DrawingsPainter({
     required this.drawings,
     this.currentDrawing,
     this.selectedDrawing,
     required this.priceHistory,
+    this.currency = 'USD',
   });
 
   @override
@@ -247,7 +250,7 @@ class DrawingsPainter extends CustomPainter {
   void _drawPriceLabel(Canvas canvas, Offset position, double price, Paint paint, double minPrice, double maxPrice) {
     final textPainter = TextPainter(
       text: TextSpan(
-        text: '\$${price.toStringAsFixed(2)}',
+        text: CurrencySymbols.formatAmountWithCurrency(price, currency),
         style: TextStyle(
           color: paint.color,
           fontSize: 10,
@@ -304,7 +307,7 @@ class DrawingsPainter extends CustomPainter {
   }
 
   void _drawMeasurementLabel(Canvas canvas, Offset position, double priceDiff, int timeDiff, Paint paint, double minPrice, double maxPrice) {
-    final text = 'ΔPrice: \$${priceDiff.toStringAsFixed(2)}\nΔTime: ${timeDiff}pts';
+    final text = 'ΔPrice: ${CurrencySymbols.formatAmountWithCurrency(priceDiff, currency)}\nΔTime: ${timeDiff}pts';
     
     final textPainter = TextPainter(
       text: TextSpan(
@@ -443,6 +446,7 @@ class DrawingsPainter extends CustomPainter {
     return oldDelegate.drawings != drawings ||
            oldDelegate.currentDrawing != currentDrawing ||
            oldDelegate.selectedDrawing != selectedDrawing ||
-           oldDelegate.priceHistory != priceHistory;
+           oldDelegate.priceHistory != priceHistory ||
+           oldDelegate.currency != currency;
   }
 } 

@@ -9,12 +9,14 @@ import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
+import '../../domain/entities/stock_entity.dart';
 import '../widgets/market_index_card.dart';
 import '../widgets/portfolio_summary_card.dart';
 import '../widgets/quick_action_button.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/stocks/presentation/widgets/stocks_voice_agent_button.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Professional Stocks Landing Screen
 /// Figma-standard landing page with invoice theme colors
@@ -90,9 +92,7 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
 
   void _loadInitialData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<StockCubit>().loadPortfolio();
-      context.read<StockCubit>().loadMarketIndices();
-      context.read<StockCubit>().loadStocks(limit: 10);
+      context.read<StockCubit>().loadDashboard();
     });
   }
 
@@ -226,9 +226,7 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
       builder: (context, state) {
         return RefreshIndicator(
           onRefresh: () async {
-            context.read<StockCubit>().loadPortfolio();
-            context.read<StockCubit>().loadMarketIndices();
-            context.read<StockCubit>().loadStocks(limit: 10);
+            await context.read<StockCubit>().loadDashboard();
           },
           backgroundColor: InvoiceThemeColors.secondaryBackground,
           color: InvoiceThemeColors.primaryPurple,
@@ -360,6 +358,7 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
   }
 
   Widget _buildMarketIndices(StockState state) {
+    final indices = state is StockDashboardLoaded ? state.indices : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -370,7 +369,7 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
               'Market Overview',
               style: InvoiceTextStyles.header18,
             ),
-            if (state is MarketIndicesLoaded)
+            if (indices != null && indices.isNotEmpty)
               TextButton(
                 onPressed: () {},
                 child: Text(
@@ -383,8 +382,8 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
           ],
         ),
         SizedBox(height: 12.h),
-        if (state is MarketIndicesLoaded)
-          _buildMarketIndicesGrid(state.indices)
+        if (indices != null && indices.isNotEmpty)
+          _buildMarketIndicesGrid(indices)
         else
           _buildMarketIndicesSkeleton(),
       ],
@@ -478,7 +477,7 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
           ],
         ),
         SizedBox(height: 12.h),
-        if (state is PortfolioLoaded)
+        if (state is StockDashboardLoaded && state.portfolio != null)
           PortfolioSummaryCard(
             portfolio: state.portfolio,
             onTap: () => Get.toNamed(AppRoutes.stockPortfolio),
@@ -550,7 +549,7 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
           ],
         ),
         SizedBox(height: 12.h),
-        if (state is StockLoaded && state.stocks.isNotEmpty)
+        if (state is StockDashboardLoaded && state.stocks.isNotEmpty)
           _buildStocksList(state.stocks.take(5).toList())
         else
           _buildTopMoversSkeleton(),
@@ -558,7 +557,7 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
     );
   }
 
-  Widget _buildStocksList(List stocks) {
+  Widget _buildStocksList(List<Stock> stocks) {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -568,12 +567,12 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
     );
   }
 
-  Widget _buildStockCard(dynamic stock) {
-    // Handle both StockEntity and Map types
-    final String symbol = (stock.symbol ?? stock['symbol'] ?? 'N/A').toString();
-    final String name = (stock.name ?? stock['name'] ?? 'Unknown').toString();
-    final price = stock.price ?? stock['price'] ?? 0.0;
-    final change = stock.change ?? stock['change'] ?? 0.0;
+  Widget _buildStockCard(Stock stock) {
+    final String symbol = stock.symbol;
+    final String name = stock.name;
+    final double price = stock.currentPrice;
+    final double change = stock.changePercent;
+    final String currency = stock.currency.isNotEmpty ? stock.currency : 'USD';
     final isPositive = change >= 0;
 
     return GestureDetector(
@@ -628,7 +627,7 @@ class _StocksLandingScreenState extends State<StocksLandingScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${price.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(price.toDouble(), currency),
                   style: InvoiceTextStyles.body14Medium,
                 ),
                 SizedBox(height: 4.h),

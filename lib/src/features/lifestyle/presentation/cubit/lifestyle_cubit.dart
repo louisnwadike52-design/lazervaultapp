@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/lifestyle/domain/entities/flight_result.dart';
 import 'package:lazervault/src/features/lifestyle/domain/repositories/i_lifestyle_repository.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_state.dart';
 
@@ -13,7 +14,7 @@ class LifestyleCubit extends Cubit<LifestyleState> {
       final categories = await _repository.getCategories();
 
       // Also load cheap flights for the deals section
-      List cheapFlights = [];
+      List<FlightResult> cheapFlights = [];
       try {
         cheapFlights = await _repository.getCheapFlights(
           origin: 'LOS', // Default to Lagos
@@ -24,12 +25,14 @@ class LifestyleCubit extends Cubit<LifestyleState> {
         // Non-critical, continue without deals
       }
 
+      if (isClosed) return;
       emit(LifestyleCategoriesLoaded(
         categories: categories,
-        cheapFlights: cheapFlights.cast(),
+        cheapFlights: cheapFlights,
       ));
     } catch (e) {
-      emit(LifestyleError('Failed to load categories: $e'));
+      if (isClosed) return;
+      emit(LifestyleError(_cleanErrorMessage(e)));
     }
   }
 
@@ -57,9 +60,11 @@ class LifestyleCubit extends Cubit<LifestyleState> {
         sortBy: sortBy,
         limit: limit,
       );
+      if (isClosed) return;
       emit(FlightsLoaded(flights: flights));
     } catch (e) {
-      emit(LifestyleError('Flight search failed: $e'));
+      if (isClosed) return;
+      emit(LifestyleError(_cleanErrorMessage(e)));
     }
   }
 
@@ -87,9 +92,11 @@ class LifestyleCubit extends Cubit<LifestyleState> {
         sortBy: sortBy,
         limit: limit,
       );
+      if (isClosed) return;
       emit(HotelsLoaded(hotels: hotels));
     } catch (e) {
-      emit(LifestyleError('Hotel search failed: $e'));
+      if (isClosed) return;
+      emit(LifestyleError(_cleanErrorMessage(e)));
     }
   }
 
@@ -109,9 +116,24 @@ class LifestyleCubit extends Cubit<LifestyleState> {
         limit: limit,
         category: category,
       );
+      if (isClosed) return;
       emit(ToursLoaded(tours: tours));
     } catch (e) {
-      emit(LifestyleError('Tour search failed: $e'));
+      if (isClosed) return;
+      emit(LifestyleError(_cleanErrorMessage(e)));
     }
+  }
+
+  String _cleanErrorMessage(Object e) {
+    var msg = e.toString();
+    // Strip "Exception: " prefix from Dart exceptions
+    if (msg.startsWith('Exception: ')) {
+      msg = msg.substring(11);
+    }
+    // Truncate overly long error messages to prevent UI overflow
+    if (msg.length > 150) {
+      msg = '${msg.substring(0, 147)}...';
+    }
+    return msg;
   }
 }

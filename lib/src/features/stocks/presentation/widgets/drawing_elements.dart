@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 enum DrawingTool { 
   none, 
@@ -336,7 +337,7 @@ class MeasureElement extends DrawingElement {
 
     final textPainter = TextPainter(
       text: TextSpan(
-        text: '\$${priceDiff.toStringAsFixed(2)}\n${priceChange.toStringAsFixed(2)}%',
+        text: '${CurrencySymbols.formatAmountWithCurrency(priceDiff, 'USD')}\n${priceChange.toStringAsFixed(2)}%',
         style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
       ),
       textDirection: TextDirection.ltr,

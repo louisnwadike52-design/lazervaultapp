@@ -163,7 +163,6 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                 SizedBox(height: 8.h),
                 CrowdfundProgressIndicator(
                   progressPercentage: crowdfund.progressPercentage,
-                  height: 6,
                 ),
                 SizedBox(height: 4.h),
                 Align(

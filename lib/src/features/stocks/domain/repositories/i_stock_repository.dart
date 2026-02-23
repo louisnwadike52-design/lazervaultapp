@@ -18,9 +18,9 @@ abstract class IStockRepository {
     String timeframe, // 1D, 1W, 1M, 3M, 1Y, ALL
   );
   
-  Future<Either<Failure, List<Stock>>> getTopMovers();
-  
-  Future<Either<Failure, List<Stock>>> searchStocks(String query);
+  Future<Either<Failure, List<Stock>>> getTopMovers({String? market});
+
+  Future<Either<Failure, List<Stock>>> searchStocks(String query, {String? market});
   
   // Portfolio Management
   Future<Either<Failure, Portfolio>> getPortfolio();

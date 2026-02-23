@@ -16,15 +16,20 @@ class DepositSimulationService {
       dotenv.env[_devModeFlag] == 'true';
 
   /// Get the webhook URL from config
-  /// Uses ngrok URL for external webhook delivery (production-grade simulation)
+  /// Prefers direct local URL (reliable) over ngrok (intermittent 404s on free tier)
   static String get _bankingWebhookUrl {
-    // Use ngrok URL for proper webhook simulation
-    // This allows testing the full webhook flow through the webhook gateway
+    // Prefer direct local URL for emulator - avoids ngrok free tier issues
+    // (interstitial page, rate limits, connection drops cause intermittent 404s)
+    final localUrl = dotenv.env['WEBHOOK_GATEWAY_URL'];
+    if (localUrl != null && localUrl.isNotEmpty) {
+      return '$localUrl/webhooks/flutterwave';
+    }
+    // Fall back to ngrok URL for physical device testing (can't reach localhost)
     final ngrokUrl = dotenv.env['WEBHOOK_GATEWAY_NGROK_URL'];
     if (ngrokUrl != null && ngrokUrl.isNotEmpty) {
       return '$ngrokUrl/webhooks/flutterwave';
     }
-    // Fallback to local webhook gateway
+    // Final fallback to local webhook gateway
     final grpcHost = dotenv.env['GRPC_API_HOST'] ?? '10.0.2.2';
     return 'http://$grpcHost:8090/webhooks/flutterwave';
   }

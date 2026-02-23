@@ -47,7 +47,7 @@ class _CableTVPaymentProcessingScreenState
     final idempotencyKey = args['idempotencyKey'] as String;
 
     context.read<CableTVCubit>().paySubscription(
-          providerId: provider.id,
+          providerId: provider.serviceId,
           smartCardNumber: smartCardNumber,
           variationCode: package.variationCode,
           amount: package.amount,

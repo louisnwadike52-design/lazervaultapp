@@ -27,6 +27,8 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     $fixnum.Int64? amount,
     $core.String? currency,
     $core.String? sourceBankName,
+    $core.String? countryCode,
+    $core.String? locale,
   }) {
     final $result = create();
     if (targetAccountId != null) {
@@ -41,6 +43,12 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     if (sourceBankName != null) {
       $result.sourceBankName = sourceBankName;
     }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
+    if (locale != null) {
+      $result.locale = locale;
+    }
     return $result;
   }
   InitiateDepositRequest._() : super();
@@ -52,6 +60,8 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, _omitFieldNames ? '' : 'currency')
     ..aOS(4, _omitFieldNames ? '' : 'source_bank_name')
+    ..aOS(5, _omitFieldNames ? '' : 'country_code')
+    ..aOS(6, _omitFieldNames ? '' : 'locale')
     ..hasRequiredFields = false
   ;
 
@@ -112,6 +122,24 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
   $core.bool hasSourceBankName() => $_has(3);
   @$pb.TagNumber(4)
   void clearSourceBankName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get countryCode => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set countryCode($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCountryCode() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCountryCode() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get locale => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set locale($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasLocale() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLocale() => clearField(6);
 }
 
 /// Response after initiating a deposit (acknowledgement)
@@ -120,6 +148,10 @@ class InitiateDepositResponse extends $pb.GeneratedMessage {
     $core.String? depositId,
     DepositStatus? status,
     $core.String? message,
+    $core.bool? requiresAuthorization,
+    $core.String? paymentUrl,
+    $core.String? provider,
+    $core.String? countryCode,
   }) {
     final $result = create();
     if (depositId != null) {
@@ -131,6 +163,18 @@ class InitiateDepositResponse extends $pb.GeneratedMessage {
     if (message != null) {
       $result.message = message;
     }
+    if (requiresAuthorization != null) {
+      $result.requiresAuthorization = requiresAuthorization;
+    }
+    if (paymentUrl != null) {
+      $result.paymentUrl = paymentUrl;
+    }
+    if (provider != null) {
+      $result.provider = provider;
+    }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
     return $result;
   }
   InitiateDepositResponse._() : super();
@@ -141,6 +185,10 @@ class InitiateDepositResponse extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'deposit_id')
     ..e<DepositStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DepositStatus.DEPOSIT_STATUS_UNSPECIFIED, valueOf: DepositStatus.valueOf, enumValues: DepositStatus.values)
     ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..aOB(4, _omitFieldNames ? '' : 'requires_authorization')
+    ..aOS(5, _omitFieldNames ? '' : 'payment_url')
+    ..aOS(6, _omitFieldNames ? '' : 'provider')
+    ..aOS(7, _omitFieldNames ? '' : 'country_code')
     ..hasRequiredFields = false
   ;
 
@@ -191,6 +239,42 @@ class InitiateDepositResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(2);
   @$pb.TagNumber(3)
   void clearMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get requiresAuthorization => $_getBF(3);
+  @$pb.TagNumber(4)
+  set requiresAuthorization($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRequiresAuthorization() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRequiresAuthorization() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get paymentUrl => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set paymentUrl($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPaymentUrl() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPaymentUrl() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get provider => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set provider($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProvider() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProvider() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get countryCode => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set countryCode($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCountryCode() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCountryCode() => clearField(7);
 }
 
 /// Request to get details of a specific deposit transaction
@@ -473,6 +557,386 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
   void clearUpdatedAccount() => clearField(13);
   @$pb.TagNumber(13)
   $0.AccountDetails ensureUpdatedAccount() => $_ensure(12);
+}
+
+/// Request to simulate a test deposit (sandbox only)
+class SimulateTestDepositRequest extends $pb.GeneratedMessage {
+  factory SimulateTestDepositRequest({
+    $core.String? destinationAccountId,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? countryCode,
+  }) {
+    final $result = create();
+    if (destinationAccountId != null) {
+      $result.destinationAccountId = destinationAccountId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
+    return $result;
+  }
+  SimulateTestDepositRequest._() : super();
+  factory SimulateTestDepositRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SimulateTestDepositRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SimulateTestDepositRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'destination_account_id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'country_code')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SimulateTestDepositRequest clone() => SimulateTestDepositRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SimulateTestDepositRequest copyWith(void Function(SimulateTestDepositRequest) updates) => super.copyWith((message) => updates(message as SimulateTestDepositRequest)) as SimulateTestDepositRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SimulateTestDepositRequest create() => SimulateTestDepositRequest._();
+  SimulateTestDepositRequest createEmptyInstance() => create();
+  static $pb.PbList<SimulateTestDepositRequest> createRepeated() => $pb.PbList<SimulateTestDepositRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SimulateTestDepositRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SimulateTestDepositRequest>(create);
+  static SimulateTestDepositRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get destinationAccountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set destinationAccountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDestinationAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDestinationAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get countryCode => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set countryCode($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCountryCode() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCountryCode() => clearField(4);
+}
+
+/// Request to get available deposit methods for a country
+class GetDepositMethodsRequest extends $pb.GeneratedMessage {
+  factory GetDepositMethodsRequest({
+    $core.String? countryCode,
+    $core.String? currency,
+  }) {
+    final $result = create();
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    return $result;
+  }
+  GetDepositMethodsRequest._() : super();
+  factory GetDepositMethodsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetDepositMethodsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDepositMethodsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'country_code')
+    ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetDepositMethodsRequest clone() => GetDepositMethodsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetDepositMethodsRequest copyWith(void Function(GetDepositMethodsRequest) updates) => super.copyWith((message) => updates(message as GetDepositMethodsRequest)) as GetDepositMethodsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetDepositMethodsRequest create() => GetDepositMethodsRequest._();
+  GetDepositMethodsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetDepositMethodsRequest> createRepeated() => $pb.PbList<GetDepositMethodsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetDepositMethodsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetDepositMethodsRequest>(create);
+  static GetDepositMethodsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get countryCode => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set countryCode($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCountryCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCountryCode() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get currency => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set currency($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCurrency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCurrency() => clearField(2);
+}
+
+/// Response containing available deposit methods
+class GetDepositMethodsResponse extends $pb.GeneratedMessage {
+  factory GetDepositMethodsResponse({
+    $core.Iterable<DepositMethod>? methods,
+    $core.String? countryCode,
+    $core.String? currency,
+    $core.String? provider,
+  }) {
+    final $result = create();
+    if (methods != null) {
+      $result.methods.addAll(methods);
+    }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (provider != null) {
+      $result.provider = provider;
+    }
+    return $result;
+  }
+  GetDepositMethodsResponse._() : super();
+  factory GetDepositMethodsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetDepositMethodsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDepositMethodsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<DepositMethod>(1, _omitFieldNames ? '' : 'methods', $pb.PbFieldType.PM, subBuilder: DepositMethod.create)
+    ..aOS(2, _omitFieldNames ? '' : 'country_code')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'provider')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetDepositMethodsResponse clone() => GetDepositMethodsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetDepositMethodsResponse copyWith(void Function(GetDepositMethodsResponse) updates) => super.copyWith((message) => updates(message as GetDepositMethodsResponse)) as GetDepositMethodsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetDepositMethodsResponse create() => GetDepositMethodsResponse._();
+  GetDepositMethodsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetDepositMethodsResponse> createRepeated() => $pb.PbList<GetDepositMethodsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetDepositMethodsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetDepositMethodsResponse>(create);
+  static GetDepositMethodsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<DepositMethod> get methods => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.String get countryCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set countryCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCountryCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCountryCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get provider => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set provider($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasProvider() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProvider() => clearField(4);
+}
+
+/// A single deposit method available for a country
+class DepositMethod extends $pb.GeneratedMessage {
+  factory DepositMethod({
+    $core.String? id,
+    $core.String? name,
+    $core.String? description,
+    $core.String? icon,
+    $core.String? feeDescription,
+    $core.String? processingTime,
+    $core.bool? available,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (icon != null) {
+      $result.icon = icon;
+    }
+    if (feeDescription != null) {
+      $result.feeDescription = feeDescription;
+    }
+    if (processingTime != null) {
+      $result.processingTime = processingTime;
+    }
+    if (available != null) {
+      $result.available = available;
+    }
+    return $result;
+  }
+  DepositMethod._() : super();
+  factory DepositMethod.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DepositMethod.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DepositMethod', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..aOS(3, _omitFieldNames ? '' : 'description')
+    ..aOS(4, _omitFieldNames ? '' : 'icon')
+    ..aOS(5, _omitFieldNames ? '' : 'fee_description')
+    ..aOS(6, _omitFieldNames ? '' : 'processing_time')
+    ..aOB(7, _omitFieldNames ? '' : 'available')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DepositMethod clone() => DepositMethod()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DepositMethod copyWith(void Function(DepositMethod) updates) => super.copyWith((message) => updates(message as DepositMethod)) as DepositMethod;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DepositMethod create() => DepositMethod._();
+  DepositMethod createEmptyInstance() => create();
+  static $pb.PbList<DepositMethod> createRepeated() => $pb.PbList<DepositMethod>();
+  @$core.pragma('dart2js:noInline')
+  static DepositMethod getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DepositMethod>(create);
+  static DepositMethod? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get description => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set description($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDescription() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDescription() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get icon => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set icon($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIcon() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIcon() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get feeDescription => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set feeDescription($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasFeeDescription() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFeeDescription() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get processingTime => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set processingTime($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProcessingTime() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProcessingTime() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get available => $_getBF(6);
+  @$pb.TagNumber(7)
+  set available($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasAvailable() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearAvailable() => clearField(7);
 }
 
 

@@ -18,6 +18,7 @@ abstract class SendGeneralChatMessageUseCase {
     required String accessToken,
     String sourceContext = 'general',
     String language = 'en',
+    String locale = 'en-NG',
     Map<String, dynamic> metadata = const {},
   });
 }
@@ -35,6 +36,7 @@ class SendGeneralChatMessageUseCaseImpl implements SendGeneralChatMessageUseCase
     required String accessToken,
     String sourceContext = 'general',
     String language = 'en',
+    String locale = 'en-NG',
     Map<String, dynamic> metadata = const {},
   }) async {
     return await repository.sendMessage(
@@ -44,6 +46,7 @@ class SendGeneralChatMessageUseCaseImpl implements SendGeneralChatMessageUseCase
       accessToken: accessToken,
       sourceContext: sourceContext,
       language: language,
+      locale: locale,
       metadata: metadata,
     );
   }

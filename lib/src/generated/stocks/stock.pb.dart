@@ -1887,6 +1887,7 @@ class SearchStocksRequest extends $pb.GeneratedMessage {
   factory SearchStocksRequest({
     $core.String? query,
     $core.int? limit,
+    $core.String? market,
   }) {
     final $result = create();
     if (query != null) {
@@ -1894,6 +1895,9 @@ class SearchStocksRequest extends $pb.GeneratedMessage {
     }
     if (limit != null) {
       $result.limit = limit;
+    }
+    if (market != null) {
+      $result.market = market;
     }
     return $result;
   }
@@ -1904,6 +1908,7 @@ class SearchStocksRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchStocksRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'stockspb'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'query')
     ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'market')
     ..hasRequiredFields = false
   ;
 
@@ -1945,6 +1950,15 @@ class SearchStocksRequest extends $pb.GeneratedMessage {
   $core.bool hasLimit() => $_has(1);
   @$pb.TagNumber(2)
   void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get market => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set market($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMarket() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMarket() => clearField(3);
 }
 
 class SearchStocksResponse extends $pb.GeneratedMessage {

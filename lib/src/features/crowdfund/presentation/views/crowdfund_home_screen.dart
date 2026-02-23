@@ -6,12 +6,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../cubit/leaderboard_cubit.dart';
 import '../cubit/leaderboard_state.dart';
-import '../widgets/leaderboard_preview_card.dart';
-import '../widgets/campaign_quick_view_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class CrowdfundHomeScreen extends StatefulWidget {
@@ -447,39 +446,32 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
-          SizedBox(
-            height: 210.h,
-            child: BlocBuilder<LeaderboardCubit, LeaderboardState>(
-              builder: (context, state) {
-                if (state is LeaderboardLoading) {
-                  return const Center(
+          SizedBox(height: 8.h),
+          BlocBuilder<LeaderboardCubit, LeaderboardState>(
+            builder: (context, state) {
+              if (state is LeaderboardLoading) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  child: const Center(
                     child: CircularProgressIndicator(
                       color: Color(0xFF6366F1),
                     ),
-                  );
-                }
+                  ),
+                );
+              }
 
-                if (state is LeaderboardLoaded && state.entries.isNotEmpty) {
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: state.entries.length,
-                    itemBuilder: (context, index) {
-                      return LeaderboardPreviewCard(
-                        entry: state.entries[index],
-                        onTap: () {
-                          CampaignQuickViewBottomSheet.show(
-                            context,
-                            state.entries[index].crowdfund,
-                          );
-                        },
-                      );
-                    },
-                  );
-                }
+              if (state is LeaderboardLoaded && state.entries.isNotEmpty) {
+                return Column(
+                  children: state.entries.map((entry) {
+                    return _buildLeaderboardItem(entry);
+                  }).toList(),
+                );
+              }
 
-                if (state is LeaderboardError) {
-                  return Center(
+              if (state is LeaderboardError) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
                     child: Text(
                       'Could not load leaderboard',
                       style: GoogleFonts.inter(
@@ -487,14 +479,127 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                         fontSize: 13.sp,
                       ),
                     ),
-                  );
-                }
+                  ),
+                );
+              }
 
-                return const SizedBox.shrink();
-              },
-            ),
+              return const SizedBox.shrink();
+            },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardItem(LeaderboardEntry entry) {
+    final crowdfund = entry.crowdfund;
+    final rank = entry.rank;
+    final Color rankColor;
+    if (rank == 1) {
+      rankColor = const Color(0xFFFFD700);
+    } else if (rank == 2) {
+      rankColor = const Color(0xFFC0C0C0);
+    } else if (rank == 3) {
+      rankColor = const Color(0xFFCD7F32);
+    } else {
+      rankColor = const Color(0xFF6B7280);
+    }
+
+    return GestureDetector(
+      onTap: () => Get.toNamed(
+        AppRoutes.crowdfundDetails,
+        arguments: crowdfund.id,
+      ),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          children: [
+            // Rank badge
+            Container(
+              width: 28.w,
+              height: 28.w,
+              decoration: BoxDecoration(
+                color: rankColor.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: rank <= 3
+                    ? Icon(Icons.emoji_events, color: rankColor, size: 14.sp)
+                    : Text(
+                        '#$rank',
+                        style: GoogleFonts.inter(
+                          color: rankColor,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            // Title + creator
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    crowdfund.title,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'by ${crowdfund.creator.displayName}',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 11.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            // Amount + progress
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${CurrencySymbols.getSymbol(crowdfund.currency)}${crowdfund.currentAmount.toStringAsFixed(0)}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6366F1),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '${crowdfund.progressPercentage.toStringAsFixed(0)}%',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(width: 4.w),
+            Icon(
+              Icons.chevron_right,
+              color: const Color(0xFF6B7280),
+              size: 18.sp,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -659,7 +764,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
     );
   }
 
-  Widget _buildCrowdfundItem(dynamic crowdfund) {
+  Widget _buildCrowdfundItem(Crowdfund crowdfund) {
     return GestureDetector(
       onTap: () => Get.toNamed(
         AppRoutes.crowdfundDetails,
@@ -708,7 +813,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             ),
             SizedBox(height: 12.h),
             LinearProgressIndicator(
-              value: crowdfund.progressPercentage / 100,
+              value: (crowdfund.progressPercentage / 100).clamp(0.0, 1.0),
               backgroundColor: Colors.white.withValues(alpha: 0.1),
               valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
               minHeight: 6.h,

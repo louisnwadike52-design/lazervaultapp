@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
@@ -30,8 +31,7 @@ class IdVerificationScreen extends StatefulWidget {
 
 class _IdVerificationScreenState extends State<IdVerificationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _bvnController = TextEditingController();
-  final _ninController = TextEditingController();
+  final _idNumberController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _dobController = TextEditingController();
@@ -78,13 +78,13 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       case IdentityDocumentType.ukDriverLicense:
         return IDType.ukDrivingLicense;
       case IdentityDocumentType.niNumber:
-        return IDType.driversLicense; // Map to a valid ID type
+        return IDType.ukDrivingLicense; // NI Number not separately supported; closest UK ID
 
       // US
       case IdentityDocumentType.ssn:
         return IDType.usSsn;
       case IdentityDocumentType.ssnLast4:
-        return IDType.usSsn; // Map to SSN
+        return IDType.usSsn; // Full SSN required by provider
       case IdentityDocumentType.usPassport:
         return IDType.usPassport;
       case IdentityDocumentType.usStateId:
@@ -96,7 +96,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       case IdentityDocumentType.ghanaVoterCard:
         return IDType.votersCard;
       case IdentityDocumentType.ghanaSsnit:
-        return IDType.kraPin; // Map to KRA PIN as placeholder
+        return IDType.ghanaCard; // SSNIT not separately supported; use Ghana Card
       case IdentityDocumentType.ghanaPassport:
         return IDType.internationalPassport;
 
@@ -108,7 +108,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       case IdentityDocumentType.kenyaPassport:
         return IDType.internationalPassport;
       case IdentityDocumentType.kenyaAlienId:
-        return IDType.kenyaNationalId;
+        return IDType.kenyaNationalId; // Alien ID verified via same flow
 
       // South Africa
       case IdentityDocumentType.saId:
@@ -117,7 +117,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         return IDType.saPassport;
 
       default:
-        return IDType.bvn;
+        return IDType.unknown;
     }
   }
 
@@ -135,8 +135,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
 
   @override
   void dispose() {
-    _bvnController.dispose();
-    _ninController.dispose();
+    _idNumberController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _dobController.dispose();
@@ -165,6 +164,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                 _buildHeader(context),
                 const SizedBox(height: 32),
                 _buildIdTypeSelector(context),
@@ -273,17 +273,22 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         return 'Ghana Card';
       case IDType.kenyaNationalId:
         return 'National ID';
+      case IDType.kraPin:
+        return 'KRA PIN';
       case IDType.saIdCard:
         return 'Smart ID Card';
-      case IDType.ukPassport:
       case IDType.saPassport:
-        return 'Passport';
+        return 'SA Passport';
+      case IDType.ukPassport:
+        return 'UK Passport';
       case IDType.ukDrivingLicense:
         return 'Driving Licence';
       case IDType.usSsn:
         return 'Social Security Number';
       case IDType.usStateId:
         return 'State ID';
+      case IDType.usPassport:
+        return 'US Passport';
       default:
         return 'Identity Document';
     }
@@ -299,7 +304,12 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     final isSelected = _selectedIdType == type;
 
     return InkWell(
-      onTap: () => setState(() => _selectedIdType = type),
+      onTap: () => setState(() {
+        if (_selectedIdType != type) {
+          _idNumberController.clear();
+          _selectedIdType = type;
+        }
+      }),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -361,7 +371,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           return 'Please enter your $label';
         }
         if (value.length < _getIdNumberMinLength(_selectedIdType)) {
-          return '$label must be at least ${_getIdNumberMinLength(_selectedIdType)} digits';
+          return '$label must be at least ${_getIdNumberMinLength(_selectedIdType)} characters';
         }
         return null;
       },
@@ -369,14 +379,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   }
 
   TextEditingController _getIdController(IDType type) {
-    switch (type) {
-      case IDType.bvn:
-        return _bvnController;
-      case IDType.nin:
-        return _ninController;
-      default:
-        return _bvnController;
-    }
+    return _idNumberController;
   }
 
   String _getIdNumberHint(IDType type) {
@@ -395,6 +398,20 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         return "Enter your Driver's License number";
       case IDType.internationalPassport:
         return 'Enter your Passport number';
+      case IDType.ukPassport:
+        return 'Enter your 9-digit UK Passport number';
+      case IDType.ukDrivingLicense:
+        return 'Enter your Driving Licence number';
+      case IDType.usSsn:
+        return 'Enter your 9-digit SSN';
+      case IDType.usStateId:
+        return 'Enter your State ID number';
+      case IDType.usPassport:
+        return 'Enter your US Passport number';
+      case IDType.kraPin:
+        return 'Enter your KRA PIN (e.g., A123456789B)';
+      case IDType.saPassport:
+        return 'Enter your South African Passport number';
       default:
         return 'Enter your ID number';
     }
@@ -411,6 +428,17 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         return 8;
       case IDType.ghanaCard:
         return 15;
+      case IDType.usSsn:
+        return 9;
+      case IDType.ukPassport:
+      case IDType.usPassport:
+        return 9;
+      case IDType.kraPin:
+        return 11;
+      case IDType.ukDrivingLicense:
+        return 16;
+      case IDType.saPassport:
+        return 9;
       default:
         return 20;
     }
@@ -425,6 +453,18 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         return 13;
       case IDType.kenyaNationalId:
         return 7;
+      case IDType.usSsn:
+      case IDType.ukPassport:
+      case IDType.usPassport:
+        return 9;
+      case IDType.kraPin:
+        return 11;
+      case IDType.ghanaCard:
+        return 15;
+      case IDType.ukDrivingLicense:
+        return 16;
+      case IDType.saPassport:
+        return 8;
       default:
         return 6;
     }
@@ -436,6 +476,9 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       case IDType.nin:
       case IDType.saIdCard:
       case IDType.kenyaNationalId:
+      case IDType.usSsn:
+      case IDType.ukPassport:
+      case IDType.usPassport:
         return TextInputType.number;
       default:
         return TextInputType.text;
@@ -448,8 +491,16 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       case IDType.nin:
       case IDType.saIdCard:
       case IDType.kenyaNationalId:
+      case IDType.usSsn:
+      case IDType.ukPassport:
+      case IDType.usPassport:
         return [
           FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(maxLength),
+        ];
+      case IDType.kraPin:
+        return [
+          FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
           LengthLimitingTextInputFormatter(maxLength),
         ];
       default:
@@ -504,14 +555,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   Widget _buildDobField(BuildContext context) {
     return TextFormField(
       controller: _dobController,
-      keyboardType: TextInputType.number,
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        _DateInputFormatter(),
-      ],
+      readOnly: true,
       decoration: const InputDecoration(
         labelText: 'Date of Birth',
-        hintText: 'DD/MM/YYYY',
+        hintText: 'Tap to select date',
         prefixIcon: Icon(Icons.calendar_today),
         border: OutlineInputBorder(),
       ),
@@ -537,6 +584,22 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         if (!regex.hasMatch(value)) {
           return 'Use DD/MM/YYYY format';
         }
+        // Parse and validate date semantically
+        final parts = value.split('/');
+        final day = int.tryParse(parts[0]) ?? 0;
+        final month = int.tryParse(parts[1]) ?? 0;
+        final year = int.tryParse(parts[2]) ?? 0;
+        if (month < 1 || month > 12) return 'Invalid month';
+        if (day < 1 || day > 31) return 'Invalid day';
+        // Check days per month
+        final daysInMonth = DateTime(year, month + 1, 0).day;
+        if (day > daysInMonth) return 'Invalid day for this month';
+        final dob = DateTime(year, month, day);
+        final now = DateTime.now();
+        if (dob.isAfter(now)) return 'Date cannot be in the future';
+        final age = now.year - dob.year - ((now.month < month || (now.month == month && now.day < day)) ? 1 : 0);
+        if (age < 18) return 'You must be at least 18 years old';
+        if (age > 120) return 'Please check the year';
         return null;
       },
     );
@@ -605,16 +668,18 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   }
 
   Widget _buildSubmitButton(BuildContext context) {
-    final cubit = context.read<KYCCubit>();
-    final isLoading = cubit.state is KYCLoading;
-
-    return SizedBox(
-      width: double.infinity,
-      child: AppLoadingButton(
-        onPressed: isLoading ? null : _submitVerification,
-        isLoading: isLoading,
-        text: 'Verify Identity',
-      ),
+    return BlocBuilder<KYCCubit, KYCState>(
+      builder: (context, state) {
+        final isLoading = state is KYCLoading;
+        return SizedBox(
+          width: double.infinity,
+          child: AppLoadingButton(
+            onPressed: isLoading ? null : _submitVerification,
+            isLoading: isLoading,
+            text: 'Verify Identity',
+          ),
+        );
+      },
     );
   }
 
@@ -650,15 +715,33 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
 
     final cubit = context.read<KYCCubit>();
     final controller = _getIdController(_selectedIdType);
-    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    final authCubit = context.read<AuthenticationCubit>();
+    final userId = authCubit.userId ?? '';
+
+    // Convert DD/MM/YYYY to YYYY-MM-DD for backend/providers
+    final dobText = _dobController.text;
+    String formattedDob = dobText;
+    if (dobText.contains('/')) {
+      final parts = dobText.split('/');
+      if (parts.length == 3) {
+        formattedDob = '${parts[2]}-${parts[1]}-${parts[0]}';
+      }
+    }
+
+    // Sanitize ID number: trim whitespace, strip dashes for SSN
+    var idNumber = controller.text.trim();
+    if (_selectedIdType == IDType.usSsn) {
+      idNumber = idNumber.replaceAll('-', '');
+    }
+
     final request = IDVerificationRequest(
       userId: userId,
       idType: _selectedIdType,
-      idNumber: controller.text.trim(),
+      idNumber: idNumber,
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
-      dateOfBirth: _dobController.text,
-      phoneNumber: '', // Get from auth state
+      dateOfBirth: formattedDob,
+      phoneNumber: authCubit.currentProfile?.user.phoneNumber ?? '',
     );
 
     cubit.verifyID(request);
@@ -668,6 +751,19 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     BuildContext context,
     VerifyIDResponse response,
   ) {
+    // Check if this is an async verification with a session URL (Onfido/Persona)
+    if (response.sessionUrl != null && response.sessionUrl!.isNotEmpty) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => _VerificationWebViewScreen(
+            sessionUrl: response.sessionUrl!,
+            verificationId: response.verificationId,
+          ),
+        ),
+      );
+      return;
+    }
+
     Navigator.of(context).popUntil((route) => route.isFirst);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -689,7 +785,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         action: SnackBarAction(
           label: 'Retry',
           textColor: Colors.white,
-          onPressed: () {},
+          onPressed: _submitVerification,
         ),
       ),
     );
@@ -723,6 +819,173 @@ class _DateInputFormatter extends TextInputFormatter {
     return newValue.copyWith(
       text: text,
       selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
+
+/// WebView screen for async identity verification (Onfido/Persona SDK)
+class _VerificationWebViewScreen extends StatefulWidget {
+  final String sessionUrl;
+  final String? verificationId;
+
+  const _VerificationWebViewScreen({
+    required this.sessionUrl,
+    this.verificationId,
+  });
+
+  @override
+  State<_VerificationWebViewScreen> createState() => _VerificationWebViewScreenState();
+}
+
+class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> {
+  bool _launched = false;
+  bool _launching = false;
+
+  Future<void> _launchVerificationUrl() async {
+    if (_launching) return;
+    setState(() => _launching = true);
+
+    final uri = Uri.tryParse(widget.sessionUrl);
+    if (uri == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid verification URL'), backgroundColor: Colors.red),
+        );
+        setState(() => _launching = false);
+      }
+      return;
+    }
+
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (mounted) {
+        setState(() {
+          _launched = launched;
+          _launching = false;
+        });
+        if (!launched) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open verification page'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _launching = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to open: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Verify Identity'),
+        elevation: 0,
+        actions: [
+          TextButton(
+            onPressed: () => _showPendingAndPop(context),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Info banner
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 18, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _launched
+                        ? 'Complete verification in your browser, then tap Done.'
+                        : 'You will be redirected to our verification partner.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _launched ? Icons.open_in_browser : Icons.verified_user,
+                    size: 64,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _launched ? 'Verification Opened' : 'Identity Verification',
+                    style: theme.textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      _launched
+                          ? 'Complete the steps in your browser. When you\'re done, come back here and tap "Done".'
+                          : 'Tap below to open the verification page in your browser.',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  if (!_launched)
+                    FilledButton.icon(
+                      onPressed: _launching ? null : _launchVerificationUrl,
+                      icon: _launching
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Icon(Icons.open_in_new),
+                      label: Text(_launching ? 'Opening...' : 'Start Verification'),
+                    )
+                  else ...[
+                    FilledButton.icon(
+                      onPressed: _launchVerificationUrl,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Reopen Verification'),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: () => _showPendingAndPop(context),
+                      icon: const Icon(Icons.check),
+                      label: const Text('I\'m Done'),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPendingAndPop(BuildContext context) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Verification in progress. We\'ll notify you once it\'s complete.',
+        ),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ class ChatRequest {
   final String accessToken;
   final String sourceContext;
   final String language;
+  final String locale;
   final Map<String, dynamic> metadata;
 
   ChatRequest({
@@ -18,6 +19,7 @@ class ChatRequest {
     required this.accessToken,
     required this.sourceContext,
     this.language = 'en',
+    this.locale = 'en-NG',
     this.metadata = const {},
   });
 
@@ -29,6 +31,7 @@ class ChatRequest {
       'access_token': accessToken,
       'source_context': sourceContext,
       'language': language,
+      'locale': locale,
       'metadata': metadata,
     };
   }
@@ -104,6 +107,7 @@ abstract class MicroserviceChatDataSource {
     required String sourceContext,
     required String sessionId,
     required String accessToken,
+    String? locale,
   });
 }
 
@@ -151,20 +155,28 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
     required String sourceContext,
     required String sessionId,
     required String accessToken,
+    String? locale,
   }) async {
     try {
       final options = await callOptionsHelper.withAuth();
 
+      final queryParams = <String, dynamic>{
+        'user_id': '', // Will be extracted from token on backend
+        'session_id': sessionId,
+        'source_context': sourceContext,
+        'access_token': accessToken,
+        'limit': 50,
+        'offset': 0,
+      };
+
+      // Filter history by locale when provided
+      if (locale != null && locale.isNotEmpty) {
+        queryParams['locale'] = locale;
+      }
+
       final response = await dio.get(
         '$baseUrl/chat/history',
-        queryParameters: {
-          'user_id': '', // Will be extracted from token on backend
-          'session_id': sessionId,
-          'source_context': sourceContext,
-          'access_token': accessToken,
-          'limit': 50,
-          'offset': 0,
-        },
+        queryParameters: queryParams,
         options: Options(
           headers: {
             'Content-Type': 'application/json',

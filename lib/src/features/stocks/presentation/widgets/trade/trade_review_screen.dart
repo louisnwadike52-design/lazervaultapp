@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../../../domain/entities/stock_entity.dart';
 
@@ -157,13 +158,13 @@ class TradeReviewScreen extends StatelessWidget {
             if (orderType == OrderType.market)
               _buildDetailRow(
                 'Market Price',
-                '\$${stock.currentPrice.toStringAsFixed(2)}',
+                CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
                 valueColor: Colors.white,
               ),
             if (orderType == OrderType.limit || orderType == OrderType.stopLimit) ...[
               _buildDetailRow(
                 'Limit Price',
-                '\$${limitPrice?.toStringAsFixed(2) ?? 'N/A'}',
+                limitPrice != null ? CurrencySymbols.formatAmountWithCurrency(limitPrice!, stock.currency) : 'N/A',
                 valueColor: Colors.white,
               ),
               _buildDivider(),
@@ -171,25 +172,25 @@ class TradeReviewScreen extends StatelessWidget {
             if (orderType == OrderType.stopLoss || orderType == OrderType.stopLimit) ...[
               _buildDetailRow(
                 'Stop Price',
-                '\$${stopPrice?.toStringAsFixed(2) ?? 'N/A'}',
+                stopPrice != null ? CurrencySymbols.formatAmountWithCurrency(stopPrice!, stock.currency) : 'N/A',
                 valueColor: Colors.white,
               ),
               _buildDivider(),
             ],
             _buildDetailRow(
               'Execution Price',
-              '\$${_executionPrice.toStringAsFixed(2)}',
+              CurrencySymbols.formatAmountWithCurrency(_executionPrice, stock.currency),
               valueColor: const Color(0xFF6366F1),
             ),
             _buildDivider(),
             _buildDetailRow(
               'Subtotal',
-              '\$${_estimatedTotal.toStringAsFixed(2)}',
+              CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, stock.currency),
             ),
             _buildDivider(),
             _buildDetailRow(
               'Est. Fees',
-              '\$${_estimatedFees.toStringAsFixed(2)}',
+              CurrencySymbols.formatAmountWithCurrency(_estimatedFees, stock.currency),
               labelColor: Colors.grey[500],
             ),
           ]),
@@ -229,7 +230,7 @@ class TradeReviewScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '\$${_grandTotal.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(_grandTotal, stock.currency),
                       style: GoogleFonts.inter(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,
@@ -434,15 +435,16 @@ class TradeReviewScreen extends StatelessWidget {
   }
 
   String _getImportantNote() {
+    final currencySymbol = CurrencySymbols.getSymbol(stock.currency);
     switch (orderType) {
       case OrderType.market:
         return 'This market order will execute immediately at the current market price. The actual execution price may vary slightly from the displayed price.';
       case OrderType.limit:
-        return 'This limit order will only execute at your specified price (\$${limitPrice?.toStringAsFixed(2)}) or better. There is no guarantee the order will be filled.';
+        return 'This limit order will only execute at your specified price ($currencySymbol${limitPrice?.toStringAsFixed(2)}) or better. There is no guarantee the order will be filled.';
       case OrderType.stopLoss:
-        return 'This stop loss order will trigger a market sell order when the price reaches \$${stopPrice?.toStringAsFixed(2)}. The execution price may vary from the stop price.';
+        return 'This stop loss order will trigger a market sell order when the price reaches $currencySymbol${stopPrice?.toStringAsFixed(2)}. The execution price may vary from the stop price.';
       case OrderType.stopLimit:
-        return 'This stop limit order will trigger when the price reaches \$${stopPrice?.toStringAsFixed(2)} and will only execute between \$${stopPrice?.toStringAsFixed(2)} and \$${limitPrice?.toStringAsFixed(2)}.';
+        return 'This stop limit order will trigger when the price reaches $currencySymbol${stopPrice?.toStringAsFixed(2)} and will only execute between $currencySymbol${stopPrice?.toStringAsFixed(2)} and $currencySymbol${limitPrice?.toStringAsFixed(2)}.';
     }
   }
 }

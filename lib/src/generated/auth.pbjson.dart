@@ -89,13 +89,32 @@ const IdentityType$json = {
     {'1': 'IDENTITY_TYPE_UNSPECIFIED', '2': 0},
     {'1': 'IDENTITY_TYPE_BVN', '2': 1},
     {'1': 'IDENTITY_TYPE_NIN', '2': 2},
+    {'1': 'IDENTITY_TYPE_GHANA_CARD', '2': 3},
+    {'1': 'IDENTITY_TYPE_KENYA_NATIONAL_ID', '2': 4},
+    {'1': 'IDENTITY_TYPE_KRA_PIN', '2': 5},
+    {'1': 'IDENTITY_TYPE_SA_ID', '2': 6},
+    {'1': 'IDENTITY_TYPE_SA_PASSPORT', '2': 7},
+    {'1': 'IDENTITY_TYPE_UK_PASSPORT', '2': 8},
+    {'1': 'IDENTITY_TYPE_UK_DRIVING_LICENSE', '2': 9},
+    {'1': 'IDENTITY_TYPE_US_SSN', '2': 10},
+    {'1': 'IDENTITY_TYPE_US_STATE_ID', '2': 11},
+    {'1': 'IDENTITY_TYPE_US_PASSPORT', '2': 12},
+    {'1': 'IDENTITY_TYPE_DRIVERS_LICENSE', '2': 13},
+    {'1': 'IDENTITY_TYPE_INTERNATIONAL_PASSPORT', '2': 14},
   ],
 };
 
 /// Descriptor for `IdentityType`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List identityTypeDescriptor = $convert.base64Decode(
     'CgxJZGVudGl0eVR5cGUSHQoZSURFTlRJVFlfVFlQRV9VTlNQRUNJRklFRBAAEhUKEUlERU5USV'
-    'RZX1RZUEVfQlZOEAESFQoRSURFTlRJVFlfVFlQRV9OSU4QAg==');
+    'RZX1RZUEVfQlZOEAESFQoRSURFTlRJVFlfVFlQRV9OSU4QAhIcChhJREVOVElUWV9UWVBFX0dI'
+    'QU5BX0NBUkQQAxIjCh9JREVOVElUWV9UWVBFX0tFTllBX05BVElPTkFMX0lEEAQSGQoVSURFTl'
+    'RJVFlfVFlQRV9LUkFfUElOEAUSFwoTSURFTlRJVFlfVFlQRV9TQV9JRBAGEh0KGUlERU5USVRZ'
+    'X1RZUEVfU0FfUEFTU1BPUlQQBxIdChlJREVOVElUWV9UWVBFX1VLX1BBU1NQT1JUEAgSJAogSU'
+    'RFTlRJVFlfVFlQRV9VS19EUklWSU5HX0xJQ0VOU0UQCRIYChRJREVOVElUWV9UWVBFX1VTX1NT'
+    'ThAKEh0KGUlERU5USVRZX1RZUEVfVVNfU1RBVEVfSUQQCxIdChlJREVOVElUWV9UWVBFX1VTX1'
+    'BBU1NQT1JUEAwSIQodSURFTlRJVFlfVFlQRV9EUklWRVJTX0xJQ0VOU0UQDRIoCiRJREVOVElU'
+    'WV9UWVBFX0lOVEVSTkFUSU9OQUxfUEFTU1BPUlQQDg==');
 
 @$core.Deprecated('Use kYCTierDescriptor instead')
 const KYCTier$json = {
@@ -286,13 +305,17 @@ const LoginData$json = {
   '2': [
     {'1': 'user', '3': 1, '4': 1, '5': 11, '6': '.auth.User', '10': 'user'},
     {'1': 'session', '3': 2, '4': 1, '5': 11, '6': '.auth.Session', '10': 'session'},
+    {'1': 'has_passcode', '3': 3, '4': 1, '5': 8, '10': 'hasPasscode'},
+    {'1': 'has_transaction_pin', '3': 4, '4': 1, '5': 8, '10': 'hasTransactionPin'},
   ],
 };
 
 /// Descriptor for `LoginData`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List loginDataDescriptor = $convert.base64Decode(
     'CglMb2dpbkRhdGESHgoEdXNlchgBIAEoCzIKLmF1dGguVXNlclIEdXNlchInCgdzZXNzaW9uGA'
-    'IgASgLMg0uYXV0aC5TZXNzaW9uUgdzZXNzaW9u');
+    'IgASgLMg0uYXV0aC5TZXNzaW9uUgdzZXNzaW9uEiEKDGhhc19wYXNzY29kZRgDIAEoCFILaGFz'
+    'UGFzc2NvZGUSLgoTaGFzX3RyYW5zYWN0aW9uX3BpbhgEIAEoCFIRaGFzVHJhbnNhY3Rpb25QaW'
+    '4=');
 
 @$core.Deprecated('Use sessionDescriptor instead')
 const Session$json = {
@@ -1576,6 +1599,10 @@ const VerifyIdentityRequest$json = {
     {'1': 'identity_type', '3': 1, '4': 1, '5': 14, '6': '.auth.IdentityType', '10': 'identityType'},
     {'1': 'identity_number', '3': 2, '4': 1, '5': 9, '10': 'identityNumber'},
     {'1': 'date_of_birth', '3': 3, '4': 1, '5': 9, '10': 'dateOfBirth'},
+    {'1': 'country_code', '3': 4, '4': 1, '5': 9, '10': 'countryCode'},
+    {'1': 'first_name', '3': 5, '4': 1, '5': 9, '10': 'firstName'},
+    {'1': 'last_name', '3': 6, '4': 1, '5': 9, '10': 'lastName'},
+    {'1': 'phone_number', '3': 7, '4': 1, '5': 9, '10': 'phoneNumber'},
   ],
 };
 
@@ -1583,7 +1610,10 @@ const VerifyIdentityRequest$json = {
 final $typed_data.Uint8List verifyIdentityRequestDescriptor = $convert.base64Decode(
     'ChVWZXJpZnlJZGVudGl0eVJlcXVlc3QSNwoNaWRlbnRpdHlfdHlwZRgBIAEoDjISLmF1dGguSW'
     'RlbnRpdHlUeXBlUgxpZGVudGl0eVR5cGUSJwoPaWRlbnRpdHlfbnVtYmVyGAIgASgJUg5pZGVu'
-    'dGl0eU51bWJlchIiCg1kYXRlX29mX2JpcnRoGAMgASgJUgtkYXRlT2ZCaXJ0aA==');
+    'dGl0eU51bWJlchIiCg1kYXRlX29mX2JpcnRoGAMgASgJUgtkYXRlT2ZCaXJ0aBIhCgxjb3VudH'
+    'J5X2NvZGUYBCABKAlSC2NvdW50cnlDb2RlEh0KCmZpcnN0X25hbWUYBSABKAlSCWZpcnN0TmFt'
+    'ZRIbCglsYXN0X25hbWUYBiABKAlSCGxhc3ROYW1lEiEKDHBob25lX251bWJlchgHIAEoCVILcG'
+    'hvbmVOdW1iZXI=');
 
 @$core.Deprecated('Use verifiedIdentityDescriptor instead')
 const VerifiedIdentity$json = {
@@ -1622,6 +1652,10 @@ const VerifyIdentityResponse$json = {
     {'1': 'error_message', '3': 4, '4': 1, '5': 9, '10': 'errorMessage'},
     {'1': 'identity', '3': 5, '4': 1, '5': 11, '6': '.auth.VerifiedIdentity', '10': 'identity'},
     {'1': 'virtual_account', '3': 6, '4': 1, '5': 11, '6': '.auth.VirtualAccountInfo', '10': 'virtualAccount'},
+    {'1': 'verification_id', '3': 7, '4': 1, '5': 9, '10': 'verificationId'},
+    {'1': 'status', '3': 8, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'session_url', '3': 9, '4': 1, '5': 9, '10': 'sessionUrl'},
+    {'1': 'session_token', '3': 10, '4': 1, '5': 9, '10': 'sessionToken'},
   ],
 };
 
@@ -1631,7 +1665,10 @@ final $typed_data.Uint8List verifyIdentityResponseDescriptor = $convert.base64De
     'VyaWZpZWQYAiABKAhSCHZlcmlmaWVkEh0KCmVycm9yX2NvZGUYAyABKAlSCWVycm9yQ29kZRIj'
     'Cg1lcnJvcl9tZXNzYWdlGAQgASgJUgxlcnJvck1lc3NhZ2USMgoIaWRlbnRpdHkYBSABKAsyFi'
     '5hdXRoLlZlcmlmaWVkSWRlbnRpdHlSCGlkZW50aXR5EkEKD3ZpcnR1YWxfYWNjb3VudBgGIAEo'
-    'CzIYLmF1dGguVmlydHVhbEFjY291bnRJbmZvUg52aXJ0dWFsQWNjb3VudA==');
+    'CzIYLmF1dGguVmlydHVhbEFjY291bnRJbmZvUg52aXJ0dWFsQWNjb3VudBInCg92ZXJpZmljYX'
+    'Rpb25faWQYByABKAlSDnZlcmlmaWNhdGlvbklkEhYKBnN0YXR1cxgIIAEoCVIGc3RhdHVzEh8K'
+    'C3Nlc3Npb25fdXJsGAkgASgJUgpzZXNzaW9uVXJsEiMKDXNlc3Npb25fdG9rZW4YCiABKAlSDH'
+    'Nlc3Npb25Ub2tlbg==');
 
 @$core.Deprecated('Use virtualAccountInfoDescriptor instead')
 const VirtualAccountInfo$json = {

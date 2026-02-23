@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../domain/entities/general_chat_message_entity.dart';
 import '../domain/usecases/send_general_chat_message_usecase.dart';
+import '../domain/usecases/load_microservice_chat_history_usecase.dart';
 import 'general_chat_state.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -21,6 +23,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 /// - Supports multi-service conversations with context awareness
 class GeneralChatCubit extends Cubit<GeneralChatState> {
   final SendGeneralChatMessageUseCase sendMessageUseCase;
+  final LoadMicroserviceChatHistoryUseCase? loadHistoryUseCase;
   final AuthenticationCubit authCubit;
 
   List<GeneralChatMessageEntity> _currentMessages = [];
@@ -30,13 +33,21 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
 
   GeneralChatCubit({
     required this.sendMessageUseCase,
+    this.loadHistoryUseCase,
     required this.authCubit,
-  }) : super(const GeneralChatInitial()) {
-    _sessionId = const Uuid().v4();
+  }) : super(const GeneralChatInitial());
+
+  String _buildSessionId() {
+    final locale = serviceLocator<LocaleManager>().currentLocale;
+    final authState = authCubit.state;
+    if (authState is AuthenticationSuccess) {
+      return 'general_${authState.profile.user.id}_$locale';
+    }
+    return 'general_unknown_$locale';
   }
 
   void initializeChat() {
-    _sessionId = const Uuid().v4();
+    _sessionId = _buildSessionId();
     _currentMessages = [];
     _currentService = null;
     _conversationServices.clear();
@@ -70,6 +81,48 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
     emit(GeneralChatInitial(messages: List.from(_currentMessages)));
   }
 
+  /// Load chat history from backend.
+  Future<void> loadHistory() async {
+    if (loadHistoryUseCase == null) return;
+
+    emit(GeneralChatHistoryLoading(messages: _currentMessages));
+
+    final locale = serviceLocator<LocaleManager>().currentLocale;
+
+    final result = await loadHistoryUseCase!(
+      sourceContext: 'general',
+      sessionId: _sessionId,
+      accessToken: '', // Token injected by interceptor
+      locale: locale,
+    );
+
+    if (isClosed) return;
+    result.fold(
+      (failure) {
+        // History load failed — keep welcome message
+        emit(GeneralChatInitial(messages: _currentMessages));
+      },
+      (history) {
+        if (history.isNotEmpty) {
+          // Map MicroserviceChatMessageEntity to GeneralChatMessageEntity
+          final historyMessages = history.map((msg) => GeneralChatMessageEntity(
+            text: msg.text,
+            isUser: msg.isUser,
+            timestamp: msg.timestamp,
+            serviceRoutedTo: msg.serviceRoutedTo,
+          )).toList();
+
+          // Replace welcome message with actual history
+          _currentMessages = historyMessages;
+          emit(GeneralChatSuccess(messages: List.from(_currentMessages)));
+        } else {
+          // No history — keep welcome message
+          emit(GeneralChatInitial(messages: _currentMessages));
+        }
+      },
+    );
+  }
+
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
@@ -92,6 +145,8 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
 
     emit(GeneralChatLoading(messages: List.from(_currentMessages)));
 
+    final locale = serviceLocator<LocaleManager>().currentLocale;
+
     final result = await sendMessageUseCase(
       message: text,
       sessionId: _sessionId,
@@ -99,6 +154,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       accessToken: '', // Access token is managed by GrpcCallOptionsHelper
       sourceContext: 'general', // Always 'general' for this screen
       language: 'en',
+      locale: locale,
     );
 
     result.fold(
@@ -180,7 +236,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
 
   void clearChat() {
     _currentMessages = [];
-    _sessionId = const Uuid().v4();
+    _sessionId = _buildSessionId();
     _currentService = null;
     _conversationServices.clear();
     emit(GeneralChatInitial(messages: _currentMessages));

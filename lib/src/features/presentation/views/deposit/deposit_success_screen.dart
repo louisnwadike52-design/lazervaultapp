@@ -96,7 +96,7 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
   }
 
   void _returnToInternationalTransfer() {
-    Get.offAllNamed(AppRoutes.internationalTransferStart);
+    Get.offAllNamed(AppRoutes.exchangeHome);
   }
 
   void _makeAnotherDeposit() {

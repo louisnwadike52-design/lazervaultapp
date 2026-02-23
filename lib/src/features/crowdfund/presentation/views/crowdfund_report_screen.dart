@@ -40,18 +40,10 @@ class CrowdfundReportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Generate report when screen loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CrowdfundCubit>().generateReport(
-            crowdfund: crowdfund,
-            statistics: statistics,
-            donations: donations,
-            campaignUrl: campaignUrl,
-          );
-    });
-
     return _CrowdfundReportContent(
       crowdfund: crowdfund,
+      statistics: statistics,
+      donations: donations,
       campaignUrl: campaignUrl,
     );
   }
@@ -59,10 +51,14 @@ class CrowdfundReportScreen extends StatelessWidget {
 
 class _CrowdfundReportContent extends StatefulWidget {
   final Crowdfund crowdfund;
+  final CrowdfundStatistics? statistics;
+  final List<CrowdfundDonation>? donations;
   final String? campaignUrl;
 
   const _CrowdfundReportContent({
     required this.crowdfund,
+    this.statistics,
+    this.donations,
     this.campaignUrl,
   });
 
@@ -79,6 +75,17 @@ class _CrowdfundReportContentState extends State<_CrowdfundReportContent> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    // Generate report once on init, not in build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<CrowdfundCubit>().generateReport(
+              crowdfund: widget.crowdfund,
+              statistics: widget.statistics,
+              donations: widget.donations,
+              campaignUrl: widget.campaignUrl,
+            );
+      }
+    });
   }
 
   @override

@@ -80,16 +80,13 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
   /// 1. Personal
   /// 2. Investment
   /// 3. Savings
-  /// 4. Family & Friends
-  /// 5. Others (main, business, usd, gbp, eur) in their original order
+  /// 4. Others (main, business, usd, gbp, eur) in their original order
   List<AccountSummaryEntity> _sortAccountSummaries(List<AccountSummaryEntity> summaries) {
     // Define the priority order for account types
     const priorityOrder = {
       'Personal': 0,
       'Investment': 1,
       'Savings': 2,
-      'Family & Friends': 3,
-      'Family': 3, // Handle alternative naming
     };
 
     final sortedList = List<AccountSummaryEntity>.from(summaries);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
 
 class AnalystRatingsSection extends StatelessWidget {
@@ -117,7 +118,7 @@ class AnalystRatingsSection extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            '\$${targetPrice.toStringAsFixed(2)}',
+            CurrencySymbols.formatAmountWithCurrency(targetPrice, stock.currency),
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 20.sp,

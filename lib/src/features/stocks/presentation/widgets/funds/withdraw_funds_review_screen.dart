@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Step 3: Review withdrawal details
 class WithdrawFundsReviewScreen extends StatelessWidget {
@@ -8,6 +9,7 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
   final String withdrawMethod;
   final Map<String, String> withdrawDetails;
   final double availableCash;
+  final String currency;
 
   const WithdrawFundsReviewScreen({
     super.key,
@@ -15,6 +17,7 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
     required this.withdrawMethod,
     required this.withdrawDetails,
     required this.availableCash,
+    this.currency = 'USD',
   });
 
   double get _fee {
@@ -90,7 +93,7 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  '\$${amount.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(amount, currency),
                   style: GoogleFonts.inter(
                     fontSize: 40.sp,
                     fontWeight: FontWeight.w700,
@@ -119,11 +122,11 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
             _buildDivider(),
             _buildDetailRow('Processing Time', _processingTime),
             _buildDivider(),
-            _buildDetailRow('Withdrawal Amount', '\$${amount.toStringAsFixed(2)}'),
+            _buildDetailRow('Withdrawal Amount', CurrencySymbols.formatAmountWithCurrency(amount, currency)),
             _buildDivider(),
             _buildDetailRow(
               'Processing Fee',
-              _fee == 0 ? 'Free' : '-\$${_fee.toStringAsFixed(2)}',
+              _fee == 0 ? 'Free' : '-${CurrencySymbols.formatAmountWithCurrency(_fee, currency)}',
               labelColor: Colors.grey[500],
               valueColor: _fee > 0 ? Colors.orange : null,
             ),
@@ -164,7 +167,7 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '\$${_totalAmount.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(_totalAmount, currency),
                       style: GoogleFonts.inter(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,
@@ -211,7 +214,7 @@ class WithdrawFundsReviewScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '\$${(availableCash - amount).toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(availableCash - amount, currency),
                   style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,

@@ -1,14 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lazervault/src/features/lifestyle/domain/entities/lifestyle_category.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_state.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/screens/flight_search_screen.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/screens/hotel_search_screen.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/screens/tour_search_screen.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/widgets/category_card.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/widgets/flight_result_card.dart';
-import 'package:lazervault/src/features/lifestyle/presentation/screens/booking_webview_screen.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/lifestyle/config/partner_config.dart';
+import 'package:lazervault/src/features/lifestyle/presentation/screens/partner_webview_screen.dart';
+
+class _BillQuickAction {
+  final IconData icon;
+  final String label;
+  final String route;
+
+  const _BillQuickAction({
+    required this.icon,
+    required this.label,
+    required this.route,
+  });
+}
+
+const _billActions = [
+  _BillQuickAction(icon: Icons.bolt, label: 'Electricity', route: AppRoutes.electricityBillHome),
+  _BillQuickAction(icon: Icons.phone_android, label: 'Airtime', route: AppRoutes.airtime),
+  _BillQuickAction(icon: Icons.signal_cellular_alt, label: 'Data', route: AppRoutes.dataBundlesHome),
+  _BillQuickAction(icon: Icons.tv, label: 'Cable TV', route: AppRoutes.cableTVHome),
+  _BillQuickAction(icon: Icons.language, label: 'Internet', route: AppRoutes.internetBillHome),
+  _BillQuickAction(icon: Icons.water_drop, label: 'Water', route: AppRoutes.waterBillHome),
+  _BillQuickAction(icon: Icons.school, label: 'Education', route: AppRoutes.educationHome),
+  _BillQuickAction(icon: Icons.card_giftcard, label: 'Gift Cards', route: AppRoutes.giftCards),
+];
+
+const _partnerIcons = <String, IconData>{
+  'flight': Icons.flight,
+  'hotel': Icons.hotel,
+  'movie': Icons.movie,
+  'card_giftcard': Icons.card_giftcard,
+  'restaurant': Icons.restaurant,
+  'spa': Icons.spa,
+  'shopping_bag': Icons.shopping_bag,
+  'diamond': Icons.diamond,
+  'sports_soccer': Icons.sports_soccer,
+  'fitness_center': Icons.fitness_center,
+  'school': Icons.school,
+};
 
 class NewLifestyleScreen extends StatefulWidget {
   const NewLifestyleScreen({super.key});
@@ -18,184 +53,284 @@ class NewLifestyleScreen extends StatefulWidget {
 }
 
 class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<LifestyleCubit>().loadCategories();
+  bool _isNavigating = false;
+
+  String _mapCountryToPartnerKey(String countryCode) {
+    if (countryCode == 'GB') return 'UK';
+    return countryCode;
   }
 
-  Future<void> _refresh() async {
-    await context.read<LifestyleCubit>().loadCategories();
-  }
+  void _onPartnerTap(PartnerConfig partner) {
+    if (_isNavigating) return;
 
-  void _onCategoryTap(LifestyleCategory category) {
-    switch (category.id) {
-      case 'flights':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => BlocProvider.value(
-            value: context.read<LifestyleCubit>(),
-            child: const FlightSearchScreen(),
-          )),
-        );
-      case 'hotels':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => BlocProvider.value(
-            value: context.read<LifestyleCubit>(),
-            child: const HotelSearchScreen(),
-          )),
-        );
-      case 'tours':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => BlocProvider.value(
-            value: context.read<LifestyleCubit>(),
-            child: const TourSearchScreen(),
-          )),
-        );
+    if (partner.requiresAuth) {
+      _showDialog(
+        title: 'Premium Feature',
+        message: 'Please upgrade your account to access premium partner services.',
+      );
+      return;
     }
+
+    final country = serviceLocator<LocaleManager>().currentCountry;
+    final partnerKey = _mapCountryToPartnerKey(country);
+    final localeConfig = partner.locales[partnerKey] ?? partner.locales['DEFAULT'];
+
+    if (localeConfig == null) {
+      _showDialog(
+        title: 'Service Unavailable',
+        message: 'This service is not available in your region yet.',
+      );
+      return;
+    }
+
+    _isNavigating = true;
+    HapticFeedback.lightImpact();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PartnerWebViewScreen(
+          url: localeConfig.url,
+          title: partner.name,
+          deepLink: localeConfig.deepLink,
+        ),
+      ),
+    ).then((_) {
+      if (mounted) _isNavigating = false;
+    });
+  }
+
+  void _showDialog({required String title, required String message}) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        content: Text(
+          message,
+          style: const TextStyle(color: Color(0xFF9CA3AF)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK', style: TextStyle(color: Color(0xFF3B82F6))),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          'Lifestyle',
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () => Future<void>.value(),
+          color: const Color(0xFF3B82F6),
+          backgroundColor: const Color(0xFF1F1F1F),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            children: [
+              // Title
+              Text(
+                'Lifestyle',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Bills, travel & more',
+                style: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14.sp,
+                ),
+              ),
+              SizedBox(height: 24.h),
+
+              // Pay Bills section
+              _buildSectionHeader(
+                'Pay Bills',
+                onSeeAll: () => Get.toNamed(AppRoutes.billsHub),
+              ),
+              SizedBox(height: 12.h),
+              GridView.count(
+                crossAxisCount: 4,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 12.h,
+                crossAxisSpacing: 8.w,
+                childAspectRatio: 0.85,
+                children: _billActions
+                    .map((action) => _buildBillTile(action))
+                    .toList(),
+              ),
+
+              SizedBox(height: 24.h),
+              Divider(color: const Color(0xFF2D2D2D), height: 1.h),
+              SizedBox(height: 24.h),
+
+              // Travel & Lifestyle section
+              _buildSectionHeader('Travel & Lifestyle'),
+              SizedBox(height: 4.h),
+              Text(
+                'Tap to visit our trusted partners',
+                style: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 13.sp,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12.h,
+                  crossAxisSpacing: 12.w,
+                  childAspectRatio: 0.9,
+                ),
+                itemCount: LifestylePartners.partners.length,
+                itemBuilder: (context, index) {
+                  final partner = LifestylePartners.partners[index];
+                  return _buildPartnerTile(partner);
+                },
+              ),
+
+              // Bottom padding to avoid nav overlap
+              SizedBox(height: 80.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 24,
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
-        centerTitle: false,
-      ),
-      body: BlocConsumer<LifestyleCubit, LifestyleState>(
-        listener: (context, state) {
-          if (state is LifestyleError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: const Color(0xFFEF4444),
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is LifestyleLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
-            );
-          }
-
-          if (state is LifestyleCategoriesLoaded) {
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              color: const Color(0xFF3B82F6),
-              backgroundColor: const Color(0xFF1F1F1F),
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // Categories grid
-                  const Text(
-                    'Explore',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  GridView.count(
-                    crossAxisCount: 3,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.9,
-                    children: state.categories.map((cat) => CategoryCard(
-                      category: cat,
-                      onTap: () => _onCategoryTap(cat),
-                    )).toList(),
-                  ),
-
-                  // Popular deals section
-                  if (state.cheapFlights.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Popular Deals',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Cheap flights from Lagos',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
-                    ),
-                    const SizedBox(height: 12),
-                    ...state.cheapFlights.map((flight) => FlightResultCard(
-                      flight: flight,
-                      onBook: () {
-                        if (flight.affiliateUrl.isNotEmpty) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => BookingWebViewScreen(
-                                url: flight.affiliateUrl,
-                                title: '${flight.origin} to ${flight.destination}',
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                    )),
-                  ],
-                ],
-              ),
-            );
-          }
-
-          // Initial/error state - show empty with pull to refresh
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            color: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF1F1F1F),
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.explore, size: 64, color: Color(0xFF9CA3AF)),
-                        SizedBox(height: 16),
-                        Text(
-                          'Explore Travel & Lifestyle',
-                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Pull down to refresh',
-                          style: TextStyle(color: Color(0xFF9CA3AF)),
-                        ),
-                      ],
-                    ),
+        if (onSeeAll != null)
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onSeeAll,
+              borderRadius: BorderRadius.circular(8.r),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+                child: Text(
+                  'See all',
+                  style: TextStyle(
+                    color: const Color(0xFF3B82F6),
+                    fontSize: 14.sp,
                   ),
                 ),
-              ],
+              ),
             ),
-          );
-        },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildBillTile(_BillQuickAction action) {
+    return Semantics(
+      button: true,
+      label: 'Pay ${action.label}',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Get.toNamed(action.route);
+          },
+          borderRadius: BorderRadius.circular(12.r),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  action.icon,
+                  color: const Color(0xFF3B82F6),
+                  size: 24.sp,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                action.label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11.sp,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPartnerTile(PartnerConfig partner) {
+    final iconData = _partnerIcons[partner.icon] ?? Icons.open_in_new;
+    return Semantics(
+      button: true,
+      label: '${partner.name} partner service',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _onPartnerTap(partner),
+          borderRadius: BorderRadius.circular(14.r),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Icon(
+                  iconData,
+                  color: const Color(0xFF9CA3AF),
+                  size: 26.sp,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                partner.name,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.sp,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

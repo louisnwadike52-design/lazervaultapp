@@ -17,9 +17,9 @@ abstract class IStockRemoteDataSource {
     String timeframe,
   );
 
-  Future<List<StockModel>> getTopMovers();
+  Future<List<StockModel>> getTopMovers({String? market});
 
-  Future<List<StockModel>> searchStocks(String query);
+  Future<List<StockModel>> searchStocks(String query, {String? market});
 
   Future<PortfolioModel> getPortfolio();
 

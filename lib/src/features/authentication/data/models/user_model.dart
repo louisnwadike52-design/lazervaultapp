@@ -31,6 +31,9 @@ class UserModel extends User {
     super.currency,
     super.country,
     super.profilePicture,
+    super.signupStatus,
+    super.hasPasscode = false,
+    super.hasTransactionPin = false,
   });
 
   static final UserModel empty =
@@ -81,6 +84,9 @@ class UserModel extends User {
     bool? isEmailVerified,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? signupStatus,
+    bool? hasPasscode,
+    bool? hasTransactionPin,
   }) {
     return UserModel(
         id: id,
@@ -93,7 +99,10 @@ class UserModel extends User {
         verified: verified ?? this.verified,
         isEmailVerified: isEmailVerified ?? this.isEmailVerified,
         createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt);
+        updatedAt: updatedAt ?? this.updatedAt,
+        signupStatus: signupStatus ?? this.signupStatus,
+        hasPasscode: hasPasscode ?? this.hasPasscode,
+        hasTransactionPin: hasTransactionPin ?? this.hasTransactionPin);
   }
 
   UserModel.fromMap(DataMap map)
@@ -108,10 +117,13 @@ class UserModel extends User {
           verified: map['verified'] as bool,
           isEmailVerified: map['isEmailVerified'] as bool,
           createdAt: map['createdAt'] as DateTime,
-          updatedAt: map['updatedAt'] as DateTime);
+          updatedAt: map['updatedAt'] as DateTime,
+          signupStatus: map['signupStatus'] as String?,
+          hasPasscode: map['hasPasscode'] as bool? ?? false,
+          hasTransactionPin: map['hasTransactionPin'] as bool? ?? false);
 
   DataMap toMap() =>
-      {"id": id, "firstName": firstName, "lastName": lastName, "email": email, "phoneNumber": phoneNumber, "username": username, "role": role, "verified": verified, "isEmailVerified": isEmailVerified, "createdAt": createdAt, "updatedAt": updatedAt};
+      {"id": id, "firstName": firstName, "lastName": lastName, "email": email, "phoneNumber": phoneNumber, "username": username, "role": role, "verified": verified, "isEmailVerified": isEmailVerified, "createdAt": createdAt, "updatedAt": updatedAt, "signupStatus": signupStatus, "hasPasscode": hasPasscode, "hasTransactionPin": hasTransactionPin};
 
   String toJson() => jsonEncode(toMap());
 }

@@ -433,7 +433,6 @@ service PaymentsService {
 
   // === BATCH TRANSFER HISTORY ===
 
-  // Get paginated list of user's batch transfers
   rpc GetBatchTransfers(GetBatchTransfersRequest) returns (GetBatchTransfersResponse) {
     option (google.api.http) = {
       get: "/api/v1/payments/batch-transfers"
@@ -446,7 +445,6 @@ service PaymentsService {
     };
   }
 
-  // Get detail of a specific batch transfer
   rpc GetBatchTransferDetail(GetBatchTransferDetailRequest) returns (GetBatchTransferDetailResponse) {
     option (google.api.http) = {
       get: "/api/v1/payments/batch-transfers/{batch_id}"
@@ -455,6 +453,130 @@ service PaymentsService {
       summary: "Get Batch Transfer Detail";
       description: "Get detailed information about a specific batch transfer";
       tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // === IDENTITY VERIFICATION (Multi-Country) ===
+
+  // Verify identity using country-specific provider (Smile ID, Onfido, Persona)
+  rpc VerifyMultiCountryIdentity(VerifyMultiCountryIdentityRequest) returns (VerifyMultiCountryIdentityResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/verify/identity"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Multi-Country Identity";
+      description: "Routes identity verification to the appropriate provider based on country code. Smile ID for GH/KE/ZA, Onfido for GB, Persona for US.";
+      tags: ["Identity Verification"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get status of an async identity verification (Onfido/Persona)
+  rpc GetIdentityVerificationStatus(GetKYCVerificationStatusRequest) returns (GetKYCVerificationStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/internal/verify/identity/{verification_id}/status"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Identity Verification Status";
+      description: "Check the status of a pending async identity verification.";
+      tags: ["Identity Verification"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // === RECURRING TRANSFER OPERATIONS ===
+
+  // Create a recurring transfer rule
+  rpc CreateRecurringTransfer(CreateRecurringTransferRequest) returns (CreateRecurringTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/recurring-transfers"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create Recurring Transfer";
+      description: "Create a recurring transfer rule for automatic payments";
+      tags: ["Recurring Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // List user's recurring transfers
+  rpc GetRecurringTransfers(GetRecurringTransfersRequest) returns (GetRecurringTransfersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/recurring-transfers"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Recurring Transfers";
+      description: "List all recurring transfers for the authenticated user";
+      tags: ["Recurring Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get single recurring transfer detail
+  rpc GetRecurringTransfer(GetRecurringTransferRequest) returns (GetRecurringTransferResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/recurring-transfers/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Recurring Transfer";
+      description: "Get details of a specific recurring transfer";
+      tags: ["Recurring Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Update a recurring transfer (pause, resume, edit)
+  rpc UpdateRecurringTransfer(UpdateRecurringTransferRequest) returns (UpdateRecurringTransferResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/recurring-transfers/{id}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Recurring Transfer";
+      description: "Update a recurring transfer rule (pause, resume, change amount/time)";
+      tags: ["Recurring Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Cancel a recurring transfer
+  rpc DeleteRecurringTransfer(DeleteRecurringTransferRequest) returns (DeleteRecurringTransferResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/recurring-transfers/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete Recurring Transfer";
+      description: "Cancel a recurring transfer rule";
+      tags: ["Recurring Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get execution history for a recurring transfer
+  rpc GetRecurringTransferExecutions(GetRecurringTransferExecutionsRequest) returns (GetRecurringTransferExecutionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/recurring-transfers/{recurring_transfer_id}/executions"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Recurring Transfer Executions";
+      description: "Get execution history for a recurring transfer";
+      tags: ["Recurring Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Get recurring transfers by recipient (for badge display)
+  rpc GetRecurringTransfersByRecipient(GetRecurringTransfersByRecipientRequest) returns (GetRecurringTransfersByRecipientResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/recurring-transfers/by-recipient/{recipient_account}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Recurring Transfers by Recipient";
+      description: "Get recurring transfers for a specific recipient account";
+      tags: ["Recurring Transfers"];
       security: { security_requirement: { key: "bearer"; } };
     };
   }
@@ -1167,4 +1289,201 @@ message GetBatchTransferDetailResponse {
   repeated BatchTransferResultItem items = 2;
   string source_account_number = 3;
   string source_account_name = 4;
+}
+
+// ===== MULTI-COUNTRY IDENTITY VERIFICATION =====
+
+message VerifyMultiCountryIdentityRequest {
+  string user_id = 1;                  // User ID from JWT
+  string country_code = 2;             // ISO 3166-1 alpha-2 (GH, KE, ZA, GB, US)
+  string id_type = 3;                  // Provider-specific ID type (e.g., "GHANA_CARD", "UK_PASSPORT", "SSN")
+  string id_number = 4;               // ID document number
+  string first_name = 5;              // User's legal first name
+  string last_name = 6;               // User's legal last name
+  string date_of_birth = 7;           // YYYY-MM-DD format
+  string phone_number = 8;            // Phone number in E.164 format
+}
+
+message VerifyMultiCountryIdentityResponse {
+  bool success = 1;
+  bool verified = 2;                   // True if synchronously verified (Smile ID)
+  string verification_id = 3;         // Provider verification/inquiry ID
+  string status = 4;                  // "verified", "pending", "failed"
+  string session_url = 5;             // SDK/WebView URL for async verification (Onfido/Persona)
+  string session_token = 6;           // SDK token for native integration
+  string error_code = 7;              // Error code on failure
+  string error_message = 8;           // Human-readable error message
+  string provider = 9;                // "smile_id", "onfido", "persona"
+  VerifiedIdentityInfo verified_identity = 10; // Identity details (sync verification only)
+}
+
+message VerifiedIdentityInfo {
+  string first_name = 1;
+  string last_name = 2;
+  string middle_name = 3;
+  string date_of_birth = 4;
+  string gender = 5;
+  string phone_number = 6;
+  string photo_url = 7;
+  string address = 8;
+}
+
+message GetKYCVerificationStatusRequest {
+  string verification_id = 1;         // Provider verification ID
+  string provider = 2;                // "smile_id", "onfido", "persona"
+}
+
+message GetKYCVerificationStatusResponse {
+  bool success = 1;
+  string status = 2;                  // "verified", "pending", "failed", "expired"
+  bool verified = 3;                  // True if verification completed successfully
+  string error_message = 4;           // Error details if failed
+  VerifiedIdentityInfo identity = 5;  // Identity details if verified
+}
+
+// ===== RECURRING TRANSFER MESSAGES =====
+
+enum RecurringFrequency {
+  RECURRING_FREQUENCY_UNSPECIFIED = 0;
+  RECURRING_FREQUENCY_DAILY = 1;
+  RECURRING_FREQUENCY_WEEKLY = 2;
+  RECURRING_FREQUENCY_BIWEEKLY = 3;
+  RECURRING_FREQUENCY_MONTHLY = 4;
+}
+
+enum RecurringTransferStatus {
+  RECURRING_TRANSFER_STATUS_UNSPECIFIED = 0;
+  RECURRING_TRANSFER_STATUS_ACTIVE = 1;
+  RECURRING_TRANSFER_STATUS_PAUSED = 2;
+  RECURRING_TRANSFER_STATUS_CANCELLED = 3;
+  RECURRING_TRANSFER_STATUS_EXPIRED = 4;
+}
+
+message RecurringTransferDetail {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string recipient_account_number = 4;
+  string recipient_name = 5;
+  string recipient_bank_code = 6;
+  string recipient_bank_name = 7;
+  string transfer_type = 8;
+  double amount = 9;
+  string currency = 10;
+  string description = 11;
+  RecurringFrequency frequency = 12;
+  int32 schedule_day = 13;
+  string schedule_time = 14;           // HH:MM UTC
+  RecurringTransferStatus status = 15;
+  string start_date = 16;
+  string end_date = 17;               // Empty if no end date
+  string next_run_at = 18;
+  int32 total_executions = 19;
+  int32 successful_executions = 20;
+  int32 failed_executions = 21;
+  int32 consecutive_failures = 22;
+  string last_executed_at = 23;
+  string last_failure_reason = 24;
+  string created_at = 25;
+  string updated_at = 26;
+}
+
+message RecurringTransferExecutionDetail {
+  string id = 1;
+  string recurring_transfer_id = 2;
+  string payment_id = 3;
+  string reference = 4;
+  string status = 5;                   // "success" or "failed"
+  double amount = 6;
+  double fee = 7;
+  string currency = 8;
+  string failure_reason = 9;
+  string scheduled_for = 10;
+  string executed_at = 11;
+}
+
+message CreateRecurringTransferRequest {
+  string from_account_id = 1;
+  string to_account_number = 2;
+  string recipient_name = 3;
+  string recipient_bank_code = 4;
+  string recipient_bank_name = 5;
+  double amount = 6;
+  string description = 7;
+  RecurringFrequency frequency = 8;
+  int32 schedule_day = 9;             // 0-6 for weekly (0=Sunday), 1-31 for monthly
+  string schedule_time = 10;          // HH:MM UTC
+  string end_date = 11;              // Optional, ISO 8601 date
+  string transaction_id = 12;        // For PIN verification
+  string verification_token = 13;    // PIN verification token
+}
+
+message CreateRecurringTransferResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  RecurringTransferDetail recurring_transfer = 4;
+}
+
+message GetRecurringTransfersRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string status = 3;                  // Optional filter: "active", "paused", "cancelled", "expired"
+}
+
+message GetRecurringTransfersResponse {
+  repeated RecurringTransferDetail recurring_transfers = 1;
+  int32 total = 2;
+}
+
+message GetRecurringTransferRequest {
+  string id = 1;
+}
+
+message GetRecurringTransferResponse {
+  RecurringTransferDetail recurring_transfer = 1;
+}
+
+message UpdateRecurringTransferRequest {
+  string id = 1;
+  string status = 2;                  // "active" (resume), "paused"
+  double amount = 3;                  // 0 = no change
+  string schedule_time = 4;          // Empty = no change
+  string end_date = 5;               // Empty = no change
+  string description = 6;            // Empty = no change
+}
+
+message UpdateRecurringTransferResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  RecurringTransferDetail recurring_transfer = 4;
+}
+
+message DeleteRecurringTransferRequest {
+  string id = 1;
+}
+
+message DeleteRecurringTransferResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetRecurringTransferExecutionsRequest {
+  string recurring_transfer_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetRecurringTransferExecutionsResponse {
+  repeated RecurringTransferExecutionDetail executions = 1;
+  int32 total = 2;
+}
+
+message GetRecurringTransfersByRecipientRequest {
+  string recipient_account = 1;
+}
+
+message GetRecurringTransfersByRecipientResponse {
+  repeated RecurringTransferDetail recurring_transfers = 1;
 }

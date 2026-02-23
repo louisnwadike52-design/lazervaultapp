@@ -20,76 +20,139 @@ class DepositRepositoryImpl implements IDepositRepository {
 
   @override
   Future<Either<Failure, DepositDetails>> initiateDeposit({
-    required String targetAccountId, // UUID string
+    required String targetAccountId,
     required double amount,
     required String currency,
     required String sourceBankName,
+    String? countryCode,
     String? accessToken,
   }) async {
     try {
-      // Use executeWithTokenRotation for automatic token refresh on auth errors
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
         final amountMinorUnits = Int64((amount * 100).round());
 
-        print('DepositRepository: Preparing request with targetAccountId: $targetAccountId, amount: $amount, currency: $currency, sourceBankName: $sourceBankName');
-
         final request = req_resp.InitiateDepositRequest(
-          targetAccountId: targetAccountId, // UUID string directly
+          targetAccountId: targetAccountId,
           amount: amountMinorUnits,
           currency: currency,
           sourceBankName: sourceBankName,
         );
+        if (countryCode != null && countryCode.isNotEmpty) {
+          request.countryCode = countryCode;
+        }
 
-        // Use helper to get call options with authorization header from secure storage
         final callOptions = await _callOptionsHelper.withAuth();
-
-        print('DepositRepository: Sending gRPC InitiateDeposit Request: $request');
-
         return await _depositServiceClient.initiateDeposit(request, options: callOptions);
       });
 
-      print('DepositRepository: gRPC InitiateDeposit Response received: ${response.message} with status ${response.status.name}, depositId: ${response.depositId}');
-
-      final depositModel = DepositModel.fromProto(response);
-      print('DepositRepository: Successfully created DepositModel from response');
-
-      return Right(depositModel);
-    } on GrpcError catch (e) {
-      print('DepositRepository: gRPC Error during InitiateDeposit: code=${e.code}, codeName=${e.codeName}, message=${e.message}, details=${e.details}');
-
-      if (e.code == StatusCode.unauthenticated) {
+      final deposit = DepositModel.fromProto(response);
+      if (deposit.depositId.isEmpty && !deposit.requiresAuthorization) {
         return Left(ServerFailure(
-          message: 'Authentication required. Please log in again.',
-          statusCode: e.code,
-        ));
-      } else if (e.code == StatusCode.permissionDenied) {
-        return Left(ServerFailure(
-          message: 'You do not have permission to perform this action.',
-          statusCode: e.code,
-        ));
-      } else if (e.code == StatusCode.invalidArgument) {
-        return Left(ServerFailure(
-          message: 'Invalid deposit information provided: ${e.message}',
-          statusCode: e.code,
-        ));
-      } else if (e.code == StatusCode.notFound) {
-        return Left(ServerFailure(
-          message: 'Account not found. Please check your details and try again.',
-          statusCode: e.code,
-        ));
-      } else {
-        return Left(ServerFailure(
-          message: e.message ?? 'Deposit initiation failed due to server error.',
-          statusCode: e.code,
+          message: 'Server returned empty deposit ID.',
+          statusCode: 500,
         ));
       }
-    } catch (e, stackTrace) {
-      print('DepositRepository: Unexpected error during initiateDeposit: $e');
-      print('DepositRepository: Stack trace: $stackTrace');
+      return Right(deposit);
+    } on GrpcError catch (e) {
+      return Left(_mapGrpcError(e, 'Deposit initiation'));
+    } catch (e) {
       return Left(ServerFailure(
-        message: 'An unexpected error occurred during deposit initiation. Please try again later.',
+        message: 'An unexpected error occurred during deposit initiation.',
         statusCode: 500,
       ));
     }
   }
-} 
+
+  @override
+  Future<Either<Failure, DepositDetails>> simulateTestDeposit({
+    required String destinationAccountId,
+    required double amount,
+    required String currency,
+    required String countryCode,
+  }) async {
+    try {
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final amountMinorUnits = Int64((amount * 100).round());
+
+        final request = req_resp.SimulateTestDepositRequest(
+          destinationAccountId: destinationAccountId,
+          amount: amountMinorUnits,
+          currency: currency,
+          countryCode: countryCode,
+        );
+
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _depositServiceClient.simulateTestDeposit(request, options: callOptions);
+      });
+
+      return Right(DepositModel.fromProto(response));
+    } on GrpcError catch (e) {
+      return Left(_mapGrpcError(e, 'Test deposit simulation'));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred during test deposit simulation.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<DepositMethodInfo>>> getDepositMethods({
+    required String countryCode,
+    required String currency,
+  }) async {
+    try {
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = req_resp.GetDepositMethodsRequest(
+          countryCode: countryCode,
+          currency: currency,
+        );
+
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _depositServiceClient.getDepositMethods(request, options: callOptions);
+      });
+
+      final methods = response.methods
+          .map((m) => DepositMethodModel.fromProto(m))
+          .toList();
+      return Right(methods);
+    } on GrpcError catch (e) {
+      return Left(_mapGrpcError(e, 'Fetching deposit methods'));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred while fetching deposit methods.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  ServerFailure _mapGrpcError(GrpcError e, String operation) {
+    switch (e.code) {
+      case StatusCode.unauthenticated:
+        return ServerFailure(
+          message: 'Authentication required. Please log in again.',
+          statusCode: e.code,
+        );
+      case StatusCode.permissionDenied:
+        return ServerFailure(
+          message: 'You do not have permission to perform this action.',
+          statusCode: e.code,
+        );
+      case StatusCode.invalidArgument:
+        return ServerFailure(
+          message: 'Invalid information provided: ${e.message}',
+          statusCode: e.code,
+        );
+      case StatusCode.notFound:
+        return ServerFailure(
+          message: 'Account not found. Please check your details.',
+          statusCode: e.code,
+        );
+      default:
+        return ServerFailure(
+          message: e.message ?? '$operation failed due to server error.',
+          statusCode: e.code,
+        );
+    }
+  }
+}

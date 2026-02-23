@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 
 import 'portfolio_rebalance_carousel.dart';
 
@@ -392,7 +393,7 @@ ${widget.trades.map((trade) => '  ${trade.action} ${trade.sharesToTrade} ${trade
                     ],
                   ),
                   Text(
-                    '\$${trade.estimatedTotal.toStringAsFixed(2)}',
+                    CurrencySymbols.formatAmountWithCurrency(trade.estimatedTotal, 'USD'),
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,

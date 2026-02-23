@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 
 class StockTradeReceiptScreen extends StatefulWidget {
   const StockTradeReceiptScreen({super.key});
@@ -323,27 +324,41 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16.r),
-            child: CachedNetworkImage(
-              imageUrl: _selectedStock!.logoUrl,
-              fit: BoxFit.contain,
-              placeholder: (context, url) => Container(
-                color: Colors.grey[200],
-                child: Icon(Icons.business, color: Colors.grey[600], size: 24.sp),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: Colors.grey[200],
-                child: Center(
-                  child: Text(
-                    _selectedStock!.symbol[0],
-                    style: GoogleFonts.inter(
-                      color: Colors.grey[700],
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w700,
+            child: _selectedStock!.logoUrl.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: _selectedStock!.logoUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[200],
+                    child: Icon(Icons.business, color: Colors.grey[600], size: 24.sp),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[200],
+                    child: Center(
+                      child: Text(
+                        _selectedStock!.symbol[0],
+                        style: GoogleFonts.inter(
+                          color: Colors.grey[700],
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              : Container(
+                  color: Colors.grey[200],
+                  child: Center(
+                    child: Text(
+                      _selectedStock!.symbol[0],
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[700],
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
           ),
         ),
         SizedBox(width: 16.w),
@@ -414,9 +429,9 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
         ),
         SizedBox(height: 16.h),
         _buildDetailRow('Shares', '$_shares'),
-        _buildDetailRow('Price per Share', '\$${(_amount / _shares).toStringAsFixed(2)}'),
-        _buildDetailRow('Subtotal', '\$${_amount.toStringAsFixed(2)}'),
-        _buildDetailRow('Trading Fees', '\$${_fees.toStringAsFixed(2)}'),
+        _buildDetailRow('Price per Share', CurrencySymbols.formatAmountWithCurrency(_amount / _shares, _selectedStock?.currency ?? 'USD')),
+        _buildDetailRow('Subtotal', CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')),
+        _buildDetailRow('Trading Fees', CurrencySymbols.formatAmountWithCurrency(_fees, _selectedStock?.currency ?? 'USD')),
         SizedBox(height: 12.h),
         Container(
           padding: EdgeInsets.all(16.w),
@@ -436,7 +451,7 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
                 ),
               ),
               Text(
-                '\$${_total.toStringAsFixed(2)}',
+                CurrencySymbols.formatAmountWithCurrency(_total, _selectedStock?.currency ?? 'USD'),
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 18.sp,

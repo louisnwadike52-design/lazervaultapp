@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Step 2: Select withdrawal method
 class WithdrawFundsMethodScreen extends StatefulWidget {
   final String selectedMethod;
+  final String currency;
   final Function(String, Map<String, String>) onChanged;
 
   const WithdrawFundsMethodScreen({
     super.key,
     required this.selectedMethod,
+    this.currency = 'USD',
     required this.onChanged,
   });
 
@@ -21,7 +24,7 @@ class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
   late String _selectedMethod;
   final Map<String, String> _withdrawDetails = {};
 
-  final List<Map<String, dynamic>> _withdrawMethods = [
+  List<Map<String, dynamic>> get _withdrawMethods => [
     {
       'name': 'Bank Transfer',
       'icon': Icons.account_balance,
@@ -34,7 +37,7 @@ class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
       'icon': Icons.payment,
       'description': 'Direct wire transfer to your account',
       'processingTime': 'Same day',
-      'fee': '\$25 fee',
+      'fee': '${CurrencySymbols.getSymbol(widget.currency)}25 fee',
     },
     {
       'name': 'PayPal',
@@ -48,7 +51,7 @@ class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
       'icon': Icons.mail_outline,
       'description': 'Physical check mailed to your address',
       'processingTime': '5-7 business days',
-      'fee': '\$5 fee',
+      'fee': '${CurrencySymbols.getSymbol(widget.currency)}5 fee',
     },
   ];
 

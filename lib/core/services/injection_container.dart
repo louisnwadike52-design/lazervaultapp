@@ -13,6 +13,7 @@ import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/device_service.dart';
+import 'package:lazervault/core/services/dio_auth_interceptor.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
 import 'package:lazervault/core/types/transaction.dart';
@@ -133,6 +134,7 @@ import 'package:lazervault/src/features/account_actions/presentation/cubit/accou
 import 'package:lazervault/src/features/currency_exchange/data/repositories/exchange_repository_impl.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/exchange_feature_config.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
 import 'package:lazervault/src/features/voice_enrollment/data/voice_enrollment_repository_impl.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
@@ -151,7 +153,6 @@ import 'package:lazervault/src/features/presentation/views/languages_screen.dart
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
-import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
@@ -178,6 +179,11 @@ import 'package:lazervault/src/features/funds/data/repositories/batch_transfer_r
 import 'package:lazervault/src/features/funds/domain/repositories/i_batch_transfer_repository.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_batch_transfer_usecase.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
+
+// Recurring Transfer imports
+import 'package:lazervault/src/features/funds/data/datasources/recurring_transfer_data_source.dart';
+import 'package:lazervault/src/features/funds/data/repositories/recurring_transfer_repository_impl.dart';
+import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
 
 import '../../src/features/authentication/data/datasources/authentication_remote_data_source.dart';
 import '../../src/features/presentation/views/splash_screen.dart';
@@ -1051,6 +1057,11 @@ Future<void> init() async {
     ),
   );
 
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => ExchangeCubit(
+    repository: serviceLocator<IExchangeRepository>(),
+  ));
+
   // ================== Feature: Multi-Country ==================
 
   // gRPC Client - routes through core-gateway (default channel)
@@ -1326,6 +1337,27 @@ Future<void> init() async {
   ));
 
 
+  // ================== Feature: Recurring Transfers ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<IRecurringTransferDataSource>(
+    () => RecurringTransferDataSourceImpl(
+      serviceLocator<payments_grpc.PaymentsServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IRecurringTransferRepository>(
+    () => RecurringTransferRepositoryImpl(serviceLocator<IRecurringTransferDataSource>()),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => RecurringTransferCubit(
+    repository: serviceLocator<IRecurringTransferRepository>(),
+  ));
+
+
   // ================== Feature: AI Chat ==================
 
   // Chat Session Manager (shared by AI Chat and Microservice Chat)
@@ -1465,10 +1497,11 @@ Future<void> init() async {
 
   // ================== Feature: Crypto ==================
 
-  // gRPC Client - Uses Investment Gateway (8090)
+  // gRPC Client - Uses Investment Gateway (8090) with auth
   serviceLocator.registerLazySingleton<CryptoGrpcClient>(
     () => CryptoGrpcClient(
       channel: serviceLocator<ClientChannel>(instanceName: 'investmentChannel'),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
 
@@ -1927,7 +1960,7 @@ Future<void> init() async {
           (invoiceId, _) => InvoiceDetailsScreen(invoiceId: invoiceId))
       ..registerFactoryParam<InputPinScreen, User, void>(
           (recipient, _) => InputPinScreen(recipient: recipient))
-      ..registerFactory(() => ProfileSettingsScreen())
+
       ..registerFactory(() => LanguagesScreen())
       ..registerFactory(() => MyAccountScreen())
       ..registerFactory(() => SetFingerPrintScreen())
@@ -2524,6 +2557,7 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => GeneralChatCubit(
     sendMessageUseCase: serviceLocator<SendGeneralChatMessageUseCase>(),
+    loadHistoryUseCase: serviceLocator<LoadMicroserviceChatHistoryUseCase>(),
     authCubit: serviceLocator<AuthenticationCubit>(),
   ));
 
@@ -2767,13 +2801,30 @@ Future<void> init() async {
   // ================== Feature: Lifestyle ==================
   // Travel aggregation: flights, hotels, tours via lifestyle-gateway
 
-  // Data Source (HTTP via Dio to lifestyle-gateway)
+  // Data Source (HTTP via Dio to lifestyle-gateway, with JWT auth)
   serviceLocator.registerLazySingleton<LifestyleRemoteDataSource>(
-    () => LifestyleRemoteDataSource(Dio(BaseOptions(
-      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? 'http://10.0.2.2:8088',
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-    ))),
+    () {
+      final dio = Dio(BaseOptions(
+        baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? 'http://10.0.2.2:8088',
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+      ));
+
+      final authInterceptor = DioAuthInterceptor(
+        storage: serviceLocator<FlutterSecureStorage>(),
+        dio: dio,
+        localeManager: serviceLocator<LocaleManager>(),
+        accountManager: serviceLocator<AccountManager>(),
+      );
+
+      // Wire token refresh callback (shared with gRPC helper)
+      final grpcHelper = serviceLocator<GrpcCallOptionsHelper>();
+      authInterceptor.onTokenRefreshNeeded = grpcHelper.onTokenRefreshNeeded;
+
+      dio.interceptors.add(authInterceptor);
+
+      return LifestyleRemoteDataSource(dio);
+    },
   );
 
   // Repository

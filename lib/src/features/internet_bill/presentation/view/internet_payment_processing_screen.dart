@@ -47,7 +47,7 @@ class _InternetPaymentProcessingScreenState
     final idempotencyKey = args['idempotencyKey'] as String;
 
     context.read<InternetBillCubit>().payBill(
-          providerId: provider.id,
+          providerId: provider.serviceId,
           customerNumber: accountNumber,
           serviceType: provider.serviceId,
           packageId: package.id,

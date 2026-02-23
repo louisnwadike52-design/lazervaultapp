@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart' as pb;
@@ -27,7 +28,7 @@ class CrowdfundGrpcDataSource {
   }
 
   fixnum.Int64 _amountToInt64(double amount) {
-    return fixnum.Int64((amount * 100).toInt());
+    return fixnum.Int64((amount * 100).round());
   }
 
   pb.CrowdfundVisibility _visibilityToProto(CrowdfundVisibility visibility) {
@@ -89,7 +90,7 @@ class CrowdfundGrpcDataSource {
       }
 
       if (metadata != null) {
-        request.metadata = metadata.toString();
+        request.metadata = jsonEncode(metadata);
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
@@ -203,7 +204,7 @@ class CrowdfundGrpcDataSource {
       if (deadline != null) request.deadline = _dateTimeToTimestamp(deadline);
       if (status != null) request.status = _statusToProto(status);
       if (imageUrl != null) request.imageUrl = imageUrl;
-      if (metadata != null) request.metadata = metadata.toString();
+      if (metadata != null) request.metadata = jsonEncode(metadata);
 
       final callOptions = await _callOptionsHelper.withAuth();
       final response =

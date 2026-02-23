@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Step 3: Review deposit details
 class AddFundsReviewScreen extends StatelessWidget {
   final double amount;
   final String paymentMethod;
   final Map<String, String> paymentDetails;
+  final String currency;
 
   const AddFundsReviewScreen({
     super.key,
     required this.amount,
     required this.paymentMethod,
     required this.paymentDetails,
+    this.currency = 'USD',
   });
 
   double get _fee {
@@ -88,7 +91,7 @@ class AddFundsReviewScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  '\$${amount.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(amount, currency),
                   style: GoogleFonts.inter(
                     fontSize: 40.sp,
                     fontWeight: FontWeight.w700,
@@ -117,11 +120,11 @@ class AddFundsReviewScreen extends StatelessWidget {
             _buildDivider(),
             _buildDetailRow('Processing Time', _processingTime),
             _buildDivider(),
-            _buildDetailRow('Deposit Amount', '\$${amount.toStringAsFixed(2)}'),
+            _buildDetailRow('Deposit Amount', CurrencySymbols.formatAmountWithCurrency(amount, currency)),
             _buildDivider(),
             _buildDetailRow(
               'Processing Fee',
-              _fee == 0 ? 'Free' : '\$${_fee.toStringAsFixed(2)}',
+              _fee == 0 ? 'Free' : CurrencySymbols.formatAmountWithCurrency(_fee, currency),
               labelColor: Colors.grey[500],
             ),
           ]),
@@ -161,7 +164,7 @@ class AddFundsReviewScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '\$${_totalAmount.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(_totalAmount, currency),
                       style: GoogleFonts.inter(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,

@@ -108,7 +108,6 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
             // Progress bar - below the row so it's never hidden
             CrowdfundProgressIndicator(
               progressPercentage: crowdfund.progressPercentage,
-              height: 6,
             ),
             SizedBox(height: 8.h),
             // Stats row

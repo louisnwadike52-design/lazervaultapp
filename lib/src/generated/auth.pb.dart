@@ -759,6 +759,8 @@ class LoginData extends $pb.GeneratedMessage {
   factory LoginData({
     User? user,
     Session? session,
+    $core.bool? hasPasscode,
+    $core.bool? hasTransactionPin,
   }) {
     final $result = create();
     if (user != null) {
@@ -766,6 +768,12 @@ class LoginData extends $pb.GeneratedMessage {
     }
     if (session != null) {
       $result.session = session;
+    }
+    if (hasPasscode != null) {
+      $result.hasPasscode = hasPasscode;
+    }
+    if (hasTransactionPin != null) {
+      $result.hasTransactionPin = hasTransactionPin;
     }
     return $result;
   }
@@ -776,6 +784,8 @@ class LoginData extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LoginData', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
     ..aOM<User>(1, _omitFieldNames ? '' : 'user', subBuilder: User.create)
     ..aOM<Session>(2, _omitFieldNames ? '' : 'session', subBuilder: Session.create)
+    ..aOB(3, _omitFieldNames ? '' : 'hasPasscode')
+    ..aOB(4, _omitFieldNames ? '' : 'hasTransactionPin')
     ..hasRequiredFields = false
   ;
 
@@ -821,6 +831,24 @@ class LoginData extends $pb.GeneratedMessage {
   void clearSession() => clearField(2);
   @$pb.TagNumber(2)
   Session ensureSession() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.bool get hasPasscode => $_getBF(2);
+  @$pb.TagNumber(3)
+  set hasPasscode($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasHasPasscode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearHasPasscode() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get hasTransactionPin => $_getBF(3);
+  @$pb.TagNumber(4)
+  set hasTransactionPin($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasHasTransactionPin() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearHasTransactionPin() => clearField(4);
 }
 
 class Session extends $pb.GeneratedMessage {
@@ -7222,12 +7250,16 @@ class CompleteSignupResponse extends $pb.GeneratedMessage {
   SignupProgress ensureProgress() => $_ensure(2);
 }
 
-/// Verify identity request (BVN or NIN)
+/// Verify identity request
 class VerifyIdentityRequest extends $pb.GeneratedMessage {
   factory VerifyIdentityRequest({
     IdentityType? identityType,
     $core.String? identityNumber,
     $core.String? dateOfBirth,
+    $core.String? countryCode,
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? phoneNumber,
   }) {
     final $result = create();
     if (identityType != null) {
@@ -7239,6 +7271,18 @@ class VerifyIdentityRequest extends $pb.GeneratedMessage {
     if (dateOfBirth != null) {
       $result.dateOfBirth = dateOfBirth;
     }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
+    if (firstName != null) {
+      $result.firstName = firstName;
+    }
+    if (lastName != null) {
+      $result.lastName = lastName;
+    }
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
     return $result;
   }
   VerifyIdentityRequest._() : super();
@@ -7249,6 +7293,10 @@ class VerifyIdentityRequest extends $pb.GeneratedMessage {
     ..e<IdentityType>(1, _omitFieldNames ? '' : 'identityType', $pb.PbFieldType.OE, defaultOrMaker: IdentityType.IDENTITY_TYPE_UNSPECIFIED, valueOf: IdentityType.valueOf, enumValues: IdentityType.values)
     ..aOS(2, _omitFieldNames ? '' : 'identityNumber')
     ..aOS(3, _omitFieldNames ? '' : 'dateOfBirth')
+    ..aOS(4, _omitFieldNames ? '' : 'countryCode')
+    ..aOS(5, _omitFieldNames ? '' : 'firstName')
+    ..aOS(6, _omitFieldNames ? '' : 'lastName')
+    ..aOS(7, _omitFieldNames ? '' : 'phoneNumber')
     ..hasRequiredFields = false
   ;
 
@@ -7299,6 +7347,42 @@ class VerifyIdentityRequest extends $pb.GeneratedMessage {
   $core.bool hasDateOfBirth() => $_has(2);
   @$pb.TagNumber(3)
   void clearDateOfBirth() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get countryCode => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set countryCode($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCountryCode() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCountryCode() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get firstName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set firstName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasFirstName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFirstName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get lastName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set lastName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasLastName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLastName() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get phoneNumber => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set phoneNumber($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPhoneNumber() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPhoneNumber() => clearField(7);
 }
 
 /// Verified identity details returned from provider
@@ -7487,6 +7571,10 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
     $core.String? errorMessage,
     VerifiedIdentity? identity,
     VirtualAccountInfo? virtualAccount,
+    $core.String? verificationId,
+    $core.String? status,
+    $core.String? sessionUrl,
+    $core.String? sessionToken,
   }) {
     final $result = create();
     if (success != null) {
@@ -7507,6 +7595,18 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
     if (virtualAccount != null) {
       $result.virtualAccount = virtualAccount;
     }
+    if (verificationId != null) {
+      $result.verificationId = verificationId;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (sessionUrl != null) {
+      $result.sessionUrl = sessionUrl;
+    }
+    if (sessionToken != null) {
+      $result.sessionToken = sessionToken;
+    }
     return $result;
   }
   VerifyIdentityResponse._() : super();
@@ -7520,6 +7620,10 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'errorMessage')
     ..aOM<VerifiedIdentity>(5, _omitFieldNames ? '' : 'identity', subBuilder: VerifiedIdentity.create)
     ..aOM<VirtualAccountInfo>(6, _omitFieldNames ? '' : 'virtualAccount', subBuilder: VirtualAccountInfo.create)
+    ..aOS(7, _omitFieldNames ? '' : 'verificationId')
+    ..aOS(8, _omitFieldNames ? '' : 'status')
+    ..aOS(9, _omitFieldNames ? '' : 'sessionUrl')
+    ..aOS(10, _omitFieldNames ? '' : 'sessionToken')
     ..hasRequiredFields = false
   ;
 
@@ -7601,6 +7705,43 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
   void clearVirtualAccount() => clearField(6);
   @$pb.TagNumber(6)
   VirtualAccountInfo ensureVirtualAccount() => $_ensure(5);
+
+  /// Async verification fields (Onfido/Persona - UK/US)
+  @$pb.TagNumber(7)
+  $core.String get verificationId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set verificationId($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasVerificationId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearVerificationId() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get status => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set status($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasStatus() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearStatus() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get sessionUrl => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set sessionUrl($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasSessionUrl() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearSessionUrl() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get sessionToken => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set sessionToken($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasSessionToken() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearSessionToken() => clearField(10);
 }
 
 /// Virtual account info (returned after identity verification)

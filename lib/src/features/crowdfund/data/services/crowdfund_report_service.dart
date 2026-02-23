@@ -85,7 +85,7 @@ class CrowdfundReportService {
         ),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
         return CrowdfundReport.fromJson(response.data as Map<String, dynamic>);
       } else {
         throw ReportGenerationException(

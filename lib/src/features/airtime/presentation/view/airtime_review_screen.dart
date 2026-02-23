@@ -109,6 +109,27 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
       return;
     }
 
+    // Check for insufficient balance before proceeding
+    final accountState = context.read<AccountCardsSummaryCubit>().state;
+    if (accountState is AccountCardsSummaryLoaded) {
+      final selectedAccount = accountState.accountSummaries
+          .where((a) => a.id.toString() == _selectedAccountId)
+          .firstOrNull;
+      if (selectedAccount != null && !_hasSufficientBalance(selectedAccount)) {
+        final currency = country?.currency ?? 'NGN';
+        final needed = totalAmount ?? amount ?? 0;
+        Get.snackbar(
+          'Insufficient Balance',
+          'Your ${selectedAccount.accountType} account has ${currency} ${selectedAccount.balance.toStringAsFixed(2)} but you need ${currency} ${needed.toStringAsFixed(2)}',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+    }
+
     if (networkProvider != null && phoneNumber != null && amount != null && country != null) {
       setState(() => _isProcessing = true);
       final transactionId = 'airtime_${DateTime.now().millisecondsSinceEpoch}_${phoneNumber!.replaceAll(RegExp(r'[^\d]'), '')}';

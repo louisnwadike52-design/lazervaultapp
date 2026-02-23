@@ -250,22 +250,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
   }
 
   void _navigateToAmountWithRecipient(Map<String, dynamic> recipient) {
-    // Navigate to amount screen with recipient pre-selected
-    // Flow: Amount (2/3) -> Review (3/3)
-    Get.toNamed(
-      AppRoutes.internationalTransferAmount,
-      arguments: {
-        'fromCurrency': 'GBP', // Default from currency
-        'toCurrency': recipient['currency'],
-        'fromCurrencyData': _allCurrencies['GBP'],
-        'toCurrencyData': _allCurrencies[recipient['currency']],
-        'preSelectedRecipient': recipient,
-        'skipRecipientSelection': true, // Flag to skip to page 4
-        'currentStep': 2,
-        'totalSteps': 3,
-        'stepTitle': 'Enter Amount',
-      },
-    );
+    // Navigate to new exchange flow
+    Get.toNamed(AppRoutes.exchangeHome);
   }
 
   void _navigateToAmountWithTransaction(Map<String, dynamic> transaction) {
@@ -274,42 +260,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
   }
 
   void _navigateToReviewWithTransaction(Map<String, dynamic> transaction) {
-    // Navigate directly to review screen (page 4) with transaction data
-    // Flow: Review (1/1) - All previous steps completed
-    Get.toNamed(
-      AppRoutes.internationalTransferReview,
-      arguments: {
-        'fromCurrency': transaction['from'],
-        'toCurrency': transaction['to'],
-        'fromCurrencyData': _allCurrencies[transaction['from']],
-        'toCurrencyData': _allCurrencies[transaction['to']],
-        'amount': transaction['amount'],
-        'convertedAmount': transaction['converted'],
-        'exchangeRate': transaction['rate'],
-        'fees': _calculateFees(transaction['amount']),
-        'recipient': _getRecipientByName(transaction['recipient']),
-        'currentStep': 1,
-        'totalSteps': 1,
-        'stepTitle': 'Review & Confirm',
-        'isRepeatTransaction': true,
-      },
-    );
-  }
-
-  double _calculateFees(double amount) {
-    // Mock fee calculation - typically 0.5% with minimum fee
-    const feePercentage = 0.005;
-    const minimumFee = 2.0;
-    final calculatedFee = amount * feePercentage;
-    return calculatedFee < minimumFee ? minimumFee : calculatedFee;
-  }
-
-  Map<String, dynamic>? _getRecipientByName(String name) {
-    try {
-      return _savedRecipients.firstWhere((recipient) => recipient['name'] == name);
-    } catch (e) {
-      return null;
-    }
+    // Navigate to new exchange flow
+    Get.toNamed(AppRoutes.exchangeHome);
   }
 
   void _showAllRecipients() {
@@ -1105,7 +1057,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
               child: IconButton(
                 icon: Icon(Icons.history, color: Colors.white, size: 20.sp),
                 onPressed: () {
-                  Get.toNamed(AppRoutes.currencyTransactionHistory);
+                  Get.toNamed(AppRoutes.exchangeHome);
                 },
               ),
             ),
@@ -2004,15 +1956,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
   }
 
   void _startNewTransfer() {
-    // Navigate to the start screen for new transfer
-    // Flow: Currency Selection (1/4) -> Amount (2/4) -> Recipient (3/4) -> Review (4/4)
-    Get.toNamed(
-      AppRoutes.internationalTransferStart,
-      arguments: {
-        'currentStep': 1,
-        'totalSteps': 4,
-        'stepTitle': 'Select Currencies',
-      },
-    );
+    // Navigate to the new exchange flow
+    Get.toNamed(AppRoutes.exchangeHome);
   }
 }

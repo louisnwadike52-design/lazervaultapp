@@ -17,6 +17,7 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
     required String accessToken,
     required String sourceContext,
     String language = 'en',
+    String locale = 'en-NG',
   }) async {
     try {
       final request = ChatRequest(
@@ -26,6 +27,7 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         accessToken: accessToken,
         sourceContext: sourceContext,
         language: language,
+        locale: locale,
       );
 
       final response = await dataSource.processChat(request);
@@ -44,12 +46,14 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
     required String sourceContext,
     required String sessionId,
     required String accessToken,
+    String? locale,
   }) async {
     try {
       final response = await dataSource.getHistory(
         sourceContext: sourceContext,
         sessionId: sessionId,
         accessToken: accessToken,
+        locale: locale,
       );
 
       final messages = response.history.map((msg) {

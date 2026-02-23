@@ -84,6 +84,10 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
       case 'crypto':
         _validateCryptoDeposit();
         break;
+      case 'flutterwave':
+      case 'test_deposit':
+        _validateFlutterwaveDeposit();
+        break;
       case 'digital_wallet':
       case 'bank_transfer':
         _validateRegularDeposit();
@@ -142,12 +146,68 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
       _validationMessage = 'Minimum deposit amount is £5.00';
       return;
     }
-    
+
     if (_enteredAmount > 100000.0) {
       _validationMessage = 'Maximum deposit amount is £100,000';
       return;
     }
-    
+
+    _isAmountValid = true;
+  }
+
+  void _validateFlutterwaveDeposit() {
+    final countryCode = _paymentMethod['country_code'] as String? ??
+        _currency['country_code'] as String? ?? '';
+    final currencyCode = _currency['code'] as String? ??
+        _currency['currency'] as String? ?? '';
+
+    // Country-aware limits
+    double minAmount;
+    double maxAmount;
+    String symbol;
+
+    switch (countryCode) {
+      case 'GH':
+        minAmount = 1.0;
+        maxAmount = 100000.0;
+        symbol = 'GH\u20B5';
+        break;
+      case 'KE':
+        minAmount = 10.0;
+        maxAmount = 10000000.0;
+        symbol = 'KSh';
+        break;
+      case 'ZA':
+        minAmount = 10.0;
+        maxAmount = 1000000.0;
+        symbol = 'R';
+        break;
+      case 'US':
+        minAmount = 1.0;
+        maxAmount = 100000.0;
+        symbol = '\$';
+        break;
+      case 'GB':
+        minAmount = 1.0;
+        maxAmount = 100000.0;
+        symbol = '\u00A3';
+        break;
+      default:
+        minAmount = 1.0;
+        maxAmount = 100000.0;
+        symbol = currencyCode;
+    }
+
+    if (_enteredAmount < minAmount) {
+      _validationMessage = 'Minimum deposit amount is $symbol${minAmount.toStringAsFixed(0)}';
+      return;
+    }
+
+    if (_enteredAmount > maxAmount) {
+      _validationMessage = 'Maximum deposit amount is $symbol${maxAmount.toStringAsFixed(0)}';
+      return;
+    }
+
     _isAmountValid = true;
   }
 

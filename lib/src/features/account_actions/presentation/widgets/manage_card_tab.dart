@@ -111,8 +111,8 @@ class ManageCardTab extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16.r),
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -121,8 +121,8 @@ class ManageCardTab extends StatelessWidget {
             height: 48.w,
             decoration: BoxDecoration(
               color: isFrozen
-                  ? const Color(0xFFEF4444).withValues(alpha: 0.2)
-                  : const Color(0xFF10B981).withValues(alpha: 0.2),
+                  ? const Color(0xFFEF4444).withValues(alpha: 0.15)
+                  : const Color(0xFF10B981).withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -139,7 +139,7 @@ class ManageCardTab extends StatelessWidget {
                 Text(
                   'Card Status',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -157,7 +157,7 @@ class ManageCardTab extends StatelessWidget {
           ),
           Icon(
             Icons.chevron_right_outlined,
-            color: Colors.white.withValues(alpha: 0.5),
+            color: const Color(0xFF9CA3AF),
             size: 20.sp,
           ),
         ],
@@ -214,11 +214,8 @@ class ManageCardTab extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
@@ -226,12 +223,12 @@ class ManageCardTab extends StatelessWidget {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
                   icon,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF6366F1),
                   size: 20.sp,
                 ),
               ),
@@ -252,7 +249,7 @@ class ManageCardTab extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: const Color(0xFF9CA3AF),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -266,14 +263,14 @@ class ManageCardTab extends StatelessWidget {
                   child: CircularProgressIndicator(
                     strokeWidth: 2.w,
                     valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF3B82F6),
+                      Color(0xFF6366F1),
                     ),
                   ),
                 )
               else
                 Icon(
                   Icons.chevron_right_outlined,
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: const Color(0xFF9CA3AF),
                   size: 20.sp,
                 ),
             ],
@@ -308,10 +305,7 @@ class ManageCardTab extends StatelessWidget {
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
-            ),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
@@ -319,7 +313,7 @@ class ManageCardTab extends StatelessWidget {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
@@ -345,7 +339,7 @@ class ManageCardTab extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: const Color(0xFF9CA3AF),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -364,7 +358,7 @@ class ManageCardTab extends StatelessWidget {
               else
                 Icon(
                   Icons.chevron_right_outlined,
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: const Color(0xFF9CA3AF),
                   size: 20.sp,
                 ),
             ],
@@ -375,7 +369,6 @@ class ManageCardTab extends StatelessWidget {
   }
 
   void _onFreeze(BuildContext context) {
-    // Validate card status before freezing
     final statusValidation = CardStatusValidator.canPerformAction(
       accountDetails?.status ?? accountArgs['status']?.toString(),
       action: 'freeze',
@@ -390,7 +383,6 @@ class ManageCardTab extends StatelessWidget {
       return;
     }
 
-    // Validate account ID
     final accountId = AccountIdValidator.extractFromArgs(accountArgs);
     if (accountId == null) {
       ValidationDialog.show(
@@ -403,7 +395,7 @@ class ManageCardTab extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -418,7 +410,7 @@ class ManageCardTab extends StatelessWidget {
         content: Text(
           'Your card will be temporarily frozen. You can unfreeze it at any time from this screen.',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
+            color: const Color(0xFF9CA3AF),
             fontSize: 14.sp,
           ),
         ),
@@ -428,7 +420,7 @@ class ManageCardTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -444,7 +436,7 @@ class ManageCardTab extends StatelessWidget {
             child: Text(
               'Freeze',
               style: TextStyle(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF6366F1),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -456,7 +448,6 @@ class ManageCardTab extends StatelessWidget {
   }
 
   void _onUnfreeze(BuildContext context) {
-    // Validate card status before unfreezing
     final statusValidation = CardStatusValidator.canPerformAction(
       accountDetails?.status ?? accountArgs['status']?.toString(),
       action: 'unfreeze',
@@ -487,7 +478,6 @@ class ManageCardTab extends StatelessWidget {
   }
 
   void _onTemporarilyBlock(BuildContext context) {
-    // Validate card status before blocking
     final statusValidation = CardStatusValidator.canPerformAction(
       accountDetails?.status ?? accountArgs['status']?.toString(),
       action: 'block',
@@ -502,7 +492,6 @@ class ManageCardTab extends StatelessWidget {
       return;
     }
 
-    // Validate account ID
     final accountId = AccountIdValidator.extractFromArgs(accountArgs);
     if (accountId == null) {
       ValidationDialog.show(
@@ -515,7 +504,7 @@ class ManageCardTab extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -530,7 +519,7 @@ class ManageCardTab extends StatelessWidget {
         content: Text(
           'Your card will be blocked but can be unblocked at any time. No new transactions will be possible.',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
+            color: const Color(0xFF9CA3AF),
             fontSize: 14.sp,
           ),
         ),
@@ -540,7 +529,7 @@ class ManageCardTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -567,7 +556,6 @@ class ManageCardTab extends StatelessWidget {
   }
 
   void _onPermanentlyBlock(BuildContext context) {
-    // Validate card status before blocking
     final statusValidation = CardStatusValidator.canPerformAction(
       accountDetails?.status ?? accountArgs['status']?.toString(),
       action: 'block',
@@ -582,7 +570,6 @@ class ManageCardTab extends StatelessWidget {
       return;
     }
 
-    // Validate account ID
     final accountId = AccountIdValidator.extractFromArgs(accountArgs);
     if (accountId == null) {
       ValidationDialog.show(
@@ -595,7 +582,7 @@ class ManageCardTab extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -614,7 +601,7 @@ class ManageCardTab extends StatelessWidget {
             Text(
               'This action cannot be undone. Your card will be permanently blocked and you\'ll need to order a replacement.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -622,14 +609,14 @@ class ManageCardTab extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                color: const Color(0xFFD97706).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.warning_amber_outlined,
-                    color: const Color(0xFFF59E0B),
+                    color: const Color(0xFFD97706),
                     size: 16.sp,
                   ),
                   SizedBox(width: 8.w),
@@ -637,7 +624,7 @@ class ManageCardTab extends StatelessWidget {
                     child: Text(
                       'You can still access your account and funds, but card transactions will be disabled.',
                       style: TextStyle(
-                        color: const Color(0xFFF59E0B),
+                        color: const Color(0xFFD97706),
                         fontSize: 11.sp,
                       ),
                     ),
@@ -653,7 +640,7 @@ class ManageCardTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -680,7 +667,6 @@ class ManageCardTab extends StatelessWidget {
   }
 
   void _onReportStolen(BuildContext context) {
-    // Validate account ID first
     final accountId = AccountIdValidator.extractFromArgs(accountArgs);
     if (accountId == null) {
       ValidationDialog.show(
@@ -693,7 +679,7 @@ class ManageCardTab extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -724,7 +710,7 @@ class ManageCardTab extends StatelessWidget {
             Text(
               'This will immediately block your card and a new replacement will be shipped to your registered address.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -751,7 +737,7 @@ class ManageCardTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -783,8 +769,8 @@ class ManageCardTab extends StatelessWidget {
         Container(
           width: 16.w,
           height: 16.w,
-          decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6),
+          decoration: const BoxDecoration(
+            color: Color(0xFF6366F1),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -803,7 +789,7 @@ class ManageCardTab extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: const Color(0xFF9CA3AF),
               fontSize: 12.sp,
             ),
           ),
@@ -813,7 +799,6 @@ class ManageCardTab extends StatelessWidget {
   }
 
   void _onViewCardDetails(BuildContext context) {
-    // Validate account ID first
     final accountId = AccountIdValidator.extractFromArgs(accountArgs);
     if (accountId == null) {
       ValidationDialog.show(
@@ -829,7 +814,7 @@ class ManageCardTab extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -846,7 +831,7 @@ class ManageCardTab extends StatelessWidget {
           children: [
             Icon(
               Icons.fingerprint,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF6366F1),
               size: 48.sp,
             ),
             SizedBox(height: 16.h),
@@ -854,7 +839,7 @@ class ManageCardTab extends StatelessWidget {
               'Enter your transaction PIN to view card details',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -865,12 +850,12 @@ class ManageCardTab extends StatelessWidget {
                 return Container(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: const Color(0xFF2D2D2D),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
                       color: isPinValid
-                          ? const Color(0xFF10B981).withValues(alpha: 0.5)
-                          : Colors.white.withValues(alpha: 0.1),
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF4A4A4A),
                     ),
                   ),
                   child: TextField(
@@ -888,7 +873,7 @@ class ManageCardTab extends StatelessWidget {
                       border: InputBorder.none,
                       hintText: '••••',
                       hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: const Color(0xFF4A4A4A),
                       ),
                       counterText: '',
                     ),
@@ -912,7 +897,7 @@ class ManageCardTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -936,8 +921,8 @@ class ManageCardTab extends StatelessWidget {
                   'View',
                   style: TextStyle(
                     color: isPinValid
-                        ? const Color(0xFF3B82F6)
-                        : Colors.white.withValues(alpha: 0.3),
+                        ? const Color(0xFF6366F1)
+                        : const Color(0xFFD1D5DB),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -951,7 +936,6 @@ class ManageCardTab extends StatelessWidget {
   }
 
   void _onViewPIN(BuildContext context) {
-    // Validate account ID first
     final accountId = AccountIdValidator.extractFromArgs(accountArgs);
     if (accountId == null) {
       ValidationDialog.show(
@@ -967,7 +951,7 @@ class ManageCardTab extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -984,7 +968,7 @@ class ManageCardTab extends StatelessWidget {
           children: [
             Icon(
               Icons.fingerprint,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF6366F1),
               size: 48.sp,
             ),
             SizedBox(height: 16.h),
@@ -992,7 +976,7 @@ class ManageCardTab extends StatelessWidget {
               'Enter your transaction PIN to reveal your card PIN',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -1003,12 +987,12 @@ class ManageCardTab extends StatelessWidget {
                 return Container(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: const Color(0xFF2D2D2D),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
                       color: isPinValid
-                          ? const Color(0xFF10B981).withValues(alpha: 0.5)
-                          : Colors.white.withValues(alpha: 0.1),
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF4A4A4A),
                     ),
                   ),
                   child: TextField(
@@ -1026,7 +1010,7 @@ class ManageCardTab extends StatelessWidget {
                       border: InputBorder.none,
                       hintText: '••••',
                       hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: const Color(0xFF4A4A4A),
                       ),
                       counterText: '',
                     ),
@@ -1050,7 +1034,7 @@ class ManageCardTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -1074,8 +1058,8 @@ class ManageCardTab extends StatelessWidget {
                   'View',
                   style: TextStyle(
                     color: isPinValid
-                        ? const Color(0xFF3B82F6)
-                        : Colors.white.withValues(alpha: 0.3),
+                        ? const Color(0xFF6366F1)
+                        : const Color(0xFFD1D5DB),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),

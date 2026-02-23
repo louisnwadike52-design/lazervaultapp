@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 import '../../domain/entities/stock_entity.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
 import '../widgets/drawing_elements.dart';
@@ -394,7 +395,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\$${widget.stock.currentPrice.toStringAsFixed(2)}',
+                    CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 14.sp,
@@ -1626,6 +1627,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         currentDrawing: _currentDrawing,
         selectedDrawing: _selectedDrawing, // Pass selected drawing to painter
         priceHistory: _getVisibleData(priceHistory),
+        currency: widget.stock.currency,
       ),
     );
   }
@@ -2973,7 +2975,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                           Row(
                             children: [
                               Text(
-                                '\$${widget.stock.currentPrice.toStringAsFixed(2)}',
+                                CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 24.sp,
@@ -3023,14 +3025,14 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                       ),
                       child: Column(
                         children: [
-                          _buildMetricRow('Market Cap', '\$${(widget.stock.marketCap / 1e9).toStringAsFixed(1)}B'),
+                          _buildMetricRow('Market Cap', '${CurrencySymbols.getSymbol(widget.stock.currency)}${(widget.stock.marketCap / 1e9).toStringAsFixed(1)}B'),
                           _buildMetricRow('P/E Ratio', widget.stock.peRatio.toStringAsFixed(2)),
                           _buildMetricRow('Beta', widget.stock.beta.toStringAsFixed(2)),
                           _buildMetricRow('Volume', '${(widget.stock.volume / 1e6).toStringAsFixed(1)}M'),
-                          _buildMetricRow('52W High', '\$${(widget.stock.currentPrice * 1.25).toStringAsFixed(2)}'),
-                          _buildMetricRow('52W Low', '\$${(widget.stock.currentPrice * 0.75).toStringAsFixed(2)}'),
+                          _buildMetricRow('52W High', CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice * 1.25, widget.stock.currency)),
+                          _buildMetricRow('52W Low', CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice * 0.75, widget.stock.currency)),
                           _buildMetricRow('Avg Volume', '${(widget.stock.volume * 0.85 / 1e6).toStringAsFixed(1)}M'),
-                          _buildMetricRow('Market Value', '\$${(widget.stock.marketCap / 1e6).toStringAsFixed(0)}M'),
+                          _buildMetricRow('Market Value', '${CurrencySymbols.getSymbol(widget.stock.currency)}${(widget.stock.marketCap / 1e6).toStringAsFixed(0)}M'),
                         ],
                       ),
                     ),
@@ -4191,7 +4193,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 ),
                 Spacer(),
                 Text(
-                  '\$${widget.stock.currentPrice.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
                   style: GoogleFonts.inter(
                     color: Colors.blue,
                     fontSize: 12.sp,
@@ -4240,7 +4242,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           ),
           Expanded(
             child: Text(
-              '\$${price.toStringAsFixed(2)}',
+              CurrencySymbols.formatAmountWithCurrency(price, widget.stock.currency),
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 12.sp,

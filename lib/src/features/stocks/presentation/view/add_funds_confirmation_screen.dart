@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 
 /// Confirmation screen showing deposit receipt
 class AddFundsConfirmationScreen extends StatefulWidget {
@@ -297,7 +298,7 @@ Date: ${dateFormat.format(now)}
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  '\$${widget.amount.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(widget.amount, 'USD'),
                   style: GoogleFonts.inter(
                     fontSize: 48.sp,
                     fontWeight: FontWeight.w700,

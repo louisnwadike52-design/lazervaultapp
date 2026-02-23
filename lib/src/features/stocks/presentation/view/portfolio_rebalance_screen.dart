@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/stock_entity.dart';
 
@@ -9,12 +10,14 @@ class PortfolioRebalanceScreen extends StatefulWidget {
   final List<StockHolding> holdings;
   final double totalValue;
   final DateTime? lastRebalancedDate;
+  final String currency;
 
   const PortfolioRebalanceScreen({
     super.key,
     required this.holdings,
     required this.totalValue,
     this.lastRebalancedDate,
+    this.currency = 'USD',
   });
 
   @override
@@ -290,7 +293,7 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
           ),
           SizedBox(height: 20.h),
           Text(
-            'Total Value: \$${widget.totalValue.toStringAsFixed(2)}',
+            'Total Value: ${CurrencySymbols.formatAmountWithCurrency(widget.totalValue, widget.currency)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 28.sp,
@@ -546,7 +549,7 @@ class _PortfolioRebalanceScreenState extends State<PortfolioRebalanceScreen> wit
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\$${allocation['value'].toStringAsFixed(0)}',
+                    '${CurrencySymbols.getSymbol(widget.currency)}${(allocation['value'] as double).toStringAsFixed(0)}',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 16.sp,

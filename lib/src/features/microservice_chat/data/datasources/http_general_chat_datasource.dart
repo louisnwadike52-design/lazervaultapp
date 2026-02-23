@@ -9,6 +9,7 @@ class GeneralChatRequest {
   final String accessToken;
   final String sourceContext;
   final String language;
+  final String locale;
   final Map<String, dynamic> metadata;
 
   GeneralChatRequest({
@@ -18,6 +19,7 @@ class GeneralChatRequest {
     required this.accessToken,
     this.sourceContext = 'general',
     this.language = 'en',
+    this.locale = 'en-NG',
     this.metadata = const {},
   });
 
@@ -29,6 +31,7 @@ class GeneralChatRequest {
       'access_token': accessToken,
       'source_context': sourceContext,
       'language': language,
+      'locale': locale,
       if (metadata.isNotEmpty) 'metadata': metadata,
     };
   }

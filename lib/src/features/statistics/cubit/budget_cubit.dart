@@ -1,8 +1,11 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/src/features/statistics/data/budget_repository.dart';
 import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
+import 'package:lazervault/src/features/widgets/category_selection.dart';
 
 /// Cubit for managing budget state
 ///
@@ -11,6 +14,12 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 class BudgetCubit extends Cubit<BudgetState> {
   final BudgetRepository _budgetRepository;
   final BudgetAIService _budgetAIService;
+
+  /// Cache of service categories fetched from backend
+  final Map<String, List<ServiceCategory>> _categoryCache = {};
+
+  /// In-flight requests to deduplicate concurrent loads for the same service
+  final Map<String, Future<List<ServiceCategory>>> _pendingLoads = {};
 
   BudgetCubit({
     required BudgetRepository budgetRepository,
@@ -381,6 +390,90 @@ class BudgetCubit extends Cubit<BudgetState> {
     } catch (e) {
       emit(BudgetError(message: 'Failed to create bill: ${e.toString()}'));
     }
+  }
+
+  /// Load service categories from backend, with in-memory cache and fallback.
+  /// Deduplicates concurrent calls for the same serviceName.
+  Future<List<ServiceCategory>> loadServiceCategories(String serviceName) async {
+    if (_categoryCache.containsKey(serviceName)) {
+      return _categoryCache[serviceName]!;
+    }
+    // Deduplicate concurrent requests for the same service
+    if (_pendingLoads.containsKey(serviceName)) {
+      return _pendingLoads[serviceName]!;
+    }
+    final future = _fetchServiceCategories(serviceName);
+    _pendingLoads[serviceName] = future;
+    try {
+      return await future;
+    } finally {
+      _pendingLoads.remove(serviceName);
+    }
+  }
+
+  Future<List<ServiceCategory>> _fetchServiceCategories(String serviceName) async {
+    try {
+      final response = await _budgetRepository.getServiceCategories(
+        serviceName: serviceName,
+      );
+      final categories = response.categories
+          .map((proto) => ServiceCategory.fromProto(proto))
+          .toList();
+      _categoryCache[serviceName] = categories;
+      return categories;
+    } catch (e) {
+      developer.log('Failed to load service categories for $serviceName', name: 'BudgetCubit', error: e);
+      return ServiceCategory.commonTransferCategories;
+    }
+  }
+
+  /// Create a custom category and clear cache
+  Future<ServiceCategory?> createCustomCategory({
+    required String serviceName,
+    required String displayName,
+    int budgetCategory = 16,
+    String icon = 'category',
+    String color = '#95A5A6',
+  }) async {
+    try {
+      final response = await _budgetRepository.createCustomCategory(
+        serviceName: serviceName,
+        displayName: displayName,
+        budgetCategory: budgetCategory,
+        icon: icon,
+        color: color,
+      );
+
+      if (response.success && response.hasCategory()) {
+        // Clear cache so next load includes the new category
+        _categoryCache.remove(serviceName);
+        return ServiceCategory.fromProto(response.category);
+      }
+      return null;
+    } catch (e) {
+      developer.log('Failed to create custom category "$displayName"', name: 'BudgetCubit', error: e);
+      return null;
+    }
+  }
+
+  /// Delete a custom category and clear cache
+  Future<bool> deleteCustomCategory(String categoryId, String serviceName) async {
+    try {
+      final response = await _budgetRepository.deleteCustomCategory(categoryId);
+      if (response.success) {
+        _categoryCache.remove(serviceName);
+      }
+      return response.success;
+    } catch (e) {
+      developer.log('Failed to delete custom category $categoryId', name: 'BudgetCubit', error: e);
+      return false;
+    }
+  }
+
+  /// Clear the category cache (e.g., on logout)
+  void clearCategoryCache() {
+    _categoryCache.clear();
+    _pendingLoads.clear();
   }
 
   /// Refresh the current state (reload budgets or alerts based on current state)

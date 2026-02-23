@@ -108,7 +108,7 @@ class HelpTab extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(
@@ -136,7 +136,7 @@ class HelpTab extends StatelessWidget {
                 Text(
                   'Call: +234 XXX XXX XXXX',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 13.sp,
                   ),
                 ),
@@ -144,7 +144,7 @@ class HelpTab extends StatelessWidget {
                 Text(
                   'Email: support@lazervault.com',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 13.sp,
                   ),
                 ),
@@ -172,11 +172,8 @@ class HelpTab extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
@@ -210,7 +207,7 @@ class HelpTab extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: const Color(0xFF9CA3AF),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -236,7 +233,7 @@ class HelpTab extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -281,7 +278,7 @@ class HelpTab extends StatelessWidget {
             child: Text(
               answer,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 12.sp,
                 height: 1.5,
               ),
@@ -305,7 +302,7 @@ class HelpTab extends StatelessWidget {
   void _onReportProblem(BuildContext context) {
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -323,7 +320,7 @@ class HelpTab extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: TextField(
@@ -332,7 +329,7 @@ class HelpTab extends StatelessWidget {
                   border: InputBorder.none,
                   hintText: 'Describe your issue...',
                   hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: const Color(0xFF4A4A4A),
                   ),
                 ),
                 maxLines: 4,
@@ -346,7 +343,7 @@ class HelpTab extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -378,7 +375,7 @@ class HelpTab extends StatelessWidget {
   void _onViewFees(BuildContext context) {
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -402,7 +399,7 @@ class HelpTab extends StatelessWidget {
             Text(
               'Fees are subject to change. Check the app before each withdrawal for the most current fees.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 11.sp,
                 fontStyle: FontStyle.italic,
               ),
@@ -429,7 +426,7 @@ class HelpTab extends StatelessWidget {
   void _onViewInternationalFees(BuildContext context) {
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -455,7 +452,7 @@ class HelpTab extends StatelessWidget {
             Text(
               'Exchange rates apply. Final amount may vary based on your bank\'s exchange rate.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 11.sp,
                 fontStyle: FontStyle.italic,
               ),
@@ -493,7 +490,7 @@ class HelpTab extends StatelessWidget {
         Text(
           fee,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
+            color: const Color(0xFF9CA3AF),
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),

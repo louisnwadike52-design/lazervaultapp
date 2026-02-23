@@ -17,6 +17,9 @@ class User extends Equatable {
   final String? currency;
   final String? country;
   final String? profilePicture;
+  final String? signupStatus;
+  final bool hasPasscode;
+  final bool hasTransactionPin;
 
   const User({
     required this.id,
@@ -34,6 +37,9 @@ class User extends Equatable {
     this.currency,
     this.country,
     this.profilePicture,
+    this.signupStatus,
+    this.hasPasscode = false,
+    this.hasTransactionPin = false,
   });
 
   /// An empty user which represents an unauthenticated user.
@@ -53,6 +59,9 @@ class User extends Equatable {
     currency: null,
     country: null,
     profilePicture: null,
+    signupStatus: null,
+    hasPasscode: false,
+    hasTransactionPin: false,
   );
 
   /// Convenience getter to determine whether the current user is empty.
@@ -78,5 +87,8 @@ class User extends Equatable {
         currency,
         country,
         profilePicture,
+        signupStatus,
+        hasPasscode,
+        hasTransactionPin,
       ];
 }

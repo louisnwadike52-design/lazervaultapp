@@ -902,6 +902,15 @@ class _SelectRecipientsState extends State<SelectRecipients> {
               },
             ),
             _buildOptionTile(
+              icon: Icons.schedule,
+              title: 'Recurring Payments',
+              color: const Color(0xFF3B82F6),
+              onTap: () {
+                Get.back();
+                Get.toNamed(AppRoutes.recurringTransfers);
+              },
+            ),
+            _buildOptionTile(
               icon: Icons.person_outline,
               title: 'View Details',
               color: Colors.grey[700]!,

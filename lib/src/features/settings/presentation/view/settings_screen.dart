@@ -641,7 +641,7 @@ class _SettingsViewState extends State<_SettingsView> {
             final currentCurrency = state is ProfileLoaded
                 ? (state.user.currency ?? 'GBP')
                 : 'GBP';
-            showDialog(
+            showDialog<String>(
               context: context,
               builder: (dialogContext) => BlocProvider.value(
                 value: context.read<ProfileCubit>(),
@@ -650,7 +650,18 @@ class _SettingsViewState extends State<_SettingsView> {
                   currentCurrency: currentCurrency,
                 ),
               ),
-            );
+            ).then((countryCode) {
+              if (countryCode != null && countryCode.isNotEmpty) {
+                // Refresh account summaries for the new country
+                final profileState = context.read<ProfileCubit>().state;
+                if (profileState is ProfileLoaded) {
+                  context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+                    userId: profileState.user.id,
+                    country: countryCode,
+                  );
+                }
+              }
+            });
           },
         ),
         // Reactive currency tile with StreamBuilder

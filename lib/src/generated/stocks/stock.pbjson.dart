@@ -414,13 +414,14 @@ const SearchStocksRequest$json = {
   '2': [
     {'1': 'query', '3': 1, '4': 1, '5': 9, '10': 'query'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'market', '3': 3, '4': 1, '5': 9, '10': 'market'},
   ],
 };
 
 /// Descriptor for `SearchStocksRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List searchStocksRequestDescriptor = $convert.base64Decode(
     'ChNTZWFyY2hTdG9ja3NSZXF1ZXN0EhQKBXF1ZXJ5GAEgASgJUgVxdWVyeRIUCgVsaW1pdBgCIA'
-    'EoBVIFbGltaXQ=');
+    'EoBVIFbGltaXQSFgoGbWFya2V0GAMgASgJUgZtYXJrZXQ=');
 
 @$core.Deprecated('Use searchStocksResponseDescriptor instead')
 const SearchStocksResponse$json = {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../../../domain/entities/stock_entity.dart';
 
@@ -265,7 +266,7 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
                 color: Colors.white,
               ),
               decoration: InputDecoration(
-                prefixText: '\$ ',
+                prefixText: '${CurrencySymbols.getSymbol(widget.stock.currency)} ',
                 hintText: widget.stock.currentPrice.toStringAsFixed(2),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.05),
@@ -303,7 +304,7 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
                 color: Colors.white,
               ),
               decoration: InputDecoration(
-                prefixText: '\$ ',
+                prefixText: '${CurrencySymbols.getSymbol(widget.stock.currency)} ',
                 hintText: widget.stock.currentPrice.toStringAsFixed(2),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.05),
@@ -342,7 +343,7 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
                   ),
                 ),
                 Text(
-                  '\$${_estimatedTotal.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, widget.stock.currency),
                   style: GoogleFonts.inter(
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700,

@@ -114,7 +114,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<List<StockModel>> getTopMovers() async {
+  Future<List<StockModel>> getTopMovers({String? market}) async {
     try {
       // Get both gainers and losers
       final gainers = await _getTopGainers();
@@ -154,11 +154,14 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<List<StockModel>> searchStocks(String query) async {
+  Future<List<StockModel>> searchStocks(String query, {String? market}) async {
     try {
       final request = SearchStocksRequest()
         ..query = query
         ..limit = 10;
+      if (market != null && market.isNotEmpty) {
+        request.market = market;
+      }
 
       final response = await _stockClient.searchStocks(
         request,

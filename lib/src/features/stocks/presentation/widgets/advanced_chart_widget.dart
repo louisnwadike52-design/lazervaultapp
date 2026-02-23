@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
 import 'chart_painters.dart';
 import 'package:get/get.dart';
@@ -470,7 +471,7 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
                 if (spot.spotIndex < priceHistory.length) {
                   final price = priceHistory[spot.spotIndex];
                   return LineTooltipItem(
-                    '\$${price.close.toStringAsFixed(2)}\n${price.timestamp.month}/${price.timestamp.day}',
+                    '${CurrencySymbols.formatAmountWithCurrency(price.close, widget.stock.currency)}\n${price.timestamp.month}/${price.timestamp.day}',
                     GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 12.sp,

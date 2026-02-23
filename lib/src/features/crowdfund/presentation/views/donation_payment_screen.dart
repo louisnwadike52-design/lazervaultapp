@@ -266,7 +266,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                     : null,
                 child: widget.crowdfund.creator.profilePicture == null
                     ? Text(
-                        '${widget.crowdfund.creator.firstName[0]}${widget.crowdfund.creator.lastName[0]}',
+                        widget.crowdfund.creator.initials,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF6366F1),
                           fontSize: 14.sp,
@@ -556,12 +556,13 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
           }
 
           // Auto-select primary or first account
-          if (_selectedAccountId == null) {
+          if (_selectedAccountId == null && accounts.isNotEmpty) {
             final primary = accounts.where((a) => a.isPrimary).firstOrNull;
+            final selected = primary ?? accounts.first;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 setState(() {
-                  _selectedAccountId = (primary ?? accounts.first).id;
+                  _selectedAccountId = selected.id;
                 });
               }
             });

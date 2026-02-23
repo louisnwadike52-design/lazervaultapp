@@ -20,6 +20,11 @@ class IDPayOrganizationDetailsScreen extends StatefulWidget {
 
 class _IDPayOrganizationDetailsScreenState
     extends State<IDPayOrganizationDetailsScreen> {
+  // Store last loaded data so the UI stays visible during delete
+  IDPayOrganizationEntity? _lastOrg;
+  List<IDPayEntity> _lastIdPays = [];
+  double _lastTotalPaidOut = 0;
+
   @override
   void initState() {
     super.initState();
@@ -109,6 +114,11 @@ class _IDPayOrganizationDetailsScreenState
       ),
       body: BlocConsumer<IDPayCubit, IDPayState>(
         listener: (context, state) {
+          if (state is IDPayOrganizationDetailsLoaded) {
+            _lastOrg = state.organization;
+            _lastIdPays = state.idPays;
+            _lastTotalPaidOut = state.totalPaidOut;
+          }
           if (state is IDPayOrganizationDeleted) {
             Get.snackbar(
               'Deleted',
@@ -117,7 +127,7 @@ class _IDPayOrganizationDetailsScreenState
               colorText: Colors.white,
               snackPosition: SnackPosition.TOP,
             );
-            Get.back();
+            Get.back(result: 'deleted');
           }
           if (state is IDPayError) {
             Get.snackbar(
@@ -130,7 +140,7 @@ class _IDPayOrganizationDetailsScreenState
           }
         },
         builder: (context, state) {
-          if (state is IDPayLoading) {
+          if (state is IDPayLoading && _lastOrg == null) {
             return const Center(
               child: CircularProgressIndicator(
                 valueColor:
@@ -145,6 +155,11 @@ class _IDPayOrganizationDetailsScreenState
               state.idPays,
               state.totalPaidOut,
             );
+          }
+
+          // Keep showing last loaded data during delete/loading/transition
+          if (_lastOrg != null) {
+            return _buildDetails(_lastOrg!, _lastIdPays, _lastTotalPaidOut);
           }
 
           return const SizedBox.shrink();

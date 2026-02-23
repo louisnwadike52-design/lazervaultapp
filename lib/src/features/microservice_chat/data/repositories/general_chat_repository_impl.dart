@@ -19,6 +19,7 @@ abstract class GeneralChatRepository {
     required String accessToken,
     String sourceContext = 'general',
     String language = 'en',
+    String locale = 'en-NG',
     Map<String, dynamic> metadata = const {},
   });
 
@@ -45,6 +46,7 @@ class GeneralChatRepositoryImpl implements GeneralChatRepository {
     required String accessToken,
     String sourceContext = 'general',
     String language = 'en',
+    String locale = 'en-NG',
     Map<String, dynamic> metadata = const {},
   }) async {
     try {
@@ -55,6 +57,7 @@ class GeneralChatRepositoryImpl implements GeneralChatRepository {
         accessToken: accessToken,
         sourceContext: sourceContext,
         language: language,
+        locale: locale,
         metadata: metadata,
       );
 

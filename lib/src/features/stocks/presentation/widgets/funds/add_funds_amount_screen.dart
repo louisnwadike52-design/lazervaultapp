@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Step 1: Select amount to add
 class AddFundsAmountScreen extends StatefulWidget {
   final double initialAmount;
   final double availableCash;
+  final String currency;
   final Function(double) onChanged;
 
   const AddFundsAmountScreen({
     super.key,
     required this.initialAmount,
     required this.availableCash,
+    this.currency = 'USD',
     required this.onChanged,
   });
 
@@ -101,7 +104,7 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '\$${widget.availableCash.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(widget.availableCash, widget.currency),
                       style: GoogleFonts.inter(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.w700,
@@ -136,7 +139,7 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
               color: Colors.white,
             ),
             decoration: InputDecoration(
-              prefixText: '\$ ',
+              prefixText: '${CurrencySymbols.getSymbol(widget.currency)} ',
               prefixStyle: GoogleFonts.inter(
                 fontSize: 32.sp,
                 fontWeight: FontWeight.w700,
@@ -205,7 +208,7 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
                     ),
                   ),
                   child: Text(
-                    '\$${amount.toStringAsFixed(0)}',
+                    '${CurrencySymbols.getSymbol(widget.currency)}${amount.toStringAsFixed(0)}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
@@ -249,7 +252,7 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        'Minimum: \$10 • Maximum: \$100,000 per transaction',
+                        'Minimum: ${CurrencySymbols.getSymbol(widget.currency)}10 • Maximum: ${CurrencySymbols.getSymbol(widget.currency)}100,000 per transaction',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           color: Colors.blue[200],
@@ -284,7 +287,7 @@ class _AddFundsAmountScreenState extends State<AddFundsAmountScreen> {
                     ),
                   ),
                   Text(
-                    '\$${(widget.availableCash + _amount).toStringAsFixed(2)}',
+                    CurrencySymbols.formatAmountWithCurrency(widget.availableCash + _amount, widget.currency),
                     style: GoogleFonts.inter(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w700,

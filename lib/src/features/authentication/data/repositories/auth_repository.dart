@@ -63,6 +63,9 @@ class AuthRepositoryImpl implements IAuthRepository {
           profilePicture: user.profilePicture.isEmpty ? null : user.profilePicture,
           createdAt: DateTime.tryParse(user.createdAt) ?? DateTime.now(),
           updatedAt: DateTime.tryParse(user.updatedAt) ?? DateTime.now(),
+          signupStatus: user.signupStatus.isNotEmpty ? user.signupStatus : null,
+          hasPasscode: response.data.hasPasscode,
+          hasTransactionPin: response.data.hasTransactionPin,
         );
 
         final now = DateTime.now();

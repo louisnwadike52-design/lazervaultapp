@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../domain/entities/stock_entity.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 
 /// Confirmation screen showing trade receipt
 class StockTradeConfirmationScreen extends StatefulWidget {
@@ -378,11 +379,11 @@ Date: ${dateFormat.format(widget.order.createdAt)}
           _buildDetailRow('Quantity', '${widget.order.quantity} shares'),
           SizedBox(height: 12.h),
           if (widget.order.price != null)
-            _buildDetailRow('Price', '\$${widget.order.price!.toStringAsFixed(2)}'),
+            _buildDetailRow('Price', CurrencySymbols.formatAmountWithCurrency(widget.order.price!, widget.stock.currency)),
           if (widget.order.price != null) SizedBox(height: 12.h),
           _buildDetailRow(
             'Est. Total',
-            '\$${((widget.order.price ?? widget.stock.currentPrice) * widget.order.quantity).toStringAsFixed(2)}',
+            CurrencySymbols.formatAmountWithCurrency((widget.order.price ?? widget.stock.currentPrice) * widget.order.quantity, widget.stock.currency),
             valueColor: const Color(0xFF6366F1),
           ),
           SizedBox(height: 12.h),

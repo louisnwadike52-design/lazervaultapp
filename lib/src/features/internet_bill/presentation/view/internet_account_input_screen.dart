@@ -32,7 +32,7 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
       final provider = args['provider'] as InternetProviderEntity;
 
       context.read<InternetBillCubit>().validateAccount(
-            providerId: provider.id,
+            providerId: provider.serviceId,
             accountNumber: _accountController.text.trim(),
           );
     }

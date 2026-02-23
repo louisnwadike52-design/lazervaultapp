@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../widgets/funds/add_funds_amount_screen.dart';
 import '../widgets/funds/add_funds_payment_method_screen.dart';
@@ -12,11 +13,13 @@ import 'add_funds_processing_screen.dart';
 class AddFundsCarousel extends StatefulWidget {
   final double? initialAmount;
   final double availableCash;
+  final String currency;
 
   const AddFundsCarousel({
     super.key,
     this.initialAmount,
     required this.availableCash,
+    this.currency = 'USD',
   });
 
   @override
@@ -90,15 +93,15 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
     switch (_currentPage) {
       case 0: // Amount
         if (_amount <= 0) {
-          _showError('Please enter an amount greater than \$0');
+          _showError('Please enter an amount greater than ${CurrencySymbols.getSymbol(widget.currency)}0');
           return false;
         }
         if (_amount < 10) {
-          _showError('Minimum deposit amount is \$10');
+          _showError('Minimum deposit amount is ${CurrencySymbols.getSymbol(widget.currency)}10');
           return false;
         }
         if (_amount > 100000) {
-          _showError('Maximum deposit amount is \$100,000');
+          _showError('Maximum deposit amount is ${CurrencySymbols.getSymbol(widget.currency)}100,000');
           return false;
         }
         return true;
@@ -228,6 +231,7 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
                 AddFundsAmountScreen(
                   initialAmount: _amount,
                   availableCash: widget.availableCash,
+                  currency: widget.currency,
                   onChanged: (amount) {
                     setState(() {
                       _amount = amount;
@@ -237,6 +241,7 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
                 // Step 2: Payment Method
                 AddFundsPaymentMethodScreen(
                   selectedMethod: _paymentMethod,
+                  currency: widget.currency,
                   onChanged: (method, details) {
                     setState(() {
                       _paymentMethod = method;
@@ -249,6 +254,7 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
                   amount: _amount,
                   paymentMethod: _paymentMethod,
                   paymentDetails: _paymentDetails,
+                  currency: widget.currency,
                 ),
               ],
             ),

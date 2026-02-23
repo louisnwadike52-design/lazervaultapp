@@ -1,46 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
+import 'package:lazervault/src/features/widgets/service_categories.dart';
 
 /// Helper functions for expense categories
+/// Delegates color and name lookups to ServiceCategories for consistency
 class ExpenseCategoryHelpers {
   /// Get display name for expense category
   static String getCategoryDisplayName(pb.ExpenseCategory category) {
-    switch (category) {
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_FOOD_DINING:
-        return 'Food & Dining';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_TRANSPORTATION:
-        return 'Transportation';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_SHOPPING:
-        return 'Shopping';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_ENTERTAINMENT:
-        return 'Entertainment';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_BILLS_UTILITIES:
-        return 'Bills & Utilities';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_HEALTHCARE:
-        return 'Healthcare';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_EDUCATION:
-        return 'Education';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_TRAVEL:
-        return 'Travel';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_GROCERIES:
-        return 'Groceries';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_RENT_MORTGAGE:
-        return 'Rent & Mortgage';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_INSURANCE:
-        return 'Insurance';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_INVESTMENTS:
-        return 'Investments';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_GIFTS_DONATIONS:
-        return 'Gifts & Donations';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_PERSONAL_CARE:
-        return 'Personal Care';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS:
-        return 'Subscriptions';
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER:
-        return 'Other';
-      default:
-        return 'Uncategorized';
-    }
+    return ServiceCategories.getBudgetCategoryName(category.value);
   }
 
   /// Get icon for expense category
@@ -82,41 +49,9 @@ class ExpenseCategoryHelpers {
   }
 
   /// Get color for expense category (for charts and badges)
+  /// Delegates to ServiceCategories for consistency across the app
   static Color getCategoryColor(pb.ExpenseCategory category) {
-    switch (category) {
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_FOOD_DINING:
-        return const Color(0xFFFF6B6B);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_TRANSPORTATION:
-        return const Color(0xFF4ECDC4);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_SHOPPING:
-        return const Color(0xFF45B7D1);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_ENTERTAINMENT:
-        return const Color(0xFFFFA07A);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_BILLS_UTILITIES:
-        return const Color(0xFF96CEB4);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_HEALTHCARE:
-        return const Color(0xFFFECA57);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_EDUCATION:
-        return const Color(0xFFDDA0DD);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_TRAVEL:
-        return const Color(0xFF98D8C8);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_GROCERIES:
-        return const Color(0xFFF7DC6F);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_RENT_MORTGAGE:
-        return const Color(0xFFBB8FCE);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_INSURANCE:
-        return const Color(0xFF85C1E9);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_INVESTMENTS:
-        return const Color(0xFF52B788);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_GIFTS_DONATIONS:
-        return const Color(0xFFFF6B9D);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_PERSONAL_CARE:
-        return const Color(0xFFD4A5A5);
-      case pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS:
-        return const Color(0xFF9B59B6);
-      default:
-        return const Color(0xFF95A5A6);
-    }
+    return ServiceCategories.getBudgetCategoryColor(category.value);
   }
 
   /// Get all expense categories

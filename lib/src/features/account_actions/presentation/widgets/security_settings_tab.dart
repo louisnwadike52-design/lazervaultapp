@@ -31,14 +31,14 @@ class SecuritySettingsTab extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF6366F1),
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -46,7 +46,7 @@ class SecuritySettingsTab extends StatelessWidget {
                   child: Text(
                     'Control how your card can be used for transactions',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 13.sp,
                     ),
                   ),
@@ -73,12 +73,7 @@ class SecuritySettingsTab extends StatelessWidget {
             title: '3D Secure',
             subtitle: 'Extra verification for online payments',
             value: details?.enable3DSecure ?? false,
-            onChanged: (value) => _onToggleChanged(
-              context,
-              '3DSecure',
-              value,
-              details,
-            ),
+            onChanged: (value) => _onToggleChanged(context, '3DSecure', value, details),
           ),
           SizedBox(height: 12.h),
 
@@ -88,12 +83,7 @@ class SecuritySettingsTab extends StatelessWidget {
             title: 'Contactless Payments',
             subtitle: 'Tap to pay at checkout',
             value: details?.enableContactless ?? false,
-            onChanged: (value) => _onToggleChanged(
-              context,
-              'Contactless',
-              value,
-              details,
-            ),
+            onChanged: (value) => _onToggleChanged(context, 'Contactless', value, details),
           ),
           SizedBox(height: 12.h),
 
@@ -103,12 +93,7 @@ class SecuritySettingsTab extends StatelessWidget {
             title: 'ATM Withdrawals',
             subtitle: 'Cash withdrawals at ATMs',
             value: details?.enableATMWithdrawals ?? false,
-            onChanged: (value) => _onToggleChanged(
-              context,
-              'ATMWithdrawals',
-              value,
-              details,
-            ),
+            onChanged: (value) => _onToggleChanged(context, 'ATMWithdrawals', value, details),
           ),
           SizedBox(height: 12.h),
 
@@ -118,12 +103,7 @@ class SecuritySettingsTab extends StatelessWidget {
             title: 'Online Payments',
             subtitle: 'E-commerce and in-app purchases',
             value: details?.enableOnlinePayments ?? false,
-            onChanged: (value) => _onToggleChanged(
-              context,
-              'OnlinePayments',
-              value,
-              details,
-            ),
+            onChanged: (value) => _onToggleChanged(context, 'OnlinePayments', value, details),
           ),
           SizedBox(height: 12.h),
 
@@ -133,12 +113,7 @@ class SecuritySettingsTab extends StatelessWidget {
             title: 'International Payments',
             subtitle: 'Transactions outside your country',
             value: details?.enableInternationalPayments ?? false,
-            onChanged: (value) => _onToggleChanged(
-              context,
-              'InternationalPayments',
-              value,
-              details,
-            ),
+            onChanged: (value) => _onToggleChanged(context, 'InternationalPayments', value, details),
           ),
           SizedBox(height: 32.h),
 
@@ -146,11 +121,8 @@ class SecuritySettingsTab extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: const Color(0xFF10B981).withValues(alpha: 0.3),
-              ),
             ),
             child: Row(
               children: [
@@ -164,7 +136,7 @@ class SecuritySettingsTab extends StatelessWidget {
                   child: Text(
                     'Your card is protected by our fraud detection system. You\'ll be notified of any suspicious activity.',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 12.sp,
                       height: 1.5,
                     ),
@@ -189,8 +161,8 @@ class SecuritySettingsTab extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16.r),
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -199,13 +171,13 @@ class SecuritySettingsTab extends StatelessWidget {
             height: 40.w,
             decoration: BoxDecoration(
               color: value
-                  ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
-                  : Colors.white.withValues(alpha: 0.1),
+                  ? const Color(0xFF6366F1).withValues(alpha: 0.15)
+                  : const Color(0xFF2D2D2D),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
               icon,
-              color: value ? const Color(0xFF3B82F6) : Colors.white.withValues(alpha: 0.5),
+              color: value ? const Color(0xFF6366F1) : const Color(0xFF9CA3AF),
               size: 20.sp,
             ),
           ),
@@ -226,7 +198,7 @@ class SecuritySettingsTab extends StatelessWidget {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -236,9 +208,9 @@ class SecuritySettingsTab extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeTrackColor: const Color(0xFF3B82F6),
-            inactiveThumbColor: Colors.white.withValues(alpha: 0.3),
-            inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+            activeTrackColor: const Color(0xFF6366F1),
+            inactiveThumbColor: const Color(0xFF9CA3AF),
+            inactiveTrackColor: const Color(0xFF2D2D2D),
           ),
         ],
       ),
@@ -252,7 +224,6 @@ class SecuritySettingsTab extends StatelessWidget {
     AccountDetailsEntity? details,
   ) {
     if (details == null) {
-      // Show error - need to fetch details first
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Loading account details...'),
@@ -262,7 +233,6 @@ class SecuritySettingsTab extends StatelessWidget {
       return;
     }
 
-    // Validate account ID
     final accountId = AccountIdValidator.extractFromArgs(accountArgs);
     if (accountId == null) {
       ValidationDialog.show(
@@ -273,14 +243,12 @@ class SecuritySettingsTab extends StatelessWidget {
       return;
     }
 
-    // Calculate new settings based on what's being toggled
     final new3DSecure = setting == '3DSecure' ? value : details.enable3DSecure;
     final newContactless = setting == 'Contactless' ? value : details.enableContactless;
     final newOnlinePayments = setting == 'OnlinePayments' ? value : details.enableOnlinePayments;
     final newATMWithdrawals = setting == 'ATMWithdrawals' ? value : details.enableATMWithdrawals;
     final newInternationalPayments = setting == 'InternationalPayments' ? value : details.enableInternationalPayments;
 
-    // Validate security settings - at least one payment method must be enabled
     final validation = SecuritySettingsValidator.validateSettings(
       enable3DSecure: new3DSecure,
       enableContactless: newContactless,
@@ -297,7 +265,6 @@ class SecuritySettingsTab extends StatelessWidget {
       return;
     }
 
-    // Call cubit to update security settings
     context.read<AccountActionsCubit>().updateSecuritySettings(
       accountId: accountId,
       enable3DSecure: new3DSecure,

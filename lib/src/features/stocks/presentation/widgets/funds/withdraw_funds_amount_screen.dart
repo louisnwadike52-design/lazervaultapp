@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Step 1: Select amount to withdraw
 class WithdrawFundsAmountScreen extends StatefulWidget {
   final double initialAmount;
   final double availableCash;
+  final String currency;
   final Function(double) onChanged;
 
   const WithdrawFundsAmountScreen({
     super.key,
     required this.initialAmount,
     required this.availableCash,
+    this.currency = 'USD',
     required this.onChanged,
   });
 
@@ -106,7 +109,7 @@ class _WithdrawFundsAmountScreenState extends State<WithdrawFundsAmountScreen> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '\$${widget.availableCash.toStringAsFixed(2)}',
+                      CurrencySymbols.formatAmountWithCurrency(widget.availableCash, widget.currency),
                       style: GoogleFonts.inter(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.w700,
@@ -141,7 +144,7 @@ class _WithdrawFundsAmountScreenState extends State<WithdrawFundsAmountScreen> {
               color: Colors.white,
             ),
             decoration: InputDecoration(
-              prefixText: '\$ ',
+              prefixText: '${CurrencySymbols.getSymbol(widget.currency)} ',
               prefixStyle: GoogleFonts.inter(
                 fontSize: 32.sp,
                 fontWeight: FontWeight.w700,
@@ -211,7 +214,7 @@ class _WithdrawFundsAmountScreenState extends State<WithdrawFundsAmountScreen> {
                       ),
                     ),
                     child: Text(
-                      '\$${amount.toStringAsFixed(0)}',
+                      '${CurrencySymbols.getSymbol(widget.currency)}${amount.toStringAsFixed(0)}',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -295,7 +298,7 @@ class _WithdrawFundsAmountScreenState extends State<WithdrawFundsAmountScreen> {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        'Minimum: \$10 • Maximum: \$${widget.availableCash.toStringAsFixed(2)}',
+                        'Minimum: ${CurrencySymbols.getSymbol(widget.currency)}10 • Maximum: ${CurrencySymbols.formatAmountWithCurrency(widget.availableCash, widget.currency)}',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           color: Colors.orange[200],
@@ -330,7 +333,7 @@ class _WithdrawFundsAmountScreenState extends State<WithdrawFundsAmountScreen> {
                     ),
                   ),
                   Text(
-                    '\$${(widget.availableCash - _amount).toStringAsFixed(2)}',
+                    CurrencySymbols.formatAmountWithCurrency(widget.availableCash - _amount, widget.currency),
                     style: GoogleFonts.inter(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w700,

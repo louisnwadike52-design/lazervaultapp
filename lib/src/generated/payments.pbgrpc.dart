@@ -149,6 +149,42 @@ class PaymentsServiceClient extends $grpc.Client {
       '/payments.PaymentsService/GetBatchTransferDetail',
       ($0.GetBatchTransferDetailRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetBatchTransferDetailResponse.fromBuffer(value));
+  static final _$verifyMultiCountryIdentity = $grpc.ClientMethod<$0.VerifyMultiCountryIdentityRequest, $0.VerifyMultiCountryIdentityResponse>(
+      '/payments.PaymentsService/VerifyMultiCountryIdentity',
+      ($0.VerifyMultiCountryIdentityRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.VerifyMultiCountryIdentityResponse.fromBuffer(value));
+  static final _$getIdentityVerificationStatus = $grpc.ClientMethod<$0.GetKYCVerificationStatusRequest, $0.GetKYCVerificationStatusResponse>(
+      '/payments.PaymentsService/GetIdentityVerificationStatus',
+      ($0.GetKYCVerificationStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetKYCVerificationStatusResponse.fromBuffer(value));
+  static final _$createRecurringTransfer = $grpc.ClientMethod<$0.CreateRecurringTransferRequest, $0.CreateRecurringTransferResponse>(
+      '/payments.PaymentsService/CreateRecurringTransfer',
+      ($0.CreateRecurringTransferRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreateRecurringTransferResponse.fromBuffer(value));
+  static final _$getRecurringTransfers = $grpc.ClientMethod<$0.GetRecurringTransfersRequest, $0.GetRecurringTransfersResponse>(
+      '/payments.PaymentsService/GetRecurringTransfers',
+      ($0.GetRecurringTransfersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetRecurringTransfersResponse.fromBuffer(value));
+  static final _$getRecurringTransfer = $grpc.ClientMethod<$0.GetRecurringTransferRequest, $0.GetRecurringTransferResponse>(
+      '/payments.PaymentsService/GetRecurringTransfer',
+      ($0.GetRecurringTransferRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetRecurringTransferResponse.fromBuffer(value));
+  static final _$updateRecurringTransfer = $grpc.ClientMethod<$0.UpdateRecurringTransferRequest, $0.UpdateRecurringTransferResponse>(
+      '/payments.PaymentsService/UpdateRecurringTransfer',
+      ($0.UpdateRecurringTransferRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateRecurringTransferResponse.fromBuffer(value));
+  static final _$deleteRecurringTransfer = $grpc.ClientMethod<$0.DeleteRecurringTransferRequest, $0.DeleteRecurringTransferResponse>(
+      '/payments.PaymentsService/DeleteRecurringTransfer',
+      ($0.DeleteRecurringTransferRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.DeleteRecurringTransferResponse.fromBuffer(value));
+  static final _$getRecurringTransferExecutions = $grpc.ClientMethod<$0.GetRecurringTransferExecutionsRequest, $0.GetRecurringTransferExecutionsResponse>(
+      '/payments.PaymentsService/GetRecurringTransferExecutions',
+      ($0.GetRecurringTransferExecutionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetRecurringTransferExecutionsResponse.fromBuffer(value));
+  static final _$getRecurringTransfersByRecipient = $grpc.ClientMethod<$0.GetRecurringTransfersByRecipientRequest, $0.GetRecurringTransfersByRecipientResponse>(
+      '/payments.PaymentsService/GetRecurringTransfersByRecipient',
+      ($0.GetRecurringTransfersByRecipientRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetRecurringTransfersByRecipientResponse.fromBuffer(value));
 
   PaymentsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -282,6 +318,42 @@ class PaymentsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetBatchTransferDetailResponse> getBatchTransferDetail($0.GetBatchTransferDetailRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getBatchTransferDetail, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.VerifyMultiCountryIdentityResponse> verifyMultiCountryIdentity($0.VerifyMultiCountryIdentityRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$verifyMultiCountryIdentity, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetKYCVerificationStatusResponse> getIdentityVerificationStatus($0.GetKYCVerificationStatusRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getIdentityVerificationStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateRecurringTransferResponse> createRecurringTransfer($0.CreateRecurringTransferRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createRecurringTransfer, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetRecurringTransfersResponse> getRecurringTransfers($0.GetRecurringTransfersRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getRecurringTransfers, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetRecurringTransferResponse> getRecurringTransfer($0.GetRecurringTransferRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getRecurringTransfer, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateRecurringTransferResponse> updateRecurringTransfer($0.UpdateRecurringTransferRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateRecurringTransfer, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteRecurringTransferResponse> deleteRecurringTransfer($0.DeleteRecurringTransferRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deleteRecurringTransfer, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetRecurringTransferExecutionsResponse> getRecurringTransferExecutions($0.GetRecurringTransferExecutionsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getRecurringTransferExecutions, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetRecurringTransfersByRecipientResponse> getRecurringTransfersByRecipient($0.GetRecurringTransfersByRecipientRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getRecurringTransfersByRecipient, request, options: options);
   }
 }
 
@@ -514,6 +586,69 @@ abstract class PaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetBatchTransferDetailRequest.fromBuffer(value),
         ($0.GetBatchTransferDetailResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.VerifyMultiCountryIdentityRequest, $0.VerifyMultiCountryIdentityResponse>(
+        'VerifyMultiCountryIdentity',
+        verifyMultiCountryIdentity_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.VerifyMultiCountryIdentityRequest.fromBuffer(value),
+        ($0.VerifyMultiCountryIdentityResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetKYCVerificationStatusRequest, $0.GetKYCVerificationStatusResponse>(
+        'GetIdentityVerificationStatus',
+        getIdentityVerificationStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetKYCVerificationStatusRequest.fromBuffer(value),
+        ($0.GetKYCVerificationStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateRecurringTransferRequest, $0.CreateRecurringTransferResponse>(
+        'CreateRecurringTransfer',
+        createRecurringTransfer_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CreateRecurringTransferRequest.fromBuffer(value),
+        ($0.CreateRecurringTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRecurringTransfersRequest, $0.GetRecurringTransfersResponse>(
+        'GetRecurringTransfers',
+        getRecurringTransfers_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetRecurringTransfersRequest.fromBuffer(value),
+        ($0.GetRecurringTransfersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRecurringTransferRequest, $0.GetRecurringTransferResponse>(
+        'GetRecurringTransfer',
+        getRecurringTransfer_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetRecurringTransferRequest.fromBuffer(value),
+        ($0.GetRecurringTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateRecurringTransferRequest, $0.UpdateRecurringTransferResponse>(
+        'UpdateRecurringTransfer',
+        updateRecurringTransfer_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UpdateRecurringTransferRequest.fromBuffer(value),
+        ($0.UpdateRecurringTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteRecurringTransferRequest, $0.DeleteRecurringTransferResponse>(
+        'DeleteRecurringTransfer',
+        deleteRecurringTransfer_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.DeleteRecurringTransferRequest.fromBuffer(value),
+        ($0.DeleteRecurringTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRecurringTransferExecutionsRequest, $0.GetRecurringTransferExecutionsResponse>(
+        'GetRecurringTransferExecutions',
+        getRecurringTransferExecutions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetRecurringTransferExecutionsRequest.fromBuffer(value),
+        ($0.GetRecurringTransferExecutionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRecurringTransfersByRecipientRequest, $0.GetRecurringTransfersByRecipientResponse>(
+        'GetRecurringTransfersByRecipient',
+        getRecurringTransfersByRecipient_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetRecurringTransfersByRecipientRequest.fromBuffer(value),
+        ($0.GetRecurringTransfersByRecipientResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.SendFundsResponse> sendFunds_Pre($grpc.ServiceCall call, $async.Future<$0.SendFundsRequest> request) async {
@@ -644,6 +779,42 @@ abstract class PaymentsServiceBase extends $grpc.Service {
     return getBatchTransferDetail(call, await request);
   }
 
+  $async.Future<$0.VerifyMultiCountryIdentityResponse> verifyMultiCountryIdentity_Pre($grpc.ServiceCall call, $async.Future<$0.VerifyMultiCountryIdentityRequest> request) async {
+    return verifyMultiCountryIdentity(call, await request);
+  }
+
+  $async.Future<$0.GetKYCVerificationStatusResponse> getIdentityVerificationStatus_Pre($grpc.ServiceCall call, $async.Future<$0.GetKYCVerificationStatusRequest> request) async {
+    return getIdentityVerificationStatus(call, await request);
+  }
+
+  $async.Future<$0.CreateRecurringTransferResponse> createRecurringTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.CreateRecurringTransferRequest> request) async {
+    return createRecurringTransfer(call, await request);
+  }
+
+  $async.Future<$0.GetRecurringTransfersResponse> getRecurringTransfers_Pre($grpc.ServiceCall call, $async.Future<$0.GetRecurringTransfersRequest> request) async {
+    return getRecurringTransfers(call, await request);
+  }
+
+  $async.Future<$0.GetRecurringTransferResponse> getRecurringTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.GetRecurringTransferRequest> request) async {
+    return getRecurringTransfer(call, await request);
+  }
+
+  $async.Future<$0.UpdateRecurringTransferResponse> updateRecurringTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateRecurringTransferRequest> request) async {
+    return updateRecurringTransfer(call, await request);
+  }
+
+  $async.Future<$0.DeleteRecurringTransferResponse> deleteRecurringTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.DeleteRecurringTransferRequest> request) async {
+    return deleteRecurringTransfer(call, await request);
+  }
+
+  $async.Future<$0.GetRecurringTransferExecutionsResponse> getRecurringTransferExecutions_Pre($grpc.ServiceCall call, $async.Future<$0.GetRecurringTransferExecutionsRequest> request) async {
+    return getRecurringTransferExecutions(call, await request);
+  }
+
+  $async.Future<$0.GetRecurringTransfersByRecipientResponse> getRecurringTransfersByRecipient_Pre($grpc.ServiceCall call, $async.Future<$0.GetRecurringTransfersByRecipientRequest> request) async {
+    return getRecurringTransfersByRecipient(call, await request);
+  }
+
   $async.Future<$0.SendFundsResponse> sendFunds($grpc.ServiceCall call, $0.SendFundsRequest request);
   $async.Future<$0.BatchTransferResponse> batchTransfer($grpc.ServiceCall call, $0.BatchTransferRequest request);
   $async.Future<$0.WithdrawResponse> withdraw($grpc.ServiceCall call, $0.WithdrawRequest request);
@@ -676,4 +847,13 @@ abstract class PaymentsServiceBase extends $grpc.Service {
   $async.Future<$0.ValidateQRTokenResponse> validateQRPaymentToken($grpc.ServiceCall call, $0.ValidateQRTokenRequest request);
   $async.Future<$0.GetBatchTransfersResponse> getBatchTransfers($grpc.ServiceCall call, $0.GetBatchTransfersRequest request);
   $async.Future<$0.GetBatchTransferDetailResponse> getBatchTransferDetail($grpc.ServiceCall call, $0.GetBatchTransferDetailRequest request);
+  $async.Future<$0.VerifyMultiCountryIdentityResponse> verifyMultiCountryIdentity($grpc.ServiceCall call, $0.VerifyMultiCountryIdentityRequest request);
+  $async.Future<$0.GetKYCVerificationStatusResponse> getIdentityVerificationStatus($grpc.ServiceCall call, $0.GetKYCVerificationStatusRequest request);
+  $async.Future<$0.CreateRecurringTransferResponse> createRecurringTransfer($grpc.ServiceCall call, $0.CreateRecurringTransferRequest request);
+  $async.Future<$0.GetRecurringTransfersResponse> getRecurringTransfers($grpc.ServiceCall call, $0.GetRecurringTransfersRequest request);
+  $async.Future<$0.GetRecurringTransferResponse> getRecurringTransfer($grpc.ServiceCall call, $0.GetRecurringTransferRequest request);
+  $async.Future<$0.UpdateRecurringTransferResponse> updateRecurringTransfer($grpc.ServiceCall call, $0.UpdateRecurringTransferRequest request);
+  $async.Future<$0.DeleteRecurringTransferResponse> deleteRecurringTransfer($grpc.ServiceCall call, $0.DeleteRecurringTransferRequest request);
+  $async.Future<$0.GetRecurringTransferExecutionsResponse> getRecurringTransferExecutions($grpc.ServiceCall call, $0.GetRecurringTransferExecutionsRequest request);
+  $async.Future<$0.GetRecurringTransfersByRecipientResponse> getRecurringTransfersByRecipient($grpc.ServiceCall call, $0.GetRecurringTransfersByRecipientRequest request);
 }

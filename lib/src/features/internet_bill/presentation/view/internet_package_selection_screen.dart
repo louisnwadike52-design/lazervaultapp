@@ -26,7 +26,7 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
     super.initState();
     final args = Get.arguments as Map<String, dynamic>;
     final provider = args['provider'] as InternetProviderEntity;
-    context.read<InternetBillCubit>().getPackages(providerId: provider.id);
+    context.read<InternetBillCubit>().getPackages(providerId: provider.serviceId);
   }
 
   @override
@@ -147,7 +147,7 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
                     }
 
                     if (state is InternetBillError) {
-                      return _buildErrorState(state.message, provider.id);
+                      return _buildErrorState(state.message, provider.serviceId);
                     }
 
                     if (state is InternetPackagesLoaded) {

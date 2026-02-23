@@ -20,7 +20,9 @@ class GeneralChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<GeneralChatCubit>()..initializeChat(),
+      create: (_) => serviceLocator<GeneralChatCubit>()
+        ..initializeChat()
+        ..loadHistory(),
       child: const GeneralChatContent(),
     );
   }

@@ -65,26 +65,36 @@ class NetworkProvidersCard extends StatelessWidget {
           SizedBox(height: 16.h),
           
           BlocConsumer<AirtimeCubit, AirtimeState>(
+            listenWhen: (previous, current) =>
+                current is AirtimeNetworkProvidersError,
             listener: (context, state) {
               if (state is AirtimeNetworkProvidersError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Failed to load network providers: ${state.message}'),
+                    content: Text(
+                        'Failed to load network providers: ${state.message}'),
                     backgroundColor: Colors.red,
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
               }
             },
+            buildWhen: (previous, current) {
+              return current is AirtimeNetworkProvidersLoaded ||
+                  current is AirtimeNetworkProvidersLoading ||
+                  current is AirtimeNetworkProvidersError ||
+                  current is AirtimeInitial;
+            },
             builder: (context, state) {
-              if (state is AirtimeNetworkProvidersLoaded && state.providers.isNotEmpty) {
+              if (state is AirtimeNetworkProvidersLoaded &&
+                  state.providers.isNotEmpty) {
                 return _buildProvidersList(state.providers);
               } else if (state is AirtimeNetworkProvidersLoading) {
                 return _buildLoadingState();
               } else if (state is AirtimeNetworkProvidersError) {
                 return _buildErrorState(state.message);
               }
-              // Default loading state for other states
+              // Default loading state for initial state
               return _buildLoadingState();
             },
           ),

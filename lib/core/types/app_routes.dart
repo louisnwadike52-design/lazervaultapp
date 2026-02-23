@@ -113,20 +113,16 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String withdrawFunds = '/profile-settings/withdraw-funds';
   static const String cbCurrencyExchange = '/profile-settings/cb-currency-exchange';
   static const String currencyDeposit = '/currency-deposit';
-  static const String currencyExchange = '/currency-exchange';
-  static const String addCurrencyRecipient = '/currency-exchange/add-recipient';
-  static const String currencyRecipientList = '/currency-exchange/recipients';
-  static const String currencyTransactionHistory = '/currency-exchange/history';
-  static const String rateCalculator = '/currency-exchange/calculator';
-  static const String contactSelection = '/currency-exchange/contacts';
-  
-  // International Transfer Flow Routes
-  static const String internationalTransferStart = '/international-transfer/start';
-  static const String internationalTransferAmount = '/international-transfer/amount';
-  static const String internationalTransferRecipient = '/international-transfer/recipient';
-  static const String internationalTransferReview = '/international-transfer/review';
-  static const String internationalTransferConfirm = '/international-transfer/confirm';
-  static const String internationalTransferSuccess = '/international-transfer/success';
+  // Currency Exchange Routes (Consolidated Flow)
+  static const String exchangeHome = '/exchange';
+  static const String exchangeRecipient = '/exchange/recipient';
+  static const String exchangeProcessing = '/exchange/processing';
+  static const String exchangeReceipt = '/exchange/receipt';
+  static const String exchangeDetail = '/exchange/detail';
+  static const String exchangeHistory = '/exchange/history';
+
+  // Legacy aliases (for navigation from other screens)
+  static const String currencyExchange = '/exchange';
   
   // Deposit Flow Routes
   static const String depositMethodSelection = '/deposit/method-selection';
@@ -283,6 +279,10 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String batchTransferReceipt = '/batch-transfer-receipt';
   static const String batchTransferHistory = '/batch-transfer-history';
   static const String batchTransferDetail = '/batch-transfer-detail';
+
+  // Recurring Transfer Routes
+  static const String recurringTransfers = '/recurring-transfers';
+  static const String recurringTransferDetail = '/recurring-transfers/detail';
 
   static const String investments = '/investments';
 

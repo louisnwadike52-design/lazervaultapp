@@ -282,7 +282,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(
-                      top: _responsiveController.screenHeight * (currentPage > 0 ? 0.04 : 0.15)), // Use destructured value
+                      top: _responsiveController.screenHeight * (currentPage == 3 ? 0.12 : currentPage > 0 ? 0.04 : 0.15)),
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
@@ -332,33 +332,35 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   ),
                 ),
               ),
-              Padding(
-                  padding: EdgeInsets.only(bottom: 20.0.h),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Already have an account?",
-                          style: TextStyle(fontSize: 16.sp, color: Colors.white),
-                        ),
-                        SizedBox(width: 8.w),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              // Hide "Already have an account?" on the identity verification page
+              if (currentPage != 3)
+                Padding(
+                    padding: EdgeInsets.only(bottom: 20.0.h),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Already have an account?",
+                            style: TextStyle(fontSize: 16.sp, color: Colors.white),
                           ),
-                          child: Text(
-                            "Sign In",
-                            style: TextStyle(
-                                fontSize: 16.sp,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          onPressed: () => Get.toNamed(AppRoutes.emailSignIn),
-                        )
-                      ])),
+                          SizedBox(width: 8.w),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              "Sign In",
+                              style: TextStyle(
+                                  fontSize: 16.sp,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            onPressed: () => Get.toNamed(AppRoutes.emailSignIn),
+                          )
+                        ])),
             ],
           );
         },
@@ -739,12 +741,37 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               onChanged: (value) => context.read<AuthenticationCubit>().signUpLastNameChanged(value),
             ),
             SizedBox(height: 8.0.h),
-            // Username field
+            // Username / LazerTag field
             BuildFormField(
               name: "username",
-              placeholder: "Username (optional)",
+              placeholder: "Username / LazerTag (optional)",
               prefixIcon: const Icon(Icons.alternate_email, color: Colors.black45),
+              maxLength: 30,
+              autocorrect: false,
+              enableSuggestions: false,
               onChanged: (value) => context.read<AuthenticationCubit>().signUpUsernameChanged(value),
+              validator: (value) {
+                if (value != null && value.trim().isNotEmpty) {
+                  final clean = value.trim().replaceAll(RegExp(r'^@'), '');
+                  if (clean.length < 3) {
+                    return 'Username must be at least 3 characters';
+                  }
+                  if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(clean)) {
+                    return 'Only letters, numbers, and underscores';
+                  }
+                }
+                return null;
+              },
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 16.0.w, top: 4.0.h),
+              child: Text(
+                'If not provided, a unique LazerTag will be auto-generated from your name',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.grey.shade500,
+                ),
+              ),
             ),
             SizedBox(height: 8.0.h),
             // Referral code field

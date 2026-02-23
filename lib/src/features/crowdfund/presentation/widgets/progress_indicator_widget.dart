@@ -10,7 +10,7 @@ class CrowdfundProgressIndicator extends StatelessWidget {
     super.key,
     required this.progressPercentage,
     this.showMilestones = false,
-    this.height = 8.0,
+    this.height = 18.0,
   });
 
   @override
@@ -51,8 +51,14 @@ class CrowdfundProgressIndicator extends StatelessWidget {
                   '${progressPercentage.toStringAsFixed(1)}%',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10.sp,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black45,
+                        blurRadius: 2,
+                      ),
+                    ],
                   ),
                 ),
               ),
