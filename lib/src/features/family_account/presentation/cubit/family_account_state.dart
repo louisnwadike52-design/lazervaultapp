@@ -195,6 +195,19 @@ class MemberContributionProcessed extends FamilyAccountState {
   List<Object?> get props => [familyAccount];
 }
 
+class FamilyAccountSettingUp extends FamilyAccountState {
+  const FamilyAccountSettingUp();
+}
+
+class FamilyAccountSetupCompleted extends FamilyAccountState {
+  final FamilyAccount familyAccount;
+
+  const FamilyAccountSetupCompleted(this.familyAccount);
+
+  @override
+  List<Object?> get props => [familyAccount];
+}
+
 // Error State
 class FamilyAccountError extends FamilyAccountState {
   final String message;

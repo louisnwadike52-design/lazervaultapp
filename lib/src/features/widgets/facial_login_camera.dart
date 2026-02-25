@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/face_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/face_verification_state.dart';
 import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:developer' as developer;
 
@@ -29,7 +30,7 @@ class _FacialLoginCameraState extends State<FacialLoginCamera>
   bool _isProcessing = false;
   String _statusMessage = 'Position your face in the frame';
   Color _overlayColor = Colors.white;
-  final _secureStorage = const FlutterSecureStorage();
+  final _secureStorage = serviceLocator<FlutterSecureStorage>();
 
   @override
   void initState() {

@@ -10,6 +10,7 @@ import '../../domain/entities/linked_bank_account.dart';
 import '../../domain/entities/deposit.dart';
 import '../../domain/entities/credit_score.dart';
 import '../errors/banking_errors.dart';
+import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
 
 /// gRPC data source for open banking operations (deposits via Mono)
 /// This replaces REST calls with direct gRPC calls to banking-service
@@ -671,5 +672,276 @@ class OpenBankingGrpcDataSource {
       return true;
     }
     return false;
+  }
+
+  // =====================================================
+  // MANDATES (Direct Debit Variable Recurring Payments)
+  // =====================================================
+
+  /// Create a direct debit mandate for a linked account.
+  ///
+  /// Optional [userEmail], [userName], [userPhone] are forwarded as gRPC
+  /// metadata so the backend can auto-create a Mono customer if needed.
+  Future<({MandateEntity mandate, bool needsAuthorization, String? authorizationUrl})>
+      createMandate({
+    required String userId,
+    required String linkedAccountId,
+    String mandateType = 'gsm',
+    int amountLimit = 0,
+    int debitLimit = 0,
+    String? description,
+    String? userEmail,
+    String? userName,
+    String? userPhone,
+  }) async {
+    try {
+      final request = banking_pb.CreateMandateRequest(
+        userId: userId,
+        linkedAccountId: linkedAccountId,
+        mandateType: mandateType,
+        amountLimit: Int64(amountLimit),
+        debitLimit: debitLimit,
+        description: description ?? 'LazerVault auto-debit mandate',
+      );
+
+      // Build extra metadata for Mono customer auto-creation
+      final extraMeta = <String, String>{};
+      if (userEmail != null && userEmail.isNotEmpty) {
+        extraMeta['x-user-email'] = userEmail;
+      }
+      if (userName != null && userName.isNotEmpty) {
+        extraMeta['x-user-name'] = userName;
+      }
+      if (userPhone != null && userPhone.isNotEmpty) {
+        extraMeta['x-user-phone'] = userPhone;
+      }
+
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.createMandate(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(
+              timeout: const Duration(seconds: 30),
+              metadata: extraMeta,
+            ),
+          ),
+        );
+      });
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+
+      return (
+        mandate: _mapMandate(response.mandate),
+        needsAuthorization: response.needsAuthorization,
+        authorizationUrl:
+            response.authorizationUrl.isNotEmpty ? response.authorizationUrl : null,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'createMandate');
+    }
+  }
+
+  /// Get all mandates for a user
+  Future<List<MandateEntity>> getUserMandates({
+    required String userId,
+    bool activeOnly = true,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final request = banking_pb.GetUserMandatesRequest(
+        userId: userId,
+        activeOnly: activeOnly,
+        limit: limit,
+        offset: offset,
+      );
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.getUserMandates(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        ),
+      );
+
+      return response.mandates.map(_mapMandate).toList();
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getUserMandates');
+    }
+  }
+
+  /// Get a specific mandate
+  Future<MandateEntity> getMandate({
+    required String mandateId,
+    required String userId,
+  }) async {
+    try {
+      final request = banking_pb.GetMandateRequest(
+        mandateId: mandateId,
+        userId: userId,
+      );
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.getMandate(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        ),
+      );
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+
+      return _mapMandate(response.mandate);
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getMandate');
+    }
+  }
+
+  /// Pause a mandate
+  Future<MandateEntity> pauseMandate({
+    required String mandateId,
+    required String userId,
+    String? reason,
+  }) async {
+    try {
+      final request = banking_pb.PauseMandateRequest(
+        mandateId: mandateId,
+        userId: userId,
+        reason: reason ?? '',
+      );
+
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.pauseMandate(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 15)),
+          ),
+        );
+      });
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+
+      return _mapMandate(response.mandate);
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'pauseMandate');
+    }
+  }
+
+  /// Reinstate a paused mandate
+  Future<MandateEntity> reinstateMandate({
+    required String mandateId,
+    required String userId,
+  }) async {
+    try {
+      final request = banking_pb.ReinstateMandateRequest(
+        mandateId: mandateId,
+        userId: userId,
+      );
+
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.reinstateMandate(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 15)),
+          ),
+        );
+      });
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+
+      return _mapMandate(response.mandate);
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'reinstateMandate');
+    }
+  }
+
+  /// Cancel a mandate
+  Future<void> cancelMandate({
+    required String mandateId,
+    required String userId,
+    String? reason,
+  }) async {
+    try {
+      final request = banking_pb.CancelMandateRequest(
+        mandateId: mandateId,
+        userId: userId,
+        reason: reason ?? '',
+      );
+
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.cancelMandate(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 15)),
+          ),
+        );
+      });
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'cancelMandate');
+    }
+  }
+
+  /// Map proto DirectDebitMandate to domain entity
+  MandateEntity _mapMandate(banking_pb.DirectDebitMandate proto) {
+    return MandateEntity(
+      id: proto.id,
+      monoMandateId: proto.monoMandateId,
+      userId: proto.userId,
+      linkedAccountId: proto.linkedAccountId,
+      monoCustomerId: proto.monoCustomerId,
+      bankName: proto.bankName,
+      bankCode: proto.bankCode,
+      accountNumber: proto.accountNumber,
+      accountName: proto.accountName,
+      mandateType: mandateTypeFromString(proto.mandateType),
+      status: mandateStatusFromString(proto.status),
+      amountLimit: proto.amountLimit.toInt(),
+      debitLimit: proto.debitLimit,
+      debitCount: proto.debitCount,
+      totalDebited: proto.totalDebited.toInt(),
+      remainingLimit: proto.remainingLimit.toInt(),
+      canDebit: proto.canDebit,
+      isExpired: proto.isExpired,
+      startDate: proto.hasStartDate() ? proto.startDate.toDateTime() : DateTime.now(),
+      endDate: proto.hasEndDate() ? proto.endDate.toDateTime() : DateTime.now(),
+      createdAt: proto.hasCreatedAt() ? proto.createdAt.toDateTime() : DateTime.now(),
+      authorizedAt: proto.hasAuthorizedAt() ? proto.authorizedAt.toDateTime() : null,
+      readyAt: proto.hasReadyAt() ? proto.readyAt.toDateTime() : null,
+      lastDebitAt: proto.hasLastDebitAt() ? proto.lastDebitAt.toDateTime() : null,
+      cancelledAt: proto.hasCancelledAt() ? proto.cancelledAt.toDateTime() : null,
+      reference: proto.reference,
+      description: proto.description.isNotEmpty ? proto.description : null,
+    );
   }
 }

@@ -6,6 +6,13 @@ enum FamilyAccountStatus {
   active,
   frozen,
   closed,
+  pendingSetup,
+}
+
+enum FundDistributionMode {
+  sharedPool,
+  equalSplit,
+  customAllocation,
 }
 
 enum FamilyMemberRole {
@@ -46,6 +53,9 @@ class FamilyAccount extends Equatable {
   final List<FamilyMember> members;
   final int memberCount;
   final int activeMemberCount;
+  final FundDistributionMode fundDistributionMode;
+  final bool setupCompleted;
+  final bool spendingVisibilityEnabled;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -63,6 +73,9 @@ class FamilyAccount extends Equatable {
     required this.members,
     required this.memberCount,
     required this.activeMemberCount,
+    this.fundDistributionMode = FundDistributionMode.customAllocation,
+    this.setupCompleted = false,
+    this.spendingVisibilityEnabled = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -82,6 +95,9 @@ class FamilyAccount extends Equatable {
         members,
         memberCount,
         activeMemberCount,
+        fundDistributionMode,
+        setupCompleted,
+        spendingVisibilityEnabled,
         createdAt,
         updatedAt,
       ];
@@ -100,6 +116,9 @@ class FamilyAccount extends Equatable {
     List<FamilyMember>? members,
     int? memberCount,
     int? activeMemberCount,
+    FundDistributionMode? fundDistributionMode,
+    bool? setupCompleted,
+    bool? spendingVisibilityEnabled,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -117,6 +136,9 @@ class FamilyAccount extends Equatable {
       members: members ?? this.members,
       memberCount: memberCount ?? this.memberCount,
       activeMemberCount: activeMemberCount ?? this.activeMemberCount,
+      fundDistributionMode: fundDistributionMode ?? this.fundDistributionMode,
+      setupCompleted: setupCompleted ?? this.setupCompleted,
+      spendingVisibilityEnabled: spendingVisibilityEnabled ?? this.spendingVisibilityEnabled,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -125,7 +147,9 @@ class FamilyAccount extends Equatable {
   // Computed properties
   bool get isActive => status == FamilyAccountStatus.active;
   bool get isFrozen => status == FamilyAccountStatus.frozen;
-  bool get canAcceptMembers => isActive;
+  bool get isPendingSetup => status == FamilyAccountStatus.pendingSetup;
+  bool get needsSetup => !setupCompleted && isPendingSetup;
+  bool get canAcceptMembers => isActive || isPendingSetup;
 }
 
 class FamilyMember extends Equatable {
@@ -448,6 +472,56 @@ extension FamilyAccountStatusExtension on FamilyAccountStatus {
         return 'Frozen';
       case FamilyAccountStatus.closed:
         return 'Closed';
+      case FamilyAccountStatus.pendingSetup:
+        return 'Pending Setup';
+    }
+  }
+}
+
+extension FundDistributionModeExtension on FundDistributionMode {
+  String get displayName {
+    switch (this) {
+      case FundDistributionMode.sharedPool:
+        return 'Shared Pool';
+      case FundDistributionMode.equalSplit:
+        return 'Equal Split';
+      case FundDistributionMode.customAllocation:
+        return 'Custom Allocation';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case FundDistributionMode.sharedPool:
+        return 'Everyone shares one balance pool. Any member spending reduces the shared balance visible to all.';
+      case FundDistributionMode.equalSplit:
+        return 'Total funds divided equally among active members. Auto-redistributes when members join or leave.';
+      case FundDistributionMode.customAllocation:
+        return 'Admin manually assigns different amounts to each member.';
+    }
+  }
+
+  String get value {
+    switch (this) {
+      case FundDistributionMode.sharedPool:
+        return 'shared_pool';
+      case FundDistributionMode.equalSplit:
+        return 'equal_split';
+      case FundDistributionMode.customAllocation:
+        return 'custom_allocation';
+    }
+  }
+
+  static FundDistributionMode fromString(String value) {
+    switch (value) {
+      case 'shared_pool':
+        return FundDistributionMode.sharedPool;
+      case 'equal_split':
+        return FundDistributionMode.equalSplit;
+      case 'custom_allocation':
+        return FundDistributionMode.customAllocation;
+      default:
+        return FundDistributionMode.customAllocation;
     }
   }
 }

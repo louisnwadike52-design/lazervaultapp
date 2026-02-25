@@ -435,6 +435,37 @@ service BankingService {
             body: "*"
         };
     }
+
+    // ===== MOVE MONEY (C2P2C: Bank-to-Bank via Mono + Flutterwave) =====
+
+    // Initiate a move money transfer between user's own linked bank accounts
+    rpc InitiateMoveTransfer(InitiateMoveTransferRequest) returns (MoveTransferResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/move-money/transfer"
+            body: "*"
+        };
+    }
+
+    // Get move transfer status
+    rpc GetMoveTransferStatus(GetMoveTransferStatusRequest) returns (MoveTransferResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/move-money/transfers/{transfer_id}"
+        };
+    }
+
+    // Get user's move transfer history
+    rpc GetMoveTransfers(GetMoveTransfersRequest) returns (MoveTransfersResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/move-money/transfers"
+        };
+    }
+
+    // Calculate move money fee breakdown
+    rpc CalculateMoveFee(CalculateMoveFeeRequest) returns (CalculateMoveFeeResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/move-money/calculate-fee"
+        };
+    }
 }
 
 // =====================================================
@@ -1655,4 +1686,132 @@ message CreditScoreHistoryPoint {
 message RefreshCreditScoreRequest {
     string user_id = 1;
     string linked_account_id = 2;             // Which linked account to analyze
+}
+
+// =====================================================
+// MOVE MONEY MESSAGES (C2P2C: Bank-to-Bank via Mono + Flutterwave)
+// =====================================================
+
+// Initiate Move Transfer
+message InitiateMoveTransferRequest {
+    string user_id = 1;
+    string source_linked_account_id = 2;      // Linked bank account to debit (Mono)
+    string destination_linked_account_id = 3;  // Linked bank account to credit (Flutterwave payout)
+    int64 amount = 4;                          // Amount in minor units (kobo)
+    string currency = 5;                       // Default: NGN
+    string narration = 6;                      // Optional description
+    string transaction_pin = 7;               // Deprecated: use verification_token + transaction_id
+    string idempotency_key = 8;               // Idempotency key
+    string verification_token = 9;            // Token from TransactionPinService validation
+    string transaction_id = 10;               // Unique transaction identifier for PIN verification
+}
+
+message MoveTransferResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    MoveTransfer transfer = 4;
+    string message = 5;
+    bool requires_authorization = 6;           // True if DirectPay needs user auth
+    string payment_url = 7;                    // DirectPay authorization URL
+    string payment_id = 8;                     // DirectPay payment ID
+}
+
+// Move Transfer record
+message MoveTransfer {
+    string id = 1;
+    string user_id = 2;
+
+    // Source (debit via Mono)
+    string source_linked_account_id = 3;
+    string source_bank_name = 4;
+    string source_account_number = 5;          // Masked: ****1234
+    string source_account_name = 6;
+
+    // Destination (credit via Flutterwave payout)
+    string destination_linked_account_id = 7;
+    string destination_bank_name = 8;
+    string destination_account_number = 9;     // Masked: ****5678
+    string destination_account_name = 10;
+
+    // Amounts (all in minor units / kobo)
+    int64 amount = 11;                         // Principal amount
+    int64 debit_fee = 12;                      // Mono debit fee
+    int64 transfer_fee = 13;                   // Flutterwave transfer fee
+    int64 stamp_duty = 14;                     // Stamp duty (≥₦10k)
+    int64 service_fee = 15;                    // LazerVault service fee (0.5% cap ₦500)
+    int64 total_fee = 16;                      // Sum of all fees
+    int64 total_debit = 17;                    // amount + total_fee
+
+    // Status tracking
+    string status = 18;                        // pending, debit_initiated, debit_authorizing, debit_processing,
+                                               // debit_completed, payout_initiated, payout_processing,
+                                               // completed, failed, refunding, refunded
+    string reference = 19;                     // MOV-{uuid[:8]}
+    string debit_reference = 20;               // Mono debit reference
+    string payout_reference = 21;              // Flutterwave payout reference
+
+    // Failure info
+    string failure_code = 22;
+    string failure_reason = 23;
+    string failure_stage = 24;                 // debit, payout, refund
+
+    // DirectPay fields
+    string payment_url = 25;                   // DirectPay auth URL
+    string payment_id = 26;                    // DirectPay payment ID
+
+    string currency = 27;
+    string narration = 28;
+
+    // Timestamps
+    google.protobuf.Timestamp created_at = 29;
+    google.protobuf.Timestamp debit_completed_at = 30;
+    google.protobuf.Timestamp payout_completed_at = 31;
+    google.protobuf.Timestamp completed_at = 32;
+    google.protobuf.Timestamp failed_at = 33;
+}
+
+// Get Move Transfer Status
+message GetMoveTransferStatusRequest {
+    string transfer_id = 1;
+    string user_id = 2;
+}
+
+// Get User Move Transfers
+message GetMoveTransfersRequest {
+    string user_id = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+    string status_filter = 4;                  // Optional: filter by status
+}
+
+message MoveTransfersResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated MoveTransfer transfers = 4;
+    int32 total = 5;
+}
+
+// Calculate Move Fee
+message CalculateMoveFeeRequest {
+    int64 amount = 1;                          // Amount in minor units (kobo)
+    string country_code = 2;                   // Default: NG
+}
+
+message CalculateMoveFeeResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    int64 amount = 4;                          // Original amount
+    int64 debit_fee = 5;                       // Mono debit fee
+    int64 transfer_fee = 6;                    // Flutterwave transfer fee
+    int64 stamp_duty = 7;                      // Stamp duty
+    int64 service_fee = 8;                     // LazerVault service fee
+    int64 total_fee = 9;                       // Sum of all fees
+    int64 total_debit = 10;                    // amount + total_fee
+    string currency = 11;
+    repeated FeeItem breakdown = 12;           // Itemized fee breakdown
+    int64 min_amount = 13;                     // Minimum transfer amount
+    int64 max_amount = 14;                     // Maximum transfer amount
 }

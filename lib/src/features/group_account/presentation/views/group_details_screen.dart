@@ -33,6 +33,7 @@ class GroupDetailsScreen extends StatefulWidget {
 class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isLeavingGroup = false;
 
   @override
   void initState() {
@@ -76,6 +77,17 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   behavior: SnackBarBehavior.floating,
                 ),
               );
+            } else if (state is GroupAccountSuccess && _isLeavingGroup) {
+              _isLeavingGroup = false;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('You have left the group'),
+                  backgroundColor: const Color(0xFF10B981),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              Get.back();
             } else if (state is MemberAddedSuccess && state.groupId == widget.groupId) {
               // Reload group details to get updated members list
               // This is a single reload after successful member add
@@ -1187,8 +1199,23 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // Implement leave group logic
-              Get.back(); // Go back to groups list
+              final cubit = context.read<GroupAccountCubit>();
+              final currentUserId = cubit.currentUserId;
+              if (currentUserId != null) {
+                final state = cubit.state;
+                if (state is GroupAccountGroupLoaded) {
+                  final currentMember = state.members
+                      .where((m) => m.userId == currentUserId)
+                      .firstOrNull;
+                  if (currentMember != null) {
+                    _isLeavingGroup = true;
+                    cubit.removeMemberFromGroupAccount(
+                      groupId: group.id,
+                      memberId: currentMember.id,
+                    );
+                  }
+                }
+              }
             },
             child: Text(
               'Leave',

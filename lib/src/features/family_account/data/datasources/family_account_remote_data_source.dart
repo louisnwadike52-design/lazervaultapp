@@ -49,6 +49,12 @@ abstract class FamilyAccountRemoteDataSource {
     required double amount,
     String? description,
   });
+  Future<FamilyAccountProto> setupFamilyAccount({
+    required String familyId,
+    required String fundDistributionMode,
+    required bool spendingVisibilityEnabled,
+    List<MemberAllocationProto> allocations = const [],
+  });
 }
 
 class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource {
@@ -819,6 +825,46 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
       createdAt: nowIso,
     ));
 
+    return updatedAccount;
+  }
+
+  @override
+  Future<FamilyAccountProto> setupFamilyAccount({
+    required String familyId,
+    required String fundDistributionMode,
+    required bool spendingVisibilityEnabled,
+    List<MemberAllocationProto> allocations = const [],
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final account = _familyAccounts[familyId];
+    if (account == null) {
+      throw Exception('Family account not found');
+    }
+
+    final nowIso = DateTime.now().toIso8601String();
+    final updatedAccount = FamilyAccountProto(
+      id: account.id,
+      creatorId: account.creatorId,
+      creatorName: account.creatorName,
+      name: account.name,
+      description: account.description,
+      totalAllocatedBalance: account.totalAllocatedBalance,
+      totalPoolBalance: account.totalPoolBalance,
+      allowMemberContributions: account.allowMemberContributions,
+      totalBalance: account.totalBalance,
+      status: 'active',
+      createdAt: account.createdAt,
+      updatedAt: nowIso,
+      members: account.members,
+      memberCount: account.memberCount,
+      activeMemberCount: account.activeMemberCount,
+      fundDistributionMode: fundDistributionMode,
+      setupCompleted: true,
+      spendingVisibilityEnabled: spendingVisibilityEnabled,
+    );
+
+    _familyAccounts[familyId] = updatedAccount;
     return updatedAccount;
   }
 

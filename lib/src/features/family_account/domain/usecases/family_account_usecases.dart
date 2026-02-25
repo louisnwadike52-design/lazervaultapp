@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../entities/family_account_entities.dart';
-import '../repositories/family_account_repository.dart';
+import '../repositories/family_account_repository.dart' show FamilyAccountRepository, MemberAllocationEntry;
 
 // Base use case class
 abstract class UseCase<T, Params> {
@@ -421,5 +421,36 @@ class ProcessMemberContributionParams {
     required this.memberId,
     required this.amount,
     this.description,
+  });
+}
+
+// Setup Family Account Use Case
+class SetupFamilyAccountUseCase extends UseCase<FamilyAccount, SetupFamilyAccountParams> {
+  final FamilyAccountRepository repository;
+
+  SetupFamilyAccountUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, FamilyAccount>> call(SetupFamilyAccountParams params) {
+    return repository.setupFamilyAccount(
+      familyId: params.familyId,
+      fundDistributionMode: params.fundDistributionMode,
+      spendingVisibilityEnabled: params.spendingVisibilityEnabled,
+      allocations: params.allocations,
+    );
+  }
+}
+
+class SetupFamilyAccountParams {
+  final String familyId;
+  final String fundDistributionMode;
+  final bool spendingVisibilityEnabled;
+  final List<MemberAllocationEntry> allocations;
+
+  SetupFamilyAccountParams({
+    required this.familyId,
+    required this.fundDistributionMode,
+    required this.spendingVisibilityEnabled,
+    this.allocations = const [],
   });
 }

@@ -14380,6 +14380,1400 @@ class RefreshCreditScoreRequest extends $pb.GeneratedMessage {
   void clearLinkedAccountId() => clearField(2);
 }
 
+/// Initiate Move Transfer
+class InitiateMoveTransferRequest extends $pb.GeneratedMessage {
+  factory InitiateMoveTransferRequest({
+    $core.String? userId,
+    $core.String? sourceLinkedAccountId,
+    $core.String? destinationLinkedAccountId,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? narration,
+    $core.String? transactionPin,
+    $core.String? idempotencyKey,
+    $core.String? verificationToken,
+    $core.String? transactionId,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (sourceLinkedAccountId != null) {
+      $result.sourceLinkedAccountId = sourceLinkedAccountId;
+    }
+    if (destinationLinkedAccountId != null) {
+      $result.destinationLinkedAccountId = destinationLinkedAccountId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (narration != null) {
+      $result.narration = narration;
+    }
+    if (transactionPin != null) {
+      $result.transactionPin = transactionPin;
+    }
+    if (idempotencyKey != null) {
+      $result.idempotencyKey = idempotencyKey;
+    }
+    if (verificationToken != null) {
+      $result.verificationToken = verificationToken;
+    }
+    if (transactionId != null) {
+      $result.transactionId = transactionId;
+    }
+    return $result;
+  }
+  InitiateMoveTransferRequest._() : super();
+  factory InitiateMoveTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateMoveTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateMoveTransferRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'sourceLinkedAccountId')
+    ..aOS(3, _omitFieldNames ? '' : 'destinationLinkedAccountId')
+    ..aInt64(4, _omitFieldNames ? '' : 'amount')
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..aOS(6, _omitFieldNames ? '' : 'narration')
+    ..aOS(7, _omitFieldNames ? '' : 'transactionPin')
+    ..aOS(8, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(9, _omitFieldNames ? '' : 'verificationToken')
+    ..aOS(10, _omitFieldNames ? '' : 'transactionId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InitiateMoveTransferRequest clone() => InitiateMoveTransferRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InitiateMoveTransferRequest copyWith(void Function(InitiateMoveTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateMoveTransferRequest)) as InitiateMoveTransferRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InitiateMoveTransferRequest create() => InitiateMoveTransferRequest._();
+  InitiateMoveTransferRequest createEmptyInstance() => create();
+  static $pb.PbList<InitiateMoveTransferRequest> createRepeated() => $pb.PbList<InitiateMoveTransferRequest>();
+  @$core.pragma('dart2js:noInline')
+  static InitiateMoveTransferRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateMoveTransferRequest>(create);
+  static InitiateMoveTransferRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get sourceLinkedAccountId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set sourceLinkedAccountId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSourceLinkedAccountId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSourceLinkedAccountId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get destinationLinkedAccountId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set destinationLinkedAccountId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDestinationLinkedAccountId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDestinationLinkedAccountId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get amount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set amount($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get narration => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set narration($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasNarration() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearNarration() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get transactionPin => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set transactionPin($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasTransactionPin() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTransactionPin() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get idempotencyKey => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set idempotencyKey($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasIdempotencyKey() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIdempotencyKey() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get verificationToken => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set verificationToken($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasVerificationToken() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearVerificationToken() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get transactionId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set transactionId($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasTransactionId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearTransactionId() => clearField(10);
+}
+
+class MoveTransferResponse extends $pb.GeneratedMessage {
+  factory MoveTransferResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    MoveTransfer? transfer,
+    $core.String? message,
+    $core.bool? requiresAuthorization,
+    $core.String? paymentUrl,
+    $core.String? paymentId,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (errorCode != null) {
+      $result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      $result.errorMessage = errorMessage;
+    }
+    if (transfer != null) {
+      $result.transfer = transfer;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (requiresAuthorization != null) {
+      $result.requiresAuthorization = requiresAuthorization;
+    }
+    if (paymentUrl != null) {
+      $result.paymentUrl = paymentUrl;
+    }
+    if (paymentId != null) {
+      $result.paymentId = paymentId;
+    }
+    return $result;
+  }
+  MoveTransferResponse._() : super();
+  factory MoveTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MoveTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MoveTransferResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aOM<MoveTransfer>(4, _omitFieldNames ? '' : 'transfer', subBuilder: MoveTransfer.create)
+    ..aOS(5, _omitFieldNames ? '' : 'message')
+    ..aOB(6, _omitFieldNames ? '' : 'requiresAuthorization')
+    ..aOS(7, _omitFieldNames ? '' : 'paymentUrl')
+    ..aOS(8, _omitFieldNames ? '' : 'paymentId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MoveTransferResponse clone() => MoveTransferResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MoveTransferResponse copyWith(void Function(MoveTransferResponse) updates) => super.copyWith((message) => updates(message as MoveTransferResponse)) as MoveTransferResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MoveTransferResponse create() => MoveTransferResponse._();
+  MoveTransferResponse createEmptyInstance() => create();
+  static $pb.PbList<MoveTransferResponse> createRepeated() => $pb.PbList<MoveTransferResponse>();
+  @$core.pragma('dart2js:noInline')
+  static MoveTransferResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MoveTransferResponse>(create);
+  static MoveTransferResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  MoveTransfer get transfer => $_getN(3);
+  @$pb.TagNumber(4)
+  set transfer(MoveTransfer v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTransfer() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTransfer() => clearField(4);
+  @$pb.TagNumber(4)
+  MoveTransfer ensureTransfer() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  $core.String get message => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set message($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasMessage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMessage() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get requiresAuthorization => $_getBF(5);
+  @$pb.TagNumber(6)
+  set requiresAuthorization($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasRequiresAuthorization() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRequiresAuthorization() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get paymentUrl => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set paymentUrl($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPaymentUrl() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPaymentUrl() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get paymentId => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set paymentId($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasPaymentId() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPaymentId() => clearField(8);
+}
+
+/// Move Transfer record
+class MoveTransfer extends $pb.GeneratedMessage {
+  factory MoveTransfer({
+    $core.String? id,
+    $core.String? userId,
+    $core.String? sourceLinkedAccountId,
+    $core.String? sourceBankName,
+    $core.String? sourceAccountNumber,
+    $core.String? sourceAccountName,
+    $core.String? destinationLinkedAccountId,
+    $core.String? destinationBankName,
+    $core.String? destinationAccountNumber,
+    $core.String? destinationAccountName,
+    $fixnum.Int64? amount,
+    $fixnum.Int64? debitFee,
+    $fixnum.Int64? transferFee,
+    $fixnum.Int64? stampDuty,
+    $fixnum.Int64? serviceFee,
+    $fixnum.Int64? totalFee,
+    $fixnum.Int64? totalDebit,
+    $core.String? status,
+    $core.String? reference,
+    $core.String? debitReference,
+    $core.String? payoutReference,
+    $core.String? failureCode,
+    $core.String? failureReason,
+    $core.String? failureStage,
+    $core.String? paymentUrl,
+    $core.String? paymentId,
+    $core.String? currency,
+    $core.String? narration,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? debitCompletedAt,
+    $1.Timestamp? payoutCompletedAt,
+    $1.Timestamp? completedAt,
+    $1.Timestamp? failedAt,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (sourceLinkedAccountId != null) {
+      $result.sourceLinkedAccountId = sourceLinkedAccountId;
+    }
+    if (sourceBankName != null) {
+      $result.sourceBankName = sourceBankName;
+    }
+    if (sourceAccountNumber != null) {
+      $result.sourceAccountNumber = sourceAccountNumber;
+    }
+    if (sourceAccountName != null) {
+      $result.sourceAccountName = sourceAccountName;
+    }
+    if (destinationLinkedAccountId != null) {
+      $result.destinationLinkedAccountId = destinationLinkedAccountId;
+    }
+    if (destinationBankName != null) {
+      $result.destinationBankName = destinationBankName;
+    }
+    if (destinationAccountNumber != null) {
+      $result.destinationAccountNumber = destinationAccountNumber;
+    }
+    if (destinationAccountName != null) {
+      $result.destinationAccountName = destinationAccountName;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (debitFee != null) {
+      $result.debitFee = debitFee;
+    }
+    if (transferFee != null) {
+      $result.transferFee = transferFee;
+    }
+    if (stampDuty != null) {
+      $result.stampDuty = stampDuty;
+    }
+    if (serviceFee != null) {
+      $result.serviceFee = serviceFee;
+    }
+    if (totalFee != null) {
+      $result.totalFee = totalFee;
+    }
+    if (totalDebit != null) {
+      $result.totalDebit = totalDebit;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (reference != null) {
+      $result.reference = reference;
+    }
+    if (debitReference != null) {
+      $result.debitReference = debitReference;
+    }
+    if (payoutReference != null) {
+      $result.payoutReference = payoutReference;
+    }
+    if (failureCode != null) {
+      $result.failureCode = failureCode;
+    }
+    if (failureReason != null) {
+      $result.failureReason = failureReason;
+    }
+    if (failureStage != null) {
+      $result.failureStage = failureStage;
+    }
+    if (paymentUrl != null) {
+      $result.paymentUrl = paymentUrl;
+    }
+    if (paymentId != null) {
+      $result.paymentId = paymentId;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (narration != null) {
+      $result.narration = narration;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    if (debitCompletedAt != null) {
+      $result.debitCompletedAt = debitCompletedAt;
+    }
+    if (payoutCompletedAt != null) {
+      $result.payoutCompletedAt = payoutCompletedAt;
+    }
+    if (completedAt != null) {
+      $result.completedAt = completedAt;
+    }
+    if (failedAt != null) {
+      $result.failedAt = failedAt;
+    }
+    return $result;
+  }
+  MoveTransfer._() : super();
+  factory MoveTransfer.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MoveTransfer.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MoveTransfer', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'sourceLinkedAccountId')
+    ..aOS(4, _omitFieldNames ? '' : 'sourceBankName')
+    ..aOS(5, _omitFieldNames ? '' : 'sourceAccountNumber')
+    ..aOS(6, _omitFieldNames ? '' : 'sourceAccountName')
+    ..aOS(7, _omitFieldNames ? '' : 'destinationLinkedAccountId')
+    ..aOS(8, _omitFieldNames ? '' : 'destinationBankName')
+    ..aOS(9, _omitFieldNames ? '' : 'destinationAccountNumber')
+    ..aOS(10, _omitFieldNames ? '' : 'destinationAccountName')
+    ..aInt64(11, _omitFieldNames ? '' : 'amount')
+    ..aInt64(12, _omitFieldNames ? '' : 'debitFee')
+    ..aInt64(13, _omitFieldNames ? '' : 'transferFee')
+    ..aInt64(14, _omitFieldNames ? '' : 'stampDuty')
+    ..aInt64(15, _omitFieldNames ? '' : 'serviceFee')
+    ..aInt64(16, _omitFieldNames ? '' : 'totalFee')
+    ..aInt64(17, _omitFieldNames ? '' : 'totalDebit')
+    ..aOS(18, _omitFieldNames ? '' : 'status')
+    ..aOS(19, _omitFieldNames ? '' : 'reference')
+    ..aOS(20, _omitFieldNames ? '' : 'debitReference')
+    ..aOS(21, _omitFieldNames ? '' : 'payoutReference')
+    ..aOS(22, _omitFieldNames ? '' : 'failureCode')
+    ..aOS(23, _omitFieldNames ? '' : 'failureReason')
+    ..aOS(24, _omitFieldNames ? '' : 'failureStage')
+    ..aOS(25, _omitFieldNames ? '' : 'paymentUrl')
+    ..aOS(26, _omitFieldNames ? '' : 'paymentId')
+    ..aOS(27, _omitFieldNames ? '' : 'currency')
+    ..aOS(28, _omitFieldNames ? '' : 'narration')
+    ..aOM<$1.Timestamp>(29, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(30, _omitFieldNames ? '' : 'debitCompletedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(31, _omitFieldNames ? '' : 'payoutCompletedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(32, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(33, _omitFieldNames ? '' : 'failedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MoveTransfer clone() => MoveTransfer()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MoveTransfer copyWith(void Function(MoveTransfer) updates) => super.copyWith((message) => updates(message as MoveTransfer)) as MoveTransfer;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MoveTransfer create() => MoveTransfer._();
+  MoveTransfer createEmptyInstance() => create();
+  static $pb.PbList<MoveTransfer> createRepeated() => $pb.PbList<MoveTransfer>();
+  @$core.pragma('dart2js:noInline')
+  static MoveTransfer getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MoveTransfer>(create);
+  static MoveTransfer? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  /// Source (debit via Mono)
+  @$pb.TagNumber(3)
+  $core.String get sourceLinkedAccountId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set sourceLinkedAccountId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSourceLinkedAccountId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSourceLinkedAccountId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sourceBankName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sourceBankName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSourceBankName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSourceBankName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get sourceAccountNumber => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set sourceAccountNumber($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSourceAccountNumber() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSourceAccountNumber() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get sourceAccountName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set sourceAccountName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSourceAccountName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSourceAccountName() => clearField(6);
+
+  /// Destination (credit via Flutterwave payout)
+  @$pb.TagNumber(7)
+  $core.String get destinationLinkedAccountId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set destinationLinkedAccountId($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasDestinationLinkedAccountId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDestinationLinkedAccountId() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get destinationBankName => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set destinationBankName($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasDestinationBankName() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDestinationBankName() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get destinationAccountNumber => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set destinationAccountNumber($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasDestinationAccountNumber() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearDestinationAccountNumber() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get destinationAccountName => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set destinationAccountName($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasDestinationAccountName() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearDestinationAccountName() => clearField(10);
+
+  /// Amounts (all in minor units / kobo)
+  @$pb.TagNumber(11)
+  $fixnum.Int64 get amount => $_getI64(10);
+  @$pb.TagNumber(11)
+  set amount($fixnum.Int64 v) { $_setInt64(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasAmount() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearAmount() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $fixnum.Int64 get debitFee => $_getI64(11);
+  @$pb.TagNumber(12)
+  set debitFee($fixnum.Int64 v) { $_setInt64(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasDebitFee() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearDebitFee() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $fixnum.Int64 get transferFee => $_getI64(12);
+  @$pb.TagNumber(13)
+  set transferFee($fixnum.Int64 v) { $_setInt64(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasTransferFee() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearTransferFee() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $fixnum.Int64 get stampDuty => $_getI64(13);
+  @$pb.TagNumber(14)
+  set stampDuty($fixnum.Int64 v) { $_setInt64(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasStampDuty() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearStampDuty() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $fixnum.Int64 get serviceFee => $_getI64(14);
+  @$pb.TagNumber(15)
+  set serviceFee($fixnum.Int64 v) { $_setInt64(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasServiceFee() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearServiceFee() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $fixnum.Int64 get totalFee => $_getI64(15);
+  @$pb.TagNumber(16)
+  set totalFee($fixnum.Int64 v) { $_setInt64(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasTotalFee() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearTotalFee() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $fixnum.Int64 get totalDebit => $_getI64(16);
+  @$pb.TagNumber(17)
+  set totalDebit($fixnum.Int64 v) { $_setInt64(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasTotalDebit() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearTotalDebit() => clearField(17);
+
+  /// Status tracking
+  @$pb.TagNumber(18)
+  $core.String get status => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set status($core.String v) { $_setString(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasStatus() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearStatus() => clearField(18);
+
+  /// debit_completed, payout_initiated, payout_processing,
+  /// completed, failed, refunding, refunded
+  @$pb.TagNumber(19)
+  $core.String get reference => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set reference($core.String v) { $_setString(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasReference() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearReference() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get debitReference => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set debitReference($core.String v) { $_setString(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasDebitReference() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearDebitReference() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get payoutReference => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set payoutReference($core.String v) { $_setString(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasPayoutReference() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearPayoutReference() => clearField(21);
+
+  /// Failure info
+  @$pb.TagNumber(22)
+  $core.String get failureCode => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set failureCode($core.String v) { $_setString(21, v); }
+  @$pb.TagNumber(22)
+  $core.bool hasFailureCode() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearFailureCode() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get failureReason => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set failureReason($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasFailureReason() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearFailureReason() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get failureStage => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set failureStage($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasFailureStage() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearFailureStage() => clearField(24);
+
+  /// DirectPay fields
+  @$pb.TagNumber(25)
+  $core.String get paymentUrl => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set paymentUrl($core.String v) { $_setString(24, v); }
+  @$pb.TagNumber(25)
+  $core.bool hasPaymentUrl() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearPaymentUrl() => clearField(25);
+
+  @$pb.TagNumber(26)
+  $core.String get paymentId => $_getSZ(25);
+  @$pb.TagNumber(26)
+  set paymentId($core.String v) { $_setString(25, v); }
+  @$pb.TagNumber(26)
+  $core.bool hasPaymentId() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearPaymentId() => clearField(26);
+
+  @$pb.TagNumber(27)
+  $core.String get currency => $_getSZ(26);
+  @$pb.TagNumber(27)
+  set currency($core.String v) { $_setString(26, v); }
+  @$pb.TagNumber(27)
+  $core.bool hasCurrency() => $_has(26);
+  @$pb.TagNumber(27)
+  void clearCurrency() => clearField(27);
+
+  @$pb.TagNumber(28)
+  $core.String get narration => $_getSZ(27);
+  @$pb.TagNumber(28)
+  set narration($core.String v) { $_setString(27, v); }
+  @$pb.TagNumber(28)
+  $core.bool hasNarration() => $_has(27);
+  @$pb.TagNumber(28)
+  void clearNarration() => clearField(28);
+
+  /// Timestamps
+  @$pb.TagNumber(29)
+  $1.Timestamp get createdAt => $_getN(28);
+  @$pb.TagNumber(29)
+  set createdAt($1.Timestamp v) { setField(29, v); }
+  @$pb.TagNumber(29)
+  $core.bool hasCreatedAt() => $_has(28);
+  @$pb.TagNumber(29)
+  void clearCreatedAt() => clearField(29);
+  @$pb.TagNumber(29)
+  $1.Timestamp ensureCreatedAt() => $_ensure(28);
+
+  @$pb.TagNumber(30)
+  $1.Timestamp get debitCompletedAt => $_getN(29);
+  @$pb.TagNumber(30)
+  set debitCompletedAt($1.Timestamp v) { setField(30, v); }
+  @$pb.TagNumber(30)
+  $core.bool hasDebitCompletedAt() => $_has(29);
+  @$pb.TagNumber(30)
+  void clearDebitCompletedAt() => clearField(30);
+  @$pb.TagNumber(30)
+  $1.Timestamp ensureDebitCompletedAt() => $_ensure(29);
+
+  @$pb.TagNumber(31)
+  $1.Timestamp get payoutCompletedAt => $_getN(30);
+  @$pb.TagNumber(31)
+  set payoutCompletedAt($1.Timestamp v) { setField(31, v); }
+  @$pb.TagNumber(31)
+  $core.bool hasPayoutCompletedAt() => $_has(30);
+  @$pb.TagNumber(31)
+  void clearPayoutCompletedAt() => clearField(31);
+  @$pb.TagNumber(31)
+  $1.Timestamp ensurePayoutCompletedAt() => $_ensure(30);
+
+  @$pb.TagNumber(32)
+  $1.Timestamp get completedAt => $_getN(31);
+  @$pb.TagNumber(32)
+  set completedAt($1.Timestamp v) { setField(32, v); }
+  @$pb.TagNumber(32)
+  $core.bool hasCompletedAt() => $_has(31);
+  @$pb.TagNumber(32)
+  void clearCompletedAt() => clearField(32);
+  @$pb.TagNumber(32)
+  $1.Timestamp ensureCompletedAt() => $_ensure(31);
+
+  @$pb.TagNumber(33)
+  $1.Timestamp get failedAt => $_getN(32);
+  @$pb.TagNumber(33)
+  set failedAt($1.Timestamp v) { setField(33, v); }
+  @$pb.TagNumber(33)
+  $core.bool hasFailedAt() => $_has(32);
+  @$pb.TagNumber(33)
+  void clearFailedAt() => clearField(33);
+  @$pb.TagNumber(33)
+  $1.Timestamp ensureFailedAt() => $_ensure(32);
+}
+
+/// Get Move Transfer Status
+class GetMoveTransferStatusRequest extends $pb.GeneratedMessage {
+  factory GetMoveTransferStatusRequest({
+    $core.String? transferId,
+    $core.String? userId,
+  }) {
+    final $result = create();
+    if (transferId != null) {
+      $result.transferId = transferId;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    return $result;
+  }
+  GetMoveTransferStatusRequest._() : super();
+  factory GetMoveTransferStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMoveTransferStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMoveTransferStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'transferId')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMoveTransferStatusRequest clone() => GetMoveTransferStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMoveTransferStatusRequest copyWith(void Function(GetMoveTransferStatusRequest) updates) => super.copyWith((message) => updates(message as GetMoveTransferStatusRequest)) as GetMoveTransferStatusRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMoveTransferStatusRequest create() => GetMoveTransferStatusRequest._();
+  GetMoveTransferStatusRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMoveTransferStatusRequest> createRepeated() => $pb.PbList<GetMoveTransferStatusRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMoveTransferStatusRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMoveTransferStatusRequest>(create);
+  static GetMoveTransferStatusRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get transferId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set transferId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransferId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransferId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+}
+
+/// Get User Move Transfers
+class GetMoveTransfersRequest extends $pb.GeneratedMessage {
+  factory GetMoveTransfersRequest({
+    $core.String? userId,
+    $core.int? limit,
+    $core.int? offset,
+    $core.String? statusFilter,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    if (offset != null) {
+      $result.offset = offset;
+    }
+    if (statusFilter != null) {
+      $result.statusFilter = statusFilter;
+    }
+    return $result;
+  }
+  GetMoveTransfersRequest._() : super();
+  factory GetMoveTransfersRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMoveTransfersRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMoveTransfersRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOS(4, _omitFieldNames ? '' : 'statusFilter')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMoveTransfersRequest clone() => GetMoveTransfersRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMoveTransfersRequest copyWith(void Function(GetMoveTransfersRequest) updates) => super.copyWith((message) => updates(message as GetMoveTransfersRequest)) as GetMoveTransfersRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMoveTransfersRequest create() => GetMoveTransfersRequest._();
+  GetMoveTransfersRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMoveTransfersRequest> createRepeated() => $pb.PbList<GetMoveTransfersRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMoveTransfersRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMoveTransfersRequest>(create);
+  static GetMoveTransfersRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get statusFilter => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set statusFilter($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasStatusFilter() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearStatusFilter() => clearField(4);
+}
+
+class MoveTransfersResponse extends $pb.GeneratedMessage {
+  factory MoveTransfersResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.Iterable<MoveTransfer>? transfers,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (errorCode != null) {
+      $result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      $result.errorMessage = errorMessage;
+    }
+    if (transfers != null) {
+      $result.transfers.addAll(transfers);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  MoveTransfersResponse._() : super();
+  factory MoveTransfersResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MoveTransfersResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MoveTransfersResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..pc<MoveTransfer>(4, _omitFieldNames ? '' : 'transfers', $pb.PbFieldType.PM, subBuilder: MoveTransfer.create)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MoveTransfersResponse clone() => MoveTransfersResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MoveTransfersResponse copyWith(void Function(MoveTransfersResponse) updates) => super.copyWith((message) => updates(message as MoveTransfersResponse)) as MoveTransfersResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MoveTransfersResponse create() => MoveTransfersResponse._();
+  MoveTransfersResponse createEmptyInstance() => create();
+  static $pb.PbList<MoveTransfersResponse> createRepeated() => $pb.PbList<MoveTransfersResponse>();
+  @$core.pragma('dart2js:noInline')
+  static MoveTransfersResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MoveTransfersResponse>(create);
+  static MoveTransfersResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<MoveTransfer> get transfers => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $core.int get total => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set total($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotal() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotal() => clearField(5);
+}
+
+/// Calculate Move Fee
+class CalculateMoveFeeRequest extends $pb.GeneratedMessage {
+  factory CalculateMoveFeeRequest({
+    $fixnum.Int64? amount,
+    $core.String? countryCode,
+  }) {
+    final $result = create();
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
+    return $result;
+  }
+  CalculateMoveFeeRequest._() : super();
+  factory CalculateMoveFeeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CalculateMoveFeeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CalculateMoveFeeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'amount')
+    ..aOS(2, _omitFieldNames ? '' : 'countryCode')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CalculateMoveFeeRequest clone() => CalculateMoveFeeRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CalculateMoveFeeRequest copyWith(void Function(CalculateMoveFeeRequest) updates) => super.copyWith((message) => updates(message as CalculateMoveFeeRequest)) as CalculateMoveFeeRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CalculateMoveFeeRequest create() => CalculateMoveFeeRequest._();
+  CalculateMoveFeeRequest createEmptyInstance() => create();
+  static $pb.PbList<CalculateMoveFeeRequest> createRepeated() => $pb.PbList<CalculateMoveFeeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CalculateMoveFeeRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CalculateMoveFeeRequest>(create);
+  static CalculateMoveFeeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get amount => $_getI64(0);
+  @$pb.TagNumber(1)
+  set amount($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAmount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAmount() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get countryCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set countryCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCountryCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCountryCode() => clearField(2);
+}
+
+class CalculateMoveFeeResponse extends $pb.GeneratedMessage {
+  factory CalculateMoveFeeResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $fixnum.Int64? amount,
+    $fixnum.Int64? debitFee,
+    $fixnum.Int64? transferFee,
+    $fixnum.Int64? stampDuty,
+    $fixnum.Int64? serviceFee,
+    $fixnum.Int64? totalFee,
+    $fixnum.Int64? totalDebit,
+    $core.String? currency,
+    $core.Iterable<FeeItem>? breakdown,
+    $fixnum.Int64? minAmount,
+    $fixnum.Int64? maxAmount,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (errorCode != null) {
+      $result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      $result.errorMessage = errorMessage;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (debitFee != null) {
+      $result.debitFee = debitFee;
+    }
+    if (transferFee != null) {
+      $result.transferFee = transferFee;
+    }
+    if (stampDuty != null) {
+      $result.stampDuty = stampDuty;
+    }
+    if (serviceFee != null) {
+      $result.serviceFee = serviceFee;
+    }
+    if (totalFee != null) {
+      $result.totalFee = totalFee;
+    }
+    if (totalDebit != null) {
+      $result.totalDebit = totalDebit;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (breakdown != null) {
+      $result.breakdown.addAll(breakdown);
+    }
+    if (minAmount != null) {
+      $result.minAmount = minAmount;
+    }
+    if (maxAmount != null) {
+      $result.maxAmount = maxAmount;
+    }
+    return $result;
+  }
+  CalculateMoveFeeResponse._() : super();
+  factory CalculateMoveFeeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CalculateMoveFeeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CalculateMoveFeeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'errorCode')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..aInt64(4, _omitFieldNames ? '' : 'amount')
+    ..aInt64(5, _omitFieldNames ? '' : 'debitFee')
+    ..aInt64(6, _omitFieldNames ? '' : 'transferFee')
+    ..aInt64(7, _omitFieldNames ? '' : 'stampDuty')
+    ..aInt64(8, _omitFieldNames ? '' : 'serviceFee')
+    ..aInt64(9, _omitFieldNames ? '' : 'totalFee')
+    ..aInt64(10, _omitFieldNames ? '' : 'totalDebit')
+    ..aOS(11, _omitFieldNames ? '' : 'currency')
+    ..pc<FeeItem>(12, _omitFieldNames ? '' : 'breakdown', $pb.PbFieldType.PM, subBuilder: FeeItem.create)
+    ..aInt64(13, _omitFieldNames ? '' : 'minAmount')
+    ..aInt64(14, _omitFieldNames ? '' : 'maxAmount')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CalculateMoveFeeResponse clone() => CalculateMoveFeeResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CalculateMoveFeeResponse copyWith(void Function(CalculateMoveFeeResponse) updates) => super.copyWith((message) => updates(message as CalculateMoveFeeResponse)) as CalculateMoveFeeResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CalculateMoveFeeResponse create() => CalculateMoveFeeResponse._();
+  CalculateMoveFeeResponse createEmptyInstance() => create();
+  static $pb.PbList<CalculateMoveFeeResponse> createRepeated() => $pb.PbList<CalculateMoveFeeResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CalculateMoveFeeResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CalculateMoveFeeResponse>(create);
+  static CalculateMoveFeeResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get amount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set amount($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get debitFee => $_getI64(4);
+  @$pb.TagNumber(5)
+  set debitFee($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDebitFee() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDebitFee() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get transferFee => $_getI64(5);
+  @$pb.TagNumber(6)
+  set transferFee($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasTransferFee() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTransferFee() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get stampDuty => $_getI64(6);
+  @$pb.TagNumber(7)
+  set stampDuty($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasStampDuty() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearStampDuty() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get serviceFee => $_getI64(7);
+  @$pb.TagNumber(8)
+  set serviceFee($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasServiceFee() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearServiceFee() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $fixnum.Int64 get totalFee => $_getI64(8);
+  @$pb.TagNumber(9)
+  set totalFee($fixnum.Int64 v) { $_setInt64(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTotalFee() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTotalFee() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $fixnum.Int64 get totalDebit => $_getI64(9);
+  @$pb.TagNumber(10)
+  set totalDebit($fixnum.Int64 v) { $_setInt64(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasTotalDebit() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearTotalDebit() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get currency => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set currency($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCurrency() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCurrency() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.List<FeeItem> get breakdown => $_getList(11);
+
+  @$pb.TagNumber(13)
+  $fixnum.Int64 get minAmount => $_getI64(12);
+  @$pb.TagNumber(13)
+  set minAmount($fixnum.Int64 v) { $_setInt64(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasMinAmount() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearMinAmount() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $fixnum.Int64 get maxAmount => $_getI64(13);
+  @$pb.TagNumber(14)
+  set maxAmount($fixnum.Int64 v) { $_setInt64(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasMaxAmount() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearMaxAmount() => clearField(14);
+}
+
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
 const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

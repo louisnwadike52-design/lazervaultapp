@@ -60,28 +60,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   bool _autoShowConfirm = false;
   bool _autoConfirmTriggered = false;
 
-  // Mock card data - Replace with actual data source
-  // Added 'id' for sourceAccountId
-  // REMOVED - Will be fetched from AccountCardsSummaryCubit
-  // final List<Map<String, dynamic>> cards = [
-  //   {
-  //     'id': 1, // Example Account ID
-  //     'type': 'Visa',
-  //     'last4': '4242',
-  //     'expiry': '12/24',
-  //     'balance': 2580.50,
-  //     'currency': 'GBP' // Assuming currency
-  //   },
-  //   {
-  //     'id': 2, // Example Account ID
-  //     'type': 'Mastercard',
-  //     'last4': '8888',
-  //     'expiry': '09/25',
-  //     'balance': 1250.75,
-  //     'currency': 'GBP' // Assuming currency
-  //   },
-  // ];
-
   final List<int> quickAmounts = [50, 100, 200, 500]; // Major units for display
 
   // Categories loaded from backend via BudgetCubit.loadServiceCategories
@@ -97,6 +75,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   bool _recurringSetupPending = false;
   bool _transferSucceeded = false;
   TransferSuccess? _pendingTransferSuccess;
+
+  // Stored for deferred recurring setup after transfer succeeds
+  String? _pendingRecurringTransactionId;
+  String? _pendingRecurringVerificationToken;
+
+  // Guards against duplicate recurring setup and tracks created transfer for rollback
+  bool _recurringSetupInitiated = false;
+  String? _createdRecurringTransferId;
+  int _recurringRetryCount = 0;
+  static const _maxRecurringRetries = 2;
 
   // --- Fetch Accounts on Init ---
   @override
@@ -1064,7 +1052,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         message: 'Confirm transfer of $currSym${transferAmountMajor.toStringAsFixed(2)} to ${_recipient!.name}?',
                                         onPinValidated: (verificationToken) async {
                                           // PIN is valid, proceed with transfer
-                                          _executeTransferWithPin(
+                                          await _executeTransferWithPin(
                                             accountState: accountState,
                                             transactionId: transactionId,
                                             verificationToken: verificationToken,
@@ -1157,18 +1145,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   // --- Cubit Interaction ---
 
   /// Execute transfer with verification token (for PIN-validated transactions)
-  void _executeTransferWithPin({
+  Future<void> _executeTransferWithPin({
     required AccountCardsSummaryState accountState,
     required String transactionId,
     required String verificationToken,
-  }) {
+  }) async {
     print("_executeTransferWithPin: Entered function.");
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       print("_executeTransferWithPin: Error - Not authenticated.");
-      Get.snackbar('Error', 'Authentication required.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
+      throw Exception('Authentication required.');
     }
 
     // Validate selected card and get source account ID from cubit state
@@ -1181,15 +1167,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
     if (summaries.isEmpty) {
       print("_executeTransferWithPin: Error - Account data not loaded.");
-      Get.snackbar('Error', 'Account data not available.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
+      throw Exception('Account data not available.');
     }
     if (selectedCardIndex >= summaries.length) {
       print("_executeTransferWithPin: Error - Invalid card index.");
-      Get.snackbar('Error', 'Invalid card selected.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
+      throw Exception('Invalid card selected.');
     }
     final selectedAccount = summaries[selectedCardIndex];
     final fromAccountId = selectedAccount.id;
@@ -1200,14 +1182,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       if (amount.isEmpty) throw const FormatException('Amount is empty');
       amountMinorUnits = int.parse(amount);
       if (amountMinorUnits <= 0) {
-        Get.snackbar('Error', 'Amount must be greater than zero.',
-            snackPosition: SnackPosition.BOTTOM);
-        return;
+        throw Exception('Amount must be greater than zero.');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Invalid amount entered.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
+      if (e is Exception && e.toString().contains('Amount must be greater than zero')) {
+        rethrow;
+      }
+      throw Exception('Invalid amount entered.');
     }
 
     // Convert minor units to major units for SendFundsRequest (e.g., 10050 -> 100.50)
@@ -1237,28 +1218,18 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     );
     print("_executeTransferWithPin: Transfer initiated.");
 
-    // If recurring is enabled, also create the recurring transfer rule
+    // If recurring is enabled, store params for deferred setup after transfer succeeds
+    // This prevents creating a recurring rule when the initial transfer fails
     if (_isRecurringEnabled && _recurringConfig != null) {
-      print("_executeTransferWithPin: Setting up recurring transfer...");
+      _pendingRecurringTransactionId = transactionId;
+      _pendingRecurringVerificationToken = verificationToken;
       _recurringSetupPending = true;
       _transferSucceeded = false;
       _pendingTransferSuccess = null;
-      context.read<RecurringTransferCubit>().createRecurringTransfer(
-        fromAccountId: fromAccountId,
-        toAccountNumber: toAccountNumber,
-        recipientName: _recipient!.name,
-        recipientBankCode: _recipient!.sortCode,
-        recipientBankName: _recipient!.bankName,
-        amount: amountMajor,
-        description: narration,
-        frequency: _recurringConfig!.frequency,
-        scheduleDay: _recurringConfig!.scheduleDay,
-        scheduleTime: _recurringConfig!.scheduleTimeString,
-        endDate: _recurringConfig!.endDate?.toIso8601String(),
-        transactionId: transactionId,
-        verificationToken: verificationToken,
-      );
-      print("_executeTransferWithPin: Recurring transfer setup initiated.");
+      _recurringSetupInitiated = false;
+      _createdRecurringTransferId = null;
+      _recurringRetryCount = 0;
+      print("_executeTransferWithPin: Recurring setup deferred until transfer succeeds.");
     }
   }
 
@@ -1328,6 +1299,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           ? 'Internal Transfer'
           : 'Domestic Transfer',
       if (scheduledDate != null) 'scheduledAt': scheduledDate,
+      // Recurring payment context for receipt display
+      if (_isRecurringEnabled && _recurringConfig != null) ...{
+        'isRecurring': true,
+        'recurringFrequency': _recurringConfig!.frequency.name,
+        'recurringSchedule': _recurringConfig!.summary,
+        if (_createdRecurringTransferId != null)
+          'recurringTransferId': _createdRecurringTransferId,
+      },
     };
 
     Future.delayed(const Duration(milliseconds: 200), () {
@@ -1335,6 +1314,151 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
       }
     });
+  }
+
+  /// Fire deferred recurring setup. Extracted to allow retry on failure.
+  void _fireRecurringSetup(BuildContext context) {
+    if (_recurringConfig == null || _pendingRecurringTransactionId == null) {
+      print("_fireRecurringSetup: Missing config or transaction ID, skipping.");
+      return;
+    }
+
+    final accountState = context.read<AccountCardsSummaryCubit>().state;
+    final recurringSummaries = switch (accountState) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+
+    if (recurringSummaries.isEmpty || selectedCardIndex >= recurringSummaries.length) {
+      print("_fireRecurringSetup: No valid account data, skipping.");
+      _recurringSetupPending = false;
+      return;
+    }
+
+    final recurringAccount = recurringSummaries[selectedCardIndex];
+    final recurringAmountMajor = int.tryParse(amount) != null ? int.parse(amount) / 100.0 : 0.0;
+    final recurringReference = _referenceController.text.trim();
+    final recurringNarration = selectedCategory != null
+        ? '${selectedCategory!.displayName}: ${recurringReference.isNotEmpty ? recurringReference : "Transfer"}'
+        : (recurringReference.isNotEmpty ? recurringReference : 'Transfer');
+
+    _recurringSetupPending = true;
+    _recurringSetupInitiated = true;
+
+    context.read<RecurringTransferCubit>().createRecurringTransfer(
+      fromAccountId: recurringAccount.id,
+      toAccountNumber: _recipient!.accountNumber,
+      recipientName: _recipient!.name,
+      recipientBankCode: _recipient!.sortCode,
+      recipientBankName: _recipient!.bankName,
+      amount: recurringAmountMajor,
+      description: recurringNarration,
+      frequency: _recurringConfig!.frequency,
+      scheduleDay: _recurringConfig!.scheduleDay,
+      scheduleTime: _recurringConfig!.scheduleTimeString,
+      endDate: _recurringConfig!.endDate?.toIso8601String(),
+      transactionId: _pendingRecurringTransactionId!,
+      verificationToken: _pendingRecurringVerificationToken!,
+    );
+    print("_fireRecurringSetup: Recurring transfer setup initiated (attempt ${_recurringRetryCount + 1}).");
+  }
+
+  /// Show retry dialog when recurring setup fails but transfer succeeded.
+  void _showRecurringRetryDialog(BuildContext context, String errorMessage) {
+    if (!mounted) {
+      // Widget disposed — navigate via Get which works globally
+      if (_pendingTransferSuccess != null) {
+        _navigateToReceipt(context, _pendingTransferSuccess!);
+      }
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        icon: Icon(Icons.warning_amber_rounded, color: const Color(0xFFFB923C), size: 48.sp),
+        title: Text(
+          'Recurring Setup Failed',
+          style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Your transfer was successful, but the recurring payment could not be set up.',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+            ),
+            SizedBox(height: 8.h),
+            Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                errorMessage,
+                style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
+              ),
+            ),
+            if (_recurringRetryCount >= _maxRecurringRetries)
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: Text(
+                  'You can set up recurring payments later from the transfer history.',
+                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, fontStyle: FontStyle.italic),
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              if (_pendingTransferSuccess != null) {
+                _navigateToReceipt(context, _pendingTransferSuccess!);
+              }
+            },
+            child: Text(
+              'Continue Without Recurring',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+            ),
+          ),
+          if (_recurringRetryCount < _maxRecurringRetries)
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _recurringRetryCount++;
+                _recurringSetupInitiated = false;
+                _fireRecurringSetup(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(
+                'Retry Setup',
+                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Reset all recurring-related state. Called on failure, cancellation, and cleanup.
+  void _resetRecurringState() {
+    _recurringSetupPending = false;
+    _transferSucceeded = false;
+    _pendingTransferSuccess = null;
+    _pendingRecurringTransactionId = null;
+    _pendingRecurringVerificationToken = null;
+    _recurringSetupInitiated = false;
+    _createdRecurringTransferId = null;
+    _recurringRetryCount = 0;
   }
 
   // Confirmation Row Helper (Minor Adjustments)
@@ -1402,6 +1526,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   void dispose() {
     _referenceController.dispose();
     _amountController.dispose();
+    // Clean up recurring state — backend operations may still complete
+    // but BlocListener is gone. Get.snackbar works without mounted context.
+    if (_recurringSetupPending) {
+      print("dispose: Recurring setup still pending — backend will complete independently.");
+    }
+    _resetRecurringState();
     super.dispose();
   }
 
@@ -1409,19 +1539,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
   @override
   Widget build(BuildContext context) {
-    // Wrap the main content with BlocProvider and BlocConsumer
-    // REMOVE MultiBlocProvider - It will be provided by the AppRouter
-    // return MultiBlocProvider(
-    //   providers: [
-    //     BlocProvider(create: (_) => serviceLocator<TransferCubit>()),
-    //     // Provide AccountCardsSummaryCubit here as well
-    //     BlocProvider.value(value: context.read<AccountCardsSummaryCubit>()),
-    //   ],
-    // child: BlocConsumer<TransferCubit, TransferState>(
     return BlocListener<RecurringTransferCubit, RecurringTransferState>(
       listener: (context, recurringState) {
         if (recurringState is RecurringTransferCreated) {
           _recurringSetupPending = false;
+          _recurringSetupInitiated = false;
+          _createdRecurringTransferId = recurringState.transfer.id;
           Get.snackbar('Recurring Payment Set', recurringState.message,
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFF10B981),
@@ -1433,14 +1556,17 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           }
         } else if (recurringState is RecurringTransferError) {
           _recurringSetupPending = false;
-          Get.snackbar('Recurring Payment Failed', recurringState.message,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFFEF4444),
-              colorText: Colors.white,
-              duration: const Duration(seconds: 5));
-          // Transfer succeeded but recurring failed — still navigate to receipt
+          _recurringSetupInitiated = false;
+          // Transfer succeeded but recurring failed — show retry dialog instead of navigating
           if (_transferSucceeded && _pendingTransferSuccess != null) {
-            _navigateToReceipt(context, _pendingTransferSuccess!);
+            _showRecurringRetryDialog(context, recurringState.message);
+          } else {
+            // Transfer hasn't resolved yet — just show a snackbar
+            Get.snackbar('Recurring Payment Failed', recurringState.message,
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFFEF4444),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 5));
           }
         }
       },
@@ -1465,6 +1591,15 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           // --- Show success in PIN modal ---
           pinModalKey.currentState?.setSuccess();
 
+          // --- Fire deferred recurring setup after transfer succeeds ---
+          // Guard: only fire once, and only if recurring was enabled
+          if (_isRecurringEnabled && _recurringConfig != null
+              && _pendingRecurringTransactionId != null
+              && !_recurringSetupInitiated) {
+            print("TransferSuccess: Firing deferred recurring transfer setup...");
+            _fireRecurringSetup(context);
+          }
+
           // --- Save Recipient After Successful Transfer ---
           // Only save if the recipient is marked for saving (isSaved=true)
           // and is not already persisted in the backend.
@@ -1482,11 +1617,20 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               final authStateForSave = context.read<AuthenticationCubit>().state;
               if (authStateForSave is AuthenticationSuccess) {
                 final accessToken = authStateForSave.profile.session.accessToken;
+                // Use selected account's currency, falling back to locale
+                final activeAccountSummaries = switch (accountState) {
+                  AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+                  AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+                  _ => <AccountSummaryEntity>[],
+                };
+                final activeAccountCurrency = activeAccountSummaries.isNotEmpty && selectedCardIndex < activeAccountSummaries.length
+                    ? activeAccountSummaries[selectedCardIndex].currency
+                    : serviceLocator<LocaleManager>().currentCurrency;
                 final recipientToSave = _recipient!.copyWith(
                   id: '0',
                   isSaved: true,
                   countryCode: _recipient!.countryCode ?? serviceLocator<LocaleManager>().currentCountry,
-                  currency: _recipient!.currency ?? serviceLocator<LocaleManager>().currentCurrency,
+                  currency: _recipient!.currency ?? activeAccountCurrency,
                 );
                 final addRecipientUseCase = serviceLocator<AddRecipientUseCase>();
                 addRecipientUseCase(
@@ -1596,6 +1740,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   ? 'Internal Transfer'
                   : 'Domestic Transfer',
               if (scheduledDate != null) 'scheduledAt': scheduledDate,
+              // Recurring payment context for receipt display
+              if (_isRecurringEnabled && _recurringConfig != null) ...{
+                'isRecurring': true,
+                'recurringFrequency': _recurringConfig!.frequency.name,
+                'recurringSchedule': _recurringConfig!.summary,
+                if (_createdRecurringTransferId != null)
+                  'recurringTransferId': _createdRecurringTransferId,
+              },
             };
             print(
                 'Listener: Transfer details prepared: $transferDetails');
@@ -1611,10 +1763,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 if (_recurringSetupPending) {
                   _transferSucceeded = true;
                   _pendingTransferSuccess = transferState;
-                  // Safety timeout: if recurring takes >10s, navigate anyway
+                  // Safety timeout: if recurring takes >10s, warn and navigate
                   Future.delayed(const Duration(seconds: 10), () {
                     if (_recurringSetupPending && mounted) {
                       _recurringSetupPending = false;
+                      _recurringSetupInitiated = false;
+                      Get.snackbar(
+                        'Recurring Setup Timed Out',
+                        'Transfer succeeded. Recurring payment setup is still processing — check recurring transfers later.',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.orange.withValues(alpha: 0.8),
+                        colorText: Colors.white,
+                        duration: const Duration(seconds: 6),
+                      );
                       _navigateToReceipt(context, transferState);
                     }
                   });
@@ -1656,6 +1817,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               _isConfirmingTransfer = false;
             });
           }
+
+          // Reset all recurring state to prevent stale flags
+          _resetRecurringState();
 
           // Show failure in PIN modal if open, otherwise show snackbar
           final modalState = pinModalKey.currentState;

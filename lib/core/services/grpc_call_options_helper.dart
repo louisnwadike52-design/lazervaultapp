@@ -119,8 +119,10 @@ class GrpcCallOptionsHelper {
     try {
       return await call();
     } on GrpcError catch (e) {
-      // Check if it's an authentication error
-      if ((e.code == StatusCode.unauthenticated || e.code == StatusCode.permissionDenied) && maxRetries > 0) {
+      // Check if it's a JWT authentication error (expired/invalid token)
+      // Note: Only retry on unauthenticated — permissionDenied may come from
+      // PIN token validation (single-use tokens) and retrying would fail.
+      if (e.code == StatusCode.unauthenticated && maxRetries > 0) {
         print('Authentication error detected (${e.code}). Attempting token refresh...');
 
         // Try to refresh the token

@@ -14,6 +14,11 @@ Future<T> retryWithBackoff<T>({
     try {
       return await operation();
     } on GrpcError catch (e) {
+      // Let auth errors propagate as GrpcError so executeWithTokenRotation
+      // can detect them and trigger token refresh
+      if (e.code == StatusCode.unauthenticated || e.code == StatusCode.permissionDenied) {
+        rethrow;
+      }
       if (retries >= maxRetries || !_isRetryable(e)) {
         throw mapGrpcError(e);
       }

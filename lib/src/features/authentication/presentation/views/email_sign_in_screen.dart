@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class EmailSignInScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _storage = const FlutterSecureStorage();
+  final _storage = serviceLocator<FlutterSecureStorage>();
   bool _hasPasscodeSetup = false;
 
   @override
@@ -96,11 +97,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               case AuthenticationSuccess(profile: final profile):
                 // Load user profile after successful authentication
                 context.read<ProfileCubit>().getUserProfile();
-
-                // Update local storage with latest email and name for passcode login screen
-                await _storage.write(key: 'stored_email', value: profile.user.email);
-                await _storage.write(key: 'user_first_name', value: profile.user.firstName);
-                await _storage.write(key: 'user_avatar_url', value: profile.user.profilePicture ?? '');
 
                 Get.snackbar(
                   'Success',
@@ -232,48 +228,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                               ),
                             ),
                           ),
-                        ),
-                      SizedBox(height: 12.0.h),
-                      if (!isLoading)
-                        FutureBuilder<bool>(
-                          future: context.read<AuthenticationCubit>().checkFaceRegistration(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const SizedBox.shrink();
-                            }
-                            if (snapshot.data == true) {
-                              return Center(
-                                child: OutlinedButton.icon(
-                                  onPressed: () async {
-                                    // TODO: Implement face capture and login
-                                    Get.snackbar(
-                                      'Coming Soon',
-                                      'Facial recognition login will be available soon',
-                                      snackPosition: SnackPosition.TOP,
-                                      backgroundColor: Colors.blue,
-                                      colorText: Colors.white,
-                                      margin: EdgeInsets.all(15.w),
-                                      borderRadius: 10.r,
-                                    );
-                                  },
-                                  icon: Icon(Icons.face, size: 24.sp),
-                                  label: Text(
-                                    'Login with Face Recognition',
-                                    style: TextStyle(fontSize: 14.sp),
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.black87,
-                                    side: const BorderSide(color: Colors.black87, width: 1.5),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 12.h,
-                                      horizontal: 20.w,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
                         ),
                       SizedBox(height: 12.0.h),
                       UniversalImageLoader(imagePath: AppData.orDivider),

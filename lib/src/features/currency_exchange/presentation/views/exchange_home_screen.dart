@@ -549,14 +549,6 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             return _buildContent(state);
           }
 
-          // Fallback for legacy ExchangeHomeLoaded
-          if (state is ExchangeHomeLoaded) {
-            return _buildContent(ExchangeHomeWithRate(
-              supportedCurrencies: state.supportedCurrencies,
-              recentTransactions: state.recentTransactions,
-            ));
-          }
-
           return const SizedBox.shrink();
         },
       ),

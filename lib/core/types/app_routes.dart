@@ -382,6 +382,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String voiceVerification = '/voice/verification';
 
   // Family Account Routes
+  static const String familyAccounts = '/family/accounts';
   static const String familySetup = '/family/setup';
   static const String familyAddMember = '/family/add-member';
   static const String familyInviteMemberFlow = '/family/invite-member';
@@ -389,6 +390,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String familyEditMemberLimits = '/family/edit-limits';
   static const String familyInvitations = '/family/invitations';
   static const String familySettings = '/family/settings';
+  static const String familyActivationSetup = '/family/activation-setup';
 
   // Microservice Chat Routes
   static const String microserviceChat = '/microservice-chat';
@@ -419,6 +421,16 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String createPayRun = '/payroll/pay-runs/create';
   static const String payRunDetails = '/payroll/pay-runs/details';
   static const String paySlipDetails = '/payroll/payslip';
+
+  // Move Money Routes
+  static const String moveMoney = '/move-money';
+  static const String moveMoneyTransfer = '/move-money/transfer';
+  static const String moveMoneyHistory = '/move-money/history';
+  static const String moveMoneyReceipt = '/move-money/receipt';
+  static const String moveMoneyDetail = '/move-money/detail';
+  static const String walletTransfer = '/move-money/wallet-transfer';
+  static const String walletTransferReceipt = '/move-money/wallet-receipt';
+  static const String walletTransferHistory = '/move-money/wallet-history';
 
   // Debug Routes (Remove before production)
   static const String debugSettings = '/debug/settings';

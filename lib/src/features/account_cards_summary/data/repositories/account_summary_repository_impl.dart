@@ -7,14 +7,17 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/account_cards_summary/domain/repositories/i_account_summary_repository.dart';
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as req_resp;
+import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart' as family_pb;
 
 
 class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
   final AccountsServiceClient _accountsServiceClient;
+  final family_pb.FamilyAccountsServiceClient _familyAccountsClient;
   final GrpcCallOptionsHelper _callOptionsHelper;
 
   AccountSummaryRepositoryImpl(
     this._accountsServiceClient,
+    this._familyAccountsClient,
     this._callOptionsHelper,
   );
 
@@ -53,9 +56,55 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
 
       print('gRPC GetUserAccounts Response received with ${response.accounts.length} items');
 
-      final accountSummaries = response.accounts
-          .map((proto) => AccountSummaryModel.fromProto(proto))
+      final List<AccountSummaryEntity> allAccounts = response.accounts
+          .map((proto) => AccountSummaryModel.fromProto(proto) as AccountSummaryEntity)
           .toList();
+
+      // Separate generic family accounts (from regular accounts) from non-family accounts
+      final genericFamilyAccounts = allAccounts
+          .where((a) => a.accountTypeEnum == VirtualAccountType.family)
+          .toList();
+      final accountSummaries = allAccounts
+          .where((a) => a.accountTypeEnum != VirtualAccountType.family)
+          .toList();
+
+      // Fetch proper family accounts (with familyStatus, memberCount, etc.)
+      final familyAccounts = await _fetchFamilyAccounts();
+
+      if (familyAccounts.isNotEmpty) {
+        // Enrich proper family accounts with virtual account number from generic ones
+        if (genericFamilyAccounts.isNotEmpty) {
+          final generic = genericFamilyAccounts.first;
+          final enriched = familyAccounts.map((fa) {
+            final last4 = fa.accountNumberLast4 == '••••'
+                ? generic.accountNumberLast4
+                : fa.accountNumberLast4;
+            return fa.copyWith(
+              accountNumber: generic.accountNumber,
+              accountNumberLast4: last4,
+              bankName: generic.bankName,
+              accountName: generic.accountName,
+            );
+          }).toList();
+          accountSummaries.addAll(enriched);
+        } else {
+          accountSummaries.addAll(familyAccounts);
+        }
+      } else if (genericFamilyAccounts.isNotEmpty) {
+        // No proper family accounts returned (error fallback) — convert generic
+        // accounts into family entities so they show "Setup" instead of "Details".
+        // familyAccountId is null because g.id is the virtual bank account UUID,
+        // NOT the family_accounts table ID. The carousel will resolve the real ID
+        // via GetFamilyAccounts when the user taps Setup.
+        // Note: familyAccountId is intentionally NOT set here — g.familyAccountId
+        // is already null (generic accounts never have it). The carousel resolves
+        // the real family ID via GetFamilyAccounts when the user taps Setup.
+        final converted = genericFamilyAccounts.map((g) => g.copyWith(
+          isFamilyAccount: true,
+          familyStatus: 'pending_setup',
+        )).toList();
+        accountSummaries.addAll(converted);
+      }
 
       // Sort accounts in the desired order: Personal > Investment > Savings > Family & Friends > Others
       final sortedSummaries = _sortAccountSummaries(accountSummaries);
@@ -76,6 +125,54 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
     }
   }
 
+  /// Fetch family accounts and convert them to AccountSummaryEntity objects.
+  /// Returns empty list on error (family accounts are supplementary, shouldn't block dashboard).
+  Future<List<AccountSummaryEntity>> _fetchFamilyAccounts() async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final request = family_pb.GetFamilyAccountsRequest();
+      final response = await _familyAccountsClient.getFamilyAccounts(
+        request,
+        options: callOptions,
+      );
+
+      print('gRPC GetFamilyAccounts Response received with ${response.familyAccounts.length} items');
+
+      return response.familyAccounts.map((proto) {
+        final status = proto.status.isNotEmpty ? proto.status : 'active';
+        return AccountSummaryEntity.familyAccount(
+          id: proto.id,
+          currency: 'USD', // Family accounts use the initial currency
+          totalBalance: proto.totalBalance,
+          memberAllocatedBalance: proto.totalAllocatedBalance,
+          memberRemainingBalance: proto.totalPoolBalance,
+          memberCount: proto.memberCount,
+          allowMemberContributions: proto.allowMemberContributions,
+          trendPercentage: 0.0,
+          familyAccountId: proto.id,
+          familyStatus: status,
+          fundDistributionMode: _mapDistributionMode(proto.fundDistributionMode),
+        );
+      }).toList();
+    } catch (e) {
+      print('Error fetching family accounts for carousel: $e');
+      return [];
+    }
+  }
+
+  String _mapDistributionMode(family_pb.FundDistributionMode mode) {
+    switch (mode) {
+      case family_pb.FundDistributionMode.SHARED_POOL:
+        return 'shared_pool';
+      case family_pb.FundDistributionMode.EQUAL_SPLIT:
+        return 'equal_split';
+      case family_pb.FundDistributionMode.CUSTOM_ALLOCATION:
+        return 'custom_allocation';
+      default:
+        return 'custom_allocation';
+    }
+  }
+
   /// Sort account summaries in the desired order:
   /// 1. Personal
   /// 2. Investment
@@ -87,6 +184,7 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
       'Personal': 0,
       'Investment': 1,
       'Savings': 2,
+      'Family': 3,
     };
 
     final sortedList = List<AccountSummaryEntity>.from(summaries);

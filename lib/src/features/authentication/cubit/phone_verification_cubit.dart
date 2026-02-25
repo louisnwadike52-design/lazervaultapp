@@ -131,12 +131,6 @@ class PhoneVerificationCubit extends Cubit<PhoneVerificationState> {
     await requestPhoneVerification(phoneNumber: phoneNumber);
   }
 
-  // Verification is now mandatory - no skip functionality
-  // void skipVerification() {
-  //   if (isClosed) return;
-  //   emit(PhoneVerificationSkipped());
-  // }
-
   // Reset state
   void reset() {
     if (isClosed) return;

@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/avatar_with_details.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
@@ -22,7 +23,7 @@ class PasscodeSignIn extends StatefulWidget {
 class _PasscodeSignInState extends State<PasscodeSignIn> {
   final int _passcodeLength = 6;
 
-  final _secureStorage = const FlutterSecureStorage();
+  final _secureStorage = serviceLocator<FlutterSecureStorage>();
   final LocalAuthentication _localAuth = LocalAuthentication();
 
   bool _canCheckBiometrics = false;
@@ -328,30 +329,6 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                                   ),
                                 if (_canCheckBiometrics && _availableBiometricType != null)
                                   SizedBox(width: 20.w),
-                                FutureBuilder<bool>(
-                                  future: context.read<AuthenticationCubit>().checkFaceRegistration(),
-                                  builder: (context, snapshot) {
-                                    // Only show facial recognition icon if face is registered
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    if (snapshot.data == true) {
-                                      return Row(
-                                        children: [
-                                          _buildIconButton(
-                                            icon: Icons.face_retouching_natural,
-                                            onPressed: () => Get.toNamed(AppRoutes.facialLogin),
-                                            iconColor: Colors.white,
-                                            colorScheme: colorScheme,
-                                            tooltip: 'Use Facial Recognition',
-                                          ),
-                                          SizedBox(width: 20.w),
-                                        ],
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  },
-                                ),
                                 _buildIconButton(
                                   icon: Icons.mic_none_outlined,
                                   onPressed: _onVoicePressed,

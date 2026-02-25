@@ -132,25 +132,8 @@ class ResetPasswordInProgress extends AuthenticationState {
   List<Object?> get props => [email, token, newPassword, confirmPassword, isLoading, errorMessage];
 }
 
-class CreatingUser extends AuthenticationState {
-  const CreatingUser();
-}
-
-class GettingUsers extends AuthenticationState {
-  const GettingUsers();
-}
-
 class UserCreated extends AuthenticationState {
   const UserCreated();
-}
-
-class UsersLoaded extends AuthenticationState {
-  const UsersLoaded(this.users);
-
-  final List<ProfileEntity> users;
-
-  @override
-  List<Object?> get props => [users];
 }
 
 class AuthenticationError extends AuthenticationState {
@@ -591,11 +574,6 @@ class PasscodeLoginInProgress extends AuthenticationState {
       ];
 }
 
-// General Authentication States (can be reused)
-class Authenticating extends AuthenticationState {
-  const Authenticating();
-}
-
 class AuthenticationFailure extends AuthenticationState {
   final String message;
   final int? statusCode;
@@ -604,88 +582,6 @@ class AuthenticationFailure extends AuthenticationState {
 
   @override
   List<Object?> get props => [message, statusCode];
-}
-
-// Password Recovery Verification States
-class PasswordRecoveryVerificationInProgress extends AuthenticationState {
-  const PasswordRecoveryVerificationInProgress();
-}
-
-class PasswordRecoveryCodeVerified extends AuthenticationState {
-  final String resetToken;
-
-  const PasswordRecoveryCodeVerified(this.resetToken);
-
-  @override
-  List<Object?> get props => [resetToken];
-}
-
-class PasswordRecoveryResendInProgress extends AuthenticationState {
-  const PasswordRecoveryResendInProgress();
-}
-
-class PasswordRecoveryResendSuccess extends AuthenticationState {
-  final String message;
-
-  const PasswordRecoveryResendSuccess(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-
-// Facial Recognition States
-class FacialRecognitionLoginInProgress extends AuthenticationState {
-  const FacialRecognitionLoginInProgress();
-}
-
-class FacialRecognitionLoginSuccess extends AuthenticationState {
-  final ProfileEntity profile;
-
-  const FacialRecognitionLoginSuccess(this.profile);
-
-  @override
-  List<Object?> get props => [profile];
-}
-
-class FacialRecognitionCheckInProgress extends AuthenticationState {
-  const FacialRecognitionCheckInProgress();
-}
-
-// BVN/NIN Verification States
-class BVNVerificationInProgress extends AuthenticationState {
-  const BVNVerificationInProgress();
-}
-
-class BVNVerificationSuccess extends AuthenticationState {
-  final String verifiedFirstName;
-  final String verifiedLastName;
-  final String? verifiedDateOfBirth;
-  final String? verifiedPhoneNumber;
-
-  const BVNVerificationSuccess({
-    required this.verifiedFirstName,
-    required this.verifiedLastName,
-    this.verifiedDateOfBirth,
-    this.verifiedPhoneNumber,
-  });
-
-  @override
-  List<Object?> get props => [
-        verifiedFirstName,
-        verifiedLastName,
-        verifiedDateOfBirth,
-        verifiedPhoneNumber,
-      ];
-}
-
-class BVNVerificationFailure extends AuthenticationState {
-  final String message;
-  final String? errorCode;
-
-  const BVNVerificationFailure(this.message, {this.errorCode});
-
-  @override
-  List<Object?> get props => [message, errorCode];
 }
 
 class FacialRecognitionEnabled extends AuthenticationState {

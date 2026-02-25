@@ -759,6 +759,13 @@ const InsuranceProduct$json = {
     {'1': 'metadata', '3': 12, '4': 3, '5': 11, '6': '.pb.InsuranceProduct.MetadataEntry', '10': 'metadata'},
     {'1': 'form_fields', '3': 13, '4': 3, '5': 11, '6': '.pb.InsuranceProductFormField', '10': 'formFields'},
     {'1': 'is_active', '3': 14, '4': 1, '5': 8, '10': 'isActive'},
+    {'1': 'purchase_route', '3': 15, '4': 1, '5': 9, '10': 'purchaseRoute'},
+    {'1': 'provider_id', '3': 16, '4': 1, '5': 9, '10': 'providerId'},
+    {'1': 'base_price', '3': 17, '4': 1, '5': 1, '10': 'basePrice'},
+    {'1': 'how_it_works', '3': 18, '4': 1, '5': 9, '10': 'howItWorks'},
+    {'1': 'full_benefits', '3': 19, '4': 1, '5': 9, '10': 'fullBenefits'},
+    {'1': 'is_renewable', '3': 20, '4': 1, '5': 8, '10': 'isRenewable'},
+    {'1': 'is_claimable', '3': 21, '4': 1, '5': 8, '10': 'isClaimable'},
   ],
   '3': [InsuranceProduct_MetadataEntry$json],
 };
@@ -783,9 +790,13 @@ final $typed_data.Uint8List insuranceProductDescriptor = $convert.base64Decode(
     'VycmVuY3kSGgoIYmVuZWZpdHMYCiADKAlSCGJlbmVmaXRzEhsKCXRlcm1zX3VybBgLIAEoCVII'
     'dGVybXNVcmwSPgoIbWV0YWRhdGEYDCADKAsyIi5wYi5JbnN1cmFuY2VQcm9kdWN0Lk1ldGFkYX'
     'RhRW50cnlSCG1ldGFkYXRhEj4KC2Zvcm1fZmllbGRzGA0gAygLMh0ucGIuSW5zdXJhbmNlUHJv'
-    'ZHVjdEZvcm1GaWVsZFIKZm9ybUZpZWxkcxIbCglpc19hY3RpdmUYDiABKAhSCGlzQWN0aXZlGj'
-    'sKDU1ldGFkYXRhRW50cnkSEAoDa2V5GAEgASgJUgNrZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVl'
-    'OgI4AQ==');
+    'ZHVjdEZvcm1GaWVsZFIKZm9ybUZpZWxkcxIbCglpc19hY3RpdmUYDiABKAhSCGlzQWN0aXZlEi'
+    'UKDnB1cmNoYXNlX3JvdXRlGA8gASgJUg1wdXJjaGFzZVJvdXRlEh8KC3Byb3ZpZGVyX2lkGBAg'
+    'ASgJUgpwcm92aWRlcklkEh0KCmJhc2VfcHJpY2UYESABKAFSCWJhc2VQcmljZRIgCgxob3dfaX'
+    'Rfd29ya3MYEiABKAlSCmhvd0l0V29ya3MSIwoNZnVsbF9iZW5lZml0cxgTIAEoCVIMZnVsbEJl'
+    'bmVmaXRzEiEKDGlzX3JlbmV3YWJsZRgUIAEoCFILaXNSZW5ld2FibGUSIQoMaXNfY2xhaW1hYm'
+    'xlGBUgASgIUgtpc0NsYWltYWJsZRo7Cg1NZXRhZGF0YUVudHJ5EhAKA2tleRgBIAEoCVIDa2V5'
+    'EhQKBXZhbHVlGAIgASgJUgV2YWx1ZToCOAE=');
 
 @$core.Deprecated('Use insuranceCategoryDescriptor instead')
 const InsuranceCategory$json = {
@@ -1048,6 +1059,83 @@ final $typed_data.Uint8List getInsurancePurchaseStatusResponseDescriptor = $conv
     'CiJHZXRJbnN1cmFuY2VQdXJjaGFzZVN0YXR1c1Jlc3BvbnNlEjMKBnJlc3VsdBgBIAEoCzIbLn'
     'BiLkluc3VyYW5jZVB1cmNoYXNlUmVzdWx0UgZyZXN1bHQSGAoHc3VjY2VzcxgCIAEoCFIHc3Vj'
     'Y2VzcxIQCgNtc2cYAyABKAlSA21zZw==');
+
+@$core.Deprecated('Use uploadInsuranceDocumentRequestDescriptor instead')
+const UploadInsuranceDocumentRequest$json = {
+  '1': 'UploadInsuranceDocumentRequest',
+  '2': [
+    {'1': 'file_data', '3': 1, '4': 1, '5': 12, '10': 'fileData'},
+    {'1': 'filename', '3': 2, '4': 1, '5': 9, '10': 'filename'},
+    {'1': 'document_type', '3': 3, '4': 1, '5': 9, '10': 'documentType'},
+  ],
+};
+
+/// Descriptor for `UploadInsuranceDocumentRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List uploadInsuranceDocumentRequestDescriptor = $convert.base64Decode(
+    'Ch5VcGxvYWRJbnN1cmFuY2VEb2N1bWVudFJlcXVlc3QSGwoJZmlsZV9kYXRhGAEgASgMUghmaW'
+    'xlRGF0YRIaCghmaWxlbmFtZRgCIAEoCVIIZmlsZW5hbWUSIwoNZG9jdW1lbnRfdHlwZRgDIAEo'
+    'CVIMZG9jdW1lbnRUeXBl');
+
+@$core.Deprecated('Use uploadInsuranceDocumentResponseDescriptor instead')
+const UploadInsuranceDocumentResponse$json = {
+  '1': 'UploadInsuranceDocumentResponse',
+  '2': [
+    {'1': 'upload_id', '3': 1, '4': 1, '5': 9, '10': 'uploadId'},
+    {'1': 'file_url', '3': 2, '4': 1, '5': 9, '10': 'fileUrl'},
+    {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'msg', '3': 4, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `UploadInsuranceDocumentResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List uploadInsuranceDocumentResponseDescriptor = $convert.base64Decode(
+    'Ch9VcGxvYWRJbnN1cmFuY2VEb2N1bWVudFJlc3BvbnNlEhsKCXVwbG9hZF9pZBgBIAEoCVIIdX'
+    'Bsb2FkSWQSGQoIZmlsZV91cmwYAiABKAlSB2ZpbGVVcmwSGAoHc3VjY2VzcxgDIAEoCFIHc3Vj'
+    'Y2VzcxIQCgNtc2cYBCABKAlSA21zZw==');
+
+@$core.Deprecated('Use getInsuranceAuxiliaryDataRequestDescriptor instead')
+const GetInsuranceAuxiliaryDataRequest$json = {
+  '1': 'GetInsuranceAuxiliaryDataRequest',
+  '2': [
+    {'1': 'utility_id', '3': 1, '4': 1, '5': 9, '10': 'utilityId'},
+    {'1': 'query', '3': 2, '4': 1, '5': 9, '10': 'query'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceAuxiliaryDataRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceAuxiliaryDataRequestDescriptor = $convert.base64Decode(
+    'CiBHZXRJbnN1cmFuY2VBdXhpbGlhcnlEYXRhUmVxdWVzdBIdCgp1dGlsaXR5X2lkGAEgASgJUg'
+    'l1dGlsaXR5SWQSFAoFcXVlcnkYAiABKAlSBXF1ZXJ5');
+
+@$core.Deprecated('Use getInsuranceAuxiliaryDataResponseDescriptor instead')
+const GetInsuranceAuxiliaryDataResponse$json = {
+  '1': 'GetInsuranceAuxiliaryDataResponse',
+  '2': [
+    {'1': 'items', '3': 1, '4': 3, '5': 11, '6': '.pb.InsuranceAuxiliaryItem', '10': 'items'},
+    {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `GetInsuranceAuxiliaryDataResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getInsuranceAuxiliaryDataResponseDescriptor = $convert.base64Decode(
+    'CiFHZXRJbnN1cmFuY2VBdXhpbGlhcnlEYXRhUmVzcG9uc2USMAoFaXRlbXMYASADKAsyGi5wYi'
+    '5JbnN1cmFuY2VBdXhpbGlhcnlJdGVtUgVpdGVtcxIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNz'
+    'EhAKA21zZxgDIAEoCVIDbXNn');
+
+@$core.Deprecated('Use insuranceAuxiliaryItemDescriptor instead')
+const InsuranceAuxiliaryItem$json = {
+  '1': 'InsuranceAuxiliaryItem',
+  '2': [
+    {'1': 'label', '3': 1, '4': 1, '5': 9, '10': 'label'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+};
+
+/// Descriptor for `InsuranceAuxiliaryItem`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List insuranceAuxiliaryItemDescriptor = $convert.base64Decode(
+    'ChZJbnN1cmFuY2VBdXhpbGlhcnlJdGVtEhQKBWxhYmVsGAEgASgJUgVsYWJlbBIUCgV2YWx1ZR'
+    'gCIAEoCVIFdmFsdWU=');
 
 @$core.Deprecated('Use insuranceDescriptor instead')
 const Insurance$json = {

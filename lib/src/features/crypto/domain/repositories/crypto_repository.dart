@@ -1,4 +1,6 @@
 import '../entities/crypto_entity.dart';
+import '../entities/crypto_wallet_entity.dart';
+import '../entities/global_market_data.dart';
 import '../entities/price_point.dart';
 
 abstract class CryptoRepository {
@@ -40,4 +42,7 @@ abstract class CryptoRepository {
   });
   Future<List<CryptoTransaction>> getTransactions();
   Future<void> toggleFavorite(String cryptoId);
-} 
+  Future<List<CryptoWalletEntity>> getWallets();
+  Future<void> createDefaultWallets();
+  Future<GlobalMarketData> getGlobalMarketData();
+}

@@ -697,6 +697,8 @@ const CryptoWallet$json = {
     {'1': 'address', '3': 4, '4': 1, '5': 9, '10': 'address'},
     {'1': 'balance', '3': 5, '4': 1, '5': 1, '10': 'balance'},
     {'1': 'wallet_type', '3': 6, '4': 1, '5': 9, '10': 'walletType'},
+    {'1': 'chain', '3': 7, '4': 1, '5': 9, '10': 'chain'},
+    {'1': 'crypto_name', '3': 8, '4': 1, '5': 9, '10': 'cryptoName'},
   ],
 };
 
@@ -705,7 +707,8 @@ final $typed_data.Uint8List cryptoWalletDescriptor = $convert.base64Decode(
     'CgxDcnlwdG9XYWxsZXQSDgoCaWQYASABKAlSAmlkEhsKCWNyeXB0b19pZBgCIAEoCVIIY3J5cH'
     'RvSWQSIwoNY3J5cHRvX3N5bWJvbBgDIAEoCVIMY3J5cHRvU3ltYm9sEhgKB2FkZHJlc3MYBCAB'
     'KAlSB2FkZHJlc3MSGAoHYmFsYW5jZRgFIAEoAVIHYmFsYW5jZRIfCgt3YWxsZXRfdHlwZRgGIA'
-    'EoCVIKd2FsbGV0VHlwZQ==');
+    'EoCVIKd2FsbGV0VHlwZRIUCgVjaGFpbhgHIAEoCVIFY2hhaW4SHwoLY3J5cHRvX25hbWUYCCAB'
+    'KAlSCmNyeXB0b05hbWU=');
 
 @$core.Deprecated('Use getWalletsResponseDescriptor instead')
 const GetWalletsResponse$json = {
@@ -727,13 +730,15 @@ const CreateWalletRequest$json = {
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
     {'1': 'wallet_type', '3': 3, '4': 1, '5': 9, '10': 'walletType'},
+    {'1': 'chain', '3': 4, '4': 1, '5': 9, '10': 'chain'},
   ],
 };
 
 /// Descriptor for `CreateWalletRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createWalletRequestDescriptor = $convert.base64Decode(
     'ChNDcmVhdGVXYWxsZXRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIbCgljcnlwdG'
-    '9faWQYAiABKAlSCGNyeXB0b0lkEh8KC3dhbGxldF90eXBlGAMgASgJUgp3YWxsZXRUeXBl');
+    '9faWQYAiABKAlSCGNyeXB0b0lkEh8KC3dhbGxldF90eXBlGAMgASgJUgp3YWxsZXRUeXBlEhQK'
+    'BWNoYWluGAQgASgJUgVjaGFpbg==');
 
 @$core.Deprecated('Use createWalletResponseDescriptor instead')
 const CreateWalletResponse$json = {
@@ -743,6 +748,8 @@ const CreateWalletResponse$json = {
     {'1': 'address', '3': 2, '4': 1, '5': 9, '10': 'address'},
     {'1': 'crypto_id', '3': 3, '4': 1, '5': 9, '10': 'cryptoId'},
     {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'chain', '3': 5, '4': 1, '5': 9, '10': 'chain'},
+    {'1': 'crypto_name', '3': 6, '4': 1, '5': 9, '10': 'cryptoName'},
   ],
 };
 
@@ -750,7 +757,36 @@ const CreateWalletResponse$json = {
 final $typed_data.Uint8List createWalletResponseDescriptor = $convert.base64Decode(
     'ChRDcmVhdGVXYWxsZXRSZXNwb25zZRIbCgl3YWxsZXRfaWQYASABKAlSCHdhbGxldElkEhgKB2'
     'FkZHJlc3MYAiABKAlSB2FkZHJlc3MSGwoJY3J5cHRvX2lkGAMgASgJUghjcnlwdG9JZBIWCgZz'
-    'dGF0dXMYBCABKAlSBnN0YXR1cw==');
+    'dGF0dXMYBCABKAlSBnN0YXR1cxIUCgVjaGFpbhgFIAEoCVIFY2hhaW4SHwoLY3J5cHRvX25hbW'
+    'UYBiABKAlSCmNyeXB0b05hbWU=');
+
+@$core.Deprecated('Use batchCreateWalletsRequestDescriptor instead')
+const BatchCreateWalletsRequest$json = {
+  '1': 'BatchCreateWalletsRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `BatchCreateWalletsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchCreateWalletsRequestDescriptor = $convert.base64Decode(
+    'ChlCYXRjaENyZWF0ZVdhbGxldHNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
+
+@$core.Deprecated('Use batchCreateWalletsResponseDescriptor instead')
+const BatchCreateWalletsResponse$json = {
+  '1': 'BatchCreateWalletsResponse',
+  '2': [
+    {'1': 'wallets', '3': 1, '4': 3, '5': 11, '6': '.pb.CryptoWallet', '10': 'wallets'},
+    {'1': 'created_count', '3': 2, '4': 1, '5': 5, '10': 'createdCount'},
+    {'1': 'failed_count', '3': 3, '4': 1, '5': 5, '10': 'failedCount'},
+  ],
+};
+
+/// Descriptor for `BatchCreateWalletsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchCreateWalletsResponseDescriptor = $convert.base64Decode(
+    'ChpCYXRjaENyZWF0ZVdhbGxldHNSZXNwb25zZRIqCgd3YWxsZXRzGAEgAygLMhAucGIuQ3J5cH'
+    'RvV2FsbGV0Ugd3YWxsZXRzEiMKDWNyZWF0ZWRfY291bnQYAiABKAVSDGNyZWF0ZWRDb3VudBIh'
+    'CgxmYWlsZWRfY291bnQYAyABKAVSC2ZhaWxlZENvdW50');
 
 @$core.Deprecated('Use getWalletBalanceRequestDescriptor instead')
 const GetWalletBalanceRequest$json = {

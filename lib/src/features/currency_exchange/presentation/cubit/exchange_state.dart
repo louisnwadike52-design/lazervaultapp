@@ -38,22 +38,6 @@ class ExchangeError extends ExchangeState {
   List<Object?> get props => [message];
 }
 
-/// Home screen loaded with supported currencies and recent transactions.
-class ExchangeHomeLoaded extends ExchangeState {
-  final List<SupportedCurrencyInfo> supportedCurrencies;
-  final List<CurrencyTransaction> recentTransactions;
-  final bool isStale;
-
-  const ExchangeHomeLoaded({
-    required this.supportedCurrencies,
-    required this.recentTransactions,
-    this.isStale = false,
-  });
-
-  @override
-  List<Object?> get props => [supportedCurrencies, recentTransactions, isStale];
-}
-
 /// Live exchange rate fetched for a currency pair.
 class ExchangeRateLoaded extends ExchangeState {
   final ExchangeRate rate;
@@ -132,16 +116,6 @@ class ExchangeSuccess extends ExchangeState {
 
   @override
   List<Object?> get props => [transaction];
-}
-
-/// Conversion queued for offline retry.
-class ExchangeConversionQueued extends ExchangeState {
-  final String message;
-
-  const ExchangeConversionQueued({required this.message});
-
-  @override
-  List<Object?> get props => [message];
 }
 
 /// Transaction status polled (processing screen).

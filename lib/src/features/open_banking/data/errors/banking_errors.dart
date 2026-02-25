@@ -11,6 +11,8 @@ class BankingErrorCode {
   static const String accountFrozen = 'ACCOUNT_FROZEN';
   static const String limitExceeded = 'LIMIT_EXCEEDED';
   static const String dailyLimitExceeded = 'DAILY_LIMIT_EXCEEDED';
+  static const String monthlyLimitExceeded = 'MONTHLY_LIMIT_EXCEEDED';
+  static const String singleTransactionLimitExceeded = 'SINGLE_TRANSACTION_LIMIT_EXCEEDED';
   static const String duplicateTransaction = 'DUPLICATE_TRANSACTION';
   static const String serviceUnavailable = 'SERVICE_UNAVAILABLE';
   static const String providerMismatch = 'PROVIDER_MISMATCH';
@@ -352,6 +354,8 @@ class BankingErrorParser {
 
       case BankingErrorCode.limitExceeded:
       case BankingErrorCode.dailyLimitExceeded:
+      case BankingErrorCode.monthlyLimitExceeded:
+      case BankingErrorCode.singleTransactionLimitExceeded:
         return LimitExceededException(
           message: errorMessage,
           limitType: data?['limit_type'] as String? ?? 'transaction',

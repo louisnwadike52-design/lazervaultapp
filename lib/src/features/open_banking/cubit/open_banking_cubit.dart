@@ -134,11 +134,15 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         );
       }
 
-      // Find default account
-      _defaultAccount = _linkedAccounts.firstWhere(
-        (a) => a.isDefault,
-        orElse: () => _linkedAccounts.isNotEmpty ? _linkedAccounts.first : throw Exception('No accounts'),
-      );
+      // Find default account (null if no accounts linked yet)
+      if (_linkedAccounts.isNotEmpty) {
+        _defaultAccount = _linkedAccounts.firstWhere(
+          (a) => a.isDefault,
+          orElse: () => _linkedAccounts.first,
+        );
+      } else {
+        _defaultAccount = null;
+      }
 
       if (isClosed) return;
       emit(LinkedAccountsLoaded(

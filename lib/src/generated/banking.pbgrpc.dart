@@ -265,6 +265,22 @@ class BankingServiceClient extends $grpc.Client {
       '/banking.BankingService/RefreshCreditScore',
       ($0.RefreshCreditScoreRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.CreditScoreResponse.fromBuffer(value));
+  static final _$initiateMoveTransfer = $grpc.ClientMethod<$0.InitiateMoveTransferRequest, $0.MoveTransferResponse>(
+      '/banking.BankingService/InitiateMoveTransfer',
+      ($0.InitiateMoveTransferRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.MoveTransferResponse.fromBuffer(value));
+  static final _$getMoveTransferStatus = $grpc.ClientMethod<$0.GetMoveTransferStatusRequest, $0.MoveTransferResponse>(
+      '/banking.BankingService/GetMoveTransferStatus',
+      ($0.GetMoveTransferStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.MoveTransferResponse.fromBuffer(value));
+  static final _$getMoveTransfers = $grpc.ClientMethod<$0.GetMoveTransfersRequest, $0.MoveTransfersResponse>(
+      '/banking.BankingService/GetMoveTransfers',
+      ($0.GetMoveTransfersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.MoveTransfersResponse.fromBuffer(value));
+  static final _$calculateMoveFee = $grpc.ClientMethod<$0.CalculateMoveFeeRequest, $0.CalculateMoveFeeResponse>(
+      '/banking.BankingService/CalculateMoveFee',
+      ($0.CalculateMoveFeeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CalculateMoveFeeResponse.fromBuffer(value));
 
   BankingServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -514,6 +530,22 @@ class BankingServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.CreditScoreResponse> refreshCreditScore($0.RefreshCreditScoreRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$refreshCreditScore, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MoveTransferResponse> initiateMoveTransfer($0.InitiateMoveTransferRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$initiateMoveTransfer, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MoveTransferResponse> getMoveTransferStatus($0.GetMoveTransferStatusRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMoveTransferStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MoveTransfersResponse> getMoveTransfers($0.GetMoveTransfersRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMoveTransfers, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CalculateMoveFeeResponse> calculateMoveFee($0.CalculateMoveFeeRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$calculateMoveFee, request, options: options);
   }
 }
 
@@ -949,6 +981,34 @@ abstract class BankingServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.RefreshCreditScoreRequest.fromBuffer(value),
         ($0.CreditScoreResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InitiateMoveTransferRequest, $0.MoveTransferResponse>(
+        'InitiateMoveTransfer',
+        initiateMoveTransfer_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.InitiateMoveTransferRequest.fromBuffer(value),
+        ($0.MoveTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMoveTransferStatusRequest, $0.MoveTransferResponse>(
+        'GetMoveTransferStatus',
+        getMoveTransferStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMoveTransferStatusRequest.fromBuffer(value),
+        ($0.MoveTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMoveTransfersRequest, $0.MoveTransfersResponse>(
+        'GetMoveTransfers',
+        getMoveTransfers_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMoveTransfersRequest.fromBuffer(value),
+        ($0.MoveTransfersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CalculateMoveFeeRequest, $0.CalculateMoveFeeResponse>(
+        'CalculateMoveFee',
+        calculateMoveFee_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CalculateMoveFeeRequest.fromBuffer(value),
+        ($0.CalculateMoveFeeResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.VirtualAccountResponse> createVirtualAccount_Pre($grpc.ServiceCall call, $async.Future<$0.CreateVirtualAccountRequest> request) async {
@@ -1195,6 +1255,22 @@ abstract class BankingServiceBase extends $grpc.Service {
     return refreshCreditScore(call, await request);
   }
 
+  $async.Future<$0.MoveTransferResponse> initiateMoveTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.InitiateMoveTransferRequest> request) async {
+    return initiateMoveTransfer(call, await request);
+  }
+
+  $async.Future<$0.MoveTransferResponse> getMoveTransferStatus_Pre($grpc.ServiceCall call, $async.Future<$0.GetMoveTransferStatusRequest> request) async {
+    return getMoveTransferStatus(call, await request);
+  }
+
+  $async.Future<$0.MoveTransfersResponse> getMoveTransfers_Pre($grpc.ServiceCall call, $async.Future<$0.GetMoveTransfersRequest> request) async {
+    return getMoveTransfers(call, await request);
+  }
+
+  $async.Future<$0.CalculateMoveFeeResponse> calculateMoveFee_Pre($grpc.ServiceCall call, $async.Future<$0.CalculateMoveFeeRequest> request) async {
+    return calculateMoveFee(call, await request);
+  }
+
   $async.Future<$0.VirtualAccountResponse> createVirtualAccount($grpc.ServiceCall call, $0.CreateVirtualAccountRequest request);
   $async.Future<$0.VirtualAccountResponse> getVirtualAccount($grpc.ServiceCall call, $0.GetVirtualAccountRequest request);
   $async.Future<$0.VirtualAccountsResponse> getUserVirtualAccounts($grpc.ServiceCall call, $0.GetUserVirtualAccountsRequest request);
@@ -1256,4 +1332,8 @@ abstract class BankingServiceBase extends $grpc.Service {
   $async.Future<$0.CreditScoreResponse> getCreditScore($grpc.ServiceCall call, $0.GetCreditScoreRequest request);
   $async.Future<$0.CreditScoreHistoryResponse> getCreditScoreHistory($grpc.ServiceCall call, $0.GetCreditScoreHistoryRequest request);
   $async.Future<$0.CreditScoreResponse> refreshCreditScore($grpc.ServiceCall call, $0.RefreshCreditScoreRequest request);
+  $async.Future<$0.MoveTransferResponse> initiateMoveTransfer($grpc.ServiceCall call, $0.InitiateMoveTransferRequest request);
+  $async.Future<$0.MoveTransferResponse> getMoveTransferStatus($grpc.ServiceCall call, $0.GetMoveTransferStatusRequest request);
+  $async.Future<$0.MoveTransfersResponse> getMoveTransfers($grpc.ServiceCall call, $0.GetMoveTransfersRequest request);
+  $async.Future<$0.CalculateMoveFeeResponse> calculateMoveFee($grpc.ServiceCall call, $0.CalculateMoveFeeRequest request);
 }

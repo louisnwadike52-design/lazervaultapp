@@ -4,6 +4,34 @@ import 'package:lazervault/src/features/family_account/domain/entities/family_ac
 
 // Extension methods to convert Proto DTOs to Domain Entities
 
+FamilyAccountStatus _parseFamilyAccountStatus(String status) {
+  switch (status) {
+    case 'active':
+      return FamilyAccountStatus.active;
+    case 'frozen':
+      return FamilyAccountStatus.frozen;
+    case 'closed':
+      return FamilyAccountStatus.closed;
+    case 'pending_setup':
+      return FamilyAccountStatus.pendingSetup;
+    default:
+      return FamilyAccountStatus.active;
+  }
+}
+
+String _serializeFamilyAccountStatus(FamilyAccountStatus status) {
+  switch (status) {
+    case FamilyAccountStatus.active:
+      return 'active';
+    case FamilyAccountStatus.frozen:
+      return 'frozen';
+    case FamilyAccountStatus.closed:
+      return 'closed';
+    case FamilyAccountStatus.pendingSetup:
+      return 'pending_setup';
+  }
+}
+
 extension FamilyAccountProtoExtension on FamilyAccountProto {
   FamilyAccount toDomain() {
     return FamilyAccount(
@@ -16,15 +44,15 @@ extension FamilyAccountProtoExtension on FamilyAccountProto {
       totalPoolBalance: totalPoolBalance,
       allowMemberContributions: allowMemberContributions,
       totalBalance: totalBalance,
-      status: FamilyAccountStatus.values.firstWhere(
-        (e) => e.name == status,
-        orElse: () => FamilyAccountStatus.active,
-      ),
+      status: _parseFamilyAccountStatus(status),
       createdAt: DateTime.parse(createdAt),
       updatedAt: DateTime.parse(updatedAt),
       members: members.map((m) => m.toDomain()).toList(),
       memberCount: memberCount,
       activeMemberCount: activeMemberCount,
+      fundDistributionMode: FundDistributionModeExtension.fromString(fundDistributionMode),
+      setupCompleted: setupCompleted,
+      spendingVisibilityEnabled: spendingVisibilityEnabled,
     );
   }
 }
@@ -124,12 +152,15 @@ extension FamilyAccountExtension on FamilyAccount {
       totalPoolBalance: totalPoolBalance,
       allowMemberContributions: allowMemberContributions,
       totalBalance: totalBalance,
-      status: status.name,
+      status: _serializeFamilyAccountStatus(status),
       createdAt: createdAt.toIso8601String(),
       updatedAt: updatedAt.toIso8601String(),
       members: members.map((m) => m.toProto()).toList(),
       memberCount: memberCount,
       activeMemberCount: activeMemberCount,
+      fundDistributionMode: fundDistributionMode.value,
+      setupCompleted: setupCompleted,
+      spendingVisibilityEnabled: spendingVisibilityEnabled,
     );
   }
 }

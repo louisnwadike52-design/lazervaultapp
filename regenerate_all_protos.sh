@@ -120,14 +120,23 @@ protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/shared/proto \
   proto/stocks/stock.proto
 
+# Generate banking.proto (local proto with Move Money, Open Banking, etc.)
+echo "Generating Dart code from banking.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -Iproto \
+  -I../microservices/shared/proto \
+  proto/banking.proto
+
 # Generate remaining local proto files (batch - some may fail due to unsupported annotations)
 echo "Generating Dart code from other local proto files..."
 for f in proto/*.proto; do
   basename=$(basename "$f")
-  # Skip ai_chat.proto (already generated above) and any proto-only annotation files
-  if [ "$basename" = "ai_chat.proto" ]; then
-    continue
-  fi
+  # Skip protos already generated from microservice sources above
+  case "$basename" in
+    ai_chat.proto|accounts.proto|family_accounts.proto|multi_country.proto|auth.proto|transaction_pin.proto|voice-biometrics.proto|payments.proto|utility-payments.proto|invoice.proto|giftcards.proto|financial-products.proto|investments.proto|banking.proto)
+      continue
+      ;;
+  esac
   protoc --dart_out=grpc:lib/src/generated \
     -Iproto \
     -I../microservices/shared/proto \

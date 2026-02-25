@@ -14,6 +14,7 @@ class DashboardScreen extends StatefulWidget {
     ScreenName.dashboard,
     ScreenName.statistics,
     ScreenName.aiChat,
+    ScreenName.moveMoney,
     ScreenName.lifeStyle,
   ].map((name) => Screen(name: name)).toList();
 
@@ -150,7 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   .map((screen) => screen.widget)
                   .toList(),
             ),
-            if (_currentIndex == 2)
+            if (_currentIndex >= 2)
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -164,14 +165,14 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
           ],
         ),
-        extendBody: _currentIndex == 2,
+        extendBody: _currentIndex >= 2,
       ),
     );
   }
 
   Widget _buildAdaptiveBottomNav() {
     // Use curved navigation for AI Chat tab (index 2)
-    if (_currentIndex == 2 || _currentIndex == 3) {
+    if (_currentIndex >= 2) {
       return Theme(
         data: Theme.of(context).copyWith(
           iconTheme: IconThemeData(color: Colors.white),
@@ -195,6 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               _buildCurvedNavItem(1),
               _buildCurvedNavItem(2),
               _buildCurvedNavItem(3),
+              _buildCurvedNavItem(4),
             ],
             color: Color(0xFF1E1E1E),
             buttonBackgroundColor: Colors.blue.withValues(alpha: 0.2),
@@ -252,6 +254,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       case 2:
         return Icons.smart_toy_rounded;
       case 3:
+        return Icons.swap_horiz_rounded;
+      case 4:
         return Icons.party_mode;
       default:
         return Icons.circle;
@@ -268,6 +272,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       case 2:
         return 'AI Chat';
       case 3:
+        return 'Move';
+      case 4:
         return 'Lifestyle';
       default:
         return '';

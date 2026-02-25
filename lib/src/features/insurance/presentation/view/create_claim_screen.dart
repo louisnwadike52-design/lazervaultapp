@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../domain/entities/insurance_claim_entity.dart';
+import '../../domain/repositories/insurance_repository.dart';
 import '../cubit/insurance_cubit.dart';
 
 class CreateClaimScreen extends StatefulWidget {
@@ -796,11 +800,32 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg'],
+        withData: true,
       );
       if (result != null && result.files.single.name.isNotEmpty) {
-        setState(() {
-          _documents.add(result.files.single.name);
-        });
+        final file = result.files.single;
+        // Upload to MyCover if file data is available
+        if (file.bytes != null) {
+          try {
+            final repo = GetIt.I<InsuranceRepository>();
+            final uploadId = await repo.uploadInsuranceDocument(
+              fileData: file.bytes!.toList(),
+              filename: file.name,
+              documentType: 'claim_evidence',
+            );
+            setState(() => _documents.add(uploadId));
+          } catch (uploadErr) {
+            // Fallback: store local filename if upload fails
+            setState(() => _documents.add(file.name));
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Upload failed, saved locally: $uploadErr')),
+              );
+            }
+          }
+        } else {
+          setState(() => _documents.add(file.name));
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -822,9 +847,7 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
       final picker = ImagePicker();
       final photo = await picker.pickImage(source: ImageSource.camera);
       if (photo != null) {
-        setState(() {
-          _attachments.add(photo.name);
-        });
+        await _uploadAttachment(photo);
       }
     } catch (e) {
       if (mounted) {
@@ -840,14 +863,33 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
       final picker = ImagePicker();
       final image = await picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
-        setState(() {
-          _attachments.add(image.name);
-        });
+        await _uploadAttachment(image);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to select image: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadAttachment(XFile image) async {
+    try {
+      final bytes = await File(image.path).readAsBytes();
+      final repo = GetIt.I<InsuranceRepository>();
+      final uploadId = await repo.uploadInsuranceDocument(
+        fileData: bytes.toList(),
+        filename: image.name,
+        documentType: 'claim_evidence',
+      );
+      if (mounted) setState(() => _attachments.add(uploadId));
+    } catch (e) {
+      // Fallback: store local path
+      if (mounted) {
+        setState(() => _attachments.add(image.name));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed, saved locally: $e')),
         );
       }
     }

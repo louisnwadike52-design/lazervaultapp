@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
@@ -41,8 +43,11 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
       final authState = context.read<AuthenticationCubit>().state;
 
       if (recipientCubit.state is! RecipientLoaded && authState is AuthenticationSuccess) {
+        final localeManager = serviceLocator<LocaleManager>();
         recipientCubit.getRecipients(
           accessToken: authState.profile.session.accessToken,
+          countryCode: localeManager.currentCountry,
+          currency: localeManager.currentCurrency,
         );
       }
     });
@@ -345,8 +350,11 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                             onPressed: () {
                               final authState = context.read<AuthenticationCubit>().state;
                               if (authState is AuthenticationSuccess) {
+                                final localeManager = serviceLocator<LocaleManager>();
                                 context.read<RecipientCubit>().getRecipients(
                                   accessToken: authState.profile.session.accessToken,
+                                  countryCode: localeManager.currentCountry,
+                                  currency: localeManager.currentCurrency,
                                 );
                               }
                             },

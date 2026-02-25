@@ -12,6 +12,10 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/widgets/app_service_builder.dart';
 import 'package:lazervault/src/features/widgets/all_services_bottom_sheet.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
+import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:get/get.dart';
 
 // Quick Services carousel - 3 rows with reduced indicator spacing
 // Context-aware: switches between personal and business services based on active account
@@ -28,6 +32,10 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   final AccountManager _accountManager = serviceLocator<AccountManager>();
   StreamSubscription<String?>? _accountSubscription;
   bool _isBusinessAccount = false;
+  bool _isFamilyAccount = false;
+  bool _isFamilyPendingSetup = false;
+  String? _activeFamilyAccountId;
+  bool _isResolvingFamilyId = false;
 
   static const int _itemsPerRow = 4;
   static const int _maxRows = 3;
@@ -125,8 +133,10 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceImg: AppServiceImg.sendFunds),
   ];
 
-  List<AppService> get _activeServices =>
-      _isBusinessAccount ? _businessServices : _personalServices;
+  List<AppService> get _activeServices {
+    if (_isBusinessAccount) return _businessServices;
+    return _personalServices;
+  }
 
   @override
   void initState() {
@@ -158,9 +168,20 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         );
         final isBusiness =
             activeAccount.accountTypeEnum == VirtualAccountType.business;
-        if (isBusiness != _isBusinessAccount) {
+        final isFamily =
+            activeAccount.accountTypeEnum == VirtualAccountType.family;
+        final isFamilyPending = isFamily &&
+            (activeAccount.isFamilyPendingSetup || !activeAccount.isFamilyAccount);
+        final familyId = isFamily ? activeAccount.familyAccountId : null;
+
+        if (isBusiness != _isBusinessAccount ||
+            isFamily != _isFamilyAccount ||
+            isFamilyPending != _isFamilyPendingSetup) {
           setState(() {
             _isBusinessAccount = isBusiness;
+            _isFamilyAccount = isFamily;
+            _isFamilyPendingSetup = isFamilyPending;
+            _activeFamilyAccountId = familyId;
             _currentIndex = 0; // Reset carousel position on account type switch
           });
         }
@@ -207,12 +228,19 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
 
   @override
   Widget build(BuildContext context) {
+    // Show family setup CTA when active account is a pending family account
+    if (_isFamilyAccount && _isFamilyPendingSetup) {
+      return _buildFamilySetupCTA();
+    }
+
     final servicePages = _getServicePages();
     final carouselHeight = _calculateCarouselHeight(context);
     final activeServices = _activeServices;
     final accentColor = _isBusinessAccount
         ? const Color(0xFF3B82F6) // Blue for business
-        : const Color.fromARGB(255, 78, 3, 208); // Purple for personal
+        : (_isFamilyAccount
+            ? const Color(0xFF2D6B6B) // Teal for family
+            : const Color.fromARGB(255, 78, 3, 208)); // Purple for personal
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
@@ -238,7 +266,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               Row(
                 children: [
                   Text(
-                    _isBusinessAccount ? "Business Services" : "Quick Services",
+                    _isBusinessAccount
+                        ? "Business Services"
+                        : (_isFamilyAccount ? "Family Services" : "Quick Services"),
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
@@ -361,6 +391,137 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFamilySetupCTA() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1A4747), Color(0xFF2D6B6B)],
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1A4747).withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.family_restroom,
+            color: Colors.white.withValues(alpha: 0.9),
+            size: 48.sp,
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Complete Your Family Account Setup',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Add members and configure how funds are distributed among your family.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 13.sp,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 20.h),
+          SizedBox(
+            width: double.infinity,
+            height: 48.h,
+            child: ElevatedButton(
+              onPressed: _isResolvingFamilyId ? null : () async {
+                if (_activeFamilyAccountId != null) {
+                  Get.toNamed(AppRoutes.familyActivationSetup,
+                      arguments: {'familyId': _activeFamilyAccountId});
+                } else {
+                  // familyAccountId unknown — resolve via GetFamilyAccounts
+                  setState(() => _isResolvingFamilyId = true);
+                  try {
+                    final familyCubit = serviceLocator<FamilyAccountCubit>();
+                    await familyCubit.loadFamilyAccounts();
+                    final state = familyCubit.state;
+                    if (state is FamilyAccountsLoaded && state.familyAccounts.isNotEmpty) {
+                      final target = state.familyAccounts.firstWhere(
+                        (a) => a.isPendingSetup,
+                        orElse: () => state.familyAccounts.first,
+                      );
+                      Get.toNamed(AppRoutes.familyActivationSetup,
+                          arguments: {'familyId': target.id});
+                    } else {
+                      Get.snackbar(
+                        'Error',
+                        'Could not find your family account. Please try again.',
+                        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.TOP,
+                      );
+                    }
+                  } catch (_) {
+                    Get.snackbar(
+                      'Error',
+                      'Failed to load family account. Please try again.',
+                      backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.TOP,
+                    );
+                  } finally {
+                    if (mounted) {
+                      setState(() => _isResolvingFamilyId = false);
+                    }
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF1A4747),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24.r),
+                ),
+                elevation: 0,
+              ),
+              child: _isResolvingFamilyId
+                  ? SizedBox(
+                      width: 20.w,
+                      height: 20.h,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF1A4747),
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.settings_rounded, size: 18.sp),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'Setup Now',
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
         ],
       ),
     );

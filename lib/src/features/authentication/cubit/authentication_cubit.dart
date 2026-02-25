@@ -12,6 +12,7 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
@@ -405,32 +406,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             errorMessage: failure.message,
           ));
         }
-      },
-      (_) {
-        _showSuccessSnackbar(
-          'Email Sent!',
-          'Check your email for password reset instructions.',
-        );
-        emit(PasswordResetEmailSent());
-      },
-    );
-  }
-
-  // Legacy method for backward compatibility
-  Future<void> forgotPassword(String email) async {
-    if (isClosed) return;
-    emit(AuthenticationLoading());
-
-    final result = await _forgotPasswordUseCase(email);
-
-    if (isClosed) return;
-    result.fold(
-      (failure) {
-        _showErrorSnackbar('Password Reset Failed', failure.message);
-        emit(AuthenticationFailure(
-          failure.message,
-          statusCode: failure.statusCode,
-        ));
       },
       (_) {
         _showSuccessSnackbar(
@@ -2099,6 +2074,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         // Mark signup as complete (passcode is the final step)
         await _signupStateService?.markSignupComplete();
 
+        // Create default stablecoin wallets in background
+        _triggerBackgroundWalletCreation();
+
         _showSuccessSnackbar('Success!', 'Passcode registered successfully');
 
         // Navigate to dashboard by emitting success
@@ -2111,9 +2089,32 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
+  void _triggerBackgroundWalletCreation() {
+    // Delay to ensure auth token is fully propagated to gRPC channel,
+    // then retry with exponential backoff if the call fails.
+    Future.delayed(const Duration(seconds: 2), () async {
+      const maxAttempts = 3;
+      for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          final cryptoGrpcClient = serviceLocator<CryptoGrpcClient>();
+          await cryptoGrpcClient.batchCreateWallets();
+          return; // Success — exit
+        } catch (e) {
+          if (attempt < maxAttempts) {
+            // Exponential backoff: 2s, 4s
+            await Future.delayed(Duration(seconds: 2 * attempt));
+          }
+        }
+      }
+    });
+  }
+
   Future<void> skipPasscodeSetup() async {
     // Mark signup as complete even when skipping passcode
     await _signupStateService?.markSignupComplete();
+
+    // Create default stablecoin wallets in background
+    _triggerBackgroundWalletCreation();
 
     // Emit success to navigate to dashboard
     if (_currentProfile != null) {
@@ -2210,23 +2211,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // ========== Password Recovery Verification Methods ==========
   // V2 implementations are below in the "Password Reset V2" section
-
-  // ========== Facial Recognition Methods ==========
-  // TODO: Implement with proper use cases
-
-  Future<void> loginWithFace(String email, List<int> imageData) async {
-    // Placeholder - needs use case implementation
-    emit(const FacialRecognitionLoginInProgress());
-    await Future.delayed(const Duration(seconds: 1));
-    emit(AuthenticationFailure('Facial recognition login not yet implemented'));
-  }
-
-  Future<bool> checkFaceRegistration() async {
-    // Placeholder - needs use case implementation
-    // DON'T emit states here as it interferes with passcode login flow
-    await Future.delayed(const Duration(milliseconds: 100));
-    return false;
-  }
 
   // ========== Two-Factor Authentication Methods ==========
 

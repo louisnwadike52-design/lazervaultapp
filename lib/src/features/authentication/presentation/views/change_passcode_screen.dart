@@ -13,7 +13,7 @@ class ChangePasscodeScreen extends StatefulWidget {
 
 class _ChangePasscodeScreenState extends State<ChangePasscodeScreen> {
   final int _passcodeLength = 6;
-  final _storage = const FlutterSecureStorage();
+  final _storage = serviceLocator<FlutterSecureStorage>();
 
   String _currentPasscode = '';
   String _newPasscode = '';

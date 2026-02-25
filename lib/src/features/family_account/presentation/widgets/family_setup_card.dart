@@ -21,18 +21,18 @@ class FamilySetupCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF6C5CE7).withValues(alpha: 0.2),
-              const Color(0xFFA29BFE).withValues(alpha: 0.1),
+              const Color(0xFF3B82F6).withValues(alpha: 0.2),
+              const Color(0xFF60A5FA).withValues(alpha: 0.1),
             ],
           ),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -45,12 +45,12 @@ class FamilySetupCard extends StatelessWidget {
               width: 50.w,
               height: 50.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
                 Icons.family_restroom,
-                color: const Color(0xFF6C5CE7),
+                color: const Color(0xFF3B82F6),
                 size: 24.sp,
               ),
             ),
@@ -85,7 +85,7 @@ class FamilySetupCard extends StatelessWidget {
             // Arrow
             Icon(
               Icons.arrow_forward_ios,
-              color: const Color(0xFF6C5CE7),
+              color: const Color(0xFF3B82F6),
               size: 16.sp,
             ),
           ],

@@ -182,8 +182,11 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
 
     try {
       final recipientCubit = context.read<RecipientCubit>();
+      final localeManager = serviceLocator<LocaleManager>();
       await recipientCubit.getRecipients(
         accessToken: authState.profile.session.accessToken,
+        countryCode: localeManager.currentCountry,
+        currency: localeManager.currentCurrency,
       );
     } catch (e) {
       if (mounted) {

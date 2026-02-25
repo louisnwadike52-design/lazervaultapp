@@ -1,10 +1,11 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 
 /// Voice Setup Manager
 /// Manages voice setup prompts on dashboard with skip count logic
 class VoiceSetupManager {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final FlutterSecureStorage _storage = serviceLocator<FlutterSecureStorage>();
   final VoiceActivationManager _voiceManager;
 
   VoiceSetupManager({

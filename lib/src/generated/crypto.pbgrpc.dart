@@ -89,6 +89,10 @@ class CryptoServiceClient extends $grpc.Client {
       '/pb.CryptoService/GetWalletBalance',
       ($0.GetWalletBalanceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetWalletBalanceResponse.fromBuffer(value));
+  static final _$batchCreateWallets = $grpc.ClientMethod<$0.BatchCreateWalletsRequest, $0.BatchCreateWalletsResponse>(
+      '/pb.CryptoService/BatchCreateWallets',
+      ($0.BatchCreateWalletsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.BatchCreateWalletsResponse.fromBuffer(value));
   static final _$createWatchlist = $grpc.ClientMethod<$0.CreateWatchlistRequest, $0.CreateWatchlistResponse>(
       '/pb.CryptoService/CreateWatchlist',
       ($0.CreateWatchlistRequest value) => value.writeToBuffer(),
@@ -182,6 +186,10 @@ class CryptoServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetWalletBalanceResponse> getWalletBalance($0.GetWalletBalanceRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getWalletBalance, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.BatchCreateWalletsResponse> batchCreateWallets($0.BatchCreateWalletsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$batchCreateWallets, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.CreateWatchlistResponse> createWatchlist($0.CreateWatchlistRequest request, {$grpc.CallOptions? options}) {
@@ -329,6 +337,13 @@ abstract class CryptoServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetWalletBalanceRequest.fromBuffer(value),
         ($0.GetWalletBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.BatchCreateWalletsRequest, $0.BatchCreateWalletsResponse>(
+        'BatchCreateWallets',
+        batchCreateWallets_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.BatchCreateWalletsRequest.fromBuffer(value),
+        ($0.BatchCreateWalletsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CreateWatchlistRequest, $0.CreateWatchlistResponse>(
         'CreateWatchlist',
         createWatchlist_Pre,
@@ -434,6 +449,10 @@ abstract class CryptoServiceBase extends $grpc.Service {
     return getWalletBalance(call, await request);
   }
 
+  $async.Future<$0.BatchCreateWalletsResponse> batchCreateWallets_Pre($grpc.ServiceCall call, $async.Future<$0.BatchCreateWalletsRequest> request) async {
+    return batchCreateWallets(call, await request);
+  }
+
   $async.Future<$0.CreateWatchlistResponse> createWatchlist_Pre($grpc.ServiceCall call, $async.Future<$0.CreateWatchlistRequest> request) async {
     return createWatchlist(call, await request);
   }
@@ -471,6 +490,7 @@ abstract class CryptoServiceBase extends $grpc.Service {
   $async.Future<$0.GetWalletsResponse> getWallets($grpc.ServiceCall call, $0.GetWalletsRequest request);
   $async.Future<$0.CreateWalletResponse> createWallet($grpc.ServiceCall call, $0.CreateWalletRequest request);
   $async.Future<$0.GetWalletBalanceResponse> getWalletBalance($grpc.ServiceCall call, $0.GetWalletBalanceRequest request);
+  $async.Future<$0.BatchCreateWalletsResponse> batchCreateWallets($grpc.ServiceCall call, $0.BatchCreateWalletsRequest request);
   $async.Future<$0.CreateWatchlistResponse> createWatchlist($grpc.ServiceCall call, $0.CreateWatchlistRequest request);
   $async.Future<$0.GetWatchlistsResponse> getWatchlists($grpc.ServiceCall call, $0.GetWatchlistsRequest request);
   $async.Future<$0.AddToWatchlistResponse> addToWatchlist($grpc.ServiceCall call, $0.AddToWatchlistRequest request);

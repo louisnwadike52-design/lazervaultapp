@@ -250,11 +250,13 @@ class TransactionPinService implements ITransactionPinService {
 
       final request = CheckUserHasPinRequest()..userId = userId;
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.checkUserHasPin(
-        request,
-        options: callOptions,
-      );
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.checkUserHasPin(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('[TransactionPinService] checkUserHasPin response: hasPin=${response.hasPin}, isActive=${response.isActive}');
       return response.hasPin;
@@ -288,11 +290,13 @@ class TransactionPinService implements ITransactionPinService {
         ..currency = currency
         ..deviceId = deviceId;
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.verifyTransactionPin(
-        request,
-        options: callOptions,
-      );
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.verifyTransactionPin(
+          request,
+          options: callOptions,
+        );
+      });
 
       if (!response.success) {
         // Check if PIN is locked
@@ -345,11 +349,13 @@ class TransactionPinService implements ITransactionPinService {
         ..userId = userId
         ..transactionId = transactionId;
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.validateTransactionPinToken(
-        request,
-        options: callOptions,
-      );
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.validateTransactionPinToken(
+          request,
+          options: callOptions,
+        );
+      });
 
       return response.valid;
     } on GrpcError catch (e) {

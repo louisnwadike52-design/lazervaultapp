@@ -71,11 +71,11 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: const Color(0xFF1F2937),
                 ),
               ),
               GestureDetector(
-                onTap: () => Get.toNamed(AppRoutes.crowdfundLeaderboard),
+                onTap: () => Get.toNamed(AppRoutes.crowdfundList),
                 child: Text(
                   'View All',
                   style: TextStyle(
@@ -123,7 +123,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: const Color(0xFF1F2937),
                 ),
               ),
               Text(

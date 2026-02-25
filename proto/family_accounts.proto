@@ -3,11 +3,19 @@ syntax = "proto3";
 package accounts.v1;
 
 import "google/api/annotations.proto";
+import "account_card.proto";
 
 option go_package = "accounts-service/proto";
 option java_multiple_files = true;
 option java_outer_classname = "FamilyAccountsProto";
 option java_package = "com.lazervault.accounts.v1";
+
+enum FundDistributionMode {
+  FUND_DISTRIBUTION_MODE_UNSPECIFIED = 0;
+  SHARED_POOL = 1;
+  EQUAL_SPLIT = 2;
+  CUSTOM_ALLOCATION = 3;
+}
 
 // Family Account Management Service
 // Provides functionality for creating and managing family and friends shared accounts
@@ -138,6 +146,31 @@ service FamilyAccountsService {
   rpc DeleteFamilyAccount(DeleteFamilyAccountRequest) returns (DeleteFamilyAccountResponse) {
     option (google.api.http) = {
       delete: "/api/v1/family-accounts/{family_id}"
+    };
+  }
+
+  // Process a member contribution to the family pool (hybrid funding)
+  // Active members can contribute to the shared pool
+  rpc ProcessMemberContribution(ProcessMemberContributionRequest) returns (ProcessMemberContributionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/family-accounts/{family_id}/contribute"
+      body: "*"
+    };
+  }
+
+  // Setup a family account after creation (choose distribution mode, activate)
+  rpc SetupFamilyAccount(SetupFamilyAccountRequest) returns (SetupFamilyAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/family-accounts/{family_id}/setup"
+      body: "*"
+    };
+  }
+
+  // Update the fund distribution mode for an active family account
+  rpc UpdateFundDistributionMode(UpdateFundDistributionModeRequest) returns (UpdateFundDistributionModeResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/family-accounts/{family_id}/distribution-mode"
+      body: "*"
     };
   }
 }
@@ -304,7 +337,7 @@ message GenerateMemberCardRequest {
 }
 
 message GenerateMemberCardResponse {
-  string card_id = 1; // Generated card ID
+  accounts.AccountCard card = 1; // Generated card details (from account_card.proto)
   FamilyMember member = 2; // Updated member with card info
   string message = 3; // Success message
 }
@@ -344,6 +377,50 @@ message DeleteFamilyAccountResponse {
   double returned_balance = 3; // Amount returned to creator's main account
 }
 
+// Process Member Contribution
+message ProcessMemberContributionRequest {
+  string family_id = 1; // Required: Family account ID
+  string member_id = 2; // Required: Contributing member's ID
+  double amount = 3; // Required: Contribution amount
+  string description = 4; // Optional: Description of the contribution
+}
+
+message ProcessMemberContributionResponse {
+  FamilyAccount family_account = 1; // Updated family account with new pool balance
+  FamilyTransaction transaction = 2; // Contribution transaction record
+  string message = 3; // Success message
+}
+
+// Setup Family Account
+message SetupFamilyAccountRequest {
+  string family_id = 1;
+  FundDistributionMode fund_distribution_mode = 2;
+  bool spending_visibility_enabled = 3;
+  repeated MemberAllocation allocations = 4;
+}
+
+message MemberAllocation {
+  string member_id = 1;
+  double amount = 2;
+}
+
+message SetupFamilyAccountResponse {
+  FamilyAccount family_account = 1;
+  string message = 2;
+}
+
+// Update Fund Distribution Mode
+message UpdateFundDistributionModeRequest {
+  string family_id = 1;
+  FundDistributionMode fund_distribution_mode = 2;
+  repeated MemberAllocation allocations = 3;
+}
+
+message UpdateFundDistributionModeResponse {
+  FamilyAccount family_account = 1;
+  string message = 2;
+}
+
 // Data Models
 
 // Family Account
@@ -363,6 +440,9 @@ message FamilyAccount {
   int32 active_member_count = 13; // Active members only
   bool allow_member_contributions = 14; // NEW: Allow members to contribute to family pool (hybrid funding)
   double total_balance = 15; // NEW: Total balance = total_allocated_balance + total_pool_balance
+  FundDistributionMode fund_distribution_mode = 16;
+  bool setup_completed = 17;
+  bool spending_visibility_enabled = 18;
 }
 
 // Family Member
@@ -443,3 +523,5 @@ message FamilyMemberSpending {
   double amount_spent = 4;
   int32 transaction_count = 5;
 }
+
+// AccountCard is defined in account_card.proto (package accounts)

@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../../domain/entities/crypto_wallet_entity.dart';
 import '../../data/models/crypto_model.dart';
 import '../widgets/crypto_search_bar.dart';
 import '../widgets/voice_input_widget.dart';
@@ -74,6 +75,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                   _buildTopBar(),
                   if (state is CryptosLoaded) ...[
                     _buildPortfolioOverview(state),
+                    if (state.wallets.isNotEmpty) _buildWalletsSection(state),
                     _buildQuickActions(),
                     _buildWarningMessage(),
                     _buildMarketOverview(state),
@@ -140,7 +142,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             ),
             child: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
-              onPressed: () => Get.offAllNamed(AppRoutes.investments),
+              onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
             ),
           ),
           SizedBox(width: 16.w),
@@ -333,6 +335,120 @@ class _CryptoScreenState extends State<CryptoScreen>
     );
   }
 
+  Widget _buildWalletsSection(CryptosLoaded state) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(24.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Stablecoin Wallets',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  '${state.wallets.length} wallets',
+                  style: TextStyle(
+                    color: const Color(0xFF6C5CE7),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          for (int i = 0; i < state.wallets.length; i++)
+            Padding(
+              padding: EdgeInsets.only(bottom: i < state.wallets.length - 1 ? 10.h : 0),
+              child: _buildWalletItem(state.wallets[i]),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWalletItem(CryptoWalletEntity wallet) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.h,
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Center(
+              child: Text(
+                wallet.cryptoSymbol,
+                style: TextStyle(
+                  color: const Color(0xFF10B981),
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  wallet.cryptoName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '${wallet.chainDisplayName} \u2022 ${wallet.truncatedAddress}',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            wallet.balance.toStringAsFixed(2),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildQuickActions() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -489,9 +605,16 @@ class _CryptoScreenState extends State<CryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          _buildPriceAlert('BTC', 'Above', '${CurrencySymbols.currentSymbol}70,000', true),
-          SizedBox(height: 12.h),
-          _buildPriceAlert('ETH', 'Below', '${CurrencySymbols.currentSymbol}1,400', false),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.h),
+            child: Text(
+              'No price alerts set. Tap + to create one.',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 14.sp,
+              ),
+            ),
+          ),
         ],
             ),
           );
@@ -1374,9 +1497,27 @@ class _CryptoScreenState extends State<CryptoScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildMarketStat('Market Cap', '${CurrencySymbols.currentSymbol}2.89T', '+2.4%'),
-              _buildMarketStat('24h Volume', '${CurrencySymbols.currentSymbol}82.1B', '+5.1%'),
-              _buildMarketStat('BTC Dom.', '48.2%', '-0.8%'),
+              _buildMarketStat(
+                'Market Cap',
+                state.globalMarketData != null
+                    ? '${CurrencySymbols.currentSymbol}${_formatLargeNumber(state.globalMarketData!.totalMarketCap)}'
+                    : '--',
+                '',
+              ),
+              _buildMarketStat(
+                '24h Volume',
+                state.globalMarketData != null
+                    ? '${CurrencySymbols.currentSymbol}${_formatLargeNumber(state.globalMarketData!.totalVolume24h)}'
+                    : '--',
+                '',
+              ),
+              _buildMarketStat(
+                'BTC Dom.',
+                state.globalMarketData != null
+                    ? '${state.globalMarketData!.marketCapPercentageBtc.toStringAsFixed(1)}%'
+                    : '--',
+                '',
+              ),
             ],
           ),
           SizedBox(height: 24.h),
@@ -1402,11 +1543,16 @@ class _CryptoScreenState extends State<CryptoScreen>
                 ),
               ),
           ] else ...[
-            _buildTrendingCoin('Bitcoin', 'BTC', '${CurrencySymbols.currentSymbol}66,175', 1.93, Colors.orange),
-            SizedBox(height: 12.h),
-            _buildTrendingCoin('Ethereum', 'ETH', '${CurrencySymbols.currentSymbol}1,544', 0.67, const Color(0xFF6C5CE7)),
-            SizedBox(height: 12.h),
-            _buildTrendingCoin('Solana', 'SOL', '${CurrencySymbols.currentSymbol}156.78', 2.45, Colors.purple),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: Text(
+                'No trending data available',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 14.sp,
+                ),
+              ),
+            ),
           ],
         ],
       ),
@@ -1542,8 +1688,8 @@ class _CryptoScreenState extends State<CryptoScreen>
           Expanded(
             child: _buildCryptoCard(
               'BTC',
-              state.cryptos.isNotEmpty ? '${CurrencySymbols.currentSymbol}${state.cryptos[0].currentPrice.toStringAsFixed(2)}' : '${CurrencySymbols.currentSymbol}66,175',
-              state.cryptos.isNotEmpty ? state.cryptos[0].priceChangePercentage24h : 1.93,
+              state.cryptos.isNotEmpty ? '${CurrencySymbols.currentSymbol}${state.cryptos[0].currentPrice.toStringAsFixed(2)}' : '--',
+              state.cryptos.isNotEmpty ? state.cryptos[0].priceChangePercentage24h : 0.0,
               [0.2, 0.3, 0.5, 0.4, 0.6, 0.5, 0.7],
               Colors.orange,
             ),
@@ -1551,8 +1697,8 @@ class _CryptoScreenState extends State<CryptoScreen>
           Expanded(
             child: _buildCryptoCard(
               'ETH',
-              state.cryptos.length > 1 ? '${CurrencySymbols.currentSymbol}${state.cryptos[1].currentPrice.toStringAsFixed(2)}' : '${CurrencySymbols.currentSymbol}1,544.43',
-              state.cryptos.length > 1 ? state.cryptos[1].priceChangePercentage24h : 0.67,
+              state.cryptos.length > 1 ? '${CurrencySymbols.currentSymbol}${state.cryptos[1].currentPrice.toStringAsFixed(2)}' : '--',
+              state.cryptos.length > 1 ? state.cryptos[1].priceChangePercentage24h : 0.0,
               [0.4, 0.5, 0.3, 0.6, 0.4, 0.5, 0.3],
               const Color(0xFF6C5CE7),
             ),
@@ -2016,9 +2162,13 @@ class _CryptoScreenState extends State<CryptoScreen>
     
     if (gainers.isEmpty) {
       return [
-        _buildMoverItem('XRP', 'XRP', '${CurrencySymbols.currentSymbol}1.87', 2.13, Icons.currency_exchange),
-        _buildMoverItem('SOL', 'Solana', '${CurrencySymbols.currentSymbol}156.78', 1.95, Icons.solar_power),
-        _buildMoverItem('MATIC', 'Polygon', '${CurrencySymbols.currentSymbol}0.98', 1.45, Icons.hexagon),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: Text(
+            'No gainers in the last 24h',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 14.sp),
+          ),
+        ),
       ];
     }
 
@@ -2036,9 +2186,13 @@ class _CryptoScreenState extends State<CryptoScreen>
     
     if (losers.isEmpty) {
       return [
-        _buildMoverItem('BNB', 'BNB', '${CurrencySymbols.currentSymbol}481.15', -0.83, Icons.attach_money),
-        _buildMoverItem('DOGE', 'Dogecoin', '${CurrencySymbols.currentSymbol}0.15', -1.2, Icons.pets),
-        _buildMoverItem('DOT', 'Polkadot', '${CurrencySymbols.currentSymbol}7.25', -1.5, Icons.radio_button_unchecked),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: Text(
+            'No losers in the last 24h',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 14.sp),
+          ),
+        ),
       ];
     }
 
@@ -2314,5 +2468,18 @@ class _CryptoScreenState extends State<CryptoScreen>
         ),
       ),
     );
+  }
+
+  String _formatLargeNumber(double value) {
+    if (value >= 1e12) {
+      return '${(value / 1e12).toStringAsFixed(2)}T';
+    } else if (value >= 1e9) {
+      return '${(value / 1e9).toStringAsFixed(1)}B';
+    } else if (value >= 1e6) {
+      return '${(value / 1e6).toStringAsFixed(1)}M';
+    } else if (value >= 1e3) {
+      return '${(value / 1e3).toStringAsFixed(1)}K';
+    }
+    return value.toStringAsFixed(2);
   }
 } 

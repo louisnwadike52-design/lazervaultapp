@@ -97,6 +97,74 @@ class FinancialProductsServiceClient extends $grpc.Client {
       '/financialproducts.FinancialProductsService/GetInsurancePurchaseStatus',
       ($0.GetInsurancePurchaseStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetInsurancePurchaseStatusResponse.fromBuffer(value));
+  static final _$uploadInsuranceDocument = $grpc.ClientMethod<$0.UploadInsuranceDocumentRequest, $0.UploadInsuranceDocumentResponse>(
+      '/financialproducts.FinancialProductsService/UploadInsuranceDocument',
+      ($0.UploadInsuranceDocumentRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UploadInsuranceDocumentResponse.fromBuffer(value));
+  static final _$getInsuranceAuxiliaryData = $grpc.ClientMethod<$0.GetInsuranceAuxiliaryDataRequest, $0.GetInsuranceAuxiliaryDataResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceAuxiliaryData',
+      ($0.GetInsuranceAuxiliaryDataRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsuranceAuxiliaryDataResponse.fromBuffer(value));
+  static final _$getInsurancePayments = $grpc.ClientMethod<$0.GetInsurancePaymentsRequest, $0.GetInsurancePaymentsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePayments',
+      ($0.GetInsurancePaymentsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsurancePaymentsResponse.fromBuffer(value));
+  static final _$getUserInsurancePayments = $grpc.ClientMethod<$0.GetUserInsurancePaymentsRequest, $0.GetUserInsurancePaymentsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserInsurancePayments',
+      ($0.GetUserInsurancePaymentsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetUserInsurancePaymentsResponse.fromBuffer(value));
+  static final _$createInsurancePayment = $grpc.ClientMethod<$0.CreateInsurancePaymentRequest, $0.CreateInsurancePaymentResponse>(
+      '/financialproducts.FinancialProductsService/CreateInsurancePayment',
+      ($0.CreateInsurancePaymentRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreateInsurancePaymentResponse.fromBuffer(value));
+  static final _$processInsurancePayment = $grpc.ClientMethod<$0.ProcessInsurancePaymentRequest, $0.ProcessInsurancePaymentResponse>(
+      '/financialproducts.FinancialProductsService/ProcessInsurancePayment',
+      ($0.ProcessInsurancePaymentRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ProcessInsurancePaymentResponse.fromBuffer(value));
+  static final _$getInsurancePaymentById = $grpc.ClientMethod<$0.GetInsurancePaymentByIdRequest, $0.GetInsurancePaymentByIdResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePaymentById',
+      ($0.GetInsurancePaymentByIdRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsurancePaymentByIdResponse.fromBuffer(value));
+  static final _$getOverdueInsurancePayments = $grpc.ClientMethod<$0.GetOverdueInsurancePaymentsRequest, $0.GetOverdueInsurancePaymentsResponse>(
+      '/financialproducts.FinancialProductsService/GetOverdueInsurancePayments',
+      ($0.GetOverdueInsurancePaymentsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetOverdueInsurancePaymentsResponse.fromBuffer(value));
+  static final _$getInsuranceClaims = $grpc.ClientMethod<$0.GetInsuranceClaimsRequest, $0.GetInsuranceClaimsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceClaims',
+      ($0.GetInsuranceClaimsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsuranceClaimsResponse.fromBuffer(value));
+  static final _$getUserInsuranceClaims = $grpc.ClientMethod<$0.GetUserInsuranceClaimsRequest, $0.GetUserInsuranceClaimsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserInsuranceClaims',
+      ($0.GetUserInsuranceClaimsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetUserInsuranceClaimsResponse.fromBuffer(value));
+  static final _$updateInsuranceClaim = $grpc.ClientMethod<$0.UpdateInsuranceClaimRequest, $0.UpdateInsuranceClaimResponse>(
+      '/financialproducts.FinancialProductsService/UpdateInsuranceClaim',
+      ($0.UpdateInsuranceClaimRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateInsuranceClaimResponse.fromBuffer(value));
+  static final _$getInsuranceClaimById = $grpc.ClientMethod<$0.GetInsuranceClaimByIdRequest, $0.GetInsuranceClaimByIdResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceClaimById',
+      ($0.GetInsuranceClaimByIdRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsuranceClaimByIdResponse.fromBuffer(value));
+  static final _$updateInsurancePolicy = $grpc.ClientMethod<$0.UpdateInsurancePolicyRequest, $0.UpdateInsurancePolicyResponse>(
+      '/financialproducts.FinancialProductsService/UpdateInsurancePolicy',
+      ($0.UpdateInsurancePolicyRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateInsurancePolicyResponse.fromBuffer(value));
+  static final _$generateInsuranceReceipt = $grpc.ClientMethod<$0.GenerateInsuranceReceiptRequest, $0.GenerateInsuranceReceiptResponse>(
+      '/financialproducts.FinancialProductsService/GenerateInsuranceReceipt',
+      ($0.GenerateInsuranceReceiptRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GenerateInsuranceReceiptResponse.fromBuffer(value));
+  static final _$getUserInsuranceReceipts = $grpc.ClientMethod<$0.GetUserInsuranceReceiptsRequest, $0.GetUserInsuranceReceiptsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserInsuranceReceipts',
+      ($0.GetUserInsuranceReceiptsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetUserInsuranceReceiptsResponse.fromBuffer(value));
+  static final _$getInsuranceStatistics = $grpc.ClientMethod<$0.GetInsuranceStatisticsRequest, $0.GetInsuranceStatisticsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsuranceStatistics',
+      ($0.GetInsuranceStatisticsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsuranceStatisticsResponse.fromBuffer(value));
+  static final _$getInsurancePaymentStatistics = $grpc.ClientMethod<$0.GetInsurancePaymentStatisticsRequest, $0.GetInsurancePaymentStatisticsResponse>(
+      '/financialproducts.FinancialProductsService/GetInsurancePaymentStatistics',
+      ($0.GetInsurancePaymentStatisticsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsurancePaymentStatisticsResponse.fromBuffer(value));
   static final _$createCrowdfund = $grpc.ClientMethod<$0.CreateCrowdfundRequest, $0.CreateCrowdfundResponse>(
       '/financialproducts.FinancialProductsService/CreateCrowdfund',
       ($0.CreateCrowdfundRequest value) => value.writeToBuffer(),
@@ -302,6 +370,74 @@ class FinancialProductsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetInsurancePurchaseStatusResponse> getInsurancePurchaseStatus($0.GetInsurancePurchaseStatusRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInsurancePurchaseStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UploadInsuranceDocumentResponse> uploadInsuranceDocument($0.UploadInsuranceDocumentRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$uploadInsuranceDocument, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsuranceAuxiliaryDataResponse> getInsuranceAuxiliaryData($0.GetInsuranceAuxiliaryDataRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsuranceAuxiliaryData, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsurancePaymentsResponse> getInsurancePayments($0.GetInsurancePaymentsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsurancePayments, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetUserInsurancePaymentsResponse> getUserInsurancePayments($0.GetUserInsurancePaymentsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserInsurancePayments, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateInsurancePaymentResponse> createInsurancePayment($0.CreateInsurancePaymentRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createInsurancePayment, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ProcessInsurancePaymentResponse> processInsurancePayment($0.ProcessInsurancePaymentRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$processInsurancePayment, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsurancePaymentByIdResponse> getInsurancePaymentById($0.GetInsurancePaymentByIdRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsurancePaymentById, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetOverdueInsurancePaymentsResponse> getOverdueInsurancePayments($0.GetOverdueInsurancePaymentsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getOverdueInsurancePayments, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsuranceClaimsResponse> getInsuranceClaims($0.GetInsuranceClaimsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsuranceClaims, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetUserInsuranceClaimsResponse> getUserInsuranceClaims($0.GetUserInsuranceClaimsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserInsuranceClaims, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateInsuranceClaimResponse> updateInsuranceClaim($0.UpdateInsuranceClaimRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateInsuranceClaim, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsuranceClaimByIdResponse> getInsuranceClaimById($0.GetInsuranceClaimByIdRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsuranceClaimById, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateInsurancePolicyResponse> updateInsurancePolicy($0.UpdateInsurancePolicyRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateInsurancePolicy, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GenerateInsuranceReceiptResponse> generateInsuranceReceipt($0.GenerateInsuranceReceiptRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$generateInsuranceReceipt, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetUserInsuranceReceiptsResponse> getUserInsuranceReceipts($0.GetUserInsuranceReceiptsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserInsuranceReceipts, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsuranceStatisticsResponse> getInsuranceStatistics($0.GetInsuranceStatisticsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsuranceStatistics, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsurancePaymentStatisticsResponse> getInsurancePaymentStatistics($0.GetInsurancePaymentStatisticsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsurancePaymentStatistics, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.CreateCrowdfundResponse> createCrowdfund($0.CreateCrowdfundRequest request, {$grpc.CallOptions? options}) {
@@ -567,6 +703,125 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetInsurancePurchaseStatusRequest.fromBuffer(value),
         ($0.GetInsurancePurchaseStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UploadInsuranceDocumentRequest, $0.UploadInsuranceDocumentResponse>(
+        'UploadInsuranceDocument',
+        uploadInsuranceDocument_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UploadInsuranceDocumentRequest.fromBuffer(value),
+        ($0.UploadInsuranceDocumentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceAuxiliaryDataRequest, $0.GetInsuranceAuxiliaryDataResponse>(
+        'GetInsuranceAuxiliaryData',
+        getInsuranceAuxiliaryData_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsuranceAuxiliaryDataRequest.fromBuffer(value),
+        ($0.GetInsuranceAuxiliaryDataResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePaymentsRequest, $0.GetInsurancePaymentsResponse>(
+        'GetInsurancePayments',
+        getInsurancePayments_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsurancePaymentsRequest.fromBuffer(value),
+        ($0.GetInsurancePaymentsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserInsurancePaymentsRequest, $0.GetUserInsurancePaymentsResponse>(
+        'GetUserInsurancePayments',
+        getUserInsurancePayments_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetUserInsurancePaymentsRequest.fromBuffer(value),
+        ($0.GetUserInsurancePaymentsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateInsurancePaymentRequest, $0.CreateInsurancePaymentResponse>(
+        'CreateInsurancePayment',
+        createInsurancePayment_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CreateInsurancePaymentRequest.fromBuffer(value),
+        ($0.CreateInsurancePaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ProcessInsurancePaymentRequest, $0.ProcessInsurancePaymentResponse>(
+        'ProcessInsurancePayment',
+        processInsurancePayment_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ProcessInsurancePaymentRequest.fromBuffer(value),
+        ($0.ProcessInsurancePaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePaymentByIdRequest, $0.GetInsurancePaymentByIdResponse>(
+        'GetInsurancePaymentById',
+        getInsurancePaymentById_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsurancePaymentByIdRequest.fromBuffer(value),
+        ($0.GetInsurancePaymentByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetOverdueInsurancePaymentsRequest, $0.GetOverdueInsurancePaymentsResponse>(
+        'GetOverdueInsurancePayments',
+        getOverdueInsurancePayments_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetOverdueInsurancePaymentsRequest.fromBuffer(value),
+        ($0.GetOverdueInsurancePaymentsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceClaimsRequest, $0.GetInsuranceClaimsResponse>(
+        'GetInsuranceClaims',
+        getInsuranceClaims_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsuranceClaimsRequest.fromBuffer(value),
+        ($0.GetInsuranceClaimsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserInsuranceClaimsRequest, $0.GetUserInsuranceClaimsResponse>(
+        'GetUserInsuranceClaims',
+        getUserInsuranceClaims_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetUserInsuranceClaimsRequest.fromBuffer(value),
+        ($0.GetUserInsuranceClaimsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateInsuranceClaimRequest, $0.UpdateInsuranceClaimResponse>(
+        'UpdateInsuranceClaim',
+        updateInsuranceClaim_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UpdateInsuranceClaimRequest.fromBuffer(value),
+        ($0.UpdateInsuranceClaimResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceClaimByIdRequest, $0.GetInsuranceClaimByIdResponse>(
+        'GetInsuranceClaimById',
+        getInsuranceClaimById_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsuranceClaimByIdRequest.fromBuffer(value),
+        ($0.GetInsuranceClaimByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateInsurancePolicyRequest, $0.UpdateInsurancePolicyResponse>(
+        'UpdateInsurancePolicy',
+        updateInsurancePolicy_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UpdateInsurancePolicyRequest.fromBuffer(value),
+        ($0.UpdateInsurancePolicyResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateInsuranceReceiptRequest, $0.GenerateInsuranceReceiptResponse>(
+        'GenerateInsuranceReceipt',
+        generateInsuranceReceipt_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GenerateInsuranceReceiptRequest.fromBuffer(value),
+        ($0.GenerateInsuranceReceiptResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserInsuranceReceiptsRequest, $0.GetUserInsuranceReceiptsResponse>(
+        'GetUserInsuranceReceipts',
+        getUserInsuranceReceipts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetUserInsuranceReceiptsRequest.fromBuffer(value),
+        ($0.GetUserInsuranceReceiptsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceStatisticsRequest, $0.GetInsuranceStatisticsResponse>(
+        'GetInsuranceStatistics',
+        getInsuranceStatistics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsuranceStatisticsRequest.fromBuffer(value),
+        ($0.GetInsuranceStatisticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsurancePaymentStatisticsRequest, $0.GetInsurancePaymentStatisticsResponse>(
+        'GetInsurancePaymentStatistics',
+        getInsurancePaymentStatistics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsurancePaymentStatisticsRequest.fromBuffer(value),
+        ($0.GetInsurancePaymentStatisticsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CreateCrowdfundRequest, $0.CreateCrowdfundResponse>(
         'CreateCrowdfund',
         createCrowdfund_Pre,
@@ -862,6 +1117,74 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
     return getInsurancePurchaseStatus(call, await request);
   }
 
+  $async.Future<$0.UploadInsuranceDocumentResponse> uploadInsuranceDocument_Pre($grpc.ServiceCall call, $async.Future<$0.UploadInsuranceDocumentRequest> request) async {
+    return uploadInsuranceDocument(call, await request);
+  }
+
+  $async.Future<$0.GetInsuranceAuxiliaryDataResponse> getInsuranceAuxiliaryData_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsuranceAuxiliaryDataRequest> request) async {
+    return getInsuranceAuxiliaryData(call, await request);
+  }
+
+  $async.Future<$0.GetInsurancePaymentsResponse> getInsurancePayments_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsurancePaymentsRequest> request) async {
+    return getInsurancePayments(call, await request);
+  }
+
+  $async.Future<$0.GetUserInsurancePaymentsResponse> getUserInsurancePayments_Pre($grpc.ServiceCall call, $async.Future<$0.GetUserInsurancePaymentsRequest> request) async {
+    return getUserInsurancePayments(call, await request);
+  }
+
+  $async.Future<$0.CreateInsurancePaymentResponse> createInsurancePayment_Pre($grpc.ServiceCall call, $async.Future<$0.CreateInsurancePaymentRequest> request) async {
+    return createInsurancePayment(call, await request);
+  }
+
+  $async.Future<$0.ProcessInsurancePaymentResponse> processInsurancePayment_Pre($grpc.ServiceCall call, $async.Future<$0.ProcessInsurancePaymentRequest> request) async {
+    return processInsurancePayment(call, await request);
+  }
+
+  $async.Future<$0.GetInsurancePaymentByIdResponse> getInsurancePaymentById_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsurancePaymentByIdRequest> request) async {
+    return getInsurancePaymentById(call, await request);
+  }
+
+  $async.Future<$0.GetOverdueInsurancePaymentsResponse> getOverdueInsurancePayments_Pre($grpc.ServiceCall call, $async.Future<$0.GetOverdueInsurancePaymentsRequest> request) async {
+    return getOverdueInsurancePayments(call, await request);
+  }
+
+  $async.Future<$0.GetInsuranceClaimsResponse> getInsuranceClaims_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsuranceClaimsRequest> request) async {
+    return getInsuranceClaims(call, await request);
+  }
+
+  $async.Future<$0.GetUserInsuranceClaimsResponse> getUserInsuranceClaims_Pre($grpc.ServiceCall call, $async.Future<$0.GetUserInsuranceClaimsRequest> request) async {
+    return getUserInsuranceClaims(call, await request);
+  }
+
+  $async.Future<$0.UpdateInsuranceClaimResponse> updateInsuranceClaim_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateInsuranceClaimRequest> request) async {
+    return updateInsuranceClaim(call, await request);
+  }
+
+  $async.Future<$0.GetInsuranceClaimByIdResponse> getInsuranceClaimById_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsuranceClaimByIdRequest> request) async {
+    return getInsuranceClaimById(call, await request);
+  }
+
+  $async.Future<$0.UpdateInsurancePolicyResponse> updateInsurancePolicy_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateInsurancePolicyRequest> request) async {
+    return updateInsurancePolicy(call, await request);
+  }
+
+  $async.Future<$0.GenerateInsuranceReceiptResponse> generateInsuranceReceipt_Pre($grpc.ServiceCall call, $async.Future<$0.GenerateInsuranceReceiptRequest> request) async {
+    return generateInsuranceReceipt(call, await request);
+  }
+
+  $async.Future<$0.GetUserInsuranceReceiptsResponse> getUserInsuranceReceipts_Pre($grpc.ServiceCall call, $async.Future<$0.GetUserInsuranceReceiptsRequest> request) async {
+    return getUserInsuranceReceipts(call, await request);
+  }
+
+  $async.Future<$0.GetInsuranceStatisticsResponse> getInsuranceStatistics_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsuranceStatisticsRequest> request) async {
+    return getInsuranceStatistics(call, await request);
+  }
+
+  $async.Future<$0.GetInsurancePaymentStatisticsResponse> getInsurancePaymentStatistics_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsurancePaymentStatisticsRequest> request) async {
+    return getInsurancePaymentStatistics(call, await request);
+  }
+
   $async.Future<$0.CreateCrowdfundResponse> createCrowdfund_Pre($grpc.ServiceCall call, $async.Future<$0.CreateCrowdfundRequest> request) async {
     return createCrowdfund(call, await request);
   }
@@ -1005,6 +1328,23 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
   $async.Future<$0.GetInsuranceQuoteResponse> getInsuranceQuote($grpc.ServiceCall call, $0.GetInsuranceQuoteRequest request);
   $async.Future<$0.PurchaseMarketplaceInsuranceResponse> purchaseMarketplaceInsurance($grpc.ServiceCall call, $0.PurchaseMarketplaceInsuranceRequest request);
   $async.Future<$0.GetInsurancePurchaseStatusResponse> getInsurancePurchaseStatus($grpc.ServiceCall call, $0.GetInsurancePurchaseStatusRequest request);
+  $async.Future<$0.UploadInsuranceDocumentResponse> uploadInsuranceDocument($grpc.ServiceCall call, $0.UploadInsuranceDocumentRequest request);
+  $async.Future<$0.GetInsuranceAuxiliaryDataResponse> getInsuranceAuxiliaryData($grpc.ServiceCall call, $0.GetInsuranceAuxiliaryDataRequest request);
+  $async.Future<$0.GetInsurancePaymentsResponse> getInsurancePayments($grpc.ServiceCall call, $0.GetInsurancePaymentsRequest request);
+  $async.Future<$0.GetUserInsurancePaymentsResponse> getUserInsurancePayments($grpc.ServiceCall call, $0.GetUserInsurancePaymentsRequest request);
+  $async.Future<$0.CreateInsurancePaymentResponse> createInsurancePayment($grpc.ServiceCall call, $0.CreateInsurancePaymentRequest request);
+  $async.Future<$0.ProcessInsurancePaymentResponse> processInsurancePayment($grpc.ServiceCall call, $0.ProcessInsurancePaymentRequest request);
+  $async.Future<$0.GetInsurancePaymentByIdResponse> getInsurancePaymentById($grpc.ServiceCall call, $0.GetInsurancePaymentByIdRequest request);
+  $async.Future<$0.GetOverdueInsurancePaymentsResponse> getOverdueInsurancePayments($grpc.ServiceCall call, $0.GetOverdueInsurancePaymentsRequest request);
+  $async.Future<$0.GetInsuranceClaimsResponse> getInsuranceClaims($grpc.ServiceCall call, $0.GetInsuranceClaimsRequest request);
+  $async.Future<$0.GetUserInsuranceClaimsResponse> getUserInsuranceClaims($grpc.ServiceCall call, $0.GetUserInsuranceClaimsRequest request);
+  $async.Future<$0.UpdateInsuranceClaimResponse> updateInsuranceClaim($grpc.ServiceCall call, $0.UpdateInsuranceClaimRequest request);
+  $async.Future<$0.GetInsuranceClaimByIdResponse> getInsuranceClaimById($grpc.ServiceCall call, $0.GetInsuranceClaimByIdRequest request);
+  $async.Future<$0.UpdateInsurancePolicyResponse> updateInsurancePolicy($grpc.ServiceCall call, $0.UpdateInsurancePolicyRequest request);
+  $async.Future<$0.GenerateInsuranceReceiptResponse> generateInsuranceReceipt($grpc.ServiceCall call, $0.GenerateInsuranceReceiptRequest request);
+  $async.Future<$0.GetUserInsuranceReceiptsResponse> getUserInsuranceReceipts($grpc.ServiceCall call, $0.GetUserInsuranceReceiptsRequest request);
+  $async.Future<$0.GetInsuranceStatisticsResponse> getInsuranceStatistics($grpc.ServiceCall call, $0.GetInsuranceStatisticsRequest request);
+  $async.Future<$0.GetInsurancePaymentStatisticsResponse> getInsurancePaymentStatistics($grpc.ServiceCall call, $0.GetInsurancePaymentStatisticsRequest request);
   $async.Future<$0.CreateCrowdfundResponse> createCrowdfund($grpc.ServiceCall call, $0.CreateCrowdfundRequest request);
   $async.Future<$0.GetCrowdfundsResponse> getCrowdfunds($grpc.ServiceCall call, $0.GetCrowdfundsRequest request);
   $async.Future<$0.GetCrowdfundResponse> getCrowdfund($grpc.ServiceCall call, $0.GetCrowdfundRequest request);

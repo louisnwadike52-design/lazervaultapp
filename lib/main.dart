@@ -30,21 +30,6 @@ import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_pl
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/quick_actions_service.dart';
 
-/// Development utility to reset onboarding state
-/// Call this function to simulate a fresh install
-Future<void> resetOnboardingForDevelopment() async {
-  const storage = FlutterSecureStorage();
-  await storage.write(key: 'force_onboarding', value: 'true');
-  print('✅ Onboarding will be reset on next app launch');
-}
-
-/// Development utility to check if onboarding will be shown
-Future<bool> willShowOnboarding() async {
-  const storage = FlutterSecureStorage();
-  final hasSeenOnboarding = await storage.read(key: 'has_seen_onboarding');
-  return hasSeenOnboarding != 'true';
-}
-
 Future<void> _checkPermissions() async {
   var status = await Permission.bluetooth.request();
   if (status.isPermanentlyDenied) {

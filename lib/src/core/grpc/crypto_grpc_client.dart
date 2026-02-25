@@ -84,11 +84,13 @@ class CryptoGrpcClient {
   ///
   /// [limit] - Number of results (default: 10)
   Future<GetTrendingCryptosResponse> getTrendingCryptos({int limit = 10}) async {
+    // Include currency metadata so backend returns prices in user's fiat currency
+    final options = await _callOptionsHelper.withAuth();
     try {
       final request = GetTrendingCryptosRequest()
         ..limit = limit;
 
-      final response = await _client.getTrendingCryptos(request);
+      final response = await _client.getTrendingCryptos(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -382,6 +384,18 @@ class CryptoGrpcClient {
     }
   }
 
+  /// Batch create default stablecoin wallets for the current user
+  Future<BatchCreateWalletsResponse> batchCreateWallets() async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = BatchCreateWalletsRequest();
+      final response = await _client.batchCreateWallets(request, options: options);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Get exchange rate for a crypto/fiat pair
   Future<GetExchangeRateResponse> getExchangeRate({
     required String cryptoId,
@@ -393,6 +407,19 @@ class CryptoGrpcClient {
         ..cryptoId = cryptoId
         ..fiatCurrency = fiatCurrency;
       final response = await _client.getExchangeRate(request, options: options);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get global cryptocurrency market data (market cap, volume, dominance)
+  /// Includes currency metadata so values are returned in user's fiat currency
+  Future<GetGlobalMarketDataResponse> getGlobalMarketData() async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = GetGlobalMarketDataRequest();
+      final response = await _client.getGlobalMarketData(request, options: options);
       return response;
     } catch (e) {
       rethrow;

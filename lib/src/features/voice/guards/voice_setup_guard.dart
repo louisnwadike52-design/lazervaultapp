@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/src/features/dashboard/managers/voice_setup_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Voice Setup Guard
@@ -10,7 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// Shows setup prompt when user tries to access voice/microphone features
 class VoiceSetupGuard {
   final VoiceActivationManager _voiceManager;
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final FlutterSecureStorage _storage = serviceLocator<FlutterSecureStorage>();
 
   VoiceSetupGuard({
     required VoiceActivationManager voiceManager,
