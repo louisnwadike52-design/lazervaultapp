@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../domain/entities/crypto_entity.dart';
+import '../domain/entities/crypto_wallet_entity.dart';
+import '../domain/entities/global_market_data.dart';
 import '../domain/repositories/crypto_repository.dart';
 import 'crypto_state.dart';
 
@@ -13,12 +15,37 @@ class CryptoCubit extends Cubit<CryptoState> {
       if (isClosed) return;
       emit(CryptoLoading());
 
-      final cryptos = await repository.getCryptos();
-      final trendingCryptos = await repository.getTrendingCryptos();
-      final topCryptos = await repository.getTopCryptos();
-      final watchlists = await repository.getWatchlists();
-      final holdings = await repository.getHoldings();
-      final transactions = await repository.getTransactions();
+      // Public data (no auth required) — parallel to reduce wall-clock time
+      final results = await Future.wait([
+        repository.getCryptos(),
+        repository.getTrendingCryptos(),
+        repository.getTopCryptos(),
+      ]);
+      final cryptos = results[0] as List<Crypto>;
+      final trendingCryptos = results[1] as List<Crypto>;
+      final topCryptos = results[2] as List<Crypto>;
+
+      // Global market data (non-critical, graceful failure)
+      GlobalMarketData? globalMarketData;
+      try {
+        globalMarketData = await repository.getGlobalMarketData();
+      } catch (e) {
+        // CoinGecko rate limit or unavailable — continue without
+      }
+
+      // Authenticated data — graceful failure if not logged in
+      List<CryptoWalletEntity> wallets = [];
+      List<CryptoWatchlist> watchlists = [];
+      List<CryptoHolding> holdings = [];
+      List<CryptoTransaction> transactions = [];
+      try {
+        watchlists = await repository.getWatchlists();
+        holdings = await repository.getHoldings();
+        transactions = await repository.getTransactions();
+        wallets = await repository.getWallets();
+      } catch (e) {
+        // Auth calls failed (user not logged in) — continue with public data
+      }
 
       if (isClosed) return;
       emit(CryptosLoaded(
@@ -28,6 +55,8 @@ class CryptoCubit extends Cubit<CryptoState> {
         watchlists: watchlists,
         holdings: holdings,
         transactions: transactions,
+        wallets: wallets,
+        globalMarketData: globalMarketData,
       ));
     } catch (e) {
       if (isClosed) return;

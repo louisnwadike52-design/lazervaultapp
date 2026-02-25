@@ -67,6 +67,9 @@ class AccountSummaryEntity extends Equatable {
   final double? memberRemainingBalance; // Member's remaining balance
   final int? memberCount; // Total member count
   final bool? allowMemberContributions; // Can members contribute
+  final String? familyAccountId; // Family account ID (for setup navigation)
+  final String? familyStatus; // Family account status (active, pending_setup, frozen, closed)
+  final String? fundDistributionMode; // Fund distribution mode (shared_pool, equal_split, custom_allocation)
 
   const AccountSummaryEntity({
     required this.id,
@@ -86,6 +89,9 @@ class AccountSummaryEntity extends Equatable {
     this.memberRemainingBalance,
     this.memberCount,
     this.allowMemberContributions,
+    this.familyAccountId,
+    this.familyStatus,
+    this.fundDistributionMode,
   }) : isUp = trendPercentage > 0; // Calculate isUp here
 
   /// Get the display name for the account type
@@ -123,9 +129,15 @@ class AccountSummaryEntity extends Equatable {
         memberRemainingBalance,
         memberCount,
         allowMemberContributions,
+        familyAccountId,
+        familyStatus,
+        fundDistributionMode,
       ];
 
   // Factory constructor for family accounts
+  /// Whether this family account needs setup (pending_setup status)
+  bool get isFamilyPendingSetup => familyStatus == 'pending_setup';
+
   factory AccountSummaryEntity.familyAccount({
     required String id,
     required String currency,
@@ -136,6 +148,9 @@ class AccountSummaryEntity extends Equatable {
     required bool allowMemberContributions,
     required double trendPercentage,
     String? accountNumberLast4,
+    String? familyAccountId,
+    String? familyStatus,
+    String? fundDistributionMode,
   }) {
     return AccountSummaryEntity(
       id: id,
@@ -150,6 +165,9 @@ class AccountSummaryEntity extends Equatable {
       memberRemainingBalance: memberRemainingBalance,
       memberCount: memberCount,
       allowMemberContributions: allowMemberContributions,
+      familyAccountId: familyAccountId,
+      familyStatus: familyStatus,
+      fundDistributionMode: fundDistributionMode,
     );
   }
 
@@ -171,6 +189,9 @@ class AccountSummaryEntity extends Equatable {
     double? memberRemainingBalance,
     int? memberCount,
     bool? allowMemberContributions,
+    String? familyAccountId,
+    String? familyStatus,
+    String? fundDistributionMode,
   }) {
     return AccountSummaryEntity(
       id: id ?? this.id,
@@ -190,6 +211,9 @@ class AccountSummaryEntity extends Equatable {
       memberRemainingBalance: memberRemainingBalance ?? this.memberRemainingBalance,
       memberCount: memberCount ?? this.memberCount,
       allowMemberContributions: allowMemberContributions ?? this.allowMemberContributions,
+      familyAccountId: familyAccountId ?? this.familyAccountId,
+      familyStatus: familyStatus ?? this.familyStatus,
+      fundDistributionMode: fundDistributionMode ?? this.fundDistributionMode,
     );
   }
 

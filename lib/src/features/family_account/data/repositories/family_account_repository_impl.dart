@@ -4,6 +4,7 @@ import 'package:lazervault/src/core/errors/failures.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/family_account/data/datasources/family_account_remote_data_source.dart';
 import 'package:lazervault/src/features/family_account/data/models/family_account_models.dart';
+import 'package:lazervault/src/features/family_account/data/models/family_account_proto.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/domain/repositories/family_account_repository.dart';
 
@@ -376,6 +377,35 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
         memberId: memberId,
         amount: amount,
         description: description,
+      );
+      return Right(account.toDomain());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, FamilyAccount>> setupFamilyAccount({
+    required String familyId,
+    required String fundDistributionMode,
+    required bool spendingVisibilityEnabled,
+    List<MemberAllocationEntry> allocations = const [],
+  }) async {
+    try {
+      final protoAllocations = allocations.map((a) => MemberAllocationProto(
+        memberId: a.memberId,
+        amount: a.amount,
+      )).toList();
+
+      final account = await remoteDataSource.setupFamilyAccount(
+        familyId: familyId,
+        fundDistributionMode: fundDistributionMode,
+        spendingVisibilityEnabled: spendingVisibilityEnabled,
+        allocations: protoAllocations,
       );
       return Right(account.toDomain());
     } on ServerException catch (e) {

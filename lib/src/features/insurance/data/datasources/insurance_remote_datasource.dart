@@ -149,6 +149,19 @@ abstract class InsuranceRemoteDataSource {
     required String accessToken,
     required String reference,
   });
+
+  Future<String> uploadInsuranceDocument({
+    required String accessToken,
+    required List<int> fileData,
+    required String filename,
+    required String documentType,
+  });
+
+  Future<List<AuxiliaryItem>> getInsuranceAuxiliaryData({
+    required String accessToken,
+    required String utilityId,
+    String? query,
+  });
 }
 
 class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
@@ -558,6 +571,45 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     return _purchaseResultFromProto(response.result);
   }
 
+  @override
+  Future<String> uploadInsuranceDocument({
+    required String accessToken,
+    required List<int> fileData,
+    required String filename,
+    required String documentType,
+  }) async {
+    final request = pb.UploadInsuranceDocumentRequest()
+      ..fileData = fileData
+      ..filename = filename
+      ..documentType = documentType;
+
+    final options = await grpcClient.callOptions;
+    final response = await _client.uploadInsuranceDocument(request, options: options);
+
+    return response.uploadId;
+  }
+
+  @override
+  Future<List<AuxiliaryItem>> getInsuranceAuxiliaryData({
+    required String accessToken,
+    required String utilityId,
+    String? query,
+  }) async {
+    final request = pb.GetInsuranceAuxiliaryDataRequest()
+      ..utilityId = utilityId;
+    if (query != null && query.isNotEmpty) {
+      request.query = query;
+    }
+
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsuranceAuxiliaryData(request, options: options);
+
+    return response.items.map((item) => AuxiliaryItem(
+      label: item.label,
+      value: item.value,
+    )).toList();
+  }
+
   // MyCover.ai Proto Conversion Helpers
 
   InsuranceProduct _insuranceProductFromProto(pb.InsuranceProduct proto) {
@@ -586,6 +638,13 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
         description: f.description,
       )).toList(),
       isActive: proto.isActive,
+      purchaseRoute: proto.purchaseRoute,
+      providerId: proto.providerId,
+      basePrice: proto.basePrice,
+      howItWorks: proto.howItWorks,
+      fullBenefits: proto.fullBenefits,
+      isRenewable: proto.isRenewable,
+      isClaimable: proto.isClaimable,
     );
   }
 

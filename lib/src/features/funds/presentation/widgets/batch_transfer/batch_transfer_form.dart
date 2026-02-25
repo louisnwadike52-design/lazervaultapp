@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -545,8 +546,11 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     try {
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is AuthenticationSuccess) {
+        final localeManager = serviceLocator<LocaleManager>();
         context.read<RecipientCubit>().getRecipients(
           accessToken: authState.profile.session.accessToken,
+          countryCode: localeManager.currentCountry,
+          currency: localeManager.currentCurrency,
         );
       }
     } catch (_) {}
@@ -1593,7 +1597,12 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
   void _loadRecipients() {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
-      context.read<RecipientCubit>().getRecipients(accessToken: authState.profile.session.accessToken);
+      final localeManager = serviceLocator<LocaleManager>();
+      context.read<RecipientCubit>().getRecipients(
+        accessToken: authState.profile.session.accessToken,
+        countryCode: localeManager.currentCountry,
+        currency: localeManager.currentCurrency,
+      );
     }
   }
 

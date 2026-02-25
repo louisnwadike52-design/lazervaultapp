@@ -201,7 +201,21 @@ class ExchangeCubit extends Cubit<ExchangeState> {
   Future<void> convertCurrency({
     required String verificationToken,
   }) async {
-    if (_currentRate == null) {
+    // Fetch fresh rate immediately before executing to avoid stale rates
+    final freshRateResult = await _repository.getExchangeRate(
+      fromCurrency: _fromCurrency,
+      toCurrency: _toCurrency,
+      amount: _amount > 0 ? _amount : null,
+    );
+
+    final freshRate = freshRateResult.fold(
+      (failure) => null,
+      (rate) => rate,
+    );
+
+    if (freshRate != null) {
+      _currentRate = freshRate;
+    } else if (_currentRate == null || _currentRate!.isExpired) {
       emit(const ExchangeError('No exchange rate available. Please refresh.'));
       return;
     }
@@ -244,7 +258,21 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     String? recipientEmail,
     String? purposeOfPayment,
   }) async {
-    if (_currentRate == null) {
+    // Fetch fresh rate immediately before executing to avoid stale rates
+    final freshRateResult = await _repository.getExchangeRate(
+      fromCurrency: _fromCurrency,
+      toCurrency: _toCurrency,
+      amount: _amount > 0 ? _amount : null,
+    );
+
+    final freshRate = freshRateResult.fold(
+      (failure) => null,
+      (rate) => rate,
+    );
+
+    if (freshRate != null) {
+      _currentRate = freshRate;
+    } else if (_currentRate == null || _currentRate!.isExpired) {
       emit(const ExchangeError('No exchange rate available. Please refresh.'));
       return;
     }

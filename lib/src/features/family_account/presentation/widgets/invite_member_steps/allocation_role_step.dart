@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// Step 2: Allocation & Role Selection
-/// - Initial allocation amount input (currency formatted)
-/// - Role selection cards: Member / Admin
-/// - Role description for each option
+/// Step 2: Allocation, Role & Spending Limits (consolidated)
+/// - Initial allocation amount input
+/// - Role selection: Member / Admin
+/// - No Spending Limits toggle
+/// - Daily / Monthly / Per-transaction limits (if limits enabled)
+/// - Allocation percentage cap slider
 class AllocationRoleStep extends StatefulWidget {
   final Map<String, dynamic> formData;
   final Function(Map<String, dynamic>) onNext;
@@ -25,6 +27,13 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
   late TextEditingController _allocationController;
   late String _selectedRole;
 
+  // Spending limits
+  late bool _noLimits;
+  late TextEditingController _dailyLimitController;
+  late TextEditingController _monthlyLimitController;
+  late TextEditingController _perTransactionLimitController;
+  late double _allocationPercentageCap;
+
   @override
   void initState() {
     super.initState();
@@ -33,11 +42,32 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
       text: allocation > 0 ? allocation.toStringAsFixed(2) : '',
     );
     _selectedRole = widget.formData['role'] as String? ?? 'member';
+
+    _noLimits = widget.formData['noLimits'] as bool? ?? true;
+
+    final dailyLimit = widget.formData['dailyLimit'] as double? ?? 0.0;
+    final monthlyLimit = widget.formData['monthlyLimit'] as double? ?? 0.0;
+    final perTxnLimit = widget.formData['perTransactionLimit'] as double? ?? 0.0;
+
+    _dailyLimitController = TextEditingController(
+      text: dailyLimit > 0 ? dailyLimit.toStringAsFixed(2) : '',
+    );
+    _monthlyLimitController = TextEditingController(
+      text: monthlyLimit > 0 ? monthlyLimit.toStringAsFixed(2) : '',
+    );
+    _perTransactionLimitController = TextEditingController(
+      text: perTxnLimit > 0 ? perTxnLimit.toStringAsFixed(2) : '',
+    );
+    _allocationPercentageCap =
+        widget.formData['allocationPercentageCap'] as double? ?? 100.0;
   }
 
   @override
   void dispose() {
     _allocationController.dispose();
+    _dailyLimitController.dispose();
+    _monthlyLimitController.dispose();
+    _perTransactionLimitController.dispose();
     super.dispose();
   }
 
@@ -47,6 +77,18 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
         'initialAllocation':
             double.tryParse(_allocationController.text) ?? 0.0,
         'role': _selectedRole,
+        'noLimits': _noLimits,
+        'dailyLimit': _noLimits
+            ? 0.0
+            : (double.tryParse(_dailyLimitController.text) ?? 0.0),
+        'monthlyLimit': _noLimits
+            ? 0.0
+            : (double.tryParse(_monthlyLimitController.text) ?? 0.0),
+        'perTransactionLimit': _noLimits
+            ? 0.0
+            : (double.tryParse(_perTransactionLimitController.text) ?? 0.0),
+        'allocationPercentageCap':
+            _noLimits ? 100.0 : _allocationPercentageCap,
       });
     }
   }
@@ -62,9 +104,9 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
           children: [
             // Header
             Text(
-              'Set initial allocation\nand role',
+              'Set allocation, role\n& limits',
               style: TextStyle(
-                color: const Color(0xFF1E1E2E),
+                color: Colors.white,
                 fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
                 height: 1.2,
@@ -72,43 +114,31 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
             ),
             SizedBox(height: 8.h),
             Text(
-              'Define how much they can access and their permissions',
+              'Configure how much they can access and spend',
               style: TextStyle(
-                color: const Color(0xFF666666),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
-            SizedBox(height: 32.h),
+            SizedBox(height: 24.h),
 
-            // Initial Allocation Section
+            // --- Initial Allocation ---
+            _buildSectionLabel('Initial Allocation'),
+            SizedBox(height: 4.h),
             Text(
-              'Initial Allocation',
+              'Amount to allocate from the family pool',
               style: TextStyle(
-                color: const Color(0xFF1E1E2E),
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Amount to allocate to this member from the family pool',
-              style: TextStyle(
-                color: const Color(0xFF888888),
+                color: const Color(0xFF9CA3AF),
                 fontSize: 12.sp,
               ),
             ),
             SizedBox(height: 12.h),
-
-            // Amount Input
             Container(
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F8F8),
+                color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: const Color(0xFFE0E0E0),
-                  width: 1,
-                ),
+                border: Border.all(color: const Color(0xFF2D2D2D)),
               ),
               child: Column(
                 children: [
@@ -122,14 +152,14 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                     ],
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: const Color(0xFF1E1E2E),
+                      color: Colors.white,
                       fontSize: 36.sp,
                       fontWeight: FontWeight.bold,
                     ),
                     decoration: InputDecoration(
                       prefixText: '\$ ',
                       prefixStyle: TextStyle(
-                        color: const Color(0xFF6C5CE7),
+                        color: const Color(0xFF3B82F6),
                         fontSize: 36.sp,
                         fontWeight: FontWeight.bold,
                       ),
@@ -153,64 +183,161 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: 4.h),
                   Text(
                     'Enter 0 to invite without initial funds',
                     style: TextStyle(
-                      color: const Color(0xFF888888),
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 12.sp,
                     ),
                   ),
                 ],
               ),
             ),
+            SizedBox(height: 24.h),
+
+            // --- Role Selection ---
+            _buildSectionLabel('Member Role'),
+            SizedBox(height: 12.h),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCompactRoleCard(
+                    role: 'member',
+                    icon: Icons.person_outline,
+                    title: 'Member',
+                    subtitle: 'Can spend & view balance',
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _buildCompactRoleCard(
+                    role: 'admin',
+                    icon: Icons.admin_panel_settings_outlined,
+                    title: 'Admin',
+                    subtitle: 'Full management access',
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 24.h),
+
+            // --- Spending Limits ---
+            _buildSectionLabel('Spending Limits'),
+            SizedBox(height: 12.h),
+
+            // No Limits Toggle
+            GestureDetector(
+              onTap: () => setState(() => _noLimits = !_noLimits),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: _noLimits
+                      ? const Color(0xFF3B82F6).withValues(alpha: 0.08)
+                      : const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: _noLimits
+                        ? const Color(0xFF3B82F6)
+                        : const Color(0xFF2D2D2D),
+                    width: _noLimits ? 2 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.all_inclusive,
+                      color: _noLimits
+                          ? const Color(0xFF3B82F6)
+                          : const Color(0xFF9CA3AF),
+                      size: 22.sp,
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Text(
+                        'No Spending Limits',
+                        style: TextStyle(
+                          color: _noLimits
+                              ? const Color(0xFF3B82F6)
+                              : Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value: _noLimits,
+                      onChanged: (v) => setState(() => _noLimits = v),
+                      activeThumbColor: const Color(0xFF3B82F6),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Limit fields (shown only when limits enabled)
+            if (!_noLimits) ...[
+              SizedBox(height: 16.h),
+              _buildLimitInput(
+                controller: _dailyLimitController,
+                icon: Icons.today_outlined,
+                label: 'Daily Limit',
+              ),
+              SizedBox(height: 12.h),
+              _buildLimitInput(
+                controller: _monthlyLimitController,
+                icon: Icons.calendar_month_outlined,
+                label: 'Monthly Limit',
+              ),
+              SizedBox(height: 12.h),
+              _buildLimitInput(
+                controller: _perTransactionLimitController,
+                icon: Icons.payment_outlined,
+                label: 'Per-Transaction Limit',
+              ),
+              SizedBox(height: 16.h),
+
+              // Allocation Percentage Cap
+              Text(
+                'Allocation Cap: ${_allocationPercentageCap.toStringAsFixed(0)}%',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Maximum percentage of total pool this member can have',
+                style: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 11.sp,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: const Color(0xFF3B82F6),
+                  inactiveTrackColor: const Color(0xFF2D2D2D),
+                  thumbColor: const Color(0xFF3B82F6),
+                  overlayColor:
+                      const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  trackHeight: 6.h,
+                  thumbShape:
+                      RoundSliderThumbShape(enabledThumbRadius: 10.r),
+                ),
+                child: Slider(
+                  value: _allocationPercentageCap,
+                  min: 1,
+                  max: 100,
+                  divisions: 99,
+                  onChanged: (value) {
+                    setState(() => _allocationPercentageCap = value);
+                  },
+                ),
+              ),
+            ],
             SizedBox(height: 32.h),
-
-            // Role Selection Section
-            Text(
-              'Member Role',
-              style: TextStyle(
-                color: const Color(0xFF1E1E2E),
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Choose what permissions this member will have',
-              style: TextStyle(
-                color: const Color(0xFF888888),
-                fontSize: 12.sp,
-              ),
-            ),
-            SizedBox(height: 12.h),
-
-            // Role Cards
-            _buildRoleCard(
-              role: 'member',
-              icon: Icons.person_outline,
-              title: 'Member',
-              description: 'Can spend allocated funds and view their balance',
-              features: [
-                'Spend from allocated balance',
-                'View transaction history',
-                'Receive notifications',
-              ],
-            ),
-            SizedBox(height: 12.h),
-            _buildRoleCard(
-              role: 'admin',
-              icon: Icons.admin_panel_settings_outlined,
-              title: 'Admin',
-              description: 'Full access to manage the family account',
-              features: [
-                'All member permissions',
-                'Add and remove members',
-                'Allocate funds to members',
-                'Modify spending limits',
-              ],
-            ),
-            SizedBox(height: 40.h),
 
             // Continue Button
             _buildContinueButton(),
@@ -221,144 +348,152 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
     );
   }
 
-  Widget _buildRoleCard({
+  Widget _buildSectionLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Widget _buildCompactRoleCard({
     required String role,
     required IconData icon,
     required String title,
-    required String description,
-    required List<String> features,
+    required String subtitle,
   }) {
     final isSelected = _selectedRole == role;
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedRole = role;
-        });
-      },
+      onTap: () => setState(() => _selectedRole = role),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF6C5CE7).withValues(alpha: 0.08)
-              : const Color(0xFFF8F8F8),
-          borderRadius: BorderRadius.circular(16.r),
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.08)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF6C5CE7)
-                : const Color(0xFFE0E0E0),
+                ? const Color(0xFF3B82F6)
+                : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 48.w,
-                  height: 48.h,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFF6C5CE7).withValues(alpha: 0.15)
-                        : const Color(0xFFE0E0E0).withValues(alpha: 0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isSelected
-                        ? const Color(0xFF6C5CE7)
-                        : const Color(0xFF888888),
-                    size: 24.sp,
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: isSelected
-                              ? const Color(0xFF6C5CE7)
-                              : const Color(0xFF1E1E2E),
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          color: const Color(0xFF888888),
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  Container(
-                    width: 24.w,
-                    height: 24.h,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF6C5CE7),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 16.sp,
-                    ),
-                  )
-                else
-                  Container(
-                    width: 24.w,
-                    height: 24.h,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFFE0E0E0),
-                        width: 2,
-                      ),
-                    ),
-                  ),
-              ],
+            Container(
+              width: 40.w,
+              height: 40.h,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+                    : const Color(0xFF2D2D2D).withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF9CA3AF),
+                size: 22.sp,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected
+                    ? const Color(0xFF3B82F6)
+                    : Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 2.h),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 11.sp,
+              ),
+              textAlign: TextAlign.center,
             ),
             if (isSelected) ...[
-              SizedBox(height: 16.h),
-              Divider(
-                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
-                height: 1,
-              ),
-              SizedBox(height: 16.h),
-              ...features.map(
-                (feature) => Padding(
-                  padding: EdgeInsets.only(bottom: 8.h),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: const Color(0xFF6C5CE7),
-                        size: 16.sp,
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        feature,
-                        style: TextStyle(
-                          color: const Color(0xFF666666),
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              SizedBox(height: 6.h),
+              Icon(
+                Icons.check_circle,
+                color: const Color(0xFF3B82F6),
+                size: 18.sp,
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLimitInput({
+    required TextEditingController controller,
+    required IconData icon,
+    required String label,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF3B82F6), size: 20.sp),
+          SizedBox(width: 10.w),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const Spacer(),
+          SizedBox(
+            width: 100.w,
+            child: TextFormField(
+              controller: controller,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: InputDecoration(
+                prefixText: '\$ ',
+                prefixStyle: TextStyle(
+                  color: const Color(0xFF3B82F6),
+                  fontSize: 14.sp,
+                ),
+                hintText: '0',
+                hintStyle: TextStyle(
+                  color: const Color(0xFFCCCCCC),
+                  fontSize: 16.sp,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -369,12 +504,12 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
       height: 56.h,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
+          colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
         ),
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

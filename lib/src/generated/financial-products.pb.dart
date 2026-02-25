@@ -11,6 +11,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'financial-products.pbenum.dart';
@@ -3589,6 +3590,13 @@ class MarketplaceInsuranceProduct extends $pb.GeneratedMessage {
     $core.Map<$core.String, $core.String>? metadata,
     $core.Iterable<MarketplaceProductFormField>? formFields,
     $core.bool? isActive,
+    $core.String? purchaseRoute,
+    $core.String? providerId,
+    $core.double? basePrice,
+    $core.String? howItWorks,
+    $core.String? fullBenefits,
+    $core.bool? isRenewable,
+    $core.bool? isClaimable,
   }) {
     final $result = create();
     if (id != null) {
@@ -3633,6 +3641,27 @@ class MarketplaceInsuranceProduct extends $pb.GeneratedMessage {
     if (isActive != null) {
       $result.isActive = isActive;
     }
+    if (purchaseRoute != null) {
+      $result.purchaseRoute = purchaseRoute;
+    }
+    if (providerId != null) {
+      $result.providerId = providerId;
+    }
+    if (basePrice != null) {
+      $result.basePrice = basePrice;
+    }
+    if (howItWorks != null) {
+      $result.howItWorks = howItWorks;
+    }
+    if (fullBenefits != null) {
+      $result.fullBenefits = fullBenefits;
+    }
+    if (isRenewable != null) {
+      $result.isRenewable = isRenewable;
+    }
+    if (isClaimable != null) {
+      $result.isClaimable = isClaimable;
+    }
     return $result;
   }
   MarketplaceInsuranceProduct._() : super();
@@ -3654,6 +3683,13 @@ class MarketplaceInsuranceProduct extends $pb.GeneratedMessage {
     ..m<$core.String, $core.String>(12, _omitFieldNames ? '' : 'metadata', entryClassName: 'MarketplaceInsuranceProduct.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('financialproducts'))
     ..pc<MarketplaceProductFormField>(13, _omitFieldNames ? '' : 'formFields', $pb.PbFieldType.PM, subBuilder: MarketplaceProductFormField.create)
     ..aOB(14, _omitFieldNames ? '' : 'isActive')
+    ..aOS(15, _omitFieldNames ? '' : 'purchaseRoute')
+    ..aOS(16, _omitFieldNames ? '' : 'providerId')
+    ..a<$core.double>(17, _omitFieldNames ? '' : 'basePrice', $pb.PbFieldType.OD)
+    ..aOS(18, _omitFieldNames ? '' : 'howItWorks')
+    ..aOS(19, _omitFieldNames ? '' : 'fullBenefits')
+    ..aOB(20, _omitFieldNames ? '' : 'isRenewable')
+    ..aOB(21, _omitFieldNames ? '' : 'isClaimable')
     ..hasRequiredFields = false
   ;
 
@@ -3785,6 +3821,69 @@ class MarketplaceInsuranceProduct extends $pb.GeneratedMessage {
   $core.bool hasIsActive() => $_has(13);
   @$pb.TagNumber(14)
   void clearIsActive() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get purchaseRoute => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set purchaseRoute($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasPurchaseRoute() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearPurchaseRoute() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get providerId => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set providerId($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasProviderId() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearProviderId() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.double get basePrice => $_getN(16);
+  @$pb.TagNumber(17)
+  set basePrice($core.double v) { $_setDouble(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasBasePrice() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearBasePrice() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get howItWorks => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set howItWorks($core.String v) { $_setString(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasHowItWorks() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearHowItWorks() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get fullBenefits => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set fullBenefits($core.String v) { $_setString(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasFullBenefits() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearFullBenefits() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.bool get isRenewable => $_getBF(19);
+  @$pb.TagNumber(20)
+  set isRenewable($core.bool v) { $_setBool(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasIsRenewable() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearIsRenewable() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.bool get isClaimable => $_getBF(20);
+  @$pb.TagNumber(21)
+  set isClaimable($core.bool v) { $_setBool(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasIsClaimable() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearIsClaimable() => clearField(21);
 }
 
 /// Insurance category metadata
@@ -4821,6 +4920,378 @@ class GetInsurancePurchaseStatusResponse extends $pb.GeneratedMessage {
   void clearResult() => clearField(1);
   @$pb.TagNumber(1)
   MarketplaceInsurancePurchaseResult ensureResult() => $_ensure(0);
+}
+
+/// Upload insurance document (ID, proof of purchase, claim evidence, device photo)
+class UploadInsuranceDocumentRequest extends $pb.GeneratedMessage {
+  factory UploadInsuranceDocumentRequest({
+    $core.List<$core.int>? fileData,
+    $core.String? filename,
+    $core.String? documentType,
+  }) {
+    final $result = create();
+    if (fileData != null) {
+      $result.fileData = fileData;
+    }
+    if (filename != null) {
+      $result.filename = filename;
+    }
+    if (documentType != null) {
+      $result.documentType = documentType;
+    }
+    return $result;
+  }
+  UploadInsuranceDocumentRequest._() : super();
+  factory UploadInsuranceDocumentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UploadInsuranceDocumentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UploadInsuranceDocumentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'fileData', $pb.PbFieldType.OY)
+    ..aOS(2, _omitFieldNames ? '' : 'filename')
+    ..aOS(3, _omitFieldNames ? '' : 'documentType')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UploadInsuranceDocumentRequest clone() => UploadInsuranceDocumentRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UploadInsuranceDocumentRequest copyWith(void Function(UploadInsuranceDocumentRequest) updates) => super.copyWith((message) => updates(message as UploadInsuranceDocumentRequest)) as UploadInsuranceDocumentRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UploadInsuranceDocumentRequest create() => UploadInsuranceDocumentRequest._();
+  UploadInsuranceDocumentRequest createEmptyInstance() => create();
+  static $pb.PbList<UploadInsuranceDocumentRequest> createRepeated() => $pb.PbList<UploadInsuranceDocumentRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UploadInsuranceDocumentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UploadInsuranceDocumentRequest>(create);
+  static UploadInsuranceDocumentRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get fileData => $_getN(0);
+  @$pb.TagNumber(1)
+  set fileData($core.List<$core.int> v) { $_setBytes(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFileData() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFileData() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get filename => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set filename($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFilename() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFilename() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get documentType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set documentType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDocumentType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDocumentType() => clearField(3);
+}
+
+class UploadInsuranceDocumentResponse extends $pb.GeneratedMessage {
+  factory UploadInsuranceDocumentResponse({
+    $core.String? uploadId,
+    $core.String? fileUrl,
+    $core.bool? success,
+    $core.String? msg,
+  }) {
+    final $result = create();
+    if (uploadId != null) {
+      $result.uploadId = uploadId;
+    }
+    if (fileUrl != null) {
+      $result.fileUrl = fileUrl;
+    }
+    if (success != null) {
+      $result.success = success;
+    }
+    if (msg != null) {
+      $result.msg = msg;
+    }
+    return $result;
+  }
+  UploadInsuranceDocumentResponse._() : super();
+  factory UploadInsuranceDocumentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UploadInsuranceDocumentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UploadInsuranceDocumentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'uploadId')
+    ..aOS(2, _omitFieldNames ? '' : 'fileUrl')
+    ..aOB(3, _omitFieldNames ? '' : 'success')
+    ..aOS(4, _omitFieldNames ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UploadInsuranceDocumentResponse clone() => UploadInsuranceDocumentResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UploadInsuranceDocumentResponse copyWith(void Function(UploadInsuranceDocumentResponse) updates) => super.copyWith((message) => updates(message as UploadInsuranceDocumentResponse)) as UploadInsuranceDocumentResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UploadInsuranceDocumentResponse create() => UploadInsuranceDocumentResponse._();
+  UploadInsuranceDocumentResponse createEmptyInstance() => create();
+  static $pb.PbList<UploadInsuranceDocumentResponse> createRepeated() => $pb.PbList<UploadInsuranceDocumentResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UploadInsuranceDocumentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UploadInsuranceDocumentResponse>(create);
+  static UploadInsuranceDocumentResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get uploadId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set uploadId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUploadId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUploadId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get fileUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set fileUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFileUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFileUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get success => $_getBF(2);
+  @$pb.TagNumber(3)
+  set success($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSuccess() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSuccess() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get msg => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set msg($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMsg() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMsg() => clearField(4);
+}
+
+/// Get auxiliary data (states, vehicle makes/models, genders, etc.)
+class GetInsuranceAuxiliaryDataRequest extends $pb.GeneratedMessage {
+  factory GetInsuranceAuxiliaryDataRequest({
+    $core.String? utilityId,
+    $core.String? query,
+  }) {
+    final $result = create();
+    if (utilityId != null) {
+      $result.utilityId = utilityId;
+    }
+    if (query != null) {
+      $result.query = query;
+    }
+    return $result;
+  }
+  GetInsuranceAuxiliaryDataRequest._() : super();
+  factory GetInsuranceAuxiliaryDataRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceAuxiliaryDataRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceAuxiliaryDataRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'utilityId')
+    ..aOS(2, _omitFieldNames ? '' : 'query')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceAuxiliaryDataRequest clone() => GetInsuranceAuxiliaryDataRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceAuxiliaryDataRequest copyWith(void Function(GetInsuranceAuxiliaryDataRequest) updates) => super.copyWith((message) => updates(message as GetInsuranceAuxiliaryDataRequest)) as GetInsuranceAuxiliaryDataRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceAuxiliaryDataRequest create() => GetInsuranceAuxiliaryDataRequest._();
+  GetInsuranceAuxiliaryDataRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceAuxiliaryDataRequest> createRepeated() => $pb.PbList<GetInsuranceAuxiliaryDataRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceAuxiliaryDataRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceAuxiliaryDataRequest>(create);
+  static GetInsuranceAuxiliaryDataRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get utilityId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set utilityId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUtilityId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUtilityId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get query => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set query($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasQuery() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearQuery() => clearField(2);
+}
+
+class GetInsuranceAuxiliaryDataResponse extends $pb.GeneratedMessage {
+  factory GetInsuranceAuxiliaryDataResponse({
+    $core.Iterable<InsuranceAuxiliaryItem>? items,
+    $core.bool? success,
+    $core.String? msg,
+  }) {
+    final $result = create();
+    if (items != null) {
+      $result.items.addAll(items);
+    }
+    if (success != null) {
+      $result.success = success;
+    }
+    if (msg != null) {
+      $result.msg = msg;
+    }
+    return $result;
+  }
+  GetInsuranceAuxiliaryDataResponse._() : super();
+  factory GetInsuranceAuxiliaryDataResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceAuxiliaryDataResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceAuxiliaryDataResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<InsuranceAuxiliaryItem>(1, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InsuranceAuxiliaryItem.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceAuxiliaryDataResponse clone() => GetInsuranceAuxiliaryDataResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceAuxiliaryDataResponse copyWith(void Function(GetInsuranceAuxiliaryDataResponse) updates) => super.copyWith((message) => updates(message as GetInsuranceAuxiliaryDataResponse)) as GetInsuranceAuxiliaryDataResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceAuxiliaryDataResponse create() => GetInsuranceAuxiliaryDataResponse._();
+  GetInsuranceAuxiliaryDataResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceAuxiliaryDataResponse> createRepeated() => $pb.PbList<GetInsuranceAuxiliaryDataResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceAuxiliaryDataResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceAuxiliaryDataResponse>(create);
+  static GetInsuranceAuxiliaryDataResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsuranceAuxiliaryItem> get items => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get success => $_getBF(1);
+  @$pb.TagNumber(2)
+  set success($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSuccess() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSuccess() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get msg => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set msg($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMsg() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMsg() => clearField(3);
+}
+
+class InsuranceAuxiliaryItem extends $pb.GeneratedMessage {
+  factory InsuranceAuxiliaryItem({
+    $core.String? label,
+    $core.String? value,
+  }) {
+    final $result = create();
+    if (label != null) {
+      $result.label = label;
+    }
+    if (value != null) {
+      $result.value = value;
+    }
+    return $result;
+  }
+  InsuranceAuxiliaryItem._() : super();
+  factory InsuranceAuxiliaryItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InsuranceAuxiliaryItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InsuranceAuxiliaryItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'label')
+    ..aOS(2, _omitFieldNames ? '' : 'value')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InsuranceAuxiliaryItem clone() => InsuranceAuxiliaryItem()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InsuranceAuxiliaryItem copyWith(void Function(InsuranceAuxiliaryItem) updates) => super.copyWith((message) => updates(message as InsuranceAuxiliaryItem)) as InsuranceAuxiliaryItem;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InsuranceAuxiliaryItem create() => InsuranceAuxiliaryItem._();
+  InsuranceAuxiliaryItem createEmptyInstance() => create();
+  static $pb.PbList<InsuranceAuxiliaryItem> createRepeated() => $pb.PbList<InsuranceAuxiliaryItem>();
+  @$core.pragma('dart2js:noInline')
+  static InsuranceAuxiliaryItem getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InsuranceAuxiliaryItem>(create);
+  static InsuranceAuxiliaryItem? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get label => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set label($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLabel() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLabel() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get value => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set value($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasValue() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearValue() => clearField(2);
 }
 
 /// NOTE: user_id extracted from JWT token, not from request
@@ -7838,6 +8309,2767 @@ class CrowdfundReceipt extends $pb.GeneratedMessage {
   $core.bool hasReceiptData() => $_has(11);
   @$pb.TagNumber(12)
   void clearReceiptData() => clearField(12);
+}
+
+/// Insurance payment record
+class InsurancePaymentRecord extends $pb.GeneratedMessage {
+  factory InsurancePaymentRecord({
+    $core.String? id,
+    $core.String? userId,
+    $core.String? policyId,
+    $core.String? accountId,
+    $core.String? purchaseId,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? paymentMethod,
+    $core.String? status,
+    $core.String? transactionReference,
+    $core.String? idempotencyKey,
+    $core.String? narration,
+    $core.String? failureReason,
+    $core.String? receiptNumber,
+    $core.String? processedAt,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (policyId != null) {
+      $result.policyId = policyId;
+    }
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (purchaseId != null) {
+      $result.purchaseId = purchaseId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (paymentMethod != null) {
+      $result.paymentMethod = paymentMethod;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (transactionReference != null) {
+      $result.transactionReference = transactionReference;
+    }
+    if (idempotencyKey != null) {
+      $result.idempotencyKey = idempotencyKey;
+    }
+    if (narration != null) {
+      $result.narration = narration;
+    }
+    if (failureReason != null) {
+      $result.failureReason = failureReason;
+    }
+    if (receiptNumber != null) {
+      $result.receiptNumber = receiptNumber;
+    }
+    if (processedAt != null) {
+      $result.processedAt = processedAt;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      $result.updatedAt = updatedAt;
+    }
+    return $result;
+  }
+  InsurancePaymentRecord._() : super();
+  factory InsurancePaymentRecord.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InsurancePaymentRecord.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InsurancePaymentRecord', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'policyId')
+    ..aOS(4, _omitFieldNames ? '' : 'accountId')
+    ..aOS(5, _omitFieldNames ? '' : 'purchaseId')
+    ..aInt64(6, _omitFieldNames ? '' : 'amount')
+    ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aOS(8, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(9, _omitFieldNames ? '' : 'status')
+    ..aOS(10, _omitFieldNames ? '' : 'transactionReference')
+    ..aOS(11, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(12, _omitFieldNames ? '' : 'narration')
+    ..aOS(13, _omitFieldNames ? '' : 'failureReason')
+    ..aOS(14, _omitFieldNames ? '' : 'receiptNumber')
+    ..aOS(15, _omitFieldNames ? '' : 'processedAt')
+    ..aOS(16, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(17, _omitFieldNames ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InsurancePaymentRecord clone() => InsurancePaymentRecord()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InsurancePaymentRecord copyWith(void Function(InsurancePaymentRecord) updates) => super.copyWith((message) => updates(message as InsurancePaymentRecord)) as InsurancePaymentRecord;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InsurancePaymentRecord create() => InsurancePaymentRecord._();
+  InsurancePaymentRecord createEmptyInstance() => create();
+  static $pb.PbList<InsurancePaymentRecord> createRepeated() => $pb.PbList<InsurancePaymentRecord>();
+  @$core.pragma('dart2js:noInline')
+  static InsurancePaymentRecord getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InsurancePaymentRecord>(create);
+  static InsurancePaymentRecord? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get policyId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set policyId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPolicyId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPolicyId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get accountId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set accountId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAccountId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAccountId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get purchaseId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set purchaseId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPurchaseId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPurchaseId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get amount => $_getI64(5);
+  @$pb.TagNumber(6)
+  set amount($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get currency => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set currency($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCurrency() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCurrency() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get paymentMethod => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set paymentMethod($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasPaymentMethod() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPaymentMethod() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get status => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set status($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStatus() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get transactionReference => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set transactionReference($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasTransactionReference() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearTransactionReference() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get idempotencyKey => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set idempotencyKey($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasIdempotencyKey() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearIdempotencyKey() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get narration => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set narration($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasNarration() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearNarration() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get failureReason => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set failureReason($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasFailureReason() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearFailureReason() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get receiptNumber => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set receiptNumber($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasReceiptNumber() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearReceiptNumber() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get processedAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set processedAt($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasProcessedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearProcessedAt() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get createdAt => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set createdAt($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasCreatedAt() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearCreatedAt() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get updatedAt => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set updatedAt($core.String v) { $_setString(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasUpdatedAt() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearUpdatedAt() => clearField(17);
+}
+
+/// Insurance claim record (detailed)
+class InsuranceClaimRecord extends $pb.GeneratedMessage {
+  factory InsuranceClaimRecord({
+    $core.String? id,
+    $core.String? userId,
+    $core.String? policyId,
+    $core.String? claimNumber,
+    $core.String? claimType,
+    $fixnum.Int64? claimAmount,
+    $fixnum.Int64? approvedAmount,
+    $core.String? currency,
+    $core.String? status,
+    $core.String? title,
+    $core.String? description,
+    $core.String? incidentDate,
+    $core.String? incidentLocation,
+    $core.Iterable<$core.String>? documents,
+    $core.Map<$core.String, $core.String>? additionalInfo,
+    $core.String? rejectionReason,
+    $core.String? settlementDate,
+    $core.String? settlementDetails,
+    $core.String? providerClaimId,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (policyId != null) {
+      $result.policyId = policyId;
+    }
+    if (claimNumber != null) {
+      $result.claimNumber = claimNumber;
+    }
+    if (claimType != null) {
+      $result.claimType = claimType;
+    }
+    if (claimAmount != null) {
+      $result.claimAmount = claimAmount;
+    }
+    if (approvedAmount != null) {
+      $result.approvedAmount = approvedAmount;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (title != null) {
+      $result.title = title;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (incidentDate != null) {
+      $result.incidentDate = incidentDate;
+    }
+    if (incidentLocation != null) {
+      $result.incidentLocation = incidentLocation;
+    }
+    if (documents != null) {
+      $result.documents.addAll(documents);
+    }
+    if (additionalInfo != null) {
+      $result.additionalInfo.addAll(additionalInfo);
+    }
+    if (rejectionReason != null) {
+      $result.rejectionReason = rejectionReason;
+    }
+    if (settlementDate != null) {
+      $result.settlementDate = settlementDate;
+    }
+    if (settlementDetails != null) {
+      $result.settlementDetails = settlementDetails;
+    }
+    if (providerClaimId != null) {
+      $result.providerClaimId = providerClaimId;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      $result.updatedAt = updatedAt;
+    }
+    return $result;
+  }
+  InsuranceClaimRecord._() : super();
+  factory InsuranceClaimRecord.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InsuranceClaimRecord.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InsuranceClaimRecord', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'policyId')
+    ..aOS(4, _omitFieldNames ? '' : 'claimNumber')
+    ..aOS(5, _omitFieldNames ? '' : 'claimType')
+    ..aInt64(6, _omitFieldNames ? '' : 'claimAmount')
+    ..aInt64(7, _omitFieldNames ? '' : 'approvedAmount')
+    ..aOS(8, _omitFieldNames ? '' : 'currency')
+    ..aOS(9, _omitFieldNames ? '' : 'status')
+    ..aOS(10, _omitFieldNames ? '' : 'title')
+    ..aOS(11, _omitFieldNames ? '' : 'description')
+    ..aOS(12, _omitFieldNames ? '' : 'incidentDate')
+    ..aOS(13, _omitFieldNames ? '' : 'incidentLocation')
+    ..pPS(14, _omitFieldNames ? '' : 'documents')
+    ..m<$core.String, $core.String>(15, _omitFieldNames ? '' : 'additionalInfo', entryClassName: 'InsuranceClaimRecord.AdditionalInfoEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('financialproducts'))
+    ..aOS(16, _omitFieldNames ? '' : 'rejectionReason')
+    ..aOS(17, _omitFieldNames ? '' : 'settlementDate')
+    ..aOS(18, _omitFieldNames ? '' : 'settlementDetails')
+    ..aOS(19, _omitFieldNames ? '' : 'providerClaimId')
+    ..aOS(20, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(21, _omitFieldNames ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InsuranceClaimRecord clone() => InsuranceClaimRecord()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InsuranceClaimRecord copyWith(void Function(InsuranceClaimRecord) updates) => super.copyWith((message) => updates(message as InsuranceClaimRecord)) as InsuranceClaimRecord;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InsuranceClaimRecord create() => InsuranceClaimRecord._();
+  InsuranceClaimRecord createEmptyInstance() => create();
+  static $pb.PbList<InsuranceClaimRecord> createRepeated() => $pb.PbList<InsuranceClaimRecord>();
+  @$core.pragma('dart2js:noInline')
+  static InsuranceClaimRecord getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InsuranceClaimRecord>(create);
+  static InsuranceClaimRecord? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get policyId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set policyId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPolicyId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPolicyId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get claimNumber => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set claimNumber($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasClaimNumber() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearClaimNumber() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get claimType => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set claimType($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasClaimType() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearClaimType() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get claimAmount => $_getI64(5);
+  @$pb.TagNumber(6)
+  set claimAmount($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasClaimAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearClaimAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get approvedAmount => $_getI64(6);
+  @$pb.TagNumber(7)
+  set approvedAmount($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasApprovedAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearApprovedAmount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get currency => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set currency($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCurrency() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCurrency() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get status => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set status($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStatus() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get title => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set title($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasTitle() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearTitle() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get description => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set description($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasDescription() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearDescription() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get incidentDate => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set incidentDate($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasIncidentDate() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearIncidentDate() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get incidentLocation => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set incidentLocation($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasIncidentLocation() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearIncidentLocation() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.List<$core.String> get documents => $_getList(13);
+
+  @$pb.TagNumber(15)
+  $core.Map<$core.String, $core.String> get additionalInfo => $_getMap(14);
+
+  @$pb.TagNumber(16)
+  $core.String get rejectionReason => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set rejectionReason($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasRejectionReason() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearRejectionReason() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get settlementDate => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set settlementDate($core.String v) { $_setString(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasSettlementDate() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearSettlementDate() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get settlementDetails => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set settlementDetails($core.String v) { $_setString(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasSettlementDetails() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearSettlementDetails() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get providerClaimId => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set providerClaimId($core.String v) { $_setString(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasProviderClaimId() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearProviderClaimId() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get createdAt => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set createdAt($core.String v) { $_setString(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasCreatedAt() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearCreatedAt() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get updatedAt => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set updatedAt($core.String v) { $_setString(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasUpdatedAt() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearUpdatedAt() => clearField(21);
+}
+
+/// Get payments by policy
+class GetInsurancePaymentsRequest extends $pb.GeneratedMessage {
+  factory GetInsurancePaymentsRequest({
+    $core.String? policyId,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final $result = create();
+    if (policyId != null) {
+      $result.policyId = policyId;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    if (offset != null) {
+      $result.offset = offset;
+    }
+    return $result;
+  }
+  GetInsurancePaymentsRequest._() : super();
+  factory GetInsurancePaymentsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsurancePaymentsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsurancePaymentsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'policyId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentsRequest clone() => GetInsurancePaymentsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentsRequest copyWith(void Function(GetInsurancePaymentsRequest) updates) => super.copyWith((message) => updates(message as GetInsurancePaymentsRequest)) as GetInsurancePaymentsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentsRequest create() => GetInsurancePaymentsRequest._();
+  GetInsurancePaymentsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsurancePaymentsRequest> createRepeated() => $pb.PbList<GetInsurancePaymentsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsurancePaymentsRequest>(create);
+  static GetInsurancePaymentsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get policyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set policyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPolicyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPolicyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => clearField(3);
+}
+
+class GetInsurancePaymentsResponse extends $pb.GeneratedMessage {
+  factory GetInsurancePaymentsResponse({
+    $core.Iterable<InsurancePaymentRecord>? payments,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (payments != null) {
+      $result.payments.addAll(payments);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetInsurancePaymentsResponse._() : super();
+  factory GetInsurancePaymentsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsurancePaymentsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsurancePaymentsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<InsurancePaymentRecord>(1, _omitFieldNames ? '' : 'payments', $pb.PbFieldType.PM, subBuilder: InsurancePaymentRecord.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentsResponse clone() => GetInsurancePaymentsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentsResponse copyWith(void Function(GetInsurancePaymentsResponse) updates) => super.copyWith((message) => updates(message as GetInsurancePaymentsResponse)) as GetInsurancePaymentsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentsResponse create() => GetInsurancePaymentsResponse._();
+  GetInsurancePaymentsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsurancePaymentsResponse> createRepeated() => $pb.PbList<GetInsurancePaymentsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsurancePaymentsResponse>(create);
+  static GetInsurancePaymentsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsurancePaymentRecord> get payments => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+/// Get all user payments
+class GetUserInsurancePaymentsRequest extends $pb.GeneratedMessage {
+  factory GetUserInsurancePaymentsRequest({
+    $core.String? status,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final $result = create();
+    if (status != null) {
+      $result.status = status;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    if (offset != null) {
+      $result.offset = offset;
+    }
+    return $result;
+  }
+  GetUserInsurancePaymentsRequest._() : super();
+  factory GetUserInsurancePaymentsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserInsurancePaymentsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserInsurancePaymentsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserInsurancePaymentsRequest clone() => GetUserInsurancePaymentsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserInsurancePaymentsRequest copyWith(void Function(GetUserInsurancePaymentsRequest) updates) => super.copyWith((message) => updates(message as GetUserInsurancePaymentsRequest)) as GetUserInsurancePaymentsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsurancePaymentsRequest create() => GetUserInsurancePaymentsRequest._();
+  GetUserInsurancePaymentsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetUserInsurancePaymentsRequest> createRepeated() => $pb.PbList<GetUserInsurancePaymentsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsurancePaymentsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserInsurancePaymentsRequest>(create);
+  static GetUserInsurancePaymentsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => clearField(3);
+}
+
+class GetUserInsurancePaymentsResponse extends $pb.GeneratedMessage {
+  factory GetUserInsurancePaymentsResponse({
+    $core.Iterable<InsurancePaymentRecord>? payments,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (payments != null) {
+      $result.payments.addAll(payments);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetUserInsurancePaymentsResponse._() : super();
+  factory GetUserInsurancePaymentsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserInsurancePaymentsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserInsurancePaymentsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<InsurancePaymentRecord>(1, _omitFieldNames ? '' : 'payments', $pb.PbFieldType.PM, subBuilder: InsurancePaymentRecord.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserInsurancePaymentsResponse clone() => GetUserInsurancePaymentsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserInsurancePaymentsResponse copyWith(void Function(GetUserInsurancePaymentsResponse) updates) => super.copyWith((message) => updates(message as GetUserInsurancePaymentsResponse)) as GetUserInsurancePaymentsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsurancePaymentsResponse create() => GetUserInsurancePaymentsResponse._();
+  GetUserInsurancePaymentsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetUserInsurancePaymentsResponse> createRepeated() => $pb.PbList<GetUserInsurancePaymentsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsurancePaymentsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserInsurancePaymentsResponse>(create);
+  static GetUserInsurancePaymentsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsurancePaymentRecord> get payments => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+/// Create payment
+class CreateInsurancePaymentRequest extends $pb.GeneratedMessage {
+  factory CreateInsurancePaymentRequest({
+    $core.String? policyId,
+    $core.String? accountId,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? paymentMethod,
+    $core.String? narration,
+    $core.String? idempotencyKey,
+  }) {
+    final $result = create();
+    if (policyId != null) {
+      $result.policyId = policyId;
+    }
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (paymentMethod != null) {
+      $result.paymentMethod = paymentMethod;
+    }
+    if (narration != null) {
+      $result.narration = narration;
+    }
+    if (idempotencyKey != null) {
+      $result.idempotencyKey = idempotencyKey;
+    }
+    return $result;
+  }
+  CreateInsurancePaymentRequest._() : super();
+  factory CreateInsurancePaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateInsurancePaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateInsurancePaymentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'policyId')
+    ..aOS(2, _omitFieldNames ? '' : 'accountId')
+    ..aInt64(3, _omitFieldNames ? '' : 'amount')
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..aOS(5, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(6, _omitFieldNames ? '' : 'narration')
+    ..aOS(7, _omitFieldNames ? '' : 'idempotencyKey')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateInsurancePaymentRequest clone() => CreateInsurancePaymentRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateInsurancePaymentRequest copyWith(void Function(CreateInsurancePaymentRequest) updates) => super.copyWith((message) => updates(message as CreateInsurancePaymentRequest)) as CreateInsurancePaymentRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateInsurancePaymentRequest create() => CreateInsurancePaymentRequest._();
+  CreateInsurancePaymentRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateInsurancePaymentRequest> createRepeated() => $pb.PbList<CreateInsurancePaymentRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateInsurancePaymentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateInsurancePaymentRequest>(create);
+  static CreateInsurancePaymentRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get policyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set policyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPolicyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPolicyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get accountId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set accountId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccountId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccountId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get amount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set amount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get paymentMethod => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set paymentMethod($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPaymentMethod() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPaymentMethod() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get narration => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set narration($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasNarration() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearNarration() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get idempotencyKey => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set idempotencyKey($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasIdempotencyKey() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIdempotencyKey() => clearField(7);
+}
+
+class CreateInsurancePaymentResponse extends $pb.GeneratedMessage {
+  factory CreateInsurancePaymentResponse({
+    InsurancePaymentRecord? payment,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (payment != null) {
+      $result.payment = payment;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  CreateInsurancePaymentResponse._() : super();
+  factory CreateInsurancePaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateInsurancePaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateInsurancePaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<InsurancePaymentRecord>(1, _omitFieldNames ? '' : 'payment', subBuilder: InsurancePaymentRecord.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateInsurancePaymentResponse clone() => CreateInsurancePaymentResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateInsurancePaymentResponse copyWith(void Function(CreateInsurancePaymentResponse) updates) => super.copyWith((message) => updates(message as CreateInsurancePaymentResponse)) as CreateInsurancePaymentResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateInsurancePaymentResponse create() => CreateInsurancePaymentResponse._();
+  CreateInsurancePaymentResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateInsurancePaymentResponse> createRepeated() => $pb.PbList<CreateInsurancePaymentResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateInsurancePaymentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateInsurancePaymentResponse>(create);
+  static CreateInsurancePaymentResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  InsurancePaymentRecord get payment => $_getN(0);
+  @$pb.TagNumber(1)
+  set payment(InsurancePaymentRecord v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPayment() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayment() => clearField(1);
+  @$pb.TagNumber(1)
+  InsurancePaymentRecord ensurePayment() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+/// Process payment
+class ProcessInsurancePaymentRequest extends $pb.GeneratedMessage {
+  factory ProcessInsurancePaymentRequest({
+    $core.String? paymentId,
+    $core.String? transactionPinToken,
+  }) {
+    final $result = create();
+    if (paymentId != null) {
+      $result.paymentId = paymentId;
+    }
+    if (transactionPinToken != null) {
+      $result.transactionPinToken = transactionPinToken;
+    }
+    return $result;
+  }
+  ProcessInsurancePaymentRequest._() : super();
+  factory ProcessInsurancePaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ProcessInsurancePaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessInsurancePaymentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'paymentId')
+    ..aOS(2, _omitFieldNames ? '' : 'transactionPinToken')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ProcessInsurancePaymentRequest clone() => ProcessInsurancePaymentRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ProcessInsurancePaymentRequest copyWith(void Function(ProcessInsurancePaymentRequest) updates) => super.copyWith((message) => updates(message as ProcessInsurancePaymentRequest)) as ProcessInsurancePaymentRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ProcessInsurancePaymentRequest create() => ProcessInsurancePaymentRequest._();
+  ProcessInsurancePaymentRequest createEmptyInstance() => create();
+  static $pb.PbList<ProcessInsurancePaymentRequest> createRepeated() => $pb.PbList<ProcessInsurancePaymentRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ProcessInsurancePaymentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessInsurancePaymentRequest>(create);
+  static ProcessInsurancePaymentRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get paymentId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set paymentId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPaymentId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPaymentId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get transactionPinToken => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set transactionPinToken($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTransactionPinToken() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTransactionPinToken() => clearField(2);
+}
+
+class ProcessInsurancePaymentResponse extends $pb.GeneratedMessage {
+  factory ProcessInsurancePaymentResponse({
+    InsurancePaymentRecord? payment,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (payment != null) {
+      $result.payment = payment;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  ProcessInsurancePaymentResponse._() : super();
+  factory ProcessInsurancePaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ProcessInsurancePaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessInsurancePaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<InsurancePaymentRecord>(1, _omitFieldNames ? '' : 'payment', subBuilder: InsurancePaymentRecord.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ProcessInsurancePaymentResponse clone() => ProcessInsurancePaymentResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ProcessInsurancePaymentResponse copyWith(void Function(ProcessInsurancePaymentResponse) updates) => super.copyWith((message) => updates(message as ProcessInsurancePaymentResponse)) as ProcessInsurancePaymentResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ProcessInsurancePaymentResponse create() => ProcessInsurancePaymentResponse._();
+  ProcessInsurancePaymentResponse createEmptyInstance() => create();
+  static $pb.PbList<ProcessInsurancePaymentResponse> createRepeated() => $pb.PbList<ProcessInsurancePaymentResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ProcessInsurancePaymentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessInsurancePaymentResponse>(create);
+  static ProcessInsurancePaymentResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  InsurancePaymentRecord get payment => $_getN(0);
+  @$pb.TagNumber(1)
+  set payment(InsurancePaymentRecord v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPayment() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayment() => clearField(1);
+  @$pb.TagNumber(1)
+  InsurancePaymentRecord ensurePayment() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+/// Get payment by ID
+class GetInsurancePaymentByIdRequest extends $pb.GeneratedMessage {
+  factory GetInsurancePaymentByIdRequest({
+    $core.String? paymentId,
+  }) {
+    final $result = create();
+    if (paymentId != null) {
+      $result.paymentId = paymentId;
+    }
+    return $result;
+  }
+  GetInsurancePaymentByIdRequest._() : super();
+  factory GetInsurancePaymentByIdRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsurancePaymentByIdRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsurancePaymentByIdRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'paymentId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentByIdRequest clone() => GetInsurancePaymentByIdRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentByIdRequest copyWith(void Function(GetInsurancePaymentByIdRequest) updates) => super.copyWith((message) => updates(message as GetInsurancePaymentByIdRequest)) as GetInsurancePaymentByIdRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentByIdRequest create() => GetInsurancePaymentByIdRequest._();
+  GetInsurancePaymentByIdRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsurancePaymentByIdRequest> createRepeated() => $pb.PbList<GetInsurancePaymentByIdRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentByIdRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsurancePaymentByIdRequest>(create);
+  static GetInsurancePaymentByIdRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get paymentId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set paymentId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPaymentId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPaymentId() => clearField(1);
+}
+
+class GetInsurancePaymentByIdResponse extends $pb.GeneratedMessage {
+  factory GetInsurancePaymentByIdResponse({
+    InsurancePaymentRecord? payment,
+  }) {
+    final $result = create();
+    if (payment != null) {
+      $result.payment = payment;
+    }
+    return $result;
+  }
+  GetInsurancePaymentByIdResponse._() : super();
+  factory GetInsurancePaymentByIdResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsurancePaymentByIdResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsurancePaymentByIdResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<InsurancePaymentRecord>(1, _omitFieldNames ? '' : 'payment', subBuilder: InsurancePaymentRecord.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentByIdResponse clone() => GetInsurancePaymentByIdResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentByIdResponse copyWith(void Function(GetInsurancePaymentByIdResponse) updates) => super.copyWith((message) => updates(message as GetInsurancePaymentByIdResponse)) as GetInsurancePaymentByIdResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentByIdResponse create() => GetInsurancePaymentByIdResponse._();
+  GetInsurancePaymentByIdResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsurancePaymentByIdResponse> createRepeated() => $pb.PbList<GetInsurancePaymentByIdResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentByIdResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsurancePaymentByIdResponse>(create);
+  static GetInsurancePaymentByIdResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  InsurancePaymentRecord get payment => $_getN(0);
+  @$pb.TagNumber(1)
+  set payment(InsurancePaymentRecord v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPayment() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayment() => clearField(1);
+  @$pb.TagNumber(1)
+  InsurancePaymentRecord ensurePayment() => $_ensure(0);
+}
+
+/// Get overdue payments
+class GetOverdueInsurancePaymentsRequest extends $pb.GeneratedMessage {
+  factory GetOverdueInsurancePaymentsRequest() => create();
+  GetOverdueInsurancePaymentsRequest._() : super();
+  factory GetOverdueInsurancePaymentsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetOverdueInsurancePaymentsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOverdueInsurancePaymentsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetOverdueInsurancePaymentsRequest clone() => GetOverdueInsurancePaymentsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetOverdueInsurancePaymentsRequest copyWith(void Function(GetOverdueInsurancePaymentsRequest) updates) => super.copyWith((message) => updates(message as GetOverdueInsurancePaymentsRequest)) as GetOverdueInsurancePaymentsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetOverdueInsurancePaymentsRequest create() => GetOverdueInsurancePaymentsRequest._();
+  GetOverdueInsurancePaymentsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetOverdueInsurancePaymentsRequest> createRepeated() => $pb.PbList<GetOverdueInsurancePaymentsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetOverdueInsurancePaymentsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOverdueInsurancePaymentsRequest>(create);
+  static GetOverdueInsurancePaymentsRequest? _defaultInstance;
+}
+
+class GetOverdueInsurancePaymentsResponse extends $pb.GeneratedMessage {
+  factory GetOverdueInsurancePaymentsResponse({
+    $core.Iterable<InsurancePaymentRecord>? payments,
+  }) {
+    final $result = create();
+    if (payments != null) {
+      $result.payments.addAll(payments);
+    }
+    return $result;
+  }
+  GetOverdueInsurancePaymentsResponse._() : super();
+  factory GetOverdueInsurancePaymentsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetOverdueInsurancePaymentsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOverdueInsurancePaymentsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<InsurancePaymentRecord>(1, _omitFieldNames ? '' : 'payments', $pb.PbFieldType.PM, subBuilder: InsurancePaymentRecord.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetOverdueInsurancePaymentsResponse clone() => GetOverdueInsurancePaymentsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetOverdueInsurancePaymentsResponse copyWith(void Function(GetOverdueInsurancePaymentsResponse) updates) => super.copyWith((message) => updates(message as GetOverdueInsurancePaymentsResponse)) as GetOverdueInsurancePaymentsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetOverdueInsurancePaymentsResponse create() => GetOverdueInsurancePaymentsResponse._();
+  GetOverdueInsurancePaymentsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetOverdueInsurancePaymentsResponse> createRepeated() => $pb.PbList<GetOverdueInsurancePaymentsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetOverdueInsurancePaymentsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOverdueInsurancePaymentsResponse>(create);
+  static GetOverdueInsurancePaymentsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsurancePaymentRecord> get payments => $_getList(0);
+}
+
+/// Get claims by policy
+class GetInsuranceClaimsRequest extends $pb.GeneratedMessage {
+  factory GetInsuranceClaimsRequest({
+    $core.String? policyId,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final $result = create();
+    if (policyId != null) {
+      $result.policyId = policyId;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    if (offset != null) {
+      $result.offset = offset;
+    }
+    return $result;
+  }
+  GetInsuranceClaimsRequest._() : super();
+  factory GetInsuranceClaimsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceClaimsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceClaimsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'policyId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceClaimsRequest clone() => GetInsuranceClaimsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceClaimsRequest copyWith(void Function(GetInsuranceClaimsRequest) updates) => super.copyWith((message) => updates(message as GetInsuranceClaimsRequest)) as GetInsuranceClaimsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceClaimsRequest create() => GetInsuranceClaimsRequest._();
+  GetInsuranceClaimsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceClaimsRequest> createRepeated() => $pb.PbList<GetInsuranceClaimsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceClaimsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceClaimsRequest>(create);
+  static GetInsuranceClaimsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get policyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set policyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPolicyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPolicyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => clearField(3);
+}
+
+class GetInsuranceClaimsResponse extends $pb.GeneratedMessage {
+  factory GetInsuranceClaimsResponse({
+    $core.Iterable<InsuranceClaimRecord>? claims,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (claims != null) {
+      $result.claims.addAll(claims);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetInsuranceClaimsResponse._() : super();
+  factory GetInsuranceClaimsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceClaimsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceClaimsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<InsuranceClaimRecord>(1, _omitFieldNames ? '' : 'claims', $pb.PbFieldType.PM, subBuilder: InsuranceClaimRecord.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceClaimsResponse clone() => GetInsuranceClaimsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceClaimsResponse copyWith(void Function(GetInsuranceClaimsResponse) updates) => super.copyWith((message) => updates(message as GetInsuranceClaimsResponse)) as GetInsuranceClaimsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceClaimsResponse create() => GetInsuranceClaimsResponse._();
+  GetInsuranceClaimsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceClaimsResponse> createRepeated() => $pb.PbList<GetInsuranceClaimsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceClaimsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceClaimsResponse>(create);
+  static GetInsuranceClaimsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsuranceClaimRecord> get claims => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+/// Get all user claims
+class GetUserInsuranceClaimsRequest extends $pb.GeneratedMessage {
+  factory GetUserInsuranceClaimsRequest({
+    $core.String? status,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final $result = create();
+    if (status != null) {
+      $result.status = status;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    if (offset != null) {
+      $result.offset = offset;
+    }
+    return $result;
+  }
+  GetUserInsuranceClaimsRequest._() : super();
+  factory GetUserInsuranceClaimsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserInsuranceClaimsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserInsuranceClaimsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserInsuranceClaimsRequest clone() => GetUserInsuranceClaimsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserInsuranceClaimsRequest copyWith(void Function(GetUserInsuranceClaimsRequest) updates) => super.copyWith((message) => updates(message as GetUserInsuranceClaimsRequest)) as GetUserInsuranceClaimsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsuranceClaimsRequest create() => GetUserInsuranceClaimsRequest._();
+  GetUserInsuranceClaimsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetUserInsuranceClaimsRequest> createRepeated() => $pb.PbList<GetUserInsuranceClaimsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsuranceClaimsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserInsuranceClaimsRequest>(create);
+  static GetUserInsuranceClaimsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => clearField(3);
+}
+
+class GetUserInsuranceClaimsResponse extends $pb.GeneratedMessage {
+  factory GetUserInsuranceClaimsResponse({
+    $core.Iterable<InsuranceClaimRecord>? claims,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (claims != null) {
+      $result.claims.addAll(claims);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetUserInsuranceClaimsResponse._() : super();
+  factory GetUserInsuranceClaimsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserInsuranceClaimsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserInsuranceClaimsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<InsuranceClaimRecord>(1, _omitFieldNames ? '' : 'claims', $pb.PbFieldType.PM, subBuilder: InsuranceClaimRecord.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserInsuranceClaimsResponse clone() => GetUserInsuranceClaimsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserInsuranceClaimsResponse copyWith(void Function(GetUserInsuranceClaimsResponse) updates) => super.copyWith((message) => updates(message as GetUserInsuranceClaimsResponse)) as GetUserInsuranceClaimsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsuranceClaimsResponse create() => GetUserInsuranceClaimsResponse._();
+  GetUserInsuranceClaimsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetUserInsuranceClaimsResponse> createRepeated() => $pb.PbList<GetUserInsuranceClaimsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsuranceClaimsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserInsuranceClaimsResponse>(create);
+  static GetUserInsuranceClaimsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsuranceClaimRecord> get claims => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+/// Update claim
+class UpdateInsuranceClaimRequest extends $pb.GeneratedMessage {
+  factory UpdateInsuranceClaimRequest({
+    $core.String? claimId,
+    $core.String? title,
+    $core.String? description,
+    $core.Iterable<$core.String>? documents,
+    $core.Map<$core.String, $core.String>? additionalInfo,
+  }) {
+    final $result = create();
+    if (claimId != null) {
+      $result.claimId = claimId;
+    }
+    if (title != null) {
+      $result.title = title;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    if (documents != null) {
+      $result.documents.addAll(documents);
+    }
+    if (additionalInfo != null) {
+      $result.additionalInfo.addAll(additionalInfo);
+    }
+    return $result;
+  }
+  UpdateInsuranceClaimRequest._() : super();
+  factory UpdateInsuranceClaimRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateInsuranceClaimRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInsuranceClaimRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'claimId')
+    ..aOS(2, _omitFieldNames ? '' : 'title')
+    ..aOS(3, _omitFieldNames ? '' : 'description')
+    ..pPS(4, _omitFieldNames ? '' : 'documents')
+    ..m<$core.String, $core.String>(5, _omitFieldNames ? '' : 'additionalInfo', entryClassName: 'UpdateInsuranceClaimRequest.AdditionalInfoEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('financialproducts'))
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateInsuranceClaimRequest clone() => UpdateInsuranceClaimRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateInsuranceClaimRequest copyWith(void Function(UpdateInsuranceClaimRequest) updates) => super.copyWith((message) => updates(message as UpdateInsuranceClaimRequest)) as UpdateInsuranceClaimRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateInsuranceClaimRequest create() => UpdateInsuranceClaimRequest._();
+  UpdateInsuranceClaimRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateInsuranceClaimRequest> createRepeated() => $pb.PbList<UpdateInsuranceClaimRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateInsuranceClaimRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateInsuranceClaimRequest>(create);
+  static UpdateInsuranceClaimRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get claimId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set claimId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasClaimId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearClaimId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get title => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set title($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTitle() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTitle() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get description => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set description($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDescription() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDescription() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<$core.String> get documents => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $core.Map<$core.String, $core.String> get additionalInfo => $_getMap(4);
+}
+
+class UpdateInsuranceClaimResponse extends $pb.GeneratedMessage {
+  factory UpdateInsuranceClaimResponse({
+    InsuranceClaimRecord? claim,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (claim != null) {
+      $result.claim = claim;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  UpdateInsuranceClaimResponse._() : super();
+  factory UpdateInsuranceClaimResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateInsuranceClaimResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInsuranceClaimResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<InsuranceClaimRecord>(1, _omitFieldNames ? '' : 'claim', subBuilder: InsuranceClaimRecord.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateInsuranceClaimResponse clone() => UpdateInsuranceClaimResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateInsuranceClaimResponse copyWith(void Function(UpdateInsuranceClaimResponse) updates) => super.copyWith((message) => updates(message as UpdateInsuranceClaimResponse)) as UpdateInsuranceClaimResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateInsuranceClaimResponse create() => UpdateInsuranceClaimResponse._();
+  UpdateInsuranceClaimResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateInsuranceClaimResponse> createRepeated() => $pb.PbList<UpdateInsuranceClaimResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateInsuranceClaimResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateInsuranceClaimResponse>(create);
+  static UpdateInsuranceClaimResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  InsuranceClaimRecord get claim => $_getN(0);
+  @$pb.TagNumber(1)
+  set claim(InsuranceClaimRecord v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasClaim() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearClaim() => clearField(1);
+  @$pb.TagNumber(1)
+  InsuranceClaimRecord ensureClaim() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+/// Get claim by ID
+class GetInsuranceClaimByIdRequest extends $pb.GeneratedMessage {
+  factory GetInsuranceClaimByIdRequest({
+    $core.String? claimId,
+  }) {
+    final $result = create();
+    if (claimId != null) {
+      $result.claimId = claimId;
+    }
+    return $result;
+  }
+  GetInsuranceClaimByIdRequest._() : super();
+  factory GetInsuranceClaimByIdRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceClaimByIdRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceClaimByIdRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'claimId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceClaimByIdRequest clone() => GetInsuranceClaimByIdRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceClaimByIdRequest copyWith(void Function(GetInsuranceClaimByIdRequest) updates) => super.copyWith((message) => updates(message as GetInsuranceClaimByIdRequest)) as GetInsuranceClaimByIdRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceClaimByIdRequest create() => GetInsuranceClaimByIdRequest._();
+  GetInsuranceClaimByIdRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceClaimByIdRequest> createRepeated() => $pb.PbList<GetInsuranceClaimByIdRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceClaimByIdRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceClaimByIdRequest>(create);
+  static GetInsuranceClaimByIdRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get claimId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set claimId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasClaimId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearClaimId() => clearField(1);
+}
+
+class GetInsuranceClaimByIdResponse extends $pb.GeneratedMessage {
+  factory GetInsuranceClaimByIdResponse({
+    InsuranceClaimRecord? claim,
+  }) {
+    final $result = create();
+    if (claim != null) {
+      $result.claim = claim;
+    }
+    return $result;
+  }
+  GetInsuranceClaimByIdResponse._() : super();
+  factory GetInsuranceClaimByIdResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceClaimByIdResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceClaimByIdResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<InsuranceClaimRecord>(1, _omitFieldNames ? '' : 'claim', subBuilder: InsuranceClaimRecord.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceClaimByIdResponse clone() => GetInsuranceClaimByIdResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceClaimByIdResponse copyWith(void Function(GetInsuranceClaimByIdResponse) updates) => super.copyWith((message) => updates(message as GetInsuranceClaimByIdResponse)) as GetInsuranceClaimByIdResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceClaimByIdResponse create() => GetInsuranceClaimByIdResponse._();
+  GetInsuranceClaimByIdResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceClaimByIdResponse> createRepeated() => $pb.PbList<GetInsuranceClaimByIdResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceClaimByIdResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceClaimByIdResponse>(create);
+  static GetInsuranceClaimByIdResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  InsuranceClaimRecord get claim => $_getN(0);
+  @$pb.TagNumber(1)
+  set claim(InsuranceClaimRecord v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasClaim() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearClaim() => clearField(1);
+  @$pb.TagNumber(1)
+  InsuranceClaimRecord ensureClaim() => $_ensure(0);
+}
+
+/// Update insurance policy
+class UpdateInsurancePolicyRequest extends $pb.GeneratedMessage {
+  factory UpdateInsurancePolicyRequest({
+    $core.String? policyId,
+    $core.String? beneficiary,
+    $core.String? paymentFrequency,
+    $core.String? metadata,
+  }) {
+    final $result = create();
+    if (policyId != null) {
+      $result.policyId = policyId;
+    }
+    if (beneficiary != null) {
+      $result.beneficiary = beneficiary;
+    }
+    if (paymentFrequency != null) {
+      $result.paymentFrequency = paymentFrequency;
+    }
+    if (metadata != null) {
+      $result.metadata = metadata;
+    }
+    return $result;
+  }
+  UpdateInsurancePolicyRequest._() : super();
+  factory UpdateInsurancePolicyRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateInsurancePolicyRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInsurancePolicyRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'policyId')
+    ..aOS(2, _omitFieldNames ? '' : 'beneficiary')
+    ..aOS(3, _omitFieldNames ? '' : 'paymentFrequency')
+    ..aOS(4, _omitFieldNames ? '' : 'metadata')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateInsurancePolicyRequest clone() => UpdateInsurancePolicyRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateInsurancePolicyRequest copyWith(void Function(UpdateInsurancePolicyRequest) updates) => super.copyWith((message) => updates(message as UpdateInsurancePolicyRequest)) as UpdateInsurancePolicyRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateInsurancePolicyRequest create() => UpdateInsurancePolicyRequest._();
+  UpdateInsurancePolicyRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateInsurancePolicyRequest> createRepeated() => $pb.PbList<UpdateInsurancePolicyRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateInsurancePolicyRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateInsurancePolicyRequest>(create);
+  static UpdateInsurancePolicyRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get policyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set policyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPolicyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPolicyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get beneficiary => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set beneficiary($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBeneficiary() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBeneficiary() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get paymentFrequency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set paymentFrequency($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPaymentFrequency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPaymentFrequency() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get metadata => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set metadata($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMetadata() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMetadata() => clearField(4);
+}
+
+class UpdateInsurancePolicyResponse extends $pb.GeneratedMessage {
+  factory UpdateInsurancePolicyResponse({
+    Insurance? insurance,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (insurance != null) {
+      $result.insurance = insurance;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  UpdateInsurancePolicyResponse._() : super();
+  factory UpdateInsurancePolicyResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateInsurancePolicyResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInsurancePolicyResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<Insurance>(1, _omitFieldNames ? '' : 'insurance', subBuilder: Insurance.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateInsurancePolicyResponse clone() => UpdateInsurancePolicyResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateInsurancePolicyResponse copyWith(void Function(UpdateInsurancePolicyResponse) updates) => super.copyWith((message) => updates(message as UpdateInsurancePolicyResponse)) as UpdateInsurancePolicyResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateInsurancePolicyResponse create() => UpdateInsurancePolicyResponse._();
+  UpdateInsurancePolicyResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateInsurancePolicyResponse> createRepeated() => $pb.PbList<UpdateInsurancePolicyResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateInsurancePolicyResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateInsurancePolicyResponse>(create);
+  static UpdateInsurancePolicyResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Insurance get insurance => $_getN(0);
+  @$pb.TagNumber(1)
+  set insurance(Insurance v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasInsurance() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearInsurance() => clearField(1);
+  @$pb.TagNumber(1)
+  Insurance ensureInsurance() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+/// Generate receipt
+class GenerateInsuranceReceiptRequest extends $pb.GeneratedMessage {
+  factory GenerateInsuranceReceiptRequest({
+    $core.String? paymentId,
+  }) {
+    final $result = create();
+    if (paymentId != null) {
+      $result.paymentId = paymentId;
+    }
+    return $result;
+  }
+  GenerateInsuranceReceiptRequest._() : super();
+  factory GenerateInsuranceReceiptRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateInsuranceReceiptRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateInsuranceReceiptRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'paymentId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateInsuranceReceiptRequest clone() => GenerateInsuranceReceiptRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateInsuranceReceiptRequest copyWith(void Function(GenerateInsuranceReceiptRequest) updates) => super.copyWith((message) => updates(message as GenerateInsuranceReceiptRequest)) as GenerateInsuranceReceiptRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateInsuranceReceiptRequest create() => GenerateInsuranceReceiptRequest._();
+  GenerateInsuranceReceiptRequest createEmptyInstance() => create();
+  static $pb.PbList<GenerateInsuranceReceiptRequest> createRepeated() => $pb.PbList<GenerateInsuranceReceiptRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateInsuranceReceiptRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateInsuranceReceiptRequest>(create);
+  static GenerateInsuranceReceiptRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get paymentId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set paymentId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPaymentId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPaymentId() => clearField(1);
+}
+
+class GenerateInsuranceReceiptResponse extends $pb.GeneratedMessage {
+  factory GenerateInsuranceReceiptResponse({
+    $core.String? receiptId,
+    $core.String? receiptNumber,
+    InsurancePaymentRecord? payment,
+    $core.String? policyNumber,
+    $core.String? policyType,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (receiptId != null) {
+      $result.receiptId = receiptId;
+    }
+    if (receiptNumber != null) {
+      $result.receiptNumber = receiptNumber;
+    }
+    if (payment != null) {
+      $result.payment = payment;
+    }
+    if (policyNumber != null) {
+      $result.policyNumber = policyNumber;
+    }
+    if (policyType != null) {
+      $result.policyType = policyType;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  GenerateInsuranceReceiptResponse._() : super();
+  factory GenerateInsuranceReceiptResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateInsuranceReceiptResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateInsuranceReceiptResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'receiptId')
+    ..aOS(2, _omitFieldNames ? '' : 'receiptNumber')
+    ..aOM<InsurancePaymentRecord>(3, _omitFieldNames ? '' : 'payment', subBuilder: InsurancePaymentRecord.create)
+    ..aOS(4, _omitFieldNames ? '' : 'policyNumber')
+    ..aOS(5, _omitFieldNames ? '' : 'policyType')
+    ..aOS(6, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateInsuranceReceiptResponse clone() => GenerateInsuranceReceiptResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateInsuranceReceiptResponse copyWith(void Function(GenerateInsuranceReceiptResponse) updates) => super.copyWith((message) => updates(message as GenerateInsuranceReceiptResponse)) as GenerateInsuranceReceiptResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateInsuranceReceiptResponse create() => GenerateInsuranceReceiptResponse._();
+  GenerateInsuranceReceiptResponse createEmptyInstance() => create();
+  static $pb.PbList<GenerateInsuranceReceiptResponse> createRepeated() => $pb.PbList<GenerateInsuranceReceiptResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateInsuranceReceiptResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateInsuranceReceiptResponse>(create);
+  static GenerateInsuranceReceiptResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get receiptId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set receiptId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasReceiptId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReceiptId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get receiptNumber => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set receiptNumber($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReceiptNumber() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReceiptNumber() => clearField(2);
+
+  @$pb.TagNumber(3)
+  InsurancePaymentRecord get payment => $_getN(2);
+  @$pb.TagNumber(3)
+  set payment(InsurancePaymentRecord v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPayment() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPayment() => clearField(3);
+  @$pb.TagNumber(3)
+  InsurancePaymentRecord ensurePayment() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  $core.String get policyNumber => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set policyNumber($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPolicyNumber() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPolicyNumber() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get policyType => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set policyType($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPolicyType() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPolicyType() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get message => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set message($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasMessage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMessage() => clearField(6);
+}
+
+/// Get user receipts
+class GetUserInsuranceReceiptsRequest extends $pb.GeneratedMessage {
+  factory GetUserInsuranceReceiptsRequest({
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final $result = create();
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    if (offset != null) {
+      $result.offset = offset;
+    }
+    return $result;
+  }
+  GetUserInsuranceReceiptsRequest._() : super();
+  factory GetUserInsuranceReceiptsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserInsuranceReceiptsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserInsuranceReceiptsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserInsuranceReceiptsRequest clone() => GetUserInsuranceReceiptsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserInsuranceReceiptsRequest copyWith(void Function(GetUserInsuranceReceiptsRequest) updates) => super.copyWith((message) => updates(message as GetUserInsuranceReceiptsRequest)) as GetUserInsuranceReceiptsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsuranceReceiptsRequest create() => GetUserInsuranceReceiptsRequest._();
+  GetUserInsuranceReceiptsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetUserInsuranceReceiptsRequest> createRepeated() => $pb.PbList<GetUserInsuranceReceiptsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsuranceReceiptsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserInsuranceReceiptsRequest>(create);
+  static GetUserInsuranceReceiptsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get limit => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set limit($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLimit() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLimit() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get offset => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set offset($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasOffset() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOffset() => clearField(2);
+}
+
+class GetUserInsuranceReceiptsResponse extends $pb.GeneratedMessage {
+  factory GetUserInsuranceReceiptsResponse({
+    $core.Iterable<InsurancePaymentRecord>? receipts,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (receipts != null) {
+      $result.receipts.addAll(receipts);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetUserInsuranceReceiptsResponse._() : super();
+  factory GetUserInsuranceReceiptsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserInsuranceReceiptsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserInsuranceReceiptsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<InsurancePaymentRecord>(1, _omitFieldNames ? '' : 'receipts', $pb.PbFieldType.PM, subBuilder: InsurancePaymentRecord.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserInsuranceReceiptsResponse clone() => GetUserInsuranceReceiptsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserInsuranceReceiptsResponse copyWith(void Function(GetUserInsuranceReceiptsResponse) updates) => super.copyWith((message) => updates(message as GetUserInsuranceReceiptsResponse)) as GetUserInsuranceReceiptsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsuranceReceiptsResponse create() => GetUserInsuranceReceiptsResponse._();
+  GetUserInsuranceReceiptsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetUserInsuranceReceiptsResponse> createRepeated() => $pb.PbList<GetUserInsuranceReceiptsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserInsuranceReceiptsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserInsuranceReceiptsResponse>(create);
+  static GetUserInsuranceReceiptsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsurancePaymentRecord> get receipts => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+/// Insurance statistics
+class GetInsuranceStatisticsRequest extends $pb.GeneratedMessage {
+  factory GetInsuranceStatisticsRequest() => create();
+  GetInsuranceStatisticsRequest._() : super();
+  factory GetInsuranceStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceStatisticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceStatisticsRequest clone() => GetInsuranceStatisticsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceStatisticsRequest copyWith(void Function(GetInsuranceStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetInsuranceStatisticsRequest)) as GetInsuranceStatisticsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceStatisticsRequest create() => GetInsuranceStatisticsRequest._();
+  GetInsuranceStatisticsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceStatisticsRequest> createRepeated() => $pb.PbList<GetInsuranceStatisticsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceStatisticsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceStatisticsRequest>(create);
+  static GetInsuranceStatisticsRequest? _defaultInstance;
+}
+
+class GetInsuranceStatisticsResponse extends $pb.GeneratedMessage {
+  factory GetInsuranceStatisticsResponse({
+    $core.int? activePolicies,
+    $core.int? totalPolicies,
+    $fixnum.Int64? totalCoverage,
+    $fixnum.Int64? totalPremiumsPaid,
+    $core.int? totalClaims,
+    $core.int? pendingClaims,
+    $fixnum.Int64? totalClaimedAmount,
+    $fixnum.Int64? totalApprovedAmount,
+    $core.String? nextPaymentDue,
+    $core.Map<$core.String, $core.int>? policiesByType,
+  }) {
+    final $result = create();
+    if (activePolicies != null) {
+      $result.activePolicies = activePolicies;
+    }
+    if (totalPolicies != null) {
+      $result.totalPolicies = totalPolicies;
+    }
+    if (totalCoverage != null) {
+      $result.totalCoverage = totalCoverage;
+    }
+    if (totalPremiumsPaid != null) {
+      $result.totalPremiumsPaid = totalPremiumsPaid;
+    }
+    if (totalClaims != null) {
+      $result.totalClaims = totalClaims;
+    }
+    if (pendingClaims != null) {
+      $result.pendingClaims = pendingClaims;
+    }
+    if (totalClaimedAmount != null) {
+      $result.totalClaimedAmount = totalClaimedAmount;
+    }
+    if (totalApprovedAmount != null) {
+      $result.totalApprovedAmount = totalApprovedAmount;
+    }
+    if (nextPaymentDue != null) {
+      $result.nextPaymentDue = nextPaymentDue;
+    }
+    if (policiesByType != null) {
+      $result.policiesByType.addAll(policiesByType);
+    }
+    return $result;
+  }
+  GetInsuranceStatisticsResponse._() : super();
+  factory GetInsuranceStatisticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceStatisticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceStatisticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'activePolicies', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalPolicies', $pb.PbFieldType.O3)
+    ..aInt64(3, _omitFieldNames ? '' : 'totalCoverage')
+    ..aInt64(4, _omitFieldNames ? '' : 'totalPremiumsPaid')
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'totalClaims', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'pendingClaims', $pb.PbFieldType.O3)
+    ..aInt64(7, _omitFieldNames ? '' : 'totalClaimedAmount')
+    ..aInt64(8, _omitFieldNames ? '' : 'totalApprovedAmount')
+    ..aOS(9, _omitFieldNames ? '' : 'nextPaymentDue')
+    ..m<$core.String, $core.int>(10, _omitFieldNames ? '' : 'policiesByType', entryClassName: 'GetInsuranceStatisticsResponse.PoliciesByTypeEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.O3, packageName: const $pb.PackageName('financialproducts'))
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceStatisticsResponse clone() => GetInsuranceStatisticsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceStatisticsResponse copyWith(void Function(GetInsuranceStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetInsuranceStatisticsResponse)) as GetInsuranceStatisticsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceStatisticsResponse create() => GetInsuranceStatisticsResponse._();
+  GetInsuranceStatisticsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceStatisticsResponse> createRepeated() => $pb.PbList<GetInsuranceStatisticsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceStatisticsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceStatisticsResponse>(create);
+  static GetInsuranceStatisticsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get activePolicies => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set activePolicies($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasActivePolicies() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearActivePolicies() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get totalPolicies => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalPolicies($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalPolicies() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalPolicies() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get totalCoverage => $_getI64(2);
+  @$pb.TagNumber(3)
+  set totalCoverage($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalCoverage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalCoverage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get totalPremiumsPaid => $_getI64(3);
+  @$pb.TagNumber(4)
+  set totalPremiumsPaid($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTotalPremiumsPaid() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalPremiumsPaid() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get totalClaims => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set totalClaims($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalClaims() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalClaims() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get pendingClaims => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set pendingClaims($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPendingClaims() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPendingClaims() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get totalClaimedAmount => $_getI64(6);
+  @$pb.TagNumber(7)
+  set totalClaimedAmount($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasTotalClaimedAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTotalClaimedAmount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get totalApprovedAmount => $_getI64(7);
+  @$pb.TagNumber(8)
+  set totalApprovedAmount($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasTotalApprovedAmount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTotalApprovedAmount() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get nextPaymentDue => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set nextPaymentDue($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasNextPaymentDue() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearNextPaymentDue() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.Map<$core.String, $core.int> get policiesByType => $_getMap(9);
+}
+
+/// Payment statistics
+class GetInsurancePaymentStatisticsRequest extends $pb.GeneratedMessage {
+  factory GetInsurancePaymentStatisticsRequest({
+    $core.String? startDate,
+    $core.String? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetInsurancePaymentStatisticsRequest._() : super();
+  factory GetInsurancePaymentStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsurancePaymentStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsurancePaymentStatisticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'startDate')
+    ..aOS(2, _omitFieldNames ? '' : 'endDate')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentStatisticsRequest clone() => GetInsurancePaymentStatisticsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentStatisticsRequest copyWith(void Function(GetInsurancePaymentStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetInsurancePaymentStatisticsRequest)) as GetInsurancePaymentStatisticsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentStatisticsRequest create() => GetInsurancePaymentStatisticsRequest._();
+  GetInsurancePaymentStatisticsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsurancePaymentStatisticsRequest> createRepeated() => $pb.PbList<GetInsurancePaymentStatisticsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentStatisticsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsurancePaymentStatisticsRequest>(create);
+  static GetInsurancePaymentStatisticsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get startDate => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set startDate($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasStartDate() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStartDate() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get endDate => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set endDate($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasEndDate() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearEndDate() => clearField(2);
+}
+
+class GetInsurancePaymentStatisticsResponse extends $pb.GeneratedMessage {
+  factory GetInsurancePaymentStatisticsResponse({
+    $core.int? totalPayments,
+    $core.int? completedPayments,
+    $core.int? pendingPayments,
+    $core.int? failedPayments,
+    $fixnum.Int64? totalAmount,
+    $fixnum.Int64? completedAmount,
+  }) {
+    final $result = create();
+    if (totalPayments != null) {
+      $result.totalPayments = totalPayments;
+    }
+    if (completedPayments != null) {
+      $result.completedPayments = completedPayments;
+    }
+    if (pendingPayments != null) {
+      $result.pendingPayments = pendingPayments;
+    }
+    if (failedPayments != null) {
+      $result.failedPayments = failedPayments;
+    }
+    if (totalAmount != null) {
+      $result.totalAmount = totalAmount;
+    }
+    if (completedAmount != null) {
+      $result.completedAmount = completedAmount;
+    }
+    return $result;
+  }
+  GetInsurancePaymentStatisticsResponse._() : super();
+  factory GetInsurancePaymentStatisticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsurancePaymentStatisticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsurancePaymentStatisticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'totalPayments', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'completedPayments', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'pendingPayments', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'failedPayments', $pb.PbFieldType.O3)
+    ..aInt64(5, _omitFieldNames ? '' : 'totalAmount')
+    ..aInt64(6, _omitFieldNames ? '' : 'completedAmount')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentStatisticsResponse clone() => GetInsurancePaymentStatisticsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsurancePaymentStatisticsResponse copyWith(void Function(GetInsurancePaymentStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetInsurancePaymentStatisticsResponse)) as GetInsurancePaymentStatisticsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentStatisticsResponse create() => GetInsurancePaymentStatisticsResponse._();
+  GetInsurancePaymentStatisticsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsurancePaymentStatisticsResponse> createRepeated() => $pb.PbList<GetInsurancePaymentStatisticsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePaymentStatisticsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsurancePaymentStatisticsResponse>(create);
+  static GetInsurancePaymentStatisticsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get totalPayments => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set totalPayments($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTotalPayments() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTotalPayments() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get completedPayments => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set completedPayments($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCompletedPayments() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCompletedPayments() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get pendingPayments => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set pendingPayments($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPendingPayments() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPendingPayments() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get failedPayments => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set failedPayments($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFailedPayments() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFailedPayments() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get totalAmount => $_getI64(4);
+  @$pb.TagNumber(5)
+  set totalAmount($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalAmount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get completedAmount => $_getI64(5);
+  @$pb.TagNumber(6)
+  set completedAmount($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasCompletedAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCompletedAmount() => clearField(6);
 }
 
 /// Auto-save rule model

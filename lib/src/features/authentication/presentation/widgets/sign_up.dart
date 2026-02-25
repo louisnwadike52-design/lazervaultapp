@@ -259,9 +259,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               )
            };
 
-          // Handle other loading states if necessary
-          final bool showGlobalLoading = state is CreatingUser || state is GettingUsers; // Example
-          final bool displayLoading = isLoading || showGlobalLoading;
+          final bool displayLoading = isLoading;
 
           return Column(
             children: [

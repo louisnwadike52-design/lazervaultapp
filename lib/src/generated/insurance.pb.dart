@@ -3417,6 +3417,13 @@ class InsuranceProduct extends $pb.GeneratedMessage {
     $core.Map<$core.String, $core.String>? metadata,
     $core.Iterable<InsuranceProductFormField>? formFields,
     $core.bool? isActive,
+    $core.String? purchaseRoute,
+    $core.String? providerId,
+    $core.double? basePrice,
+    $core.String? howItWorks,
+    $core.String? fullBenefits,
+    $core.bool? isRenewable,
+    $core.bool? isClaimable,
   }) {
     final $result = create();
     if (id != null) {
@@ -3461,6 +3468,27 @@ class InsuranceProduct extends $pb.GeneratedMessage {
     if (isActive != null) {
       $result.isActive = isActive;
     }
+    if (purchaseRoute != null) {
+      $result.purchaseRoute = purchaseRoute;
+    }
+    if (providerId != null) {
+      $result.providerId = providerId;
+    }
+    if (basePrice != null) {
+      $result.basePrice = basePrice;
+    }
+    if (howItWorks != null) {
+      $result.howItWorks = howItWorks;
+    }
+    if (fullBenefits != null) {
+      $result.fullBenefits = fullBenefits;
+    }
+    if (isRenewable != null) {
+      $result.isRenewable = isRenewable;
+    }
+    if (isClaimable != null) {
+      $result.isClaimable = isClaimable;
+    }
     return $result;
   }
   InsuranceProduct._() : super();
@@ -3482,6 +3510,13 @@ class InsuranceProduct extends $pb.GeneratedMessage {
     ..m<$core.String, $core.String>(12, _omitFieldNames ? '' : 'metadata', entryClassName: 'InsuranceProduct.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
     ..pc<InsuranceProductFormField>(13, _omitFieldNames ? '' : 'formFields', $pb.PbFieldType.PM, subBuilder: InsuranceProductFormField.create)
     ..aOB(14, _omitFieldNames ? '' : 'isActive')
+    ..aOS(15, _omitFieldNames ? '' : 'purchaseRoute')
+    ..aOS(16, _omitFieldNames ? '' : 'providerId')
+    ..a<$core.double>(17, _omitFieldNames ? '' : 'basePrice', $pb.PbFieldType.OD)
+    ..aOS(18, _omitFieldNames ? '' : 'howItWorks')
+    ..aOS(19, _omitFieldNames ? '' : 'fullBenefits')
+    ..aOB(20, _omitFieldNames ? '' : 'isRenewable')
+    ..aOB(21, _omitFieldNames ? '' : 'isClaimable')
     ..hasRequiredFields = false
   ;
 
@@ -3613,6 +3648,69 @@ class InsuranceProduct extends $pb.GeneratedMessage {
   $core.bool hasIsActive() => $_has(13);
   @$pb.TagNumber(14)
   void clearIsActive() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get purchaseRoute => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set purchaseRoute($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasPurchaseRoute() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearPurchaseRoute() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get providerId => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set providerId($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasProviderId() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearProviderId() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.double get basePrice => $_getN(16);
+  @$pb.TagNumber(17)
+  set basePrice($core.double v) { $_setDouble(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasBasePrice() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearBasePrice() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get howItWorks => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set howItWorks($core.String v) { $_setString(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasHowItWorks() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearHowItWorks() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get fullBenefits => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set fullBenefits($core.String v) { $_setString(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasFullBenefits() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearFullBenefits() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.bool get isRenewable => $_getBF(19);
+  @$pb.TagNumber(20)
+  set isRenewable($core.bool v) { $_setBool(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasIsRenewable() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearIsRenewable() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.bool get isClaimable => $_getBF(20);
+  @$pb.TagNumber(21)
+  set isClaimable($core.bool v) { $_setBool(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasIsClaimable() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearIsClaimable() => clearField(21);
 }
 
 /// Insurance category metadata
@@ -4770,6 +4868,378 @@ class GetInsurancePurchaseStatusResponse extends $pb.GeneratedMessage {
   $core.bool hasMsg() => $_has(2);
   @$pb.TagNumber(3)
   void clearMsg() => clearField(3);
+}
+
+/// Upload insurance document (ID, proof of purchase, claim evidence, device photo)
+class UploadInsuranceDocumentRequest extends $pb.GeneratedMessage {
+  factory UploadInsuranceDocumentRequest({
+    $core.List<$core.int>? fileData,
+    $core.String? filename,
+    $core.String? documentType,
+  }) {
+    final $result = create();
+    if (fileData != null) {
+      $result.fileData = fileData;
+    }
+    if (filename != null) {
+      $result.filename = filename;
+    }
+    if (documentType != null) {
+      $result.documentType = documentType;
+    }
+    return $result;
+  }
+  UploadInsuranceDocumentRequest._() : super();
+  factory UploadInsuranceDocumentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UploadInsuranceDocumentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UploadInsuranceDocumentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'fileData', $pb.PbFieldType.OY)
+    ..aOS(2, _omitFieldNames ? '' : 'filename')
+    ..aOS(3, _omitFieldNames ? '' : 'documentType')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UploadInsuranceDocumentRequest clone() => UploadInsuranceDocumentRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UploadInsuranceDocumentRequest copyWith(void Function(UploadInsuranceDocumentRequest) updates) => super.copyWith((message) => updates(message as UploadInsuranceDocumentRequest)) as UploadInsuranceDocumentRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UploadInsuranceDocumentRequest create() => UploadInsuranceDocumentRequest._();
+  UploadInsuranceDocumentRequest createEmptyInstance() => create();
+  static $pb.PbList<UploadInsuranceDocumentRequest> createRepeated() => $pb.PbList<UploadInsuranceDocumentRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UploadInsuranceDocumentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UploadInsuranceDocumentRequest>(create);
+  static UploadInsuranceDocumentRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get fileData => $_getN(0);
+  @$pb.TagNumber(1)
+  set fileData($core.List<$core.int> v) { $_setBytes(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFileData() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFileData() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get filename => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set filename($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFilename() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFilename() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get documentType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set documentType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDocumentType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDocumentType() => clearField(3);
+}
+
+class UploadInsuranceDocumentResponse extends $pb.GeneratedMessage {
+  factory UploadInsuranceDocumentResponse({
+    $core.String? uploadId,
+    $core.String? fileUrl,
+    $core.bool? success,
+    $core.String? msg,
+  }) {
+    final $result = create();
+    if (uploadId != null) {
+      $result.uploadId = uploadId;
+    }
+    if (fileUrl != null) {
+      $result.fileUrl = fileUrl;
+    }
+    if (success != null) {
+      $result.success = success;
+    }
+    if (msg != null) {
+      $result.msg = msg;
+    }
+    return $result;
+  }
+  UploadInsuranceDocumentResponse._() : super();
+  factory UploadInsuranceDocumentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UploadInsuranceDocumentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UploadInsuranceDocumentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'uploadId')
+    ..aOS(2, _omitFieldNames ? '' : 'fileUrl')
+    ..aOB(3, _omitFieldNames ? '' : 'success')
+    ..aOS(4, _omitFieldNames ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UploadInsuranceDocumentResponse clone() => UploadInsuranceDocumentResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UploadInsuranceDocumentResponse copyWith(void Function(UploadInsuranceDocumentResponse) updates) => super.copyWith((message) => updates(message as UploadInsuranceDocumentResponse)) as UploadInsuranceDocumentResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UploadInsuranceDocumentResponse create() => UploadInsuranceDocumentResponse._();
+  UploadInsuranceDocumentResponse createEmptyInstance() => create();
+  static $pb.PbList<UploadInsuranceDocumentResponse> createRepeated() => $pb.PbList<UploadInsuranceDocumentResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UploadInsuranceDocumentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UploadInsuranceDocumentResponse>(create);
+  static UploadInsuranceDocumentResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get uploadId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set uploadId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUploadId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUploadId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get fileUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set fileUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFileUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFileUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get success => $_getBF(2);
+  @$pb.TagNumber(3)
+  set success($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSuccess() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSuccess() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get msg => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set msg($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMsg() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMsg() => clearField(4);
+}
+
+/// Get auxiliary data (states, vehicle makes/models, genders, etc.)
+class GetInsuranceAuxiliaryDataRequest extends $pb.GeneratedMessage {
+  factory GetInsuranceAuxiliaryDataRequest({
+    $core.String? utilityId,
+    $core.String? query,
+  }) {
+    final $result = create();
+    if (utilityId != null) {
+      $result.utilityId = utilityId;
+    }
+    if (query != null) {
+      $result.query = query;
+    }
+    return $result;
+  }
+  GetInsuranceAuxiliaryDataRequest._() : super();
+  factory GetInsuranceAuxiliaryDataRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceAuxiliaryDataRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceAuxiliaryDataRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'utilityId')
+    ..aOS(2, _omitFieldNames ? '' : 'query')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceAuxiliaryDataRequest clone() => GetInsuranceAuxiliaryDataRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceAuxiliaryDataRequest copyWith(void Function(GetInsuranceAuxiliaryDataRequest) updates) => super.copyWith((message) => updates(message as GetInsuranceAuxiliaryDataRequest)) as GetInsuranceAuxiliaryDataRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceAuxiliaryDataRequest create() => GetInsuranceAuxiliaryDataRequest._();
+  GetInsuranceAuxiliaryDataRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceAuxiliaryDataRequest> createRepeated() => $pb.PbList<GetInsuranceAuxiliaryDataRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceAuxiliaryDataRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceAuxiliaryDataRequest>(create);
+  static GetInsuranceAuxiliaryDataRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get utilityId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set utilityId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUtilityId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUtilityId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get query => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set query($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasQuery() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearQuery() => clearField(2);
+}
+
+class GetInsuranceAuxiliaryDataResponse extends $pb.GeneratedMessage {
+  factory GetInsuranceAuxiliaryDataResponse({
+    $core.Iterable<InsuranceAuxiliaryItem>? items,
+    $core.bool? success,
+    $core.String? msg,
+  }) {
+    final $result = create();
+    if (items != null) {
+      $result.items.addAll(items);
+    }
+    if (success != null) {
+      $result.success = success;
+    }
+    if (msg != null) {
+      $result.msg = msg;
+    }
+    return $result;
+  }
+  GetInsuranceAuxiliaryDataResponse._() : super();
+  factory GetInsuranceAuxiliaryDataResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceAuxiliaryDataResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInsuranceAuxiliaryDataResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<InsuranceAuxiliaryItem>(1, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InsuranceAuxiliaryItem.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceAuxiliaryDataResponse clone() => GetInsuranceAuxiliaryDataResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceAuxiliaryDataResponse copyWith(void Function(GetInsuranceAuxiliaryDataResponse) updates) => super.copyWith((message) => updates(message as GetInsuranceAuxiliaryDataResponse)) as GetInsuranceAuxiliaryDataResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceAuxiliaryDataResponse create() => GetInsuranceAuxiliaryDataResponse._();
+  GetInsuranceAuxiliaryDataResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceAuxiliaryDataResponse> createRepeated() => $pb.PbList<GetInsuranceAuxiliaryDataResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceAuxiliaryDataResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceAuxiliaryDataResponse>(create);
+  static GetInsuranceAuxiliaryDataResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsuranceAuxiliaryItem> get items => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get success => $_getBF(1);
+  @$pb.TagNumber(2)
+  set success($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSuccess() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSuccess() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get msg => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set msg($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMsg() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMsg() => clearField(3);
+}
+
+class InsuranceAuxiliaryItem extends $pb.GeneratedMessage {
+  factory InsuranceAuxiliaryItem({
+    $core.String? label,
+    $core.String? value,
+  }) {
+    final $result = create();
+    if (label != null) {
+      $result.label = label;
+    }
+    if (value != null) {
+      $result.value = value;
+    }
+    return $result;
+  }
+  InsuranceAuxiliaryItem._() : super();
+  factory InsuranceAuxiliaryItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InsuranceAuxiliaryItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InsuranceAuxiliaryItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'label')
+    ..aOS(2, _omitFieldNames ? '' : 'value')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InsuranceAuxiliaryItem clone() => InsuranceAuxiliaryItem()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InsuranceAuxiliaryItem copyWith(void Function(InsuranceAuxiliaryItem) updates) => super.copyWith((message) => updates(message as InsuranceAuxiliaryItem)) as InsuranceAuxiliaryItem;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static InsuranceAuxiliaryItem create() => InsuranceAuxiliaryItem._();
+  InsuranceAuxiliaryItem createEmptyInstance() => create();
+  static $pb.PbList<InsuranceAuxiliaryItem> createRepeated() => $pb.PbList<InsuranceAuxiliaryItem>();
+  @$core.pragma('dart2js:noInline')
+  static InsuranceAuxiliaryItem getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InsuranceAuxiliaryItem>(create);
+  static InsuranceAuxiliaryItem? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get label => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set label($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLabel() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLabel() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get value => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set value($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasValue() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearValue() => clearField(2);
 }
 
 /// Data Models

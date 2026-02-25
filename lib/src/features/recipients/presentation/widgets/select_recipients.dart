@@ -96,8 +96,13 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     final authState = context.read<AuthenticationCubit>().state;
     final accessToken = _getAccessTokenFromState(authState);
     if (accessToken != null) {
-      // If already authenticated, fetch recipients immediately
-      context.read<RecipientCubit>().getRecipients(accessToken: accessToken);
+      // If already authenticated, fetch recipients immediately with locale filters
+      final localeManager = serviceLocator<LocaleManager>();
+      context.read<RecipientCubit>().getRecipients(
+        accessToken: accessToken,
+        countryCode: localeManager.currentCountry,
+        currency: localeManager.currentCurrency,
+      );
     }
     // The listener below will handle cases where auth happens later.
 
@@ -136,31 +141,39 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     final accessToken = _getAccessTokenFromState(authState);
     if (accessToken == null) return;
 
+    final localeManager = serviceLocator<LocaleManager>();
+    final countryCode = localeManager.currentCountry;
+    final currency = localeManager.currentCurrency;
+
     // Apply filter based on selected type
     switch (filterType) {
       case RecipientFilterType.all:
         context.read<RecipientCubit>().getRecipients(
           accessToken: accessToken,
+          countryCode: countryCode,
+          currency: currency,
         );
         break;
       case RecipientFilterType.favorites:
         context.read<RecipientCubit>().getRecipients(
           accessToken: accessToken,
+          countryCode: countryCode,
+          currency: currency,
           favoritesOnly: true,
         );
         break;
       case RecipientFilterType.recent:
-        // For now, recent is handled the same as all (sorted by recent on backend)
-        // TODO: Add recent filter support to backend if needed
         context.read<RecipientCubit>().getRecipients(
           accessToken: accessToken,
+          countryCode: countryCode,
+          currency: currency,
         );
         break;
       case RecipientFilterType.bank:
-        // Filter by external recipients (bank transfers)
-        // For now handled the same, could add type filter to backend
         context.read<RecipientCubit>().getRecipients(
           accessToken: accessToken,
+          countryCode: countryCode,
+          currency: currency,
         );
         break;
     }
@@ -182,10 +195,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           // Trigger fetch if needed (handles auth happening while screen is visible)
           final recipientState = context.read<RecipientCubit>().state;
           if (recipientState is RecipientInitial) {
-            // Pass the retrieved token
-            context
-                .read<RecipientCubit>()
-                .getRecipients(accessToken: accessToken);
+            final localeManager = serviceLocator<LocaleManager>();
+            context.read<RecipientCubit>().getRecipients(
+              accessToken: accessToken,
+              countryCode: localeManager.currentCountry,
+              currency: localeManager.currentCurrency,
+            );
           }
         }
       },
@@ -415,8 +430,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         onRefresh: () async {
           final authState = context.read<AuthenticationCubit>().state;
           if (authState is AuthenticationSuccess) {
+            final lm = serviceLocator<LocaleManager>();
             await context.read<RecipientCubit>().getRecipients(
               accessToken: authState.profile.session.accessToken,
+              countryCode: lm.currentCountry,
+              currency: lm.currentCurrency,
             );
           }
         },
@@ -574,8 +592,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         onRefresh: () async {
           final authState = context.read<AuthenticationCubit>().state;
           if (authState is AuthenticationSuccess) {
+            final lm = serviceLocator<LocaleManager>();
             await context.read<RecipientCubit>().getRecipients(
               accessToken: authState.profile.session.accessToken,
+              countryCode: lm.currentCountry,
+              currency: lm.currentCurrency,
             );
           }
         },

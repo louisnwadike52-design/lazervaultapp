@@ -1,6 +1,7 @@
 import 'package:lazervault/core/services/locale_manager.dart';
 
 import '../models/crypto_model.dart';
+import '../../domain/entities/global_market_data.dart';
 import '../../domain/entities/price_point.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart' as pb;
@@ -12,6 +13,7 @@ abstract class CryptoRemoteDataSource {
   Future<List<PricePoint>> getCryptoPriceHistory(String id, {String range = '7d'});
   Future<List<CryptoModel>> getTrendingCryptos();
   Future<List<CryptoModel>> getTopCryptos();
+  Future<GlobalMarketData> getGlobalMarketData();
 }
 
 class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
@@ -152,4 +154,24 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
           .toList(),
     );
   }
-} 
+
+  @override
+  Future<GlobalMarketData> getGlobalMarketData() async {
+    try {
+      final response = await grpcClient.getGlobalMarketData();
+      return GlobalMarketData(
+        totalMarketCap: response.totalMarketCap,
+        totalVolume24h: response.totalVolume24h,
+        marketCapPercentageBtc: response.marketCapPercentageBtc,
+        marketCapPercentageEth: response.marketCapPercentageEth,
+        activeCryptocurrencies: response.activeCryptocurrencies,
+        markets: response.markets,
+        updatedAt: response.hasUpdatedAt()
+            ? response.updatedAt.toDateTime()
+            : DateTime.now(),
+      );
+    } catch (e) {
+      throw Exception('Failed to fetch global market data: $e');
+    }
+  }
+}

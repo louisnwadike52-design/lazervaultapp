@@ -135,6 +135,7 @@ import 'package:lazervault/src/features/currency_exchange/data/repositories/exch
 import 'package:lazervault/src/features/currency_exchange/domain/exchange_feature_config.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/cubit/dashboard_rates_cubit.dart';
 import 'package:lazervault/src/features/voice_enrollment/data/voice_enrollment_repository_impl.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
@@ -456,6 +457,12 @@ import 'package:lazervault/src/features/family_account/domain/usecases/family_ac
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart' as family_accounts_grpc;
 import 'package:dio/dio.dart';
+
+// Move Money Imports
+import 'package:lazervault/src/features/move_money/data/datasources/move_money_grpc_datasource.dart';
+import 'package:lazervault/src/features/move_money/cubit/move_money_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/wallet_transfer_cubit.dart';
 
 // Lifestyle Imports
 import 'package:lazervault/src/features/lifestyle/data/datasources/lifestyle_remote_datasource.dart';
@@ -1062,6 +1069,10 @@ Future<void> init() async {
     repository: serviceLocator<IExchangeRepository>(),
   ));
 
+  serviceLocator.registerFactory(() => DashboardRatesCubit(
+    repository: serviceLocator<IExchangeRepository>(),
+  ));
+
   // ================== Feature: Multi-Country ==================
 
   // gRPC Client - routes through core-gateway (default channel)
@@ -1145,6 +1156,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<IAccountSummaryRepository>(
       () => AccountSummaryRepositoryImpl(
         serviceLocator<accounts_grpc.AccountsServiceClient>(),
+        serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
         serviceLocator<GrpcCallOptionsHelper>(),
       ));
 
@@ -1707,6 +1719,12 @@ Future<void> init() async {
   serviceLocator.registerFactory(() => TagPayCubit(
     repository: serviceLocator<TagPayRepository>(),
     mutationQueue: serviceLocator<MutationQueue>(),
+  ));
+
+  // ================== Feature: Wallet Transfer (own accounts) ==================
+
+  serviceLocator.registerFactory(() => WalletTransferCubit(
+    paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
   ));
 
   // ================== Feature: QR Pay ==================
@@ -2503,6 +2521,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => UnfreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => DeleteFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => ProcessMemberContributionUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => SetupFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory<FamilyAccountCubit>(
@@ -2523,6 +2542,7 @@ Future<void> init() async {
       unfreezeFamilyAccount: serviceLocator<UnfreezeFamilyAccountUseCase>(),
       deleteFamilyAccount: serviceLocator<DeleteFamilyAccountUseCase>(),
       processMemberContribution: serviceLocator<ProcessMemberContributionUseCase>(),
+      setupFamilyAccount: serviceLocator<SetupFamilyAccountUseCase>(),
     ),
   );
 
@@ -2631,6 +2651,7 @@ Future<void> init() async {
     () => TransactionHistoryRepositoryGrpc(
       grpcClient: serviceLocator<AccountsGrpcClient>(),
       accountManager: serviceLocator<AccountManager>(),
+      storage: serviceLocator<FlutterSecureStorage>(),
     ),
   );
 
@@ -2653,10 +2674,14 @@ Future<void> init() async {
   // These services enable offline-first patterns for low-network regions
 
   // SWR Cache Manager - Stale-While-Revalidate caching for list data
-  serviceLocator.registerLazySingleton<SWRCacheManager>(() => SWRCacheManager());
+  serviceLocator.registerLazySingleton<SWRCacheManager>(() => SWRCacheManager(
+    storage: serviceLocator<FlutterSecureStorage>(),
+  ));
 
   // Mutation Queue - Queues failed operations for retry when online
-  serviceLocator.registerLazySingleton<MutationQueue>(() => MutationQueue());
+  serviceLocator.registerLazySingleton<MutationQueue>(() => MutationQueue(
+    storage: serviceLocator<FlutterSecureStorage>(),
+  ));
 
   // Mutation Executor - Processes queued mutations using registered handlers
   serviceLocator.registerLazySingleton<MutationExecutor>(() {
@@ -2835,6 +2860,26 @@ Future<void> init() async {
   // Cubit
   serviceLocator.registerFactory<LifestyleCubit>(
     () => LifestyleCubit(serviceLocator<ILifestyleRepository>()),
+  );
+
+  // ================== Feature: Move Money ==================
+
+  // Data Source (gRPC, uses existing BankingServiceClient)
+  serviceLocator.registerLazySingleton<MoveMoneyGrpcDataSource>(
+    () => MoveMoneyGrpcDataSource(
+      serviceLocator<banking_grpc.BankingServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Cubit (factory — fresh instance per screen)
+  serviceLocator.registerFactory<MoveMoneyCubit>(
+    () => MoveMoneyCubit(serviceLocator<MoveMoneyGrpcDataSource>()),
+  );
+
+  // Mandate Cubit (lazy singleton — shared mandate state across screens)
+  serviceLocator.registerLazySingleton<MandateCubit>(
+    () => MandateCubit(serviceLocator<OpenBankingGrpcDataSource>()),
   );
 
   print("Dependency Injection Initialized with Hierarchical Order");

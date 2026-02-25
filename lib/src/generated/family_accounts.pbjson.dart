@@ -13,6 +13,23 @@ import 'dart:convert' as $convert;
 import 'dart:core' as $core;
 import 'dart:typed_data' as $typed_data;
 
+@$core.Deprecated('Use fundDistributionModeDescriptor instead')
+const FundDistributionMode$json = {
+  '1': 'FundDistributionMode',
+  '2': [
+    {'1': 'FUND_DISTRIBUTION_MODE_UNSPECIFIED', '2': 0},
+    {'1': 'SHARED_POOL', '2': 1},
+    {'1': 'EQUAL_SPLIT', '2': 2},
+    {'1': 'CUSTOM_ALLOCATION', '2': 3},
+  ],
+};
+
+/// Descriptor for `FundDistributionMode`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List fundDistributionModeDescriptor = $convert.base64Decode(
+    'ChRGdW5kRGlzdHJpYnV0aW9uTW9kZRImCiJGVU5EX0RJU1RSSUJVVElPTl9NT0RFX1VOU1BFQ0'
+    'lGSUVEEAASDwoLU0hBUkVEX1BPT0wQARIPCgtFUVVBTF9TUExJVBACEhUKEUNVU1RPTV9BTExP'
+    'Q0FUSU9OEAM=');
+
 @$core.Deprecated('Use createFamilyAccountRequestDescriptor instead')
 const CreateFamilyAccountRequest$json = {
   '1': 'CreateFamilyAccountRequest',
@@ -399,7 +416,7 @@ final $typed_data.Uint8List generateMemberCardRequestDescriptor = $convert.base6
 const GenerateMemberCardResponse$json = {
   '1': 'GenerateMemberCardResponse',
   '2': [
-    {'1': 'card_id', '3': 1, '4': 1, '5': 9, '10': 'cardId'},
+    {'1': 'card', '3': 1, '4': 1, '5': 11, '6': '.accounts.AccountCard', '10': 'card'},
     {'1': 'member', '3': 2, '4': 1, '5': 11, '6': '.accounts.v1.FamilyMember', '10': 'member'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -407,9 +424,9 @@ const GenerateMemberCardResponse$json = {
 
 /// Descriptor for `GenerateMemberCardResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List generateMemberCardResponseDescriptor = $convert.base64Decode(
-    'ChpHZW5lcmF0ZU1lbWJlckNhcmRSZXNwb25zZRIXCgdjYXJkX2lkGAEgASgJUgZjYXJkSWQSMQ'
-    'oGbWVtYmVyGAIgASgLMhkuYWNjb3VudHMudjEuRmFtaWx5TWVtYmVyUgZtZW1iZXISGAoHbWVz'
-    'c2FnZRgDIAEoCVIHbWVzc2FnZQ==');
+    'ChpHZW5lcmF0ZU1lbWJlckNhcmRSZXNwb25zZRIpCgRjYXJkGAEgASgLMhUuYWNjb3VudHMuQW'
+    'Njb3VudENhcmRSBGNhcmQSMQoGbWVtYmVyGAIgASgLMhkuYWNjb3VudHMudjEuRmFtaWx5TWVt'
+    'YmVyUgZtZW1iZXISGAoHbWVzc2FnZRgDIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use freezeFamilyAccountRequestDescriptor instead')
 const FreezeFamilyAccountRequest$json = {
@@ -500,6 +517,120 @@ final $typed_data.Uint8List deleteFamilyAccountResponseDescriptor = $convert.bas
     'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEikKEHJldHVybmVkX2JhbGFuY2UYAyABKAFSD3Jl'
     'dHVybmVkQmFsYW5jZQ==');
 
+@$core.Deprecated('Use processMemberContributionRequestDescriptor instead')
+const ProcessMemberContributionRequest$json = {
+  '1': 'ProcessMemberContributionRequest',
+  '2': [
+    {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    {'1': 'member_id', '3': 2, '4': 1, '5': 9, '10': 'memberId'},
+    {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+  ],
+};
+
+/// Descriptor for `ProcessMemberContributionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List processMemberContributionRequestDescriptor = $convert.base64Decode(
+    'CiBQcm9jZXNzTWVtYmVyQ29udHJpYnV0aW9uUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKAlSCG'
+    'ZhbWlseUlkEhsKCW1lbWJlcl9pZBgCIAEoCVIIbWVtYmVySWQSFgoGYW1vdW50GAMgASgBUgZh'
+    'bW91bnQSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9u');
+
+@$core.Deprecated('Use processMemberContributionResponseDescriptor instead')
+const ProcessMemberContributionResponse$json = {
+  '1': 'ProcessMemberContributionResponse',
+  '2': [
+    {'1': 'family_account', '3': 1, '4': 1, '5': 11, '6': '.accounts.v1.FamilyAccount', '10': 'familyAccount'},
+    {'1': 'transaction', '3': 2, '4': 1, '5': 11, '6': '.accounts.v1.FamilyTransaction', '10': 'transaction'},
+    {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ProcessMemberContributionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List processMemberContributionResponseDescriptor = $convert.base64Decode(
+    'CiFQcm9jZXNzTWVtYmVyQ29udHJpYnV0aW9uUmVzcG9uc2USQQoOZmFtaWx5X2FjY291bnQYAS'
+    'ABKAsyGi5hY2NvdW50cy52MS5GYW1pbHlBY2NvdW50Ug1mYW1pbHlBY2NvdW50EkAKC3RyYW5z'
+    'YWN0aW9uGAIgASgLMh4uYWNjb3VudHMudjEuRmFtaWx5VHJhbnNhY3Rpb25SC3RyYW5zYWN0aW'
+    '9uEhgKB21lc3NhZ2UYAyABKAlSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use setupFamilyAccountRequestDescriptor instead')
+const SetupFamilyAccountRequest$json = {
+  '1': 'SetupFamilyAccountRequest',
+  '2': [
+    {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    {'1': 'fund_distribution_mode', '3': 2, '4': 1, '5': 14, '6': '.accounts.v1.FundDistributionMode', '10': 'fundDistributionMode'},
+    {'1': 'spending_visibility_enabled', '3': 3, '4': 1, '5': 8, '10': 'spendingVisibilityEnabled'},
+    {'1': 'allocations', '3': 4, '4': 3, '5': 11, '6': '.accounts.v1.MemberAllocation', '10': 'allocations'},
+  ],
+};
+
+/// Descriptor for `SetupFamilyAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setupFamilyAccountRequestDescriptor = $convert.base64Decode(
+    'ChlTZXR1cEZhbWlseUFjY291bnRSZXF1ZXN0EhsKCWZhbWlseV9pZBgBIAEoCVIIZmFtaWx5SW'
+    'QSVwoWZnVuZF9kaXN0cmlidXRpb25fbW9kZRgCIAEoDjIhLmFjY291bnRzLnYxLkZ1bmREaXN0'
+    'cmlidXRpb25Nb2RlUhRmdW5kRGlzdHJpYnV0aW9uTW9kZRI+ChtzcGVuZGluZ192aXNpYmlsaX'
+    'R5X2VuYWJsZWQYAyABKAhSGXNwZW5kaW5nVmlzaWJpbGl0eUVuYWJsZWQSPwoLYWxsb2NhdGlv'
+    'bnMYBCADKAsyHS5hY2NvdW50cy52MS5NZW1iZXJBbGxvY2F0aW9uUgthbGxvY2F0aW9ucw==');
+
+@$core.Deprecated('Use memberAllocationDescriptor instead')
+const MemberAllocation$json = {
+  '1': 'MemberAllocation',
+  '2': [
+    {'1': 'member_id', '3': 1, '4': 1, '5': 9, '10': 'memberId'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `MemberAllocation`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List memberAllocationDescriptor = $convert.base64Decode(
+    'ChBNZW1iZXJBbGxvY2F0aW9uEhsKCW1lbWJlcl9pZBgBIAEoCVIIbWVtYmVySWQSFgoGYW1vdW'
+    '50GAIgASgBUgZhbW91bnQ=');
+
+@$core.Deprecated('Use setupFamilyAccountResponseDescriptor instead')
+const SetupFamilyAccountResponse$json = {
+  '1': 'SetupFamilyAccountResponse',
+  '2': [
+    {'1': 'family_account', '3': 1, '4': 1, '5': 11, '6': '.accounts.v1.FamilyAccount', '10': 'familyAccount'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SetupFamilyAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setupFamilyAccountResponseDescriptor = $convert.base64Decode(
+    'ChpTZXR1cEZhbWlseUFjY291bnRSZXNwb25zZRJBCg5mYW1pbHlfYWNjb3VudBgBIAEoCzIaLm'
+    'FjY291bnRzLnYxLkZhbWlseUFjY291bnRSDWZhbWlseUFjY291bnQSGAoHbWVzc2FnZRgCIAEo'
+    'CVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use updateFundDistributionModeRequestDescriptor instead')
+const UpdateFundDistributionModeRequest$json = {
+  '1': 'UpdateFundDistributionModeRequest',
+  '2': [
+    {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    {'1': 'fund_distribution_mode', '3': 2, '4': 1, '5': 14, '6': '.accounts.v1.FundDistributionMode', '10': 'fundDistributionMode'},
+    {'1': 'allocations', '3': 3, '4': 3, '5': 11, '6': '.accounts.v1.MemberAllocation', '10': 'allocations'},
+  ],
+};
+
+/// Descriptor for `UpdateFundDistributionModeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateFundDistributionModeRequestDescriptor = $convert.base64Decode(
+    'CiFVcGRhdGVGdW5kRGlzdHJpYnV0aW9uTW9kZVJlcXVlc3QSGwoJZmFtaWx5X2lkGAEgASgJUg'
+    'hmYW1pbHlJZBJXChZmdW5kX2Rpc3RyaWJ1dGlvbl9tb2RlGAIgASgOMiEuYWNjb3VudHMudjEu'
+    'RnVuZERpc3RyaWJ1dGlvbk1vZGVSFGZ1bmREaXN0cmlidXRpb25Nb2RlEj8KC2FsbG9jYXRpb2'
+    '5zGAMgAygLMh0uYWNjb3VudHMudjEuTWVtYmVyQWxsb2NhdGlvblILYWxsb2NhdGlvbnM=');
+
+@$core.Deprecated('Use updateFundDistributionModeResponseDescriptor instead')
+const UpdateFundDistributionModeResponse$json = {
+  '1': 'UpdateFundDistributionModeResponse',
+  '2': [
+    {'1': 'family_account', '3': 1, '4': 1, '5': 11, '6': '.accounts.v1.FamilyAccount', '10': 'familyAccount'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `UpdateFundDistributionModeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateFundDistributionModeResponseDescriptor = $convert.base64Decode(
+    'CiJVcGRhdGVGdW5kRGlzdHJpYnV0aW9uTW9kZVJlc3BvbnNlEkEKDmZhbWlseV9hY2NvdW50GA'
+    'EgASgLMhouYWNjb3VudHMudjEuRmFtaWx5QWNjb3VudFINZmFtaWx5QWNjb3VudBIYCgdtZXNz'
+    'YWdlGAIgASgJUgdtZXNzYWdl');
+
 @$core.Deprecated('Use familyAccountDescriptor instead')
 const FamilyAccount$json = {
   '1': 'FamilyAccount',
@@ -519,6 +650,9 @@ const FamilyAccount$json = {
     {'1': 'active_member_count', '3': 13, '4': 1, '5': 5, '10': 'activeMemberCount'},
     {'1': 'allow_member_contributions', '3': 14, '4': 1, '5': 8, '10': 'allowMemberContributions'},
     {'1': 'total_balance', '3': 15, '4': 1, '5': 1, '10': 'totalBalance'},
+    {'1': 'fund_distribution_mode', '3': 16, '4': 1, '5': 14, '6': '.accounts.v1.FundDistributionMode', '10': 'fundDistributionMode'},
+    {'1': 'setup_completed', '3': 17, '4': 1, '5': 8, '10': 'setupCompleted'},
+    {'1': 'spending_visibility_enabled', '3': 18, '4': 1, '5': 8, '10': 'spendingVisibilityEnabled'},
   ],
 };
 
@@ -534,7 +668,10 @@ final $typed_data.Uint8List familyAccountDescriptor = $convert.base64Decode(
     'JlcnMSIQoMbWVtYmVyX2NvdW50GAwgASgFUgttZW1iZXJDb3VudBIuChNhY3RpdmVfbWVtYmVy'
     'X2NvdW50GA0gASgFUhFhY3RpdmVNZW1iZXJDb3VudBI8ChphbGxvd19tZW1iZXJfY29udHJpYn'
     'V0aW9ucxgOIAEoCFIYYWxsb3dNZW1iZXJDb250cmlidXRpb25zEiMKDXRvdGFsX2JhbGFuY2UY'
-    'DyABKAFSDHRvdGFsQmFsYW5jZQ==');
+    'DyABKAFSDHRvdGFsQmFsYW5jZRJXChZmdW5kX2Rpc3RyaWJ1dGlvbl9tb2RlGBAgASgOMiEuYW'
+    'Njb3VudHMudjEuRnVuZERpc3RyaWJ1dGlvbk1vZGVSFGZ1bmREaXN0cmlidXRpb25Nb2RlEicK'
+    'D3NldHVwX2NvbXBsZXRlZBgRIAEoCFIOc2V0dXBDb21wbGV0ZWQSPgobc3BlbmRpbmdfdmlzaW'
+    'JpbGl0eV9lbmFibGVkGBIgASgIUhlzcGVuZGluZ1Zpc2liaWxpdHlFbmFibGVk');
 
 @$core.Deprecated('Use familyMemberDescriptor instead')
 const FamilyMember$json = {

@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
+import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
@@ -35,6 +36,11 @@ import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/move_money_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/wallet_transfer_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/move_money_dashboard_screen.dart';
 
 class Screen {
   final ScreenName name;
@@ -147,8 +153,32 @@ class Screen {
           return const AiChats();
       case ScreenName.currencyExchange:
         return const CBCurrencyExchangeScreen();
+      case ScreenName.moveMoney:
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(
+              value: serviceLocator<OpenBankingCubit>(),
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<MoveMoneyCubit>(),
+            ),
+            BlocProvider.value(
+              value: serviceLocator<MandateCubit>(),
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<WalletTransferCubit>(),
+            ),
+            BlocProvider(
+              create: (_) => serviceLocator<AccountCardsSummaryCubit>(),
+            ),
+          ],
+          child: const MoveMoneyDashboardScreen(),
+        );
       case ScreenName.lifeStyle:
-        return const NewLifestyleScreen();
+        return BlocProvider(
+          create: (_) => serviceLocator<LifestyleCubit>()..loadCategories(),
+          child: const NewLifestyleScreen(),
+        );
       case ScreenName.crowdfund:
         return BlocProvider(
           create: (context) => serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),
@@ -185,6 +215,7 @@ enum ScreenName {
   transactionHistory('Transaction History'),
   aiChat('AI Chat'),
   currencyExchange('Currency Exchange'),
+  moveMoney('Move Money'),
   lifeStyle('Life Style'),
   crowdfund('Crowdfunding');
 

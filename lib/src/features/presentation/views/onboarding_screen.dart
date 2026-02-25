@@ -5,6 +5,7 @@ import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -38,7 +39,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _gotoSignUp() async {
     // Save that the user has seen onboarding
-    const storage = FlutterSecureStorage();
+    final storage = serviceLocator<FlutterSecureStorage>();
     await storage.write(key: 'has_seen_onboarding', value: 'true');
 
     // Navigate to sign up screen

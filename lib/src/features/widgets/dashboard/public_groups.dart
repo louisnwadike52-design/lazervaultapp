@@ -154,7 +154,7 @@ class _PublicGroupsState extends State<PublicGroups> {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: const Color(0xFF1F2937),
             ),
           ),
           GestureDetector(

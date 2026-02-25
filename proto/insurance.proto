@@ -280,17 +280,24 @@ message InsuranceProduct {
     string id = 1;
     string name = 2;
     string description = 3;
-    string category = 4;                     // "auto", "health", "travel", "gadget", "home", "life", "marine", "personal_accident"
+    string category = 4;                     // "auto", "health", "travel", "gadget", "home", "life", "package", "content"
     string provider_name = 5;
     string provider_logo = 6;
-    double min_premium = 7;
-    double max_premium = 8;
+    double min_premium = 7;                  // User-facing price (includes margin)
+    double max_premium = 8;                  // User-facing price (includes margin)
     string currency = 9;
     repeated string benefits = 10;
     string terms_url = 11;
     map<string, string> metadata = 12;
     repeated InsuranceProductFormField form_fields = 13;
     bool is_active = 14;
+    string purchase_route = 15;              // Provider-specific route: "leadway/buy-third-party"
+    string provider_id = 16;                // MyCover provider UUID
+    double base_price = 17;                 // Original MyCover price before margin
+    string how_it_works = 18;               // HTML how-it-works text
+    string full_benefits = 19;              // HTML benefits text
+    bool is_renewable = 20;
+    bool is_claimable = 21;
 }
 
 // Insurance category metadata
@@ -386,6 +393,37 @@ message GetInsurancePurchaseStatusResponse {
     InsurancePurchaseResult result = 1;
     bool success = 2;
     string msg = 3;
+}
+
+// Upload insurance document (ID, proof of purchase, claim evidence, device photo)
+message UploadInsuranceDocumentRequest {
+    bytes file_data = 1;
+    string filename = 2;
+    string document_type = 3;                // "id_document", "proof_of_purchase", "claim_evidence", "device_photo"
+}
+
+message UploadInsuranceDocumentResponse {
+    string upload_id = 1;
+    string file_url = 2;
+    bool success = 3;
+    string msg = 4;
+}
+
+// Get auxiliary data (states, vehicle makes/models, genders, etc.)
+message GetInsuranceAuxiliaryDataRequest {
+    string utility_id = 1;                   // UUID of the utility endpoint
+    string query = 2;                        // Optional query param (e.g., vehicle make for models)
+}
+
+message GetInsuranceAuxiliaryDataResponse {
+    repeated InsuranceAuxiliaryItem items = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message InsuranceAuxiliaryItem {
+    string label = 1;
+    string value = 2;
 }
 
 // Data Models
@@ -629,6 +667,21 @@ service InsuranceService {
     rpc GetInsurancePurchaseStatus(GetInsurancePurchaseStatusRequest) returns (GetInsurancePurchaseStatusResponse) {
         option (google.api.http) = {
             get: "/v1/insurance/purchase/{reference}/status"
+        };
+    }
+
+    // Upload file for insurance documents
+    rpc UploadInsuranceDocument(UploadInsuranceDocumentRequest) returns (UploadInsuranceDocumentResponse) {
+        option (google.api.http) = {
+            post: "/v1/insurance/upload-document"
+            body: "*"
+        };
+    }
+
+    // Get auxiliary data (states, vehicle makes, vehicle models, genders, etc.)
+    rpc GetInsuranceAuxiliaryData(GetInsuranceAuxiliaryDataRequest) returns (GetInsuranceAuxiliaryDataResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/auxiliary/{utility_id}"
         };
     }
 }

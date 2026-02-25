@@ -327,6 +327,8 @@ message CryptoWallet {
   string address = 4;
   double balance = 5;
   string wallet_type = 6; // hot, cold, exchange
+  string chain = 7;
+  string crypto_name = 8;
 }
 
 message GetWalletsResponse {
@@ -338,6 +340,7 @@ message CreateWalletRequest {
   string user_id = 1;
   string crypto_id = 2;
   string wallet_type = 3;
+  string chain = 4;
 }
 
 message CreateWalletResponse {
@@ -345,6 +348,19 @@ message CreateWalletResponse {
   string address = 2;
   string crypto_id = 3;
   string status = 4;
+  string chain = 5;
+  string crypto_name = 6;
+}
+
+// Batch Create Wallets (stablecoin auto-creation)
+message BatchCreateWalletsRequest {
+  string user_id = 1;
+}
+
+message BatchCreateWalletsResponse {
+  repeated CryptoWallet wallets = 1;
+  int32 created_count = 2;
+  int32 failed_count = 3;
 }
 
 // Get Wallet Balance
@@ -553,6 +569,14 @@ service CryptoService {
   rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
     option (google.api.http) = {
       get: "/v1/crypto/wallets/{wallet_id}/balance"
+    };
+  }
+
+  // Batch create default stablecoin wallets
+  rpc BatchCreateWallets(BatchCreateWalletsRequest) returns (BatchCreateWalletsResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/wallets/batch"
+      body: "*"
     };
   }
 

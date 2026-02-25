@@ -1,232 +1,310 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:lazervault/core/types/countries.dart';
-import 'package:lazervault/src/features/widgets/dashboard/country_rate_card.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/cubit/dashboard_rates_cubit.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/cubit/dashboard_rates_state.dart';
+import 'package:lazervault/src/features/widgets/dashboard/country_rate_card.dart';
 
-class ExchangeRates extends StatefulWidget {
+class ExchangeRates extends StatelessWidget {
   const ExchangeRates({super.key});
 
-  @override
-  State<ExchangeRates> createState() => _ExchangeRatesState();
-}
-
-class _ExchangeRatesState extends State<ExchangeRates> {
-  List<List<CountryRateDetails>> countryRateDetails = [];
-
-  final List<Country> countries = [
-    Country(
-      flag: '🇺🇸', // US flag
-      name: 'United States',
-      code: 'USD',
-      symbol: '\$',
-    ),
-    Country(
-      flag: '🇪🇺', // EU flag
-      name: 'European Union',
-      code: 'EUR',
-      symbol: '€',
-    ),
-    Country(
-      flag: '🇬🇧', // UK flag
-      name: 'United Kingdom',
-      code: 'GBP',
-      symbol: '£',
-    ),
-    Country(
-      flag: '🇨🇦', // Canada flag
-      name: 'Canada',
-      code: 'CAD',
-      symbol: 'C\$',
-    ),
-    Country(
-      flag: '🇦🇺', // Australia flag
-      name: 'Australia',
-      code: 'AUD',
-      symbol: 'A\$',
-    ),
-    Country(
-      flag: '🇯🇵', // Japan flag
-      name: 'Japan',
-      code: 'JPY',
-      symbol: '¥',
-    ),
-    Country(
-      flag: '🇨🇭', // Switzerland flag
-      name: 'Switzerland',
-      code: 'CHF',
-      symbol: 'Fr',
-    ),
-    Country(
-      flag: '🇨🇳', // China flag
-      name: 'China',
-      code: 'CNY',
-      symbol: '¥',
-    ),
-  ];
-
-  final List<ExchangeRate> exchangeRates = [
-    ExchangeRate(
-      base: 'USD',
-      timestamp: DateTime.now(),
-      rates: {
-        'EUR': 0.85,
-        'GBP': 0.72,
-        'CAD': 1.34,
-        'AUD': 1.45,
-        'JPY': 110.23,
-        'CHF': 0.91,
-        'CNY': 6.45,
-      },
-    ),
-    ExchangeRate(
-      base: 'USD',
-      timestamp: DateTime.now(),
-      rates: {
-        'EUR': 0.85,
-        'GBP': 0.72,
-        'CAD': 1.34,
-        'AUD': 1.45,
-        'JPY': 110.23,
-        'CHF': 0.91,
-        'CNY': 6.45,
-      },
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    countryRateDetails = exchangeRates.map((exchangeRate) {
-      final from =
-          countries.firstWhere((country) => country.code == exchangeRate.base);
-      final to = exchangeRate.rates.keys
-          .toList()
-          .map(
-              (code) => countries.firstWhere((country) => country.code == code))
-          .toList();
-      return to
-          .map((country) => CountryRateDetails(
-                from: from,
-                to: country,
-                rate: exchangeRate.rates[country.code]!,
-              ))
-          .toList();
-    }).toList();
-  }
-
-  double getResponsiveHeight() {
-    if (Get.width >= 1200) return Get.height * 0.35; // Desktop
-    if (Get.width >= 768) return Get.height * 0.3; // Tablet
-    if (Get.width >= 480) return Get.height * 0.25; // Large Phone
-    return Get.height * 0.21; // Small Phone
+  String _formatLastUpdated(DateTime lastUpdated) {
+    final diff = DateTime.now().difference(lastUpdated);
+    if (diff.inMinutes < 1) return 'Live rates';
+    if (diff.inMinutes < 60) return 'Updated ${diff.inMinutes}m ago';
+    return 'Updated ${diff.inHours}h ago';
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 280.h, // Fixed height instead of responsive
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: Offset(0, 4),
+    return BlocBuilder<DashboardRatesCubit, DashboardRatesState>(
+      builder: (context, state) {
+        return Container(
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Icon(
-                        Icons.currency_exchange_rounded,
-                        color: Color.fromARGB(255, 78, 3, 208),
-                        size: 20.sp,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Flexible(
-                      child: Text(
-                        'Exchange Rates',
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                          letterSpacing: 0.5,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+              _buildHeader(state),
+              SizedBox(height: 16.h),
+              _buildBody(context, state),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader(DashboardRatesState state) {
+    String subtitle = 'Live rates';
+    if (state is DashboardRatesLoaded) {
+      subtitle = _formatLastUpdated(state.lastUpdated);
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  Icons.currency_exchange_rounded,
+                  color: const Color.fromARGB(255, 78, 3, 208),
+                  size: 20.sp,
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              SizedBox(width: 12.w),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "View All",
+                      'Exchange Rates',
                       style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Color.fromARGB(255, 78, 3, 208),
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                        letterSpacing: 0.5,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 16.sp,
-                      color: Color.fromARGB(255, 78, 3, 208),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.black45,
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 24.h),
+        ),
+        GestureDetector(
+          onTap: () => Get.toNamed(AppRoutes.exchangeHome),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 78, 3, 208)
+                  .withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "View All",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color.fromARGB(255, 78, 3, 208),
+                  ),
+                ),
+                SizedBox(width: 4.w),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 16.sp,
+                  color: const Color.fromARGB(255, 78, 3, 208),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-          // Rates List
+  Widget _buildBody(BuildContext context, DashboardRatesState state) {
+    if (state is DashboardRatesLoading) {
+      return _buildShimmer();
+    }
+
+    if (state is DashboardRatesLoaded) {
+      return Column(
+        children: [
+          if (state.isStale)
+            Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: const LinearProgressIndicator(
+                minHeight: 2,
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
+                backgroundColor: Color(0xFFE5E7EB),
+              ),
+            ),
           SizedBox(
-            height: 160.h, // Fixed height for list container
+            height: 160.h,
             child: ListView.builder(
-              shrinkWrap: true,
               padding: EdgeInsets.zero,
-              itemCount: countryRateDetails.expand((list) => list).length,
+              itemCount: state.rates.length,
               scrollDirection: Axis.horizontal,
-              physics: BouncingScrollPhysics(),
+              physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
-                final flatList = countryRateDetails.expand((list) => list).toList();
                 return Padding(
                   padding: EdgeInsets.only(right: 16.w),
-                  child: CountryRateCard(
-                    countryRateDetails: flatList[index],
-                  ),
+                  child: CountryRateCard(rate: state.rates[index]),
                 );
               },
             ),
           ),
         ],
+      );
+    }
+
+    if (state is DashboardRatesError) {
+      return SizedBox(
+        height: 120.h,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.wifi_off_rounded,
+                size: 32.sp,
+                color: Colors.black26,
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Unable to load rates',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.black45,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              GestureDetector(
+                onTap: () =>
+                    context.read<DashboardRatesCubit>().loadRates('NGN'),
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    'Retry',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color.fromARGB(255, 78, 3, 208),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return _buildShimmer();
+  }
+
+  Widget _buildShimmer() {
+    return SizedBox(
+      height: 160.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.zero,
+        itemCount: 3,
+        itemBuilder: (_, __) => _buildShimmerCard(),
+      ),
+    );
+  }
+
+  Widget _buildShimmerCard() {
+    return Padding(
+      padding: EdgeInsets.only(right: 16.w),
+      child: Container(
+        width: 160.w,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromARGB(255, 78, 3, 208)
+                  .withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32.w,
+                  height: 32.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Container(
+                  width: 50.w,
+                  height: 14.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Container(
+              width: 100.w,
+              height: 20.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Container(
+              width: 60.w,
+              height: 12.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

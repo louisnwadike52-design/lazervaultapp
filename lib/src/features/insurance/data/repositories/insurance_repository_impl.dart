@@ -348,6 +348,46 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
     }
   }
 
+  @override
+  Future<String> uploadInsuranceDocument({
+    required List<int> fileData,
+    required String filename,
+    required String documentType,
+  }) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.uploadInsuranceDocument(
+        accessToken: accessToken,
+        fileData: fileData,
+        filename: filename,
+        documentType: documentType,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to upload document: $e');
+    }
+  }
+
+  @override
+  Future<List<AuxiliaryItem>> getInsuranceAuxiliaryData({
+    required String utilityId,
+    String? query,
+  }) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceAuxiliaryData(
+        accessToken: accessToken,
+        utilityId: utilityId,
+        query: query,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to get auxiliary data: $e');
+    }
+  }
+
   // Error Handling Helper
   Exception _handleGrpcError(GrpcError error) {
     switch (error.code) {

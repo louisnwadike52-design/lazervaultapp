@@ -132,6 +132,19 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan
 // import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_payment_success_screen.dart';
 // import 'package:lazervault/src/features/ai_scan_to_pay/domain/entities/scan_entities.dart';
 
+// Move Money imports
+import 'package:lazervault/src/features/move_money/cubit/move_money_cubit.dart';
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/move_transfer_flow_screen.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/move_history_screen.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/move_transfer_receipt_screen.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/move_transfer_detail_screen.dart';
+import 'package:lazervault/src/features/move_money/cubit/wallet_transfer_cubit.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/wallet_transfer_flow_screen.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/wallet_transfer_receipt_screen.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/wallet_history_screen.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+
 // Group Account imports
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart';
@@ -406,10 +419,13 @@ import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_fun
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_setup_flow_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_activation_setup_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_add_member_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_invite_member_flow_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_account_detail_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_edit_member_limits_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_accounts_list_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_pending_invitations_screen.dart';
 
 // Transaction History imports (Redesigned)
 import 'package:lazervault/core/types/unified_transaction.dart';
@@ -2555,11 +2571,39 @@ GetPage(
 
     // Family Account Routes
     GetPage(
+      name: AppRoutes.familyAccounts,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<FamilyAccountCubit>(),
+        child: const FamilyAccountsListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.familyInvitations,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<FamilyAccountCubit>(),
+        child: const FamilyPendingInvitationsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.familySetup,
       page: () => BlocProvider(
         create: (_) => serviceLocator<FamilyAccountCubit>(),
         child: const FamilySetupFlowScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.familyActivationSetup,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        final familyId = args?['familyId'] as String? ?? '';
+        return BlocProvider(
+          create: (_) => serviceLocator<FamilyAccountCubit>(),
+          child: FamilyActivationSetupScreen(familyId: familyId),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -2977,6 +3021,74 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => serviceLocator<PayrollCubit>(),
         child: PaySlipDetailsScreen(paySlipId: Get.parameters['id'] ?? ''),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ================== Move Money Routes ==================
+    GetPage(
+      name: AppRoutes.moveMoneyTransfer,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(
+            value: serviceLocator<OpenBankingCubit>(),
+          ),
+          BlocProvider(
+            create: (_) => serviceLocator<MoveMoneyCubit>(),
+          ),
+          BlocProvider.value(
+            value: serviceLocator<MandateCubit>(),
+          ),
+        ],
+        child: const MoveTransferFlowScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.moveMoneyHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<MoveMoneyCubit>(),
+        child: const MoveHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.moveMoneyReceipt,
+      page: () => const MoveTransferReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.moveMoneyDetail,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<MoveMoneyCubit>(),
+        child: const MoveTransferDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.walletTransfer,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<WalletTransferCubit>()),
+          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+        ],
+        child: const WalletTransferFlowScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.walletTransferReceipt,
+      page: () => const WalletTransferReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.walletTransferHistory,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<WalletTransferCubit>()),
+          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+        ],
+        child: const WalletHistoryScreen(),
       ),
       transition: Transition.rightToLeft,
     ),

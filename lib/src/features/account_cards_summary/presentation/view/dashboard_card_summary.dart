@@ -26,38 +26,6 @@ class DashboardCardSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // No longer need to get authState here or provide the cubit
-    // The view state will handle fetching.
-    // final authState = context.watch<AuthenticationCubit>().state;
-    // String? userId;
-    // String? accessToken;
-
-    // // Linter Fix: Check for AuthenticationSuccess state correctly
-    // if (authState is AuthenticationSuccess) {
-    //   // Access user ID via profile
-    //   userId = authState.profile.user.id;
-    //   // Get access token from session
-    //   accessToken = authState.profile.session.accessToken;
-    // } // else: userId remains null if not authenticated
-
-    // REMOVE the BlocProvider here
-    // return BlocProvider(
-    //   create: (_) {
-    //     final cubit = serviceLocator<AccountCardsSummaryCubit>();
-    //     if (userId != null) {
-    //       cubit.fetchAccountSummaries(
-    //         userId: userId,
-    //         accessToken: accessToken,
-    //       );
-    //     } else {
-    //       print("DashboardCardSummary: User not authenticated...");
-    //     }
-    //     return cubit;
-    //   },
-    //   child: const _DashboardCardSummaryView(),
-    // );
-
-    // Directly return the view
     return const _DashboardCardSummaryView();
   }
 }

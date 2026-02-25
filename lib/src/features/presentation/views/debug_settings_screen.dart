@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:get/get.dart';
 
 /// Development utility to reset onboarding state
 /// Call this function to simulate a fresh install
 Future<void> resetOnboardingForDevelopment() async {
-  const storage = FlutterSecureStorage();
+  final storage = serviceLocator<FlutterSecureStorage>();
   await storage.write(key: 'force_onboarding', value: 'true');
   print('✅ Onboarding will be reset on next app launch');
 }
@@ -21,7 +22,7 @@ class DebugSettingsScreen extends StatefulWidget {
 }
 
 class _DebugSettingsScreenState extends State<DebugSettingsScreen> {
-  final FlutterSecureStorage storage = const FlutterSecureStorage();
+  final FlutterSecureStorage storage = serviceLocator<FlutterSecureStorage>();
   bool _isLoading = false;
   Map<String, String> _storageData = {};
 

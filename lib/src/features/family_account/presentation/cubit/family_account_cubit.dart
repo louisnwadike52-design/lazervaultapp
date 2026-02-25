@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/family_account_entities.dart';
+import '../../domain/repositories/family_account_repository.dart' show MemberAllocationEntry;
 import '../../domain/usecases/family_account_usecases.dart';
 import 'family_account_state.dart';
 
@@ -20,6 +21,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
   final UnfreezeFamilyAccountUseCase unfreezeFamilyAccount;
   final DeleteFamilyAccountUseCase deleteFamilyAccount;
   final ProcessMemberContributionUseCase processMemberContribution;
+  final SetupFamilyAccountUseCase setupFamilyAccount;
 
   FamilyAccountCubit({
     required this.getFamilyAccounts,
@@ -38,6 +40,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     required this.unfreezeFamilyAccount,
     required this.deleteFamilyAccount,
     required this.processMemberContribution,
+    required this.setupFamilyAccount,
   })  : _acceptInvitationUseCase = acceptInvitationUseCase,
         _declineInvitationUseCase = declineInvitationUseCase,
         super(FamilyAccountInitial());
@@ -317,6 +320,26 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     result.fold(
       (failure) => emit(FamilyAccountError(failure.toString())),
       (account) => emit(MemberContributionProcessed(account)),
+    );
+  }
+
+  // Setup family account (choose distribution mode, activate)
+  Future<void> setupAccount({
+    required String familyId,
+    required String fundDistributionMode,
+    required bool spendingVisibilityEnabled,
+    List<MemberAllocationEntry> allocations = const [],
+  }) async {
+    emit(const FamilyAccountSettingUp());
+    final result = await setupFamilyAccount(SetupFamilyAccountParams(
+      familyId: familyId,
+      fundDistributionMode: fundDistributionMode,
+      spendingVisibilityEnabled: spendingVisibilityEnabled,
+      allocations: allocations,
+    ));
+    result.fold(
+      (failure) => emit(FamilyAccountError(failure.toString())),
+      (account) => emit(FamilyAccountSetupCompleted(account)),
     );
   }
 

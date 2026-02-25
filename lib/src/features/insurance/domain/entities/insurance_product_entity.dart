@@ -72,10 +72,32 @@ enum InsuranceProductCategory {
         return InsuranceProductCategory.marine;
       case 'personal_accident':
         return InsuranceProductCategory.personalAccident;
+      case 'package':
+        return InsuranceProductCategory.personalAccident; // Map package to personalAccident
+      case 'content':
+        return InsuranceProductCategory.home; // Map content to home
       default:
         return InsuranceProductCategory.health;
     }
   }
+}
+
+/// Utility ID constants for auxiliary data lookups
+class InsuranceUtilityIds {
+  static const nigerianStates = 'e55de863-7d98-4236-bd61-40328cd7f7fc';
+  static const vehicleMakes = 'fa2fb85f-9d1a-4652-a136-9da8e4c57c5c';
+  static const vehicleModels = '86db5030-df01-4e2d-821b-e43e017f7e67';
+}
+
+/// Auxiliary data item from MyCover.ai utility endpoints
+class AuxiliaryItem extends Equatable {
+  final String label;
+  final String value;
+
+  const AuxiliaryItem({required this.label, required this.value});
+
+  @override
+  List<Object?> get props => [label, value];
 }
 
 /// Dynamic form field from MyCover.ai product
@@ -122,6 +144,13 @@ class InsuranceProduct extends Equatable {
   final Map<String, String> metadata;
   final List<InsuranceProductFormField> formFields;
   final bool isActive;
+  final String purchaseRoute;
+  final String providerId;
+  final double basePrice;
+  final String howItWorks;
+  final String fullBenefits;
+  final bool isRenewable;
+  final bool isClaimable;
 
   const InsuranceProduct({
     required this.id,
@@ -138,13 +167,20 @@ class InsuranceProduct extends Equatable {
     this.metadata = const {},
     this.formFields = const [],
     this.isActive = true,
+    this.purchaseRoute = '',
+    this.providerId = '',
+    this.basePrice = 0,
+    this.howItWorks = '',
+    this.fullBenefits = '',
+    this.isRenewable = false,
+    this.isClaimable = false,
   });
 
   String get premiumRange {
     if (minPremium == maxPremium) {
-      return '${currency} ${_formatAmount(minPremium)}';
+      return '$currency ${_formatAmount(minPremium)}';
     }
-    return '${currency} ${_formatAmount(minPremium)} - ${_formatAmount(maxPremium)}';
+    return '$currency ${_formatAmount(minPremium)} - ${_formatAmount(maxPremium)}';
   }
 
   String _formatAmount(double amount) {
@@ -176,7 +212,7 @@ class InsuranceCategoryInfo extends Equatable {
     this.productCount = 0,
   });
 
-  InsuranceProductCategory get category => InsuranceProductCategory.fromString(id);
+  InsuranceProductCategory get category => InsuranceProductCategory.fromString(name);
 
   @override
   List<Object?> get props => [id, name, productCount];

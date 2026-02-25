@@ -155,25 +155,28 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
     try {
       final token = accessToken ?? await _secureStorage.getAccessToken();
 
-      // Update security settings via accounts service
-      // Note: Security settings are stored as account metadata
-      // For now, fetch account details to return current state
-      // TODO: Add dedicated security settings RPC to accounts service
-      final currentResult = await getAccountDetails(
+      final request = accounts_pb.UpdateSecuritySettingsRequest(
         accountId: accountId,
-        accessToken: token,
+        enable3dSecure: enable3DSecure,
+        enableContactless: enableContactless,
+        enableOnlinePayments: enableOnlinePayments,
+        enableAtmWithdrawals: enableATMWithdrawals,
+        enableInternationalPayments: enableInternationalPayments,
       );
 
-      return currentResult.fold(
-        (failure) => Left(failure),
-        (current) => Right(current.copyWith(
-          enable3DSecure: enable3DSecure,
-          enableContactless: enableContactless,
-          enableOnlinePayments: enableOnlinePayments,
-          enableATMWithdrawals: enableATMWithdrawals,
-          enableInternationalPayments: enableInternationalPayments,
-        )),
+      final response = await _accountsClient.updateSecuritySettings(
+        request,
+        options: _getCallOptions(token),
       );
+
+      final account = _mapAccountToEntity(response.account);
+      return Right(account.copyWith(
+        enable3DSecure: response.enable3dSecure,
+        enableContactless: response.enableContactless,
+        enableOnlinePayments: response.enableOnlinePayments,
+        enableATMWithdrawals: response.enableAtmWithdrawals,
+        enableInternationalPayments: response.enableInternationalPayments,
+      ));
     } catch (e) {
       return Left(Failure(
         message: 'Failed to update security settings: ${e.toString()}',
@@ -426,7 +429,7 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
       bicSwift: null,
       dailyLimit: proto.dailyLimit / 100,
       monthlyLimit: proto.monthlyLimit / 100,
-      singleTransactionLimit: null,
+      singleTransactionLimit: proto.singleTransactionLimit > 0 ? proto.singleTransactionLimit / 100 : null,
       enable3DSecure: false,
       enableContactless: false,
       enableOnlinePayments: true,

@@ -125,6 +125,14 @@ class InsuranceServiceClient extends $grpc.Client {
       '/pb.InsuranceService/GetInsurancePurchaseStatus',
       ($0.GetInsurancePurchaseStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetInsurancePurchaseStatusResponse.fromBuffer(value));
+  static final _$uploadInsuranceDocument = $grpc.ClientMethod<$0.UploadInsuranceDocumentRequest, $0.UploadInsuranceDocumentResponse>(
+      '/pb.InsuranceService/UploadInsuranceDocument',
+      ($0.UploadInsuranceDocumentRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UploadInsuranceDocumentResponse.fromBuffer(value));
+  static final _$getInsuranceAuxiliaryData = $grpc.ClientMethod<$0.GetInsuranceAuxiliaryDataRequest, $0.GetInsuranceAuxiliaryDataResponse>(
+      '/pb.InsuranceService/GetInsuranceAuxiliaryData',
+      ($0.GetInsuranceAuxiliaryDataRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInsuranceAuxiliaryDataResponse.fromBuffer(value));
 
   InsuranceServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -234,6 +242,14 @@ class InsuranceServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetInsurancePurchaseStatusResponse> getInsurancePurchaseStatus($0.GetInsurancePurchaseStatusRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInsurancePurchaseStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UploadInsuranceDocumentResponse> uploadInsuranceDocument($0.UploadInsuranceDocumentRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$uploadInsuranceDocument, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInsuranceAuxiliaryDataResponse> getInsuranceAuxiliaryData($0.GetInsuranceAuxiliaryDataRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInsuranceAuxiliaryData, request, options: options);
   }
 }
 
@@ -424,6 +440,20 @@ abstract class InsuranceServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetInsurancePurchaseStatusRequest.fromBuffer(value),
         ($0.GetInsurancePurchaseStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UploadInsuranceDocumentRequest, $0.UploadInsuranceDocumentResponse>(
+        'UploadInsuranceDocument',
+        uploadInsuranceDocument_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UploadInsuranceDocumentRequest.fromBuffer(value),
+        ($0.UploadInsuranceDocumentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInsuranceAuxiliaryDataRequest, $0.GetInsuranceAuxiliaryDataResponse>(
+        'GetInsuranceAuxiliaryData',
+        getInsuranceAuxiliaryData_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetInsuranceAuxiliaryDataRequest.fromBuffer(value),
+        ($0.GetInsuranceAuxiliaryDataResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.GetUserInsurancesResponse> getUserInsurances_Pre($grpc.ServiceCall call, $async.Future<$0.GetUserInsurancesRequest> request) async {
@@ -530,6 +560,14 @@ abstract class InsuranceServiceBase extends $grpc.Service {
     return getInsurancePurchaseStatus(call, await request);
   }
 
+  $async.Future<$0.UploadInsuranceDocumentResponse> uploadInsuranceDocument_Pre($grpc.ServiceCall call, $async.Future<$0.UploadInsuranceDocumentRequest> request) async {
+    return uploadInsuranceDocument(call, await request);
+  }
+
+  $async.Future<$0.GetInsuranceAuxiliaryDataResponse> getInsuranceAuxiliaryData_Pre($grpc.ServiceCall call, $async.Future<$0.GetInsuranceAuxiliaryDataRequest> request) async {
+    return getInsuranceAuxiliaryData(call, await request);
+  }
+
   $async.Future<$0.GetUserInsurancesResponse> getUserInsurances($grpc.ServiceCall call, $0.GetUserInsurancesRequest request);
   $async.Future<$0.GetInsuranceByIdResponse> getInsuranceById($grpc.ServiceCall call, $0.GetInsuranceByIdRequest request);
   $async.Future<$0.CreateInsuranceResponse> createInsurance($grpc.ServiceCall call, $0.CreateInsuranceRequest request);
@@ -556,4 +594,6 @@ abstract class InsuranceServiceBase extends $grpc.Service {
   $async.Future<$0.GetInsuranceQuoteResponse> getInsuranceQuote($grpc.ServiceCall call, $0.GetInsuranceQuoteRequest request);
   $async.Future<$0.PurchaseInsuranceResponse> purchaseInsurance($grpc.ServiceCall call, $0.PurchaseInsuranceRequest request);
   $async.Future<$0.GetInsurancePurchaseStatusResponse> getInsurancePurchaseStatus($grpc.ServiceCall call, $0.GetInsurancePurchaseStatusRequest request);
+  $async.Future<$0.UploadInsuranceDocumentResponse> uploadInsuranceDocument($grpc.ServiceCall call, $0.UploadInsuranceDocumentRequest request);
+  $async.Future<$0.GetInsuranceAuxiliaryDataResponse> getInsuranceAuxiliaryData($grpc.ServiceCall call, $0.GetInsuranceAuxiliaryDataRequest request);
 }

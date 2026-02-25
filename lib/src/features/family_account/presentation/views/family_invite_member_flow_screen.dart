@@ -7,15 +7,12 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/src/features/family_account/presentation/widgets/invite_member_steps/contact_method_step.dart';
 import 'package:lazervault/src/features/family_account/presentation/widgets/invite_member_steps/allocation_role_step.dart';
-import 'package:lazervault/src/features/family_account/presentation/widgets/invite_member_steps/spending_limits_step.dart';
 import 'package:lazervault/src/features/family_account/presentation/widgets/invite_member_steps/review_send_step.dart';
 
 /// Multi-step wizard flow for inviting a new member to a Family & Friends account
-/// Features:
-/// - Step 1: Contact Method (Email/Phone/Username)
-/// - Step 2: Initial Allocation & Role
-/// - Step 3: Spending Limits
-/// - Step 4: Review & Send Invitation
+/// - Step 1: Search & Select User
+/// - Step 2: Allocation, Role & Limits
+/// - Step 3: Review & Send Invitation
 class FamilyInviteMemberFlowScreen extends StatefulWidget {
   final String familyId;
   final String? familyName;
@@ -37,26 +34,28 @@ class _FamilyInviteMemberFlowScreenState
   final FamilyAccountCubit _cubit = serviceLocator<FamilyAccountCubit>();
 
   int _currentStep = 0;
-  final int _totalSteps = 4;
+  final int _totalSteps = 3;
 
   // Form data collected across steps
   final Map<String, dynamic> _formData = {
-    // Step 1: Contact Method
-    'invitationMethod': 'email', // email, phone, username
+    // Step 1: User search
+    'invitationMethod': 'username',
     'invitationDestination': '',
+    'selectedUserId': '',
+    'selectedUserName': '',
+    'selectedUserEmail': '',
+    'selectedUserProfilePicture': '',
 
-    // Step 2: Allocation & Role
+    // Step 2: Allocation, Role & Limits
     'initialAllocation': 0.0,
-    'role': 'member', // member, admin
-
-    // Step 3: Spending Limits
-    'noLimits': false,
+    'role': 'member',
+    'noLimits': true,
     'dailyLimit': 0.0,
     'monthlyLimit': 0.0,
     'perTransactionLimit': 0.0,
     'allocationPercentageCap': 100.0,
 
-    // Step 4: Personal Message
+    // Step 3: Personal Message
     'personalMessage': '',
   };
 
@@ -101,8 +100,7 @@ class _FamilyInviteMemberFlowScreenState
   }
 
   void _submitInvitation() {
-    // Convert limits to 0 if noLimits is true
-    final noLimits = _formData['noLimits'] as bool? ?? false;
+    final noLimits = _formData['noLimits'] as bool? ?? true;
 
     _cubit.addMember(
       familyId: widget.familyId,
@@ -124,7 +122,7 @@ class _FamilyInviteMemberFlowScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: BlocListener<FamilyAccountCubit, FamilyAccountState>(
           bloc: _cubit,
@@ -157,8 +155,7 @@ class _FamilyInviteMemberFlowScreenState
               Expanded(
                 child: PageView(
                   controller: _pageController,
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Disable manual swipe
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     ContactMethodStep(
                       formData: _formData,
@@ -168,13 +165,6 @@ class _FamilyInviteMemberFlowScreenState
                       },
                     ),
                     AllocationRoleStep(
-                      formData: _formData,
-                      onNext: (data) {
-                        _updateFormData(data);
-                        _nextStep();
-                      },
-                    ),
-                    SpendingLimitsStep(
                       formData: _formData,
                       onNext: (data) {
                         _updateFormData(data);
@@ -203,7 +193,7 @@ class _FamilyInviteMemberFlowScreenState
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0A0A0A),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -214,7 +204,6 @@ class _FamilyInviteMemberFlowScreenState
       ),
       child: Column(
         children: [
-          // Title and Back/Close Button
           Row(
             children: [
               GestureDetector(
@@ -223,12 +212,12 @@ class _FamilyInviteMemberFlowScreenState
                   width: 40.w,
                   height: 40.h,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF5F5F5),
+                    color: Color(0xFF1F1F1F),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     _currentStep > 0 ? Icons.arrow_back_ios_new : Icons.close,
-                    color: const Color(0xFF1E1E2E),
+                    color: Colors.white,
                     size: 20.sp,
                   ),
                 ),
@@ -238,19 +227,17 @@ class _FamilyInviteMemberFlowScreenState
                 child: Text(
                   _getStepTitle(),
                   style: TextStyle(
-                    color: const Color(0xFF1E1E2E),
+                    color: Colors.white,
                     fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
-              SizedBox(width: 56.w), // Balance the back button
+              SizedBox(width: 56.w),
             ],
           ),
           SizedBox(height: 24.h),
-
-          // Progress Indicator
           _buildProgressBar(),
         ],
       ),
@@ -260,12 +247,10 @@ class _FamilyInviteMemberFlowScreenState
   String _getStepTitle() {
     switch (_currentStep) {
       case 0:
-        return 'Invite Member';
+        return 'Find User';
       case 1:
-        return 'Allocation & Role';
+        return 'Allocation & Limits';
       case 2:
-        return 'Spending Limits';
-      case 3:
         return 'Review & Send';
       default:
         return 'Invite Member';
@@ -285,11 +270,11 @@ class _FamilyInviteMemberFlowScreenState
                 decoration: BoxDecoration(
                   gradient: index <= _currentStep
                       ? const LinearGradient(
-                          colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
+                          colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
                         )
                       : null,
                   color:
-                      index <= _currentStep ? null : const Color(0xFFE0E0E0),
+                      index <= _currentStep ? null : const Color(0xFF2D2D2D),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -300,7 +285,7 @@ class _FamilyInviteMemberFlowScreenState
         Text(
           'Step ${_currentStep + 1} of $_totalSteps',
           style: TextStyle(
-            color: const Color(0xFF666666),
+            color: const Color(0xFF9CA3AF),
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           ),

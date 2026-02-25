@@ -11,6 +11,8 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/widgets/animated_balance_counter.dart';
+import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
+import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 
 // Type definition for the callback when a card's details are requested
 typedef OnShowDetailsCallback = void Function(Map<String, dynamic> accountArgs);
@@ -42,6 +44,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   // Pending balance updates to apply when dashboard becomes visible (from→to for two-phase animation)
   final Map<String, ({double from, double to})> _pendingBalanceUpdates = {};
+
+  // Whether we're currently resolving a family account ID for setup navigation
+  bool _isResolvingFamilyId = false;
   // Helper to convert currency code to symbol
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
@@ -278,7 +283,67 @@ class _AccountCarouselState extends State<AccountCarousel> {
     return account.balance;
   }
 
+  /// Resolves the family account ID by calling GetFamilyAccounts, then navigates to setup.
+  /// If no family account record exists yet, auto-creates one first.
+  Future<void> _resolveFamilyIdAndNavigate(AccountSummaryEntity account) async {
+    setState(() => _isResolvingFamilyId = true);
+    try {
+      final familyCubit = serviceLocator<FamilyAccountCubit>();
+      await familyCubit.loadFamilyAccounts();
+      final state = familyCubit.state;
+      if (state is FamilyAccountsLoaded && state.familyAccounts.isNotEmpty) {
+        // Find the first pending_setup account (or first account)
+        final target = state.familyAccounts.firstWhere(
+          (a) => a.isPendingSetup,
+          orElse: () => state.familyAccounts.first,
+        );
+        Get.toNamed(AppRoutes.familyActivationSetup,
+            arguments: {'familyId': target.id});
+      } else {
+        // No family_accounts record exists — auto-create one for the user.
+        // The virtual NUBAN account (type "family") already exists from signup,
+        // but the family_accounts table record was never created.
+        await familyCubit.createAccount(
+          name: 'Family & Friends',
+          initialCurrency: account.currency,
+          initialFunding: 0.0,
+          allowMemberContributions: true,
+        );
+        final createState = familyCubit.state;
+        if (createState is FamilyAccountCreated) {
+          Get.toNamed(AppRoutes.familyActivationSetup,
+              arguments: {'familyId': createState.familyAccount.id});
+        } else if (createState is FamilyAccountError) {
+          Get.snackbar(
+            'Error',
+            createState.message,
+            backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+          );
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load family account. Please try again.',
+        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isResolvingFamilyId = false);
+      }
+    }
+  }
+
   Widget _buildAccountCard(BuildContext context, AccountSummaryEntity account) {
+    // Check if this is a family account
+    if (account.accountTypeEnum == VirtualAccountType.family) {
+      return _buildFamilyAccountCard(context, account);
+    }
+
     // Check if this is a business account
     if (account.accountTypeEnum == VirtualAccountType.business) {
       return _buildBusinessAccountCard(context, account);
@@ -531,6 +596,200 @@ class _AccountCarouselState extends State<AccountCarousel> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFamilyAccountCard(BuildContext context, AccountSummaryEntity account) {
+    final currencySymbol = _getCurrencySymbol(account.currency);
+    // If it's a proper family entity, check its status. If it's a generic family
+    // account (from regular accounts, isFamilyAccount==false), treat as pending setup.
+    final isPendingSetup = account.isFamilyPendingSetup || !account.isFamilyAccount;
+
+    return StreamBuilder<String?>(
+      stream: _accountManager.accountIdStream,
+      initialData: _accountManager.activeAccountId,
+      builder: (context, snapshot) {
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1A4747),
+                Color(0xFF2D6B6B),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1A4747).withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.r),
+            child: Stack(
+              children: [
+                // Background decorative circles
+                Positioned(
+                  right: -30,
+                  top: -30,
+                  child: Container(
+                    width: 120.w,
+                    height: 120.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -20,
+                  bottom: -40,
+                  child: Container(
+                    width: 100.w,
+                    height: 100.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.04),
+                    ),
+                  ),
+                ),
+                // Main content
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.family_restroom,
+                                color: Colors.white,
+                                size: 18.sp,
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                account.accountLabel ?? 'Family & Friends',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                            decoration: BoxDecoration(
+                              color: isPendingSetup
+                                  ? const Color(0xFFFB923C).withValues(alpha: 0.3)
+                                  : const Color(0xFF10B981).withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Text(
+                              isPendingSetup
+                                  ? 'SETUP'
+                                  : '${account.memberCount ?? 0} members',
+                              style: TextStyle(
+                                color: isPendingSetup
+                                    ? const Color(0xFFFB923C)
+                                    : const Color(0xFF10B981),
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: isPendingSetup ? 1.2 : 0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      if (isPendingSetup) ...[
+                        Text(
+                          'Tap to complete setup',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'Configure how funds are distributed',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ] else ...[
+                        CompactAnimatedBalance(
+                          balance: _getAccountBalance(account),
+                          currencySymbol: currencySymbol,
+                          fontSize: 26,
+                          color: Colors.white,
+                          duration: const Duration(seconds: 3),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          'Family Balance',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '•••• ${account.accountNumberLast4}',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                          _buildActionButton(
+                            _isResolvingFamilyId
+                                ? "Loading..."
+                                : (isPendingSetup ? "Setup" : "Details"),
+                            isPendingSetup ? Icons.settings_rounded : Icons.arrow_forward_rounded,
+                            onTap: _isResolvingFamilyId
+                                ? () {}
+                                : () {
+                                    if (isPendingSetup && account.familyAccountId == null) {
+                                      // familyAccountId is null (fallback path) — resolve via GetFamilyAccounts
+                                      // or auto-create if no family account record exists
+                                      _resolveFamilyIdAndNavigate(account);
+                                    } else {
+                                      final familyId = account.familyAccountId ?? account.id;
+                                      if (isPendingSetup) {
+                                        Get.toNamed(AppRoutes.familyActivationSetup,
+                                            arguments: {'familyId': familyId});
+                                      } else {
+                                        Get.toNamed(AppRoutes.familyDetails,
+                                            arguments: {'familyId': familyId});
+                                      }
+                                    }
+                                  },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

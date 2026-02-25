@@ -13,6 +13,11 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
+import 'account_card.pb.dart' as $1;
+import 'family_accounts.pbenum.dart';
+
+export 'family_accounts.pbenum.dart';
+
 /// Create Family Account
 class CreateFamilyAccountRequest extends $pb.GeneratedMessage {
   factory CreateFamilyAccountRequest({
@@ -1923,13 +1928,13 @@ class GenerateMemberCardRequest extends $pb.GeneratedMessage {
 
 class GenerateMemberCardResponse extends $pb.GeneratedMessage {
   factory GenerateMemberCardResponse({
-    $core.String? cardId,
+    $1.AccountCard? card,
     FamilyMember? member,
     $core.String? message,
   }) {
     final $result = create();
-    if (cardId != null) {
-      $result.cardId = cardId;
+    if (card != null) {
+      $result.card = card;
     }
     if (member != null) {
       $result.member = member;
@@ -1944,7 +1949,7 @@ class GenerateMemberCardResponse extends $pb.GeneratedMessage {
   factory GenerateMemberCardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateMemberCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'cardId')
+    ..aOM<$1.AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: $1.AccountCard.create)
     ..aOM<FamilyMember>(2, _omitFieldNames ? '' : 'member', subBuilder: FamilyMember.create)
     ..aOS(3, _omitFieldNames ? '' : 'message')
     ..hasRequiredFields = false
@@ -1972,13 +1977,15 @@ class GenerateMemberCardResponse extends $pb.GeneratedMessage {
   static GenerateMemberCardResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get cardId => $_getSZ(0);
+  $1.AccountCard get card => $_getN(0);
   @$pb.TagNumber(1)
-  set cardId($core.String v) { $_setString(0, v); }
+  set card($1.AccountCard v) { setField(1, v); }
   @$pb.TagNumber(1)
-  $core.bool hasCardId() => $_has(0);
+  $core.bool hasCard() => $_has(0);
   @$pb.TagNumber(1)
-  void clearCardId() => clearField(1);
+  void clearCard() => clearField(1);
+  @$pb.TagNumber(1)
+  $1.AccountCard ensureCard() => $_ensure(0);
 
   @$pb.TagNumber(2)
   FamilyMember get member => $_getN(1);
@@ -2420,6 +2427,537 @@ class DeleteFamilyAccountResponse extends $pb.GeneratedMessage {
   void clearReturnedBalance() => clearField(3);
 }
 
+/// Process Member Contribution
+class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
+  factory ProcessMemberContributionRequest({
+    $core.String? familyId,
+    $core.String? memberId,
+    $core.double? amount,
+    $core.String? description,
+  }) {
+    final $result = create();
+    if (familyId != null) {
+      $result.familyId = familyId;
+    }
+    if (memberId != null) {
+      $result.memberId = memberId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    return $result;
+  }
+  ProcessMemberContributionRequest._() : super();
+  factory ProcessMemberContributionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ProcessMemberContributionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessMemberContributionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..aOS(2, _omitFieldNames ? '' : 'memberId')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'description')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ProcessMemberContributionRequest clone() => ProcessMemberContributionRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ProcessMemberContributionRequest copyWith(void Function(ProcessMemberContributionRequest) updates) => super.copyWith((message) => updates(message as ProcessMemberContributionRequest)) as ProcessMemberContributionRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ProcessMemberContributionRequest create() => ProcessMemberContributionRequest._();
+  ProcessMemberContributionRequest createEmptyInstance() => create();
+  static $pb.PbList<ProcessMemberContributionRequest> createRepeated() => $pb.PbList<ProcessMemberContributionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ProcessMemberContributionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessMemberContributionRequest>(create);
+  static ProcessMemberContributionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get memberId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set memberId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMemberId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMemberId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get description => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set description($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDescription() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDescription() => clearField(4);
+}
+
+class ProcessMemberContributionResponse extends $pb.GeneratedMessage {
+  factory ProcessMemberContributionResponse({
+    FamilyAccount? familyAccount,
+    FamilyTransaction? transaction,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (familyAccount != null) {
+      $result.familyAccount = familyAccount;
+    }
+    if (transaction != null) {
+      $result.transaction = transaction;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  ProcessMemberContributionResponse._() : super();
+  factory ProcessMemberContributionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ProcessMemberContributionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessMemberContributionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOM<FamilyAccount>(1, _omitFieldNames ? '' : 'familyAccount', subBuilder: FamilyAccount.create)
+    ..aOM<FamilyTransaction>(2, _omitFieldNames ? '' : 'transaction', subBuilder: FamilyTransaction.create)
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ProcessMemberContributionResponse clone() => ProcessMemberContributionResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ProcessMemberContributionResponse copyWith(void Function(ProcessMemberContributionResponse) updates) => super.copyWith((message) => updates(message as ProcessMemberContributionResponse)) as ProcessMemberContributionResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ProcessMemberContributionResponse create() => ProcessMemberContributionResponse._();
+  ProcessMemberContributionResponse createEmptyInstance() => create();
+  static $pb.PbList<ProcessMemberContributionResponse> createRepeated() => $pb.PbList<ProcessMemberContributionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ProcessMemberContributionResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessMemberContributionResponse>(create);
+  static ProcessMemberContributionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyAccount get familyAccount => $_getN(0);
+  @$pb.TagNumber(1)
+  set familyAccount(FamilyAccount v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  FamilyAccount ensureFamilyAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  FamilyTransaction get transaction => $_getN(1);
+  @$pb.TagNumber(2)
+  set transaction(FamilyTransaction v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTransaction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTransaction() => clearField(2);
+  @$pb.TagNumber(2)
+  FamilyTransaction ensureTransaction() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
+}
+
+/// Setup Family Account
+class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
+  factory SetupFamilyAccountRequest({
+    $core.String? familyId,
+    FundDistributionMode? fundDistributionMode,
+    $core.bool? spendingVisibilityEnabled,
+    $core.Iterable<MemberAllocation>? allocations,
+  }) {
+    final $result = create();
+    if (familyId != null) {
+      $result.familyId = familyId;
+    }
+    if (fundDistributionMode != null) {
+      $result.fundDistributionMode = fundDistributionMode;
+    }
+    if (spendingVisibilityEnabled != null) {
+      $result.spendingVisibilityEnabled = spendingVisibilityEnabled;
+    }
+    if (allocations != null) {
+      $result.allocations.addAll(allocations);
+    }
+    return $result;
+  }
+  SetupFamilyAccountRequest._() : super();
+  factory SetupFamilyAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SetupFamilyAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetupFamilyAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..e<FundDistributionMode>(2, _omitFieldNames ? '' : 'fundDistributionMode', $pb.PbFieldType.OE, defaultOrMaker: FundDistributionMode.FUND_DISTRIBUTION_MODE_UNSPECIFIED, valueOf: FundDistributionMode.valueOf, enumValues: FundDistributionMode.values)
+    ..aOB(3, _omitFieldNames ? '' : 'spendingVisibilityEnabled')
+    ..pc<MemberAllocation>(4, _omitFieldNames ? '' : 'allocations', $pb.PbFieldType.PM, subBuilder: MemberAllocation.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SetupFamilyAccountRequest clone() => SetupFamilyAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SetupFamilyAccountRequest copyWith(void Function(SetupFamilyAccountRequest) updates) => super.copyWith((message) => updates(message as SetupFamilyAccountRequest)) as SetupFamilyAccountRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetupFamilyAccountRequest create() => SetupFamilyAccountRequest._();
+  SetupFamilyAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<SetupFamilyAccountRequest> createRepeated() => $pb.PbList<SetupFamilyAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SetupFamilyAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SetupFamilyAccountRequest>(create);
+  static SetupFamilyAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  FundDistributionMode get fundDistributionMode => $_getN(1);
+  @$pb.TagNumber(2)
+  set fundDistributionMode(FundDistributionMode v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFundDistributionMode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFundDistributionMode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get spendingVisibilityEnabled => $_getBF(2);
+  @$pb.TagNumber(3)
+  set spendingVisibilityEnabled($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSpendingVisibilityEnabled() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSpendingVisibilityEnabled() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<MemberAllocation> get allocations => $_getList(3);
+}
+
+class MemberAllocation extends $pb.GeneratedMessage {
+  factory MemberAllocation({
+    $core.String? memberId,
+    $core.double? amount,
+  }) {
+    final $result = create();
+    if (memberId != null) {
+      $result.memberId = memberId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    return $result;
+  }
+  MemberAllocation._() : super();
+  factory MemberAllocation.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MemberAllocation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MemberAllocation', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'memberId')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MemberAllocation clone() => MemberAllocation()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MemberAllocation copyWith(void Function(MemberAllocation) updates) => super.copyWith((message) => updates(message as MemberAllocation)) as MemberAllocation;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MemberAllocation create() => MemberAllocation._();
+  MemberAllocation createEmptyInstance() => create();
+  static $pb.PbList<MemberAllocation> createRepeated() => $pb.PbList<MemberAllocation>();
+  @$core.pragma('dart2js:noInline')
+  static MemberAllocation getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MemberAllocation>(create);
+  static MemberAllocation? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get memberId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set memberId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMemberId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMemberId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+}
+
+class SetupFamilyAccountResponse extends $pb.GeneratedMessage {
+  factory SetupFamilyAccountResponse({
+    FamilyAccount? familyAccount,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (familyAccount != null) {
+      $result.familyAccount = familyAccount;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  SetupFamilyAccountResponse._() : super();
+  factory SetupFamilyAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SetupFamilyAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetupFamilyAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOM<FamilyAccount>(1, _omitFieldNames ? '' : 'familyAccount', subBuilder: FamilyAccount.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SetupFamilyAccountResponse clone() => SetupFamilyAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SetupFamilyAccountResponse copyWith(void Function(SetupFamilyAccountResponse) updates) => super.copyWith((message) => updates(message as SetupFamilyAccountResponse)) as SetupFamilyAccountResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetupFamilyAccountResponse create() => SetupFamilyAccountResponse._();
+  SetupFamilyAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<SetupFamilyAccountResponse> createRepeated() => $pb.PbList<SetupFamilyAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SetupFamilyAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SetupFamilyAccountResponse>(create);
+  static SetupFamilyAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyAccount get familyAccount => $_getN(0);
+  @$pb.TagNumber(1)
+  set familyAccount(FamilyAccount v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  FamilyAccount ensureFamilyAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+/// Update Fund Distribution Mode
+class UpdateFundDistributionModeRequest extends $pb.GeneratedMessage {
+  factory UpdateFundDistributionModeRequest({
+    $core.String? familyId,
+    FundDistributionMode? fundDistributionMode,
+    $core.Iterable<MemberAllocation>? allocations,
+  }) {
+    final $result = create();
+    if (familyId != null) {
+      $result.familyId = familyId;
+    }
+    if (fundDistributionMode != null) {
+      $result.fundDistributionMode = fundDistributionMode;
+    }
+    if (allocations != null) {
+      $result.allocations.addAll(allocations);
+    }
+    return $result;
+  }
+  UpdateFundDistributionModeRequest._() : super();
+  factory UpdateFundDistributionModeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateFundDistributionModeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateFundDistributionModeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..e<FundDistributionMode>(2, _omitFieldNames ? '' : 'fundDistributionMode', $pb.PbFieldType.OE, defaultOrMaker: FundDistributionMode.FUND_DISTRIBUTION_MODE_UNSPECIFIED, valueOf: FundDistributionMode.valueOf, enumValues: FundDistributionMode.values)
+    ..pc<MemberAllocation>(3, _omitFieldNames ? '' : 'allocations', $pb.PbFieldType.PM, subBuilder: MemberAllocation.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateFundDistributionModeRequest clone() => UpdateFundDistributionModeRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateFundDistributionModeRequest copyWith(void Function(UpdateFundDistributionModeRequest) updates) => super.copyWith((message) => updates(message as UpdateFundDistributionModeRequest)) as UpdateFundDistributionModeRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateFundDistributionModeRequest create() => UpdateFundDistributionModeRequest._();
+  UpdateFundDistributionModeRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateFundDistributionModeRequest> createRepeated() => $pb.PbList<UpdateFundDistributionModeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateFundDistributionModeRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateFundDistributionModeRequest>(create);
+  static UpdateFundDistributionModeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  FundDistributionMode get fundDistributionMode => $_getN(1);
+  @$pb.TagNumber(2)
+  set fundDistributionMode(FundDistributionMode v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFundDistributionMode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFundDistributionMode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.List<MemberAllocation> get allocations => $_getList(2);
+}
+
+class UpdateFundDistributionModeResponse extends $pb.GeneratedMessage {
+  factory UpdateFundDistributionModeResponse({
+    FamilyAccount? familyAccount,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (familyAccount != null) {
+      $result.familyAccount = familyAccount;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  UpdateFundDistributionModeResponse._() : super();
+  factory UpdateFundDistributionModeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateFundDistributionModeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateFundDistributionModeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOM<FamilyAccount>(1, _omitFieldNames ? '' : 'familyAccount', subBuilder: FamilyAccount.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateFundDistributionModeResponse clone() => UpdateFundDistributionModeResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateFundDistributionModeResponse copyWith(void Function(UpdateFundDistributionModeResponse) updates) => super.copyWith((message) => updates(message as UpdateFundDistributionModeResponse)) as UpdateFundDistributionModeResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateFundDistributionModeResponse create() => UpdateFundDistributionModeResponse._();
+  UpdateFundDistributionModeResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateFundDistributionModeResponse> createRepeated() => $pb.PbList<UpdateFundDistributionModeResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateFundDistributionModeResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateFundDistributionModeResponse>(create);
+  static UpdateFundDistributionModeResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyAccount get familyAccount => $_getN(0);
+  @$pb.TagNumber(1)
+  set familyAccount(FamilyAccount v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  FamilyAccount ensureFamilyAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
 /// Family Account
 class FamilyAccount extends $pb.GeneratedMessage {
   factory FamilyAccount({
@@ -2438,6 +2976,9 @@ class FamilyAccount extends $pb.GeneratedMessage {
     $core.int? activeMemberCount,
     $core.bool? allowMemberContributions,
     $core.double? totalBalance,
+    FundDistributionMode? fundDistributionMode,
+    $core.bool? setupCompleted,
+    $core.bool? spendingVisibilityEnabled,
   }) {
     final $result = create();
     if (id != null) {
@@ -2485,6 +3026,15 @@ class FamilyAccount extends $pb.GeneratedMessage {
     if (totalBalance != null) {
       $result.totalBalance = totalBalance;
     }
+    if (fundDistributionMode != null) {
+      $result.fundDistributionMode = fundDistributionMode;
+    }
+    if (setupCompleted != null) {
+      $result.setupCompleted = setupCompleted;
+    }
+    if (spendingVisibilityEnabled != null) {
+      $result.spendingVisibilityEnabled = spendingVisibilityEnabled;
+    }
     return $result;
   }
   FamilyAccount._() : super();
@@ -2507,6 +3057,9 @@ class FamilyAccount extends $pb.GeneratedMessage {
     ..a<$core.int>(13, _omitFieldNames ? '' : 'activeMemberCount', $pb.PbFieldType.O3)
     ..aOB(14, _omitFieldNames ? '' : 'allowMemberContributions')
     ..a<$core.double>(15, _omitFieldNames ? '' : 'totalBalance', $pb.PbFieldType.OD)
+    ..e<FundDistributionMode>(16, _omitFieldNames ? '' : 'fundDistributionMode', $pb.PbFieldType.OE, defaultOrMaker: FundDistributionMode.FUND_DISTRIBUTION_MODE_UNSPECIFIED, valueOf: FundDistributionMode.valueOf, enumValues: FundDistributionMode.values)
+    ..aOB(17, _omitFieldNames ? '' : 'setupCompleted')
+    ..aOB(18, _omitFieldNames ? '' : 'spendingVisibilityEnabled')
     ..hasRequiredFields = false
   ;
 
@@ -2659,6 +3212,33 @@ class FamilyAccount extends $pb.GeneratedMessage {
   $core.bool hasTotalBalance() => $_has(14);
   @$pb.TagNumber(15)
   void clearTotalBalance() => clearField(15);
+
+  @$pb.TagNumber(16)
+  FundDistributionMode get fundDistributionMode => $_getN(15);
+  @$pb.TagNumber(16)
+  set fundDistributionMode(FundDistributionMode v) { setField(16, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasFundDistributionMode() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearFundDistributionMode() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.bool get setupCompleted => $_getBF(16);
+  @$pb.TagNumber(17)
+  set setupCompleted($core.bool v) { $_setBool(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasSetupCompleted() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearSetupCompleted() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.bool get spendingVisibilityEnabled => $_getBF(17);
+  @$pb.TagNumber(18)
+  set spendingVisibilityEnabled($core.bool v) { $_setBool(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasSpendingVisibilityEnabled() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearSpendingVisibilityEnabled() => clearField(18);
 }
 
 /// Family Member

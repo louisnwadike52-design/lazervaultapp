@@ -48,4 +48,17 @@ abstract class InsuranceRepository {
     required String locale,
   });
   Future<InsurancePurchaseResult> getInsurancePurchaseStatus({required String reference});
-} 
+
+  // Document Upload
+  Future<String> uploadInsuranceDocument({
+    required List<int> fileData,
+    required String filename,
+    required String documentType,
+  });
+
+  // Auxiliary Data
+  Future<List<AuxiliaryItem>> getInsuranceAuxiliaryData({
+    required String utilityId,
+    String? query,
+  });
+}

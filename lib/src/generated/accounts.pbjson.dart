@@ -42,6 +42,7 @@ const Account$json = {
     {'1': 'provider', '3': 23, '4': 1, '5': 9, '10': 'provider'},
     {'1': 'provider_ref', '3': 24, '4': 1, '5': 9, '10': 'providerRef'},
     {'1': 'bank_name', '3': 25, '4': 1, '5': 9, '10': 'bankName'},
+    {'1': 'single_transaction_limit', '3': 26, '4': 1, '5': 1, '10': 'singleTransactionLimit'},
   ],
 };
 
@@ -61,7 +62,8 @@ final $typed_data.Uint8List accountDescriptor = $convert.base64Decode(
     'IdCgpjcmVhdGVkX2F0GBQgASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgVIAEoCVIJdXBk'
     'YXRlZEF0Eh0KCmlzX3ZpcnR1YWwYFiABKAhSCWlzVmlydHVhbBIaCghwcm92aWRlchgXIAEoCV'
     'IIcHJvdmlkZXISIQoMcHJvdmlkZXJfcmVmGBggASgJUgtwcm92aWRlclJlZhIbCgliYW5rX25h'
-    'bWUYGSABKAlSCGJhbmtOYW1l');
+    'bWUYGSABKAlSCGJhbmtOYW1lEjgKGHNpbmdsZV90cmFuc2FjdGlvbl9saW1pdBgaIAEoAVIWc2'
+    'luZ2xlVHJhbnNhY3Rpb25MaW1pdA==');
 
 @$core.Deprecated('Use accountSummaryDescriptor instead')
 const AccountSummary$json = {
@@ -1191,6 +1193,11 @@ const DebitBalanceResponse$json = {
     {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'new_balance', '3': 5, '4': 1, '5': 3, '10': 'newBalance'},
     {'1': 'new_available_balance', '3': 6, '4': 1, '5': 3, '10': 'newAvailableBalance'},
+    {'1': 'daily_spent_today', '3': 7, '4': 1, '5': 3, '10': 'dailySpentToday'},
+    {'1': 'monthly_spent', '3': 8, '4': 1, '5': 3, '10': 'monthlySpent'},
+    {'1': 'remaining_daily_limit', '3': 9, '4': 1, '5': 3, '10': 'remainingDailyLimit'},
+    {'1': 'remaining_monthly_limit', '3': 10, '4': 1, '5': 3, '10': 'remainingMonthlyLimit'},
+    {'1': 'remaining_single_transaction_limit', '3': 11, '4': 1, '5': 3, '10': 'remainingSingleTransactionLimit'},
   ],
 };
 
@@ -1200,7 +1207,12 @@ final $typed_data.Uint8List debitBalanceResponseDescriptor = $convert.base64Deco
     '9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1l'
     'c3NhZ2USJQoOdHJhbnNhY3Rpb25faWQYBCABKAlSDXRyYW5zYWN0aW9uSWQSHwoLbmV3X2JhbG'
     'FuY2UYBSABKANSCm5ld0JhbGFuY2USMgoVbmV3X2F2YWlsYWJsZV9iYWxhbmNlGAYgASgDUhNu'
-    'ZXdBdmFpbGFibGVCYWxhbmNl');
+    'ZXdBdmFpbGFibGVCYWxhbmNlEioKEWRhaWx5X3NwZW50X3RvZGF5GAcgASgDUg9kYWlseVNwZW'
+    '50VG9kYXkSIwoNbW9udGhseV9zcGVudBgIIAEoA1IMbW9udGhseVNwZW50EjIKFXJlbWFpbmlu'
+    'Z19kYWlseV9saW1pdBgJIAEoA1ITcmVtYWluaW5nRGFpbHlMaW1pdBI2ChdyZW1haW5pbmdfbW'
+    '9udGhseV9saW1pdBgKIAEoA1IVcmVtYWluaW5nTW9udGhseUxpbWl0EksKInJlbWFpbmluZ19z'
+    'aW5nbGVfdHJhbnNhY3Rpb25fbGltaXQYCyABKANSH3JlbWFpbmluZ1NpbmdsZVRyYW5zYWN0aW'
+    '9uTGltaXQ=');
 
 @$core.Deprecated('Use transferBalanceRequestDescriptor instead')
 const TransferBalanceRequest$json = {
@@ -2167,4 +2179,50 @@ final $typed_data.Uint8List generateProofOfFundsResponseDescriptor = $convert.ba
     'aWwYAyABKANSCnZhbGlkVW50aWwSJwoPY3VycmVudF9iYWxhbmNlGAQgASgBUg5jdXJyZW50Qm'
     'FsYW5jZRIaCghjdXJyZW5jeRgFIAEoCVIIY3VycmVuY3kSGAoHbWVzc2FnZRgGIAEoCVIHbWVz'
     'c2FnZQ==');
+
+@$core.Deprecated('Use updateSecuritySettingsRequestDescriptor instead')
+const UpdateSecuritySettingsRequest$json = {
+  '1': 'UpdateSecuritySettingsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'enable_3d_secure', '3': 2, '4': 1, '5': 8, '10': 'enable3dSecure'},
+    {'1': 'enable_contactless', '3': 3, '4': 1, '5': 8, '10': 'enableContactless'},
+    {'1': 'enable_online_payments', '3': 4, '4': 1, '5': 8, '10': 'enableOnlinePayments'},
+    {'1': 'enable_atm_withdrawals', '3': 5, '4': 1, '5': 8, '10': 'enableAtmWithdrawals'},
+    {'1': 'enable_international_payments', '3': 6, '4': 1, '5': 8, '10': 'enableInternationalPayments'},
+  ],
+};
+
+/// Descriptor for `UpdateSecuritySettingsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSecuritySettingsRequestDescriptor = $convert.base64Decode(
+    'Ch1VcGRhdGVTZWN1cml0eVNldHRpbmdzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2'
+    'NvdW50SWQSKAoQZW5hYmxlXzNkX3NlY3VyZRgCIAEoCFIOZW5hYmxlM2RTZWN1cmUSLQoSZW5h'
+    'YmxlX2NvbnRhY3RsZXNzGAMgASgIUhFlbmFibGVDb250YWN0bGVzcxI0ChZlbmFibGVfb25saW'
+    '5lX3BheW1lbnRzGAQgASgIUhRlbmFibGVPbmxpbmVQYXltZW50cxI0ChZlbmFibGVfYXRtX3dp'
+    'dGhkcmF3YWxzGAUgASgIUhRlbmFibGVBdG1XaXRoZHJhd2FscxJCCh1lbmFibGVfaW50ZXJuYX'
+    'Rpb25hbF9wYXltZW50cxgGIAEoCFIbZW5hYmxlSW50ZXJuYXRpb25hbFBheW1lbnRz');
+
+@$core.Deprecated('Use updateSecuritySettingsResponseDescriptor instead')
+const UpdateSecuritySettingsResponse$json = {
+  '1': 'UpdateSecuritySettingsResponse',
+  '2': [
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'enable_3d_secure', '3': 3, '4': 1, '5': 8, '10': 'enable3dSecure'},
+    {'1': 'enable_contactless', '3': 4, '4': 1, '5': 8, '10': 'enableContactless'},
+    {'1': 'enable_online_payments', '3': 5, '4': 1, '5': 8, '10': 'enableOnlinePayments'},
+    {'1': 'enable_atm_withdrawals', '3': 6, '4': 1, '5': 8, '10': 'enableAtmWithdrawals'},
+    {'1': 'enable_international_payments', '3': 7, '4': 1, '5': 8, '10': 'enableInternationalPayments'},
+  ],
+};
+
+/// Descriptor for `UpdateSecuritySettingsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSecuritySettingsResponseDescriptor = $convert.base64Decode(
+    'Ch5VcGRhdGVTZWN1cml0eVNldHRpbmdzUmVzcG9uc2USKwoHYWNjb3VudBgBIAEoCzIRLmFjY2'
+    '91bnRzLkFjY291bnRSB2FjY291bnQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIoChBlbmFi'
+    'bGVfM2Rfc2VjdXJlGAMgASgIUg5lbmFibGUzZFNlY3VyZRItChJlbmFibGVfY29udGFjdGxlc3'
+    'MYBCABKAhSEWVuYWJsZUNvbnRhY3RsZXNzEjQKFmVuYWJsZV9vbmxpbmVfcGF5bWVudHMYBSAB'
+    'KAhSFGVuYWJsZU9ubGluZVBheW1lbnRzEjQKFmVuYWJsZV9hdG1fd2l0aGRyYXdhbHMYBiABKA'
+    'hSFGVuYWJsZUF0bVdpdGhkcmF3YWxzEkIKHWVuYWJsZV9pbnRlcm5hdGlvbmFsX3BheW1lbnRz'
+    'GAcgASgIUhtlbmFibGVJbnRlcm5hdGlvbmFsUGF5bWVudHM=');
 

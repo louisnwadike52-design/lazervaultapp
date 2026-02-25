@@ -743,6 +743,7 @@ message Account {
   string provider = 23;                 // Provider: "flutterwave", "vfd", "mono", etc.
   string provider_ref = 24;             // Provider's reference for the virtual account
   string bank_name = 25;                // Bank name from provider (e.g., "Wema Bank", "Sterling Bank")
+  double single_transaction_limit = 26; // Single transaction limit (0 = no limit)
 }
 
 // ===== Account Summary Model (for carousel/list views) =====
@@ -1270,6 +1271,11 @@ message DebitBalanceResponse {
   string transaction_id = 4;
   int64 new_balance = 5;
   int64 new_available_balance = 6;
+  int64 daily_spent_today = 7;
+  int64 monthly_spent = 8;
+  int64 remaining_daily_limit = 9;
+  int64 remaining_monthly_limit = 10;
+  int64 remaining_single_transaction_limit = 11;
 }
 
 // TransferBalanceRequest - Atomic internal transfer between accounts

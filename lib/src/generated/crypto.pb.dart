@@ -3373,6 +3373,8 @@ class CryptoWallet extends $pb.GeneratedMessage {
     $core.String? address,
     $core.double? balance,
     $core.String? walletType,
+    $core.String? chain,
+    $core.String? cryptoName,
   }) {
     final $result = create();
     if (id != null) {
@@ -3393,6 +3395,12 @@ class CryptoWallet extends $pb.GeneratedMessage {
     if (walletType != null) {
       $result.walletType = walletType;
     }
+    if (chain != null) {
+      $result.chain = chain;
+    }
+    if (cryptoName != null) {
+      $result.cryptoName = cryptoName;
+    }
     return $result;
   }
   CryptoWallet._() : super();
@@ -3406,6 +3414,8 @@ class CryptoWallet extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'address')
     ..a<$core.double>(5, _omitFieldNames ? '' : 'balance', $pb.PbFieldType.OD)
     ..aOS(6, _omitFieldNames ? '' : 'walletType')
+    ..aOS(7, _omitFieldNames ? '' : 'chain')
+    ..aOS(8, _omitFieldNames ? '' : 'cryptoName')
     ..hasRequiredFields = false
   ;
 
@@ -3483,6 +3493,24 @@ class CryptoWallet extends $pb.GeneratedMessage {
   $core.bool hasWalletType() => $_has(5);
   @$pb.TagNumber(6)
   void clearWalletType() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get chain => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set chain($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasChain() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearChain() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get cryptoName => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set cryptoName($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCryptoName() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCryptoName() => clearField(8);
 }
 
 class GetWalletsResponse extends $pb.GeneratedMessage {
@@ -3535,6 +3563,7 @@ class CreateWalletRequest extends $pb.GeneratedMessage {
     $core.String? userId,
     $core.String? cryptoId,
     $core.String? walletType,
+    $core.String? chain,
   }) {
     final $result = create();
     if (userId != null) {
@@ -3546,6 +3575,9 @@ class CreateWalletRequest extends $pb.GeneratedMessage {
     if (walletType != null) {
       $result.walletType = walletType;
     }
+    if (chain != null) {
+      $result.chain = chain;
+    }
     return $result;
   }
   CreateWalletRequest._() : super();
@@ -3556,6 +3588,7 @@ class CreateWalletRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(3, _omitFieldNames ? '' : 'walletType')
+    ..aOS(4, _omitFieldNames ? '' : 'chain')
     ..hasRequiredFields = false
   ;
 
@@ -3606,6 +3639,15 @@ class CreateWalletRequest extends $pb.GeneratedMessage {
   $core.bool hasWalletType() => $_has(2);
   @$pb.TagNumber(3)
   void clearWalletType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get chain => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set chain($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasChain() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearChain() => clearField(4);
 }
 
 class CreateWalletResponse extends $pb.GeneratedMessage {
@@ -3614,6 +3656,8 @@ class CreateWalletResponse extends $pb.GeneratedMessage {
     $core.String? address,
     $core.String? cryptoId,
     $core.String? status,
+    $core.String? chain,
+    $core.String? cryptoName,
   }) {
     final $result = create();
     if (walletId != null) {
@@ -3628,6 +3672,12 @@ class CreateWalletResponse extends $pb.GeneratedMessage {
     if (status != null) {
       $result.status = status;
     }
+    if (chain != null) {
+      $result.chain = chain;
+    }
+    if (cryptoName != null) {
+      $result.cryptoName = cryptoName;
+    }
     return $result;
   }
   CreateWalletResponse._() : super();
@@ -3639,6 +3689,8 @@ class CreateWalletResponse extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'address')
     ..aOS(3, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(4, _omitFieldNames ? '' : 'status')
+    ..aOS(5, _omitFieldNames ? '' : 'chain')
+    ..aOS(6, _omitFieldNames ? '' : 'cryptoName')
     ..hasRequiredFields = false
   ;
 
@@ -3698,6 +3750,147 @@ class CreateWalletResponse extends $pb.GeneratedMessage {
   $core.bool hasStatus() => $_has(3);
   @$pb.TagNumber(4)
   void clearStatus() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get chain => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set chain($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasChain() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearChain() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get cryptoName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set cryptoName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasCryptoName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCryptoName() => clearField(6);
+}
+
+/// Batch Create Wallets (stablecoin auto-creation)
+class BatchCreateWalletsRequest extends $pb.GeneratedMessage {
+  factory BatchCreateWalletsRequest({
+    $core.String? userId,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    return $result;
+  }
+  BatchCreateWalletsRequest._() : super();
+  factory BatchCreateWalletsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BatchCreateWalletsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchCreateWalletsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BatchCreateWalletsRequest clone() => BatchCreateWalletsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BatchCreateWalletsRequest copyWith(void Function(BatchCreateWalletsRequest) updates) => super.copyWith((message) => updates(message as BatchCreateWalletsRequest)) as BatchCreateWalletsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BatchCreateWalletsRequest create() => BatchCreateWalletsRequest._();
+  BatchCreateWalletsRequest createEmptyInstance() => create();
+  static $pb.PbList<BatchCreateWalletsRequest> createRepeated() => $pb.PbList<BatchCreateWalletsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static BatchCreateWalletsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchCreateWalletsRequest>(create);
+  static BatchCreateWalletsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+}
+
+class BatchCreateWalletsResponse extends $pb.GeneratedMessage {
+  factory BatchCreateWalletsResponse({
+    $core.Iterable<CryptoWallet>? wallets,
+    $core.int? createdCount,
+    $core.int? failedCount,
+  }) {
+    final $result = create();
+    if (wallets != null) {
+      $result.wallets.addAll(wallets);
+    }
+    if (createdCount != null) {
+      $result.createdCount = createdCount;
+    }
+    if (failedCount != null) {
+      $result.failedCount = failedCount;
+    }
+    return $result;
+  }
+  BatchCreateWalletsResponse._() : super();
+  factory BatchCreateWalletsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BatchCreateWalletsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchCreateWalletsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CryptoWallet>(1, _omitFieldNames ? '' : 'wallets', $pb.PbFieldType.PM, subBuilder: CryptoWallet.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'createdCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'failedCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BatchCreateWalletsResponse clone() => BatchCreateWalletsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BatchCreateWalletsResponse copyWith(void Function(BatchCreateWalletsResponse) updates) => super.copyWith((message) => updates(message as BatchCreateWalletsResponse)) as BatchCreateWalletsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BatchCreateWalletsResponse create() => BatchCreateWalletsResponse._();
+  BatchCreateWalletsResponse createEmptyInstance() => create();
+  static $pb.PbList<BatchCreateWalletsResponse> createRepeated() => $pb.PbList<BatchCreateWalletsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static BatchCreateWalletsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchCreateWalletsResponse>(create);
+  static BatchCreateWalletsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CryptoWallet> get wallets => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get createdCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set createdCount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCreatedCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreatedCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get failedCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set failedCount($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasFailedCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFailedCount() => clearField(3);
 }
 
 /// Get Wallet Balance

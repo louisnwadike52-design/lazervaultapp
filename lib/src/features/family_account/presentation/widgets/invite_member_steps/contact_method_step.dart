@@ -1,10 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
-/// Step 1: Contact Method Selection
-/// - Card-based selection: Email / Phone / Username
-/// - Dynamic input field based on selection
-/// - Validation per method type
+/// Step 1: Search & Select User
+/// Unified search across username, name, phone, email using ProfileCubit.searchUsers()
 class ContactMethodStep extends StatefulWidget {
   final Map<String, dynamic> formData;
   final Function(Map<String, dynamic>) onNext;
@@ -20,338 +23,439 @@ class ContactMethodStep extends StatefulWidget {
 }
 
 class _ContactMethodStepState extends State<ContactMethodStep> {
-  final _formKey = GlobalKey<FormState>();
-  late String _selectedMethod;
-  late TextEditingController _destinationController;
+  final TextEditingController _searchController = TextEditingController();
+  final ProfileCubit _profileCubit = serviceLocator<ProfileCubit>();
+  Timer? _debounce;
+
+  List<UserSearchResultEntity> _searchResults = [];
+  UserSearchResultEntity? _selectedUser;
+  bool _isSearching = false;
+  String _lastQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _selectedMethod = widget.formData['invitationMethod'] as String? ?? 'email';
-    _destinationController = TextEditingController(
-      text: widget.formData['invitationDestination'] as String? ?? '',
-    );
+    // Restore previously selected user if going back
+    final destination = widget.formData['invitationDestination'] as String? ?? '';
+    if (destination.isNotEmpty) {
+      _searchController.text = destination;
+    }
   }
 
   @override
   void dispose() {
-    _destinationController.dispose();
+    _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
-  void _submitStep() {
-    if (_formKey.currentState!.validate()) {
-      widget.onNext({
-        'invitationMethod': _selectedMethod,
-        'invitationDestination': _destinationController.text.trim(),
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+    final trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
       });
+      return;
+    }
+    setState(() => _isSearching = true);
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _performSearch(trimmed);
+    });
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query == _lastQuery && _searchResults.isNotEmpty) return;
+    _lastQuery = query;
+
+    try {
+      final results = await _profileCubit.searchUsers(query, limit: 10);
+      if (mounted && query == _lastQuery) {
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _searchResults = [];
+          _isSearching = false;
+        });
+      }
     }
   }
 
-  String _getInputLabel() {
-    switch (_selectedMethod) {
-      case 'email':
-        return 'Email Address';
-      case 'phone':
-        return 'Phone Number';
-      case 'username':
-        return 'Username';
-      default:
-        return 'Contact Info';
-    }
+  void _selectUser(UserSearchResultEntity user) {
+    setState(() {
+      _selectedUser = user;
+      _searchResults = [];
+      _searchController.text = user.username;
+    });
+    FocusScope.of(context).unfocus();
   }
 
-  String _getInputHint() {
-    switch (_selectedMethod) {
-      case 'email':
-        return 'Enter email address';
-      case 'phone':
-        return 'Enter phone number';
-      case 'username':
-        return 'Enter username (e.g., @johndoe)';
-      default:
-        return 'Enter contact info';
-    }
+  void _clearSelection() {
+    setState(() {
+      _selectedUser = null;
+      _searchController.clear();
+      _searchResults = [];
+      _lastQuery = '';
+    });
   }
 
-  TextInputType _getKeyboardType() {
-    switch (_selectedMethod) {
-      case 'email':
-        return TextInputType.emailAddress;
-      case 'phone':
-        return TextInputType.phone;
-      case 'username':
-        return TextInputType.text;
-      default:
-        return TextInputType.text;
+  void _submitStep() {
+    if (_selectedUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please search and select a user')),
+      );
+      return;
     }
-  }
-
-  String? _validateInput(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Please enter ${_getInputLabel().toLowerCase()}';
-    }
-
-    switch (_selectedMethod) {
-      case 'email':
-        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-        if (!emailRegex.hasMatch(value)) {
-          return 'Please enter a valid email address';
-        }
-        break;
-      case 'phone':
-        final phoneRegex = RegExp(r'^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$');
-        if (!phoneRegex.hasMatch(value.replaceAll(' ', ''))) {
-          return 'Please enter a valid phone number';
-        }
-        break;
-      case 'username':
-        if (value.length < 3) {
-          return 'Username must be at least 3 characters';
-        }
-        break;
-    }
-
-    return null;
+    widget.onNext({
+      'invitationMethod': 'username',
+      'invitationDestination': _selectedUser!.username,
+      'selectedUserId': _selectedUser!.userId,
+      'selectedUserName': _selectedUser!.fullName,
+      'selectedUserEmail': _selectedUser!.email,
+      'selectedUserProfilePicture': _selectedUser!.profilePicture,
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Text(
-              'How would you like to\ninvite this member?',
-              style: TextStyle(
-                color: const Color(0xFF1E1E2E),
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
-                height: 1.2,
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Text(
+            'Find a user to invite',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24.sp,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
             ),
-            SizedBox(height: 8.h),
-            Text(
-              'Choose how to send the invitation',
-              style: TextStyle(
-                color: const Color(0xFF666666),
-                fontSize: 14.sp,
-              ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Search by username, name, email, or phone number',
+            style: TextStyle(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 14.sp,
             ),
-            SizedBox(height: 32.h),
+          ),
+          SizedBox(height: 24.h),
 
-            // Contact Method Cards
-            _buildMethodCard(
-              method: 'email',
-              icon: Icons.email_outlined,
-              title: 'Email',
-              description: 'Send invitation via email',
-            ),
-            SizedBox(height: 12.h),
-            _buildMethodCard(
-              method: 'phone',
-              icon: Icons.phone_outlined,
-              title: 'Phone',
-              description: 'Send invitation via SMS',
-            ),
-            SizedBox(height: 12.h),
-            _buildMethodCard(
-              method: 'username',
-              icon: Icons.alternate_email,
-              title: 'Username',
-              description: 'Invite an existing user',
-            ),
-            SizedBox(height: 32.h),
+          // Selected user card or search
+          if (_selectedUser != null) ...[
+            _buildSelectedUserCard(),
+            SizedBox(height: 40.h),
+          ] else ...[
+            // Search Field
+            _buildSearchField(),
+            SizedBox(height: 16.h),
 
-            // Input Field
-            Text(
-              _getInputLabel(),
-              style: TextStyle(
-                color: const Color(0xFF1E1E2E),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            TextFormField(
-              controller: _destinationController,
-              keyboardType: _getKeyboardType(),
-              style: TextStyle(
-                color: const Color(0xFF1E1E2E),
-                fontSize: 16.sp,
-              ),
-              decoration: InputDecoration(
-                hintText: _getInputHint(),
-                hintStyle: TextStyle(
-                  color: const Color(0xFF999999),
-                  fontSize: 14.sp,
-                ),
-                prefixIcon: Icon(
-                  _selectedMethod == 'email'
-                      ? Icons.email_outlined
-                      : _selectedMethod == 'phone'
-                          ? Icons.phone_outlined
-                          : Icons.alternate_email,
-                  color: const Color(0xFF6C5CE7),
+            // Search Results or empty state
+            if (_isSearching)
+              _buildLoadingIndicator()
+            else if (_searchResults.isNotEmpty)
+              _buildSearchResults()
+            else if (_lastQuery.isNotEmpty)
+              _buildNoResults(),
+            SizedBox(height: 40.h),
+          ],
+
+          // Continue Button
+          _buildContinueButton(),
+          SizedBox(height: 20.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      onChanged: _onSearchChanged,
+      autofocus: true,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 16.sp,
+      ),
+      decoration: InputDecoration(
+        hintText: 'Search username, name, email, or phone...',
+        hintStyle: TextStyle(
+          color: const Color(0xFF6B7280),
+          fontSize: 14.sp,
+        ),
+        prefixIcon: Icon(
+          Icons.person_search,
+          color: const Color(0xFF3B82F6),
+          size: 22.sp,
+        ),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? GestureDetector(
+                onTap: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchResults = [];
+                    _lastQuery = '';
+                    _isSearching = false;
+                  });
+                },
+                child: Icon(
+                  Icons.close,
+                  color: const Color(0xFF9CA3AF),
                   size: 20.sp,
                 ),
-                filled: true,
-                fillColor: const Color(0xFFF0F0F0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(
-                    color: Color(0xFFE0E0E0),
-                    width: 1,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(
-                    color: Color(0xFF6C5CE7),
-                    width: 2,
-                  ),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(
-                    color: Colors.red,
-                    width: 1,
-                  ),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(
-                    color: Colors.red,
-                    width: 2,
-                  ),
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 14.h,
-                ),
-              ),
-              validator: _validateInput,
-            ),
-            SizedBox(height: 40.h),
+              )
+            : null,
+        filled: true,
+        fillColor: const Color(0xFF1F1F1F),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16.r),
+          borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      ),
+    );
+  }
 
-            // Continue Button
-            _buildContinueButton(),
-            SizedBox(height: 20.h),
+  Widget _buildLoadingIndicator() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 24.h),
+        child: SizedBox(
+          width: 28.w,
+          height: 28.h,
+          child: const CircularProgressIndicator(
+            color: Color(0xFF3B82F6),
+            strokeWidth: 2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${_searchResults.length} user${_searchResults.length == 1 ? '' : 's'} found',
+          style: TextStyle(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 12.sp,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        ...List.generate(
+          _searchResults.length > 5 ? 5 : _searchResults.length,
+          (index) => _buildUserResultTile(_searchResults[index]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUserResultTile(UserSearchResultEntity user) {
+    return GestureDetector(
+      onTap: () => _selectUser(user),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 20.r,
+              backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+              backgroundImage: user.profilePicture.isNotEmpty
+                  ? NetworkImage(user.profilePicture)
+                  : null,
+              child: user.profilePicture.isEmpty
+                  ? Text(
+                      user.initials,
+                      style: TextStyle(
+                        color: const Color(0xFF3B82F6),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user.fullName,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    '@${user.username}',
+                    style: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                  if (user.email.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      user.email,
+                      style: TextStyle(
+                        color: const Color(0xFF6B7280),
+                        fontSize: 11.sp,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(
+              Icons.add_circle_outline,
+              color: const Color(0xFF3B82F6),
+              size: 24.sp,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMethodCard({
-    required String method,
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    final isSelected = _selectedMethod == method;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedMethod = method;
-          _destinationController.clear();
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF6C5CE7).withValues(alpha: 0.08)
-              : const Color(0xFFF8F8F8),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF6C5CE7)
-                : const Color(0xFFE0E0E0),
-            width: isSelected ? 2 : 1,
-          ),
+  Widget _buildSelectedUserCard() {
+    final user = _selectedUser!;
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+          width: 2,
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 48.w,
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF6C5CE7).withValues(alpha: 0.15)
-                    : const Color(0xFFE0E0E0).withValues(alpha: 0.5),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? const Color(0xFF6C5CE7)
-                    : const Color(0xFF888888),
-                size: 24.sp,
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24.r,
+            backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+            backgroundImage: user.profilePicture.isNotEmpty
+                ? NetworkImage(user.profilePicture)
+                : null,
+            child: user.profilePicture.isEmpty
+                ? Text(
+                    user.initials,
                     style: TextStyle(
-                      color: isSelected
-                          ? const Color(0xFF6C5CE7)
-                          : const Color(0xFF1E1E2E),
+                      color: const Color(0xFF3B82F6),
                       fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                     ),
+                  )
+                : null,
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.fullName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
                   ),
-                  SizedBox(height: 4.h),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '@${user.username}',
+                  style: TextStyle(
+                    color: const Color(0xFF3B82F6),
+                    fontSize: 14.sp,
+                  ),
+                ),
+                if (user.email.isNotEmpty) ...[
+                  SizedBox(height: 2.h),
                   Text(
-                    description,
+                    user.email,
                     style: TextStyle(
-                      color: const Color(0xFF888888),
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 12.sp,
                     ),
                   ),
                 ],
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: _clearSelection,
+            child: Container(
+              width: 32.w,
+              height: 32.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2D2D2D),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.close,
+                color: const Color(0xFF9CA3AF),
+                size: 18.sp,
               ),
             ),
-            if (isSelected)
-              Container(
-                width: 24.w,
-                height: 24.h,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF6C5CE7),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: 16.sp,
-                ),
-              )
-            else
-              Container(
-                width: 24.w,
-                height: 24.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFE0E0E0),
-                    width: 2,
-                  ),
-                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoResults() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 24.h),
+        child: Column(
+          children: [
+            Icon(
+              Icons.person_off_outlined,
+              color: const Color(0xFF9CA3AF),
+              size: 40.sp,
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'No users found',
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
               ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Try a different name, username, email, or phone',
+              style: TextStyle(
+                color: const Color(0xFF6B7280),
+                fontSize: 12.sp,
+              ),
+            ),
           ],
         ),
       ),
@@ -359,21 +463,27 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
   }
 
   Widget _buildContinueButton() {
+    final hasSelection = _selectedUser != null;
     return Container(
       width: double.infinity,
       height: 56.h,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
-        ),
+        gradient: hasSelection
+            ? const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+              )
+            : null,
+        color: hasSelection ? null : const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(28.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        boxShadow: hasSelection
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -384,7 +494,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
             child: Text(
               'Continue',
               style: TextStyle(
-                color: Colors.white,
+                color: hasSelection ? Colors.white : const Color(0xFF6B7280),
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
               ),

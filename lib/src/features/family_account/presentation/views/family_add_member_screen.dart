@@ -78,9 +78,9 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E2E),
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1E2E),
+        backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
         leading: IconButton(
           icon: Icon(
@@ -175,7 +175,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: const BorderSide(
-                      color: Color(0xFF6C5CE7),
+                      color: Color(0xFF3B82F6),
                       width: 2,
                     ),
                   ),
@@ -260,7 +260,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                       Text(
                         '${_allocationPercentageCap.toStringAsFixed(0)}%',
                         style: TextStyle(
-                          color: const Color(0xFF6C5CE7),
+                          color: const Color(0xFF3B82F6),
                           fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -280,7 +280,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                     min: 1,
                     max: 100,
                     divisions: 99,
-                    activeColor: const Color(0xFF6C5CE7),
+                    activeColor: const Color(0xFF3B82F6),
                     onChanged: (value) {
                       setState(() {
                         _allocationPercentageCap = value;
@@ -337,7 +337,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: const BorderSide(
-                      color: Color(0xFF6C5CE7),
+                      color: Color(0xFF3B82F6),
                       width: 2,
                     ),
                   ),
@@ -360,12 +360,12 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                     height: 56.h,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
+                        colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
                       ),
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -455,21 +455,21 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withValues(alpha: 0.6),
+              color: isSelected ? const Color(0xFF3B82F6) : Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF6C5CE7) : Colors.white,
+                color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
                 fontSize: 15.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -478,7 +478,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: const Color(0xFF6C5CE7),
+                color: const Color(0xFF3B82F6),
                 size: 20.sp,
               ),
           ],
@@ -528,7 +528,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: const BorderSide(
-            color: Color(0xFF6C5CE7),
+            color: Color(0xFF3B82F6),
             width: 2,
           ),
         ),
@@ -573,7 +573,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
             children: [
               Icon(
                 icon,
-                color: const Color(0xFF6C5CE7),
+                color: const Color(0xFF3B82F6),
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -599,7 +599,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
             decoration: InputDecoration(
               prefixText: '\$ ',
               prefixStyle: TextStyle(
-                color: const Color(0xFF6C5CE7),
+                color: const Color(0xFF3B82F6),
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
               ),
@@ -624,7 +624,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
                 borderSide: const BorderSide(
-                  color: Color(0xFF6C5CE7),
+                  color: Color(0xFF3B82F6),
                   width: 2,
                 ),
               ),
@@ -689,14 +689,14 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           children: [
             Icon(
               isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withValues(alpha: 0.6),
+              color: isSelected ? const Color(0xFF3B82F6) : Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
@@ -707,7 +707,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   Text(
                     title,
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFF6C5CE7) : Colors.white,
+                      color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
                     ),

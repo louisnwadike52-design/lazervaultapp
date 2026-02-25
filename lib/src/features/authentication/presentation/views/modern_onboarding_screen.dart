@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -149,7 +150,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
   }
 
   Future<void> _completeOnboarding() async {
-    const storage = FlutterSecureStorage();
+    final storage = serviceLocator<FlutterSecureStorage>();
     await storage.write(key: 'has_seen_onboarding', value: 'true');
     Get.offAllNamed(AppRoutes.signUp);
   }

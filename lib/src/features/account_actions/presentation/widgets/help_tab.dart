@@ -290,13 +290,10 @@ class HelpTab extends StatelessWidget {
   }
 
   void _onGetHelp(BuildContext context) {
-    Get.snackbar(
-      'Support',
-      'Connecting you to our support team...',
-      backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.back(); // Close bottom sheet
+    Get.toNamed('/microservice-chat', arguments: {
+      'initialMessage': 'I need help with my card',
+    });
   }
 
   void _onReportProblem(BuildContext context) {
@@ -350,13 +347,11 @@ class HelpTab extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              Get.back();
-              Get.snackbar(
-                'Report Submitted',
-                'We\'ll get back to you within 24 hours',
-                backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.1),
-                colorText: Colors.white,
-              );
+              Get.back(); // Close dialog
+              Get.back(); // Close bottom sheet
+              Get.toNamed('/microservice-chat', arguments: {
+                'initialMessage': 'I want to report a problem with my card',
+              });
             },
             child: Text(
               'Submit',

@@ -209,6 +209,10 @@ class AccountsServiceClient extends $grpc.Client {
       '/accounts.AccountsService/RevealCardDetails',
       ($0.RevealCardDetailsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.RevealCardDetailsResponse.fromBuffer(value));
+  static final _$updateSecuritySettings = $grpc.ClientMethod<$0.UpdateSecuritySettingsRequest, $0.UpdateSecuritySettingsResponse>(
+      '/accounts.AccountsService/UpdateSecuritySettings',
+      ($0.UpdateSecuritySettingsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateSecuritySettingsResponse.fromBuffer(value));
   static final _$generateStatement = $grpc.ClientMethod<$0.GenerateStatementRequest, $0.GenerateStatementResponse>(
       '/accounts.AccountsService/GenerateStatement',
       ($0.GenerateStatementRequest value) => value.writeToBuffer(),
@@ -414,6 +418,10 @@ class AccountsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.RevealCardDetailsResponse> revealCardDetails($0.RevealCardDetailsRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$revealCardDetails, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateSecuritySettingsResponse> updateSecuritySettings($0.UpdateSecuritySettingsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateSecuritySettings, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GenerateStatementResponse> generateStatement($0.GenerateStatementRequest request, {$grpc.CallOptions? options}) {
@@ -763,6 +771,13 @@ abstract class AccountsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.RevealCardDetailsRequest.fromBuffer(value),
         ($0.RevealCardDetailsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateSecuritySettingsRequest, $0.UpdateSecuritySettingsResponse>(
+        'UpdateSecuritySettings',
+        updateSecuritySettings_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UpdateSecuritySettingsRequest.fromBuffer(value),
+        ($0.UpdateSecuritySettingsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GenerateStatementRequest, $0.GenerateStatementResponse>(
         'GenerateStatement',
         generateStatement_Pre,
@@ -974,6 +989,10 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return revealCardDetails(call, await request);
   }
 
+  $async.Future<$0.UpdateSecuritySettingsResponse> updateSecuritySettings_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateSecuritySettingsRequest> request) async {
+    return updateSecuritySettings(call, await request);
+  }
+
   $async.Future<$0.GenerateStatementResponse> generateStatement_Pre($grpc.ServiceCall call, $async.Future<$0.GenerateStatementRequest> request) async {
     return generateStatement(call, await request);
   }
@@ -1033,6 +1052,7 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.UpdateSpendingLimitsResponse> updateSpendingLimits($grpc.ServiceCall call, $0.UpdateSpendingLimitsRequest request);
   $async.Future<$0.RevealPINResponse> revealPIN($grpc.ServiceCall call, $0.RevealPINRequest request);
   $async.Future<$0.RevealCardDetailsResponse> revealCardDetails($grpc.ServiceCall call, $0.RevealCardDetailsRequest request);
+  $async.Future<$0.UpdateSecuritySettingsResponse> updateSecuritySettings($grpc.ServiceCall call, $0.UpdateSecuritySettingsRequest request);
   $async.Future<$0.GenerateStatementResponse> generateStatement($grpc.ServiceCall call, $0.GenerateStatementRequest request);
   $async.Future<$0.GenerateAccountConfirmationResponse> generateAccountConfirmation($grpc.ServiceCall call, $0.GenerateAccountConfirmationRequest request);
   $async.Future<$0.GenerateProofOfFundsResponse> generateProofOfFunds($grpc.ServiceCall call, $0.GenerateProofOfFundsRequest request);

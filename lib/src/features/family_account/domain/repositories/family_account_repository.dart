@@ -118,4 +118,22 @@ abstract class FamilyAccountRepository {
     required double amount,
     String? description,
   });
+
+  // Setup family account (choose distribution mode, activate)
+  Future<Either<Failure, FamilyAccount>> setupFamilyAccount({
+    required String familyId,
+    required String fundDistributionMode,
+    required bool spendingVisibilityEnabled,
+    List<MemberAllocationEntry> allocations = const [],
+  });
+}
+
+class MemberAllocationEntry {
+  final String memberId;
+  final double amount;
+
+  const MemberAllocationEntry({
+    required this.memberId,
+    required this.amount,
+  });
 }

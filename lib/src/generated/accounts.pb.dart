@@ -42,6 +42,7 @@ class Account extends $pb.GeneratedMessage {
     $core.String? provider,
     $core.String? providerRef,
     $core.String? bankName,
+    $core.double? singleTransactionLimit,
   }) {
     final $result = create();
     if (id != null) {
@@ -119,6 +120,9 @@ class Account extends $pb.GeneratedMessage {
     if (bankName != null) {
       $result.bankName = bankName;
     }
+    if (singleTransactionLimit != null) {
+      $result.singleTransactionLimit = singleTransactionLimit;
+    }
     return $result;
   }
   Account._() : super();
@@ -151,6 +155,7 @@ class Account extends $pb.GeneratedMessage {
     ..aOS(23, _omitFieldNames ? '' : 'provider')
     ..aOS(24, _omitFieldNames ? '' : 'providerRef')
     ..aOS(25, _omitFieldNames ? '' : 'bankName')
+    ..a<$core.double>(26, _omitFieldNames ? '' : 'singleTransactionLimit', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -400,6 +405,15 @@ class Account extends $pb.GeneratedMessage {
   $core.bool hasBankName() => $_has(24);
   @$pb.TagNumber(25)
   void clearBankName() => clearField(25);
+
+  @$pb.TagNumber(26)
+  $core.double get singleTransactionLimit => $_getN(25);
+  @$pb.TagNumber(26)
+  set singleTransactionLimit($core.double v) { $_setDouble(25, v); }
+  @$pb.TagNumber(26)
+  $core.bool hasSingleTransactionLimit() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearSingleTransactionLimit() => clearField(26);
 }
 
 /// ===== Account Summary Model (for carousel/list views) =====
@@ -6471,6 +6485,11 @@ class DebitBalanceResponse extends $pb.GeneratedMessage {
     $core.String? transactionId,
     $fixnum.Int64? newBalance,
     $fixnum.Int64? newAvailableBalance,
+    $fixnum.Int64? dailySpentToday,
+    $fixnum.Int64? monthlySpent,
+    $fixnum.Int64? remainingDailyLimit,
+    $fixnum.Int64? remainingMonthlyLimit,
+    $fixnum.Int64? remainingSingleTransactionLimit,
   }) {
     final $result = create();
     if (success != null) {
@@ -6491,6 +6510,21 @@ class DebitBalanceResponse extends $pb.GeneratedMessage {
     if (newAvailableBalance != null) {
       $result.newAvailableBalance = newAvailableBalance;
     }
+    if (dailySpentToday != null) {
+      $result.dailySpentToday = dailySpentToday;
+    }
+    if (monthlySpent != null) {
+      $result.monthlySpent = monthlySpent;
+    }
+    if (remainingDailyLimit != null) {
+      $result.remainingDailyLimit = remainingDailyLimit;
+    }
+    if (remainingMonthlyLimit != null) {
+      $result.remainingMonthlyLimit = remainingMonthlyLimit;
+    }
+    if (remainingSingleTransactionLimit != null) {
+      $result.remainingSingleTransactionLimit = remainingSingleTransactionLimit;
+    }
     return $result;
   }
   DebitBalanceResponse._() : super();
@@ -6504,6 +6538,11 @@ class DebitBalanceResponse extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'transactionId')
     ..aInt64(5, _omitFieldNames ? '' : 'newBalance')
     ..aInt64(6, _omitFieldNames ? '' : 'newAvailableBalance')
+    ..aInt64(7, _omitFieldNames ? '' : 'dailySpentToday')
+    ..aInt64(8, _omitFieldNames ? '' : 'monthlySpent')
+    ..aInt64(9, _omitFieldNames ? '' : 'remainingDailyLimit')
+    ..aInt64(10, _omitFieldNames ? '' : 'remainingMonthlyLimit')
+    ..aInt64(11, _omitFieldNames ? '' : 'remainingSingleTransactionLimit')
     ..hasRequiredFields = false
   ;
 
@@ -6581,6 +6620,51 @@ class DebitBalanceResponse extends $pb.GeneratedMessage {
   $core.bool hasNewAvailableBalance() => $_has(5);
   @$pb.TagNumber(6)
   void clearNewAvailableBalance() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get dailySpentToday => $_getI64(6);
+  @$pb.TagNumber(7)
+  set dailySpentToday($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasDailySpentToday() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDailySpentToday() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get monthlySpent => $_getI64(7);
+  @$pb.TagNumber(8)
+  set monthlySpent($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasMonthlySpent() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearMonthlySpent() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $fixnum.Int64 get remainingDailyLimit => $_getI64(8);
+  @$pb.TagNumber(9)
+  set remainingDailyLimit($fixnum.Int64 v) { $_setInt64(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasRemainingDailyLimit() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearRemainingDailyLimit() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $fixnum.Int64 get remainingMonthlyLimit => $_getI64(9);
+  @$pb.TagNumber(10)
+  set remainingMonthlyLimit($fixnum.Int64 v) { $_setInt64(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasRemainingMonthlyLimit() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearRemainingMonthlyLimit() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $fixnum.Int64 get remainingSingleTransactionLimit => $_getI64(10);
+  @$pb.TagNumber(11)
+  set remainingSingleTransactionLimit($fixnum.Int64 v) { $_setInt64(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasRemainingSingleTransactionLimit() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearRemainingSingleTransactionLimit() => clearField(11);
 }
 
 /// TransferBalanceRequest - Atomic internal transfer between accounts
@@ -11751,6 +11835,263 @@ class GenerateProofOfFundsResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(5);
   @$pb.TagNumber(6)
   void clearMessage() => clearField(6);
+}
+
+/// Update security settings request
+class UpdateSecuritySettingsRequest extends $pb.GeneratedMessage {
+  factory UpdateSecuritySettingsRequest({
+    $core.String? accountId,
+    $core.bool? enable3dSecure,
+    $core.bool? enableContactless,
+    $core.bool? enableOnlinePayments,
+    $core.bool? enableAtmWithdrawals,
+    $core.bool? enableInternationalPayments,
+  }) {
+    final $result = create();
+    if (accountId != null) {
+      $result.accountId = accountId;
+    }
+    if (enable3dSecure != null) {
+      $result.enable3dSecure = enable3dSecure;
+    }
+    if (enableContactless != null) {
+      $result.enableContactless = enableContactless;
+    }
+    if (enableOnlinePayments != null) {
+      $result.enableOnlinePayments = enableOnlinePayments;
+    }
+    if (enableAtmWithdrawals != null) {
+      $result.enableAtmWithdrawals = enableAtmWithdrawals;
+    }
+    if (enableInternationalPayments != null) {
+      $result.enableInternationalPayments = enableInternationalPayments;
+    }
+    return $result;
+  }
+  UpdateSecuritySettingsRequest._() : super();
+  factory UpdateSecuritySettingsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSecuritySettingsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSecuritySettingsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOB(2, _omitFieldNames ? '' : 'enable3dSecure', protoName: 'enable_3d_secure')
+    ..aOB(3, _omitFieldNames ? '' : 'enableContactless')
+    ..aOB(4, _omitFieldNames ? '' : 'enableOnlinePayments')
+    ..aOB(5, _omitFieldNames ? '' : 'enableAtmWithdrawals')
+    ..aOB(6, _omitFieldNames ? '' : 'enableInternationalPayments')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSecuritySettingsRequest clone() => UpdateSecuritySettingsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSecuritySettingsRequest copyWith(void Function(UpdateSecuritySettingsRequest) updates) => super.copyWith((message) => updates(message as UpdateSecuritySettingsRequest)) as UpdateSecuritySettingsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateSecuritySettingsRequest create() => UpdateSecuritySettingsRequest._();
+  UpdateSecuritySettingsRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateSecuritySettingsRequest> createRepeated() => $pb.PbList<UpdateSecuritySettingsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateSecuritySettingsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSecuritySettingsRequest>(create);
+  static UpdateSecuritySettingsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get enable3dSecure => $_getBF(1);
+  @$pb.TagNumber(2)
+  set enable3dSecure($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasEnable3dSecure() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearEnable3dSecure() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get enableContactless => $_getBF(2);
+  @$pb.TagNumber(3)
+  set enableContactless($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEnableContactless() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEnableContactless() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get enableOnlinePayments => $_getBF(3);
+  @$pb.TagNumber(4)
+  set enableOnlinePayments($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasEnableOnlinePayments() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEnableOnlinePayments() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get enableAtmWithdrawals => $_getBF(4);
+  @$pb.TagNumber(5)
+  set enableAtmWithdrawals($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasEnableAtmWithdrawals() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEnableAtmWithdrawals() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get enableInternationalPayments => $_getBF(5);
+  @$pb.TagNumber(6)
+  set enableInternationalPayments($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasEnableInternationalPayments() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearEnableInternationalPayments() => clearField(6);
+}
+
+class UpdateSecuritySettingsResponse extends $pb.GeneratedMessage {
+  factory UpdateSecuritySettingsResponse({
+    Account? account,
+    $core.String? message,
+    $core.bool? enable3dSecure,
+    $core.bool? enableContactless,
+    $core.bool? enableOnlinePayments,
+    $core.bool? enableAtmWithdrawals,
+    $core.bool? enableInternationalPayments,
+  }) {
+    final $result = create();
+    if (account != null) {
+      $result.account = account;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (enable3dSecure != null) {
+      $result.enable3dSecure = enable3dSecure;
+    }
+    if (enableContactless != null) {
+      $result.enableContactless = enableContactless;
+    }
+    if (enableOnlinePayments != null) {
+      $result.enableOnlinePayments = enableOnlinePayments;
+    }
+    if (enableAtmWithdrawals != null) {
+      $result.enableAtmWithdrawals = enableAtmWithdrawals;
+    }
+    if (enableInternationalPayments != null) {
+      $result.enableInternationalPayments = enableInternationalPayments;
+    }
+    return $result;
+  }
+  UpdateSecuritySettingsResponse._() : super();
+  factory UpdateSecuritySettingsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSecuritySettingsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSecuritySettingsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOM<Account>(1, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOB(3, _omitFieldNames ? '' : 'enable3dSecure', protoName: 'enable_3d_secure')
+    ..aOB(4, _omitFieldNames ? '' : 'enableContactless')
+    ..aOB(5, _omitFieldNames ? '' : 'enableOnlinePayments')
+    ..aOB(6, _omitFieldNames ? '' : 'enableAtmWithdrawals')
+    ..aOB(7, _omitFieldNames ? '' : 'enableInternationalPayments')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSecuritySettingsResponse clone() => UpdateSecuritySettingsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSecuritySettingsResponse copyWith(void Function(UpdateSecuritySettingsResponse) updates) => super.copyWith((message) => updates(message as UpdateSecuritySettingsResponse)) as UpdateSecuritySettingsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateSecuritySettingsResponse create() => UpdateSecuritySettingsResponse._();
+  UpdateSecuritySettingsResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateSecuritySettingsResponse> createRepeated() => $pb.PbList<UpdateSecuritySettingsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateSecuritySettingsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSecuritySettingsResponse>(create);
+  static UpdateSecuritySettingsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get enable3dSecure => $_getBF(2);
+  @$pb.TagNumber(3)
+  set enable3dSecure($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEnable3dSecure() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEnable3dSecure() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get enableContactless => $_getBF(3);
+  @$pb.TagNumber(4)
+  set enableContactless($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasEnableContactless() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEnableContactless() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get enableOnlinePayments => $_getBF(4);
+  @$pb.TagNumber(5)
+  set enableOnlinePayments($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasEnableOnlinePayments() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEnableOnlinePayments() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get enableAtmWithdrawals => $_getBF(5);
+  @$pb.TagNumber(6)
+  set enableAtmWithdrawals($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasEnableAtmWithdrawals() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearEnableAtmWithdrawals() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get enableInternationalPayments => $_getBF(6);
+  @$pb.TagNumber(7)
+  set enableInternationalPayments($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasEnableInternationalPayments() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearEnableInternationalPayments() => clearField(7);
 }
 
 

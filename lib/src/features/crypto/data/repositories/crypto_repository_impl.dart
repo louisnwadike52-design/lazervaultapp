@@ -1,6 +1,8 @@
 import 'package:lazervault/core/services/locale_manager.dart';
 
 import '../../domain/entities/crypto_entity.dart';
+import '../../domain/entities/crypto_wallet_entity.dart';
+import '../../domain/entities/global_market_data.dart';
 import '../../domain/entities/price_point.dart';
 import '../../domain/repositories/crypto_repository.dart';
 import '../datasources/crypto_remote_data_source.dart';
@@ -257,4 +259,38 @@ class CryptoRepositoryImpl implements CryptoRepository {
     // For now, this is a no-op to prevent compilation errors
     throw UnimplementedError('Toggle favorite feature not yet implemented');
   }
-} 
+
+  @override
+  Future<List<CryptoWalletEntity>> getWallets() async {
+    try {
+      final response = await grpcClient.getWallets();
+      return response.wallets.map((w) => CryptoWalletEntity(
+        id: w.id,
+        cryptoId: w.cryptoId,
+        cryptoSymbol: w.cryptoSymbol,
+        cryptoName: w.cryptoName,
+        address: w.address,
+        balance: w.balance,
+        walletType: w.walletType,
+        chain: w.chain,
+      )).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<void> createDefaultWallets() async {
+    try {
+      await grpcClient.batchCreateWallets();
+    } catch (e) {
+      // Fire-and-forget, log but don't throw
+      print('Background wallet creation failed: $e');
+    }
+  }
+
+  @override
+  Future<GlobalMarketData> getGlobalMarketData() async {
+    return await remoteDataSource.getGlobalMarketData();
+  }
+}

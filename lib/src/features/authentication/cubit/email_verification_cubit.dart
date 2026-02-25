@@ -139,9 +139,4 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
     }
   }
 
-  // Verification is now mandatory - no skip functionality
-  // void skipVerification() {
-  //   if (isClosed) return;
-  //   emit(const EmailVerificationSkipped());
-  // }
 }

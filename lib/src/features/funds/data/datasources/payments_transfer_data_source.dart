@@ -82,7 +82,7 @@ abstract class IPaymentsTransferDataSource {
   });
 
   /// Get payment/transfer history
-  Future<List<PaymentsTransferResult>> getPaymentHistory({
+  Future<({List<PaymentsTransferResult> transfers, int total})> getPaymentHistory({
     required String accountId,
     int? limit,
     int? offset,
@@ -193,7 +193,7 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
   }
 
   @override
-  Future<List<PaymentsTransferResult>> getPaymentHistory({
+  Future<({List<PaymentsTransferResult> transfers, int total})> getPaymentHistory({
     required String accountId,
     int? limit,
     int? offset,
@@ -215,15 +215,17 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
         );
       });
 
-      return response.transactions.map((p) => PaymentsTransferResult(
+      final transfers = response.transactions.map((p) => PaymentsTransferResult(
         success: true,
         transferId: p.id.isNotEmpty ? p.id : null,
         reference: p.reference.isNotEmpty ? p.reference : null,
         status: p.status.isNotEmpty ? p.status : null,
         amount: p.amount.isNotEmpty ? (double.tryParse(p.amount) ?? 0.0 * 100).toInt() : null,
-        fee: p.hasFee() ? (p.fee! * 100).toInt() : null,
+        fee: p.hasFee() ? (p.fee * 100).toInt() : null,
         createdAt: DateTime.fromMillisecondsSinceEpoch(p.createdAt.toInt()),
       )).toList();
+
+      return (transfers: transfers, total: response.total);
     } on GrpcError catch (e) {
       print('gRPC Error getting payment history: ${e.code} - ${e.message}');
       throw ServerException(

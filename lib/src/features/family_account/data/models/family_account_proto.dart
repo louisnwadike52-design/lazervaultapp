@@ -238,6 +238,9 @@ class FamilyAccountProto {
   final List<FamilyMemberProto> members;
   final int memberCount;
   final int activeMemberCount;
+  final String fundDistributionMode;
+  final bool setupCompleted;
+  final bool spendingVisibilityEnabled;
 
   FamilyAccountProto({
     required this.id,
@@ -255,6 +258,9 @@ class FamilyAccountProto {
     required this.members,
     required this.memberCount,
     required this.activeMemberCount,
+    this.fundDistributionMode = 'custom_allocation',
+    this.setupCompleted = false,
+    this.spendingVisibilityEnabled = true,
   });
 
   factory FamilyAccountProto.fromJson(Map<String, dynamic> json) {
@@ -276,6 +282,9 @@ class FamilyAccountProto {
               .toList() ?? [],
       memberCount: json['member_count'] as int? ?? 0,
       activeMemberCount: json['active_member_count'] as int? ?? 0,
+      fundDistributionMode: json['fund_distribution_mode'] as String? ?? 'custom_allocation',
+      setupCompleted: json['setup_completed'] as bool? ?? false,
+      spendingVisibilityEnabled: json['spending_visibility_enabled'] as bool? ?? true,
     );
   }
 
@@ -296,6 +305,9 @@ class FamilyAccountProto {
       'members': members.map((e) => e.toJson()).toList(),
       'member_count': memberCount,
       'active_member_count': activeMemberCount,
+      'fund_distribution_mode': fundDistributionMode,
+      'setup_completed': setupCompleted,
+      'spending_visibility_enabled': spendingVisibilityEnabled,
     };
   }
 }
@@ -546,6 +558,46 @@ class PendingInvitationProto {
       if (personalMessage != null) 'personal_message': personalMessage,
       'expires_at': expiresAt,
       'created_at': createdAt,
+    };
+  }
+}
+
+class SetupFamilyAccountRequestProto {
+  final String familyId;
+  final String fundDistributionMode;
+  final bool spendingVisibilityEnabled;
+  final List<MemberAllocationProto> allocations;
+
+  SetupFamilyAccountRequestProto({
+    required this.familyId,
+    required this.fundDistributionMode,
+    required this.spendingVisibilityEnabled,
+    this.allocations = const [],
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'family_id': familyId,
+      'fund_distribution_mode': fundDistributionMode,
+      'spending_visibility_enabled': spendingVisibilityEnabled,
+      'allocations': allocations.map((a) => a.toJson()).toList(),
+    };
+  }
+}
+
+class MemberAllocationProto {
+  final String memberId;
+  final double amount;
+
+  MemberAllocationProto({
+    required this.memberId,
+    required this.amount,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'member_id': memberId,
+      'amount': amount,
     };
   }
 }
