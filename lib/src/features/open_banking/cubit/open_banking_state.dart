@@ -4,6 +4,7 @@ import '../domain/entities/deposit.dart';
 import '../domain/entities/withdrawal.dart';
 import '../domain/entities/credit_score.dart';
 import '../domain/entities/credit_score_ai_insights.dart';
+import '../domain/entities/external_bank_transaction.dart';
 import '../data/errors/banking_errors.dart';
 
 /// Error type classification for UI handling
@@ -377,6 +378,16 @@ class CreditScoreHistoryLoaded extends OpenBankingState {
 /// Credit score is being refreshed
 class CreditScoreRefreshing extends OpenBankingState {}
 
+/// Multi-source credit scores loaded
+class MultiSourceCreditScoresLoaded extends OpenBankingState {
+  final MultiSourceCreditScores scores;
+
+  const MultiSourceCreditScoresLoaded({required this.scores});
+
+  @override
+  List<Object?> get props => [scores];
+}
+
 // ===== Credit Score AI Insights States =====
 
 /// AI insights are being generated
@@ -400,4 +411,67 @@ class CreditScoreAIInsightsError extends OpenBankingState {
 
   @override
   List<Object?> get props => [message];
+}
+
+// ===== External Transaction Sync States =====
+
+/// All accounts are being synced
+class AllAccountsSyncing extends OpenBankingState {}
+
+/// All accounts sync completed
+class AllAccountsSynced extends OpenBankingState {
+  final int accountsSynced;
+  final int transactionsSynced;
+
+  const AllAccountsSynced({
+    required this.accountsSynced,
+    required this.transactionsSynced,
+  });
+
+  @override
+  List<Object?> get props => [accountsSynced, transactionsSynced];
+}
+
+/// Single account transactions are being synced
+class AccountTransactionsSyncing extends OpenBankingState {
+  final String accountId;
+
+  const AccountTransactionsSyncing({required this.accountId});
+
+  @override
+  List<Object?> get props => [accountId];
+}
+
+/// Single account transactions sync completed
+class AccountTransactionsSynced extends OpenBankingState {
+  final String accountId;
+  final int transactionsSynced;
+  final double newBalance;
+
+  const AccountTransactionsSynced({
+    required this.accountId,
+    required this.transactionsSynced,
+    required this.newBalance,
+  });
+
+  @override
+  List<Object?> get props => [accountId, transactionsSynced, newBalance];
+}
+
+/// Account transactions loaded
+class AccountTransactionsLoaded extends OpenBankingState {
+  final String accountId;
+  final List transactions;
+  final int totalTransactions;
+  final DateTime? lastSyncAt;
+
+  const AccountTransactionsLoaded({
+    required this.accountId,
+    required this.transactions,
+    required this.totalTransactions,
+    this.lastSyncAt,
+  });
+
+  @override
+  List<Object?> get props => [accountId, transactions, totalTransactions, lastSyncAt];
 }

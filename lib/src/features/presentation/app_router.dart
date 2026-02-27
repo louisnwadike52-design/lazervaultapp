@@ -234,6 +234,7 @@ import 'package:lazervault/src/features/statistics/presentation/screens/category
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/presentation/screens/credit_score_screen.dart';
 import 'package:lazervault/src/features/open_banking/presentation/screens/linked_accounts_screen.dart' as open_banking;
+import 'package:lazervault/src/features/open_banking/presentation/screens/link_bank_screen.dart' as open_banking;
 
 // Tag Pay imports
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
@@ -1892,11 +1893,40 @@ GetPage(
         value: serviceLocator<OpenBankingCubit>(),
         child: CreditScoreScreen(
           userId: (Get.arguments as Map<String, dynamic>?)?['userId'] as String? ?? '',
+          showAllSources: (Get.arguments as Map<String, dynamic>?)?['showAllSources'] as bool? ?? false,
         ),
       ),
       transition: Transition.rightToLeft,
     ),
     // Open Banking routes
+    GetPage(
+      name: AppRoutes.linkedBanks,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        return BlocProvider.value(
+          value: serviceLocator<OpenBankingCubit>(),
+          child: open_banking.LinkedAccountsScreen(
+            userId: args?['userId'] as String? ?? '',
+            accessToken: args?['accessToken'] as String? ?? '',
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.linkBank,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        return BlocProvider.value(
+          value: serviceLocator<OpenBankingCubit>(),
+          child: open_banking.LinkBankScreen(
+            userId: args?['userId'] as String? ?? '',
+            accessToken: args?['accessToken'] as String? ?? '',
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
     GetPage(
       name: AppRoutes.openBankingConnect,
       page: () {

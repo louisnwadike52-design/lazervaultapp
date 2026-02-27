@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
@@ -20,11 +21,33 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
-import 'package:lazervault/src/features/statistics/presentation/widgets/open_banking_status_card.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/linked_banks_widget.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/financial_health_score_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/cash_flow_insights_card.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/failed_transactions_card.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+
+/// Returns true for platform/internal fee categories that should be
+/// included in totals but hidden from the UI breakdown.
+bool _isPlatformFee(String categoryName) {
+  final n = categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
+  return const {
+    'fee',
+    'fees',
+    'service_fees',
+    'service_fee',
+    'transfer_fee',
+    'transfer_fees',
+    'exchange_margin',
+    'exchange_fee',
+    'platform_fee',
+    'platform_fees',
+    'processing_fee',
+    'processing_fees',
+    'commission',
+    'commissions',
+  }.contains(n);
+}
 
 /// Maps category names from backend to display-friendly names.
 /// Uses ServiceCategories for service subcategory mappings where available.
@@ -113,11 +136,12 @@ class Statistics extends StatefulWidget {
 }
 
 class _StatisticsState extends State<Statistics> {
-  final List<String> timePeriods = ["Week", "Month", "Quarter", "Year"];
-  String selectedPeriod = "Month";
+  final List<String> timePeriods = ["Day", "Week", "Month", "Quarter", "Year"];
+  String selectedPeriod = "Week"; // Default to week instead of Day
 
   bool showIncome = true;
   bool _isSyncing = false;
+  bool _includeExternalBanks = true; // Track external banks filter state
   String _userId = '';
   String _accessToken = '';
 
@@ -126,10 +150,36 @@ class _StatisticsState extends State<Statistics> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureActiveAccount();
       context.read<StatisticsCubit>().loadStatistics();
       context.read<BudgetCubit>().loadBudgetProgress();
       _initOpenBanking();
     });
+  }
+
+  /// Ensure AccountManager has an active account before loading statistics.
+  /// Syncs from the dashboard carousel selection, or falls back to
+  /// the first available account.
+  void _ensureActiveAccount() {
+    final accountManager = serviceLocator<AccountManager>();
+    if (accountManager.activeAccountId != null) return;
+
+    final accountCubit = context.read<AccountCardsSummaryCubit>();
+    final accountState = accountCubit.state;
+
+    List<AccountSummaryEntity> accounts = [];
+    if (accountState is AccountCardsSummaryLoaded) {
+      accounts = accountState.accountSummaries;
+    } else if (accountState is AccountBalanceUpdated) {
+      accounts = accountState.accountSummaries;
+    }
+
+    if (accounts.isNotEmpty) {
+      // Prefer personal account, fallback to first
+      final personal = accounts.where((a) => a.accountType == 'personal');
+      final selected = personal.isNotEmpty ? personal.first : accounts.first;
+      accountManager.setActiveAccount(selected.id);
+    }
   }
 
   Future<void> _initOpenBanking() async {
@@ -141,8 +191,13 @@ class _StatisticsState extends State<Statistics> {
         _userId = userId;
         _accessToken = accessToken;
       });
-      context.read<OpenBankingCubit>().fetchCreditScore(userId: userId);
-      context.read<OpenBankingCubit>().fetchLinkedAccounts(userId: userId, accessToken: accessToken);
+      // Await linked accounts first to avoid race condition —
+      // both methods emit to the same cubit, so running them
+      // concurrently causes the second to overwrite the first state.
+      await context.read<OpenBankingCubit>().fetchLinkedAccounts(userId: userId, accessToken: accessToken);
+      if (mounted) {
+        context.read<OpenBankingCubit>().fetchCreditScore(userId: userId);
+      }
     }
   }
 
@@ -181,6 +236,10 @@ class _StatisticsState extends State<Statistics> {
               : selectedPeriod;
           if (capitalized != selectedPeriod) {
             setState(() => selectedPeriod = capitalized);
+          }
+          // Sync external banks filter state
+          if (_includeExternalBanks != state.includeExternalBanks) {
+            setState(() => _includeExternalBanks = state.includeExternalBanks);
           }
         }
 
@@ -224,7 +283,7 @@ class _StatisticsState extends State<Statistics> {
                   SizedBox(height: 16.h),
 
                   // ==================== OVERVIEW SECTION ====================
-                  _buildSectionHeader('Overview'),
+                  _buildSectionHeader('Overview', trailing: _buildAccountSourceFilter()),
                   SizedBox(height: 12.h),
                   _buildQuickStats(state),
                   SizedBox(height: 12.h),
@@ -243,6 +302,14 @@ class _StatisticsState extends State<Statistics> {
                   _buildSectionHeader('Quick Actions'),
                   SizedBox(height: 12.h),
                   _buildFeatureGrid(state),
+                  SizedBox(height: 16.h),
+
+                  // ==================== CREDIT SCORE CTA ====================
+                  _buildCreditScoreCTA(),
+                  SizedBox(height: 12.h),
+
+                  // ==================== LINKED BANKS SECTION ====================
+                  _buildLinkedBanksSection(),
                   SizedBox(height: 16.h),
 
                   // ==================== ANALYTICS SECTION ====================
@@ -274,6 +341,7 @@ class _StatisticsState extends State<Statistics> {
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             title,
@@ -283,7 +351,7 @@ class _StatisticsState extends State<Statistics> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          if (trailing != null) Expanded(child: trailing),
+          if (trailing != null) trailing,
         ],
       ),
     );
@@ -638,7 +706,10 @@ class _StatisticsState extends State<Statistics> {
               expenseChangePercent: analytics.expenseChangePercent,
               budgetItems: budgetItems,
             ),
-            onTap: () => Get.toNamed(AppRoutes.budgetAIInsights),
+            onTap: () => Get.toNamed(
+              AppRoutes.creditScore,
+              arguments: {'userId': _userId},
+            ),
           ),
         );
       },
@@ -669,6 +740,7 @@ class _StatisticsState extends State<Statistics> {
     List<({String name, double amount, double percentage})> topCategories = [];
     if (state.categoryAnalytics != null) {
       topCategories = state.categoryAnalytics!.expenseCategories
+          .where((c) => !_isPlatformFee(c.categoryName))
           .map((c) => (
                 name: _friendlyCategoryName(c.categoryName),
                 amount: c.amount,
@@ -762,41 +834,132 @@ class _StatisticsState extends State<Statistics> {
   }
 
   Widget _buildPeriodSelector() {
-    return SizedBox(
-      height: 32.h,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: timePeriods.length,
-        itemBuilder: (context, index) {
-          final isSelected = timePeriods[index] == selectedPeriod;
-          return GestureDetector(
-            onTap: () {
-              setState(() => selectedPeriod = timePeriods[index]);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D3F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedPeriod,
+          dropdownColor: const Color(0xFF1F1F1F),
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: const Color(0xFF10B981),
+            size: 20.sp,
+          ),
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+          ),
+          items: timePeriods.map((String period) {
+            return DropdownMenuItem<String>(
+              value: period,
+              child: Text(period),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            if (newValue != null) {
+              setState(() => selectedPeriod = newValue);
               context.read<StatisticsCubit>().changePeriod(
-                    timePeriods[index].toLowerCase(),
+                    newValue.toLowerCase(),
                   );
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Toggle widget to filter data source (LazerVault only vs All Accounts)
+  Widget _buildAccountSourceFilter() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D3F),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // LazerVault Only option
+          GestureDetector(
+            onTap: () {
+              if (_includeExternalBanks) {
+                setState(() => _includeExternalBanks = false);
+                context.read<StatisticsCubit>().toggleExternalBanks(false);
+              }
             },
             child: Container(
-              margin: EdgeInsets.only(right: 8.w),
-              padding: EdgeInsets.symmetric(horizontal: 14.w),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: isSelected
+                color: !_includeExternalBanks
                     ? const Color(0xFF10B981)
-                    : const Color(0xFF2D2D3F),
-                borderRadius: BorderRadius.circular(16.r),
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8.r),
               ),
-              alignment: Alignment.center,
-              child: Text(
-                timePeriods[index],
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
-                  fontSize: 13.sp,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet,
+                    size: 14.sp,
+                    color: !_includeExternalBanks ? Colors.white : Colors.white60,
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'Wallet Only',
+                    style: GoogleFonts.inter(
+                      color: !_includeExternalBanks ? Colors.white : Colors.white60,
+                      fontSize: 11.sp,
+                      fontWeight: !_includeExternalBanks ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
-          );
-        },
+          ),
+          SizedBox(width: 4.w),
+          // All Accounts option
+          GestureDetector(
+            onTap: () {
+              if (!_includeExternalBanks) {
+                setState(() => _includeExternalBanks = true);
+                context.read<StatisticsCubit>().toggleExternalBanks(true);
+              }
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: _includeExternalBanks
+                    ? const Color(0xFF10B981)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.account_balance,
+                    size: 14.sp,
+                    color: _includeExternalBanks ? Colors.white : Colors.white60,
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'All Accounts',
+                    style: GoogleFonts.inter(
+                      color: _includeExternalBanks ? Colors.white : Colors.white60,
+                      fontSize: 11.sp,
+                      fontWeight: _includeExternalBanks ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1150,15 +1313,12 @@ class _StatisticsState extends State<Statistics> {
   }
 
   Widget _buildManagementSection(StatisticsState state) {
-    // Only show management items if they have content
+    // Only show failed transactions card if available
     final hasFailedTransactions = state is StatisticsLoaded &&
         state.failedTransactions != null &&
         state.failedTransactions!.transactions.isNotEmpty;
 
-    final hasLinkedAccounts = context.read<OpenBankingCubit>().state is LinkedAccountsLoaded &&
-        (context.read<OpenBankingCubit>().state as LinkedAccountsLoaded).accounts.isNotEmpty;
-
-    if (!hasFailedTransactions && !hasLinkedAccounts) {
+    if (!hasFailedTransactions) {
       return const SizedBox.shrink();
     }
 
@@ -1167,36 +1327,110 @@ class _StatisticsState extends State<Statistics> {
       children: [
         _buildSectionHeader('Management'),
         SizedBox(height: 12.h),
-        if (hasLinkedAccounts) _buildOpenBankingSection(),
-        if (hasFailedTransactions) _buildFailedTransactionsSection(state),
+        _buildFailedTransactionsSection(state),
       ],
     );
   }
 
-  Widget _buildOpenBankingSection() {
+  Widget _buildCreditScoreCTA() {
+    return GestureDetector(
+      onTap: () => Get.toNamed(
+        AppRoutes.creditScore,
+        arguments: {
+          'userId': _userId,
+          'showAllSources': _includeExternalBanks,
+        },
+      ),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(
+                Icons.speed_rounded,
+                color: const Color(0xFF10B981),
+                size: 24.sp,
+              ),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Credit Score',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'View your score, insights & tips to improve',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: const Color(0xFF9CA3AF),
+              size: 16.sp,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLinkedBanksSection() {
     return BlocBuilder<OpenBankingCubit, OpenBankingState>(
       buildWhen: (prev, curr) =>
           curr is LinkedAccountsLoaded ||
+          curr is AccountLinked ||
+          curr is AccountUnlinked ||
+          curr is BalanceRefreshed ||
+          curr is AllAccountsSynced ||
+          curr is AccountTransactionsSynced ||
           curr is OpenBankingInitial ||
           curr is OpenBankingError,
       builder: (context, state) {
-        final isConnected = state is LinkedAccountsLoaded && state.accounts.isNotEmpty;
-        final linkedAccounts = state is LinkedAccountsLoaded ? state.accounts : <LinkedBankAccount>[];
-        return Padding(
-          padding: EdgeInsets.only(bottom: 12.h),
-          child: OpenBankingStatusCard(
-            isConnected: isConnected,
-            isSyncing: _isSyncing,
+        final linkedAccounts = context.read<OpenBankingCubit>().linkedAccounts;
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A1A2E), Color(0xFF1F1F1F)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: LinkedBanksWidget(
             linkedAccounts: linkedAccounts,
-            onConnectBank: () => Get.toNamed(
-              AppRoutes.openBankingConnect,
-              arguments: {'userId': _userId, 'accessToken': _accessToken},
-            ),
-            onSync: () => _syncLinkedAccounts(linkedAccounts),
-            onViewAll: () => Get.toNamed(
-              AppRoutes.openBankingConnect,
-              arguments: {'userId': _userId, 'accessToken': _accessToken},
-            ),
+            onRefresh: linkedAccounts.isNotEmpty
+                ? () => _syncLinkedAccounts(linkedAccounts)
+                : null,
           ),
         );
       },
@@ -1361,8 +1595,13 @@ class _StatisticsState extends State<Statistics> {
 
     final catAnalytics = state.categoryAnalytics;
     if (catAnalytics != null && catAnalytics.expenseCategories.isNotEmpty) {
-      final categories = catAnalytics.expenseCategories;
+      // Filter out platform fees from display but keep total (which includes them)
+      final displayCategories = catAnalytics.expenseCategories
+          .where((c) => !_isPlatformFee(c.categoryName))
+          .toList();
       final totalExpenses = catAnalytics.totalExpenses;
+
+      if (displayCategories.isEmpty) return const SizedBox.shrink();
 
       return GestureDetector(
         onTap: () => Get.toNamed(
@@ -1405,20 +1644,20 @@ class _StatisticsState extends State<Statistics> {
                 ],
               ),
               SizedBox(height: 16.h),
-              if (categories.isNotEmpty)
+              if (displayCategories.isNotEmpty)
                 AspectRatio(
                   aspectRatio: 1.3,
                   child: PieChart(
                     PieChartData(
                       sectionsSpace: 0,
                       centerSpaceRadius: 40,
-                      sections: _generateCategoryBreakdownSections(categories, totalExpenses),
+                      sections: _generateCategoryBreakdownSections(displayCategories, totalExpenses),
                     ),
                   ),
                 ),
               SizedBox(height: 16.h),
               Column(
-                children: categories.map((cat) {
+                children: displayCategories.map((cat) {
                   return _CategoryItem(
                     categoryName: cat.categoryName,
                     amount: cat.amount,

@@ -185,6 +185,22 @@ class BankingServiceClient extends $grpc.Client {
       '/banking.BankingService/GetReauthorizationToken',
       ($0.GetReauthorizationTokenRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetReauthorizationTokenResponse.fromBuffer(value));
+  static final _$syncAllAccountTransactions = $grpc.ClientMethod<$0.SyncAllAccountTransactionsRequest, $0.SyncAllAccountTransactionsResponse>(
+      '/banking.BankingService/SyncAllAccountTransactions',
+      ($0.SyncAllAccountTransactionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.SyncAllAccountTransactionsResponse.fromBuffer(value));
+  static final _$syncExternalTransactions = $grpc.ClientMethod<$0.SyncExternalTransactionsRequest, $0.SyncExternalTransactionsResponse>(
+      '/banking.BankingService/SyncExternalTransactions',
+      ($0.SyncExternalTransactionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.SyncExternalTransactionsResponse.fromBuffer(value));
+  static final _$getAccountWithTransactions = $grpc.ClientMethod<$0.GetAccountWithTransactionsRequest, $0.GetAccountWithTransactionsResponse>(
+      '/banking.BankingService/GetAccountWithTransactions',
+      ($0.GetAccountWithTransactionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAccountWithTransactionsResponse.fromBuffer(value));
+  static final _$refreshAccountTransactions = $grpc.ClientMethod<$0.RefreshAccountTransactionsRequest, $0.RefreshAccountTransactionsResponse>(
+      '/banking.BankingService/RefreshAccountTransactions',
+      ($0.RefreshAccountTransactionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RefreshAccountTransactionsResponse.fromBuffer(value));
   static final _$initiateDeposit = $grpc.ClientMethod<$0.InitiateDepositRequest, $0.DepositResponse>(
       '/banking.BankingService/InitiateDeposit',
       ($0.InitiateDepositRequest value) => value.writeToBuffer(),
@@ -205,6 +221,14 @@ class BankingServiceClient extends $grpc.Client {
       '/banking.BankingService/CalculateDepositFee',
       ($0.CalculateDepositFeeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.CalculateDepositFeeResponse.fromBuffer(value));
+  static final _$simulateTestDeposit = $grpc.ClientMethod<$0.SimulateTestDepositRequest, $0.DepositResponse>(
+      '/banking.BankingService/SimulateTestDeposit',
+      ($0.SimulateTestDepositRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.DepositResponse.fromBuffer(value));
+  static final _$getDepositMethods = $grpc.ClientMethod<$0.GetDepositMethodsRequest, $0.GetDepositMethodsResponse>(
+      '/banking.BankingService/GetDepositMethods',
+      ($0.GetDepositMethodsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetDepositMethodsResponse.fromBuffer(value));
   static final _$createMandate = $grpc.ClientMethod<$0.CreateMandateRequest, $0.MandateResponse>(
       '/banking.BankingService/CreateMandate',
       ($0.CreateMandateRequest value) => value.writeToBuffer(),
@@ -253,18 +277,6 @@ class BankingServiceClient extends $grpc.Client {
       '/banking.BankingService/GetTransferFee',
       ($0.GetTransferFeeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetTransferFeeResponse.fromBuffer(value));
-  static final _$getCreditScore = $grpc.ClientMethod<$0.GetCreditScoreRequest, $0.CreditScoreResponse>(
-      '/banking.BankingService/GetCreditScore',
-      ($0.GetCreditScoreRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.CreditScoreResponse.fromBuffer(value));
-  static final _$getCreditScoreHistory = $grpc.ClientMethod<$0.GetCreditScoreHistoryRequest, $0.CreditScoreHistoryResponse>(
-      '/banking.BankingService/GetCreditScoreHistory',
-      ($0.GetCreditScoreHistoryRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.CreditScoreHistoryResponse.fromBuffer(value));
-  static final _$refreshCreditScore = $grpc.ClientMethod<$0.RefreshCreditScoreRequest, $0.CreditScoreResponse>(
-      '/banking.BankingService/RefreshCreditScore',
-      ($0.RefreshCreditScoreRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.CreditScoreResponse.fromBuffer(value));
   static final _$initiateMoveTransfer = $grpc.ClientMethod<$0.InitiateMoveTransferRequest, $0.MoveTransferResponse>(
       '/banking.BankingService/InitiateMoveTransfer',
       ($0.InitiateMoveTransferRequest value) => value.writeToBuffer(),
@@ -281,6 +293,22 @@ class BankingServiceClient extends $grpc.Client {
       '/banking.BankingService/CalculateMoveFee',
       ($0.CalculateMoveFeeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.CalculateMoveFeeResponse.fromBuffer(value));
+  static final _$getCreditScore = $grpc.ClientMethod<$0.GetCreditScoreRequest, $0.CreditScoreResponse>(
+      '/banking.BankingService/GetCreditScore',
+      ($0.GetCreditScoreRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreditScoreResponse.fromBuffer(value));
+  static final _$getCreditScoreHistory = $grpc.ClientMethod<$0.GetCreditScoreHistoryRequest, $0.CreditScoreHistoryResponse>(
+      '/banking.BankingService/GetCreditScoreHistory',
+      ($0.GetCreditScoreHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreditScoreHistoryResponse.fromBuffer(value));
+  static final _$refreshCreditScore = $grpc.ClientMethod<$0.RefreshCreditScoreRequest, $0.CreditScoreResponse>(
+      '/banking.BankingService/RefreshCreditScore',
+      ($0.RefreshCreditScoreRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreditScoreResponse.fromBuffer(value));
+  static final _$getMultiSourceCreditScores = $grpc.ClientMethod<$0.GetMultiSourceCreditScoresRequest, $0.MultiSourceCreditScoresResponse>(
+      '/banking.BankingService/GetMultiSourceCreditScores',
+      ($0.GetMultiSourceCreditScoresRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.MultiSourceCreditScoresResponse.fromBuffer(value));
 
   BankingServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -452,6 +480,22 @@ class BankingServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getReauthorizationToken, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.SyncAllAccountTransactionsResponse> syncAllAccountTransactions($0.SyncAllAccountTransactionsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$syncAllAccountTransactions, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SyncExternalTransactionsResponse> syncExternalTransactions($0.SyncExternalTransactionsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$syncExternalTransactions, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAccountWithTransactionsResponse> getAccountWithTransactions($0.GetAccountWithTransactionsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAccountWithTransactions, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RefreshAccountTransactionsResponse> refreshAccountTransactions($0.RefreshAccountTransactionsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$refreshAccountTransactions, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.DepositResponse> initiateDeposit($0.InitiateDepositRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$initiateDeposit, request, options: options);
   }
@@ -470,6 +514,14 @@ class BankingServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.CalculateDepositFeeResponse> calculateDepositFee($0.CalculateDepositFeeRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$calculateDepositFee, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DepositResponse> simulateTestDeposit($0.SimulateTestDepositRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$simulateTestDeposit, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetDepositMethodsResponse> getDepositMethods($0.GetDepositMethodsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getDepositMethods, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.MandateResponse> createMandate($0.CreateMandateRequest request, {$grpc.CallOptions? options}) {
@@ -520,18 +572,6 @@ class BankingServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getTransferFee, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreditScoreResponse> getCreditScore($0.GetCreditScoreRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$getCreditScore, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$0.CreditScoreHistoryResponse> getCreditScoreHistory($0.GetCreditScoreHistoryRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$getCreditScoreHistory, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$0.CreditScoreResponse> refreshCreditScore($0.RefreshCreditScoreRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$refreshCreditScore, request, options: options);
-  }
-
   $grpc.ResponseFuture<$0.MoveTransferResponse> initiateMoveTransfer($0.InitiateMoveTransferRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$initiateMoveTransfer, request, options: options);
   }
@@ -546,6 +586,22 @@ class BankingServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.CalculateMoveFeeResponse> calculateMoveFee($0.CalculateMoveFeeRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$calculateMoveFee, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreditScoreResponse> getCreditScore($0.GetCreditScoreRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCreditScore, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreditScoreHistoryResponse> getCreditScoreHistory($0.GetCreditScoreHistoryRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCreditScoreHistory, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreditScoreResponse> refreshCreditScore($0.RefreshCreditScoreRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$refreshCreditScore, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MultiSourceCreditScoresResponse> getMultiSourceCreditScores($0.GetMultiSourceCreditScoresRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMultiSourceCreditScores, request, options: options);
   }
 }
 
@@ -841,6 +897,34 @@ abstract class BankingServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetReauthorizationTokenRequest.fromBuffer(value),
         ($0.GetReauthorizationTokenResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SyncAllAccountTransactionsRequest, $0.SyncAllAccountTransactionsResponse>(
+        'SyncAllAccountTransactions',
+        syncAllAccountTransactions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.SyncAllAccountTransactionsRequest.fromBuffer(value),
+        ($0.SyncAllAccountTransactionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SyncExternalTransactionsRequest, $0.SyncExternalTransactionsResponse>(
+        'SyncExternalTransactions',
+        syncExternalTransactions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.SyncExternalTransactionsRequest.fromBuffer(value),
+        ($0.SyncExternalTransactionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAccountWithTransactionsRequest, $0.GetAccountWithTransactionsResponse>(
+        'GetAccountWithTransactions',
+        getAccountWithTransactions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetAccountWithTransactionsRequest.fromBuffer(value),
+        ($0.GetAccountWithTransactionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RefreshAccountTransactionsRequest, $0.RefreshAccountTransactionsResponse>(
+        'RefreshAccountTransactions',
+        refreshAccountTransactions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RefreshAccountTransactionsRequest.fromBuffer(value),
+        ($0.RefreshAccountTransactionsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.InitiateDepositRequest, $0.DepositResponse>(
         'InitiateDeposit',
         initiateDeposit_Pre,
@@ -876,6 +960,20 @@ abstract class BankingServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.CalculateDepositFeeRequest.fromBuffer(value),
         ($0.CalculateDepositFeeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SimulateTestDepositRequest, $0.DepositResponse>(
+        'SimulateTestDeposit',
+        simulateTestDeposit_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.SimulateTestDepositRequest.fromBuffer(value),
+        ($0.DepositResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetDepositMethodsRequest, $0.GetDepositMethodsResponse>(
+        'GetDepositMethods',
+        getDepositMethods_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetDepositMethodsRequest.fromBuffer(value),
+        ($0.GetDepositMethodsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CreateMandateRequest, $0.MandateResponse>(
         'CreateMandate',
         createMandate_Pre,
@@ -960,27 +1058,6 @@ abstract class BankingServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetTransferFeeRequest.fromBuffer(value),
         ($0.GetTransferFeeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetCreditScoreRequest, $0.CreditScoreResponse>(
-        'GetCreditScore',
-        getCreditScore_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.GetCreditScoreRequest.fromBuffer(value),
-        ($0.CreditScoreResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetCreditScoreHistoryRequest, $0.CreditScoreHistoryResponse>(
-        'GetCreditScoreHistory',
-        getCreditScoreHistory_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.GetCreditScoreHistoryRequest.fromBuffer(value),
-        ($0.CreditScoreHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.RefreshCreditScoreRequest, $0.CreditScoreResponse>(
-        'RefreshCreditScore',
-        refreshCreditScore_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.RefreshCreditScoreRequest.fromBuffer(value),
-        ($0.CreditScoreResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.InitiateMoveTransferRequest, $0.MoveTransferResponse>(
         'InitiateMoveTransfer',
         initiateMoveTransfer_Pre,
@@ -1009,6 +1086,34 @@ abstract class BankingServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.CalculateMoveFeeRequest.fromBuffer(value),
         ($0.CalculateMoveFeeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCreditScoreRequest, $0.CreditScoreResponse>(
+        'GetCreditScore',
+        getCreditScore_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetCreditScoreRequest.fromBuffer(value),
+        ($0.CreditScoreResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCreditScoreHistoryRequest, $0.CreditScoreHistoryResponse>(
+        'GetCreditScoreHistory',
+        getCreditScoreHistory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetCreditScoreHistoryRequest.fromBuffer(value),
+        ($0.CreditScoreHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RefreshCreditScoreRequest, $0.CreditScoreResponse>(
+        'RefreshCreditScore',
+        refreshCreditScore_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RefreshCreditScoreRequest.fromBuffer(value),
+        ($0.CreditScoreResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMultiSourceCreditScoresRequest, $0.MultiSourceCreditScoresResponse>(
+        'GetMultiSourceCreditScores',
+        getMultiSourceCreditScores_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMultiSourceCreditScoresRequest.fromBuffer(value),
+        ($0.MultiSourceCreditScoresResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.VirtualAccountResponse> createVirtualAccount_Pre($grpc.ServiceCall call, $async.Future<$0.CreateVirtualAccountRequest> request) async {
@@ -1175,6 +1280,22 @@ abstract class BankingServiceBase extends $grpc.Service {
     return getReauthorizationToken(call, await request);
   }
 
+  $async.Future<$0.SyncAllAccountTransactionsResponse> syncAllAccountTransactions_Pre($grpc.ServiceCall call, $async.Future<$0.SyncAllAccountTransactionsRequest> request) async {
+    return syncAllAccountTransactions(call, await request);
+  }
+
+  $async.Future<$0.SyncExternalTransactionsResponse> syncExternalTransactions_Pre($grpc.ServiceCall call, $async.Future<$0.SyncExternalTransactionsRequest> request) async {
+    return syncExternalTransactions(call, await request);
+  }
+
+  $async.Future<$0.GetAccountWithTransactionsResponse> getAccountWithTransactions_Pre($grpc.ServiceCall call, $async.Future<$0.GetAccountWithTransactionsRequest> request) async {
+    return getAccountWithTransactions(call, await request);
+  }
+
+  $async.Future<$0.RefreshAccountTransactionsResponse> refreshAccountTransactions_Pre($grpc.ServiceCall call, $async.Future<$0.RefreshAccountTransactionsRequest> request) async {
+    return refreshAccountTransactions(call, await request);
+  }
+
   $async.Future<$0.DepositResponse> initiateDeposit_Pre($grpc.ServiceCall call, $async.Future<$0.InitiateDepositRequest> request) async {
     return initiateDeposit(call, await request);
   }
@@ -1193,6 +1314,14 @@ abstract class BankingServiceBase extends $grpc.Service {
 
   $async.Future<$0.CalculateDepositFeeResponse> calculateDepositFee_Pre($grpc.ServiceCall call, $async.Future<$0.CalculateDepositFeeRequest> request) async {
     return calculateDepositFee(call, await request);
+  }
+
+  $async.Future<$0.DepositResponse> simulateTestDeposit_Pre($grpc.ServiceCall call, $async.Future<$0.SimulateTestDepositRequest> request) async {
+    return simulateTestDeposit(call, await request);
+  }
+
+  $async.Future<$0.GetDepositMethodsResponse> getDepositMethods_Pre($grpc.ServiceCall call, $async.Future<$0.GetDepositMethodsRequest> request) async {
+    return getDepositMethods(call, await request);
   }
 
   $async.Future<$0.MandateResponse> createMandate_Pre($grpc.ServiceCall call, $async.Future<$0.CreateMandateRequest> request) async {
@@ -1243,18 +1372,6 @@ abstract class BankingServiceBase extends $grpc.Service {
     return getTransferFee(call, await request);
   }
 
-  $async.Future<$0.CreditScoreResponse> getCreditScore_Pre($grpc.ServiceCall call, $async.Future<$0.GetCreditScoreRequest> request) async {
-    return getCreditScore(call, await request);
-  }
-
-  $async.Future<$0.CreditScoreHistoryResponse> getCreditScoreHistory_Pre($grpc.ServiceCall call, $async.Future<$0.GetCreditScoreHistoryRequest> request) async {
-    return getCreditScoreHistory(call, await request);
-  }
-
-  $async.Future<$0.CreditScoreResponse> refreshCreditScore_Pre($grpc.ServiceCall call, $async.Future<$0.RefreshCreditScoreRequest> request) async {
-    return refreshCreditScore(call, await request);
-  }
-
   $async.Future<$0.MoveTransferResponse> initiateMoveTransfer_Pre($grpc.ServiceCall call, $async.Future<$0.InitiateMoveTransferRequest> request) async {
     return initiateMoveTransfer(call, await request);
   }
@@ -1269,6 +1386,22 @@ abstract class BankingServiceBase extends $grpc.Service {
 
   $async.Future<$0.CalculateMoveFeeResponse> calculateMoveFee_Pre($grpc.ServiceCall call, $async.Future<$0.CalculateMoveFeeRequest> request) async {
     return calculateMoveFee(call, await request);
+  }
+
+  $async.Future<$0.CreditScoreResponse> getCreditScore_Pre($grpc.ServiceCall call, $async.Future<$0.GetCreditScoreRequest> request) async {
+    return getCreditScore(call, await request);
+  }
+
+  $async.Future<$0.CreditScoreHistoryResponse> getCreditScoreHistory_Pre($grpc.ServiceCall call, $async.Future<$0.GetCreditScoreHistoryRequest> request) async {
+    return getCreditScoreHistory(call, await request);
+  }
+
+  $async.Future<$0.CreditScoreResponse> refreshCreditScore_Pre($grpc.ServiceCall call, $async.Future<$0.RefreshCreditScoreRequest> request) async {
+    return refreshCreditScore(call, await request);
+  }
+
+  $async.Future<$0.MultiSourceCreditScoresResponse> getMultiSourceCreditScores_Pre($grpc.ServiceCall call, $async.Future<$0.GetMultiSourceCreditScoresRequest> request) async {
+    return getMultiSourceCreditScores(call, await request);
   }
 
   $async.Future<$0.VirtualAccountResponse> createVirtualAccount($grpc.ServiceCall call, $0.CreateVirtualAccountRequest request);
@@ -1312,11 +1445,17 @@ abstract class BankingServiceBase extends $grpc.Service {
   $async.Future<$0.SetDefaultLinkedAccountResponse> setDefaultLinkedAccount($grpc.ServiceCall call, $0.SetDefaultLinkedAccountRequest request);
   $async.Future<$0.RefreshLinkedAccountBalanceResponse> refreshLinkedAccountBalance($grpc.ServiceCall call, $0.RefreshLinkedAccountBalanceRequest request);
   $async.Future<$0.GetReauthorizationTokenResponse> getReauthorizationToken($grpc.ServiceCall call, $0.GetReauthorizationTokenRequest request);
+  $async.Future<$0.SyncAllAccountTransactionsResponse> syncAllAccountTransactions($grpc.ServiceCall call, $0.SyncAllAccountTransactionsRequest request);
+  $async.Future<$0.SyncExternalTransactionsResponse> syncExternalTransactions($grpc.ServiceCall call, $0.SyncExternalTransactionsRequest request);
+  $async.Future<$0.GetAccountWithTransactionsResponse> getAccountWithTransactions($grpc.ServiceCall call, $0.GetAccountWithTransactionsRequest request);
+  $async.Future<$0.RefreshAccountTransactionsResponse> refreshAccountTransactions($grpc.ServiceCall call, $0.RefreshAccountTransactionsRequest request);
   $async.Future<$0.DepositResponse> initiateDeposit($grpc.ServiceCall call, $0.InitiateDepositRequest request);
   $async.Future<$0.DepositResponse> getDepositStatus($grpc.ServiceCall call, $0.GetDepositStatusRequest request);
   $async.Future<$0.DepositsResponse> getUserDeposits($grpc.ServiceCall call, $0.GetUserDepositsRequest request);
   $async.Future<$0.CancelDepositResponse> cancelDeposit($grpc.ServiceCall call, $0.CancelDepositRequest request);
   $async.Future<$0.CalculateDepositFeeResponse> calculateDepositFee($grpc.ServiceCall call, $0.CalculateDepositFeeRequest request);
+  $async.Future<$0.DepositResponse> simulateTestDeposit($grpc.ServiceCall call, $0.SimulateTestDepositRequest request);
+  $async.Future<$0.GetDepositMethodsResponse> getDepositMethods($grpc.ServiceCall call, $0.GetDepositMethodsRequest request);
   $async.Future<$0.MandateResponse> createMandate($grpc.ServiceCall call, $0.CreateMandateRequest request);
   $async.Future<$0.MandateResponse> getMandate($grpc.ServiceCall call, $0.GetMandateRequest request);
   $async.Future<$0.MandatesResponse> getUserMandates($grpc.ServiceCall call, $0.GetUserMandatesRequest request);
@@ -1329,11 +1468,12 @@ abstract class BankingServiceBase extends $grpc.Service {
   $async.Future<$0.WithdrawalsResponse> getUserWithdrawals($grpc.ServiceCall call, $0.GetUserWithdrawalsRequest request);
   $async.Future<$0.CalculateWithdrawalFeeResponse> calculateWithdrawalFee($grpc.ServiceCall call, $0.CalculateWithdrawalFeeRequest request);
   $async.Future<$0.GetTransferFeeResponse> getTransferFee($grpc.ServiceCall call, $0.GetTransferFeeRequest request);
-  $async.Future<$0.CreditScoreResponse> getCreditScore($grpc.ServiceCall call, $0.GetCreditScoreRequest request);
-  $async.Future<$0.CreditScoreHistoryResponse> getCreditScoreHistory($grpc.ServiceCall call, $0.GetCreditScoreHistoryRequest request);
-  $async.Future<$0.CreditScoreResponse> refreshCreditScore($grpc.ServiceCall call, $0.RefreshCreditScoreRequest request);
   $async.Future<$0.MoveTransferResponse> initiateMoveTransfer($grpc.ServiceCall call, $0.InitiateMoveTransferRequest request);
   $async.Future<$0.MoveTransferResponse> getMoveTransferStatus($grpc.ServiceCall call, $0.GetMoveTransferStatusRequest request);
   $async.Future<$0.MoveTransfersResponse> getMoveTransfers($grpc.ServiceCall call, $0.GetMoveTransfersRequest request);
   $async.Future<$0.CalculateMoveFeeResponse> calculateMoveFee($grpc.ServiceCall call, $0.CalculateMoveFeeRequest request);
+  $async.Future<$0.CreditScoreResponse> getCreditScore($grpc.ServiceCall call, $0.GetCreditScoreRequest request);
+  $async.Future<$0.CreditScoreHistoryResponse> getCreditScoreHistory($grpc.ServiceCall call, $0.GetCreditScoreHistoryRequest request);
+  $async.Future<$0.CreditScoreResponse> refreshCreditScore($grpc.ServiceCall call, $0.RefreshCreditScoreRequest request);
+  $async.Future<$0.MultiSourceCreditScoresResponse> getMultiSourceCreditScores($grpc.ServiceCall call, $0.GetMultiSourceCreditScoresRequest request);
 }

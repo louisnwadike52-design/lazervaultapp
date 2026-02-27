@@ -16,6 +16,9 @@ class CreditScoreEntity extends Equatable {
   final DateTime calculatedAt;
   final DateTime? nextRefreshAt;
   final List<CreditScoreTipEntity> tips;
+  final String source; // "lazervault", "external", "combined"
+  final String sourceLabel;
+  final double confidence; // 0.0-1.0
 
   const CreditScoreEntity({
     required this.id,
@@ -33,6 +36,9 @@ class CreditScoreEntity extends Equatable {
     required this.calculatedAt,
     this.nextRefreshAt,
     this.tips = const [],
+    this.source = 'external',
+    this.sourceLabel = '',
+    this.confidence = 0.0,
   });
 
   String get ratingLabel {
@@ -67,6 +73,31 @@ class CreditScoreEntity extends Equatable {
         calculatedAt,
         nextRefreshAt,
         tips,
+        source,
+        sourceLabel,
+        confidence,
+      ];
+}
+
+class MultiSourceCreditScores extends Equatable {
+  final CreditScoreEntity lazervaultScore;
+  final CreditScoreEntity? externalScore;
+  final CreditScoreEntity? combinedScore;
+  final bool hasLinkedBanks;
+
+  const MultiSourceCreditScores({
+    required this.lazervaultScore,
+    this.externalScore,
+    this.combinedScore,
+    required this.hasLinkedBanks,
+  });
+
+  @override
+  List<Object?> get props => [
+        lazervaultScore,
+        externalScore,
+        combinedScore,
+        hasLinkedBanks,
       ];
 }
 
