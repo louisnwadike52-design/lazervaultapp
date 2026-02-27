@@ -13,6 +13,23 @@ import 'dart:convert' as $convert;
 import 'dart:core' as $core;
 import 'dart:typed_data' as $typed_data;
 
+@$core.Deprecated('Use creditScoreSourceDescriptor instead')
+const CreditScoreSource$json = {
+  '1': 'CreditScoreSource',
+  '2': [
+    {'1': 'CREDIT_SCORE_SOURCE_UNSPECIFIED', '2': 0},
+    {'1': 'CREDIT_SCORE_SOURCE_LAZERVAULT', '2': 1},
+    {'1': 'CREDIT_SCORE_SOURCE_EXTERNAL', '2': 2},
+    {'1': 'CREDIT_SCORE_SOURCE_COMBINED', '2': 3},
+  ],
+};
+
+/// Descriptor for `CreditScoreSource`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List creditScoreSourceDescriptor = $convert.base64Decode(
+    'ChFDcmVkaXRTY29yZVNvdXJjZRIjCh9DUkVESVRfU0NPUkVfU09VUkNFX1VOU1BFQ0lGSUVEEA'
+    'ASIgoeQ1JFRElUX1NDT1JFX1NPVVJDRV9MQVpFUlZBVUxUEAESIAocQ1JFRElUX1NDT1JFX1NP'
+    'VVJDRV9FWFRFUk5BTBACEiAKHENSRURJVF9TQ09SRV9TT1VSQ0VfQ09NQklORUQQAw==');
+
 @$core.Deprecated('Use createVirtualAccountRequestDescriptor instead')
 const CreateVirtualAccountRequest$json = {
   '1': 'CreateVirtualAccountRequest',
@@ -1547,6 +1564,10 @@ const LinkedBankAccount$json = {
     {'1': 'balance_updated_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'balanceUpdatedAt'},
     {'1': 'last_used_at', '3': 16, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastUsedAt'},
     {'1': 'needs_reauthorize', '3': 17, '4': 1, '5': 8, '10': 'needsReauthorize'},
+    {'1': 'last_sync_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastSyncAt'},
+    {'1': 'last_sync_status', '3': 19, '4': 1, '5': 9, '10': 'lastSyncStatus'},
+    {'1': 'transaction_count', '3': 20, '4': 1, '5': 5, '10': 'transactionCount'},
+    {'1': 'sync_error_count', '3': 21, '4': 1, '5': 5, '10': 'syncErrorCount'},
   ],
 };
 
@@ -1563,7 +1584,11 @@ final $typed_data.Uint8List linkedBankAccountDescriptor = $convert.base64Decode(
     'ZS5wcm90b2J1Zi5UaW1lc3RhbXBSCGxpbmtlZEF0EkgKEmJhbGFuY2VfdXBkYXRlZF9hdBgPIA'
     'EoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSEGJhbGFuY2VVcGRhdGVkQXQSPAoMbGFz'
     'dF91c2VkX2F0GBAgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIKbGFzdFVzZWRBdB'
-    'IrChFuZWVkc19yZWF1dGhvcml6ZRgRIAEoCFIQbmVlZHNSZWF1dGhvcml6ZQ==');
+    'IrChFuZWVkc19yZWF1dGhvcml6ZRgRIAEoCFIQbmVlZHNSZWF1dGhvcml6ZRI8CgxsYXN0X3N5'
+    'bmNfYXQYEiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgpsYXN0U3luY0F0EigKEG'
+    'xhc3Rfc3luY19zdGF0dXMYEyABKAlSDmxhc3RTeW5jU3RhdHVzEisKEXRyYW5zYWN0aW9uX2Nv'
+    'dW50GBQgASgFUhB0cmFuc2FjdGlvbkNvdW50EigKEHN5bmNfZXJyb3JfY291bnQYFSABKAVSDn'
+    'N5bmNFcnJvckNvdW50');
 
 @$core.Deprecated('Use unlinkBankAccountRequestDescriptor instead')
 const UnlinkBankAccountRequest$json = {
@@ -1689,6 +1714,208 @@ final $typed_data.Uint8List getReauthorizationTokenResponseDescriptor = $convert
     'Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyAB'
     'KAlSDGVycm9yTWVzc2FnZRIUCgV0b2tlbhgEIAEoCVIFdG9rZW4=');
 
+@$core.Deprecated('Use externalBankTransactionDescriptor instead')
+const ExternalBankTransaction$json = {
+  '1': 'ExternalBankTransaction',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'linked_bank_account_id', '3': 3, '4': 1, '5': 9, '10': 'linkedBankAccountId'},
+    {'1': 'external_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'externalTransactionId'},
+    {'1': 'external_account_id', '3': 5, '4': 1, '5': 9, '10': 'externalAccountId'},
+    {'1': 'amount', '3': 6, '4': 1, '5': 3, '10': 'amount'},
+    {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'transaction_type', '3': 8, '4': 1, '5': 9, '10': 'transactionType'},
+    {'1': 'category', '3': 9, '4': 1, '5': 9, '10': 'category'},
+    {'1': 'description', '3': 10, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'bank_name', '3': 11, '4': 1, '5': 9, '10': 'bankName'},
+    {'1': 'account_name', '3': 12, '4': 1, '5': 9, '10': 'accountName'},
+    {'1': 'account_number_masked', '3': 13, '4': 1, '5': 9, '10': 'accountNumberMasked'},
+    {'1': 'transaction_date', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'transactionDate'},
+    {'1': 'value_date', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'valueDate'},
+    {'1': 'cleared_at', '3': 16, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'clearedAt'},
+    {'1': 'created_at', '3': 17, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'sync_status', '3': 18, '4': 1, '5': 9, '10': 'syncStatus'},
+    {'1': 'last_sync_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastSyncAt'},
+    {'1': 'metadata', '3': 20, '4': 1, '5': 9, '10': 'metadata'},
+  ],
+};
+
+/// Descriptor for `ExternalBankTransaction`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List externalBankTransactionDescriptor = $convert.base64Decode(
+    'ChdFeHRlcm5hbEJhbmtUcmFuc2FjdGlvbhIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIA'
+    'EoCVIGdXNlcklkEjMKFmxpbmtlZF9iYW5rX2FjY291bnRfaWQYAyABKAlSE2xpbmtlZEJhbmtB'
+    'Y2NvdW50SWQSNgoXZXh0ZXJuYWxfdHJhbnNhY3Rpb25faWQYBCABKAlSFWV4dGVybmFsVHJhbn'
+    'NhY3Rpb25JZBIuChNleHRlcm5hbF9hY2NvdW50X2lkGAUgASgJUhFleHRlcm5hbEFjY291bnRJ'
+    'ZBIWCgZhbW91bnQYBiABKANSBmFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSKQ'
+    'oQdHJhbnNhY3Rpb25fdHlwZRgIIAEoCVIPdHJhbnNhY3Rpb25UeXBlEhoKCGNhdGVnb3J5GAkg'
+    'ASgJUghjYXRlZ29yeRIgCgtkZXNjcmlwdGlvbhgKIAEoCVILZGVzY3JpcHRpb24SGwoJYmFua1'
+    '9uYW1lGAsgASgJUghiYW5rTmFtZRIhCgxhY2NvdW50X25hbWUYDCABKAlSC2FjY291bnROYW1l'
+    'EjIKFWFjY291bnRfbnVtYmVyX21hc2tlZBgNIAEoCVITYWNjb3VudE51bWJlck1hc2tlZBJFCh'
+    'B0cmFuc2FjdGlvbl9kYXRlGA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIPdHJh'
+    'bnNhY3Rpb25EYXRlEjkKCnZhbHVlX2RhdGUYDyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZX'
+    'N0YW1wUgl2YWx1ZURhdGUSOQoKY2xlYXJlZF9hdBgQIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U'
+    'aW1lc3RhbXBSCWNsZWFyZWRBdBI5CgpjcmVhdGVkX2F0GBEgASgLMhouZ29vZ2xlLnByb3RvYn'
+    'VmLlRpbWVzdGFtcFIJY3JlYXRlZEF0Eh8KC3N5bmNfc3RhdHVzGBIgASgJUgpzeW5jU3RhdHVz'
+    'EjwKDGxhc3Rfc3luY19hdBgTIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCmxhc3'
+    'RTeW5jQXQSGgoIbWV0YWRhdGEYFCABKAlSCG1ldGFkYXRh');
+
+@$core.Deprecated('Use syncAllAccountTransactionsRequestDescriptor instead')
+const SyncAllAccountTransactionsRequest$json = {
+  '1': 'SyncAllAccountTransactionsRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'sync_type', '3': 2, '4': 1, '5': 9, '10': 'syncType'},
+  ],
+};
+
+/// Descriptor for `SyncAllAccountTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List syncAllAccountTransactionsRequestDescriptor = $convert.base64Decode(
+    'CiFTeW5jQWxsQWNjb3VudFRyYW5zYWN0aW9uc1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdX'
+    'NlcklkEhsKCXN5bmNfdHlwZRgCIAEoCVIIc3luY1R5cGU=');
+
+@$core.Deprecated('Use syncAllAccountTransactionsResponseDescriptor instead')
+const SyncAllAccountTransactionsResponse$json = {
+  '1': 'SyncAllAccountTransactionsResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'total_accounts_synced', '3': 2, '4': 1, '5': 5, '10': 'totalAccountsSynced'},
+    {'1': 'total_transactions_synced', '3': 3, '4': 1, '5': 5, '10': 'totalTransactionsSynced'},
+    {'1': 'accounts', '3': 4, '4': 3, '5': 11, '6': '.banking.AccountSyncResult', '10': 'accounts'},
+  ],
+};
+
+/// Descriptor for `SyncAllAccountTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List syncAllAccountTransactionsResponseDescriptor = $convert.base64Decode(
+    'CiJTeW5jQWxsQWNjb3VudFRyYW5zYWN0aW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3'
+    'N1Y2Nlc3MSMgoVdG90YWxfYWNjb3VudHNfc3luY2VkGAIgASgFUhN0b3RhbEFjY291bnRzU3lu'
+    'Y2VkEjoKGXRvdGFsX3RyYW5zYWN0aW9uc19zeW5jZWQYAyABKAVSF3RvdGFsVHJhbnNhY3Rpb2'
+    '5zU3luY2VkEjYKCGFjY291bnRzGAQgAygLMhouYmFua2luZy5BY2NvdW50U3luY1Jlc3VsdFII'
+    'YWNjb3VudHM=');
+
+@$core.Deprecated('Use accountSyncResultDescriptor instead')
+const AccountSyncResult$json = {
+  '1': 'AccountSyncResult',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'bank_name', '3': 2, '4': 1, '5': 9, '10': 'bankName'},
+    {'1': 'transactions_synced', '3': 3, '4': 1, '5': 5, '10': 'transactionsSynced'},
+    {'1': 'success', '3': 4, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error', '3': 5, '4': 1, '5': 9, '10': 'error'},
+  ],
+};
+
+/// Descriptor for `AccountSyncResult`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List accountSyncResultDescriptor = $convert.base64Decode(
+    'ChFBY2NvdW50U3luY1Jlc3VsdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SWQSGwoJYm'
+    'Fua19uYW1lGAIgASgJUghiYW5rTmFtZRIvChN0cmFuc2FjdGlvbnNfc3luY2VkGAMgASgFUhJ0'
+    'cmFuc2FjdGlvbnNTeW5jZWQSGAoHc3VjY2VzcxgEIAEoCFIHc3VjY2VzcxIUCgVlcnJvchgFIA'
+    'EoCVIFZXJyb3I=');
+
+@$core.Deprecated('Use syncExternalTransactionsRequestDescriptor instead')
+const SyncExternalTransactionsRequest$json = {
+  '1': 'SyncExternalTransactionsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'sync_type', '3': 2, '4': 1, '5': 9, '10': 'syncType'},
+    {'1': 'start_date', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    {'1': 'end_date', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `SyncExternalTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List syncExternalTransactionsRequestDescriptor = $convert.base64Decode(
+    'Ch9TeW5jRXh0ZXJuYWxUcmFuc2FjdGlvbnNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCW'
+    'FjY291bnRJZBIbCglzeW5jX3R5cGUYAiABKAlSCHN5bmNUeXBlEjkKCnN0YXJ0X2RhdGUYAyAB'
+    'KAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydERhdGUSNQoIZW5kX2RhdGUYBC'
+    'ABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgdlbmREYXRl');
+
+@$core.Deprecated('Use syncExternalTransactionsResponseDescriptor instead')
+const SyncExternalTransactionsResponse$json = {
+  '1': 'SyncExternalTransactionsResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'transactions_synced', '3': 2, '4': 1, '5': 5, '10': 'transactionsSynced'},
+    {'1': 'transactions_skipped', '3': 3, '4': 1, '5': 5, '10': 'transactionsSkipped'},
+    {'1': 'sync_id', '3': 4, '4': 1, '5': 9, '10': 'syncId'},
+    {'1': 'transactions', '3': 5, '4': 3, '5': 11, '6': '.banking.ExternalBankTransaction', '10': 'transactions'},
+  ],
+};
+
+/// Descriptor for `SyncExternalTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List syncExternalTransactionsResponseDescriptor = $convert.base64Decode(
+    'CiBTeW5jRXh0ZXJuYWxUcmFuc2FjdGlvbnNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdW'
+    'NjZXNzEi8KE3RyYW5zYWN0aW9uc19zeW5jZWQYAiABKAVSEnRyYW5zYWN0aW9uc1N5bmNlZBIx'
+    'ChR0cmFuc2FjdGlvbnNfc2tpcHBlZBgDIAEoBVITdHJhbnNhY3Rpb25zU2tpcHBlZBIXCgdzeW'
+    '5jX2lkGAQgASgJUgZzeW5jSWQSRAoMdHJhbnNhY3Rpb25zGAUgAygLMiAuYmFua2luZy5FeHRl'
+    'cm5hbEJhbmtUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25z');
+
+@$core.Deprecated('Use getAccountWithTransactionsRequestDescriptor instead')
+const GetAccountWithTransactionsRequest$json = {
+  '1': 'GetAccountWithTransactionsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 3, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetAccountWithTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAccountWithTransactionsRequestDescriptor = $convert.base64Decode(
+    'CiFHZXRBY2NvdW50V2l0aFRyYW5zYWN0aW9uc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCV'
+    'IJYWNjb3VudElkEhQKBWxpbWl0GAIgASgFUgVsaW1pdBIWCgZvZmZzZXQYAyABKAVSBm9mZnNl'
+    'dA==');
+
+@$core.Deprecated('Use getAccountWithTransactionsResponseDescriptor instead')
+const GetAccountWithTransactionsResponse$json = {
+  '1': 'GetAccountWithTransactionsResponse',
+  '2': [
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.banking.LinkedBankAccount', '10': 'account'},
+    {'1': 'transactions', '3': 2, '4': 3, '5': 11, '6': '.banking.ExternalBankTransaction', '10': 'transactions'},
+    {'1': 'total_transactions', '3': 3, '4': 1, '5': 3, '10': 'totalTransactions'},
+    {'1': 'last_sync_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastSyncAt'},
+  ],
+};
+
+/// Descriptor for `GetAccountWithTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAccountWithTransactionsResponseDescriptor = $convert.base64Decode(
+    'CiJHZXRBY2NvdW50V2l0aFRyYW5zYWN0aW9uc1Jlc3BvbnNlEjQKB2FjY291bnQYASABKAsyGi'
+    '5iYW5raW5nLkxpbmtlZEJhbmtBY2NvdW50UgdhY2NvdW50EkQKDHRyYW5zYWN0aW9ucxgCIAMo'
+    'CzIgLmJhbmtpbmcuRXh0ZXJuYWxCYW5rVHJhbnNhY3Rpb25SDHRyYW5zYWN0aW9ucxItChJ0b3'
+    'RhbF90cmFuc2FjdGlvbnMYAyABKANSEXRvdGFsVHJhbnNhY3Rpb25zEjwKDGxhc3Rfc3luY19h'
+    'dBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCmxhc3RTeW5jQXQ=');
+
+@$core.Deprecated('Use refreshAccountTransactionsRequestDescriptor instead')
+const RefreshAccountTransactionsRequest$json = {
+  '1': 'RefreshAccountTransactionsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+  ],
+};
+
+/// Descriptor for `RefreshAccountTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List refreshAccountTransactionsRequestDescriptor = $convert.base64Decode(
+    'CiFSZWZyZXNoQWNjb3VudFRyYW5zYWN0aW9uc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCV'
+    'IJYWNjb3VudElk');
+
+@$core.Deprecated('Use refreshAccountTransactionsResponseDescriptor instead')
+const RefreshAccountTransactionsResponse$json = {
+  '1': 'RefreshAccountTransactionsResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'transactions_synced', '3': 2, '4': 1, '5': 5, '10': 'transactionsSynced'},
+    {'1': 'new_balance', '3': 3, '4': 1, '5': 3, '10': 'newBalance'},
+    {'1': 'sync_id', '3': 4, '4': 1, '5': 9, '10': 'syncId'},
+  ],
+};
+
+/// Descriptor for `RefreshAccountTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List refreshAccountTransactionsResponseDescriptor = $convert.base64Decode(
+    'CiJSZWZyZXNoQWNjb3VudFRyYW5zYWN0aW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3'
+    'N1Y2Nlc3MSLwoTdHJhbnNhY3Rpb25zX3N5bmNlZBgCIAEoBVISdHJhbnNhY3Rpb25zU3luY2Vk'
+    'Eh8KC25ld19iYWxhbmNlGAMgASgDUgpuZXdCYWxhbmNlEhcKB3N5bmNfaWQYBCABKAlSBnN5bm'
+    'NJZA==');
+
 @$core.Deprecated('Use initiateDepositRequestDescriptor instead')
 const InitiateDepositRequest$json = {
   '1': 'InitiateDepositRequest',
@@ -1700,6 +1927,8 @@ const InitiateDepositRequest$json = {
     {'1': 'narration', '3': 5, '4': 1, '5': 9, '10': 'narration'},
     {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'use_recurring_access', '3': 7, '4': 1, '5': 8, '10': 'useRecurringAccess'},
+    {'1': 'country_code', '3': 8, '4': 1, '5': 9, '10': 'countryCode'},
+    {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
   ],
 };
 
@@ -1710,7 +1939,8 @@ final $typed_data.Uint8List initiateDepositRequestDescriptor = $convert.base64De
     'Y291bnRfaWQYAyABKAlSFGRlc3RpbmF0aW9uQWNjb3VudElkEhYKBmFtb3VudBgEIAEoA1IGYW'
     '1vdW50EhwKCW5hcnJhdGlvbhgFIAEoCVIJbmFycmF0aW9uEicKD2lkZW1wb3RlbmN5X2tleRgG'
     'IAEoCVIOaWRlbXBvdGVuY3lLZXkSMAoUdXNlX3JlY3VycmluZ19hY2Nlc3MYByABKAhSEnVzZV'
-    'JlY3VycmluZ0FjY2Vzcw==');
+    'JlY3VycmluZ0FjY2VzcxIhCgxjb3VudHJ5X2NvZGUYCCABKAlSC2NvdW50cnlDb2RlEhoKCGN1'
+    'cnJlbmN5GAkgASgJUghjdXJyZW5jeQ==');
 
 @$core.Deprecated('Use depositResponseDescriptor instead')
 const DepositResponse$json = {
@@ -1727,6 +1957,8 @@ const DepositResponse$json = {
     {'1': 'requires_authorization', '3': 9, '4': 1, '5': 8, '10': 'requiresAuthorization'},
     {'1': 'payment_url', '3': 10, '4': 1, '5': 9, '10': 'paymentUrl'},
     {'1': 'payment_id', '3': 11, '4': 1, '5': 9, '10': 'paymentId'},
+    {'1': 'provider', '3': 12, '4': 1, '5': 9, '10': 'provider'},
+    {'1': 'country_code', '3': 13, '4': 1, '5': 9, '10': 'countryCode'},
   ],
 };
 
@@ -1739,7 +1971,8 @@ final $typed_data.Uint8List depositResponseDescriptor = $convert.base64Decode(
     'bWFuZGF0ZV9pZBgHIAEoCVIJbWFuZGF0ZUlkEisKEWF1dGhvcml6YXRpb25fdXJsGAggASgJUh'
     'BhdXRob3JpemF0aW9uVXJsEjUKFnJlcXVpcmVzX2F1dGhvcml6YXRpb24YCSABKAhSFXJlcXVp'
     'cmVzQXV0aG9yaXphdGlvbhIfCgtwYXltZW50X3VybBgKIAEoCVIKcGF5bWVudFVybBIdCgpwYX'
-    'ltZW50X2lkGAsgASgJUglwYXltZW50SWQ=');
+    'ltZW50X2lkGAsgASgJUglwYXltZW50SWQSGgoIcHJvdmlkZXIYDCABKAlSCHByb3ZpZGVyEiEK'
+    'DGNvdW50cnlfY29kZRgNIAEoCVILY291bnRyeUNvZGU=');
 
 @$core.Deprecated('Use depositDescriptor instead')
 const Deposit$json = {
@@ -1761,6 +1994,10 @@ const Deposit$json = {
     {'1': 'failure_reason', '3': 14, '4': 1, '5': 9, '10': 'failureReason'},
     {'1': 'created_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     {'1': 'completed_at', '3': 16, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completedAt'},
+    {'1': 'country_code', '3': 17, '4': 1, '5': 9, '10': 'countryCode'},
+    {'1': 'provider', '3': 18, '4': 1, '5': 9, '10': 'provider'},
+    {'1': 'payment_type', '3': 19, '4': 1, '5': 9, '10': 'paymentType'},
+    {'1': 'is_simulated', '3': 20, '4': 1, '5': 8, '10': 'isSimulated'},
   ],
 };
 
@@ -1776,7 +2013,10 @@ final $typed_data.Uint8List depositDescriptor = $convert.base64Decode(
     'FycmF0aW9uEiEKDGZhaWx1cmVfY29kZRgNIAEoCVILZmFpbHVyZUNvZGUSJQoOZmFpbHVyZV9y'
     'ZWFzb24YDiABKAlSDWZhaWx1cmVSZWFzb24SOQoKY3JlYXRlZF9hdBgPIAEoCzIaLmdvb2dsZS'
     '5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI9Cgxjb21wbGV0ZWRfYXQYECABKAsyGi5n'
-    'b29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtjb21wbGV0ZWRBdA==');
+    'b29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtjb21wbGV0ZWRBdBIhCgxjb3VudHJ5X2NvZGUYES'
+    'ABKAlSC2NvdW50cnlDb2RlEhoKCHByb3ZpZGVyGBIgASgJUghwcm92aWRlchIhCgxwYXltZW50'
+    'X3R5cGUYEyABKAlSC3BheW1lbnRUeXBlEiEKDGlzX3NpbXVsYXRlZBgUIAEoCFILaXNTaW11bG'
+    'F0ZWQ=');
 
 @$core.Deprecated('Use getDepositStatusRequestDescriptor instead')
 const GetDepositStatusRequest$json = {
@@ -1889,6 +2129,77 @@ final $typed_data.Uint8List calculateDepositFeeResponseDescriptor = $convert.bas
     'ZXJyb3JNZXNzYWdlEhYKBmFtb3VudBgEIAEoA1IGYW1vdW50EhAKA2ZlZRgFIAEoA1IDZmVlEh'
     '0KCm5ldF9hbW91bnQYBiABKANSCW5ldEFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVu'
     'Y3k=');
+
+@$core.Deprecated('Use simulateTestDepositRequestDescriptor instead')
+const SimulateTestDepositRequest$json = {
+  '1': 'SimulateTestDepositRequest',
+  '2': [
+    {'1': 'destination_account_id', '3': 1, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'country_code', '3': 4, '4': 1, '5': 9, '10': 'countryCode'},
+  ],
+};
+
+/// Descriptor for `SimulateTestDepositRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List simulateTestDepositRequestDescriptor = $convert.base64Decode(
+    'ChpTaW11bGF0ZVRlc3REZXBvc2l0UmVxdWVzdBI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGA'
+    'EgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBIWCgZhbW91bnQYAiABKANSBmFtb3VudBIaCghj'
+    'dXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSIQoMY291bnRyeV9jb2RlGAQgASgJUgtjb3VudHJ5Q2'
+    '9kZQ==');
+
+@$core.Deprecated('Use getDepositMethodsRequestDescriptor instead')
+const GetDepositMethodsRequest$json = {
+  '1': 'GetDepositMethodsRequest',
+  '2': [
+    {'1': 'country_code', '3': 1, '4': 1, '5': 9, '10': 'countryCode'},
+    {'1': 'currency', '3': 2, '4': 1, '5': 9, '10': 'currency'},
+  ],
+};
+
+/// Descriptor for `GetDepositMethodsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDepositMethodsRequestDescriptor = $convert.base64Decode(
+    'ChhHZXREZXBvc2l0TWV0aG9kc1JlcXVlc3QSIQoMY291bnRyeV9jb2RlGAEgASgJUgtjb3VudH'
+    'J5Q29kZRIaCghjdXJyZW5jeRgCIAEoCVIIY3VycmVuY3k=');
+
+@$core.Deprecated('Use getDepositMethodsResponseDescriptor instead')
+const GetDepositMethodsResponse$json = {
+  '1': 'GetDepositMethodsResponse',
+  '2': [
+    {'1': 'methods', '3': 1, '4': 3, '5': 11, '6': '.banking.DepositMethodInfo', '10': 'methods'},
+    {'1': 'country_code', '3': 2, '4': 1, '5': 9, '10': 'countryCode'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'provider', '3': 4, '4': 1, '5': 9, '10': 'provider'},
+  ],
+};
+
+/// Descriptor for `GetDepositMethodsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDepositMethodsResponseDescriptor = $convert.base64Decode(
+    'ChlHZXREZXBvc2l0TWV0aG9kc1Jlc3BvbnNlEjQKB21ldGhvZHMYASADKAsyGi5iYW5raW5nLk'
+    'RlcG9zaXRNZXRob2RJbmZvUgdtZXRob2RzEiEKDGNvdW50cnlfY29kZRgCIAEoCVILY291bnRy'
+    'eUNvZGUSGgoIY3VycmVuY3kYAyABKAlSCGN1cnJlbmN5EhoKCHByb3ZpZGVyGAQgASgJUghwcm'
+    '92aWRlcg==');
+
+@$core.Deprecated('Use depositMethodInfoDescriptor instead')
+const DepositMethodInfo$json = {
+  '1': 'DepositMethodInfo',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'icon', '3': 4, '4': 1, '5': 9, '10': 'icon'},
+    {'1': 'fee_description', '3': 5, '4': 1, '5': 9, '10': 'feeDescription'},
+    {'1': 'processing_time', '3': 6, '4': 1, '5': 9, '10': 'processingTime'},
+    {'1': 'available', '3': 7, '4': 1, '5': 8, '10': 'available'},
+  ],
+};
+
+/// Descriptor for `DepositMethodInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List depositMethodInfoDescriptor = $convert.base64Decode(
+    'ChFEZXBvc2l0TWV0aG9kSW5mbxIOCgJpZBgBIAEoCVICaWQSEgoEbmFtZRgCIAEoCVIEbmFtZR'
+    'IgCgtkZXNjcmlwdGlvbhgDIAEoCVILZGVzY3JpcHRpb24SEgoEaWNvbhgEIAEoCVIEaWNvbhIn'
+    'Cg9mZWVfZGVzY3JpcHRpb24YBSABKAlSDmZlZURlc2NyaXB0aW9uEicKD3Byb2Nlc3NpbmdfdG'
+    'ltZRgGIAEoCVIOcHJvY2Vzc2luZ1RpbWUSHAoJYXZhaWxhYmxlGAcgASgIUglhdmFpbGFibGU=');
 
 @$core.Deprecated('Use initiateWithdrawalRequestDescriptor instead')
 const InitiateWithdrawalRequest$json = {
@@ -2486,6 +2797,9 @@ const CreditScore$json = {
     {'1': 'calculated_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'calculatedAt'},
     {'1': 'next_refresh_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'nextRefreshAt'},
     {'1': 'tips', '3': 16, '4': 3, '5': 11, '6': '.banking.CreditScoreTip', '10': 'tips'},
+    {'1': 'source', '3': 17, '4': 1, '5': 14, '6': '.banking.CreditScoreSource', '10': 'source'},
+    {'1': 'source_label', '3': 18, '4': 1, '5': 9, '10': 'sourceLabel'},
+    {'1': 'confidence', '3': 19, '4': 1, '5': 1, '10': 'confidence'},
   ],
 };
 
@@ -2503,7 +2817,9 @@ final $typed_data.Uint8List creditScoreDescriptor = $convert.base64Decode(
     '5tb250aHNfb2ZfZGF0YRgNIAEoBVIMbW9udGhzT2ZEYXRhEj8KDWNhbGN1bGF0ZWRfYXQYDiAB'
     'KAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgxjYWxjdWxhdGVkQXQSQgoPbmV4dF9yZW'
     'ZyZXNoX2F0GA8gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFINbmV4dFJlZnJlc2hB'
-    'dBIrCgR0aXBzGBAgAygLMhcuYmFua2luZy5DcmVkaXRTY29yZVRpcFIEdGlwcw==');
+    'dBIrCgR0aXBzGBAgAygLMhcuYmFua2luZy5DcmVkaXRTY29yZVRpcFIEdGlwcxIyCgZzb3VyY2'
+    'UYESABKA4yGi5iYW5raW5nLkNyZWRpdFNjb3JlU291cmNlUgZzb3VyY2USIQoMc291cmNlX2xh'
+    'YmVsGBIgASgJUgtzb3VyY2VMYWJlbBIeCgpjb25maWRlbmNlGBMgASgBUgpjb25maWRlbmNl');
 
 @$core.Deprecated('Use creditScoreTipDescriptor instead')
 const CreditScoreTip$json = {
@@ -2577,13 +2893,52 @@ const RefreshCreditScoreRequest$json = {
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'linked_account_id', '3': 2, '4': 1, '5': 9, '10': 'linkedAccountId'},
+    {'1': 'source', '3': 3, '4': 1, '5': 14, '6': '.banking.CreditScoreSource', '10': 'source'},
   ],
 };
 
 /// Descriptor for `RefreshCreditScoreRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List refreshCreditScoreRequestDescriptor = $convert.base64Decode(
     'ChlSZWZyZXNoQ3JlZGl0U2NvcmVSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqCh'
-    'FsaW5rZWRfYWNjb3VudF9pZBgCIAEoCVIPbGlua2VkQWNjb3VudElk');
+    'FsaW5rZWRfYWNjb3VudF9pZBgCIAEoCVIPbGlua2VkQWNjb3VudElkEjIKBnNvdXJjZRgDIAEo'
+    'DjIaLmJhbmtpbmcuQ3JlZGl0U2NvcmVTb3VyY2VSBnNvdXJjZQ==');
+
+@$core.Deprecated('Use getMultiSourceCreditScoresRequestDescriptor instead')
+const GetMultiSourceCreditScoresRequest$json = {
+  '1': 'GetMultiSourceCreditScoresRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetMultiSourceCreditScoresRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMultiSourceCreditScoresRequestDescriptor = $convert.base64Decode(
+    'CiFHZXRNdWx0aVNvdXJjZUNyZWRpdFNjb3Jlc1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdX'
+    'Nlcklk');
+
+@$core.Deprecated('Use multiSourceCreditScoresResponseDescriptor instead')
+const MultiSourceCreditScoresResponse$json = {
+  '1': 'MultiSourceCreditScoresResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    {'1': 'lazervault_score', '3': 4, '4': 1, '5': 11, '6': '.banking.CreditScore', '10': 'lazervaultScore'},
+    {'1': 'external_score', '3': 5, '4': 1, '5': 11, '6': '.banking.CreditScore', '10': 'externalScore'},
+    {'1': 'combined_score', '3': 6, '4': 1, '5': 11, '6': '.banking.CreditScore', '10': 'combinedScore'},
+    {'1': 'has_linked_banks', '3': 7, '4': 1, '5': 8, '10': 'hasLinkedBanks'},
+  ],
+};
+
+/// Descriptor for `MultiSourceCreditScoresResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List multiSourceCreditScoresResponseDescriptor = $convert.base64Decode(
+    'Ch9NdWx0aVNvdXJjZUNyZWRpdFNjb3Jlc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
+    'Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyAB'
+    'KAlSDGVycm9yTWVzc2FnZRI/ChBsYXplcnZhdWx0X3Njb3JlGAQgASgLMhQuYmFua2luZy5Dcm'
+    'VkaXRTY29yZVIPbGF6ZXJ2YXVsdFNjb3JlEjsKDmV4dGVybmFsX3Njb3JlGAUgASgLMhQuYmFu'
+    'a2luZy5DcmVkaXRTY29yZVINZXh0ZXJuYWxTY29yZRI7Cg5jb21iaW5lZF9zY29yZRgGIAEoCz'
+    'IULmJhbmtpbmcuQ3JlZGl0U2NvcmVSDWNvbWJpbmVkU2NvcmUSKAoQaGFzX2xpbmtlZF9iYW5r'
+    'cxgHIAEoCFIOaGFzTGlua2VkQmFua3M=');
 
 @$core.Deprecated('Use initiateMoveTransferRequestDescriptor instead')
 const InitiateMoveTransferRequest$json = {

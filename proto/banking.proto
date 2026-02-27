@@ -284,6 +284,39 @@ service BankingService {
         };
     }
 
+    // ===== EXTERNAL TRANSACTION SYNC =====
+
+    // Sync transactions for all linked accounts
+    rpc SyncAllAccountTransactions(SyncAllAccountTransactionsRequest) returns (SyncAllAccountTransactionsResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/linked-accounts/sync-all"
+            body: "*"
+        };
+    }
+
+    // Sync transactions for a specific account
+    rpc SyncExternalTransactions(SyncExternalTransactionsRequest) returns (SyncExternalTransactionsResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/linked-accounts/{account_id}/sync-transactions"
+            body: "*"
+        };
+    }
+
+    // Get account with its synced transactions
+    rpc GetAccountWithTransactions(GetAccountWithTransactionsRequest) returns (GetAccountWithTransactionsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/linked-accounts/{account_id}/transactions"
+        };
+    }
+
+    // Refresh transactions and balance for an account
+    rpc RefreshAccountTransactions(RefreshAccountTransactionsRequest) returns (RefreshAccountTransactionsResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/linked-accounts/{account_id}/refresh"
+            body: "*"
+        };
+    }
+
     // ===== OPEN BANKING - DEPOSITS (Direct Debit) =====
 
     // Initiate a deposit via direct debit from linked account
@@ -320,6 +353,21 @@ service BankingService {
     rpc CalculateDepositFee(CalculateDepositFeeRequest) returns (CalculateDepositFeeResponse) {
         option (google.api.http) = {
             get: "/api/v1/deposits/calculate-fee"
+        };
+    }
+
+    // Simulate a test deposit (sandbox only)
+    rpc SimulateTestDeposit(SimulateTestDepositRequest) returns (DepositResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/deposits/simulate"
+            body: "*"
+        };
+    }
+
+    // Get available deposit methods for a country
+    rpc GetDepositMethods(GetDepositMethodsRequest) returns (GetDepositMethodsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/deposits/methods"
         };
     }
 
@@ -416,26 +464,6 @@ service BankingService {
         };
     }
 
-    // ===== CREDIT SCORE =====
-    rpc GetCreditScore(GetCreditScoreRequest) returns (CreditScoreResponse) {
-        option (google.api.http) = {
-            get: "/api/v1/users/{user_id}/credit-score"
-        };
-    }
-
-    rpc GetCreditScoreHistory(GetCreditScoreHistoryRequest) returns (CreditScoreHistoryResponse) {
-        option (google.api.http) = {
-            get: "/api/v1/users/{user_id}/credit-score/history"
-        };
-    }
-
-    rpc RefreshCreditScore(RefreshCreditScoreRequest) returns (CreditScoreResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/users/{user_id}/credit-score/refresh"
-            body: "*"
-        };
-    }
-
     // ===== MOVE MONEY (C2P2C: Bank-to-Bank via Mono + Flutterwave) =====
 
     // Initiate a move money transfer between user's own linked bank accounts
@@ -464,6 +492,32 @@ service BankingService {
     rpc CalculateMoveFee(CalculateMoveFeeRequest) returns (CalculateMoveFeeResponse) {
         option (google.api.http) = {
             get: "/api/v1/move-money/calculate-fee"
+        };
+    }
+
+    // ===== CREDIT SCORE =====
+    rpc GetCreditScore(GetCreditScoreRequest) returns (CreditScoreResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/credit-score"
+        };
+    }
+
+    rpc GetCreditScoreHistory(GetCreditScoreHistoryRequest) returns (CreditScoreHistoryResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/credit-score/history"
+        };
+    }
+
+    rpc RefreshCreditScore(RefreshCreditScoreRequest) returns (CreditScoreResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/users/{user_id}/credit-score/refresh"
+            body: "*"
+        };
+    }
+
+    rpc GetMultiSourceCreditScores(GetMultiSourceCreditScoresRequest) returns (MultiSourceCreditScoresResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/credit-score/multi-source"
         };
     }
 }
@@ -1179,6 +1233,12 @@ message LinkedBankAccount {
     google.protobuf.Timestamp balance_updated_at = 15;
     google.protobuf.Timestamp last_used_at = 16;
     bool needs_reauthorize = 17;      // True if status is 'reauthorize'
+
+    // Transaction Sync Tracking
+    google.protobuf.Timestamp last_sync_at = 18;          // Last time transactions were synced
+    string last_sync_status = 19;                         // never, in_progress, success, error
+    int32 transaction_count = 20;                         // Total synced transactions
+    int32 sync_error_count = 21;                          // Number of consecutive sync errors
 }
 
 // Unlink Bank Account
@@ -1232,6 +1292,107 @@ message GetReauthorizationTokenResponse {
     string token = 4;                 // Reauthorization token for widget
 }
 
+// ===== EXTERNAL TRANSACTION SYNC MESSAGES =====
+
+// External Bank Transaction
+message ExternalBankTransaction {
+    string id = 1;
+    string user_id = 2;
+    string linked_bank_account_id = 3;
+
+    // External identifiers
+    string external_transaction_id = 4;
+    string external_account_id = 5;
+
+    // Transaction details
+    int64 amount = 6;                 // in minor units
+    string currency = 7;
+    string transaction_type = 8;      // 'debit', 'credit'
+    string category = 9;
+    string description = 10;
+
+    // Bank info
+    string bank_name = 11;
+    string account_name = 12;
+    string account_number_masked = 13;
+
+    // Dates
+    google.protobuf.Timestamp transaction_date = 14;
+    google.protobuf.Timestamp value_date = 15;
+    google.protobuf.Timestamp cleared_at = 16;
+    google.protobuf.Timestamp created_at = 17;
+
+    // Sync status
+    string sync_status = 18;          // 'pending', 'synced', 'error'
+    google.protobuf.Timestamp last_sync_at = 19;
+
+    // Additional
+    string metadata = 20;
+}
+
+// Sync All Account Transactions
+message SyncAllAccountTransactionsRequest {
+    string user_id = 1;
+    string sync_type = 2;             // 'full', 'incremental'
+}
+
+message SyncAllAccountTransactionsResponse {
+    bool success = 1;
+    int32 total_accounts_synced = 2;
+    int32 total_transactions_synced = 3;
+    repeated AccountSyncResult accounts = 4;
+}
+
+message AccountSyncResult {
+    string account_id = 1;
+    string bank_name = 2;
+    int32 transactions_synced = 3;
+    bool success = 4;
+    string error = 5;
+}
+
+// Sync External Transactions
+message SyncExternalTransactionsRequest {
+    string account_id = 1;
+    string sync_type = 2;             // 'full', 'incremental'
+    google.protobuf.Timestamp start_date = 3;
+    google.protobuf.Timestamp end_date = 4;
+}
+
+message SyncExternalTransactionsResponse {
+    bool success = 1;
+    int32 transactions_synced = 2;
+    int32 transactions_skipped = 3;
+    string sync_id = 4;               // sync_history ID
+    repeated ExternalBankTransaction transactions = 5;
+}
+
+// Get Account With Transactions
+message GetAccountWithTransactionsRequest {
+    string account_id = 1;
+    int32 limit = 2;                  // Default 50
+    int32 offset = 3;                 // Default 0
+}
+
+message GetAccountWithTransactionsResponse {
+    LinkedBankAccount account = 1;
+    repeated ExternalBankTransaction transactions = 2;
+    int64 total_transactions = 3;
+    google.protobuf.Timestamp last_sync_at = 4;
+}
+
+// Refresh Account Transactions
+message RefreshAccountTransactionsRequest {
+    string account_id = 1;
+}
+
+message RefreshAccountTransactionsResponse {
+    bool success = 1;
+    int32 transactions_synced = 2;
+    int64 new_balance = 3;
+    string sync_id = 4;
+}
+
 // =====================================================
 // OPEN BANKING - DEPOSITS (DIRECT DEBIT) MESSAGES
 // =====================================================
@@ -1246,6 +1407,8 @@ message InitiateDepositRequest {
     string idempotency_key = 6;
     // Access type control for DirectPay vs Mandate
     bool use_recurring_access = 7;    // If true, create mandate; if false, use DirectPay (one-time)
+    string country_code = 8;          // "NG", "GH", "KE", "ZA", "US", "GB"
+    string currency = 9;              // For provider routing
 }
 
 message DepositResponse {
@@ -1261,9 +1424,11 @@ message DepositResponse {
     string authorization_url = 8;     // URL for mandate authorization (if needs_mandate=true)
 
     // DirectPay fields (for one-time payments)
-    bool requires_authorization = 9;  // True if user needs to authorize payment (DirectPay)
-    string payment_url = 10;          // URL for DirectPay authorization
+    bool requires_authorization = 9;  // True if user needs to authorize payment (DirectPay/Flutterwave)
+    string payment_url = 10;          // URL for DirectPay/Flutterwave authorization
     string payment_id = 11;           // DirectPay payment ID for tracking
+    string provider = 12;             // "mono", "flutterwave", "simulation"
+    string country_code = 13;
 }
 
 // Deposit Message
@@ -1284,6 +1449,10 @@ message Deposit {
     string failure_reason = 14;
     google.protobuf.Timestamp created_at = 15;
     google.protobuf.Timestamp completed_at = 16;
+    string country_code = 17;
+    string provider = 18;             // "mono", "flutterwave", "simulation"
+    string payment_type = 19;         // "card", "mobilemoneyghana", "mpesa", "bank_transfer"
+    bool is_simulated = 20;
 }
 
 // Get Deposit Status
@@ -1332,6 +1501,37 @@ message CalculateDepositFeeResponse {
     int64 fee = 5;                    // Fee in minor units
     int64 net_amount = 6;             // Amount after fee deduction
     string currency = 7;
+}
+
+// Simulate Test Deposit (sandbox only)
+message SimulateTestDepositRequest {
+    string destination_account_id = 1;
+    int64 amount = 2;                 // Amount in minor units
+    string currency = 3;
+    string country_code = 4;
+}
+
+// Get Deposit Methods for a Country
+message GetDepositMethodsRequest {
+    string country_code = 1;
+    string currency = 2;
+}
+
+message GetDepositMethodsResponse {
+    repeated DepositMethodInfo methods = 1;
+    string country_code = 2;
+    string currency = 3;
+    string provider = 4;
+}
+
+message DepositMethodInfo {
+    string id = 1;                    // "mobile_money", "card", "bank_transfer", "mpesa"
+    string name = 2;                  // "Mobile Money"
+    string description = 3;          // "Pay with MTN, Vodafone or Tigo"
+    string icon = 4;                  // Icon name for Flutter
+    string fee_description = 5;      // "1.5%"
+    string processing_time = 6;      // "Instant"
+    bool available = 7;
 }
 
 // =====================================================
@@ -1655,6 +1855,11 @@ message CreditScore {
 
     // Tips for improvement
     repeated CreditScoreTip tips = 16;
+
+    // Multi-source fields
+    CreditScoreSource source = 17;
+    string source_label = 18;             // "LazerVault Wallet", "External Banks", "Combined"
+    double confidence = 19;               // 0.0-1.0 based on data quality
 }
 
 message CreditScoreTip {
@@ -1686,10 +1891,33 @@ message CreditScoreHistoryPoint {
 message RefreshCreditScoreRequest {
     string user_id = 1;
     string linked_account_id = 2;             // Which linked account to analyze
+    CreditScoreSource source = 3;             // Which source to refresh
+}
+
+// Credit Score Source
+enum CreditScoreSource {
+    CREDIT_SCORE_SOURCE_UNSPECIFIED = 0;
+    CREDIT_SCORE_SOURCE_LAZERVAULT = 1;
+    CREDIT_SCORE_SOURCE_EXTERNAL = 2;
+    CREDIT_SCORE_SOURCE_COMBINED = 3;
+}
+
+message GetMultiSourceCreditScoresRequest {
+    string user_id = 1;
+}
+
+message MultiSourceCreditScoresResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    CreditScore lazervault_score = 4;         // Always present (from internal transactions)
+    CreditScore external_score = 5;           // Present only if user has linked banks
+    CreditScore combined_score = 6;           // Present only if user has linked banks
+    bool has_linked_banks = 7;
 }
 
 // =====================================================
-// MOVE MONEY MESSAGES (C2P2C: Bank-to-Bank via Mono + Flutterwave)
+// MOVE MONEY MESSAGES (C2P2C: Bank-to-Bank)
 // =====================================================
 
 // Initiate Move Transfer

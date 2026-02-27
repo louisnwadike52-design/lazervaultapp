@@ -9,6 +9,8 @@ import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
 import '../../domain/entities/linked_bank_account.dart';
 import '../../domain/entities/deposit.dart';
 import '../../domain/entities/credit_score.dart';
+import '../../domain/entities/sync_results.dart';
+import '../../domain/entities/external_bank_transaction.dart';
 import '../errors/banking_errors.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
 
@@ -634,7 +636,60 @@ class OpenBankingGrpcDataSource {
     }
   }
 
+  /// Get multi-source credit scores (LazerVault, External, Combined)
+  Future<MultiSourceCreditScores> getMultiSourceCreditScores({
+    required String userId,
+  }) async {
+    try {
+      final request = banking_pb.GetMultiSourceCreditScoresRequest(userId: userId);
+      final callOptions = await _callOptionsHelper.withAuth();
+
+      final response = await _client.getMultiSourceCreditScores(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 45)),
+        ),
+      );
+
+      if (!response.success) {
+        throw GenericBankingException(
+          code: response.errorCode,
+          message: response.errorMessage,
+        );
+      }
+
+      return MultiSourceCreditScores(
+        lazervaultScore: _mapCreditScore(response.lazervaultScore),
+        externalScore: response.hasExternalScore()
+            ? _mapCreditScore(response.externalScore)
+            : null,
+        combinedScore: response.hasCombinedScore()
+            ? _mapCreditScore(response.combinedScore)
+            : null,
+        hasLinkedBanks: response.hasLinkedBanks,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getMultiSourceCreditScores');
+    }
+  }
+
   CreditScoreEntity _mapCreditScore(banking_pb.CreditScore cs) {
+    // Map proto source enum to string
+    String source;
+    switch (cs.source) {
+      case banking_pb.CreditScoreSource.CREDIT_SCORE_SOURCE_LAZERVAULT:
+        source = 'lazervault';
+        break;
+      case banking_pb.CreditScoreSource.CREDIT_SCORE_SOURCE_EXTERNAL:
+        source = 'external';
+        break;
+      case banking_pb.CreditScoreSource.CREDIT_SCORE_SOURCE_COMBINED:
+        source = 'combined';
+        break;
+      default:
+        source = 'external';
+    }
+
     return CreditScoreEntity(
       id: cs.id,
       score: cs.score,
@@ -658,6 +713,9 @@ class OpenBankingGrpcDataSource {
                 potentialImpact: t.potentialImpact,
               ))
           .toList(),
+      source: source,
+      sourceLabel: cs.sourceLabel,
+      confidence: cs.confidence,
     );
   }
 
@@ -943,5 +1001,161 @@ class OpenBankingGrpcDataSource {
       reference: proto.reference,
       description: proto.description.isNotEmpty ? proto.description : null,
     );
+  }
+
+  // =====================================================
+  // EXTERNAL TRANSACTION SYNC
+  // =====================================================
+
+  /// Sync transactions for all linked accounts
+  Future<SyncAllAccountsResult> syncAllAccountTransactions({
+    required String userId,
+    String syncType = 'incremental',
+  }) async {
+    try {
+      final request = banking_pb.SyncAllAccountTransactionsRequest(
+        userId: userId,
+        syncType: syncType,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+
+      final response = await _client.syncAllAccountTransactions(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 60)),
+        ),
+      );
+
+      final accountResults = response.accounts.map((a) => AccountSyncResult(
+            accountId: a.accountId,
+            bankName: a.bankName,
+            transactionsSynced: a.transactionsSynced,
+            success: a.success,
+            error: a.error.isNotEmpty ? a.error : null,
+          )).toList();
+
+      return SyncAllAccountsResult(
+        success: response.success,
+        totalAccountsSynced: response.totalAccountsSynced,
+        totalTransactionsSynced: response.totalTransactionsSynced,
+        accounts: accountResults,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'syncAllAccountTransactions');
+    }
+  }
+
+  /// Sync transactions for a specific account
+  Future<SyncTransactionsResult> syncAccountTransactions({
+    required String accountId,
+    required String userId,
+    String syncType = 'incremental',
+  }) async {
+    try {
+      final request = banking_pb.SyncExternalTransactionsRequest(
+        accountId: accountId,
+        syncType: syncType,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+
+      final response = await _client.syncExternalTransactions(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 60)),
+        ),
+      );
+
+      return SyncTransactionsResult(
+        success: response.success,
+        transactionsSynced: response.transactionsSynced,
+        transactionsSkipped: response.transactionsSkipped,
+        syncId: response.syncId.isNotEmpty ? response.syncId : null,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'syncAccountTransactions');
+    }
+  }
+
+  /// Get account with its external transactions
+  Future<AccountWithTransactionsResult> getAccountWithTransactions({
+    required String accountId,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final request = banking_pb.GetAccountWithTransactionsRequest(
+        accountId: accountId,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+
+      final response = await _client.getAccountWithTransactions(
+        request,
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        ),
+      );
+
+      final transactions = response.transactions.map((t) => ExternalBankTransaction(
+            id: t.id,
+            userId: t.userId,
+            linkedBankAccountId: t.linkedBankAccountId,
+            externalTransactionId: t.externalTransactionId,
+            externalAccountId: t.externalAccountId,
+            amount: t.amount.toInt(),
+            currency: t.currency,
+            transactionType: t.transactionType,
+            category: t.category.isNotEmpty ? t.category : null,
+            description: t.description,
+            bankName: t.bankName,
+            accountName: t.accountName,
+            accountNumberMasked: t.accountNumberMasked,
+            transactionDate: t.hasTransactionDate() ? t.transactionDate.toDateTime() : null,
+            valueDate: t.hasValueDate() ? t.valueDate.toDateTime() : null,
+            clearedAt: t.hasClearedAt() ? t.clearedAt.toDateTime() : null,
+            createdAt: t.hasCreatedAt() ? t.createdAt.toDateTime() : null,
+            syncStatus: t.syncStatus,
+            lastSyncAt: t.hasLastSyncAt() ? t.lastSyncAt.toDateTime() : null,
+          )).toList();
+
+      return AccountWithTransactionsResult(
+        account: _mapLinkedAccount(response.account),
+        transactions: transactions,
+        totalTransactions: response.totalTransactions.toInt(),
+        lastSyncAt: response.hasLastSyncAt() ? response.lastSyncAt.toDateTime() : null,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getAccountWithTransactions');
+    }
+  }
+
+  /// Refresh balance and latest transactions for an account
+  Future<RefreshAccountResult> refreshAccountTransactions({
+    required String accountId,
+    required String userId,
+  }) async {
+    try {
+      final request = banking_pb.RefreshAccountTransactionsRequest(
+        accountId: accountId,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        return await _client.refreshAccountTransactions(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 45)),
+          ),
+        );
+      });
+
+      return RefreshAccountResult(
+        success: response.success,
+        transactionsSynced: response.transactionsSynced,
+        newBalance: response.newBalance.toInt() / 100, // Convert from kobo
+        syncId: response.syncId.isNotEmpty ? response.syncId : null,
+      );
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'refreshAccountTransactions');
+    }
   }
 }

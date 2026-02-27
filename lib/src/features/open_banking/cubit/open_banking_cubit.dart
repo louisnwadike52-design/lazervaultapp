@@ -10,6 +10,8 @@ import '../domain/entities/deposit.dart';
 import '../domain/entities/withdrawal.dart';
 import '../domain/entities/credit_score.dart';
 import '../domain/entities/credit_score_ai_insights.dart';
+import '../domain/entities/sync_results.dart';
+import '../domain/entities/external_bank_transaction.dart';
 import 'open_banking_state.dart';
 
 /// Cubit for managing open banking operations
@@ -719,6 +721,27 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     }
   }
 
+  /// Fetch multi-source credit scores (LazerVault, External, Combined)
+  Future<void> fetchMultiSourceCreditScores({required String userId}) async {
+    if (isClosed) return;
+    emit(OpenBankingLoading());
+
+    try {
+      final MultiSourceCreditScores scores;
+      if (useGrpc && _grpcDataSource != null) {
+        scores = await _grpcDataSource!.getMultiSourceCreditScores(userId: userId);
+      } else {
+        throw UnimplementedError('Multi-source credit scores only available via gRPC');
+      }
+
+      if (isClosed) return;
+      emit(MultiSourceCreditScoresLoaded(scores: scores));
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'fetchMultiSourceCreditScores');
+    }
+  }
+
   // =====================================================
   // AI CREDIT SCORE INSIGHTS
   // =====================================================
@@ -766,6 +789,182 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       return GetIt.instance<CreditScoreAIService>();
     } catch (_) {
       return null;
+    }
+  }
+
+  // =====================================================
+  // EXTERNAL TRANSACTION SYNC OPERATIONS
+  // =====================================================
+
+  /// Sync transactions for all linked accounts
+  Future<void> syncAllAccountTransactions({
+    required String userId,
+    String syncType = 'incremental',
+  }) async {
+    if (isClosed) return;
+    if (!useGrpc || _grpcDataSource == null) {
+      emit(const OpenBankingError(
+        message: 'Transaction sync is only available via gRPC',
+        errorType: BankingErrorType.general,
+      ));
+      return;
+    }
+
+    emit(AllAccountsSyncing());
+
+    try {
+      final result = await _grpcDataSource!.syncAllAccountTransactions(
+        userId: userId,
+        syncType: syncType,
+      );
+
+      if (isClosed) return;
+      if (result.success) {
+        // Refresh linked accounts to get updated sync status
+        await fetchLinkedAccounts(
+          userId: userId,
+          accessToken: '', // Not used for gRPC
+        );
+        emit(AllAccountsSynced(
+          accountsSynced: result.totalAccountsSynced,
+          transactionsSynced: result.totalTransactionsSynced,
+        ));
+      } else {
+        emit(OpenBankingError(
+          message: 'Sync completed with some errors',
+          operation: 'syncAllAccountTransactions',
+        ));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'syncAllAccountTransactions');
+    }
+  }
+
+  /// Sync transactions for a specific account
+  Future<void> syncAccountTransactions({
+    required String accountId,
+    required String userId,
+    String syncType = 'incremental',
+  }) async {
+    if (isClosed) return;
+    if (!useGrpc || _grpcDataSource == null) {
+      emit(const OpenBankingError(
+        message: 'Transaction sync is only available via gRPC',
+        errorType: BankingErrorType.general,
+      ));
+      return;
+    }
+
+    emit(AccountTransactionsSyncing(accountId: accountId));
+
+    try {
+      final result = await _grpcDataSource!.syncAccountTransactions(
+        accountId: accountId,
+        userId: userId,
+        syncType: syncType,
+      );
+
+      if (isClosed) return;
+      emit(AccountTransactionsSynced(
+        accountId: accountId,
+        transactionsSynced: result.transactionsSynced,
+        newBalance: 0, // Will be updated when balance is refreshed
+      ));
+
+      // Refresh linked accounts to get updated sync status
+      await fetchLinkedAccounts(userId: userId, accessToken: '');
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'syncAccountTransactions');
+    }
+  }
+
+  /// Get account with its external transactions
+  Future<void> getAccountWithTransactions({
+    required String accountId,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    if (isClosed) return;
+    if (!useGrpc || _grpcDataSource == null) {
+      emit(const OpenBankingError(
+        message: 'Transaction sync is only available via gRPC',
+        errorType: BankingErrorType.general,
+      ));
+      return;
+    }
+
+    emit(OpenBankingLoading());
+
+    try {
+      final result = await _grpcDataSource!.getAccountWithTransactions(
+        accountId: accountId,
+        limit: limit,
+        offset: offset,
+      );
+
+      if (isClosed) return;
+      emit(AccountTransactionsLoaded(
+        accountId: accountId,
+        transactions: result.transactions,
+        totalTransactions: result.totalTransactions,
+        lastSyncAt: result.lastSyncAt,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'getAccountWithTransactions');
+    }
+  }
+
+  /// Refresh balance and latest transactions for an account
+  Future<void> refreshAccountTransactions({
+    required String accountId,
+    required String userId,
+    required String accessToken,
+  }) async {
+    if (isClosed) return;
+    if (!useGrpc || _grpcDataSource == null) {
+      emit(const OpenBankingError(
+        message: 'Transaction sync is only available via gRPC',
+        errorType: BankingErrorType.general,
+      ));
+      return;
+    }
+
+    emit(AccountTransactionsSyncing(accountId: accountId));
+
+    try {
+      final result = await _grpcDataSource!.refreshAccountTransactions(
+        accountId: accountId,
+        userId: userId,
+      );
+
+      // Update local cache with new balance
+      final index = _linkedAccounts.indexWhere((a) => a.id == accountId);
+      if (index >= 0) {
+        _linkedAccounts[index] = _linkedAccounts[index].copyWith(
+          lastKnownBalance: result.newBalance,
+          balanceUpdatedAt: DateTime.now(),
+        );
+
+        if (_defaultAccount?.id == accountId) {
+          _defaultAccount = _linkedAccounts[index];
+        }
+      }
+
+      if (isClosed) return;
+      emit(AccountTransactionsSynced(
+        accountId: accountId,
+        transactionsSynced: result.transactionsSynced,
+        newBalance: result.newBalance,
+      ));
+
+      // Refresh linked accounts list to show updated sync status
+      await fetchLinkedAccounts(userId: userId, accessToken: accessToken);
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'refreshAccountTransactions');
     }
   }
 

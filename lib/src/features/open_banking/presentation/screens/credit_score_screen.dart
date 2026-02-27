@@ -11,17 +11,24 @@ import '../../domain/entities/credit_score_ai_insights.dart';
 
 class CreditScoreScreen extends StatefulWidget {
   final String userId;
+  final bool showAllSources;
 
-  const CreditScoreScreen({super.key, required this.userId});
+  const CreditScoreScreen({
+    super.key,
+    required this.userId,
+    this.showAllSources = false,
+  });
 
   @override
   State<CreditScoreScreen> createState() => _CreditScoreScreenState();
 }
 
 class _CreditScoreScreenState extends State<CreditScoreScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _gaugeController;
   late Animation<double> _gaugeAnimation;
+  TabController? _tabController;
+  MultiSourceCreditScores? _multiSourceScores;
 
   @override
   void initState() {
@@ -35,14 +42,30 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
       curve: Curves.easeOutCubic,
     );
 
+    if (widget.showAllSources) {
+      _tabController = TabController(length: 3, vsync: this);
+      _tabController!.addListener(() {
+        if (!_tabController!.indexIsChanging) {
+          _gaugeController.forward(from: 0);
+        }
+      });
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<OpenBankingCubit>().fetchCreditScore(userId: widget.userId);
+      if (widget.showAllSources) {
+        context.read<OpenBankingCubit>().fetchMultiSourceCreditScores(
+              userId: widget.userId,
+            );
+      } else {
+        context.read<OpenBankingCubit>().fetchCreditScore(userId: widget.userId);
+      }
     });
   }
 
   @override
   void dispose() {
     _gaugeController.dispose();
+    _tabController?.dispose();
     super.dispose();
   }
 
@@ -66,16 +89,38 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
           ),
         ),
         centerTitle: true,
+        bottom: widget.showAllSources && _tabController != null
+            ? TabBar(
+                controller: _tabController,
+                indicatorColor: const Color(0xFF3B82F6),
+                labelColor: Colors.white,
+                unselectedLabelColor: const Color(0xFF9CA3AF),
+                labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                unselectedLabelStyle: TextStyle(fontSize: 13.sp),
+                tabs: const [
+                  Tab(text: 'LazerVault'),
+                  Tab(text: 'External'),
+                  Tab(text: 'Combined'),
+                ],
+              )
+            : null,
       ),
       body: BlocConsumer<OpenBankingCubit, OpenBankingState>(
         listener: (context, state) {
           if (state is CreditScoreLoaded) {
             _gaugeController.forward(from: 0);
-            // Also fetch history and AI insights
             context.read<OpenBankingCubit>().fetchCreditScoreHistory(
                   userId: widget.userId,
                 );
             context.read<OpenBankingCubit>().fetchAICreditInsights(state.creditScore);
+          }
+          if (state is MultiSourceCreditScoresLoaded) {
+            _multiSourceScores = state.scores;
+            _gaugeController.forward(from: 0);
+            // Fetch AI insights for the primary score (lazervault)
+            context.read<OpenBankingCubit>().fetchAICreditInsights(
+                  state.scores.lazervaultScore,
+                );
           }
           if (state is OpenBankingError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +133,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
         },
         buildWhen: (previous, current) =>
             current is CreditScoreLoaded ||
+            current is MultiSourceCreditScoresLoaded ||
             current is CreditScoreHistoryLoaded ||
             current is CreditScoreRefreshing ||
             current is CreditScoreAIInsightsLoading ||
@@ -106,12 +152,20 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
             return _buildErrorState(state);
           }
 
+          // Multi-source tabbed view
+          if (widget.showAllSources && _multiSourceScores != null) {
+            return _buildTabbedContent(_multiSourceScores!);
+          }
+          if (state is MultiSourceCreditScoresLoaded) {
+            _multiSourceScores = state.scores;
+            return _buildTabbedContent(state.scores);
+          }
+
           if (state is CreditScoreLoaded) {
             return _buildContent(state.creditScore, null);
           }
 
           if (state is CreditScoreHistoryLoaded) {
-            // History loaded after score - need to look back at previous score state
             return _buildContent(null, state.history);
           }
 
@@ -119,6 +173,9 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
           if (state is CreditScoreAIInsightsLoading ||
               state is CreditScoreAIInsightsLoaded ||
               state is CreditScoreAIInsightsError) {
+            if (_multiSourceScores != null) {
+              return _buildTabbedContent(_multiSourceScores!);
+            }
             return _buildContent(null, null);
           }
 
@@ -132,6 +189,102 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
 
   // Keep track of last loaded score for when history loads
   CreditScoreEntity? _lastScore;
+
+  Widget _buildTabbedContent(MultiSourceCreditScores scores) {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        // LazerVault tab — always available
+        _buildScoreTab(scores.lazervaultScore),
+        // External tab
+        scores.externalScore != null
+            ? _buildScoreTab(scores.externalScore!)
+            : _buildLinkBankCTA(),
+        // Combined tab
+        scores.combinedScore != null
+            ? _buildScoreTab(scores.combinedScore!)
+            : _buildLinkBankCTA(),
+      ],
+    );
+  }
+
+  Widget _buildScoreTab(CreditScoreEntity score) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<OpenBankingCubit>().fetchMultiSourceCreditScores(
+              userId: widget.userId,
+            );
+      },
+      color: const Color(0xFF3B82F6),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(16.r),
+        children: [
+          _buildGaugeCard(score),
+          SizedBox(height: 20.h),
+          _buildBreakdownCard(score),
+          SizedBox(height: 20.h),
+          if (score.tips.isNotEmpty) ...[
+            _buildTipsSection(score.tips),
+            SizedBox(height: 20.h),
+          ],
+          _buildAIInsightsSection(),
+          SizedBox(height: 40.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLinkBankCTA() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.r),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_outlined,
+              color: const Color(0xFF9CA3AF),
+              size: 64.r,
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'No Linked Bank Account',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Link an external bank account to see your credit score from external transactions.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.add),
+              label: const Text('Link a Bank Account'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildContent(CreditScoreEntity? score, CreditScoreHistoryEntity? history) {
     if (score != null) _lastScore = score;
@@ -251,7 +404,9 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
           ),
           SizedBox(height: 12.h),
           Text(
-            'Based on ${score.bankName}',
+            score.sourceLabel.isNotEmpty
+                ? score.sourceLabel
+                : 'Based on ${score.bankName}',
             style: TextStyle(
               color: const Color(0xFF9CA3AF),
               fontSize: 13.sp,
@@ -991,37 +1146,64 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
   }
 
   Widget _buildErrorState(OpenBankingError state) {
+    final isNoLinkedBank = state.message.toLowerCase().contains('no linked bank') ||
+        state.message.toLowerCase().contains('linked account');
+
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.r),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, color: Colors.white60, size: 48.r),
+            Icon(
+              isNoLinkedBank ? Icons.account_balance_rounded : Icons.error_outline,
+              color: isNoLinkedBank ? const Color(0xFF3B82F6) : Colors.white60,
+              size: 48.r,
+            ),
             SizedBox(height: 16.h),
             Text(
-              state.message,
+              isNoLinkedBank
+                  ? 'Link a bank account to generate your credit score'
+                  : state.message,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
+            if (isNoLinkedBank) ...[
+              SizedBox(height: 8.h),
+              Text(
+                'We analyze your transaction history to calculate a personalized credit score with insights and tips.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: const Color(0xFF6B7280),
+                  fontSize: 12.sp,
+                ),
+              ),
+            ],
             SizedBox(height: 24.h),
             ElevatedButton(
               onPressed: () {
-                context.read<OpenBankingCubit>().fetchCreditScore(
-                      userId: widget.userId,
-                    );
+                if (isNoLinkedBank) {
+                  Navigator.of(context).pop();
+                } else {
+                  context.read<OpenBankingCubit>().fetchCreditScore(
+                        userId: widget.userId,
+                      );
+                }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: isNoLinkedBank
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               ),
-              child: const Text('Retry'),
+              child: Text(isNoLinkedBank ? 'Go Back & Link Bank' : 'Retry'),
             ),
           ],
         ),

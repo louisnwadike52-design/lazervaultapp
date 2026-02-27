@@ -42,6 +42,7 @@ class CreditScoreAIService {
           'transactions_analyzed': score.transactionsAnalyzed,
           'months_of_data': score.monthsOfData,
           'bank_name': score.bankName,
+          'source': score.source,
         },
         options: Options(
           headers: {
