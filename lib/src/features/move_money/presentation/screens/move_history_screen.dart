@@ -407,7 +407,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
               Text(
                 _activeFilter == 'all'
                     ? 'No transfers yet'
-                    : 'No ${_activeFilter} transfers',
+                    : 'No $_activeFilter transfers',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 16.sp,
@@ -442,7 +442,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Move Money',
+                      'Transfer',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,

@@ -5,6 +5,9 @@ import '../entities/referral_transaction_entity.dart';
 import '../entities/country_reward_config_entity.dart';
 import '../entities/referral_stats_entity.dart';
 import '../entities/leaderboard_entry_entity.dart';
+import '../entities/points_balance_entity.dart';
+import '../entities/point_transaction_entity.dart';
+import '../entities/points_config_entity.dart';
 
 abstract class IReferralRepository {
   /// Validate a referral code (used during signup)
@@ -22,6 +25,7 @@ abstract class IReferralRepository {
   Future<Either<Failure, List<ReferralTransactionEntity>>> getMyReferrals({
     int page = 1,
     int pageSize = 20,
+    String filter = '',
   });
 
   /// Get referral leaderboard
@@ -34,4 +38,16 @@ abstract class IReferralRepository {
   Future<Either<Failure, CountryRewardConfigEntity>> getCountryRewardConfig({
     String? countryCode,
   });
+
+  /// Get user's LazerPoints balance
+  Future<Either<Failure, PointsBalanceEntity>> getMyPointsBalance();
+
+  /// Get user's LazerPoints transaction history
+  Future<Either<Failure, List<PointTransactionEntity>>> getMyPointsHistory({
+    int page = 1,
+    int pageSize = 20,
+  });
+
+  /// Get LazerPoints earn rules/configuration
+  Future<Either<Failure, List<PointsConfigEntity>>> getPointsConfig();
 }

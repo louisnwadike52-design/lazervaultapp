@@ -359,6 +359,7 @@ class TransactionFilters extends Equatable {
   final double? minAmount;
   final double? maxAmount;
   final String? searchQuery;
+  final String? counterpartyAccount;
 
   const TransactionFilters({
     this.serviceTypes,
@@ -369,6 +370,7 @@ class TransactionFilters extends Equatable {
     this.minAmount,
     this.maxAmount,
     this.searchQuery,
+    this.counterpartyAccount,
   });
 
   bool get hasFilters =>
@@ -379,7 +381,8 @@ class TransactionFilters extends Equatable {
       endDate != null ||
       minAmount != null ||
       maxAmount != null ||
-      searchQuery != null;
+      searchQuery != null ||
+      counterpartyAccount != null;
 
   TransactionFilters copyWith({
     List<TransactionServiceType>? serviceTypes,
@@ -390,6 +393,7 @@ class TransactionFilters extends Equatable {
     double? minAmount,
     double? maxAmount,
     String? searchQuery,
+    String? counterpartyAccount,
   }) {
     return TransactionFilters(
       serviceTypes: serviceTypes ?? this.serviceTypes,
@@ -400,6 +404,7 @@ class TransactionFilters extends Equatable {
       minAmount: minAmount ?? this.minAmount,
       maxAmount: maxAmount ?? this.maxAmount,
       searchQuery: searchQuery ?? this.searchQuery,
+      counterpartyAccount: counterpartyAccount ?? this.counterpartyAccount,
     );
   }
 
@@ -417,5 +422,6 @@ class TransactionFilters extends Equatable {
         minAmount,
         maxAmount,
         searchQuery,
+        counterpartyAccount,
       ];
 }

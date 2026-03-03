@@ -7,12 +7,14 @@ class RateCountdownWidget extends StatefulWidget {
   final ExchangeRate rate;
   final VoidCallback onExpired;
   final VoidCallback? onRefresh;
+  final bool isRefreshing;
 
   const RateCountdownWidget({
     super.key,
     required this.rate,
     required this.onExpired,
     this.onRefresh,
+    this.isRefreshing = false,
   });
 
   @override
@@ -81,6 +83,37 @@ class _RateCountdownWidgetState extends State<RateCountdownWidget> {
   @override
   Widget build(BuildContext context) {
     if (_remainingSeconds <= 0) {
+      if (widget.isRefreshing) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFF3B82F6),
+                ),
+              ),
+              SizedBox(width: 6),
+              Text(
+                'Refreshing rate...',
+                style: TextStyle(
+                  color: Color(0xFF3B82F6),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
       return GestureDetector(
         onTap: widget.onRefresh,
         child: Container(

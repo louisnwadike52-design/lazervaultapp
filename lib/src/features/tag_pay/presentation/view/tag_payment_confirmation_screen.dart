@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -318,14 +319,55 @@ class _TagPaymentConfirmationScreenState
     );
   }
 
-  /// Check if an account has sufficient balance for the tag payment
-  bool _hasSufficientBalance(dynamic account) {
-    // Only accounts with matching currency can pay
-    if (account.currency.toUpperCase() != widget.tag.currency.toUpperCase()) {
-      return false;
-    }
-    // Check if balance is sufficient
-    return account.balance >= widget.tag.amount;
+  /// Check if an account type is eligible for TagPay
+  bool _canPerformTagPay(AccountSummaryEntity account) {
+    const eligibleTypes = {
+      VirtualAccountType.personal,
+      VirtualAccountType.usd,
+      VirtualAccountType.gbp,
+      VirtualAccountType.eur,
+      VirtualAccountType.family,
+      VirtualAccountType.main,
+    };
+    if (!eligibleTypes.contains(account.accountTypeEnum)) return false;
+    // Must match the tag's currency
+    return account.currency.toUpperCase() == widget.tag.currency.toUpperCase();
+  }
+
+  /// Get eligible accounts sorted: sufficient balance first, then by balance descending
+  List<AccountSummaryEntity> _getEligibleAccounts(List<AccountSummaryEntity> all) {
+    final eligible = all.where(_canPerformTagPay).toList();
+    eligible.sort((a, b) {
+      final aHas = a.balance >= widget.tag.amount ? 1 : 0;
+      final bHas = b.balance >= widget.tag.amount ? 1 : 0;
+      if (aHas != bHas) return bHas - aHas;
+      return b.balance.compareTo(a.balance);
+    });
+    return eligible;
+  }
+
+  IconData _getAccountIcon(VirtualAccountType type) {
+    return switch (type) {
+      VirtualAccountType.personal => Icons.account_balance_wallet,
+      VirtualAccountType.savings => Icons.savings,
+      VirtualAccountType.investment => Icons.trending_up,
+      VirtualAccountType.family => Icons.family_restroom,
+      VirtualAccountType.business => Icons.business,
+      VirtualAccountType.usd || VirtualAccountType.gbp || VirtualAccountType.eur => Icons.currency_exchange,
+      VirtualAccountType.main => Icons.account_balance_wallet,
+    };
+  }
+
+  Color _getAccountColor(VirtualAccountType type) {
+    return switch (type) {
+      VirtualAccountType.personal => const Color(0xFF3B82F6),
+      VirtualAccountType.usd => const Color(0xFF10B981),
+      VirtualAccountType.gbp => const Color(0xFF8B5CF6),
+      VirtualAccountType.eur => const Color(0xFF06B6D4),
+      VirtualAccountType.family => const Color(0xFFF59E0B),
+      VirtualAccountType.main => const Color(0xFF3B82F6),
+      _ => const Color(0xFF6B7280),
+    };
   }
 
   Widget _buildAccountSelector() {
@@ -343,254 +385,370 @@ class _TagPaymentConfirmationScreenState
         }
 
         if (state is AccountCardsSummaryLoaded) {
-          // Filter to only show accounts with matching currency
-          final matchingCurrencyAccounts = state.accountSummaries
-              .where((a) => a.currency.toUpperCase() == widget.tag.currency.toUpperCase())
-              .toList();
+          final eligibleAccounts = _getEligibleAccounts(state.accountSummaries);
 
-          final otherCurrencyAccounts = state.accountSummaries
-              .where((a) => a.currency.toUpperCase() != widget.tag.currency.toUpperCase())
-              .toList();
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Select Account',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+          if (eligibleAccounts.isEmpty) {
+            return Container(
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(16.r),
               ),
-              SizedBox(height: 4.h),
-              Text(
-                'Only ${widget.tag.currency} accounts with sufficient balance can be used',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w400,
-                ),
+              child: Column(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: const Color(0xFFFB923C), size: 32.sp),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'No eligible ${widget.tag.currency} account found',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              SizedBox(height: 12.h),
+            );
+          }
 
-              // Show matching currency accounts first
-              ...matchingCurrencyAccounts.map((account) {
-                final isSelected = _selectedAccountId == account.id.toString();
-                final hasSufficientBalance = _hasSufficientBalance(account);
+          // Auto-select first eligible account with sufficient balance
+          if (_selectedAccountId == null) {
+            final bestAccount = eligibleAccounts.firstWhere(
+              (a) => a.balance >= widget.tag.amount,
+              orElse: () => eligibleAccounts.first,
+            );
+            _selectedAccountId = bestAccount.id.toString();
+          }
 
-                return GestureDetector(
-                  onTap: hasSufficientBalance
-                      ? () {
-                          setState(() {
-                            _selectedAccountId = account.id.toString();
-                          });
-                        }
-                      : () {
-                          // Show insufficient balance message
-                          Get.snackbar(
-                            'Insufficient Balance',
-                            'This account does not have enough funds. You need ${widget.tag.currency} ${widget.tag.amount.toStringAsFixed(2)}',
-                            backgroundColor: const Color(0xFFFB923C),
-                            colorText: Colors.white,
-                            snackPosition: SnackPosition.TOP,
-                          );
-                        },
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 12.h),
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: !hasSufficientBalance
-                          ? const Color(0xFF1F1F1F).withValues(alpha: 0.5)
-                          : isSelected
-                              ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
-                              : const Color(0xFF1F1F1F),
-                      border: Border.all(
-                        color: !hasSufficientBalance
-                            ? const Color(0xFFEF4444).withValues(alpha: 0.3)
-                            : isSelected
-                                ? const Color(0xFF3B82F6)
-                                : Colors.transparent,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40.w,
-                          height: 40.w,
-                          decoration: BoxDecoration(
-                            color: !hasSufficientBalance
-                                ? const Color(0xFFEF4444).withValues(alpha: 0.2)
-                                : const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Icon(
-                            Icons.account_balance_wallet,
-                            color: !hasSufficientBalance
-                                ? const Color(0xFFEF4444)
-                                : const Color(0xFF3B82F6),
-                            size: 20.sp,
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      account.accountType,
-                                      style: GoogleFonts.inter(
-                                        color: !hasSufficientBalance
-                                            ? Colors.white.withValues(alpha: 0.5)
-                                            : Colors.white,
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  if (!hasSufficientBalance)
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8.w,
-                                        vertical: 2.h,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEF4444).withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(4.r),
-                                      ),
-                                      child: Text(
-                                        'Insufficient',
-                                        style: GoogleFonts.inter(
-                                          color: const Color(0xFFEF4444),
-                                          fontSize: 10.sp,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              Text(
-                                '${account.currency} ${account.balance.toStringAsFixed(2)}',
-                                style: GoogleFonts.inter(
-                                  color: !hasSufficientBalance
-                                      ? const Color(0xFF9CA3AF).withValues(alpha: 0.5)
-                                      : const Color(0xFF9CA3AF),
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (isSelected && hasSufficientBalance)
-                          Icon(
-                            Icons.check_circle,
-                            color: const Color(0xFF3B82F6),
-                            size: 24.sp,
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+          final displayAccount = eligibleAccounts.firstWhere(
+            (a) => a.id.toString() == _selectedAccountId,
+            orElse: () => eligibleAccounts.first,
+          );
+          final hasEnough = displayAccount.balance >= widget.tag.amount;
+          final accentColor = _getAccountColor(displayAccount.accountTypeEnum);
 
-              // Show other currency accounts as disabled
-              if (otherCurrencyAccounts.isNotEmpty) ...[
-                SizedBox(height: 8.h),
-                Text(
-                  'Other Currencies (not available for this payment)',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                ...otherCurrencyAccounts.map((account) {
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 12.h),
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1F1F1F).withValues(alpha: 0.3),
-                      border: Border.all(
-                        color: const Color(0xFF2D2D2D).withValues(alpha: 0.5),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40.w,
-                          height: 40.w,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2D2D2D).withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Icon(
-                            Icons.account_balance_wallet,
-                            color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
-                            size: 20.sp,
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                account.accountType,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white.withValues(alpha: 0.4),
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                '${account.currency} ${account.balance.toStringAsFixed(2)}',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8.w,
-                            vertical: 2.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2D2D2D),
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                          child: Text(
-                            'Wrong Currency',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF9CA3AF),
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ],
-            ],
+          return _buildPaymentCategoryCard(
+            icon: _getAccountIcon(displayAccount.accountTypeEnum),
+            iconColor: accentColor,
+            title: 'Pay with ${displayAccount.accountType}',
+            subtitle: '${displayAccount.currency} ${displayAccount.balance.toStringAsFixed(2)}',
+            insufficientFunds: !hasEnough,
+            isSelected: true,
+            onTap: () {},
+            onChangeTap: eligibleAccounts.length > 1
+                ? () => _showWalletBottomSheet(eligibleAccounts)
+                : null,
           );
         }
 
         return const SizedBox.shrink();
       },
+    );
+  }
+
+  Widget _buildPaymentCategoryCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    bool insufficientFunds = false,
+    required bool isSelected,
+    required VoidCallback onTap,
+    VoidCallback? onChangeTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF3B82F6) : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44.w,
+                    height: 44.w,
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(icon, color: iconColor, size: 22.sp),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          subtitle,
+                          style: GoogleFonts.inter(
+                            color: insufficientFunds
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF9CA3AF),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (isSelected)
+                    Icon(
+                      Icons.check_circle,
+                      color: const Color(0xFF3B82F6),
+                      size: 24.sp,
+                    ),
+                ],
+              ),
+            ),
+            if (insufficientFunds)
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                  border: Border(
+                    top: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.2)),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: const Color(0xFFEF4444), size: 16.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        onChangeTap != null
+                            ? 'Insufficient balance. Tap "Change" to select another wallet.'
+                            : 'Insufficient balance for this payment.',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFEF4444),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (onChangeTap != null)
+              GestureDetector(
+                onTap: onChangeTap,
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: const Color(0xFF2D2D2D)),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.swap_horiz, color: const Color(0xFF3B82F6), size: 18.sp),
+                      SizedBox(width: 6.w),
+                      Text(
+                        'Change',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF3B82F6),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showWalletBottomSheet(List<AccountSummaryEntity> accounts) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return _buildBottomSheetContainer(
+          title: 'Select Wallet',
+          children: accounts.map((account) {
+            final isSelected = _selectedAccountId == account.id.toString();
+            final hasEnough = account.balance >= widget.tag.amount;
+            final accentColor = _getAccountColor(account.accountTypeEnum);
+
+            return _buildBottomSheetOption(
+              icon: _getAccountIcon(account.accountTypeEnum),
+              iconColor: accentColor,
+              title: account.accountType,
+              subtitle: '${account.currency} ${account.balance.toStringAsFixed(2)}',
+              insufficientFunds: !hasEnough,
+              isSelected: isSelected,
+              onTap: () {
+                setState(() {
+                  _selectedAccountId = account.id.toString();
+                });
+                Navigator.pop(sheetContext);
+              },
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomSheetContainer({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.6,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 12.h),
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4B5563),
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              children: children,
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 16.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomSheetOption({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    bool insufficientFunds = false,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12.r),
+          border: isSelected
+              ? Border.all(color: const Color(0xFF3B82F6), width: 1.5)
+              : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(icon, color: iconColor, size: 20.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      color: insufficientFunds
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (insufficientFunds)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+                child: Text(
+                  'Insufficient',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            if (isSelected)
+              Padding(
+                padding: EdgeInsets.only(left: 8.w),
+                child: Icon(
+                  Icons.check_circle,
+                  color: const Color(0xFF3B82F6),
+                  size: 22.sp,
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 

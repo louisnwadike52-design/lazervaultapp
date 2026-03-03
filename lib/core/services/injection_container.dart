@@ -63,6 +63,9 @@ import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral_stats_usecase.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referrals_usecase.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_referral_leaderboard_usecase.dart';
+import 'package:lazervault/src/features/referral/domain/usecases/get_my_points_balance_usecase.dart';
+import 'package:lazervault/src/features/referral/domain/usecases/get_my_points_history_usecase.dart';
+import 'package:lazervault/src/features/referral/domain/usecases/get_points_config_usecase.dart';
 import 'package:lazervault/src/features/referral/presentation/cubit/referral_cubit.dart';
 import 'package:lazervault/src/generated/whatsapp.pbgrpc.dart';
 import 'package:lazervault/src/features/whatsapp_banking/domain/repositories/i_whatsapp_repository.dart';
@@ -74,6 +77,9 @@ import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/unlink_
 import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/get_security_settings_usecase.dart';
 import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/update_security_settings_usecase.dart' as whatsapp_usecases;
 import 'package:lazervault/src/features/whatsapp_banking/cubit/whatsapp_banking_cubit.dart';
+import 'package:lazervault/src/features/channel_management/domain/repositories/i_channel_repository.dart';
+import 'package:lazervault/src/features/channel_management/data/repositories/channel_repository_impl.dart';
+import 'package:lazervault/src/features/channel_management/cubit/channel_management_cubit.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_face_recognition_repository.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/social_linking/data/datasources/social_linking_grpc_datasource.dart';
@@ -246,6 +252,11 @@ import 'package:lazervault/src/features/microservice_chat/data/repositories/micr
 import 'package:lazervault/src/features/microservice_chat/domain/repositories/microservice_chat_repository.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/send_microservice_chat_message_usecase.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/load_microservice_chat_history_usecase.dart';
+import 'package:lazervault/src/features/microservice_chat/data/datasources/http_direct_chat_datasource.dart';
+import 'package:lazervault/src/features/microservice_chat/data/datasources/grpc_direct_chat_datasource.dart';
+import 'package:lazervault/src/features/microservice_chat/domain/usecases/send_direct_chat_message_usecase.dart';
+import 'package:lazervault/src/features/microservice_chat/domain/usecases/load_direct_chat_history_usecase.dart';
+import 'package:lazervault/src/generated/direct_chat.pbgrpc.dart' as direct_chat_grpc;
 import 'package:lazervault/core/services/chat_session_manager.dart';
 // End Microservice Chat Imports
 
@@ -421,6 +432,16 @@ import 'package:lazervault/src/features/data_bundles/domain/repositories/data_bu
 import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_bundles_cubit.dart';
 // End Data Bundles Imports
 
+// Subscription Tracker Imports
+import 'package:lazervault/src/features/subscriptions/data/datasources/subscription_remote_datasource.dart';
+import 'package:lazervault/src/features/subscriptions/data/repositories/subscription_repository_impl.dart';
+import 'package:lazervault/src/features/subscriptions/domain/repositories/i_subscription_repository.dart';
+import 'package:lazervault/src/features/subscriptions/domain/usecases/get_active_subscriptions_usecase.dart';
+import 'package:lazervault/src/features/subscriptions/domain/usecases/get_subscription_summary_usecase.dart';
+import 'package:lazervault/src/features/subscriptions/domain/usecases/get_subscription_spending_usecase.dart';
+import 'package:lazervault/src/features/subscriptions/presentation/cubit/subscription_tracker_cubit.dart';
+// End Subscription Tracker Imports
+
 // Airtime Imports
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_local_datasource.dart';
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_remote_datasource.dart';
@@ -563,6 +584,30 @@ import 'package:lazervault/src/features/payroll/data/repositories/payroll_reposi
 import 'package:lazervault/src/features/payroll/domain/repositories/payroll_repository.dart';
 import 'package:lazervault/src/features/payroll/presentation/cubit/payroll_cubit.dart';
 // End Payroll Imports
+
+// Inventory Imports (Business)
+import 'package:lazervault/src/features/inventory/data/repositories/inventory_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/inventory/domain/repositories/inventory_repository.dart';
+import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_cubit.dart';
+// End Inventory Imports
+
+// Customer CRM Imports (Business)
+import 'package:lazervault/src/features/customers/data/repositories/customer_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/customers/domain/repositories/customer_repository.dart';
+import 'package:lazervault/src/features/customers/presentation/cubit/customer_cubit.dart';
+// End Customer Imports
+
+// Tax Management Imports (Business)
+import 'package:lazervault/src/features/tax/data/repositories/tax_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/tax/domain/repositories/tax_repository.dart';
+import 'package:lazervault/src/features/tax/presentation/cubit/tax_cubit.dart';
+// End Tax Imports
+
+// Inventory Enhanced Imports (Business)
+import 'package:lazervault/src/features/inventory/data/repositories/inventory_enhanced_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/inventory/domain/repositories/inventory_enhanced_repository.dart';
+import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_enhanced_cubit.dart';
+// End Inventory Enhanced Imports
 
 // Business Dashboard Imports
 import 'package:lazervault/src/features/business_dashboard/data/repositories/business_dashboard_repository_impl.dart';
@@ -936,6 +981,7 @@ Future<void> init() async {
         currencySyncService: serviceLocator<CurrencySyncService>(),
         accountManager: serviceLocator<AccountManager>(),
         signupStateService: serviceLocator<SignupStateService>(),
+        validateReferralCode: serviceLocator<ValidateReferralCodeUseCase>(),
       ));
 
   serviceLocator.registerFactory(() => FaceVerificationCubit(
@@ -1108,6 +1154,9 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetMyReferralStatsUseCase(serviceLocator<IReferralRepository>()));
   serviceLocator.registerLazySingleton(() => GetMyReferralsUseCase(serviceLocator<IReferralRepository>()));
   serviceLocator.registerLazySingleton(() => GetReferralLeaderboardUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(() => GetMyPointsBalanceUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(() => GetMyPointsHistoryUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(() => GetPointsConfigUseCase(serviceLocator<IReferralRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ReferralCubit(
@@ -1116,6 +1165,9 @@ Future<void> init() async {
         getMyReferralStats: serviceLocator<GetMyReferralStatsUseCase>(),
         getMyReferrals: serviceLocator<GetMyReferralsUseCase>(),
         getLeaderboard: serviceLocator<GetReferralLeaderboardUseCase>(),
+        getMyPointsBalance: serviceLocator<GetMyPointsBalanceUseCase>(),
+        getMyPointsHistory: serviceLocator<GetMyPointsHistoryUseCase>(),
+        getPointsConfig: serviceLocator<GetPointsConfigUseCase>(),
       ));
 
   // ================== Feature: WhatsApp Banking ==================
@@ -1148,6 +1200,21 @@ Future<void> init() async {
         unlinkAccount: serviceLocator<UnlinkAccountUseCase>(),
         getSecuritySettings: serviceLocator<GetSecuritySettingsUseCase>(),
         updateSecuritySettings: serviceLocator<whatsapp_usecases.UpdateSecuritySettingsUseCase>(),
+      ));
+
+  // ================== Feature: Channel Management ==================
+
+  // Repository (reuses TransactionPinServiceClient from Transaction PIN feature)
+  serviceLocator.registerLazySingleton<IChannelRepository>(
+      () => ChannelRepositoryImpl(
+          pinClient: serviceLocator<TransactionPinServiceClient>(),
+          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+          secureStorage: serviceLocator<SecureStorageService>(),
+        ));
+
+  // Cubit
+  serviceLocator.registerFactory(() => ChannelManagementCubit(
+        repository: serviceLocator<IChannelRepository>(),
       ));
 
   // ================== Feature: Account Cards Summary ==================
@@ -1961,6 +2028,40 @@ Future<void> init() async {
     repository: serviceLocator<DataBundlesRepository>(),
   ));
 
+  // ================== Feature: Subscription Tracker ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<SubscriptionRemoteDataSource>(
+    () => SubscriptionRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<ISubscriptionRepository>(
+    () => SubscriptionRepositoryImpl(
+      remoteDataSource: serviceLocator<SubscriptionRemoteDataSource>(),
+    ),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(
+    () => GetActiveSubscriptionsUsecase(serviceLocator<ISubscriptionRepository>()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => GetSubscriptionSummaryUsecase(serviceLocator<ISubscriptionRepository>()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => GetSubscriptionSpendingUsecase(serviceLocator<ISubscriptionRepository>()),
+  );
+
+  // Cubits
+  serviceLocator.registerFactory(() => SubscriptionTrackerCubit(
+    getActiveSubscriptions: serviceLocator<GetActiveSubscriptionsUsecase>(),
+    getSubscriptionSummary: serviceLocator<GetSubscriptionSummaryUsecase>(),
+    getSubscriptionSpending: serviceLocator<GetSubscriptionSpendingUsecase>(),
+  ));
+
   // ================== Screens / Presentation ==================
   // Note: ModernOnboardingScreen uses const constructor, no registration needed
   serviceLocator
@@ -2522,6 +2623,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => DeleteFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => ProcessMemberContributionUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => SetupFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateFundDistributionModeUseCase(serviceLocator<FamilyAccountRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory<FamilyAccountCubit>(
@@ -2543,6 +2645,7 @@ Future<void> init() async {
       deleteFamilyAccount: serviceLocator<DeleteFamilyAccountUseCase>(),
       processMemberContribution: serviceLocator<ProcessMemberContributionUseCase>(),
       setupFamilyAccount: serviceLocator<SetupFamilyAccountUseCase>(),
+      updateFundDistributionMode: serviceLocator<UpdateFundDistributionModeUseCase>(),
     ),
   );
 
@@ -2589,7 +2692,7 @@ Future<void> init() async {
 
   // ChatSessionManager is registered in the AI Chat section above (shared dependency)
 
-  // Data Sources
+  // Data Sources — Python Chat Agent Gateway (existing, for central chatbot)
   serviceLocator.registerLazySingleton<MicroserviceChatDataSource>(
     () => HttpMicroserviceChatDataSource(
       dio: serviceLocator<Dio>(),
@@ -2598,14 +2701,36 @@ Future<void> init() async {
     ),
   );
 
+  // gRPC Channel — Chat Proxy Gateway (port 50074)
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createChatProxyChannel(),
+    instanceName: 'chatProxyChannel',
+  );
+
+  // gRPC Client — DirectChatService
+  serviceLocator.registerLazySingleton<direct_chat_grpc.DirectChatServiceClient>(
+    () => direct_chat_grpc.DirectChatServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'chatProxyChannel'),
+    ),
+  );
+
+  // Data Sources — Go Chat Proxy Gateway gRPC (replaces HTTP)
+  serviceLocator.registerLazySingleton<GrpcDirectChatDataSource>(
+    () => GrpcDirectChatDataSource(
+      client: serviceLocator<direct_chat_grpc.DirectChatServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
   // Repositories
   serviceLocator.registerLazySingleton<MicroserviceChatRepository>(
     () => MicroserviceChatRepositoryImpl(
       dataSource: serviceLocator<MicroserviceChatDataSource>(),
+      directDataSource: serviceLocator<GrpcDirectChatDataSource>(),
     ),
   );
 
-  // Use Cases
+  // Use Cases — Standard (Python gateway path)
   serviceLocator.registerLazySingleton<SendMicroserviceChatMessageUseCase>(
     () => SendMicroserviceChatMessageUseCase(
       repository: serviceLocator<MicroserviceChatRepository>(),
@@ -2613,6 +2738,18 @@ Future<void> init() async {
   );
   serviceLocator.registerLazySingleton<LoadMicroserviceChatHistoryUseCase>(
     () => LoadMicroserviceChatHistoryUseCase(
+      repository: serviceLocator<MicroserviceChatRepository>(),
+    ),
+  );
+
+  // Use Cases — Direct (Go Chat Proxy Gateway path)
+  serviceLocator.registerLazySingleton<SendDirectChatMessageUseCase>(
+    () => SendDirectChatMessageUseCase(
+      repository: serviceLocator<MicroserviceChatRepository>(),
+    ),
+  );
+  serviceLocator.registerLazySingleton<LoadDirectChatHistoryUseCase>(
+    () => LoadDirectChatHistoryUseCase(
       repository: serviceLocator<MicroserviceChatRepository>(),
     ),
   );
@@ -2779,6 +2916,94 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => PayrollCubit(
     repository: serviceLocator<PayrollRepository>(),
+  ));
+
+  // ================== Feature: Inventory (Business) ==================
+
+  // InventoryServiceClient - via Business Gateway (shared connection)
+  serviceLocator.registerLazySingleton<payroll_pb.InventoryServiceClient>(
+    () => payroll_pb.InventoryServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'businessChannel'),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<InventoryRepository>(
+    () => InventoryRepositoryGrpcImpl(
+      client: serviceLocator<payroll_pb.InventoryServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => InventoryCubit(
+    repository: serviceLocator<InventoryRepository>(),
+  ));
+
+  // ================== Feature: Customer CRM (Business) ==================
+
+  // CustomerServiceClient - via Business Gateway (shared connection)
+  serviceLocator.registerLazySingleton<payroll_pb.CustomerServiceClient>(
+    () => payroll_pb.CustomerServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'businessChannel'),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<CustomerRepository>(
+    () => CustomerRepositoryGrpcImpl(
+      client: serviceLocator<payroll_pb.CustomerServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => CustomerCubit(
+    repository: serviceLocator<CustomerRepository>(),
+  ));
+
+  // ================== Feature: Tax Management (Business) ==================
+
+  // TaxServiceClient - via Business Gateway (shared connection)
+  serviceLocator.registerLazySingleton<payroll_pb.TaxServiceClient>(
+    () => payroll_pb.TaxServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'businessChannel'),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<TaxRepository>(
+    () => TaxRepositoryGrpcImpl(
+      client: serviceLocator<payroll_pb.TaxServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => TaxCubit(
+    repository: serviceLocator<TaxRepository>(),
+  ));
+
+  // ================== Feature: Inventory Enhanced (Business) ==================
+
+  // InventoryEnhancedServiceClient - via Business Gateway (shared connection)
+  serviceLocator.registerLazySingleton<payroll_pb.InventoryEnhancedServiceClient>(
+    () => payroll_pb.InventoryEnhancedServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'businessChannel'),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<InventoryEnhancedRepository>(
+    () => InventoryEnhancedRepositoryGrpcImpl(
+      client: serviceLocator<payroll_pb.InventoryEnhancedServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => InventoryEnhancedCubit(
+    repository: serviceLocator<InventoryEnhancedRepository>(),
   ));
 
   // ================== Feature: Business Dashboard ==================

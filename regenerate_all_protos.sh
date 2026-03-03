@@ -17,6 +17,7 @@ mkdir -p proto/google/protobuf
 curl -s -o proto/google/protobuf/empty.proto https://raw.githubusercontent.com/protocolbuffers/protobuf/main/src/google/protobuf/empty.proto
 curl -s -o proto/google/protobuf/timestamp.proto https://raw.githubusercontent.com/protocolbuffers/protobuf/main/src/google/protobuf/timestamp.proto
 curl -s -o proto/google/protobuf/wrappers.proto https://raw.githubusercontent.com/protocolbuffers/protobuf/main/src/google/protobuf/wrappers.proto
+curl -s -o proto/google/protobuf/struct.proto https://raw.githubusercontent.com/protocolbuffers/protobuf/main/src/google/protobuf/struct.proto
 
 mkdir -p proto/protoc-gen-openapiv2/options
 curl -s -o proto/protoc-gen-openapiv2/options/annotations.proto https://raw.githubusercontent.com/grpc-ecosystem/grpc-gateway/master/protoc-gen-openapiv2/options/annotations.proto
@@ -127,13 +128,28 @@ protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/shared/proto \
   proto/banking.proto
 
+# Generate direct_chat.proto (Chat Proxy Gateway gRPC)
+echo "Generating Dart code from direct_chat.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -Iproto \
+  -I../microservices/shared/proto \
+  proto/direct_chat.proto
+
+# Generate payroll.proto (Business: Payroll, Customer CRM, Tax, Inventory)
+echo "Generating Dart code from payroll.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/payroll-service/proto \
+  -Iproto \
+  -I../microservices/shared/proto \
+  ../microservices/payroll-service/proto/payroll.proto
+
 # Generate remaining local proto files (batch - some may fail due to unsupported annotations)
 echo "Generating Dart code from other local proto files..."
 for f in proto/*.proto; do
   basename=$(basename "$f")
   # Skip protos already generated from microservice sources above
   case "$basename" in
-    ai_chat.proto|accounts.proto|family_accounts.proto|multi_country.proto|auth.proto|transaction_pin.proto|voice-biometrics.proto|payments.proto|utility-payments.proto|invoice.proto|giftcards.proto|financial-products.proto|investments.proto|banking.proto)
+    ai_chat.proto|accounts.proto|family_accounts.proto|multi_country.proto|auth.proto|transaction_pin.proto|voice-biometrics.proto|payments.proto|utility-payments.proto|invoice.proto|giftcards.proto|financial-products.proto|investments.proto|banking.proto|direct_chat.proto|payroll.proto)
       continue
       ;;
   esac

@@ -31,15 +31,8 @@ class LeaderboardList extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +42,7 @@ class LeaderboardList extends StatelessWidget {
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: Colors.white,
             ),
           ),
           SizedBox(height: 12.h),
@@ -68,12 +61,12 @@ class LeaderboardList extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: isCurrentUser
-            ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
-            : Colors.grey[50],
+            ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+            : const Color(0xFF2D2D2D).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12.r),
         border: isCurrentUser
             ? Border.all(
-                color: const Color(0xFF4E03D0),
+                color: const Color(0xFF3B82F6),
                 width: 1.5,
               )
             : null,
@@ -88,7 +81,7 @@ class LeaderboardList extends StatelessWidget {
               style: TextStyle(
                 fontSize: medal.isNotEmpty ? 18.sp : 14.sp,
                 fontWeight: FontWeight.w700,
-                color: Colors.black87,
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
@@ -135,7 +128,7 @@ class LeaderboardList extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -145,7 +138,7 @@ class LeaderboardList extends StatelessWidget {
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4E03D0),
+                          color: const Color(0xFF3B82F6),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -166,7 +159,7 @@ class LeaderboardList extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w400,
-                    color: Colors.grey[600],
+                    color: const Color(0xFF9CA3AF),
                   ),
                 ),
               ],

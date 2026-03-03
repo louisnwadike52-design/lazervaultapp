@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
@@ -35,6 +37,9 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
   String? _recipientAccountNumber;
   String? _recipientName;
 
+  /// All transactions matching this recipient (before search filtering)
+  List<UnifiedTransaction> _allRecipientTransactions = [];
+
   RecipientTransactionHistoryCubit({required this.repository})
       : super(const RecipientTransactionHistoryInitial());
 
@@ -50,90 +55,110 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
     emit(const RecipientTransactionHistoryLoading());
 
     try {
-      // Fetch ALL transactions (not just transfers) since payments could be categorized differently
-      final response = await repository.fetchAllTransactions(
-        page: 1,
-        limit: 100,
+      developer.log(
+        '[RecipientTxHistory] Loading transactions for: '
+        'name="$recipientName", account="$recipientAccountNumber"',
       );
 
-      final nameLower = recipientName.toLowerCase().trim();
-      final nameWords = nameLower.split(' ').where((w) => w.isNotEmpty).toList();
+      // Use backend counterparty_account filter — the backend filters
+      // transactions WHERE counterparty_account = recipientAccountNumber.
+      // This catches both incoming and outgoing transfers with this person.
+      final response = await repository.fetchAllTransactions(
+        page: 1,
+        limit: 200,
+        filters: TransactionFilters(
+          counterpartyAccount: recipientAccountNumber,
+        ),
+      );
 
-      // Filter to outgoing transactions matching this recipient
-      final filtered = response.transactions.where((tx) {
-        // Only include outgoing transactions (money sent to this recipient)
-        if (tx.flow != TransactionFlow.outgoing) return false;
+      var transactions = response.transactions;
 
-        // 1. Direct account number match (most reliable)
-        if (recipientAccountNumber.isNotEmpty &&
-            tx.counterpartyAccount != null &&
-            tx.counterpartyAccount!.isNotEmpty &&
-            tx.counterpartyAccount == recipientAccountNumber) {
-          return true;
-        }
+      developer.log(
+        '[RecipientTxHistory] Backend returned ${transactions.length} '
+        'transactions for counterparty "$recipientAccountNumber"',
+      );
 
-        // 2. Account number in description or metadata
-        if (recipientAccountNumber.isNotEmpty) {
-          final accountDigits = recipientAccountNumber.replaceAll(RegExp(r'[^\d]'), '');
-          if (accountDigits.length >= 6) {
-            final desc = tx.description ?? '';
-            if (desc.contains(accountDigits)) return true;
-            final meta = tx.metadata;
-            if (meta != null) {
-              for (final value in meta.values) {
-                if (value?.toString().contains(accountDigits) == true) {
-                  return true;
-                }
-              }
-            }
-          }
-        }
-
-        // 3. Counterparty name exact match
-        if (tx.counterpartyName != null &&
-            tx.counterpartyName!.toLowerCase().trim() == nameLower) {
-          return true;
-        }
-
-        // 4. Title contains recipient full name (e.g. "Transfer to Grace")
-        if (tx.title.toLowerCase().contains(nameLower)) {
-          return true;
-        }
-
-        // 5. Counterparty name contains recipient name or vice versa
-        if (tx.counterpartyName != null) {
-          final cpLower = tx.counterpartyName!.toLowerCase().trim();
-          if (cpLower.contains(nameLower) || nameLower.contains(cpLower)) {
-            return true;
-          }
-        }
-
-        // 6. Match by any significant word of recipient name in counterparty or title
-        if (nameWords.isNotEmpty) {
-          for (final word in nameWords) {
-            if (word.length > 2) {
-              if (tx.counterpartyName?.toLowerCase().contains(word) == true) {
-                return true;
-              }
-            }
-          }
-        }
-
-        return false;
-      }).toList();
+      // Deduplicate by reference (backend creates duplicate records from
+      // TransferBalance + RecordTransaction paths). Keep the richer record.
+      transactions = _deduplicateByReference(transactions);
 
       // Sort by date, newest first
-      filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      if (filtered.isEmpty) {
+      _allRecipientTransactions = transactions;
+
+      if (transactions.isEmpty) {
         emit(const RecipientTransactionHistoryEmpty());
       } else {
-        emit(RecipientTransactionHistoryLoaded(transactions: filtered));
+        emit(RecipientTransactionHistoryLoaded(transactions: transactions));
       }
     } catch (e) {
+      developer.log('[RecipientTxHistory] Error: $e');
       emit(RecipientTransactionHistoryError(
         message: e.toString().replaceAll('Exception: ', ''),
       ));
+    }
+  }
+
+  /// Deduplicate transactions that share the same reference.
+  /// Keeps the record with more populated fields (counterpartyName, etc).
+  List<UnifiedTransaction> _deduplicateByReference(List<UnifiedTransaction> txs) {
+    final byRef = <String, UnifiedTransaction>{};
+    for (final tx in txs) {
+      final ref = tx.transactionReference ?? tx.id;
+      // Strip -CR suffix to group sender/receiver records by base reference
+      final baseRef = ref.endsWith('-CR') ? ref.substring(0, ref.length - 3) : ref;
+      final key = '${baseRef}_${tx.flow.name}';
+      final existing = byRef[key];
+      if (existing == null) {
+        byRef[key] = tx;
+      } else {
+        // Prefer the record with counterparty info populated
+        final existingScore = (existing.counterpartyName != null ? 1 : 0) +
+            (existing.counterpartyAccount != null ? 1 : 0);
+        final newScore = (tx.counterpartyName != null ? 1 : 0) +
+            (tx.counterpartyAccount != null ? 1 : 0);
+        if (newScore > existingScore) {
+          byRef[key] = tx;
+        }
+      }
+    }
+    return byRef.values.toList();
+  }
+
+  /// Filter loaded transactions by search query (local, no network call)
+  void filterBySearch(String query) {
+    final searchQuery = query.trim().toLowerCase();
+
+    if (_allRecipientTransactions.isEmpty) return;
+
+    if (searchQuery.isEmpty) {
+      emit(RecipientTransactionHistoryLoaded(
+        transactions: _allRecipientTransactions,
+      ));
+      return;
+    }
+
+    final filtered = _allRecipientTransactions.where((tx) {
+      if (tx.title.toLowerCase().contains(searchQuery)) return true;
+      if (tx.formattedAmount.toLowerCase().contains(searchQuery)) return true;
+      if (tx.transactionReference?.toLowerCase().contains(searchQuery) == true) {
+        return true;
+      }
+      if (tx.counterpartyName?.toLowerCase().contains(searchQuery) == true) {
+        return true;
+      }
+      if (tx.description?.toLowerCase().contains(searchQuery) == true) {
+        return true;
+      }
+      if (tx.currency.toLowerCase().contains(searchQuery)) return true;
+      return false;
+    }).toList();
+
+    if (filtered.isEmpty) {
+      emit(const RecipientTransactionHistoryEmpty());
+    } else {
+      emit(RecipientTransactionHistoryLoaded(transactions: filtered));
     }
   }
 

@@ -7,12 +7,18 @@ import 'package:lazervault/src/features/referral/domain/entities/referral_transa
 import 'package:lazervault/src/features/referral/domain/entities/country_reward_config_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/referral_stats_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/leaderboard_entry_entity.dart';
+import 'package:lazervault/src/features/referral/domain/entities/points_balance_entity.dart';
+import 'package:lazervault/src/features/referral/domain/entities/point_transaction_entity.dart';
+import 'package:lazervault/src/features/referral/domain/entities/points_config_entity.dart';
 import 'package:lazervault/src/features/referral/domain/repositories/i_referral_repository.dart';
 import 'package:lazervault/src/features/referral/data/models/referral_code_model.dart';
 import 'package:lazervault/src/features/referral/data/models/referral_transaction_model.dart';
 import 'package:lazervault/src/features/referral/data/models/country_reward_config_model.dart';
 import 'package:lazervault/src/features/referral/data/models/referral_stats_model.dart';
 import 'package:lazervault/src/features/referral/data/models/leaderboard_entry_model.dart';
+import 'package:lazervault/src/features/referral/data/models/points_balance_model.dart';
+import 'package:lazervault/src/features/referral/data/models/point_transaction_model.dart';
+import 'package:lazervault/src/features/referral/data/models/points_config_model.dart';
 import 'package:lazervault/src/generated/referral.pbgrpc.dart';
 import 'package:lazervault/src/generated/referral.pb.dart' as referral_pb;
 
@@ -131,12 +137,14 @@ class ReferralRepositoryImpl implements IReferralRepository {
   Future<Either<Failure, List<ReferralTransactionEntity>>> getMyReferrals({
     int page = 1,
     int pageSize = 20,
+    String filter = '',
   }) async {
     try {
       final callOptions = await _callOptionsHelper.withAuth();
       final request = referral_pb.GetMyReferralsRequest(
         page: page,
         pageSize: pageSize,
+        filter: filter,
       );
       final response = await _referralServiceClient.getMyReferrals(
         request,
@@ -227,6 +235,95 @@ class ReferralRepositoryImpl implements IReferralRepository {
       ));
     } catch (e) {
       print('Unexpected error getting country config: $e');
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PointsBalanceEntity>> getMyPointsBalance() async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final request = referral_pb.GetMyPointsBalanceRequest();
+      final response = await _referralServiceClient.getMyPointsBalance(
+        request,
+        options: callOptions,
+      );
+
+      if (response.hasBalance()) {
+        final model = PointsBalanceModel.fromProto(response.balance);
+        return Right(model);
+      } else {
+        return const Right(PointsBalanceEntity(
+          totalEarned: 0,
+          totalRedeemed: 0,
+          currentBalance: 0,
+        ));
+      }
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to get points balance',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<PointTransactionEntity>>> getMyPointsHistory({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final request = referral_pb.GetMyPointsHistoryRequest(
+        page: page,
+        pageSize: pageSize,
+      );
+      final response = await _referralServiceClient.getMyPointsHistory(
+        request,
+        options: callOptions,
+      );
+
+      final transactions = response.transactions
+          .map((proto) => PointTransactionModel.fromProto(proto))
+          .toList();
+      return Right(transactions);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to get points history',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<PointsConfigEntity>>> getPointsConfig() async {
+    try {
+      final request = referral_pb.GetPointsConfigRequest();
+      final response = await _referralServiceClient.getPointsConfig(request);
+
+      final configs = response.configs
+          .map((proto) => PointsConfigModel.fromProto(proto))
+          .toList();
+      return Right(configs);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to get points config',
+        statusCode: e.code,
+      ));
+    } catch (e) {
       return Left(ServerFailure(
         message: 'An unexpected error occurred',
         statusCode: 500,

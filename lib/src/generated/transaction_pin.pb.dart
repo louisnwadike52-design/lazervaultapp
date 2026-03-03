@@ -14,6 +14,9 @@ import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $2;
+import 'transaction_pin.pbenum.dart';
+
+export 'transaction_pin.pbenum.dart';
 
 /// CreateTransactionPinRequest creates a new PIN
 class CreateTransactionPinRequest extends $pb.GeneratedMessage {
@@ -23,6 +26,7 @@ class CreateTransactionPinRequest extends $pb.GeneratedMessage {
     $core.String? confirmPin,
     $core.String? deviceId,
     $core.String? deviceName,
+    PinChannelType? channelType,
   }) {
     final $result = create();
     if (userId != null) {
@@ -40,6 +44,9 @@ class CreateTransactionPinRequest extends $pb.GeneratedMessage {
     if (deviceName != null) {
       $result.deviceName = deviceName;
     }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
     return $result;
   }
   CreateTransactionPinRequest._() : super();
@@ -52,6 +59,7 @@ class CreateTransactionPinRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'confirmPin')
     ..aOS(4, _omitFieldNames ? '' : 'deviceId')
     ..aOS(5, _omitFieldNames ? '' : 'deviceName')
+    ..e<PinChannelType>(6, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
     ..hasRequiredFields = false
   ;
 
@@ -120,6 +128,15 @@ class CreateTransactionPinRequest extends $pb.GeneratedMessage {
   $core.bool hasDeviceName() => $_has(4);
   @$pb.TagNumber(5)
   void clearDeviceName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  PinChannelType get channelType => $_getN(5);
+  @$pb.TagNumber(6)
+  set channelType(PinChannelType v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasChannelType() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearChannelType() => clearField(6);
 }
 
 class CreateTransactionPinResponse extends $pb.GeneratedMessage {
@@ -212,6 +229,7 @@ class VerifyTransactionPinRequest extends $pb.GeneratedMessage {
     $core.double? amount,
     $core.String? currency,
     $core.String? deviceId,
+    PinChannelType? channelType,
   }) {
     final $result = create();
     if (userId != null) {
@@ -235,6 +253,9 @@ class VerifyTransactionPinRequest extends $pb.GeneratedMessage {
     if (deviceId != null) {
       $result.deviceId = deviceId;
     }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
     return $result;
   }
   VerifyTransactionPinRequest._() : super();
@@ -249,6 +270,7 @@ class VerifyTransactionPinRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(5, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(6, _omitFieldNames ? '' : 'currency')
     ..aOS(7, _omitFieldNames ? '' : 'deviceId')
+    ..e<PinChannelType>(8, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
     ..hasRequiredFields = false
   ;
 
@@ -335,6 +357,15 @@ class VerifyTransactionPinRequest extends $pb.GeneratedMessage {
   $core.bool hasDeviceId() => $_has(6);
   @$pb.TagNumber(7)
   void clearDeviceId() => clearField(7);
+
+  @$pb.TagNumber(8)
+  PinChannelType get channelType => $_getN(7);
+  @$pb.TagNumber(8)
+  set channelType(PinChannelType v) { setField(8, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasChannelType() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearChannelType() => clearField(8);
 }
 
 class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
@@ -466,6 +497,7 @@ class ChangeTransactionPinRequest extends $pb.GeneratedMessage {
     $core.String? currentPin,
     $core.String? newPin,
     $core.String? confirmNewPin,
+    PinChannelType? channelType,
   }) {
     final $result = create();
     if (userId != null) {
@@ -480,6 +512,9 @@ class ChangeTransactionPinRequest extends $pb.GeneratedMessage {
     if (confirmNewPin != null) {
       $result.confirmNewPin = confirmNewPin;
     }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
     return $result;
   }
   ChangeTransactionPinRequest._() : super();
@@ -491,6 +526,7 @@ class ChangeTransactionPinRequest extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'currentPin')
     ..aOS(3, _omitFieldNames ? '' : 'newPin')
     ..aOS(4, _omitFieldNames ? '' : 'confirmNewPin')
+    ..e<PinChannelType>(5, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
     ..hasRequiredFields = false
   ;
 
@@ -550,6 +586,15 @@ class ChangeTransactionPinRequest extends $pb.GeneratedMessage {
   $core.bool hasConfirmNewPin() => $_has(3);
   @$pb.TagNumber(4)
   void clearConfirmNewPin() => clearField(4);
+
+  @$pb.TagNumber(5)
+  PinChannelType get channelType => $_getN(4);
+  @$pb.TagNumber(5)
+  set channelType(PinChannelType v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasChannelType() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearChannelType() => clearField(5);
 }
 
 class ChangeTransactionPinResponse extends $pb.GeneratedMessage {
@@ -624,6 +669,7 @@ class ResetTransactionPinRequest extends $pb.GeneratedMessage {
     $core.String? verificationCode,
     $core.String? newPin,
     $core.String? confirmNewPin,
+    PinChannelType? channelType,
   }) {
     final $result = create();
     if (userId != null) {
@@ -641,6 +687,9 @@ class ResetTransactionPinRequest extends $pb.GeneratedMessage {
     if (confirmNewPin != null) {
       $result.confirmNewPin = confirmNewPin;
     }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
     return $result;
   }
   ResetTransactionPinRequest._() : super();
@@ -653,6 +702,7 @@ class ResetTransactionPinRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'verificationCode')
     ..aOS(4, _omitFieldNames ? '' : 'newPin')
     ..aOS(5, _omitFieldNames ? '' : 'confirmNewPin')
+    ..e<PinChannelType>(6, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
     ..hasRequiredFields = false
   ;
 
@@ -721,6 +771,15 @@ class ResetTransactionPinRequest extends $pb.GeneratedMessage {
   $core.bool hasConfirmNewPin() => $_has(4);
   @$pb.TagNumber(5)
   void clearConfirmNewPin() => clearField(5);
+
+  @$pb.TagNumber(6)
+  PinChannelType get channelType => $_getN(5);
+  @$pb.TagNumber(6)
+  set channelType(PinChannelType v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasChannelType() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearChannelType() => clearField(6);
 }
 
 class ResetTransactionPinResponse extends $pb.GeneratedMessage {
@@ -791,10 +850,14 @@ class ResetTransactionPinResponse extends $pb.GeneratedMessage {
 class CheckUserHasPinRequest extends $pb.GeneratedMessage {
   factory CheckUserHasPinRequest({
     $core.String? userId,
+    PinChannelType? channelType,
   }) {
     final $result = create();
     if (userId != null) {
       $result.userId = userId;
+    }
+    if (channelType != null) {
+      $result.channelType = channelType;
     }
     return $result;
   }
@@ -804,6 +867,7 @@ class CheckUserHasPinRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckUserHasPinRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..e<PinChannelType>(2, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
     ..hasRequiredFields = false
   ;
 
@@ -836,6 +900,15 @@ class CheckUserHasPinRequest extends $pb.GeneratedMessage {
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
   void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  PinChannelType get channelType => $_getN(1);
+  @$pb.TagNumber(2)
+  set channelType(PinChannelType v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelType() => clearField(2);
 }
 
 class CheckUserHasPinResponse extends $pb.GeneratedMessage {
@@ -1119,6 +1192,7 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
     $core.int? failedAttempts,
     $core.bool? isLocked,
     $2.Timestamp? lockedUntil,
+    PinChannelType? channelType,
   }) {
     final $result = create();
     if (id != null) {
@@ -1148,6 +1222,9 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
     if (lockedUntil != null) {
       $result.lockedUntil = lockedUntil;
     }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
     return $result;
   }
   TransactionPinDetails._() : super();
@@ -1164,6 +1241,7 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
     ..a<$core.int>(7, _omitFieldNames ? '' : 'failedAttempts', $pb.PbFieldType.O3)
     ..aOB(8, _omitFieldNames ? '' : 'isLocked')
     ..aOM<$2.Timestamp>(9, _omitFieldNames ? '' : 'lockedUntil', subBuilder: $2.Timestamp.create)
+    ..e<PinChannelType>(10, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
     ..hasRequiredFields = false
   ;
 
@@ -1276,6 +1354,15 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   void clearLockedUntil() => clearField(9);
   @$pb.TagNumber(9)
   $2.Timestamp ensureLockedUntil() => $_ensure(8);
+
+  @$pb.TagNumber(10)
+  PinChannelType get channelType => $_getN(9);
+  @$pb.TagNumber(10)
+  set channelType(PinChannelType v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasChannelType() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearChannelType() => clearField(10);
 }
 
 /// InitiatePinOTP request - sends OTP for PIN create/change/reset
@@ -1502,6 +1589,7 @@ class VerifyPinOTPRequest extends $pb.GeneratedMessage {
     $core.String? confirmNewPin,
     $core.String? deviceId,
     $core.String? deviceName,
+    PinChannelType? channelType,
   }) {
     final $result = create();
     if (userId != null) {
@@ -1528,6 +1616,9 @@ class VerifyPinOTPRequest extends $pb.GeneratedMessage {
     if (deviceName != null) {
       $result.deviceName = deviceName;
     }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
     return $result;
   }
   VerifyPinOTPRequest._() : super();
@@ -1543,6 +1634,7 @@ class VerifyPinOTPRequest extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'confirmNewPin')
     ..aOS(7, _omitFieldNames ? '' : 'deviceId')
     ..aOS(8, _omitFieldNames ? '' : 'deviceName')
+    ..e<PinChannelType>(9, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
     ..hasRequiredFields = false
   ;
 
@@ -1638,6 +1730,15 @@ class VerifyPinOTPRequest extends $pb.GeneratedMessage {
   $core.bool hasDeviceName() => $_has(7);
   @$pb.TagNumber(8)
   void clearDeviceName() => clearField(8);
+
+  @$pb.TagNumber(9)
+  PinChannelType get channelType => $_getN(8);
+  @$pb.TagNumber(9)
+  set channelType(PinChannelType v) { setField(9, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasChannelType() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearChannelType() => clearField(9);
 }
 
 class VerifyPinOTPResponse extends $pb.GeneratedMessage {
@@ -1927,6 +2028,7 @@ class CompleteForgotPinRequest extends $pb.GeneratedMessage {
     $core.String? newPin,
     $core.String? confirmNewPin,
     $core.String? deviceId,
+    PinChannelType? channelType,
   }) {
     final $result = create();
     if (userId != null) {
@@ -1944,6 +2046,9 @@ class CompleteForgotPinRequest extends $pb.GeneratedMessage {
     if (deviceId != null) {
       $result.deviceId = deviceId;
     }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
     return $result;
   }
   CompleteForgotPinRequest._() : super();
@@ -1956,6 +2061,7 @@ class CompleteForgotPinRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'newPin')
     ..aOS(4, _omitFieldNames ? '' : 'confirmNewPin')
     ..aOS(5, _omitFieldNames ? '' : 'deviceId')
+    ..e<PinChannelType>(6, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
     ..hasRequiredFields = false
   ;
 
@@ -2024,6 +2130,15 @@ class CompleteForgotPinRequest extends $pb.GeneratedMessage {
   $core.bool hasDeviceId() => $_has(4);
   @$pb.TagNumber(5)
   void clearDeviceId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  PinChannelType get channelType => $_getN(5);
+  @$pb.TagNumber(6)
+  set channelType(PinChannelType v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasChannelType() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearChannelType() => clearField(6);
 }
 
 class CompleteForgotPinResponse extends $pb.GeneratedMessage {
@@ -2209,6 +2324,1088 @@ class PinConfig extends $pb.GeneratedMessage {
   $core.bool hasTokenExpiryMinutes() => $_has(4);
   @$pb.TagNumber(5)
   void clearTokenExpiryMinutes() => clearField(5);
+}
+
+/// GetUserChannelPins - returns PIN status for all channels
+class GetUserChannelPinsRequest extends $pb.GeneratedMessage {
+  factory GetUserChannelPinsRequest({
+    $core.String? userId,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    return $result;
+  }
+  GetUserChannelPinsRequest._() : super();
+  factory GetUserChannelPinsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserChannelPinsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserChannelPinsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserChannelPinsRequest clone() => GetUserChannelPinsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserChannelPinsRequest copyWith(void Function(GetUserChannelPinsRequest) updates) => super.copyWith((message) => updates(message as GetUserChannelPinsRequest)) as GetUserChannelPinsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUserChannelPinsRequest create() => GetUserChannelPinsRequest._();
+  GetUserChannelPinsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetUserChannelPinsRequest> createRepeated() => $pb.PbList<GetUserChannelPinsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserChannelPinsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserChannelPinsRequest>(create);
+  static GetUserChannelPinsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+}
+
+class GetUserChannelPinsResponse extends $pb.GeneratedMessage {
+  factory GetUserChannelPinsResponse({
+    $core.Iterable<ChannelPinStatus>? channelPins,
+  }) {
+    final $result = create();
+    if (channelPins != null) {
+      $result.channelPins.addAll(channelPins);
+    }
+    return $result;
+  }
+  GetUserChannelPinsResponse._() : super();
+  factory GetUserChannelPinsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserChannelPinsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserChannelPinsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..pc<ChannelPinStatus>(1, _omitFieldNames ? '' : 'channelPins', $pb.PbFieldType.PM, subBuilder: ChannelPinStatus.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserChannelPinsResponse clone() => GetUserChannelPinsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserChannelPinsResponse copyWith(void Function(GetUserChannelPinsResponse) updates) => super.copyWith((message) => updates(message as GetUserChannelPinsResponse)) as GetUserChannelPinsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUserChannelPinsResponse create() => GetUserChannelPinsResponse._();
+  GetUserChannelPinsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetUserChannelPinsResponse> createRepeated() => $pb.PbList<GetUserChannelPinsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserChannelPinsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserChannelPinsResponse>(create);
+  static GetUserChannelPinsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<ChannelPinStatus> get channelPins => $_getList(0);
+}
+
+class ChannelPinStatus extends $pb.GeneratedMessage {
+  factory ChannelPinStatus({
+    PinChannelType? channelType,
+    $core.bool? hasPin,
+    $core.bool? isActive,
+    $core.bool? isLocked,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? lastUsedAt,
+  }) {
+    final $result = create();
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
+    if (hasPin != null) {
+      $result.hasPin = hasPin;
+    }
+    if (isActive != null) {
+      $result.isActive = isActive;
+    }
+    if (isLocked != null) {
+      $result.isLocked = isLocked;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    if (lastUsedAt != null) {
+      $result.lastUsedAt = lastUsedAt;
+    }
+    return $result;
+  }
+  ChannelPinStatus._() : super();
+  factory ChannelPinStatus.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ChannelPinStatus.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelPinStatus', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..e<PinChannelType>(1, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..aOB(2, _omitFieldNames ? '' : 'hasPin')
+    ..aOB(3, _omitFieldNames ? '' : 'isActive')
+    ..aOB(4, _omitFieldNames ? '' : 'isLocked')
+    ..aOM<$2.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(6, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $2.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ChannelPinStatus clone() => ChannelPinStatus()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ChannelPinStatus copyWith(void Function(ChannelPinStatus) updates) => super.copyWith((message) => updates(message as ChannelPinStatus)) as ChannelPinStatus;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ChannelPinStatus create() => ChannelPinStatus._();
+  ChannelPinStatus createEmptyInstance() => create();
+  static $pb.PbList<ChannelPinStatus> createRepeated() => $pb.PbList<ChannelPinStatus>();
+  @$core.pragma('dart2js:noInline')
+  static ChannelPinStatus getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChannelPinStatus>(create);
+  static ChannelPinStatus? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  PinChannelType get channelType => $_getN(0);
+  @$pb.TagNumber(1)
+  set channelType(PinChannelType v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChannelType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChannelType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get hasPin => $_getBF(1);
+  @$pb.TagNumber(2)
+  set hasPin($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasHasPin() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearHasPin() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get isActive => $_getBF(2);
+  @$pb.TagNumber(3)
+  set isActive($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIsActive() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIsActive() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get isLocked => $_getBF(3);
+  @$pb.TagNumber(4)
+  set isLocked($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIsLocked() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIsLocked() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $2.Timestamp get createdAt => $_getN(4);
+  @$pb.TagNumber(5)
+  set createdAt($2.Timestamp v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCreatedAt() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCreatedAt() => clearField(5);
+  @$pb.TagNumber(5)
+  $2.Timestamp ensureCreatedAt() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  $2.Timestamp get lastUsedAt => $_getN(5);
+  @$pb.TagNumber(6)
+  set lastUsedAt($2.Timestamp v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasLastUsedAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLastUsedAt() => clearField(6);
+  @$pb.TagNumber(6)
+  $2.Timestamp ensureLastUsedAt() => $_ensure(5);
+}
+
+/// CreateChannelRegistration
+class CreateChannelRegistrationRequest extends $pb.GeneratedMessage {
+  factory CreateChannelRegistrationRequest({
+    $core.String? userId,
+    $core.String? channelType,
+    $core.String? phoneNumber,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
+    return $result;
+  }
+  CreateChannelRegistrationRequest._() : super();
+  factory CreateChannelRegistrationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateChannelRegistrationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateChannelRegistrationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'channelType')
+    ..aOS(3, _omitFieldNames ? '' : 'phoneNumber')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateChannelRegistrationRequest clone() => CreateChannelRegistrationRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateChannelRegistrationRequest copyWith(void Function(CreateChannelRegistrationRequest) updates) => super.copyWith((message) => updates(message as CreateChannelRegistrationRequest)) as CreateChannelRegistrationRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateChannelRegistrationRequest create() => CreateChannelRegistrationRequest._();
+  CreateChannelRegistrationRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateChannelRegistrationRequest> createRepeated() => $pb.PbList<CreateChannelRegistrationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateChannelRegistrationRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateChannelRegistrationRequest>(create);
+  static CreateChannelRegistrationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get channelType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set channelType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get phoneNumber => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set phoneNumber($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPhoneNumber() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPhoneNumber() => clearField(3);
+}
+
+class CreateChannelRegistrationResponse extends $pb.GeneratedMessage {
+  factory CreateChannelRegistrationResponse({
+    $core.bool? success,
+    $core.String? message,
+    $core.String? maskedPhone,
+    $core.int? otpExpiresInSeconds,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (maskedPhone != null) {
+      $result.maskedPhone = maskedPhone;
+    }
+    if (otpExpiresInSeconds != null) {
+      $result.otpExpiresInSeconds = otpExpiresInSeconds;
+    }
+    return $result;
+  }
+  CreateChannelRegistrationResponse._() : super();
+  factory CreateChannelRegistrationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateChannelRegistrationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateChannelRegistrationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOS(3, _omitFieldNames ? '' : 'maskedPhone')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'otpExpiresInSeconds', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateChannelRegistrationResponse clone() => CreateChannelRegistrationResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateChannelRegistrationResponse copyWith(void Function(CreateChannelRegistrationResponse) updates) => super.copyWith((message) => updates(message as CreateChannelRegistrationResponse)) as CreateChannelRegistrationResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateChannelRegistrationResponse create() => CreateChannelRegistrationResponse._();
+  CreateChannelRegistrationResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateChannelRegistrationResponse> createRepeated() => $pb.PbList<CreateChannelRegistrationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateChannelRegistrationResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateChannelRegistrationResponse>(create);
+  static CreateChannelRegistrationResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get maskedPhone => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set maskedPhone($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMaskedPhone() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMaskedPhone() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get otpExpiresInSeconds => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set otpExpiresInSeconds($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasOtpExpiresInSeconds() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOtpExpiresInSeconds() => clearField(4);
+}
+
+/// VerifyChannelOTP
+class VerifyChannelOTPRequest extends $pb.GeneratedMessage {
+  factory VerifyChannelOTPRequest({
+    $core.String? userId,
+    $core.String? channelType,
+    $core.String? otpCode,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
+    if (otpCode != null) {
+      $result.otpCode = otpCode;
+    }
+    return $result;
+  }
+  VerifyChannelOTPRequest._() : super();
+  factory VerifyChannelOTPRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyChannelOTPRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyChannelOTPRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'channelType')
+    ..aOS(3, _omitFieldNames ? '' : 'otpCode')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyChannelOTPRequest clone() => VerifyChannelOTPRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyChannelOTPRequest copyWith(void Function(VerifyChannelOTPRequest) updates) => super.copyWith((message) => updates(message as VerifyChannelOTPRequest)) as VerifyChannelOTPRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static VerifyChannelOTPRequest create() => VerifyChannelOTPRequest._();
+  VerifyChannelOTPRequest createEmptyInstance() => create();
+  static $pb.PbList<VerifyChannelOTPRequest> createRepeated() => $pb.PbList<VerifyChannelOTPRequest>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyChannelOTPRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyChannelOTPRequest>(create);
+  static VerifyChannelOTPRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get channelType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set channelType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get otpCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set otpCode($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasOtpCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOtpCode() => clearField(3);
+}
+
+class VerifyChannelOTPResponse extends $pb.GeneratedMessage {
+  factory VerifyChannelOTPResponse({
+    $core.bool? success,
+    $core.String? message,
+    ChannelRegistrationDetails? registration,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (registration != null) {
+      $result.registration = registration;
+    }
+    return $result;
+  }
+  VerifyChannelOTPResponse._() : super();
+  factory VerifyChannelOTPResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyChannelOTPResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyChannelOTPResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<ChannelRegistrationDetails>(3, _omitFieldNames ? '' : 'registration', subBuilder: ChannelRegistrationDetails.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyChannelOTPResponse clone() => VerifyChannelOTPResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyChannelOTPResponse copyWith(void Function(VerifyChannelOTPResponse) updates) => super.copyWith((message) => updates(message as VerifyChannelOTPResponse)) as VerifyChannelOTPResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static VerifyChannelOTPResponse create() => VerifyChannelOTPResponse._();
+  VerifyChannelOTPResponse createEmptyInstance() => create();
+  static $pb.PbList<VerifyChannelOTPResponse> createRepeated() => $pb.PbList<VerifyChannelOTPResponse>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyChannelOTPResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyChannelOTPResponse>(create);
+  static VerifyChannelOTPResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  ChannelRegistrationDetails get registration => $_getN(2);
+  @$pb.TagNumber(3)
+  set registration(ChannelRegistrationDetails v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRegistration() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRegistration() => clearField(3);
+  @$pb.TagNumber(3)
+  ChannelRegistrationDetails ensureRegistration() => $_ensure(2);
+}
+
+/// GetChannelRegistrations
+class GetChannelRegistrationsRequest extends $pb.GeneratedMessage {
+  factory GetChannelRegistrationsRequest({
+    $core.String? userId,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    return $result;
+  }
+  GetChannelRegistrationsRequest._() : super();
+  factory GetChannelRegistrationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetChannelRegistrationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetChannelRegistrationsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetChannelRegistrationsRequest clone() => GetChannelRegistrationsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetChannelRegistrationsRequest copyWith(void Function(GetChannelRegistrationsRequest) updates) => super.copyWith((message) => updates(message as GetChannelRegistrationsRequest)) as GetChannelRegistrationsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetChannelRegistrationsRequest create() => GetChannelRegistrationsRequest._();
+  GetChannelRegistrationsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetChannelRegistrationsRequest> createRepeated() => $pb.PbList<GetChannelRegistrationsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetChannelRegistrationsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetChannelRegistrationsRequest>(create);
+  static GetChannelRegistrationsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+}
+
+class GetChannelRegistrationsResponse extends $pb.GeneratedMessage {
+  factory GetChannelRegistrationsResponse({
+    $core.Iterable<ChannelRegistrationDetails>? registrations,
+  }) {
+    final $result = create();
+    if (registrations != null) {
+      $result.registrations.addAll(registrations);
+    }
+    return $result;
+  }
+  GetChannelRegistrationsResponse._() : super();
+  factory GetChannelRegistrationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetChannelRegistrationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetChannelRegistrationsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..pc<ChannelRegistrationDetails>(1, _omitFieldNames ? '' : 'registrations', $pb.PbFieldType.PM, subBuilder: ChannelRegistrationDetails.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetChannelRegistrationsResponse clone() => GetChannelRegistrationsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetChannelRegistrationsResponse copyWith(void Function(GetChannelRegistrationsResponse) updates) => super.copyWith((message) => updates(message as GetChannelRegistrationsResponse)) as GetChannelRegistrationsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetChannelRegistrationsResponse create() => GetChannelRegistrationsResponse._();
+  GetChannelRegistrationsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetChannelRegistrationsResponse> createRepeated() => $pb.PbList<GetChannelRegistrationsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetChannelRegistrationsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetChannelRegistrationsResponse>(create);
+  static GetChannelRegistrationsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<ChannelRegistrationDetails> get registrations => $_getList(0);
+}
+
+class ChannelRegistrationDetails extends $pb.GeneratedMessage {
+  factory ChannelRegistrationDetails({
+    $core.String? id,
+    $core.String? userId,
+    $core.String? channelType,
+    $core.String? phoneNumber,
+    $core.String? status,
+    $core.bool? hasPin,
+    $2.Timestamp? activatedAt,
+    $2.Timestamp? createdAt,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (hasPin != null) {
+      $result.hasPin = hasPin;
+    }
+    if (activatedAt != null) {
+      $result.activatedAt = activatedAt;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    return $result;
+  }
+  ChannelRegistrationDetails._() : super();
+  factory ChannelRegistrationDetails.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ChannelRegistrationDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelRegistrationDetails', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'channelType')
+    ..aOS(4, _omitFieldNames ? '' : 'phoneNumber')
+    ..aOS(5, _omitFieldNames ? '' : 'status')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPin')
+    ..aOM<$2.Timestamp>(7, _omitFieldNames ? '' : 'activatedAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ChannelRegistrationDetails clone() => ChannelRegistrationDetails()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ChannelRegistrationDetails copyWith(void Function(ChannelRegistrationDetails) updates) => super.copyWith((message) => updates(message as ChannelRegistrationDetails)) as ChannelRegistrationDetails;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ChannelRegistrationDetails create() => ChannelRegistrationDetails._();
+  ChannelRegistrationDetails createEmptyInstance() => create();
+  static $pb.PbList<ChannelRegistrationDetails> createRepeated() => $pb.PbList<ChannelRegistrationDetails>();
+  @$core.pragma('dart2js:noInline')
+  static ChannelRegistrationDetails getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChannelRegistrationDetails>(create);
+  static ChannelRegistrationDetails? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get channelType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set channelType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasChannelType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearChannelType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get phoneNumber => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set phoneNumber($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPhoneNumber() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPhoneNumber() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get status => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set status($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasStatus() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearStatus() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get hasPin => $_getBF(5);
+  @$pb.TagNumber(6)
+  set hasPin($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasHasPin() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHasPin() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $2.Timestamp get activatedAt => $_getN(6);
+  @$pb.TagNumber(7)
+  set activatedAt($2.Timestamp v) { setField(7, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasActivatedAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearActivatedAt() => clearField(7);
+  @$pb.TagNumber(7)
+  $2.Timestamp ensureActivatedAt() => $_ensure(6);
+
+  @$pb.TagNumber(8)
+  $2.Timestamp get createdAt => $_getN(7);
+  @$pb.TagNumber(8)
+  set createdAt($2.Timestamp v) { setField(8, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCreatedAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCreatedAt() => clearField(8);
+  @$pb.TagNumber(8)
+  $2.Timestamp ensureCreatedAt() => $_ensure(7);
+}
+
+/// DeactivateChannel
+class DeactivateChannelRequest extends $pb.GeneratedMessage {
+  factory DeactivateChannelRequest({
+    $core.String? userId,
+    $core.String? channelType,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
+    return $result;
+  }
+  DeactivateChannelRequest._() : super();
+  factory DeactivateChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeactivateChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeactivateChannelRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'channelType')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeactivateChannelRequest clone() => DeactivateChannelRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeactivateChannelRequest copyWith(void Function(DeactivateChannelRequest) updates) => super.copyWith((message) => updates(message as DeactivateChannelRequest)) as DeactivateChannelRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeactivateChannelRequest create() => DeactivateChannelRequest._();
+  DeactivateChannelRequest createEmptyInstance() => create();
+  static $pb.PbList<DeactivateChannelRequest> createRepeated() => $pb.PbList<DeactivateChannelRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeactivateChannelRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeactivateChannelRequest>(create);
+  static DeactivateChannelRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get channelType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set channelType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelType() => clearField(2);
+}
+
+class DeactivateChannelResponse extends $pb.GeneratedMessage {
+  factory DeactivateChannelResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  DeactivateChannelResponse._() : super();
+  factory DeactivateChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeactivateChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeactivateChannelResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeactivateChannelResponse clone() => DeactivateChannelResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeactivateChannelResponse copyWith(void Function(DeactivateChannelResponse) updates) => super.copyWith((message) => updates(message as DeactivateChannelResponse)) as DeactivateChannelResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeactivateChannelResponse create() => DeactivateChannelResponse._();
+  DeactivateChannelResponse createEmptyInstance() => create();
+  static $pb.PbList<DeactivateChannelResponse> createRepeated() => $pb.PbList<DeactivateChannelResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeactivateChannelResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeactivateChannelResponse>(create);
+  static DeactivateChannelResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+/// ResolvePhoneToUser - service-to-service only
+class ResolvePhoneToUserRequest extends $pb.GeneratedMessage {
+  factory ResolvePhoneToUserRequest({
+    $core.String? phoneNumber,
+    $core.String? channelType,
+  }) {
+    final $result = create();
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
+    if (channelType != null) {
+      $result.channelType = channelType;
+    }
+    return $result;
+  }
+  ResolvePhoneToUserRequest._() : super();
+  factory ResolvePhoneToUserRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ResolvePhoneToUserRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResolvePhoneToUserRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
+    ..aOS(2, _omitFieldNames ? '' : 'channelType')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ResolvePhoneToUserRequest clone() => ResolvePhoneToUserRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ResolvePhoneToUserRequest copyWith(void Function(ResolvePhoneToUserRequest) updates) => super.copyWith((message) => updates(message as ResolvePhoneToUserRequest)) as ResolvePhoneToUserRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ResolvePhoneToUserRequest create() => ResolvePhoneToUserRequest._();
+  ResolvePhoneToUserRequest createEmptyInstance() => create();
+  static $pb.PbList<ResolvePhoneToUserRequest> createRepeated() => $pb.PbList<ResolvePhoneToUserRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ResolvePhoneToUserRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResolvePhoneToUserRequest>(create);
+  static ResolvePhoneToUserRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get phoneNumber => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set phoneNumber($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPhoneNumber() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPhoneNumber() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get channelType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set channelType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelType() => clearField(2);
+}
+
+class ResolvePhoneToUserResponse extends $pb.GeneratedMessage {
+  factory ResolvePhoneToUserResponse({
+    $core.bool? found,
+    $core.String? userId,
+    $core.String? channelStatus,
+    $core.bool? hasPin,
+  }) {
+    final $result = create();
+    if (found != null) {
+      $result.found = found;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (channelStatus != null) {
+      $result.channelStatus = channelStatus;
+    }
+    if (hasPin != null) {
+      $result.hasPin = hasPin;
+    }
+    return $result;
+  }
+  ResolvePhoneToUserResponse._() : super();
+  factory ResolvePhoneToUserResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ResolvePhoneToUserResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResolvePhoneToUserResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'found')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'channelStatus')
+    ..aOB(4, _omitFieldNames ? '' : 'hasPin')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ResolvePhoneToUserResponse clone() => ResolvePhoneToUserResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ResolvePhoneToUserResponse copyWith(void Function(ResolvePhoneToUserResponse) updates) => super.copyWith((message) => updates(message as ResolvePhoneToUserResponse)) as ResolvePhoneToUserResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ResolvePhoneToUserResponse create() => ResolvePhoneToUserResponse._();
+  ResolvePhoneToUserResponse createEmptyInstance() => create();
+  static $pb.PbList<ResolvePhoneToUserResponse> createRepeated() => $pb.PbList<ResolvePhoneToUserResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ResolvePhoneToUserResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResolvePhoneToUserResponse>(create);
+  static ResolvePhoneToUserResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get found => $_getBF(0);
+  @$pb.TagNumber(1)
+  set found($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFound() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFound() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get channelStatus => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set channelStatus($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasChannelStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearChannelStatus() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get hasPin => $_getBF(3);
+  @$pb.TagNumber(4)
+  set hasPin($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasHasPin() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearHasPin() => clearField(4);
 }
 
 

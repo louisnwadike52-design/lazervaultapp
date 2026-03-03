@@ -93,7 +93,6 @@ class CashFlowInsightsCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 16.w),
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),

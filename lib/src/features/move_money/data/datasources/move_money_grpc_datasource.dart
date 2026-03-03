@@ -7,6 +7,17 @@ import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
 import '../../domain/entities/move_transfer.dart';
 import '../../domain/entities/move_fee_calculation.dart';
 
+/// Exception with error code from backend for typed error handling
+class MoveMoneyException implements Exception {
+  final String code;
+  final String message;
+
+  const MoveMoneyException({required this.code, required this.message});
+
+  @override
+  String toString() => message;
+}
+
 /// gRPC data source for Move Money operations
 class MoveMoneyGrpcDataSource {
   final banking.BankingServiceClient _client;
@@ -49,8 +60,9 @@ class MoveMoneyGrpcDataSource {
     });
 
     if (!response.success) {
-      throw Exception(
-        response.errorMessage.isNotEmpty ? response.errorMessage : 'Transfer failed',
+      throw MoveMoneyException(
+        code: response.errorCode.isNotEmpty ? response.errorCode : 'UNKNOWN',
+        message: response.errorMessage.isNotEmpty ? response.errorMessage : 'Transfer failed',
       );
     }
 

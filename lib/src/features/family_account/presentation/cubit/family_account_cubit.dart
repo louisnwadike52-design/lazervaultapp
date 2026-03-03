@@ -22,6 +22,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
   final DeleteFamilyAccountUseCase deleteFamilyAccount;
   final ProcessMemberContributionUseCase processMemberContribution;
   final SetupFamilyAccountUseCase setupFamilyAccount;
+  final UpdateFundDistributionModeUseCase updateFundDistributionMode;
 
   FamilyAccountCubit({
     required this.getFamilyAccounts,
@@ -41,6 +42,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     required this.deleteFamilyAccount,
     required this.processMemberContribution,
     required this.setupFamilyAccount,
+    required this.updateFundDistributionMode,
   })  : _acceptInvitationUseCase = acceptInvitationUseCase,
         _declineInvitationUseCase = declineInvitationUseCase,
         super(FamilyAccountInitial());
@@ -340,6 +342,24 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     result.fold(
       (failure) => emit(FamilyAccountError(failure.toString())),
       (account) => emit(FamilyAccountSetupCompleted(account)),
+    );
+  }
+
+  // Update fund distribution mode for an active account
+  Future<void> updateDistributionMode({
+    required String familyId,
+    required String fundDistributionMode,
+    List<MemberAllocationEntry> allocations = const [],
+  }) async {
+    emit(FamilyAccountLoading());
+    final result = await updateFundDistributionMode(UpdateFundDistributionModeParams(
+      familyId: familyId,
+      fundDistributionMode: fundDistributionMode,
+      allocations: allocations,
+    ));
+    result.fold(
+      (failure) => emit(FamilyAccountError(failure.toString())),
+      (account) => emit(FundDistributionModeUpdated(account)),
     );
   }
 

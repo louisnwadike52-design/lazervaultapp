@@ -4684,6 +4684,8 @@ class GetTransactionHistoryRequest extends $pb.GeneratedMessage {
     $core.String? endDate,
     $core.int? limit,
     $core.int? offset,
+    $core.bool? includeExternalBanks,
+    $core.String? counterpartyAccount,
   }) {
     final $result = create();
     if (accountId != null) {
@@ -4713,6 +4715,12 @@ class GetTransactionHistoryRequest extends $pb.GeneratedMessage {
     if (offset != null) {
       $result.offset = offset;
     }
+    if (includeExternalBanks != null) {
+      $result.includeExternalBanks = includeExternalBanks;
+    }
+    if (counterpartyAccount != null) {
+      $result.counterpartyAccount = counterpartyAccount;
+    }
     return $result;
   }
   GetTransactionHistoryRequest._() : super();
@@ -4729,6 +4737,8 @@ class GetTransactionHistoryRequest extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'endDate')
     ..a<$core.int>(8, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(9, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOB(10, _omitFieldNames ? '' : 'includeExternalBanks')
+    ..aOS(11, _omitFieldNames ? '' : 'counterpartyAccount')
     ..hasRequiredFields = false
   ;
 
@@ -4833,6 +4843,24 @@ class GetTransactionHistoryRequest extends $pb.GeneratedMessage {
   $core.bool hasOffset() => $_has(8);
   @$pb.TagNumber(9)
   void clearOffset() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.bool get includeExternalBanks => $_getBF(9);
+  @$pb.TagNumber(10)
+  set includeExternalBanks($core.bool v) { $_setBool(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasIncludeExternalBanks() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearIncludeExternalBanks() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get counterpartyAccount => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set counterpartyAccount($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCounterpartyAccount() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCounterpartyAccount() => clearField(11);
 }
 
 class GetTransactionHistoryResponse extends $pb.GeneratedMessage {
@@ -4928,6 +4956,7 @@ class GetTransactionStatisticsRequest extends $pb.GeneratedMessage {
     $core.String? accountId,
     $core.String? startDate,
     $core.String? endDate,
+    $core.bool? includeExternalBanks,
   }) {
     final $result = create();
     if (accountId != null) {
@@ -4939,6 +4968,9 @@ class GetTransactionStatisticsRequest extends $pb.GeneratedMessage {
     if (endDate != null) {
       $result.endDate = endDate;
     }
+    if (includeExternalBanks != null) {
+      $result.includeExternalBanks = includeExternalBanks;
+    }
     return $result;
   }
   GetTransactionStatisticsRequest._() : super();
@@ -4949,6 +4981,7 @@ class GetTransactionStatisticsRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'accountId')
     ..aOS(2, _omitFieldNames ? '' : 'startDate')
     ..aOS(3, _omitFieldNames ? '' : 'endDate')
+    ..aOB(4, _omitFieldNames ? '' : 'includeExternalBanks')
     ..hasRequiredFields = false
   ;
 
@@ -4999,6 +5032,15 @@ class GetTransactionStatisticsRequest extends $pb.GeneratedMessage {
   $core.bool hasEndDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndDate() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get includeExternalBanks => $_getBF(3);
+  @$pb.TagNumber(4)
+  set includeExternalBanks($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIncludeExternalBanks() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIncludeExternalBanks() => clearField(4);
 }
 
 class GetTransactionStatisticsResponse extends $pb.GeneratedMessage {
@@ -9452,6 +9494,7 @@ class GetFinancialAnalyticsRequest extends $pb.GeneratedMessage {
     $core.String? period,
     $core.String? startDate,
     $core.String? endDate,
+    $core.bool? includeExternalBanks,
   }) {
     final $result = create();
     if (accountId != null) {
@@ -9466,6 +9509,9 @@ class GetFinancialAnalyticsRequest extends $pb.GeneratedMessage {
     if (endDate != null) {
       $result.endDate = endDate;
     }
+    if (includeExternalBanks != null) {
+      $result.includeExternalBanks = includeExternalBanks;
+    }
     return $result;
   }
   GetFinancialAnalyticsRequest._() : super();
@@ -9477,6 +9523,7 @@ class GetFinancialAnalyticsRequest extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'period')
     ..aOS(3, _omitFieldNames ? '' : 'startDate')
     ..aOS(4, _omitFieldNames ? '' : 'endDate')
+    ..aOB(5, _omitFieldNames ? '' : 'includeExternalBanks')
     ..hasRequiredFields = false
   ;
 
@@ -9536,6 +9583,15 @@ class GetFinancialAnalyticsRequest extends $pb.GeneratedMessage {
   $core.bool hasEndDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearEndDate() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get includeExternalBanks => $_getBF(4);
+  @$pb.TagNumber(5)
+  set includeExternalBanks($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIncludeExternalBanks() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIncludeExternalBanks() => clearField(5);
 }
 
 class GetFinancialAnalyticsResponse extends $pb.GeneratedMessage {
@@ -9848,6 +9904,7 @@ class GetCategoryAnalyticsRequest extends $pb.GeneratedMessage {
     $core.String? accountId,
     $core.String? startDate,
     $core.String? endDate,
+    $core.bool? includeExternalBanks,
   }) {
     final $result = create();
     if (accountId != null) {
@@ -9859,6 +9916,9 @@ class GetCategoryAnalyticsRequest extends $pb.GeneratedMessage {
     if (endDate != null) {
       $result.endDate = endDate;
     }
+    if (includeExternalBanks != null) {
+      $result.includeExternalBanks = includeExternalBanks;
+    }
     return $result;
   }
   GetCategoryAnalyticsRequest._() : super();
@@ -9869,6 +9929,7 @@ class GetCategoryAnalyticsRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'accountId')
     ..aOS(2, _omitFieldNames ? '' : 'startDate')
     ..aOS(3, _omitFieldNames ? '' : 'endDate')
+    ..aOB(4, _omitFieldNames ? '' : 'includeExternalBanks')
     ..hasRequiredFields = false
   ;
 
@@ -9919,6 +9980,15 @@ class GetCategoryAnalyticsRequest extends $pb.GeneratedMessage {
   $core.bool hasEndDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndDate() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get includeExternalBanks => $_getBF(3);
+  @$pb.TagNumber(4)
+  set includeExternalBanks($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIncludeExternalBanks() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIncludeExternalBanks() => clearField(4);
 }
 
 class GetCategoryAnalyticsResponse extends $pb.GeneratedMessage {
@@ -10274,6 +10344,7 @@ class GetExpenseTimeSeriesRequest extends $pb.GeneratedMessage {
     $core.String? accountId,
     $core.String? startDate,
     $core.String? endDate,
+    $core.bool? includeExternalBanks,
   }) {
     final $result = create();
     if (accountId != null) {
@@ -10285,6 +10356,9 @@ class GetExpenseTimeSeriesRequest extends $pb.GeneratedMessage {
     if (endDate != null) {
       $result.endDate = endDate;
     }
+    if (includeExternalBanks != null) {
+      $result.includeExternalBanks = includeExternalBanks;
+    }
     return $result;
   }
   GetExpenseTimeSeriesRequest._() : super();
@@ -10295,6 +10369,7 @@ class GetExpenseTimeSeriesRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'accountId')
     ..aOS(2, _omitFieldNames ? '' : 'startDate')
     ..aOS(3, _omitFieldNames ? '' : 'endDate')
+    ..aOB(4, _omitFieldNames ? '' : 'includeExternalBanks')
     ..hasRequiredFields = false
   ;
 
@@ -10345,6 +10420,15 @@ class GetExpenseTimeSeriesRequest extends $pb.GeneratedMessage {
   $core.bool hasEndDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndDate() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get includeExternalBanks => $_getBF(3);
+  @$pb.TagNumber(4)
+  set includeExternalBanks($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIncludeExternalBanks() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIncludeExternalBanks() => clearField(4);
 }
 
 class GetExpenseTimeSeriesResponse extends $pb.GeneratedMessage {

@@ -772,14 +772,61 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               ),
             ),
             SizedBox(height: 8.0.h),
-            // Referral code field
-            BuildFormField(
-              name: "referralCode",
-              placeholder: "Referral Code (optional)",
-              prefixIcon: const Icon(Icons.card_giftcard, color: Colors.black45),
-              textCapitalization: TextCapitalization.characters,
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpReferralCodeChanged(value.toUpperCase()),
+            // Referral code field with on-blur validation
+            Focus(
+              onFocusChange: (hasFocus) {
+                if (!hasFocus) {
+                  context.read<AuthenticationCubit>().validateReferralCodeOnBlur();
+                }
+              },
+              child: Builder(
+                builder: (context) {
+                  final s = context.read<AuthenticationCubit>().state;
+                  final isValidating = s is SignUpInProgress && s.isReferralCodeValidating;
+                  final isValid = s is SignUpInProgress ? s.isReferralCodeValid : null;
+                  final hasCode = s is SignUpInProgress && s.referralCode.trim().isNotEmpty;
+
+                  Widget? suffixIcon;
+                  if (isValidating) {
+                    suffixIcon = const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.grey),
+                    );
+                  } else if (hasCode && isValid == true) {
+                    suffixIcon = const Icon(Icons.check_circle, color: Color(0xFF10B981));
+                  } else if (hasCode && isValid == false) {
+                    suffixIcon = const Icon(Icons.cancel, color: Color(0xFFEF4444));
+                  }
+
+                  return BuildFormField(
+                    name: "referralCode",
+                    placeholder: "Referral Code (optional)",
+                    prefixIcon: const Icon(Icons.card_giftcard, color: Colors.black45),
+                    suffixIcon: suffixIcon,
+                    textCapitalization: TextCapitalization.characters,
+                    onChanged: (value) => context.read<AuthenticationCubit>().signUpReferralCodeChanged(value.toUpperCase()),
+                  );
+                },
+              ),
             ),
+            if (state is SignUpInProgress &&
+                (state as SignUpInProgress).referralCode.trim().isNotEmpty &&
+                (state as SignUpInProgress).isReferralCodeValid != null)
+              Padding(
+                padding: EdgeInsets.only(left: 16.0.w, top: 4.0.h),
+                child: Text(
+                  (state as SignUpInProgress).isReferralCodeValid!
+                      ? 'Valid referral code!'
+                      : 'Invalid referral code',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: (state as SignUpInProgress).isReferralCodeValid!
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
+                  ),
+                ),
+              ),
             SizedBox(height: 8.0.h),
             // DOB field
             GestureDetector(

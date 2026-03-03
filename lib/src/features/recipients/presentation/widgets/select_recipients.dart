@@ -21,6 +21,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/recipien
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_filter_chip_card.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
@@ -35,6 +36,7 @@ import 'dart:io';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/qr_scan_confirmation_sheet.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/username_recipient_confirmation_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/transfer_history_bottom_sheet.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 
@@ -79,6 +81,24 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       return parts[0][0].toUpperCase();
     }
     return '??';
+  }
+
+  /// Convert raw gRPC/network error messages to user-friendly text
+  String _friendlyError(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('unavailable') || lower.contains('connection')) {
+      return 'Service temporarily unavailable. Pull down to retry.';
+    }
+    if (lower.contains('deadline_exceeded') || lower.contains('timeout')) {
+      return 'Request timed out. Please try again.';
+    }
+    if (lower.contains('unauthenticated') || lower.contains('token')) {
+      return 'Session expired. Please log in again.';
+    }
+    if (lower.contains('permission') || lower.contains('denied')) {
+      return 'You don\'t have permission for this action.';
+    }
+    return 'Something went wrong. Pull down to retry.';
   }
 
   /// Convert to title case (only capitalize first letter of each word)
@@ -267,9 +287,21 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                 ),
                               ),
                             ),
+                            const MicroserviceChatIcon(
+                              serviceName: 'Send Funds',
+                              sourceContext: 'transfers',
+                              iconColor: Color(0xFF8B5CF6),
+                              isDirect: true,
+                              agentDescription: 'I can help you send money, set up recurring transfers, check transfer history, view fees, and more.',
+                              size: 34,
+                              iconSize: 16,
+                            ),
+                            SizedBox(width: 8.w),
                             ServiceVoiceButton(
                               serviceName: 'transfers',
                               iconColor: Colors.white,
+                              buttonSize: 34.w,
+                              iconSize: 16.sp,
                             ),
                           ],
                         ),
@@ -494,12 +526,50 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           ),
         );
       } else {
-        // Display general recipient errors
-        return Center(
-          child: Text(
-            'Error loading recipients: ${state.message}', // Add context to error
-            style: TextStyle(color: Colors.red, fontSize: 16.sp),
-            textAlign: TextAlign.center, // Center align error text
+        // Display user-friendly error instead of raw gRPC errors
+        final friendlyMessage = _friendlyError(state.message);
+        return RefreshIndicator(
+          color: const Color.fromARGB(255, 78, 3, 208),
+          onRefresh: () async {
+            final authState = context.read<AuthenticationCubit>().state;
+            if (authState is AuthenticationSuccess) {
+              final lm = serviceLocator<LocaleManager>();
+              await context.read<RecipientCubit>().getRecipients(
+                accessToken: authState.profile.session.accessToken,
+                countryCode: lm.currentCountry,
+                currency: lm.currentCurrency,
+              );
+            }
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: 300.h,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 32.w),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        color: Colors.grey[400],
+                        size: 48.sp,
+                      ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        friendlyMessage,
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 14.sp,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         );
       }
@@ -1505,20 +1575,24 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
           },
           onLazertagUserSelected: (user) {
-            // Convert lazertag user to recipient and navigate
-            final currency = CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
-            final recipient = RecipientModel(
-              id: user.id,
-              name: user.name,
-              accountNumber: user.username,
-              bankName: 'LazerVault',
-              sortCode: '',
-              isFavorite: false,
-              isSaved: false,
-              countryCode: _currentCountry,
-              currency: currency,
+            // Convert LazertagUser to UserSearchResultEntity and show confirmation
+            final searchResult = UserSearchResultEntity(
+              userId: user.id,
+              username: user.username,
+              firstName: user.name.split(' ').first,
+              lastName: user.name.split(' ').length > 1
+                  ? user.name.split(' ').skip(1).join(' ')
+                  : '',
+              email: user.email ?? '',
+              phoneNumber: user.phoneNumber ?? '',
+              profilePicture: user.avatar ?? '',
+              searchType: user.searchType,
             );
-            Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+            // Show confirmation sheet after enhanced bottom sheet closes
+            Future.delayed(const Duration(milliseconds: 350), () {
+              if (!mounted) return;
+              _showLazertagUserConfirmation(searchResult);
+            });
           },
           onContactSelected: (contact) {
             // Show dialog to add contact as recipient, then navigate
@@ -1527,6 +1601,65 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         ),
       ),
     );
+  }
+
+  /// Show confirmation sheet for LazerTag user selected from enhanced bottom sheet.
+  /// Lets the user choose save/favorite before proceeding to send funds.
+  void _showLazertagUserConfirmation(UserSearchResultEntity user) async {
+    bool confirmed = false;
+    bool isSaved = false;
+    bool isFavorite = false;
+    String? alias;
+    final sheetKey = GlobalKey<UsernameRecipientConfirmationSheetState>();
+
+    await Get.bottomSheet(
+      PopScope(
+        canPop: true,
+        child: UsernameRecipientConfirmationSheet(
+          key: sheetKey,
+          user: user,
+          onConfirm: () {
+            confirmed = true;
+            // Read save/favorite/alias state directly via GlobalKey
+            final sheetState = sheetKey.currentState;
+            if (sheetState != null) {
+              isSaved = sheetState.isSaved;
+              isFavorite = sheetState.isFavorite;
+              alias = sheetState.alias;
+            }
+            Get.back();
+          },
+          onCancel: () {
+            Get.back();
+          },
+        ),
+      ),
+      isScrollControlled: true,
+      enableDrag: true,
+      isDismissible: true,
+      enterBottomSheetDuration: const Duration(milliseconds: 300),
+      exitBottomSheetDuration: const Duration(milliseconds: 200),
+      backgroundColor: Colors.transparent,
+    );
+
+    if (!mounted) return;
+    if (confirmed) {
+      final currency = CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
+      final recipient = RecipientModel(
+        id: user.userId,
+        name: user.fullName,
+        accountNumber: user.primaryAccountId ?? user.username,
+        bankName: 'LazerVault',
+        sortCode: '',
+        isFavorite: isFavorite,
+        isSaved: isSaved,
+        alias: alias,
+        countryCode: _currentCountry,
+        currency: currency,
+        email: user.email.isNotEmpty ? user.email : null,
+      );
+      Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+    }
   }
 
   void _loadBanksIfNeeded() {
@@ -2568,31 +2701,55 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
     // Step 1: Capture image from camera
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: 2048,
-      maxHeight: 2048,
-      imageQuality: 85,
-    );
+    final XFile? image;
+    try {
+      image = await picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 85,
+      );
+    } on PlatformException catch (e) {
+      // 2.1: Camera permission denied or other platform error
+      if (!mounted) return;
+      final isDenied = e.code == 'camera_access_denied' ||
+          e.code == 'photo_access_denied' ||
+          (e.message?.toLowerCase().contains('permission') ?? false);
+      if (isDenied) {
+        _showScanErrorSheet(
+          'Camera Permission Required',
+          'Please enable camera access in your device settings to scan bank details.',
+        );
+      } else {
+        _showScanErrorSheet(
+          'Camera Error',
+          'Could not open the camera. Please try again.',
+        );
+      }
+      return;
+    }
 
-    if (image == null) return; // User cancelled
+    if (image == null) return; // User cancelled the camera
     if (!mounted) return;
 
-    // Step 2: Show processing bottom sheet immediately
+    // Step 2: Show processing sheet
     _showScanProcessingSheet();
-    // Allow the bottom sheet to render before starting network call
     await Future.delayed(const Duration(milliseconds: 100));
 
+    BankScanDataSource? dataSource;
     try {
-      // Step 3: Get user ID from auth state
+      if (!mounted) {
+        if (Get.isBottomSheetOpen ?? false) Get.back();
+        return;
+      }
+
       final authState = authCubit.state;
       final userId = (authState is AuthenticationSuccess)
           ? authState.profile.user.id
           : '';
 
-      // Step 4: Call OCR endpoint
       final gatewayUrl = dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011';
-      final dataSource = BankScanDataSource(
+      dataSource = BankScanDataSource(
         baseUrl: gatewayUrl,
         secureStorage: GetIt.I<SecureStorageService>(),
       );
@@ -2601,45 +2758,100 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         imageFile: File(image.path),
         userId: userId,
         locale: 'en-$_currentCountry',
+        countryCode: _currentCountry,
       );
 
       dataSource.dispose();
+      dataSource = null;
 
-      // Dismiss processing sheet
+      // 2.4: Always dismiss processing sheet before showing next UI
       if (Get.isBottomSheetOpen ?? false) Get.back();
-
+      // 2.3: Mounted check after async gap
       if (!mounted) return;
 
-      // Step 5: Show extracted details modal for review + verification
-      final verified = await ScanBankDetailsModal.show(
+      // Handle no_data immediately with error sheet
+      if (result.extractionType == 'no_data') {
+        _showScanErrorSheet(
+          'No Details Found',
+          'Could not find payment details in this image. Try with a clearer photo.',
+        );
+        return;
+      }
+
+      // Show smart result sheet for all other types
+      final action = await SmartScanResultSheet.show(
         context,
         scanResult: result,
         country: _currentCountry,
       );
 
-      if (verified != null) {
-        // Step 6: Navigate to send funds with verified account
-        Get.toNamed(
-          AppRoutes.initiateSendFunds,
-          arguments: {
-            'accountNumber': verified['accountNumber'],
-            'accountName': verified['accountName'],
-            'bankName': verified['bankName'],
-            'bankCode': verified['bankCode'],
-            'source': 'ocr_scan',
-          },
-        );
+      // 2.3: Mounted check after showing bottom sheet
+      if (action == null || !mounted) return;
+
+      // Route based on action type
+      switch (action.type) {
+        case ScanActionType.bankTransfer:
+          final recipient = RecipientModel(
+            id: '',
+            name: action.accountName ?? '',
+            accountNumber: action.accountNumber ?? '',
+            bankName: action.bankName ?? '',
+            sortCode: action.bankCode ?? '',
+            isFavorite: false,
+            isSaved: false,
+            countryCode: _currentCountry,
+          );
+          Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+        case ScanActionType.internalTransfer:
+          if (action.username != null && action.username!.isNotEmpty) {
+            _handleSmartScanUserSearch(action.username!);
+          }
+        case ScanActionType.phoneTransfer:
+          final recipient = RecipientModel(
+            id: '',
+            name: '',
+            accountNumber: action.phoneNumber ?? '',
+            bankName: '',
+            sortCode: '',
+            isFavorite: false,
+            isSaved: false,
+            phoneNumber: action.phoneNumber,
+            countryCode: _currentCountry,
+          );
+          Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+        case ScanActionType.retryCapture:
+          _launchBankDetailsScan();
       }
-    } on BankScanLowConfidenceException catch (e) {
-      if (Get.isBottomSheetOpen ?? false) Get.back();
-      _showScanErrorSheet('Low Quality Image', e.message, isWarning: true);
     } on BankScanException catch (e) {
+      // 2.4: Always dismiss processing sheet on error
       if (Get.isBottomSheetOpen ?? false) Get.back();
+      if (!mounted) return;
       _showScanErrorSheet('Scan Failed', e.message);
     } catch (e) {
+      // 2.4: Always dismiss processing sheet on error
       if (Get.isBottomSheetOpen ?? false) Get.back();
-      _showScanErrorSheet('Error', 'Something went wrong. Please try again.\n${e.toString()}');
+      if (!mounted) return;
+      _showScanErrorSheet('Error', 'Something went wrong. Please try again.');
+    } finally {
+      // Ensure datasource is cleaned up even on unexpected errors
+      dataSource?.dispose();
     }
+  }
+
+  void _handleSmartScanUserSearch(String username) {
+    final currency = CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
+    final recipient = RecipientModel(
+      id: '',
+      name: username,
+      accountNumber: username,
+      bankName: 'LazerVault',
+      sortCode: '',
+      isFavorite: false,
+      isSaved: false,
+      countryCode: _currentCountry,
+      currency: currency,
+    );
+    Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
   }
 
   void _showQrVerificationLoadingSheet() {

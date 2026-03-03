@@ -60,7 +60,7 @@ class RecentReferralsList extends StatelessWidget {
       case ReferralStatus.failed:
         return const Color(0xFFEF4444);
       case ReferralStatus.cancelled:
-        return Colors.grey;
+        return const Color(0xFF6B7280);
     }
   }
 
@@ -84,22 +84,15 @@ class RecentReferralsList extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Column(
           children: [
             Icon(
               Icons.people_outline_rounded,
               size: 48.sp,
-              color: Colors.grey[300],
+              color: const Color(0xFF2D2D2D),
             ),
             SizedBox(height: 12.h),
             Text(
@@ -107,7 +100,7 @@ class RecentReferralsList extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: const Color(0xFF9CA3AF),
               ),
             ),
             SizedBox(height: 4.h),
@@ -116,7 +109,7 @@ class RecentReferralsList extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
-                color: Colors.grey[500],
+                color: const Color(0xFF6B7280),
               ),
             ),
           ],
@@ -128,28 +121,12 @@ class RecentReferralsList extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Recent Referrals',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
-          SizedBox(height: 12.h),
           ...referrals.map((referral) => _buildReferralItem(referral)),
         ],
       ),
@@ -159,12 +136,13 @@ class RecentReferralsList extends StatelessWidget {
   Widget _buildReferralItem(ReferralTransactionEntity referral) {
     final statusColor = _getStatusColor(referral.status);
     final statusIcon = _getStatusIcon(referral.status);
+    final displayName = referral.refereeDisplayName;
 
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: const Color(0xFF2D2D2D).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -174,7 +152,7 @@ class RecentReferralsList extends StatelessWidget {
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
+              color: statusColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -190,11 +168,11 @@ class RecentReferralsList extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Referral #${referral.id}',
+                  displayName,
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
                 SizedBox(height: 2.h),
@@ -203,7 +181,7 @@ class RecentReferralsList extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w400,
-                    color: Colors.grey[600],
+                    color: const Color(0xFF6B7280),
                   ),
                 ),
               ],
@@ -214,7 +192,7 @@ class RecentReferralsList extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6.r),
               ),
               child: Text(

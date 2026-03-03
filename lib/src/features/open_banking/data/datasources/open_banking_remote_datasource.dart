@@ -58,7 +58,7 @@ class OpenBankingRemoteDataSource {
   }
 
   static String _getBaseUrl() {
-    final host = dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:8080';
+    final host = dotenv.env['BANKING_API_URL'] ?? 'http://10.0.2.2:8082';
     return '$host/api/v1';
   }
 
@@ -89,9 +89,19 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
+    final publicKey = data['public_key'] as String? ??
+        data['publicKey'] as String?;
+    final appId = data['app_id'] as String? ??
+        data['appId'] as String?;
+    if (publicKey == null || publicKey.isEmpty || appId == null || appId.isEmpty) {
+      throw const GenericBankingException(
+        message: 'Invalid connect configuration received from server',
+        isRetryable: true,
+      );
+    }
     return {
-      'public_key': data['public_key'] as String,
-      'app_id': data['app_id'] as String,
+      'public_key': publicKey,
+      'app_id': appId,
     };
   }
 
@@ -123,7 +133,14 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    return LinkedBankAccount.fromJson(data['account']);
+    final accountData = data['account'] as Map<String, dynamic>?;
+    if (accountData == null) {
+      throw const GenericBankingException(
+        message: 'Server returned no account data after linking',
+        isRetryable: true,
+      );
+    }
+    return LinkedBankAccount.fromJson(accountData);
   }
 
   /// Get all linked bank accounts for a user
@@ -138,10 +155,10 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    final accounts = (data['accounts'] as List)
-        .map((e) => LinkedBankAccount.fromJson(e))
+    final accountsList = data['accounts'] as List? ?? [];
+    return accountsList
+        .map((e) => LinkedBankAccount.fromJson(e as Map<String, dynamic>))
         .toList();
-    return accounts;
   }
 
   /// Get a specific linked account
@@ -156,7 +173,14 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    return LinkedBankAccount.fromJson(data['account']);
+    final accountData = data['account'] as Map<String, dynamic>?;
+    if (accountData == null) {
+      throw AccountNotFoundException(
+        message: 'Account $accountId not found',
+        accountId: accountId,
+      );
+    }
+    return LinkedBankAccount.fromJson(accountData);
   }
 
   /// Unlink a bank account
@@ -206,7 +230,10 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    return (data['balance'] as num).toDouble() / 100; // Convert from kobo
+    // Proto field: new_balance (int64) → JSON: newBalance (camelCase)
+    // Proto3 omits default values, so 0 balance won't have the field
+    final rawBalance = data['newBalance'] ?? data['new_balance'] ?? 0;
+    return (rawBalance as num).toDouble() / 100; // Convert from kobo
   }
 
   /// Get reauthorization token
@@ -223,7 +250,14 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    return data['token'] as String;
+    final token = data['token'] as String?;
+    if (token == null || token.isEmpty) {
+      throw const GenericBankingException(
+        message: 'Failed to obtain reauthorization token. Please try again.',
+        isRetryable: true,
+      );
+    }
+    return token;
   }
 
   // =====================================================
@@ -267,7 +301,14 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    return Deposit.fromJson(data['deposit']);
+    final depositData = data['deposit'] as Map<String, dynamic>?;
+    if (depositData == null) {
+      throw const GenericBankingException(
+        message: 'Server returned no deposit data',
+        isRetryable: true,
+      );
+    }
+    return Deposit.fromJson(depositData);
   }
 
   /// Get deposit status
@@ -283,7 +324,14 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    return Deposit.fromJson(data['deposit']);
+    final depositData = data['deposit'] as Map<String, dynamic>?;
+    if (depositData == null) {
+      throw const GenericBankingException(
+        message: 'Deposit not found',
+        isRetryable: false,
+      );
+    }
+    return Deposit.fromJson(depositData);
   }
 
   /// Get user's deposits
@@ -300,8 +348,9 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    final deposits = (data['deposits'] as List)
-        .map((e) => Deposit.fromJson(e))
+    final depositsList = data['deposits'] as List? ?? [];
+    final deposits = depositsList
+        .map((e) => Deposit.fromJson(e as Map<String, dynamic>))
         .toList();
     final total = data['total'] as int? ?? deposits.length;
     return (deposits, total);
@@ -358,10 +407,10 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    final banks = (data['banks'] as List)
-        .map((e) => Bank.fromJson(e))
+    final banksList = data['banks'] as List? ?? [];
+    return banksList
+        .map((e) => Bank.fromJson(e as Map<String, dynamic>))
         .toList();
-    return banks;
   }
 
   /// Resolve account name (name inquiry)
@@ -432,7 +481,14 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    return Withdrawal.fromJson(data['withdrawal']);
+    final withdrawalData = data['withdrawal'] as Map<String, dynamic>?;
+    if (withdrawalData == null) {
+      throw const GenericBankingException(
+        message: 'Server returned no withdrawal data',
+        isRetryable: true,
+      );
+    }
+    return Withdrawal.fromJson(withdrawalData);
   }
 
   /// Get withdrawal status
@@ -448,7 +504,14 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    return Withdrawal.fromJson(data['withdrawal']);
+    final withdrawalData = data['withdrawal'] as Map<String, dynamic>?;
+    if (withdrawalData == null) {
+      throw const GenericBankingException(
+        message: 'Withdrawal not found',
+        isRetryable: false,
+      );
+    }
+    return Withdrawal.fromJson(withdrawalData);
   }
 
   /// Get user's withdrawals
@@ -465,8 +528,9 @@ class OpenBankingRemoteDataSource {
     );
 
     final data = response.parseJsonOrThrow();
-    final withdrawals = (data['withdrawals'] as List)
-        .map((e) => Withdrawal.fromJson(e))
+    final withdrawalsList = data['withdrawals'] as List? ?? [];
+    final withdrawals = withdrawalsList
+        .map((e) => Withdrawal.fromJson(e as Map<String, dynamic>))
         .toList();
     final total = data['total'] as int? ?? withdrawals.length;
     return (withdrawals, total);

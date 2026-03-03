@@ -20,12 +20,15 @@ enum AppServiceName {
   crowdfund,
   lockFunds,
   whatsappIntegration,
+  phoneBanking,
   idPay,
   payroll,
   businessDashboard,
   businessAnalytics,
   customers,
   expenses,
+  inventory,
+  tax,
 }
 
 extension AppServiceNameExtension on AppServiceName {
@@ -73,6 +76,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'PiggyVault';
       case AppServiceName.whatsappIntegration:
         return 'WhatsApp Banking';
+      case AppServiceName.phoneBanking:
+        return 'Phone Banking';
       case AppServiceName.idPay:
         return 'IDPay';
       case AppServiceName.payroll:
@@ -85,6 +90,10 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Customers';
       case AppServiceName.expenses:
         return 'Expenses';
+      case AppServiceName.inventory:
+        return 'Inventory';
+      case AppServiceName.tax:
+        return 'Taxation';
     }
   }
 
@@ -93,9 +102,9 @@ extension AppServiceNameExtension on AppServiceName {
   String get backendServiceName {
     switch (this) {
       case AppServiceName.sendFunds:
-        return 'transfer-service';
+        return 'core-payments-service';
       case AppServiceName.batchTransfer:
-        return 'transfer-service';
+        return 'core-payments-service';
       case AppServiceName.tagPay:
         return 'tag-pay-service';
       case AppServiceName.invoice:
@@ -134,6 +143,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'accounts-service';
       case AppServiceName.whatsappIntegration:
         return 'whatsapp-service';
+      case AppServiceName.phoneBanking:
+        return 'phone-bridge-service';
       case AppServiceName.idPay:
         return 'id-pay-service';
       case AppServiceName.payroll:
@@ -146,6 +157,10 @@ extension AppServiceNameExtension on AppServiceName {
         return 'payroll-service';
       case AppServiceName.expenses:
         return 'accounts-service';
+      case AppServiceName.inventory:
+        return 'payroll-service';
+      case AppServiceName.tax:
+        return 'payroll-service';
     }
   }
 }
@@ -179,12 +194,15 @@ enum AppServiceImg {
   crowdfund,
   lockFunds,
   whatsappIntegration,
+  phoneBanking,
   idPay,
   payroll,
   businessDashboard,
   businessAnalytics,
   customers,
   expenses,
+  inventory,
+  tax,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -232,6 +250,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/lock.png';
       case AppServiceImg.whatsappIntegration:
         return 'assets/images/whatsapp-banking.png';
+      case AppServiceImg.phoneBanking:
+        return 'assets/images/contactless.png';
       case AppServiceImg.idPay:
         return 'assets/images/money-receive.png';
       case AppServiceImg.payroll:
@@ -243,6 +263,10 @@ extension AppServiceImgExtension on AppServiceImg {
       case AppServiceImg.customers:
         return 'assets/images/group-account.png';
       case AppServiceImg.expenses:
+        return 'assets/images/receive-square.png';
+      case AppServiceImg.inventory:
+        return 'assets/images/payroll.png';
+      case AppServiceImg.tax:
         return 'assets/images/receive-square.png';
     }
   }

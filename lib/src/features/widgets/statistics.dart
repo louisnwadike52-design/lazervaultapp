@@ -1407,6 +1407,7 @@ class _StatisticsState extends State<Statistics> {
       buildWhen: (prev, curr) =>
           curr is LinkedAccountsLoaded ||
           curr is AccountLinked ||
+          curr is AccountLinkedWithMandate ||
           curr is AccountUnlinked ||
           curr is BalanceRefreshed ||
           curr is AllAccountsSynced ||
@@ -1428,6 +1429,8 @@ class _StatisticsState extends State<Statistics> {
           ),
           child: LinkedBanksWidget(
             linkedAccounts: linkedAccounts,
+            userId: _userId,
+            accessToken: _accessToken,
             onRefresh: linkedAccounts.isNotEmpty
                 ? () => _syncLinkedAccounts(linkedAccounts)
                 : null,

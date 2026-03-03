@@ -55,6 +55,11 @@ abstract class FamilyAccountRemoteDataSource {
     required bool spendingVisibilityEnabled,
     List<MemberAllocationProto> allocations = const [],
   });
+  Future<FamilyAccountProto> updateFundDistributionMode({
+    required String familyId,
+    required String fundDistributionMode,
+    List<MemberAllocationProto> allocations = const [],
+  });
 }
 
 class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource {
@@ -866,6 +871,40 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
 
     _familyAccounts[familyId] = updatedAccount;
     return updatedAccount;
+  }
+
+  @override
+  Future<FamilyAccountProto> updateFundDistributionMode({
+    required String familyId,
+    required String fundDistributionMode,
+    List<MemberAllocationProto> allocations = const [],
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final account = _familyAccounts[familyId];
+    if (account == null) throw Exception('Family account not found');
+    final nowIso = DateTime.now().toIso8601String();
+    final updated = FamilyAccountProto(
+      id: account.id,
+      creatorId: account.creatorId,
+      creatorName: account.creatorName,
+      name: account.name,
+      description: account.description,
+      totalAllocatedBalance: account.totalAllocatedBalance,
+      totalPoolBalance: account.totalPoolBalance,
+      allowMemberContributions: account.allowMemberContributions,
+      totalBalance: account.totalBalance,
+      status: account.status,
+      createdAt: account.createdAt,
+      updatedAt: nowIso,
+      members: account.members,
+      memberCount: account.memberCount,
+      activeMemberCount: account.activeMemberCount,
+      fundDistributionMode: fundDistributionMode,
+      setupCompleted: account.setupCompleted,
+      spendingVisibilityEnabled: account.spendingVisibilityEnabled,
+    );
+    _familyAccounts[familyId] = updated;
+    return updated;
   }
 
   // Helper method to update family balance after member changes

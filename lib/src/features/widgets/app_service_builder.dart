@@ -78,6 +78,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.whatsappIntegration:
         Get.toNamed(AppRoutes.whatsappBanking);
         break;
+      case AppServiceName.phoneBanking:
+        Get.toNamed(AppRoutes.channelManagement);
+        break;
       case AppServiceName.idPay:
         Get.toNamed(AppRoutes.idPayHome);
         break;
@@ -94,8 +97,13 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         Get.toNamed(AppRoutes.businessAnalytics);
         break;
       case AppServiceName.customers:
-        // TODO: Phase 4 - Customer Management
-        Get.toNamed(AppRoutes.businessDashboard);
+        Get.toNamed(AppRoutes.customers);
+        break;
+      case AppServiceName.inventory:
+        Get.toNamed(AppRoutes.inventory);
+        break;
+      case AppServiceName.tax:
+        Get.toNamed(AppRoutes.taxDashboard);
         break;
       case AppServiceName.expenses:
         // TODO: Phase 5 - Expense Tracking
@@ -248,6 +256,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.whatsappIntegration:
         iconData = Icons.chat_bubble;
         break;
+      case AppServiceName.phoneBanking:
+        iconData = Icons.phone_in_talk;
+        break;
       case AppServiceName.idPay:
         iconData = Icons.fingerprint;
         break;
@@ -265,6 +276,12 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.expenses:
         iconData = Icons.account_balance_wallet_rounded;
+        break;
+      case AppServiceName.inventory:
+        iconData = Icons.inventory_2_rounded;
+        break;
+      case AppServiceName.tax:
+        iconData = Icons.account_balance_rounded;
         break;
     }
 

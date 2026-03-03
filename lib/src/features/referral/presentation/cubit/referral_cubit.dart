@@ -6,6 +6,9 @@ import '../../domain/usecases/get_my_referral_stats_usecase.dart';
 import '../../domain/usecases/get_my_referrals_usecase.dart';
 import '../../domain/usecases/get_referral_leaderboard_usecase.dart';
 import '../../domain/usecases/validate_referral_code_usecase.dart';
+import '../../domain/usecases/get_my_points_balance_usecase.dart';
+import '../../domain/usecases/get_my_points_history_usecase.dart';
+import '../../domain/usecases/get_points_config_usecase.dart';
 import 'referral_state.dart';
 
 class ReferralCubit extends Cubit<ReferralState> {
@@ -14,6 +17,9 @@ class ReferralCubit extends Cubit<ReferralState> {
   final GetReferralLeaderboardUseCase _getLeaderboardUseCase;
   final GetMyReferralsUseCase _getMyReferralsUseCase;
   final ValidateReferralCodeUseCase _validateReferralCodeUseCase;
+  final GetMyPointsBalanceUseCase _getMyPointsBalanceUseCase;
+  final GetMyPointsHistoryUseCase _getMyPointsHistoryUseCase;
+  final GetPointsConfigUseCase _getPointsConfigUseCase;
 
   ReferralCubit({
     required GetMyReferralCodeUseCase getMyReferralCode,
@@ -21,11 +27,17 @@ class ReferralCubit extends Cubit<ReferralState> {
     required GetReferralLeaderboardUseCase getLeaderboard,
     required GetMyReferralsUseCase getMyReferrals,
     required ValidateReferralCodeUseCase validateReferralCode,
+    required GetMyPointsBalanceUseCase getMyPointsBalance,
+    required GetMyPointsHistoryUseCase getMyPointsHistory,
+    required GetPointsConfigUseCase getPointsConfig,
   })  : _getMyReferralCodeUseCase = getMyReferralCode,
         _getMyReferralStatsUseCase = getMyReferralStats,
         _getLeaderboardUseCase = getLeaderboard,
         _getMyReferralsUseCase = getMyReferrals,
         _validateReferralCodeUseCase = validateReferralCode,
+        _getMyPointsBalanceUseCase = getMyPointsBalance,
+        _getMyPointsHistoryUseCase = getMyPointsHistory,
+        _getPointsConfigUseCase = getPointsConfig,
         super(const ReferralInitial());
 
   /// Load dashboard data (code, stats, leaderboard, recent referrals)
@@ -198,6 +210,118 @@ class ReferralCubit extends Cubit<ReferralState> {
       default:
         return '\$';
     }
+  }
+
+  /// Load all referrals with optional filter (for All Referrals screen)
+  Future<void> loadAllReferrals({String filter = '', int page = 1}) async {
+    if (isClosed) return;
+    emit(const ReferralLoading(loadingMessage: 'Loading referrals...'));
+
+    final result = await _getMyReferralsUseCase(
+      page: page,
+      pageSize: 20,
+      filter: filter,
+    );
+
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(ReferralError(failure.message)),
+      (referrals) => emit(AllReferralsLoaded(
+        referrals: referrals,
+        filter: filter,
+        currentPage: page,
+        hasMore: referrals.length >= 20,
+      )),
+    );
+  }
+
+  /// Load more referrals for pagination
+  Future<void> loadMoreReferrals() async {
+    final currentState = state;
+    if (currentState is! AllReferralsLoaded || !currentState.hasMore) return;
+
+    final nextPage = currentState.currentPage + 1;
+    final result = await _getMyReferralsUseCase(
+      page: nextPage,
+      pageSize: 20,
+      filter: currentState.filter,
+    );
+
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(ReferralError(failure.message)),
+      (newReferrals) => emit(currentState.copyWith(
+        referrals: [...currentState.referrals, ...newReferrals],
+        currentPage: nextPage,
+        hasMore: newReferrals.length >= 20,
+      )),
+    );
+  }
+
+  /// Load LazerPoints balance
+  Future<void> loadPointsBalance() async {
+    if (isClosed) return;
+    emit(const ReferralLoading(loadingMessage: 'Loading points...'));
+
+    final result = await _getMyPointsBalanceUseCase();
+
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(ReferralError(failure.message)),
+      (balance) => emit(PointsBalanceLoaded(balance: balance)),
+    );
+  }
+
+  /// Load LazerPoints transaction history
+  Future<void> loadPointsHistory({int page = 1}) async {
+    if (isClosed) return;
+    if (page == 1) {
+      emit(const ReferralLoading(loadingMessage: 'Loading points history...'));
+    }
+
+    final result = await _getMyPointsHistoryUseCase(page: page, pageSize: 20);
+
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(ReferralError(failure.message)),
+      (transactions) {
+        if (page > 1 && state is PointsHistoryLoaded) {
+          final current = state as PointsHistoryLoaded;
+          emit(current.copyWith(
+            transactions: [...current.transactions, ...transactions],
+            currentPage: page,
+            hasMore: transactions.length >= 20,
+          ));
+        } else {
+          emit(PointsHistoryLoaded(
+            transactions: transactions,
+            currentPage: page,
+            hasMore: transactions.length >= 20,
+          ));
+        }
+      },
+    );
+  }
+
+  /// Load more points history for pagination
+  Future<void> loadMorePointsHistory() async {
+    final currentState = state;
+    if (currentState is! PointsHistoryLoaded || !currentState.hasMore) return;
+    await loadPointsHistory(page: currentState.currentPage + 1);
+  }
+
+  /// Load LazerPoints earn rules/configuration
+  Future<void> loadPointsConfig() async {
+    if (isClosed) return;
+    emit(const ReferralLoading(loadingMessage: 'Loading points config...'));
+
+    final result = await _getPointsConfigUseCase();
+
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(ReferralError(failure.message)),
+      (configs) => emit(PointsConfigLoaded(configs: configs)),
+    );
   }
 
   /// Reset to initial state

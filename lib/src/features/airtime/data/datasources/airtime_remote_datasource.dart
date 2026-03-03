@@ -84,10 +84,6 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
       if (operatorId != null && operatorId.isNotEmpty) {
         request.operatorId = operatorId;
       }
-      if (reloadlyOperatorId != null && reloadlyOperatorId.isNotEmpty) {
-        request.reloadlyOperatorId = reloadlyOperatorId;
-      }
-
       final options = await grpcClient.callOptions;
       final response = await grpcClient.utilityPaymentsClient
           .buyAirtime(request, options: options);

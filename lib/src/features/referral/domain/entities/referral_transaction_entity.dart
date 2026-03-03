@@ -19,6 +19,11 @@ class ReferralTransactionEntity extends Equatable {
   final DateTime createdAt;
   final DateTime? completedAt;
   final String? failureReason;
+  final String refereeFirstName;
+  final String refereeLastName;
+  final String refereeUsername;
+  final String referrerUsername;
+  final bool refereeHasJoined;
 
   const ReferralTransactionEntity({
     required this.id,
@@ -32,7 +37,20 @@ class ReferralTransactionEntity extends Equatable {
     required this.createdAt,
     this.completedAt,
     this.failureReason,
+    this.refereeFirstName = '',
+    this.refereeLastName = '',
+    this.refereeUsername = '',
+    this.referrerUsername = '',
+    this.refereeHasJoined = false,
   });
+
+  String get refereeDisplayName {
+    if (refereeFirstName.isNotEmpty || refereeLastName.isNotEmpty) {
+      return '$refereeFirstName $refereeLastName'.trim();
+    }
+    if (refereeUsername.isNotEmpty) return '@$refereeUsername';
+    return 'Referral #$id';
+  }
 
   ReferralTransactionEntity copyWith({
     int? id,
@@ -46,6 +64,11 @@ class ReferralTransactionEntity extends Equatable {
     DateTime? createdAt,
     DateTime? completedAt,
     String? failureReason,
+    String? refereeFirstName,
+    String? refereeLastName,
+    String? refereeUsername,
+    String? referrerUsername,
+    bool? refereeHasJoined,
   }) {
     return ReferralTransactionEntity(
       id: id ?? this.id,
@@ -59,6 +82,11 @@ class ReferralTransactionEntity extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
       failureReason: failureReason ?? this.failureReason,
+      refereeFirstName: refereeFirstName ?? this.refereeFirstName,
+      refereeLastName: refereeLastName ?? this.refereeLastName,
+      refereeUsername: refereeUsername ?? this.refereeUsername,
+      referrerUsername: referrerUsername ?? this.referrerUsername,
+      refereeHasJoined: refereeHasJoined ?? this.refereeHasJoined,
     );
   }
 
@@ -75,10 +103,15 @@ class ReferralTransactionEntity extends Equatable {
         createdAt,
         completedAt,
         failureReason,
+        refereeFirstName,
+        refereeLastName,
+        refereeUsername,
+        referrerUsername,
+        refereeHasJoined,
       ];
 
   @override
   String toString() {
-    return 'ReferralTransactionEntity(id: $id, referrerUserId: $referrerUserId, refereeUserId: $refereeUserId, code: $referralCodeUsed, status: $status, referrerReward: $referrerRewardAmount, refereeReward: $refereeRewardAmount, currency: $currency)';
+    return 'ReferralTransactionEntity(id: $id, referee: $refereeDisplayName, status: $status, referrerReward: $referrerRewardAmount, currency: $currency)';
   }
 }

@@ -8,6 +8,9 @@ abstract class IAiChatDataSource {
     String? sessionId,
     String? sourceContext,
     String? language,
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   });
   Future<dynamic> getChatHistory({String? sessionId, String? sourceContext});
 }
@@ -28,6 +31,9 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
     String? sessionId,
     String? sourceContext,
     String? language,
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   }) async {
     final request = ProcessChatRequest()..query = query;
     if (sessionId != null) request.sessionId = sessionId;

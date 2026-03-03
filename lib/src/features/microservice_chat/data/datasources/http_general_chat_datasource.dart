@@ -11,6 +11,9 @@ class GeneralChatRequest {
   final String language;
   final String locale;
   final Map<String, dynamic> metadata;
+  final String? mediaBase64;
+  final String? mediaType; // 'image' | 'voice'
+  final String? mediaMimeType;
 
   GeneralChatRequest({
     required this.message,
@@ -21,6 +24,9 @@ class GeneralChatRequest {
     this.language = 'en',
     this.locale = 'en-NG',
     this.metadata = const {},
+    this.mediaBase64,
+    this.mediaType,
+    this.mediaMimeType,
   });
 
   Map<String, dynamic> toJson() {
@@ -33,6 +39,9 @@ class GeneralChatRequest {
       'language': language,
       'locale': locale,
       if (metadata.isNotEmpty) 'metadata': metadata,
+      if (mediaBase64 != null && mediaBase64!.isNotEmpty) 'media_base64': mediaBase64,
+      if (mediaType != null && mediaType!.isNotEmpty) 'media_type': mediaType,
+      if (mediaMimeType != null && mediaMimeType!.isNotEmpty) 'media_mime_type': mediaMimeType,
     };
   }
 }
@@ -138,10 +147,16 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
   final GrpcCallOptionsHelper callOptionsHelper;
   final String baseUrl;
 
-  // Production configuration
+  // Production configuration — optimized for poor network (Nigeria 2G/3G)
   static const Duration _connectionTimeout = Duration(seconds: 30);
-  static const Duration _receiveTimeout = Duration(seconds: 45);
-  static const int _maxRetries = 3;
+  static const Duration _receiveTimeout = Duration(seconds: 60);
+  static const Duration _sendTimeout = Duration(seconds: 30);
+  // Media messages get extended timeouts (set per-request in processChat)
+  static const Duration _mediaSendTimeout = Duration(seconds: 120);
+  static const Duration _mediaReceiveTimeout = Duration(seconds: 90);
+  // Retries: only for text messages. Media messages are NOT retried
+  // (re-uploading 10MB base64 over 2G wastes time and will likely fail again).
+  static const int _maxRetries = 1;
   static const Duration _retryDelay = Duration(milliseconds: 500);
 
   HttpGeneralChatDataSource({
@@ -156,18 +171,21 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
     dio.options = BaseOptions(
       connectTimeout: _connectionTimeout,
       receiveTimeout: _receiveTimeout,
-      sendTimeout: _connectionTimeout,
+      sendTimeout: _sendTimeout,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     );
 
-    // Add interceptor for retry logic
+    // Add interceptor for retry logic (text messages only)
     dio.interceptors.add(
       InterceptorsWrapper(
         onError: (error, handler) async {
-          if (_shouldRetry(error)) {
+          // Never retry media messages — re-uploading large payloads over
+          // slow networks wastes time and will likely fail for the same reason.
+          final isMedia = error.requestOptions.extra['has_media'] == true;
+          if (!isMedia && _shouldRetry(error)) {
             final retryCount = error.requestOptions.extra['retry_count'] ?? 0;
             if (retryCount < _maxRetries) {
               error.requestOptions.extra['retry_count'] = retryCount + 1;
@@ -188,20 +206,23 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
   }
 
   bool _shouldRetry(DioException error) {
-    // Retry on network errors, 5xx errors, and 408 (timeout)
-    return error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.receiveTimeout ||
-        error.type == DioExceptionType.connectionError ||
+    // Only retry on connection-level errors and 5xx, NOT on timeouts
+    // (a timed-out request already consumed the full timeout budget).
+    return error.type == DioExceptionType.connectionError ||
         (error.response?.statusCode != null &&
             error.response!.statusCode! >= 500 &&
-            error.response!.statusCode! < 600) ||
-        error.response?.statusCode == 408;
+            error.response!.statusCode! < 600);
   }
 
   @override
   Future<GeneralChatResponse> processChat(GeneralChatRequest request) async {
     try {
       final callOptions = await callOptionsHelper.withAuth();
+
+      // Media messages need longer timeouts:
+      // - sendTimeout: uploading large base64 over 2G/3G can be slow
+      // - receiveTimeout: server processes GCS upload + Whisper/Vision + agent
+      final hasMedia = request.mediaBase64 != null && request.mediaBase64!.isNotEmpty;
 
       final response = await dio.post(
         '$baseUrl/chat',
@@ -211,6 +232,9 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
             'Content-Type': 'application/json',
             ...callOptions.metadata,
           },
+          sendTimeout: hasMedia ? _mediaSendTimeout : null,
+          receiveTimeout: hasMedia ? _mediaReceiveTimeout : null,
+          extra: {'has_media': hasMedia},
         ),
       );
 
@@ -225,6 +249,12 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
         );
       }
     } on DioException catch (e) {
+      if (e.type == DioExceptionType.sendTimeout) {
+        throw ChatGatewayException(
+          'Upload timed out. Your connection may be too slow — try a smaller file or better network.',
+          statusCode: 408,
+        );
+      }
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         throw ChatGatewayException(

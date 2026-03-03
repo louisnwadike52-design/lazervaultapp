@@ -126,6 +126,13 @@ abstract class FamilyAccountRepository {
     required bool spendingVisibilityEnabled,
     List<MemberAllocationEntry> allocations = const [],
   });
+
+  // Update fund distribution mode for an active account
+  Future<Either<Failure, FamilyAccount>> updateFundDistributionMode({
+    required String familyId,
+    required String fundDistributionMode,
+    List<MemberAllocationEntry> allocations = const [],
+  });
 }
 
 class MemberAllocationEntry {

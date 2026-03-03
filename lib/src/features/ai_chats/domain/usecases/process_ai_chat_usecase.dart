@@ -14,6 +14,9 @@ class ProcessChatUseCase {
     String? sessionId,
     String? sourceContext,
     String? language,
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   }) async {
     return await _repository.processChat(
       query: query,
@@ -21,6 +24,9 @@ class ProcessChatUseCase {
       sessionId: sessionId,
       sourceContext: sourceContext,
       language: language,
+      mediaBase64: mediaBase64,
+      mediaType: mediaType,
+      mediaMimeType: mediaMimeType,
     );
   }
 } 

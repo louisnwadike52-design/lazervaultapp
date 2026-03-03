@@ -9,7 +9,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
-import 'package:lazervault/src/features/funds/presentation/widgets/directpay_authorization_sheet.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
@@ -23,10 +22,12 @@ import '../../cubit/move_money_cubit.dart';
 import '../../cubit/move_money_state.dart';
 import '../../domain/entities/mandate_entity.dart';
 import '../../domain/entities/move_fee_calculation.dart';
+import '../widgets/directpay_webview_sheet.dart';
+import '../widgets/mandate_activating_banner.dart';
 import '../widgets/mandate_management_bottomsheet.dart';
-import '../widgets/mandate_setup_bottomsheet.dart';
 import '../widgets/mandate_status_badge.dart';
 import '../widgets/move_fee_breakdown.dart';
+import '../widgets/reauth_required_overlay.dart';
 
 /// Single-screen Move Money transfer flow (modelled after the Exchange Convert flow).
 ///
@@ -97,6 +98,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   void dispose() {
     _amountController.dispose();
     _narrationController.dispose();
+    // Stop any active polling when leaving the screen
+    context.read<MoveMoneyCubit>().stopPolling();
     super.dispose();
   }
 
@@ -191,7 +194,15 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       final temp = _sourceAccount;
       _sourceAccount = _destinationAccount;
       _destinationAccount = temp;
+      // Fee depends on source account — recalculate
+      _feeCalculation = null;
     });
+    // Recalculate fee if there's an amount entered
+    final amountKobo = _parseAmountKobo();
+    if (amountKobo >= _minAmountKobo && amountKobo <= _maxAmountKobo) {
+      setState(() => _isCalculatingFee = true);
+      context.read<MoveMoneyCubit>().calculateFeeDebounced(amountKobo);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -214,12 +225,14 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     );
 
     if (result != null && mounted) {
-      // BlocListener<OpenBankingCubit> in build() detects AccountLinked
-      // and offers mandate setup
+      // Auto-mandate: passes user info so mandate is created automatically
       context.read<OpenBankingCubit>().linkAccount(
             userId: user.id,
             code: result.code,
             accessToken: authState.profile.session.accessToken,
+            userEmail: user.email.isNotEmpty ? user.email : null,
+            userName: customerName.isNotEmpty ? customerName : null,
+            userPhone: (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
           );
       context.read<OpenBankingCubit>().fetchLinkedAccounts(
             userId: authState.profile.userId,
@@ -253,18 +266,119 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
   /// Handle DirectPay authorization when transfer requires it (no mandate).
   /// Opens in-app WebView for bank authorization.
-  Future<bool> _handleDirectPayAuthorization(
-    String paymentUrl,
-    String paymentId,
-  ) async {
-    final result = await showDirectPayAuthorizationSheet(
+  Future<bool> _handleDirectPayAuthorization(String paymentUrl) async {
+    return await showDirectPayAuthorizationSheet(
       context: context,
       paymentUrl: paymentUrl,
-      paymentId: paymentId,
-      redirectScheme: 'lazervault',
-      redirectPath: '/move-money/callback',
     );
-    return result.success;
+  }
+
+  /// Handle mandate required error — auto-create mandate for the account.
+  void _handleMandateRequired(String accountId) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+
+    final mandateCubit = context.read<MandateCubit>();
+    final user = authState.profile.user;
+
+    Get.snackbar(
+      'Setting Up Auto-Debit',
+      'Creating auto-debit authorization for this account...',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF1F1F1F),
+      colorText: const Color(0xFFFB923C),
+    );
+
+    mandateCubit.recreateMandateForAccount(
+      userId: authState.profile.userId,
+      linkedAccountId: accountId,
+      userEmail: user.email.isNotEmpty ? user.email : null,
+      userName: '${user.firstName} ${user.lastName}'.trim(),
+      userPhone: (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
+    );
+  }
+
+  /// Handle reauthorization for an expired account.
+  void _handleReauthorization(LinkedBankAccount account) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+
+    context.read<OpenBankingCubit>().reauthorizeAccount(
+          accountId: account.id,
+          userId: authState.profile.userId,
+          accessToken: authState.profile.session.accessToken,
+        );
+  }
+
+  /// Check source account readiness before proceeding to PIN.
+  /// Returns null if ready, or an error message string.
+  String? _checkSourceAccountReady() {
+    if (_sourceAccount == null) return 'Please select a source account';
+    if (_destinationAccount == null) return 'Please select a destination account';
+
+    if (_sourceAccount!.needsReauthorization) {
+      return 'Source account requires re-authorization. Please re-link the account.';
+    }
+
+    if (_destinationAccount!.needsReauthorization) {
+      return 'Destination account requires re-authorization. Please re-link the account.';
+    }
+
+    if (!_sourceAccount!.isActive) {
+      return 'Source account is not active.';
+    }
+
+    if (!_destinationAccount!.isActive) {
+      return 'Destination account is not active.';
+    }
+
+    // Same-account check (belt + suspenders — picker already prevents this)
+    if (_sourceAccount!.id == _destinationAccount!.id) {
+      return 'Source and destination cannot be the same account.';
+    }
+
+    // Cross-currency check
+    if (_sourceAccount!.currency != _destinationAccount!.currency) {
+      return 'Source and destination accounts must use the same currency.';
+    }
+
+    // Check balance
+    final amountKobo = _parseAmountKobo();
+    final totalDebit = _feeCalculation?.totalDebit ?? amountKobo;
+    final balanceKobo = (_sourceAccount!.lastKnownBalance * 100).toInt();
+
+    if (!_sourceAccount!.isBalanceStale) {
+      // Fresh balance — strict check
+      if (balanceKobo > 0 && balanceKobo < totalDebit) {
+        final available = _sourceAccount!.lastKnownBalance.toStringAsFixed(2);
+        final required = (totalDebit / 100.0).toStringAsFixed(2);
+        return 'Insufficient balance. Available: NGN $available, required: NGN $required.';
+      }
+    }
+
+    return null;
+  }
+
+  /// Returns a non-blocking warning if balance is stale (shown but doesn't prevent transfer).
+  String? _getBalanceWarning() {
+    if (_sourceAccount == null) return null;
+    if (_sourceAccount!.isBalanceStale && _sourceAccount!.lastKnownBalance > 0) {
+      return 'Balance may be outdated. Last updated: ${_formatLastRefresh(_sourceAccount!)}.';
+    }
+    if (_sourceAccount!.lastKnownBalance <= 0 && !_sourceAccount!.isBalanceStale) {
+      return 'Balance information unavailable for this account.';
+    }
+    return null;
+  }
+
+  String _formatLastRefresh(LinkedBankAccount account) {
+    final refreshTime = account.lastBalanceRefreshAt ?? account.balanceUpdatedAt;
+    if (refreshTime == null) return 'never';
+    final diff = DateTime.now().difference(refreshTime);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 
   // ---------------------------------------------------------------------------
@@ -294,6 +408,17 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: const Color(0xFF1F1F1F),
           colorText: Colors.white);
+      return;
+    }
+
+    // Pre-check source account readiness
+    final readinessError = _checkSourceAccountReady();
+    if (readinessError != null) {
+      Get.snackbar('Cannot Proceed', readinessError,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF1F1F1F),
+          colorText: const Color(0xFFEF4444),
+          duration: const Duration(seconds: 4));
       return;
     }
 
@@ -346,32 +471,43 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           if (currentState.requiresAuthorization &&
               currentState.paymentUrl != null &&
               currentState.paymentUrl!.isNotEmpty) {
-            // No mandate — DirectPay fallback: open bank authorization WebView
+            // No mandate — DirectPay fallback: open in-app WebView
             pinModalKey.currentState?.setProcessing();
             if (mounted) Navigator.of(context).pop(); // Close PIN modal
 
             final authSuccess = await _handleDirectPayAuthorization(
               currentState.paymentUrl!,
-              currentState.transfer.paymentId ?? currentState.transfer.id,
             );
 
             if (authSuccess) {
-              Get.snackbar(
-                'Authorization Successful',
-                'Your transfer is being processed.',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF1F1F1F),
-                colorText: const Color(0xFF10B981),
+              // Start polling transfer status
+              cubit.startPollingTransferStatus(
+                transferId: currentState.transfer.id,
+                userId: authState.profile.userId,
               );
               Get.offNamed('/move-money/receipt',
                   arguments: currentState.transfer);
             } else {
+              // WebView was cancelled/failed — check if transfer might still
+              // be processing server-side (user may have completed auth in
+              // browser but redirect wasn't detected).
               Get.snackbar(
-                'Authorization Required',
-                'Bank authorization was cancelled. Please try again.',
+                'Authorization Cancelled',
+                'Transfer may still be processing. Check transfer history for updates.',
                 snackPosition: SnackPosition.BOTTOM,
                 backgroundColor: const Color(0xFF1F1F1F),
                 colorText: const Color(0xFFFB923C),
+                duration: const Duration(seconds: 5),
+                mainButton: TextButton(
+                  onPressed: () => Get.toNamed('/move-money/history'),
+                  child: Text(
+                    'View History',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF3B82F6),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               );
             }
           } else {
@@ -382,6 +518,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
             Get.offNamed('/move-money/receipt',
                 arguments: currentState.transfer);
           }
+        } else if (currentState is MoveMoneyNeedsReauth) {
+          throw Exception(currentState.message);
         } else if (currentState is MoveMoneyError) {
           throw Exception(currentState.message);
         }
@@ -413,7 +551,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'Move Money',
+          'Beam',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -431,14 +569,130 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                   _feeCalculation = state.feeCalculation;
                   _isCalculatingFee = false;
                 });
+              } else if (state is MoveMoneyFeeError) {
+                setState(() {
+                  _isCalculatingFee = false;
+                  _feeCalculation = null;
+                });
+              } else if (state is MoveMoneyInsufficientFunds) {
+                Get.snackbar(
+                  'Insufficient Funds',
+                  state.message,
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  colorText: const Color(0xFFEF4444),
+                  duration: const Duration(seconds: 5),
+                  mainButton: TextButton(
+                    onPressed: () {
+                      if (_sourceAccount != null) {
+                        final authState =
+                            context.read<AuthenticationCubit>().state;
+                        if (authState is AuthenticationSuccess) {
+                          context.read<OpenBankingCubit>().refreshBalance(
+                                accountId: _sourceAccount!.id,
+                                userId: authState.profile.userId,
+                                accessToken:
+                                    authState.profile.session.accessToken,
+                              );
+                        }
+                      }
+                    },
+                    child: Text(
+                      'Refresh',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                );
+              } else if (state is MoveMoneyNeedsReauth) {
+                // Mark source account as needing reauth in local state
+                if (_sourceAccount != null &&
+                    _sourceAccount!.id == state.accountId) {
+                  setState(() {
+                    _sourceAccount = _sourceAccount!.copyWith(
+                      status: LinkedAccountStatus.reauthorize,
+                    );
+                  });
+                }
+                Get.snackbar(
+                  'Re-link Required',
+                  state.message,
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  colorText: const Color(0xFFFB923C),
+                  duration: const Duration(seconds: 5),
+                  mainButton: TextButton(
+                    onPressed: () {
+                      if (_sourceAccount != null) {
+                        _handleReauthorization(_sourceAccount!);
+                      }
+                    },
+                    child: Text(
+                      'Re-link',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                );
+              } else if (state is MoveMoneyMandateRequired) {
+                _handleMandateRequired(state.accountId);
+              } else if (state is MoveMoneyRateLimited) {
+                // Temporarily disable the transfer button during rate limit
+                setState(() => _isTransferInProgress = true);
+                Future.delayed(state.retryAfter, () {
+                  if (mounted) setState(() => _isTransferInProgress = false);
+                });
+                Get.snackbar(
+                  'Please Wait',
+                  'Too many requests. Try again in ${state.retryAfter.inSeconds} seconds.',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  colorText: const Color(0xFFFB923C),
+                  duration: state.retryAfter + const Duration(seconds: 1),
+                );
+              } else if (state is MoveMoneyTransferTimeout) {
+                Get.snackbar(
+                  'Transfer Processing',
+                  state.message,
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  colorText: const Color(0xFF3B82F6),
+                  duration: const Duration(seconds: 6),
+                  mainButton: TextButton(
+                    onPressed: () => Get.toNamed('/move-money/history'),
+                    child: Text(
+                      'View History',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                );
+              } else if (state is MoveMoneyError) {
+                Get.snackbar(
+                  'Transfer Failed',
+                  state.message,
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  colorText: const Color(0xFFEF4444),
+                  duration: const Duration(seconds: 4),
+                );
               }
             },
           ),
           BlocListener<OpenBankingCubit, OpenBankingState>(
             listener: (context, state) async {
               // Auto-select newly linked account on the side that triggered linking
-              if (state is AccountLinked && _pendingLinkIsSource != null) {
-                final account = state.account;
+              if ((state is AccountLinked || state is AccountLinkedWithMandate) &&
+                  _pendingLinkIsSource != null) {
+                final account = state is AccountLinkedWithMandate
+                    ? state.account
+                    : (state as AccountLinked).account;
                 setState(() {
                   if (_pendingLinkIsSource!) {
                     _sourceAccount = account;
@@ -447,26 +701,22 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                   }
                   _pendingLinkIsSource = null;
                 });
-                // Refresh accounts list
+                // Refresh accounts list and mandates
                 _loadAccounts();
-
-                // Offer mandate setup for newly linked account
                 final authState = context.read<AuthenticationCubit>().state;
                 if (authState is AuthenticationSuccess) {
-                  final mandateCubit = context.read<MandateCubit>();
-                  final user = authState.profile.user;
-                  await showMandateSetupBottomSheet(
-                    context: context,
-                    linkedAccountId: account.id,
-                    userId: authState.profile.userId,
-                    bankName: account.bankName,
-                    accountName: account.accountName,
-                    userEmail: user.email,
-                    userName: '${user.firstName} ${user.lastName}'.trim(),
-                    userPhone: user.phoneNumber,
-                  );
-                  mandateCubit.fetchUserMandates(
-                    userId: authState.profile.userId,
+                  context.read<MandateCubit>().fetchUserMandates(
+                        userId: authState.profile.userId,
+                      );
+                }
+
+                if (state is AccountLinkedWithMandate && state.mandateFailed) {
+                  Get.snackbar(
+                    'Auto-Debit Pending',
+                    'Account linked. Auto-debit setup will retry automatically.',
+                    backgroundColor: const Color(0xFFFB923C),
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
                   );
                 }
               }
@@ -481,6 +731,15 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                   state is MandateReinstated ||
                   state is MandateCancelled) {
                 setState(() {}); // Trigger rebuild so badges reflect new state
+              } else if (state is MandateError) {
+                Get.snackbar(
+                  'Auto-Debit Issue',
+                  state.message,
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  colorText: const Color(0xFFFB923C),
+                  duration: const Duration(seconds: 4),
+                );
               }
             },
           ),
@@ -502,6 +761,39 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Reauth overlay for source account
+                        if (_sourceAccount != null &&
+                            _sourceAccount!.needsReauthorization)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 8.h),
+                            child: ReauthRequiredOverlay(
+                              bankName: _sourceAccount!.bankName,
+                              accountName: _sourceAccount!.accountName,
+                              onReauthorize: () =>
+                                  _handleReauthorization(_sourceAccount!),
+                            ),
+                          ),
+
+                        // Mandate activating banner for source account
+                        if (_sourceAccount != null &&
+                            !_sourceAccount!.needsReauthorization) ...[
+                          Builder(builder: (context) {
+                            final mandate = context
+                                .read<MandateCubit>()
+                                .getMandateForAccount(_sourceAccount!.id);
+                            if (mandate != null && mandate.isActivating) {
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: 8.h),
+                                child: MandateActivatingBanner(
+                                  mandate: mandate,
+                                  bankName: _sourceAccount!.bankName,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          }),
+                        ],
+
                         // From / swap / To – with drag-to-swap
                         _buildDraggableAccountPair(),
                         SizedBox(height: 20.h),
@@ -514,8 +806,47 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                         if (_isCalculatingFee)
                           _buildCalculatingFees()
                         else if (_feeCalculation != null)
-                          MoveFeeBreakdown(feeCalculation: _feeCalculation!),
+                          MoveFeeBreakdown(feeCalculation: _feeCalculation!)
+                        else
+                          BlocBuilder<MoveMoneyCubit, MoveMoneyState>(
+                            buildWhen: (prev, curr) =>
+                                curr is MoveMoneyFeeError,
+                            builder: (context, state) {
+                              if (state is MoveMoneyFeeError) {
+                                return _buildFeeRetry(state);
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
                         SizedBox(height: 16.h),
+
+                        // Stale balance warning
+                        Builder(builder: (context) {
+                          final warning = _getBalanceWarning();
+                          if (warning == null) return const SizedBox.shrink();
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 12.h),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline_rounded,
+                                  color: const Color(0xFFFB923C),
+                                  size: 14.sp,
+                                ),
+                                SizedBox(width: 6.w),
+                                Expanded(
+                                  child: Text(
+                                    warning,
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFFFB923C),
+                                      fontSize: 11.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
 
                         // Narration
                         _buildNarrationInput(),
@@ -544,7 +875,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                           elevation: 0,
                         ),
                         child: Text(
-                          'Move Money',
+                          'Transfer',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 16.sp,
@@ -793,7 +1124,31 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                       ),
                     ),
                     SizedBox(height: 2.h),
-                    MandateStatusBadge(mandate: mandate),
+                    if (account.needsReauthorization)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6.w,
+                            height: 6.w,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEF4444),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            'Re-link required',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFEF4444),
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      MandateStatusBadge(mandate: mandate),
                   ] else
                     Text(
                       'Tap to select account',
@@ -937,6 +1292,64 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Fee retry widget
+  // ---------------------------------------------------------------------------
+
+  Widget _buildFeeRetry(MoveMoneyFeeError state) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: GestureDetector(
+          onTap: _isCalculatingFee
+              ? null
+              : () {
+                  final amountKobo = _parseAmountKobo();
+                  if (amountKobo > 0) {
+                    setState(() => _isCalculatingFee = true);
+                    context
+                        .read<MoveMoneyCubit>()
+                        .retryFeeCalculation(amountKobo);
+                  }
+                },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_isCalculatingFee)
+                SizedBox(
+                  width: 14.w,
+                  height: 14.w,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFFFB923C),
+                  ),
+                )
+              else
+                Icon(
+                  Icons.refresh_rounded,
+                  color: const Color(0xFFFB923C),
+                  size: 16.sp,
+                ),
+              SizedBox(width: 8.w),
+              Text(
+                _isCalculatingFee
+                    ? 'Retrying...'
+                    : state.retryCount >= 3
+                        ? 'Fee unavailable. Tap to retry.'
+                        : 'Failed to calculate fees. Tap to retry.',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFFB923C),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1148,9 +1561,11 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                   final isSelected = account.id == widget.selectedId;
                   final isExcluded = account.id == widget.excludeId;
 
+                  final needsReauth = account.needsReauthorization;
+
                   return ListTile(
-                    enabled: !isExcluded && account.isActive,
-                    onTap: (isExcluded || !account.isActive)
+                    enabled: !isExcluded && account.isActive && !needsReauth,
+                    onTap: (isExcluded || !account.isActive || needsReauth)
                         ? null
                         : () => widget.onSelected(account),
                     leading: Container(
@@ -1193,12 +1608,18 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                     trailing: isSelected
                         ? Icon(Icons.check_circle,
                             color: const Color(0xFF10B981), size: 20.sp)
-                        : isExcluded
-                            ? Text('In use',
+                        : needsReauth
+                            ? Text('Re-link',
                                 style: GoogleFonts.inter(
-                                    color: const Color(0xFF6B7280),
-                                    fontSize: 12.sp))
-                            : null,
+                                    color: const Color(0xFFFB923C),
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600))
+                            : isExcluded
+                                ? Text('In use',
+                                    style: GoogleFonts.inter(
+                                        color: const Color(0xFF6B7280),
+                                        fontSize: 12.sp))
+                                : null,
                   );
                 },
               ),

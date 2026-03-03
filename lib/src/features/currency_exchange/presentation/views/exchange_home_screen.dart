@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
@@ -38,6 +39,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   final _amountFocusNode = FocusNode();
   ExchangeMode _mode = ExchangeMode.convert;
   bool _isRateExpired = false;
+  bool _isRefreshingRate = false;
   bool _isPrimaryActionInProgress = false;
 
   @override
@@ -72,12 +74,19 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     context.read<ExchangeCubit>().setMode(mode);
   }
 
-  void _fetchRate() {
+  Future<void> _fetchRate() async {
+    if (_isRefreshingRate) return;
+    setState(() => _isRefreshingRate = true);
     final amount = double.tryParse(_amountController.text) ?? 0;
-    context
+    await context
         .read<ExchangeCubit>()
         .fetchRateForHome(forAmount: amount > 0 ? amount : null);
-    setState(() => _isRateExpired = false);
+    if (!mounted) return;
+    final cubit = context.read<ExchangeCubit>();
+    setState(() {
+      _isRefreshingRate = false;
+      _isRateExpired = cubit.currentRate == null || cubit.currentRate!.isExpired;
+    });
   }
 
   void _onSwapCurrencies() {
@@ -476,10 +485,12 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       currency: cubit.fromCurrency,
       onPinValidated: (verificationToken) async {
         pinModalKey.currentState?.setProcessing();
+        print('[Exchange] PIN validated, calling convertCurrency...');
 
         await cubit.convertCurrency(verificationToken: verificationToken);
 
         final currentState = cubit.state;
+        print('[Exchange] After convertCurrency, cubit state: ${currentState.runtimeType}');
         if (currentState is ExchangeSuccess) {
           pinModalKey.currentState?.setSuccess();
           await Future.delayed(const Duration(milliseconds: 800));
@@ -527,11 +538,19 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
+        actions: const [
+          MicroserviceChatIcon(
+            serviceName: 'Currency Exchange',
+            sourceContext: 'exchange',
+          ),
+        ],
       ),
       body: BlocConsumer<ExchangeCubit, ExchangeState>(
         listener: (context, state) {
           if (state is ExchangeRateExpired) {
             setState(() => _isRateExpired = true);
+          } else if (state is ExchangeHomeWithRate && state.rate != null && !state.rate!.isExpired) {
+            setState(() => _isRateExpired = false);
           }
         },
         builder: (context, state) {
@@ -655,13 +674,21 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                     ),
                   const SizedBox(height: 16),
 
-                  // Rate countdown
+                  // Rate countdown — always in tree, keyed by rate identity
+                  // so Flutter creates a fresh widget (with full countdown)
+                  // when a new rate arrives.
                   if (rate != null)
                     Center(
                       child: RateCountdownWidget(
+                        key: ValueKey(
+                            'rate_${rate.rateId}_${rate.timestamp.millisecondsSinceEpoch}'),
                         rate: rate,
-                        onExpired: () =>
-                            setState(() => _isRateExpired = true),
+                        isRefreshing: _isRefreshingRate,
+                        onExpired: () {
+                          if (!_isRefreshingRate) {
+                            setState(() => _isRateExpired = true);
+                          }
+                        },
                         onRefresh: _fetchRate,
                       ),
                     ),
@@ -724,11 +751,13 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isRateExpired
-                      ? _fetchRate
-                      : canProceed
-                          ? _onPrimaryAction
-                          : null,
+                  onPressed: _isRefreshingRate
+                      ? null
+                      : _isRateExpired
+                          ? _fetchRate
+                          : canProceed
+                              ? _onPrimaryAction
+                              : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3B82F6),
                     disabledBackgroundColor: const Color(0xFF2D2D2D),
@@ -737,11 +766,13 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                         borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
-                    _isRateExpired
-                        ? 'Refresh Rate to Continue'
-                        : _mode == ExchangeMode.convert
-                            ? 'Convert Now'
-                            : 'Continue',
+                    _isRefreshingRate
+                        ? 'Refreshing Rate...'
+                        : _isRateExpired
+                            ? 'Refresh Rate to Continue'
+                            : _mode == ExchangeMode.convert
+                                ? 'Convert Now'
+                                : 'Continue',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,

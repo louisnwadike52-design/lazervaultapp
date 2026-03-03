@@ -49,6 +49,11 @@ abstract class PayrollRepository {
   Future<PayRunEntity> createPayRun({
     required String payPeriodStart,
     required String payPeriodEnd,
+    String name = '',
+    List<String> employeeIds = const [],
+    bool isRecurring = false,
+    int recurrenceFrequency = 0,
+    bool autoApprove = false,
   });
   Future<PayRunEntity> calculatePayRun(String payRunId);
   Future<PayRunEntity> approvePayRun(String payRunId);

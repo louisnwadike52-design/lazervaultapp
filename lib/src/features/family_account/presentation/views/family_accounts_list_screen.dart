@@ -366,15 +366,22 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
   }
 
   Widget _buildAccountCard(FamilyAccount account) {
-    final statusColor = account.status == FamilyAccountStatus.active
-        ? const Color(0xFF10B981)
-        : const Color(0xFF3B82F6);
+    final statusColor = switch (account.status) {
+      FamilyAccountStatus.active => const Color(0xFF10B981),
+      FamilyAccountStatus.frozen => const Color(0xFF3B82F6),
+      FamilyAccountStatus.pendingSetup => const Color(0xFFFB923C),
+      FamilyAccountStatus.closed => const Color(0xFFEF4444),
+    };
     final statusLabel = account.status.displayName;
 
     return GestureDetector(
       onTap: () async {
+        // Route pendingSetup accounts to activation setup, active/frozen to detail
+        final route = account.isPendingSetup
+            ? AppRoutes.familyActivationSetup
+            : AppRoutes.familyDetails;
         final result = await Get.toNamed(
-          AppRoutes.familyDetails,
+          route,
           arguments: {'familyId': account.id},
         );
         if (result == true) _onRefresh();

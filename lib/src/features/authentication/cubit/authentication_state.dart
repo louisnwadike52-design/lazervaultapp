@@ -371,6 +371,9 @@ class SignUpInProgress extends AuthenticationState {
     this.kycSkipped = false,
     // Account creation status
     this.accountCreated = false,
+    // Referral code validation
+    this.isReferralCodeValid,
+    this.isReferralCodeValidating = false,
   });
 
   final int currentPage;
@@ -408,6 +411,10 @@ class SignUpInProgress extends AuthenticationState {
   // Account creation status
   final bool accountCreated;
 
+  // Referral code validation
+  final bool? isReferralCodeValid;
+  final bool isReferralCodeValidating;
+
   SignUpInProgress copyWith({
     int? currentPage,
     String? email,
@@ -436,6 +443,8 @@ class SignUpInProgress extends AuthenticationState {
     String? verifiedDateOfBirth,
     bool? kycSkipped,
     bool? accountCreated,
+    bool? isReferralCodeValid,
+    bool? isReferralCodeValidating,
   }) {
     return SignUpInProgress(
       currentPage: currentPage ?? this.currentPage,
@@ -464,6 +473,8 @@ class SignUpInProgress extends AuthenticationState {
       verifiedDateOfBirth: verifiedDateOfBirth ?? this.verifiedDateOfBirth,
       kycSkipped: kycSkipped ?? this.kycSkipped,
       accountCreated: accountCreated ?? this.accountCreated,
+      isReferralCodeValid: isReferralCodeValid ?? this.isReferralCodeValid,
+      isReferralCodeValidating: isReferralCodeValidating ?? this.isReferralCodeValidating,
     );
   }
 
@@ -495,6 +506,8 @@ class SignUpInProgress extends AuthenticationState {
         verifiedDateOfBirth,
         kycSkipped,
         accountCreated,
+        isReferralCodeValid,
+        isReferralCodeValidating,
       ];
 }
 

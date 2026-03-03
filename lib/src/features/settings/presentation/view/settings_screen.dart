@@ -483,6 +483,19 @@ class _SettingsViewState extends State<_SettingsView> {
           },
         ),
         _buildSettingsTile(
+          icon: Icons.swap_horiz,
+          title: 'Banking Channels',
+          subtitle: 'Manage WhatsApp, Phone & SMS banking',
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16.sp,
+            color: const Color(0xFF9CA3AF),
+          ),
+          onTap: () {
+            Get.toNamed(AppRoutes.channelManagement);
+          },
+        ),
+        _buildSettingsTile(
           icon: Icons.fingerprint,
           title: 'Biometric Settings',
           subtitle: 'Use fingerprint or face to unlock',

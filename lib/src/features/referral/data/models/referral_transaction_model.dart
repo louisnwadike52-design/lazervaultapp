@@ -14,6 +14,11 @@ class ReferralTransactionModel extends ReferralTransactionEntity {
     required super.createdAt,
     super.completedAt,
     super.failureReason,
+    super.refereeFirstName,
+    super.refereeLastName,
+    super.refereeUsername,
+    super.referrerUsername,
+    super.refereeHasJoined,
   });
 
   /// Create ReferralTransactionModel from protobuf ReferralTransaction
@@ -38,6 +43,11 @@ class ReferralTransactionModel extends ReferralTransactionEntity {
       failureReason: protoTransaction.failureReason.isNotEmpty
           ? protoTransaction.failureReason
           : null,
+      refereeFirstName: protoTransaction.refereeFirstName,
+      refereeLastName: protoTransaction.refereeLastName,
+      refereeUsername: protoTransaction.refereeUsername,
+      referrerUsername: protoTransaction.referrerUsername,
+      refereeHasJoined: protoTransaction.refereeHasJoined,
     );
   }
 

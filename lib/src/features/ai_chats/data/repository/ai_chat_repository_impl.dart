@@ -17,6 +17,9 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     String? sessionId,
     String? sourceContext,
     String? language,
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   }) async {
     try {
       final response = await _dataSource.processChat(
@@ -24,6 +27,9 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         sessionId: sessionId,
         sourceContext: sourceContext,
         language: language,
+        mediaBase64: mediaBase64,
+        mediaType: mediaType,
+        mediaMimeType: mediaMimeType,
       );
 
       // Handle both gRPC proto response and HTTP JSON response

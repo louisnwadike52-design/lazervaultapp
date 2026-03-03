@@ -11,6 +11,9 @@ class ChatRequest {
   final String language;
   final String locale;
   final Map<String, dynamic> metadata;
+  final String? mediaBase64;
+  final String? mediaType; // 'image' | 'voice'
+  final String? mediaMimeType;
 
   ChatRequest({
     required this.message,
@@ -21,6 +24,9 @@ class ChatRequest {
     this.language = 'en',
     this.locale = 'en-NG',
     this.metadata = const {},
+    this.mediaBase64,
+    this.mediaType,
+    this.mediaMimeType,
   });
 
   Map<String, dynamic> toJson() {
@@ -33,6 +39,9 @@ class ChatRequest {
       'language': language,
       'locale': locale,
       'metadata': metadata,
+      if (mediaBase64 != null && mediaBase64!.isNotEmpty) 'media_base64': mediaBase64,
+      if (mediaType != null && mediaType!.isNotEmpty) 'media_type': mediaType,
+      if (mediaMimeType != null && mediaMimeType!.isNotEmpty) 'media_mime_type': mediaMimeType,
     };
   }
 }
@@ -80,6 +89,7 @@ class ChatHistoryMessage {
   final String service;
   final String sourceContext;
   final String timestamp;
+  final Map<String, dynamic>? mediaMetadata;
 
   ChatHistoryMessage({
     required this.role,
@@ -87,15 +97,18 @@ class ChatHistoryMessage {
     required this.service,
     required this.sourceContext,
     required this.timestamp,
+    this.mediaMetadata,
   });
 
   factory ChatHistoryMessage.fromJson(Map<String, dynamic> json) {
+    final metadata = json['metadata'] as Map<String, dynamic>?;
     return ChatHistoryMessage(
       role: json['role'] as String? ?? '',
       content: json['content'] as String? ?? '',
       service: json['service'] as String? ?? '',
       sourceContext: json['source_context'] as String? ?? '',
       timestamp: json['timestamp'] as String? ?? '',
+      mediaMetadata: metadata != null ? metadata['media'] as Map<String, dynamic>? : null,
     );
   }
 }
@@ -127,6 +140,11 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
     try {
       final options = await callOptionsHelper.withAuth();
 
+      // Media messages need longer timeouts:
+      // - sendTimeout: uploading large base64 over 2G/3G can be slow
+      // - receiveTimeout: server processes GCS upload + Whisper/Vision + agent
+      final hasMedia = request.mediaBase64 != null && request.mediaBase64!.isNotEmpty;
+
       final response = await dio.post(
         '$baseUrl/chat',
         data: request.toJson(),
@@ -135,6 +153,8 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
             'Content-Type': 'application/json',
             ...options.metadata,
           },
+          sendTimeout: hasMedia ? const Duration(seconds: 120) : null,
+          receiveTimeout: hasMedia ? const Duration(seconds: 90) : null,
         ),
       );
 
@@ -144,7 +164,13 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
         throw Exception('Failed to process chat: ${response.statusMessage}');
       }
     } on DioException catch (e) {
-      throw Exception('Dio error: ${e.message}');
+      if (e.type == DioExceptionType.sendTimeout) {
+        throw Exception('Upload timed out. Your connection may be too slow — try a smaller file or better network.');
+      }
+      if (e.type == DioExceptionType.receiveTimeout) {
+        throw Exception('The server took too long to respond. Please try again.');
+      }
+      throw Exception('Network error: ${e.message}');
     } catch (e) {
       throw Exception('Error processing chat: $e');
     }

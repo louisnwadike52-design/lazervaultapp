@@ -215,7 +215,7 @@ class _DashboardState extends State<Dashboard> {
         border: Border.all(
           color: isExpired
               ? const Color(0xFFEF4444).withValues(alpha: 0.3)
-              : const Color(0xFF2D6B6B).withValues(alpha: 0.4),
+              : const Color(0xFF2D2B6B).withValues(alpha: 0.4),
           width: 1.5,
         ),
       ),
@@ -230,14 +230,14 @@ class _DashboardState extends State<Dashboard> {
                 decoration: BoxDecoration(
                   color: isExpired
                       ? const Color(0xFFEF4444).withValues(alpha: 0.15)
-                      : const Color(0xFF2D6B6B).withValues(alpha: 0.2),
+                      : const Color(0xFF2D2B6B).withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   isExpired ? Icons.timer_off : Icons.family_restroom,
                   color: isExpired
                       ? const Color(0xFFEF4444)
-                      : const Color(0xFF2D6B6B),
+                      : const Color(0xFF2D2B6B),
                   size: 22.sp,
                 ),
               ),
@@ -333,9 +333,9 @@ class _DashboardState extends State<Dashboard> {
                           ? null
                           : () => _familyInviteCubit.acceptInvitation(invite.invitationToken),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2D6B6B),
+                        backgroundColor: const Color(0xFF2D2B6B),
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xFF2D6B6B).withValues(alpha: 0.4),
+                        disabledBackgroundColor: const Color(0xFF2D2B6B).withValues(alpha: 0.4),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),

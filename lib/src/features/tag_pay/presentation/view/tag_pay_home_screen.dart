@@ -125,7 +125,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
         backgroundColor: const Color(0xFF3B82F6),
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
-          'Create Tag',
+          'Request Funds',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 14.sp,
@@ -193,7 +193,8 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
           ),
           MicroserviceChatIcon(
             serviceName: 'Tag Pay',
-            sourceContext: 'transfers',
+            sourceContext: 'tagpay',
+            isDirect: true,
             icon: Icons.chat_bubble_outline,
             iconColor: const Color(0xFF10B981),
           ),
@@ -814,7 +815,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                 },
                 icon: Icon(Icons.add, size: 20.sp, color: Colors.white),
                 label: Text(
-                  'Create Tag',
+                  'Request Funds',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 14.sp,

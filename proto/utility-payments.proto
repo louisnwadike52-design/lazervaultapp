@@ -181,6 +181,29 @@ service UtilityPaymentsService {
       get: "/api/v1/bills/educationproviders"
     };
   }
+
+  // === SUBSCRIPTION TRACKING ===
+
+  // Get active subscriptions for a user
+  rpc GetActiveSubscriptions(GetActiveSubscriptionsRequest) returns (GetActiveSubscriptionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/subscriptions/active"
+    };
+  }
+
+  // Get subscription summary (counts, monthly spend)
+  rpc GetSubscriptionSummary(GetSubscriptionSummaryRequest) returns (GetSubscriptionSummaryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/subscriptions/summary"
+    };
+  }
+
+  // Get subscription spending analytics
+  rpc GetSubscriptionSpending(GetSubscriptionSpendingRequest) returns (GetSubscriptionSpendingResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/subscriptions/spending"
+    };
+  }
 }
 
 // ===== MODELS =====
@@ -224,8 +247,8 @@ message AirtimeProvider {
   double min_amount = 9;               // Minimum topup amount
   double max_amount = 10;              // Maximum topup amount
   double commission_rate = 11;         // % earned per transaction
-  string operator_id = 12;            // Universal operator ID (network name: "MTN", "AIRTEL")
-  string reloadly_operator_id = 13;   // Reloadly-specific numeric ID ("649")
+  string operator_id = 12;            // Universal operator ID
+  string reloadly_operator_id = 13;   // Reloadly-specific numeric ID
 }
 
 // ===== ELECTRICITY BILL =====
@@ -315,8 +338,7 @@ message BuyAirtimeRequest {
   string idempotency_key = 8;          // Unique key for idempotency (recommended: UUID)
 
   string country_code = 9;             // ISO country code (e.g., "NG")
-  string operator_id = 10;             // Universal operator ID (network name)
-  string reloadly_operator_id = 11;   // Reloadly-specific numeric ID
+  string operator_id = 10;             // Reloadly operator ID
 }
 
 message BuyAirtimeResponse {
@@ -662,4 +684,69 @@ message GetInternetPackagesRequest {
 message GetInternetPackagesResponse {
   repeated InternetPackage packages = 1;
   int32 total = 2;
+}
+
+// ===== SUBSCRIPTION TRACKING =====
+
+message ActiveSubscription {
+  string id = 1;
+  string subscription_type = 2;       // data, cable_tv, internet, electricity, airtime
+  string provider_id = 3;
+  string provider_name = 4;
+  string plan_name = 5;
+  double amount = 6;
+  string currency = 7;
+  string customer_number = 8;
+  string status = 9;                   // active, expired, cancelled
+  string purchased_at = 10;
+  string expires_at = 11;             // Empty for non-expiring
+  int32 validity_days = 12;
+  string renewal_date = 13;
+  string token = 14;                   // Electricity token
+  double units = 15;                   // Electricity units
+  double progress_percentage = 16;     // 0-100 (time elapsed %)
+  int32 days_remaining = 17;           // -1 for non-expiring
+  string payment_reference = 18;
+}
+
+message GetActiveSubscriptionsRequest {
+  string subscription_type = 1;        // Optional filter
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetActiveSubscriptionsResponse {
+  repeated ActiveSubscription subscriptions = 1;
+  int32 total = 2;
+}
+
+message SubscriptionTypeSummary {
+  string type = 1;
+  int32 count = 2;
+  double total_spend = 3;
+}
+
+message GetSubscriptionSummaryRequest {}
+
+message GetSubscriptionSummaryResponse {
+  int32 active_count = 1;
+  int32 expiring_count = 2;
+  double total_monthly_spend = 3;
+  repeated SubscriptionTypeSummary by_type = 4;
+}
+
+message MonthlySubscriptionSpending {
+  string month = 1;                    // YYYY-MM format
+  double total = 2;
+}
+
+message GetSubscriptionSpendingRequest {
+  int32 months = 1;                    // Number of months to look back (default 6)
+}
+
+message GetSubscriptionSpendingResponse {
+  double total_all_time = 1;
+  double total_this_month = 2;
+  map<string, double> by_type = 3;
+  repeated MonthlySubscriptionSpending monthly_trend = 4;
 }

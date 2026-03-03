@@ -8,6 +8,16 @@ class MicroserviceChatIcon extends StatelessWidget {
   final Color? iconColor;
   final String? agentDescription;
 
+  /// When true, uses the Go Chat Proxy Gateway (direct to microservice,
+  /// no intent classification). When false, uses the Python Chat Agent Gateway.
+  final bool isDirect;
+
+  /// Overall button size (defaults to 50)
+  final double? size;
+
+  /// Icon size inside the button (defaults to 24)
+  final double? iconSize;
+
   const MicroserviceChatIcon({
     super.key,
     required this.serviceName,
@@ -15,6 +25,9 @@ class MicroserviceChatIcon extends StatelessWidget {
     this.icon = Icons.chat_bubble_outline,
     this.iconColor,
     this.agentDescription,
+    this.isDirect = true,
+    this.size,
+    this.iconSize,
   });
 
   @override
@@ -27,23 +40,24 @@ class MicroserviceChatIcon extends StatelessWidget {
           sourceContext: sourceContext,
           agentDescription: agentDescription,
           accentColor: iconColor ?? const Color(0xFF8B5CF6),
+          isDirect: isDirect,
         );
       },
       child: Container(
-        width: 50,
-        height: 50,
+        width: size ?? 50,
+        height: size ?? 50,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: (iconColor ?? const Color(0xFF8B5CF6)).withValues(alpha: 0.1),
           border: Border.all(
             color: iconColor ?? const Color(0xFF8B5CF6),
-            width: 2,
+            width: size != null && size! < 40 ? 1.5 : 2,
           ),
         ),
         child: Icon(
           icon,
           color: iconColor ?? const Color(0xFF8B5CF6),
-          size: 24,
+          size: iconSize ?? 24,
         ),
       ),
     );

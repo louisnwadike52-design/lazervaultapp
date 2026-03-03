@@ -368,6 +368,33 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     }
   }
 
+  @override
+  Future<FamilyAccountProto> updateFundDistributionMode({
+    required String familyId,
+    required String fundDistributionMode,
+    List<MemberAllocationProto> allocations = const [],
+  }) async {
+    try {
+      final protoAllocations = allocations.map((a) => family_pb.MemberAllocation(
+        memberId: a.memberId,
+        amount: a.amount,
+      )).toList();
+
+      final request = family_pb.UpdateFundDistributionModeRequest(
+        familyId: familyId,
+        fundDistributionMode: _mapDistributionMode(fundDistributionMode),
+        allocations: protoAllocations,
+      );
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.updateFundDistributionMode(request, options: callOptions);
+
+      return _mapFamilyAccountFromProto(response.familyAccount);
+    } on GrpcError catch (e) {
+      throw mapGrpcError(e);
+    }
+  }
+
   family_pb.FundDistributionMode _mapDistributionMode(String mode) {
     switch (mode) {
       case 'shared_pool':

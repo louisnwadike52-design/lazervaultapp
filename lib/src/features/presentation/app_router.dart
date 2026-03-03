@@ -7,7 +7,6 @@ import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/send_funds/presentation/chatbot_transfer_screen.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
-import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
@@ -53,7 +52,6 @@ import 'package:lazervault/src/features/presentation/views/otp_verification_scre
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
 import 'package:lazervault/src/features/presentation/views/verify_password_reset_otp_screen.dart';
-import 'package:lazervault/src/features/widgets/verify_password_reset_otp.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
@@ -76,7 +74,6 @@ import 'package:lazervault/src/features/authentication/presentation/views/two_fa
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_settings_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
-import 'package:lazervault/src/features/stocks/presentation/view/stocks_home_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_landing_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_amount_screen.dart';
@@ -94,7 +91,6 @@ import '../../../main.dart' show AuthCheckScreen;
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
-import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
 import '../investments/presentation/view/investments_screen.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
@@ -231,7 +227,6 @@ import 'package:lazervault/src/features/statistics/cubit/category_management_cub
 import 'package:lazervault/src/features/statistics/presentation/screens/category_management_screen.dart';
 
 // Credit Score & Open Banking imports
-import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/presentation/screens/credit_score_screen.dart';
 import 'package:lazervault/src/features/open_banking/presentation/screens/linked_accounts_screen.dart' as open_banking;
 import 'package:lazervault/src/features/open_banking/presentation/screens/link_bank_screen.dart' as open_banking;
@@ -286,7 +281,6 @@ import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_h
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_list_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_details_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/create_crowdfund_carousel.dart';
-import 'package:lazervault/src/features/crowdfund/presentation/views/create_crowdfund_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_payment_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_processing_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_receipt_screen.dart';
@@ -362,6 +356,10 @@ import 'package:lazervault/src/features/data_bundles/presentation/view/data_paym
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_payment_processing_screen.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_payment_receipt_screen.dart';
 
+// Subscription Tracker imports
+import 'package:lazervault/src/features/subscriptions/presentation/screens/subscription_dashboard_screen.dart';
+import 'package:lazervault/src/features/subscriptions/presentation/screens/subscription_detail_screen.dart';
+
 // Currency Exchange imports (BLoC/Cubit)
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_home_screen.dart';
@@ -376,6 +374,8 @@ import 'package:lazervault/src/features/settings/presentation/view/privacy_polic
 import 'package:lazervault/src/features/settings/presentation/view/help_support_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/contact_us_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/referral_dashboard_screen.dart';
+import 'package:lazervault/src/features/referral/presentation/screens/all_referrals_screen.dart';
+import 'package:lazervault/src/features/referral/presentation/screens/lazer_points_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/cubit/referral_cubit.dart';
 
 // WhatsApp Banking imports
@@ -383,6 +383,12 @@ import 'package:lazervault/src/features/whatsapp_banking/cubit/whatsapp_banking_
 import 'package:lazervault/src/features/whatsapp_banking/presentation/screens/whatsapp_main_screen.dart';
 import 'package:lazervault/src/features/whatsapp_banking/presentation/screens/whatsapp_linking_screen.dart';
 import 'package:lazervault/src/features/whatsapp_banking/presentation/screens/whatsapp_security_screen.dart';
+
+// Channel Management imports
+import 'package:lazervault/src/features/channel_management/cubit/channel_management_cubit.dart';
+import 'package:lazervault/src/features/channel_management/presentation/screens/channel_management_screen.dart';
+import 'package:lazervault/src/features/channel_management/presentation/screens/channel_activation_screen.dart';
+import 'package:lazervault/src/features/channel_management/presentation/screens/channel_pin_setup_screen.dart';
 
 // KYC imports
 import 'package:lazervault/src/features/kyc/presentation/views/progressive_kyc_screen.dart';
@@ -398,6 +404,38 @@ import 'package:lazervault/src/features/payroll/presentation/views/pay_run_list_
 import 'package:lazervault/src/features/payroll/presentation/views/create_pay_run_screen.dart';
 import 'package:lazervault/src/features/payroll/presentation/views/pay_run_details_screen.dart';
 import 'package:lazervault/src/features/payroll/presentation/views/pay_slip_details_screen.dart';
+
+// Inventory Imports (Business)
+import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_cubit.dart';
+import 'package:lazervault/src/features/inventory/presentation/views/inventory_list_screen.dart';
+import 'package:lazervault/src/features/inventory/presentation/views/add_inventory_item_screen.dart';
+import 'package:lazervault/src/features/inventory/presentation/views/inventory_item_details_screen.dart';
+import 'package:lazervault/src/features/inventory/presentation/views/edit_inventory_item_screen.dart';
+import 'package:lazervault/src/features/inventory/domain/entities/inventory_item_entity.dart';
+
+// Customer CRM Imports (Business)
+import 'package:lazervault/src/features/customers/presentation/cubit/customer_cubit.dart';
+import 'package:lazervault/src/features/customers/presentation/views/customer_list_screen.dart';
+import 'package:lazervault/src/features/customers/presentation/views/add_customer_screen.dart';
+import 'package:lazervault/src/features/customers/presentation/views/customer_details_screen.dart';
+import 'package:lazervault/src/features/customers/presentation/views/edit_customer_screen.dart';
+import 'package:lazervault/src/features/customers/domain/entities/customer_entity.dart';
+
+// Inventory Enhanced Imports (Business)
+import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_enhanced_cubit.dart';
+import 'package:lazervault/src/features/inventory/presentation/views/supplier_list_screen.dart';
+import 'package:lazervault/src/features/inventory/presentation/views/purchase_order_list_screen.dart';
+import 'package:lazervault/src/features/inventory/presentation/views/inventory_valuation_screen.dart';
+import 'package:lazervault/src/features/inventory/presentation/views/expiry_alerts_screen.dart';
+
+// Tax Management Imports (Business)
+import 'package:lazervault/src/features/tax/presentation/cubit/tax_cubit.dart';
+import 'package:lazervault/src/features/tax/presentation/views/tax_dashboard_screen.dart';
+import 'package:lazervault/src/features/tax/presentation/views/tax_calendar_screen.dart';
+import 'package:lazervault/src/features/tax/presentation/views/tax_obligations_screen.dart';
+import 'package:lazervault/src/features/tax/presentation/views/tax_documents_screen.dart';
+import 'package:lazervault/src/features/tax/presentation/views/vat_schedule_screen.dart';
+import 'package:lazervault/src/features/tax/presentation/views/record_vat_screen.dart';
 
 // Business Dashboard
 import 'package:lazervault/src/features/business_dashboard/presentation/cubit/business_dashboard_cubit.dart';
@@ -899,6 +937,22 @@ class AppRouter {
       page: () => BlocProvider(
         create: (context) => serviceLocator<ReferralCubit>(),
         child: const ReferralDashboardScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.allReferrals,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<ReferralCubit>(),
+        child: const AllReferralsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.lazerPoints,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<ReferralCubit>(),
+        child: const LazerPointsScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2977,6 +3031,18 @@ GetPage(
       transition: Transition.zoom,
     ),
 
+    // Subscription Tracker routes
+    GetPage(
+      name: AppRoutes.subscriptionDashboard,
+      page: () => const SubscriptionDashboardScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.subscriptionDetail,
+      page: () => const SubscriptionDetailScreen(),
+      transition: Transition.rightToLeft,
+    ),
+
     // ================== Business Dashboard Routes ==================
     GetPage(
       name: AppRoutes.businessDashboard,
@@ -3055,6 +3121,170 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
 
+    // ================== Inventory Routes (Business) ==================
+    GetPage(
+      name: AppRoutes.inventory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InventoryCubit>(),
+        child: const InventoryListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.addInventoryItem,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InventoryCubit>(),
+        child: const AddInventoryItemScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.inventoryItemDetails,
+      page: () {
+        final item = Get.arguments as InventoryItemEntity;
+        return BlocProvider(
+          create: (_) => serviceLocator<InventoryCubit>(),
+          child: InventoryItemDetailsScreen(item: item),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.editInventoryItem,
+      page: () {
+        final item = Get.arguments as InventoryItemEntity;
+        return BlocProvider(
+          create: (_) => serviceLocator<InventoryCubit>(),
+          child: EditInventoryItemScreen(item: item),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
+    // ================== Inventory Enhanced Routes (Business) ==================
+    GetPage(
+      name: AppRoutes.supplierList,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InventoryEnhancedCubit>(),
+        child: const SupplierListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.purchaseOrders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InventoryEnhancedCubit>(),
+        child: const PurchaseOrderListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.inventoryValuation,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InventoryEnhancedCubit>(),
+        child: const InventoryValuationScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.expiryAlerts,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InventoryEnhancedCubit>(),
+        child: const ExpiryAlertsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ================== Customer CRM Routes (Business) ==================
+    GetPage(
+      name: AppRoutes.customers,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CustomerCubit>(),
+        child: const CustomerListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.addCustomer,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CustomerCubit>(),
+        child: const AddCustomerScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.customerDetails,
+      page: () {
+        final customer = Get.arguments as CustomerEntity;
+        return BlocProvider(
+          create: (_) => serviceLocator<CustomerCubit>(),
+          child: CustomerDetailsScreen(customer: customer),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.editCustomer,
+      page: () {
+        final customer = Get.arguments as CustomerEntity;
+        return BlocProvider(
+          create: (_) => serviceLocator<CustomerCubit>(),
+          child: EditCustomerScreen(customer: customer),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
+    // ================== Tax Management Routes (Business) ==================
+    GetPage(
+      name: AppRoutes.taxDashboard,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaxCubit>(),
+        child: const TaxDashboardScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.taxCalendar,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaxCubit>(),
+        child: const TaxCalendarScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.taxObligations,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaxCubit>(),
+        child: const TaxObligationsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.taxDocuments,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaxCubit>(),
+        child: const TaxDocumentsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.vatSchedule,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaxCubit>(),
+        child: const VATScheduleScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.recordVat,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaxCubit>(),
+        child: const RecordVATScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
     // ================== Move Money Routes ==================
     GetPage(
       name: AppRoutes.moveMoneyTransfer,
@@ -3120,6 +3350,35 @@ GetPage(
         ],
         child: const WalletHistoryScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Channel Management Routes
+    GetPage(
+      name: AppRoutes.channelManagement,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<ChannelManagementCubit>(),
+        child: const ChannelManagementScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.channelActivation,
+      page: () {
+        final channelType = Get.arguments as String;
+        return ChannelActivationScreen(channelType: channelType);
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.channelPinSetup,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        return ChannelPinSetupScreen(
+          channelType: args['channelType'] as String,
+          isChange: args['isChange'] as bool? ?? false,
+        );
+      },
       transition: Transition.rightToLeft,
     ),
 

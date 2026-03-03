@@ -54,7 +54,7 @@ class ReferralStatsCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
-                color: Colors.black87,
+                color: Colors.white,
               ),
             ),
           ),
@@ -103,15 +103,8 @@ class ReferralStatsCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         children: [
@@ -133,7 +126,7 @@ class ReferralStatsCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.w800,
-              color: Colors.black87,
+              color: Colors.white,
             ),
           ),
           SizedBox(height: 2.h),
@@ -142,7 +135,7 @@ class ReferralStatsCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 11.sp,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
+              color: const Color(0xFF9CA3AF),
             ),
           ),
         ],

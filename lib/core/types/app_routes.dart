@@ -88,6 +88,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String dataBundlesPaymentProcessing = '/data-bundles/payment-processing';
   static const String dataBundlesPaymentReceipt = '/data-bundles/payment-receipt';
 
+  // Subscription Tracker Routes
+  static const String subscriptionDashboard = '/subscriptions/dashboard';
+  static const String subscriptionDetail = '/subscriptions/detail';
+
   static const String flights = '/flights';
   static const String payInvoice = '/pay-invoice';
   static const String crypto = '/crypto';
@@ -155,6 +159,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
 
   // Referral Routes
   static const String referralDashboard = '/referral/dashboard';
+  static const String allReferrals = '/referral/all';
+  static const String lazerPoints = '/referral/points';
 
   // Gift Card Routes
   static const String giftCards = '/gift-cards';
@@ -315,6 +321,8 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String creditScore = '/credit-score';
 
   // Open Banking Routes
+  static const String linkedBanks = '/open-banking/linked-banks';
+  static const String linkBank = '/open-banking/link';
   static const String openBankingConnect = '/open-banking/connect';
   static const String openBankingCallback = '/open-banking/callback';
   static const String openBankingSync = '/open-banking/sync';
@@ -422,6 +430,33 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String payRunDetails = '/payroll/pay-runs/details';
   static const String paySlipDetails = '/payroll/payslip';
 
+  // Customer CRM Routes (Business)
+  static const String customers = '/customers';
+  static const String addCustomer = '/customers/add';
+  static const String customerDetails = '/customers/details';
+  static const String editCustomer = '/customers/edit';
+
+  // Tax Management Routes (Business)
+  static const String taxDashboard = '/tax/dashboard';
+  static const String taxCalendar = '/tax/calendar';
+  static const String taxObligations = '/tax/obligations';
+  static const String taxDocuments = '/tax/documents';
+  static const String vatSchedule = '/tax/vat/schedule';
+  static const String recordVat = '/tax/vat/record';
+
+  // Inventory Routes (Business)
+  static const String inventory = '/inventory';
+  static const String addInventoryItem = '/inventory/items/add';
+  static const String inventoryItemDetails = '/inventory/items/details';
+  static const String editInventoryItem = '/inventory/items/edit';
+  static const String supplierList = '/inventory/suppliers';
+  static const String addSupplier = '/inventory/suppliers/add';
+  static const String purchaseOrders = '/inventory/purchase-orders';
+  static const String createPurchaseOrder = '/inventory/purchase-orders/create';
+  static const String purchaseOrderDetails = '/inventory/purchase-orders/details';
+  static const String inventoryValuation = '/inventory/valuation';
+  static const String expiryAlerts = '/inventory/expiry-alerts';
+
   // Move Money Routes
   static const String moveMoney = '/move-money';
   static const String moveMoneyTransfer = '/move-money/transfer';
@@ -431,6 +466,11 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String walletTransfer = '/move-money/wallet-transfer';
   static const String walletTransferReceipt = '/move-money/wallet-receipt';
   static const String walletTransferHistory = '/move-money/wallet-history';
+
+  // Channel Management Routes
+  static const String channelManagement = '/settings/channels';
+  static const String channelActivation = '/settings/channels/activate';
+  static const String channelPinSetup = '/settings/channels/pin-setup';
 
   // Debug Routes (Remove before production)
   static const String debugSettings = '/debug/settings';

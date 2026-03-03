@@ -12,6 +12,7 @@ import '../../../account_cards_summary/domain/entities/account_summary_entity.da
 import '../../domain/entities/id_pay_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import '../widgets/id_pay_details_bottom_sheet.dart';
 import '../widgets/id_pay_status_badge.dart';
 
@@ -149,6 +150,10 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
               ),
             ),
           ],
+          const MicroserviceChatIcon(
+            serviceName: 'IDPay',
+            sourceContext: 'idpay',
+          ),
         ],
       ),
     );

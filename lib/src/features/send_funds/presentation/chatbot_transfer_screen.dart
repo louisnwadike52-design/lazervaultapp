@@ -184,7 +184,7 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'LazerAI Transfer',
+                  'NOVA Transfer',
                   style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
                 ),
                 Text(

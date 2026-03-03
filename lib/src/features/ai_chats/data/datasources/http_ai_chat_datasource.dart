@@ -117,6 +117,9 @@ class HttpAiChatDataSource implements IAiChatDataSource {
     String? sessionId,
     String? sourceContext,
     String? language,
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   }) async {
     try {
       // Get user context
@@ -136,7 +139,7 @@ class HttpAiChatDataSource implements IAiChatDataSource {
 
       // Build request body matching Chat Agent Gateway's ChatMessage model
       final locale = _localeManager?.currentLocale ?? 'en-NG';
-      final requestBody = {
+      final requestBody = <String, dynamic>{
         'message': query,
         'session_id': sessionId ?? _generateSessionId(),
         'user_id': userId,
@@ -153,11 +156,30 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         },
       };
 
+      // Add media fields if present
+      if (mediaBase64 != null && mediaBase64.isNotEmpty) {
+        requestBody['media_base64'] = mediaBase64;
+      }
+      if (mediaType != null && mediaType.isNotEmpty) {
+        requestBody['media_type'] = mediaType;
+      }
+      if (mediaMimeType != null && mediaMimeType.isNotEmpty) {
+        requestBody['media_mime_type'] = mediaMimeType;
+      }
+
       print('AI Chat Request Body: ${requestBody.keys}');
 
+      // Use longer timeouts for media messages
+      final hasMedia = mediaBase64 != null && mediaBase64.isNotEmpty;
       final response = await _dio.post(
         '/chat',
         data: requestBody,
+        options: hasMedia
+            ? Options(
+                sendTimeout: const Duration(seconds: 120),
+                receiveTimeout: const Duration(seconds: 90),
+              )
+            : null,
       );
 
       if (response.statusCode == 200) {

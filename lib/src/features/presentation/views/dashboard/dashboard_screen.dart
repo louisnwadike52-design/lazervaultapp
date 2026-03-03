@@ -272,7 +272,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       case 2:
         return 'AI Chat';
       case 3:
-        return 'Move';
+        return 'Beam';
       case 4:
         return 'Lifestyle';
       default:

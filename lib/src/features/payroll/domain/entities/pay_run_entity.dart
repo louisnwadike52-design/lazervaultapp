@@ -16,9 +16,12 @@ class PayRunsPageResult {
 
 enum PayRunStatus { draft, calculating, ready, approved, processing, completed, failed }
 
+enum RecurrenceFrequency { none, weekly, biweekly, monthly }
+
 class PayRunEntity extends Equatable {
   final String id;
   final String businessId;
+  final String name;
   final String payPeriodStart;
   final String payPeriodEnd;
   final PayRunStatus status;
@@ -27,6 +30,11 @@ class PayRunEntity extends Equatable {
   final double totalNet;
   final double totalEmployerContributions;
   final int employeeCount;
+  final bool isRecurring;
+  final RecurrenceFrequency recurrenceFrequency;
+  final String? nextScheduledDate;
+  final bool autoApprove;
+  final List<String> employeeIds;
   final String createdBy;
   final String? approvedBy;
   final DateTime createdAt;
@@ -35,6 +43,7 @@ class PayRunEntity extends Equatable {
   const PayRunEntity({
     required this.id,
     required this.businessId,
+    this.name = '',
     required this.payPeriodStart,
     required this.payPeriodEnd,
     required this.status,
@@ -43,6 +52,11 @@ class PayRunEntity extends Equatable {
     required this.totalNet,
     required this.totalEmployerContributions,
     required this.employeeCount,
+    this.isRecurring = false,
+    this.recurrenceFrequency = RecurrenceFrequency.none,
+    this.nextScheduledDate,
+    this.autoApprove = false,
+    this.employeeIds = const [],
     required this.createdBy,
     this.approvedBy,
     required this.createdAt,
@@ -79,6 +93,21 @@ class PayRunEntity extends Equatable {
   bool get canApprove => status == PayRunStatus.ready;
   bool get canProcess => status == PayRunStatus.approved;
 
+  String get displayName => name.isNotEmpty ? name : 'Pay Run ${payPeriodStart} - ${payPeriodEnd}';
+
+  String get recurrenceFrequencyDisplay {
+    switch (recurrenceFrequency) {
+      case RecurrenceFrequency.none:
+        return 'One-time';
+      case RecurrenceFrequency.weekly:
+        return 'Weekly';
+      case RecurrenceFrequency.biweekly:
+        return 'Bi-weekly';
+      case RecurrenceFrequency.monthly:
+        return 'Monthly';
+    }
+  }
+
   @override
-  List<Object?> get props => [id, status, totalNet, employeeCount];
+  List<Object?> get props => [id, status, totalNet, employeeCount, name];
 }

@@ -46,15 +46,16 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
     emit(DashboardRatesLoading());
 
     await _fetchRates();
-    _startAutoRefresh();
+    if (!isClosed) _startAutoRefresh();
   }
 
   Future<void> _fetchRates({bool isRefresh = false}) async {
     final currenciesResult = await _repository.getSupportedCurrencies();
+    if (isClosed) return;
 
     await currenciesResult.fold(
       (failure) async {
-        if (!isRefresh) {
+        if (!isRefresh && !isClosed) {
           emit(DashboardRatesError(message: failure.message));
         }
       },
@@ -69,6 +70,7 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
             ));
 
         final results = await Future.wait(rateFutures);
+        if (isClosed) return;
 
         final dashboardRates = <DashboardCurrencyRate>[];
 
@@ -93,6 +95,8 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
             },
           );
         }
+
+        if (isClosed) return;
 
         if (dashboardRates.isEmpty && !isRefresh) {
           emit(const DashboardRatesError(
@@ -119,6 +123,7 @@ class DashboardRatesCubit extends Cubit<DashboardRatesState> {
   }
 
   Future<void> _refreshRates() async {
+    if (isClosed) return;
     final currentState = state;
     if (currentState is DashboardRatesLoaded) {
       emit(DashboardRatesLoaded(

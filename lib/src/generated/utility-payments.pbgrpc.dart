@@ -105,6 +105,18 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
       '/utilitypayments.UtilityPaymentsService/GetEducationProviders',
       ($0.GetEducationProvidersRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetEducationProvidersResponse.fromBuffer(value));
+  static final _$getActiveSubscriptions = $grpc.ClientMethod<$0.GetActiveSubscriptionsRequest, $0.GetActiveSubscriptionsResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetActiveSubscriptions',
+      ($0.GetActiveSubscriptionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetActiveSubscriptionsResponse.fromBuffer(value));
+  static final _$getSubscriptionSummary = $grpc.ClientMethod<$0.GetSubscriptionSummaryRequest, $0.GetSubscriptionSummaryResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetSubscriptionSummary',
+      ($0.GetSubscriptionSummaryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetSubscriptionSummaryResponse.fromBuffer(value));
+  static final _$getSubscriptionSpending = $grpc.ClientMethod<$0.GetSubscriptionSpendingRequest, $0.GetSubscriptionSpendingResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetSubscriptionSpending',
+      ($0.GetSubscriptionSpendingRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetSubscriptionSpendingResponse.fromBuffer(value));
 
   UtilityPaymentsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -194,6 +206,18 @@ class UtilityPaymentsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetEducationProvidersResponse> getEducationProviders($0.GetEducationProvidersRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getEducationProviders, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetActiveSubscriptionsResponse> getActiveSubscriptions($0.GetActiveSubscriptionsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getActiveSubscriptions, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetSubscriptionSummaryResponse> getSubscriptionSummary($0.GetSubscriptionSummaryRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSubscriptionSummary, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetSubscriptionSpendingResponse> getSubscriptionSpending($0.GetSubscriptionSpendingRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSubscriptionSpending, request, options: options);
   }
 }
 
@@ -349,6 +373,27 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetEducationProvidersRequest.fromBuffer(value),
         ($0.GetEducationProvidersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetActiveSubscriptionsRequest, $0.GetActiveSubscriptionsResponse>(
+        'GetActiveSubscriptions',
+        getActiveSubscriptions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetActiveSubscriptionsRequest.fromBuffer(value),
+        ($0.GetActiveSubscriptionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetSubscriptionSummaryRequest, $0.GetSubscriptionSummaryResponse>(
+        'GetSubscriptionSummary',
+        getSubscriptionSummary_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetSubscriptionSummaryRequest.fromBuffer(value),
+        ($0.GetSubscriptionSummaryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetSubscriptionSpendingRequest, $0.GetSubscriptionSpendingResponse>(
+        'GetSubscriptionSpending',
+        getSubscriptionSpending_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetSubscriptionSpendingRequest.fromBuffer(value),
+        ($0.GetSubscriptionSpendingResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.PayElectricityBillResponse> payElectricityBill_Pre($grpc.ServiceCall call, $async.Future<$0.PayElectricityBillRequest> request) async {
@@ -435,6 +480,18 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
     return getEducationProviders(call, await request);
   }
 
+  $async.Future<$0.GetActiveSubscriptionsResponse> getActiveSubscriptions_Pre($grpc.ServiceCall call, $async.Future<$0.GetActiveSubscriptionsRequest> request) async {
+    return getActiveSubscriptions(call, await request);
+  }
+
+  $async.Future<$0.GetSubscriptionSummaryResponse> getSubscriptionSummary_Pre($grpc.ServiceCall call, $async.Future<$0.GetSubscriptionSummaryRequest> request) async {
+    return getSubscriptionSummary(call, await request);
+  }
+
+  $async.Future<$0.GetSubscriptionSpendingResponse> getSubscriptionSpending_Pre($grpc.ServiceCall call, $async.Future<$0.GetSubscriptionSpendingRequest> request) async {
+    return getSubscriptionSpending(call, await request);
+  }
+
   $async.Future<$0.PayElectricityBillResponse> payElectricityBill($grpc.ServiceCall call, $0.PayElectricityBillRequest request);
   $async.Future<$0.PayWaterBillResponse> payWaterBill($grpc.ServiceCall call, $0.PayWaterBillRequest request);
   $async.Future<$0.PayInternetBillResponse> payInternetBill($grpc.ServiceCall call, $0.PayInternetBillRequest request);
@@ -456,4 +513,7 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
   $async.Future<$0.GetInternetPackagesResponse> getInternetPackages($grpc.ServiceCall call, $0.GetInternetPackagesRequest request);
   $async.Future<$0.PurchaseEducationPinResponse> purchaseEducationPin($grpc.ServiceCall call, $0.PurchaseEducationPinRequest request);
   $async.Future<$0.GetEducationProvidersResponse> getEducationProviders($grpc.ServiceCall call, $0.GetEducationProvidersRequest request);
+  $async.Future<$0.GetActiveSubscriptionsResponse> getActiveSubscriptions($grpc.ServiceCall call, $0.GetActiveSubscriptionsRequest request);
+  $async.Future<$0.GetSubscriptionSummaryResponse> getSubscriptionSummary($grpc.ServiceCall call, $0.GetSubscriptionSummaryRequest request);
+  $async.Future<$0.GetSubscriptionSpendingResponse> getSubscriptionSpending($grpc.ServiceCall call, $0.GetSubscriptionSpendingRequest request);
 }

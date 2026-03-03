@@ -1116,9 +1116,9 @@ class FamilyInviteMembersStep extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  // Navigate to family details to add members
+                  // Navigate to activation setup to configure distribution, invite members, etc.
                   if (familyId.isNotEmpty) {
-                    Get.offNamed(AppRoutes.familyDetails, arguments: {'familyId': familyId});
+                    Get.offNamed(AppRoutes.familyActivationSetup, arguments: {'familyId': familyId});
                   } else {
                     onComplete();
                   }

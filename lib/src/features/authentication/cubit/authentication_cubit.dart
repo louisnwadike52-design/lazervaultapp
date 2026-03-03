@@ -30,6 +30,7 @@ import '../domain/usecases/check_email_availability_usecase.dart';
 import '../domain/usecases/verify_identity_usecase.dart';
 import '../domain/usecases/validate_token_usecase.dart';
 import '../../virtual_account/domain/usecases/create_virtual_account_usecase.dart';
+import '../../referral/domain/usecases/validate_referral_code_usecase.dart';
 import '../domain/entities/profile_entity.dart';
 import '../domain/entities/user.dart';
 import '../domain/entities/signup_draft.dart';
@@ -56,6 +57,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final CurrencySyncService _currencySyncService;
   final AccountManager _accountManager;
   final SignupStateService? _signupStateService;
+  final ValidateReferralCodeUseCase? _validateReferralCodeUseCase;
 
   ProfileEntity? _currentProfile;
   Timer? _draftSaveTimer;
@@ -80,6 +82,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required CurrencySyncService currencySyncService,
     required AccountManager accountManager,
     SignupStateService? signupStateService,
+    ValidateReferralCodeUseCase? validateReferralCode,
   })  : _loginUseCase = login,
         _loginWithPasscodeUseCase = loginWithPasscode,
         _registerPasscodeUseCase = registerPasscode,
@@ -99,6 +102,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         _currencySyncService = currencySyncService,
         _accountManager = accountManager,
         _signupStateService = signupStateService,
+        _validateReferralCodeUseCase = validateReferralCode,
         super(AuthenticationInitial());
 
   // Getters
@@ -750,9 +754,53 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   void signUpReferralCodeChanged(String value) {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
-      emit(currentState.copyWith(referralCode: value, clearErrorMessage: true, isLoading: false));
+      emit(currentState.copyWith(
+        referralCode: value,
+        clearErrorMessage: true,
+        isLoading: false,
+        isReferralCodeValid: null,
+        isReferralCodeValidating: false,
+      ));
       _scheduleDraftSave(); // Auto-save draft
     }
+  }
+
+  /// Validate referral code when field loses focus
+  Future<void> validateReferralCodeOnBlur() async {
+    if (state is! SignUpInProgress) return;
+    final currentState = state as SignUpInProgress;
+    final code = currentState.referralCode.trim();
+
+    // Skip validation if empty (field is optional)
+    if (code.isEmpty) {
+      emit(currentState.copyWith(
+        isReferralCodeValid: null,
+        isReferralCodeValidating: false,
+      ));
+      return;
+    }
+
+    // Show loading spinner
+    emit(currentState.copyWith(isReferralCodeValidating: true));
+
+    if (_validateReferralCodeUseCase == null) return;
+
+    final result = await _validateReferralCodeUseCase!(code: code);
+
+    if (isClosed) return;
+    if (state is! SignUpInProgress) return;
+    final latestState = state as SignUpInProgress;
+
+    result.fold(
+      (failure) => emit(latestState.copyWith(
+        isReferralCodeValid: false,
+        isReferralCodeValidating: false,
+      )),
+      (isValid) => emit(latestState.copyWith(
+        isReferralCodeValid: isValid,
+        isReferralCodeValidating: false,
+      )),
+    );
   }
 
   void signUpDateOfBirthChanged(DateTime? value) {

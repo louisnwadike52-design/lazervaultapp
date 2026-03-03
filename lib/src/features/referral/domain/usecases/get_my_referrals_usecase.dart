@@ -11,10 +11,12 @@ class GetMyReferralsUseCase {
   Future<Either<Failure, List<ReferralTransactionEntity>>> call({
     int page = 1,
     int pageSize = 20,
+    String filter = '',
   }) async {
     return await repository.getMyReferrals(
       page: page,
       pageSize: pageSize,
+      filter: filter,
     );
   }
 }

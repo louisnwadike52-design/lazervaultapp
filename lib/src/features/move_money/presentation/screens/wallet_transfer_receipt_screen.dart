@@ -292,13 +292,15 @@ class WalletTransferReceiptScreen extends StatelessWidget {
                         destinationAccountName: destName,
                       );
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to share receipt',
-                              style: GoogleFonts.inter()),
-                          backgroundColor: const Color(0xFFEF4444),
-                        ),
-                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to share receipt',
+                                style: GoogleFonts.inter()),
+                            backgroundColor: const Color(0xFFEF4444),
+                          ),
+                        );
+                      }
                     }
                   },
                   icon: Icon(Icons.share_rounded, size: 18.sp),

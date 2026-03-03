@@ -89,6 +89,16 @@ class _AccountCarouselState extends State<AccountCarousel> {
     _checkForPendingAnimation();
   }
 
+  @override
+  void didUpdateWidget(AccountCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Clamp _currentIndex when item count shrinks (e.g., "+" card disappears
+    // after reaching the 2-family-account cap, or an account is removed).
+    if (_currentIndex >= _totalItemCount && _totalItemCount > 0) {
+      _currentIndex = _totalItemCount - 1;
+    }
+  }
+
   /// Reads cubit tracking maps for unconsumed WebSocket updates and plays
   /// a two-phase animation: show old balance → animate to new balance.
   void _checkForPendingAnimation() {
@@ -146,14 +156,24 @@ class _AccountCarouselState extends State<AccountCarousel> {
       _currentIndex = index;
     });
 
-    // Automatically set the visible account as active
+    // Skip setting active account when on the "+" add card (last index)
     if (widget.accountSummaries.isNotEmpty && index < widget.accountSummaries.length) {
       final newAccountId = widget.accountSummaries[index].id;
       _accountManager.setActiveAccount(newAccountId);
     }
   }
 
-  int get _totalItemCount => widget.accountSummaries.length;
+  /// Whether the user can create more family accounts (max 2).
+  bool get _canCreateMoreFamilyAccounts {
+    final familyCount = widget.accountSummaries
+        .where((a) => a.accountTypeEnum == VirtualAccountType.family)
+        .length;
+    return familyCount < 2;
+  }
+
+  // +1 for the "Add Family Account" card at the end (only if under the cap)
+  int get _totalItemCount =>
+      widget.accountSummaries.length + (_canCreateMoreFamilyAccounts ? 1 : 0);
 
   @override
   Widget build(BuildContext context) {
@@ -191,6 +211,10 @@ class _AccountCarouselState extends State<AccountCarousel> {
               onPageChanged: _onPageChanged, // Automatically sets active account on swipe
             ),
             itemBuilder: (context, index, realIndex) {
+              // Last slot is the "+" add family account card (when visible)
+              if (index >= widget.accountSummaries.length) {
+                return _buildAddFamilyAccountCard();
+              }
               final account = widget.accountSummaries[index];
               return _buildAccountCard(context, account);
             },
@@ -283,20 +307,26 @@ class _AccountCarouselState extends State<AccountCarousel> {
     return account.balance;
   }
 
-  /// Resolves the family account ID by calling GetFamilyAccounts, then navigates to setup.
-  /// If no family account record exists yet, auto-creates one first.
+  /// Resolves the family account ID for a legacy NUBAN (familyAccountId == null),
+  /// then navigates to setup. Auto-creates a family_accounts record if needed.
   Future<void> _resolveFamilyIdAndNavigate(AccountSummaryEntity account) async {
     setState(() => _isResolvingFamilyId = true);
     try {
       final familyCubit = serviceLocator<FamilyAccountCubit>();
       await familyCubit.loadFamilyAccounts();
       final state = familyCubit.state;
+
       if (state is FamilyAccountsLoaded && state.familyAccounts.isNotEmpty) {
-        // Find the first pending_setup account (or first account)
-        final target = state.familyAccounts.firstWhere(
-          (a) => a.isPendingSetup,
-          orElse: () => state.familyAccounts.first,
-        );
+        // With multi-family, there may be several family accounts.
+        // This legacy NUBAN has no familyAccountId link, so try to match
+        // by finding the account named "Family & Friends" in pending_setup
+        // (the default name for legacy NUBANs). If none match, fall back
+        // to the oldest pending account, then the first account overall.
+        final pending = state.familyAccounts.where((a) => a.isPendingSetup).toList();
+        final target = pending.where((a) => a.name == 'Family & Friends').firstOrNull
+            ?? pending.firstOrNull
+            ?? state.familyAccounts.first;
+
         Get.toNamed(AppRoutes.familyActivationSetup,
             arguments: {'familyId': target.id});
       } else {
@@ -336,6 +366,320 @@ class _AccountCarouselState extends State<AccountCarousel> {
         setState(() => _isResolvingFamilyId = false);
       }
     }
+  }
+
+  Widget _buildAddFamilyAccountCard() {
+    return GestureDetector(
+      onTap: () {
+        // Prevent double-tap opening multiple bottom sheets
+        if (Get.isBottomSheetOpen == true) return;
+        _showCreateFamilyAccountSheet();
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0D4D4D),
+              Color(0xFF1A6B6B),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0D4D4D).withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20.r),
+          child: Stack(
+            children: [
+              // Background decorative circles
+              Positioned(
+                right: -30,
+                top: -30,
+                child: Container(
+                  width: 120.w,
+                  height: 120.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.06),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: -20,
+                bottom: -40,
+                child: Container(
+                  width: 100.w,
+                  height: 100.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.04),
+                  ),
+                ),
+              ),
+              // Main content
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 52.w,
+                      height: 52.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.add_rounded,
+                        color: const Color(0xFF0D4D4D),
+                        size: 28.sp,
+                      ),
+                    ),
+                    SizedBox(height: 14.h),
+                    Text(
+                      'New Family Account',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Create a shared account for\nfamily or friends',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCreateFamilyAccountSheet() {
+    // Defensive: recheck cap in case carousel data is stale
+    if (!_canCreateMoreFamilyAccounts) {
+      Get.snackbar(
+        'Limit Reached',
+        'You can have a maximum of 2 family accounts.',
+        backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
+    final nameController = TextEditingController();
+    bool isCreating = false;
+
+    // Determine currency from current active account
+    String currentCurrency = 'NGN';
+    if (widget.accountSummaries.isNotEmpty) {
+      final activeId = _accountManager.activeAccountId;
+      final activeAccount = widget.accountSummaries.where((a) => a.id == activeId).firstOrNull;
+      currentCurrency = activeAccount?.currency ?? widget.accountSummaries.first.currency;
+    }
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setSheetState) {
+          return Container(
+            padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 24.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Text(
+                  'Create Family & Friends Account',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                TextField(
+                  controller: nameController,
+                  maxLength: 50,
+                  style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                  decoration: InputDecoration(
+                    labelText: 'Account Name',
+                    labelStyle: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                    ),
+                    hintText: 'e.g., Kids Allowance, Friend Group, Family Pool',
+                    hintStyle: TextStyle(
+                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                      fontSize: 13.sp,
+                    ),
+                    counterStyle: TextStyle(color: const Color(0xFF9CA3AF)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFF0A0A0A),
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50.h,
+                  child: ElevatedButton(
+                    onPressed: isCreating
+                        ? null
+                        : () async {
+                            final name = nameController.text.trim();
+                            if (name.isEmpty) {
+                              Get.snackbar(
+                                'Required',
+                                'Please enter a name for the account',
+                                backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+                                colorText: Colors.white,
+                                snackPosition: SnackPosition.TOP,
+                              );
+                              return;
+                            }
+
+                            setSheetState(() => isCreating = true);
+
+                            try {
+                              final familyCubit = serviceLocator<FamilyAccountCubit>();
+                              await familyCubit.createAccount(
+                                name: name,
+                                initialCurrency: currentCurrency,
+                                initialFunding: 0.0,
+                                allowMemberContributions: true,
+                              );
+
+                              // Sheet may have been dismissed while awaiting
+                              if (Get.isBottomSheetOpen != true) return;
+
+                              final state = familyCubit.state;
+                              if (state is FamilyAccountCreated) {
+                                Get.back(); // Close bottom sheet
+                                Get.snackbar(
+                                  'Success',
+                                  '"$name" account created!',
+                                  backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
+                                  colorText: Colors.white,
+                                  snackPosition: SnackPosition.TOP,
+                                );
+                                // Refresh dashboard accounts
+                                if (_cubit.currentUserId != null) {
+                                  _cubit.fetchAccountSummaries(userId: _cubit.currentUserId!);
+                                }
+                                // Navigate to family setup
+                                Get.toNamed(
+                                  AppRoutes.familyActivationSetup,
+                                  arguments: {'familyId': state.familyAccount.id},
+                                );
+                              } else if (state is FamilyAccountError) {
+                                setSheetState(() => isCreating = false);
+                                Get.snackbar(
+                                  'Error',
+                                  state.message,
+                                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+                                  colorText: Colors.white,
+                                  snackPosition: SnackPosition.TOP,
+                                );
+                              } else {
+                                // Unexpected state (e.g., FamilyAccountCreating) — reset button
+                                setSheetState(() => isCreating = false);
+                              }
+                            } catch (e) {
+                              // Sheet may have been dismissed while awaiting
+                              if (Get.isBottomSheetOpen == true) {
+                                setSheetState(() => isCreating = false);
+                              }
+                              Get.snackbar(
+                                'Error',
+                                'Failed to create account. Please try again.',
+                                backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+                                colorText: Colors.white,
+                                snackPosition: SnackPosition.TOP,
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: isCreating
+                        ? SizedBox(
+                            width: 24.w,
+                            height: 24.w,
+                            child: const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Create Account',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+              ],
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
+    );
   }
 
   Widget _buildAccountCard(BuildContext context, AccountSummaryEntity account) {
@@ -616,14 +960,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF1A4747),
-                Color(0xFF2D6B6B),
+                Color(0xFF1A1A3E),
+                Color(0xFF2D2B6B),
               ],
             ),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1A4747).withValues(alpha: 0.3),
+                color: const Color(0xFF1A1A3E).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -685,46 +1029,58 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               ),
                             ],
                           ),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                            decoration: BoxDecoration(
-                              color: isPendingSetup
-                                  ? const Color(0xFFFB923C).withValues(alpha: 0.3)
-                                  : const Color(0xFF10B981).withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                            child: Text(
-                              isPendingSetup
-                                  ? 'SETUP'
-                                  : '${account.memberCount ?? 0} members',
-                              style: TextStyle(
-                                color: isPendingSetup
-                                    ? const Color(0xFFFB923C)
-                                    : const Color(0xFF10B981),
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: isPendingSetup ? 1.2 : 0,
+                          if (!isPendingSetup)
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF7C6BF0).withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: Text(
+                                '${account.memberCount ?? 0} members',
+                                style: TextStyle(
+                                  color: const Color(0xFFB8ABFF),
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF7C6BF0).withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: Text(
+                                'NEW',
+                                style: TextStyle(
+                                  color: const Color(0xFFB8ABFF),
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.2,
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                       SizedBox(height: 12.h),
                       if (isPendingSetup) ...[
                         Text(
-                          'Tap to complete setup',
+                          'Share & Manage',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          'Money Together',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Configure how funds are distributed',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 12.sp,
                           ),
                         ),
                       ] else ...[
@@ -746,42 +1102,70 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         ),
                       ],
                       const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '•••• ${account.accountNumberLast4}',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 12.sp,
+                      if (isPendingSetup)
+                        GestureDetector(
+                          onTap: _isResolvingFamilyId
+                              ? null
+                              : () {
+                                  if (account.familyAccountId == null) {
+                                    _resolveFamilyIdAndNavigate(account);
+                                  } else {
+                                    final familyId = account.familyAccountId ?? account.id;
+                                    Get.toNamed(AppRoutes.familyActivationSetup,
+                                        arguments: {'familyId': familyId});
+                                  }
+                                },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _isResolvingFamilyId ? 'Loading...' : 'Get Started',
+                                  style: TextStyle(
+                                    color: const Color(0xFF1A1A3E),
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (!_isResolvingFamilyId) ...[
+                                  SizedBox(width: 4.w),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: const Color(0xFF1A1A3E),
+                                    size: 16.sp,
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
-                          _buildActionButton(
-                            _isResolvingFamilyId
-                                ? "Loading..."
-                                : (isPendingSetup ? "Setup" : "Details"),
-                            isPendingSetup ? Icons.settings_rounded : Icons.arrow_forward_rounded,
-                            onTap: _isResolvingFamilyId
-                                ? () {}
-                                : () {
-                                    if (isPendingSetup && account.familyAccountId == null) {
-                                      // familyAccountId is null (fallback path) — resolve via GetFamilyAccounts
-                                      // or auto-create if no family account record exists
-                                      _resolveFamilyIdAndNavigate(account);
-                                    } else {
-                                      final familyId = account.familyAccountId ?? account.id;
-                                      if (isPendingSetup) {
-                                        Get.toNamed(AppRoutes.familyActivationSetup,
-                                            arguments: {'familyId': familyId});
-                                      } else {
-                                        Get.toNamed(AppRoutes.familyDetails,
-                                            arguments: {'familyId': familyId});
-                                      }
-                                    }
-                                  },
-                          ),
-                        ],
-                      ),
+                        )
+                      else
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '•••• ${account.accountNumberLast4}',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                            _buildActionButton(
+                              "Details",
+                              Icons.arrow_forward_rounded,
+                              onTap: () {
+                                final familyId = account.familyAccountId ?? account.id;
+                                Get.toNamed(AppRoutes.familyDetails,
+                                    arguments: {'familyId': familyId});
+                              },
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

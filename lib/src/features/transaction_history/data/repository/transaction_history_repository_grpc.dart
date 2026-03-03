@@ -48,7 +48,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         throw Exception('No active account selected');
       }
 
-      // Try cache first
+      // Try cache first (but skip if search query is present — apply locally after)
       final userId = await storage.read(key: 'user_id');
       if (page == 1 && userId != null && !_shouldBypassCache(filters)) {
         try {
@@ -58,8 +58,20 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
           );
 
           if (cached.isNotEmpty) {
+            // Apply local search filter to cached results
+            var cachedResults = cached;
+            if (filters?.searchQuery?.isNotEmpty == true) {
+              final query = filters!.searchQuery!.toLowerCase();
+              cachedResults = cached.where((tx) =>
+                tx.title.toLowerCase().contains(query) ||
+                tx.description?.toLowerCase().contains(query) == true ||
+                tx.counterpartyName?.toLowerCase().contains(query) == true ||
+                tx.transactionReference?.toLowerCase().contains(query) == true ||
+                tx.formattedAmount.toLowerCase().contains(query)
+              ).toList();
+            }
             return TransactionListResponse(
-              transactions: cached,
+              transactions: cachedResults,
               hasMore: false,
               currentPage: page,
               totalPages: 1,
@@ -92,6 +104,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         serviceName: filters?.serviceTypes?.isNotEmpty == true
             ? _mapServiceTypeToServiceName(filters!.serviceTypes!.first)
             : null,
+        counterpartyAccount: filters?.counterpartyAccount,
         startDate: filters?.startDate,
         endDate: filters?.endDate,
         limit: limit,
@@ -108,7 +121,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
           tx.title.toLowerCase().contains(query) ||
           tx.description?.toLowerCase().contains(query) == true ||
           tx.counterpartyName?.toLowerCase().contains(query) == true ||
-          tx.transactionReference?.toLowerCase().contains(query) == true
+          tx.transactionReference?.toLowerCase().contains(query) == true ||
+          tx.formattedAmount.toLowerCase().contains(query)
         ).toList();
       }
 
@@ -398,6 +412,9 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // Amount range filters bypass cache
     if (filters.minAmount != null || filters.maxAmount != null) return true;
 
+    // Counterparty account filter bypasses cache (backend-filtered)
+    if (filters.counterpartyAccount != null) return true;
+
     return false;
   }
 
@@ -449,6 +466,12 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       if (accountMatch != null) {
         counterpartyAccount = accountMatch.group(1);
       }
+    }
+
+    // Don't use generic account names as counterparty display names
+    const genericAccountNames = {'Personal', 'Savings', 'Business', 'USD Wallet', 'GBP Wallet', 'GHS Wallet', 'KES Wallet', 'ZAR Wallet'};
+    if (counterpartyName != null && genericAccountNames.contains(counterpartyName)) {
+      counterpartyName = null;
     }
 
     // Generate title, enriched with counterparty name for transfers

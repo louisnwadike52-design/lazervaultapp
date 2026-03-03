@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/expense_category_helpers.dart';
+import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 
 /// Create/Edit Budget Screen
@@ -22,8 +22,14 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
 
-  pb.ExpenseCategory? _selectedCategory;
+  // Dynamic categories from backend (same as transfer flow)
+  ServiceCategory? _selectedServiceCategory;
+  List<ServiceCategory> _availableCategories = [];
+  bool _categoriesLoading = true;
+
   pb.BudgetPeriod _selectedPeriod = pb.BudgetPeriod.BUDGET_PERIOD_MONTHLY;
+  pb.BudgetEnforcementMode _selectedEnforcementMode =
+      pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
   DateTime? _startDate;
   DateTime? _endDate;
   bool _enableAlerts = true;
@@ -42,13 +48,17 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   @override
   void initState() {
     super.initState();
+    _loadCategories();
 
     // Check if editing
     if (_isEditMode && _editingBudget != null) {
       _nameController.text = _editingBudget!.name;
       _amountController.text = _editingBudget!.amount.toString();
-      _selectedCategory = _editingBudget!.category;
       _selectedPeriod = _editingBudget!.period;
+      _selectedEnforcementMode = _editingBudget!.enforcementMode;
+      if (_selectedEnforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_UNSPECIFIED) {
+        _selectedEnforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
+      }
       _enableAlerts = _editingBudget!.enableAlerts;
       _alertThreshold = _editingBudget!.alertThreshold;
       _startDate = _editingBudget!.startDate.toDateTime();
@@ -57,6 +67,25 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       // Set default dates based on period
       _setDefaultDates();
     }
+  }
+
+  Future<void> _loadCategories() async {
+    final budgetCubit = context.read<BudgetCubit>();
+    final categories = await budgetCubit.loadServiceCategories('budget');
+    if (!mounted) return;
+    setState(() {
+      _availableCategories = categories;
+      _categoriesLoading = false;
+
+      // Pre-select category in edit mode
+      if (_isEditMode && _editingBudget != null) {
+        final editCategoryValue = _editingBudget!.category.value;
+        _selectedServiceCategory = categories.cast<ServiceCategory?>().firstWhere(
+          (c) => c!.budgetCategory == editCategoryValue,
+          orElse: () => null,
+        );
+      }
+    });
   }
 
   void _setDefaultDates() {
@@ -112,7 +141,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       return;
     }
 
-    if (_selectedCategory == null) {
+    if (_selectedServiceCategory == null) {
       Get.snackbar(
         'Error',
         'Please select a category',
@@ -121,6 +150,10 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       );
       return;
     }
+
+    // Derive proto ExpenseCategory from ServiceCategory.budgetCategory
+    final protoCategory = pb.ExpenseCategory.valueOf(_selectedServiceCategory!.budgetCategory)
+        ?? pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER;
 
     if (_isEditMode && _editingBudget != null) {
       context.read<BudgetCubit>().updateBudget(
@@ -132,18 +165,20 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         endDate: _endDate,
         enableAlerts: _enableAlerts,
         alertThreshold: _alertThreshold,
+        enforcementMode: _selectedEnforcementMode,
       );
     } else {
       context.read<BudgetCubit>().createBudget(
         name: _nameController.text,
         amount: amount,
         currency: 'NGN',
-        category: _selectedCategory!,
+        category: protoCategory,
         period: _selectedPeriod,
         startDate: _startDate,
         endDate: _endDate,
         enableAlerts: _enableAlerts,
         alertThreshold: _alertThreshold,
+        enforcementMode: _selectedEnforcementMode,
       );
     }
   }
@@ -207,6 +242,11 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                 // Category
                 _buildSectionTitle('Category'),
                 _buildCategorySelector(),
+                SizedBox(height: 24.h),
+
+                // Enforcement Mode
+                _buildSectionTitle('Enforcement Mode'),
+                _buildEnforcementModeSelector(),
                 SizedBox(height: 24.h),
 
                 // Period
@@ -293,7 +333,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       decoration: InputDecoration(
         hintText: '0.00',
         hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-        prefixText: '₦ ',
+        prefixText: '\u20A6 ',
         prefixStyle: const TextStyle(color: Colors.white, fontSize: 18),
         filled: true,
         fillColor: const Color(0xFF1F1F1F),
@@ -324,47 +364,172 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   }
 
   Widget _buildCategorySelector() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<pb.ExpenseCategory>(
-          value: _selectedCategory,
-          isExpanded: true,
-          dropdownColor: const Color(0xFF1F1F1F),
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-          iconEnabledColor: const Color(0xFF9CA3AF),
-          hint: const Text(
-            'Select Category',
-            style: TextStyle(color: Color(0xFF9CA3AF)),
+    if (_categoriesLoading) {
+      return Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: const Center(
+          child: SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
           ),
-          items: ExpenseCategoryHelpers.getAllCategories().map((category) {
-            return DropdownMenuItem<pb.ExpenseCategory>(
-              value: category,
-              child: Row(
-                children: [
-                  Icon(
-                    ExpenseCategoryHelpers.getCategoryIcon(category),
-                    color: ExpenseCategoryHelpers.getCategoryColor(category),
-                    size: 20.sp,
-                  ),
-                  SizedBox(width: 12.w),
-                  Text(
-                    ExpenseCategoryHelpers.getCategoryDisplayName(category),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () async {
+        final selected = await CategorySelectionBottomSheet.show(
+          context,
+          serviceName: 'budget',
+          categories: _availableCategories,
+          selectedCategory: _selectedServiceCategory,
+        );
+        if (selected != null) {
+          setState(() {
+            _selectedServiceCategory = selected;
+            // Auto-fill budget name from category if name is empty
+            if (_nameController.text.isEmpty) {
+              _nameController.text = selected.displayName;
+            }
+          });
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Row(
+          children: [
+            if (_selectedServiceCategory != null) ...[
+              Icon(
+                _selectedServiceCategory!.iconData,
+                color: _selectedServiceCategory!.color,
+                size: 20.sp,
               ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedCategory = value;
-            });
-          },
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  _selectedServiceCategory!.displayName,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ] else
+              Expanded(
+                child: Text(
+                  'Select Category',
+                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
+                ),
+              ),
+            const Icon(Icons.keyboard_arrow_down, color: Color(0xFF9CA3AF)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnforcementModeSelector() {
+    final isFlexible = _selectedEnforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
+    final isStrict = _selectedEnforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildEnforcementOption(
+                title: 'Flexible',
+                description: 'Allows transactions with a warning',
+                icon: Icons.warning_amber_rounded,
+                iconColor: const Color(0xFFFB923C),
+                isSelected: isFlexible,
+                onTap: () {
+                  setState(() {
+                    _selectedEnforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
+                  });
+                },
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: _buildEnforcementOption(
+                title: 'Strict',
+                description: 'Blocks transactions when exceeded',
+                icon: Icons.block,
+                iconColor: const Color(0xFFEF4444),
+                isSelected: isStrict,
+                onTap: () {
+                  setState(() {
+                    _selectedEnforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEnforcementOption({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color iconColor,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF10B981).withValues(alpha: 0.1)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF10B981) : const Color(0xFF2D2D2D),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: iconColor, size: 18.sp),
+                SizedBox(width: 6.w),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                if (isSelected)
+                  Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 18.sp),
+              ],
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              description,
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 11.sp,
+              ),
+            ),
+          ],
         ),
       ),
     );

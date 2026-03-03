@@ -61,56 +61,65 @@ class UsernameRecipientConfirmationSheetState
   /// Get alias.
   String? get alias => _alias;
 
+  double get _sheetHeightFraction => _isSaved ? 0.92 : 0.82;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.93,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      height: MediaQuery.of(context).size.height * _sheetHeightFraction,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.r),
-          topRight: Radius.circular(24.r),
+          topLeft: Radius.circular(20.r),
+          topRight: Radius.circular(20.r),
         ),
       ),
       child: Column(
         children: [
-          _buildDragHandle(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  SizedBox(height: 24.h),
-                  _buildProfileSection(),
-                  SizedBox(height: 24.h),
-                  _buildAccountDetailsCard(),
-                  SizedBox(height: 16.h),
-                  _buildContactDetails(),
-                  SizedBox(height: 24.h),
-                  _buildInfoBox(),
-                  SizedBox(height: 16.h),
-                  _buildFavoriteToggle(),
-                  _buildAliasInput(),
-                  SizedBox(height: 100.h),
-                ],
-              ),
+          // Drag handle
+          Container(
+            width: 36.w,
+            height: 4.h,
+            margin: EdgeInsets.only(top: 10.h, bottom: 6.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD1D5DB),
+              borderRadius: BorderRadius.circular(2.r),
             ),
           ),
+
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        SizedBox(height: 8.h),
+                        _buildProfileSection(),
+                        SizedBox(height: 20.h),
+                        _buildAccountCard(),
+                        SizedBox(height: 16.h),
+                        _buildContactAndInfo(),
+                        SizedBox(height: 16.h),
+                        _buildToggles(),
+                        _buildAliasInput(),
+                        SizedBox(height: 8.h),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
           _buildBottomActions(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDragHandle() {
-    return Container(
-      width: 40.w,
-      height: 4.h,
-      margin: EdgeInsets.symmetric(vertical: 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE5E7EB),
-        borderRadius: BorderRadius.circular(2.r),
       ),
     );
   }
@@ -120,16 +129,16 @@ class UsernameRecipientConfirmationSheetState
       scale: _scaleAnimation,
       child: Column(
         children: [
-          // Profile picture
+          // Avatar
           Container(
-            width: 80.w,
-            height: 80.h,
+            width: 72.w,
+            height: 72.w,
             decoration: BoxDecoration(
               color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
               shape: BoxShape.circle,
               border: Border.all(
                 color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
-                width: 3,
+                width: 2.5,
               ),
             ),
             child: widget.user.profilePicture.isNotEmpty
@@ -137,30 +146,28 @@ class UsernameRecipientConfirmationSheetState
                     child: Image.network(
                       widget.user.profilePicture,
                       fit: BoxFit.cover,
-                      width: 80.w,
-                      height: 80.h,
+                      width: 56.w,
+                      height: 56.w,
                       errorBuilder: (_, __, ___) => _buildInitials(),
                     ),
                   )
                 : _buildInitials(),
           ),
-          SizedBox(height: 16.h),
-
-          // Full name
+          SizedBox(height: 10.h),
+          // Name
           Text(
             widget.user.fullName,
             style: TextStyle(
-              fontSize: 20.sp,
+              fontSize: 18.sp,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF111827),
             ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 4.h),
-
-          // Username
+          // @ badge
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 3.h),
             decoration: BoxDecoration(
               color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20.r),
@@ -168,29 +175,23 @@ class UsernameRecipientConfirmationSheetState
             child: Text(
               '@${widget.user.username}',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF4E03D0),
               ),
             ),
           ),
-
-          SizedBox(height: 8.h),
-
-          // Verified badge
+          SizedBox(height: 6.h),
+          // Verified
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.verified,
-                color: const Color(0xFF10B981),
-                size: 16.sp,
-              ),
+              Icon(Icons.verified, color: const Color(0xFF10B981), size: 15.sp),
               SizedBox(width: 4.w),
               Text(
                 'LazerVault User',
                 style: TextStyle(
-                  fontSize: 13.sp,
+                  fontSize: 12.sp,
                   color: const Color(0xFF10B981),
                   fontWeight: FontWeight.w500,
                 ),
@@ -208,140 +209,110 @@ class UsernameRecipientConfirmationSheetState
         widget.user.initials,
         style: TextStyle(
           color: const Color(0xFF4E03D0),
-          fontSize: 28.sp,
+          fontSize: 26.sp,
           fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  Widget _buildAccountDetailsCard() {
+  Widget _buildAccountCard() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF4E03D0),
-            Color(0xFF5F14E1),
-          ],
+          colors: [Color(0xFF4E03D0), Color(0xFF5F14E1)],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Bank name with icon
+          // Bank header
           Row(
             children: [
               Container(
-                width: 40.w,
-                height: 40.h,
+                width: 36.w,
+                height: 36.w,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: Icon(
-                  Icons.account_balance,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
+                child: Icon(Icons.account_balance, color: Colors.white, size: 18.sp),
               ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Text(
-                  'LazerVault',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
+              SizedBox(width: 10.w),
+              Text(
+                'LazerVault',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
-
-          SizedBox(height: 20.h),
+          SizedBox(height: 14.h),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
-          SizedBox(height: 20.h),
-
-          // Account holder name
+          SizedBox(height: 14.h),
+          // Account holder
           Text(
             'Account Holder',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 12.sp,
+              fontSize: 11.sp,
               fontWeight: FontWeight.w500,
-              letterSpacing: 0.5,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
           Text(
             widget.user.fullName.toUpperCase(),
             style: TextStyle(
               color: Colors.white,
-              fontSize: 20.sp,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
+              letterSpacing: 0.3,
             ),
           ),
-
-          SizedBox(height: 20.h),
-
-          // Account details row
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Personal Account',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      widget.accountNumber ?? '@${widget.user.username}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          SizedBox(height: 14.h),
+          // Personal account
+          Text(
+            'Personal Account',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 11.sp,
+            ),
           ),
-
-          // Alias display
+          SizedBox(height: 4.h),
+          Text(
+            widget.accountNumber ?? '@${widget.user.username}',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.8,
+            ),
+          ),
+          // Alias
           if (_alias != null && _alias!.isNotEmpty) ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 8.h),
             Row(
               children: [
-                Icon(
-                  Icons.label_outline,
-                  color: Colors.white.withValues(alpha: 0.9),
-                  size: 16.sp,
-                ),
-                SizedBox(width: 8.w),
+                Icon(Icons.label_outline, color: Colors.white70, size: 14.sp),
+                SizedBox(width: 6.w),
                 Text(
                   'Alias: $_alias',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 14.sp,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -353,85 +324,61 @@ class UsernameRecipientConfirmationSheetState
     );
   }
 
-  Widget _buildContactDetails() {
+  Widget _buildContactAndInfo() {
     final hasEmail = widget.user.email.isNotEmpty;
     final hasPhone = widget.user.phoneNumber.isNotEmpty;
-    if (!hasEmail && !hasPhone) return const SizedBox.shrink();
 
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          if (hasEmail)
-            _buildContactRow(
-              icon: Icons.email_outlined,
-              label: 'Email',
-              value: widget.user.email,
-            ),
-          if (hasEmail && hasPhone)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.h),
-              child: Divider(height: 1, color: const Color(0xFFE5E7EB)),
-            ),
-          if (hasPhone)
-            _buildContactRow(
-              icon: Icons.phone_outlined,
-              label: 'Phone',
-              value: widget.user.phoneNumber,
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Row(
+    return Column(
       children: [
+        // Contact row
+        if (hasEmail || hasPhone)
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                if (hasEmail) ...[
+                  _buildContactItem(Icons.email_outlined, 'Email', widget.user.email),
+                ],
+                if (hasEmail && hasPhone) ...[
+                  Container(
+                    width: 1,
+                    height: 40.h,
+                    margin: EdgeInsets.symmetric(horizontal: 12.w),
+                    color: const Color(0xFFE5E7EB),
+                  ),
+                ],
+                if (hasPhone) ...[
+                  _buildContactItem(Icons.phone_outlined, 'Phone', widget.user.phoneNumber),
+                ],
+              ],
+            ),
+          ),
+        SizedBox(height: 10.h),
+        // Info bar
         Container(
-          width: 36.w,
-          height: 36.w,
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           decoration: BoxDecoration(
-            color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(8.r),
+            color: const Color(0xFFFEF3C7),
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(color: const Color(0xFFFBBF24)),
           ),
-          child: Icon(
-            icon,
-            color: const Color(0xFF4E03D0),
-            size: 18.sp,
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                value,
-                style: TextStyle(
-                  color: const Color(0xFF374151),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
+              Icon(Icons.info_outline, color: const Color(0xFFD97706), size: 18.sp),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  'Confirm this is the person you want to send money to.',
+                  style: TextStyle(
+                    color: const Color(0xFF92400E),
+                    fontSize: 12.sp,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ],
@@ -441,34 +388,42 @@ class UsernameRecipientConfirmationSheetState
     );
   }
 
-  Widget _buildInfoBox() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF3C7),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFFFBBF24),
-          width: 1,
-        ),
-      ),
+  Widget _buildContactItem(IconData icon, String label, String value) {
+    return Expanded(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline,
-            color: const Color(0xFFD97706),
-            size: 20.sp,
+          Container(
+            width: 34.w,
+            height: 34.w,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(icon, color: const Color(0xFF4E03D0), size: 16.sp),
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              'Confirm this is the person you want to send money to.',
-              style: TextStyle(
-                color: const Color(0xFF92400E),
-                fontSize: 13.sp,
-                height: 1.5,
-              ),
+          SizedBox(width: 10.w),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: const Color(0xFF374151),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ],
@@ -476,173 +431,137 @@ class UsernameRecipientConfirmationSheetState
     );
   }
 
-  Widget _buildFavoriteToggle() {
+  Widget _buildToggles() {
     return Column(
       children: [
-        // Save Recipient toggle
-        Row(
-          children: [
-            Icon(
-              _isSaved ? Icons.bookmark : Icons.bookmark_outline,
-              color: _isSaved ? const Color(0xFF4E03D0) : const Color(0xFF6B7280),
-              size: 20.sp,
-            ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: Text(
-                'Save Recipient',
-                style: TextStyle(
-                  color: const Color(0xFF111827),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Switch(
-              value: _isSaved,
-              onChanged: (value) {
-                setState(() {
-                  _isSaved = value;
-                  if (!value) {
-                    _isFavorite = false;
-                  }
-                });
-              },
-              activeThumbColor: const Color(0xFF4E03D0),
-            ),
-          ],
-        ),
-        // Add to Favorites toggle (only visible when saved)
-        if (_isSaved) ...[
-          SizedBox(height: 8.h),
-          Row(
+        SizedBox(
+          height: 40.h,
+          child: Row(
             children: [
               Icon(
-                _isFavorite ? Icons.star : Icons.star_outline,
-                color: _isFavorite ? const Color(0xFFF59E0B) : const Color(0xFF6B7280),
+                _isSaved ? Icons.bookmark : Icons.bookmark_outline,
+                color: _isSaved ? const Color(0xFF4E03D0) : const Color(0xFF9CA3AF),
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
-                  'Add to Favorites',
+                  'Save Recipient',
                   style: TextStyle(
-                    color: const Color(0xFF111827),
+                    color: const Color(0xFF374151),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-              Switch(
-                value: _isFavorite,
-                onChanged: (value) {
-                  setState(() {
-                    _isFavorite = value;
-                  });
-                },
-                activeThumbColor: const Color(0xFFF59E0B),
+              Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: _isSaved,
+                  onChanged: (value) {
+                    setState(() {
+                      _isSaved = value;
+                      if (!value) _isFavorite = false;
+                    });
+                  },
+                  activeThumbColor: const Color(0xFF4E03D0),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
               ),
             ],
           ),
-        ],
+        ),
+        if (_isSaved)
+          SizedBox(
+            height: 40.h,
+            child: Row(
+              children: [
+                Icon(
+                  _isFavorite ? Icons.star : Icons.star_outline,
+                  color: _isFavorite ? const Color(0xFFF59E0B) : const Color(0xFF9CA3AF),
+                  size: 20.sp,
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    'Add to Favorites',
+                    style: TextStyle(
+                      color: const Color(0xFF374151),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Transform.scale(
+                  scale: 0.85,
+                  child: Switch(
+                    value: _isFavorite,
+                    onChanged: (value) {
+                      setState(() => _isFavorite = value);
+                    },
+                    activeThumbColor: const Color(0xFFF59E0B),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
 
   Widget _buildAliasInput() {
     if (!_isSaved) return const SizedBox.shrink();
-    return Padding(
-      padding: EdgeInsets.only(top: 16.h),
-      child: Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: const Color(0xFFE5E7EB),
-            width: 1,
+    return SizedBox(
+      height: 46.h,
+      child: TextFormField(
+        maxLength: 50,
+        style: TextStyle(fontSize: 13.sp),
+        decoration: InputDecoration(
+          hintText: 'Alias (optional) e.g. Mom',
+          hintStyle: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+          counterText: '',
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: Color(0xFF4E03D0)),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Set Alias (optional)',
-              style: TextStyle(
-                color: const Color(0xFF374151),
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            TextFormField(
-              maxLength: 50,
-              decoration: InputDecoration(
-                hintText: 'e.g. Mom, Coffee Shop',
-                hintStyle: TextStyle(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 14.sp,
-                ),
-                counterStyle: TextStyle(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 11.sp,
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 10.h,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: Color(0xFF4E03D0)),
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  final trimmed = value.trim();
-                  _alias = trimmed.isEmpty ? null : trimmed;
-                });
-              },
-            ),
-          ],
-        ),
+        onChanged: (value) {
+          setState(() {
+            final trimmed = value.trim();
+            _alias = trimmed.isEmpty ? null : trimmed;
+          });
+        },
       ),
     );
   }
 
   Widget _buildBottomActions() {
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        border: Border(top: BorderSide(color: const Color(0xFFF3F4F6), width: 1)),
       ),
       child: SafeArea(
         child: Row(
           children: [
-            // Cancel
             Expanded(
               child: OutlinedButton(
                 onPressed: widget.onCancel,
                 style: OutlinedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
-                  side: const BorderSide(
-                    color: Color(0xFFE5E7EB),
-                    width: 1.5,
-                  ),
+                  side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -651,16 +570,13 @@ class UsernameRecipientConfirmationSheetState
                   'Cancel',
                   style: TextStyle(
                     color: const Color(0xFF374151),
-                    fontSize: 16.sp,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
-
-            SizedBox(width: 16.w),
-
-            // Confirm
+            SizedBox(width: 12.w),
             Expanded(
               flex: 2,
               child: ElevatedButton(
@@ -680,16 +596,12 @@ class UsernameRecipientConfirmationSheetState
                       'Confirm & Send',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16.sp,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 8.w),
-                    Icon(
-                      Icons.send_rounded,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
+                    SizedBox(width: 6.w),
+                    Icon(Icons.send_rounded, color: Colors.white, size: 18.sp),
                   ],
                 ),
               ),
