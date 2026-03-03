@@ -24,6 +24,7 @@ class FinancialAnalyticsRepository {
     String period = 'month',
     DateTime? startDate,
     DateTime? endDate,
+    bool includeExternalBanks = true,
   }) async {
     final accountId = _accountId;
     if (accountId == null || accountId.isEmpty) {
@@ -36,6 +37,7 @@ class FinancialAnalyticsRepository {
         period: period,
         startDate: startDate,
         endDate: endDate,
+        includeExternalBanks: includeExternalBanks,
       ),
     );
   }
@@ -44,6 +46,7 @@ class FinancialAnalyticsRepository {
   Future<GetCategoryAnalyticsResponse> getCategoryAnalytics({
     DateTime? startDate,
     DateTime? endDate,
+    bool includeExternalBanks = true,
   }) async {
     final accountId = _accountId;
     if (accountId == null || accountId.isEmpty) {
@@ -55,6 +58,7 @@ class FinancialAnalyticsRepository {
         accountId: accountId,
         startDate: startDate,
         endDate: endDate,
+        includeExternalBanks: includeExternalBanks,
       ),
     );
   }
@@ -80,6 +84,7 @@ class FinancialAnalyticsRepository {
   Future<GetExpenseTimeSeriesResponse> getExpenseTimeSeries({
     DateTime? startDate,
     DateTime? endDate,
+    bool includeExternalBanks = true,
   }) async {
     final accountId = _accountId;
     if (accountId == null || accountId.isEmpty) {
@@ -91,6 +96,7 @@ class FinancialAnalyticsRepository {
         accountId: accountId,
         startDate: startDate,
         endDate: endDate,
+        includeExternalBanks: includeExternalBanks,
       ),
     );
   }
@@ -100,6 +106,7 @@ class FinancialAnalyticsRepository {
     DateTime? startDate,
     DateTime? endDate,
     int limit = 50,
+    bool includeExternalBanks = true,
   }) async {
     final accountId = _accountId;
     if (accountId == null || accountId.isEmpty) {
@@ -117,6 +124,7 @@ class FinancialAnalyticsRepository {
             startDate: startDate,
             endDate: endDate,
             limit: limit,
+            includeExternalBanks: includeExternalBanks,
           ),
         );
       } catch (_) {

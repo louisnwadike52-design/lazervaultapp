@@ -1303,7 +1303,6 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
     $core.String? idempotencyKey,
     $core.String? countryCode,
     $core.String? operatorId,
-    $core.String? reloadlyOperatorId,
   }) {
     final $result = create();
     if (providerId != null) {
@@ -1336,9 +1335,6 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
     if (operatorId != null) {
       $result.operatorId = operatorId;
     }
-    if (reloadlyOperatorId != null) {
-      $result.reloadlyOperatorId = reloadlyOperatorId;
-    }
     return $result;
   }
   BuyAirtimeRequest._() : super();
@@ -1356,7 +1352,6 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'idempotencyKey')
     ..aOS(9, _omitFieldNames ? '' : 'countryCode')
     ..aOS(10, _omitFieldNames ? '' : 'operatorId')
-    ..aOS(11, _omitFieldNames ? '' : 'reloadlyOperatorId')
     ..hasRequiredFields = false
   ;
 
@@ -1472,15 +1467,6 @@ class BuyAirtimeRequest extends $pb.GeneratedMessage {
   $core.bool hasOperatorId() => $_has(9);
   @$pb.TagNumber(10)
   void clearOperatorId() => clearField(10);
-
-  @$pb.TagNumber(11)
-  $core.String get reloadlyOperatorId => $_getSZ(10);
-  @$pb.TagNumber(11)
-  set reloadlyOperatorId($core.String v) { $_setString(10, v); }
-  @$pb.TagNumber(11)
-  $core.bool hasReloadlyOperatorId() => $_has(10);
-  @$pb.TagNumber(11)
-  void clearReloadlyOperatorId() => clearField(11);
 }
 
 class BuyAirtimeResponse extends $pb.GeneratedMessage {
@@ -5420,6 +5406,820 @@ class GetInternetPackagesResponse extends $pb.GeneratedMessage {
   $core.bool hasTotal() => $_has(1);
   @$pb.TagNumber(2)
   void clearTotal() => clearField(2);
+}
+
+class ActiveSubscription extends $pb.GeneratedMessage {
+  factory ActiveSubscription({
+    $core.String? id,
+    $core.String? subscriptionType,
+    $core.String? providerId,
+    $core.String? providerName,
+    $core.String? planName,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? customerNumber,
+    $core.String? status,
+    $core.String? purchasedAt,
+    $core.String? expiresAt,
+    $core.int? validityDays,
+    $core.String? renewalDate,
+    $core.String? token,
+    $core.double? units,
+    $core.double? progressPercentage,
+    $core.int? daysRemaining,
+    $core.String? paymentReference,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (subscriptionType != null) {
+      $result.subscriptionType = subscriptionType;
+    }
+    if (providerId != null) {
+      $result.providerId = providerId;
+    }
+    if (providerName != null) {
+      $result.providerName = providerName;
+    }
+    if (planName != null) {
+      $result.planName = planName;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    if (customerNumber != null) {
+      $result.customerNumber = customerNumber;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (purchasedAt != null) {
+      $result.purchasedAt = purchasedAt;
+    }
+    if (expiresAt != null) {
+      $result.expiresAt = expiresAt;
+    }
+    if (validityDays != null) {
+      $result.validityDays = validityDays;
+    }
+    if (renewalDate != null) {
+      $result.renewalDate = renewalDate;
+    }
+    if (token != null) {
+      $result.token = token;
+    }
+    if (units != null) {
+      $result.units = units;
+    }
+    if (progressPercentage != null) {
+      $result.progressPercentage = progressPercentage;
+    }
+    if (daysRemaining != null) {
+      $result.daysRemaining = daysRemaining;
+    }
+    if (paymentReference != null) {
+      $result.paymentReference = paymentReference;
+    }
+    return $result;
+  }
+  ActiveSubscription._() : super();
+  factory ActiveSubscription.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ActiveSubscription.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ActiveSubscription', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'subscriptionType')
+    ..aOS(3, _omitFieldNames ? '' : 'providerId')
+    ..aOS(4, _omitFieldNames ? '' : 'providerName')
+    ..aOS(5, _omitFieldNames ? '' : 'planName')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aOS(8, _omitFieldNames ? '' : 'customerNumber')
+    ..aOS(9, _omitFieldNames ? '' : 'status')
+    ..aOS(10, _omitFieldNames ? '' : 'purchasedAt')
+    ..aOS(11, _omitFieldNames ? '' : 'expiresAt')
+    ..a<$core.int>(12, _omitFieldNames ? '' : 'validityDays', $pb.PbFieldType.O3)
+    ..aOS(13, _omitFieldNames ? '' : 'renewalDate')
+    ..aOS(14, _omitFieldNames ? '' : 'token')
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'units', $pb.PbFieldType.OD)
+    ..a<$core.double>(16, _omitFieldNames ? '' : 'progressPercentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(17, _omitFieldNames ? '' : 'daysRemaining', $pb.PbFieldType.O3)
+    ..aOS(18, _omitFieldNames ? '' : 'paymentReference')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ActiveSubscription clone() => ActiveSubscription()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ActiveSubscription copyWith(void Function(ActiveSubscription) updates) => super.copyWith((message) => updates(message as ActiveSubscription)) as ActiveSubscription;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ActiveSubscription create() => ActiveSubscription._();
+  ActiveSubscription createEmptyInstance() => create();
+  static $pb.PbList<ActiveSubscription> createRepeated() => $pb.PbList<ActiveSubscription>();
+  @$core.pragma('dart2js:noInline')
+  static ActiveSubscription getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ActiveSubscription>(create);
+  static ActiveSubscription? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get subscriptionType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set subscriptionType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSubscriptionType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSubscriptionType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get providerId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set providerId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProviderId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProviderId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get providerName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set providerName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasProviderName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProviderName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get planName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set planName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPlanName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPlanName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get amount => $_getN(5);
+  @$pb.TagNumber(6)
+  set amount($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get currency => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set currency($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCurrency() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCurrency() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get customerNumber => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set customerNumber($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCustomerNumber() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCustomerNumber() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get status => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set status($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStatus() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get purchasedAt => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set purchasedAt($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasPurchasedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearPurchasedAt() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get expiresAt => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set expiresAt($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasExpiresAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearExpiresAt() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.int get validityDays => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set validityDays($core.int v) { $_setSignedInt32(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasValidityDays() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearValidityDays() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get renewalDate => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set renewalDate($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasRenewalDate() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearRenewalDate() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get token => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set token($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasToken() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearToken() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.double get units => $_getN(14);
+  @$pb.TagNumber(15)
+  set units($core.double v) { $_setDouble(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasUnits() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearUnits() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.double get progressPercentage => $_getN(15);
+  @$pb.TagNumber(16)
+  set progressPercentage($core.double v) { $_setDouble(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasProgressPercentage() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearProgressPercentage() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.int get daysRemaining => $_getIZ(16);
+  @$pb.TagNumber(17)
+  set daysRemaining($core.int v) { $_setSignedInt32(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasDaysRemaining() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearDaysRemaining() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get paymentReference => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set paymentReference($core.String v) { $_setString(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasPaymentReference() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearPaymentReference() => clearField(18);
+}
+
+class GetActiveSubscriptionsRequest extends $pb.GeneratedMessage {
+  factory GetActiveSubscriptionsRequest({
+    $core.String? subscriptionType,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final $result = create();
+    if (subscriptionType != null) {
+      $result.subscriptionType = subscriptionType;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    if (offset != null) {
+      $result.offset = offset;
+    }
+    return $result;
+  }
+  GetActiveSubscriptionsRequest._() : super();
+  factory GetActiveSubscriptionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetActiveSubscriptionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetActiveSubscriptionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'subscriptionType')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetActiveSubscriptionsRequest clone() => GetActiveSubscriptionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetActiveSubscriptionsRequest copyWith(void Function(GetActiveSubscriptionsRequest) updates) => super.copyWith((message) => updates(message as GetActiveSubscriptionsRequest)) as GetActiveSubscriptionsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetActiveSubscriptionsRequest create() => GetActiveSubscriptionsRequest._();
+  GetActiveSubscriptionsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetActiveSubscriptionsRequest> createRepeated() => $pb.PbList<GetActiveSubscriptionsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetActiveSubscriptionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetActiveSubscriptionsRequest>(create);
+  static GetActiveSubscriptionsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get subscriptionType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set subscriptionType($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSubscriptionType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSubscriptionType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => clearField(3);
+}
+
+class GetActiveSubscriptionsResponse extends $pb.GeneratedMessage {
+  factory GetActiveSubscriptionsResponse({
+    $core.Iterable<ActiveSubscription>? subscriptions,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (subscriptions != null) {
+      $result.subscriptions.addAll(subscriptions);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  GetActiveSubscriptionsResponse._() : super();
+  factory GetActiveSubscriptionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetActiveSubscriptionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetActiveSubscriptionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..pc<ActiveSubscription>(1, _omitFieldNames ? '' : 'subscriptions', $pb.PbFieldType.PM, subBuilder: ActiveSubscription.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetActiveSubscriptionsResponse clone() => GetActiveSubscriptionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetActiveSubscriptionsResponse copyWith(void Function(GetActiveSubscriptionsResponse) updates) => super.copyWith((message) => updates(message as GetActiveSubscriptionsResponse)) as GetActiveSubscriptionsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetActiveSubscriptionsResponse create() => GetActiveSubscriptionsResponse._();
+  GetActiveSubscriptionsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetActiveSubscriptionsResponse> createRepeated() => $pb.PbList<GetActiveSubscriptionsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetActiveSubscriptionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetActiveSubscriptionsResponse>(create);
+  static GetActiveSubscriptionsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<ActiveSubscription> get subscriptions => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+class SubscriptionTypeSummary extends $pb.GeneratedMessage {
+  factory SubscriptionTypeSummary({
+    $core.String? type,
+    $core.int? count,
+    $core.double? totalSpend,
+  }) {
+    final $result = create();
+    if (type != null) {
+      $result.type = type;
+    }
+    if (count != null) {
+      $result.count = count;
+    }
+    if (totalSpend != null) {
+      $result.totalSpend = totalSpend;
+    }
+    return $result;
+  }
+  SubscriptionTypeSummary._() : super();
+  factory SubscriptionTypeSummary.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SubscriptionTypeSummary.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SubscriptionTypeSummary', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'type')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'count', $pb.PbFieldType.O3)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalSpend', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SubscriptionTypeSummary clone() => SubscriptionTypeSummary()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SubscriptionTypeSummary copyWith(void Function(SubscriptionTypeSummary) updates) => super.copyWith((message) => updates(message as SubscriptionTypeSummary)) as SubscriptionTypeSummary;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SubscriptionTypeSummary create() => SubscriptionTypeSummary._();
+  SubscriptionTypeSummary createEmptyInstance() => create();
+  static $pb.PbList<SubscriptionTypeSummary> createRepeated() => $pb.PbList<SubscriptionTypeSummary>();
+  @$core.pragma('dart2js:noInline')
+  static SubscriptionTypeSummary getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SubscriptionTypeSummary>(create);
+  static SubscriptionTypeSummary? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get type => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set type($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get count => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set count($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get totalSpend => $_getN(2);
+  @$pb.TagNumber(3)
+  set totalSpend($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalSpend() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalSpend() => clearField(3);
+}
+
+class GetSubscriptionSummaryRequest extends $pb.GeneratedMessage {
+  factory GetSubscriptionSummaryRequest() => create();
+  GetSubscriptionSummaryRequest._() : super();
+  factory GetSubscriptionSummaryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSubscriptionSummaryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSubscriptionSummaryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSubscriptionSummaryRequest clone() => GetSubscriptionSummaryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSubscriptionSummaryRequest copyWith(void Function(GetSubscriptionSummaryRequest) updates) => super.copyWith((message) => updates(message as GetSubscriptionSummaryRequest)) as GetSubscriptionSummaryRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetSubscriptionSummaryRequest create() => GetSubscriptionSummaryRequest._();
+  GetSubscriptionSummaryRequest createEmptyInstance() => create();
+  static $pb.PbList<GetSubscriptionSummaryRequest> createRepeated() => $pb.PbList<GetSubscriptionSummaryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetSubscriptionSummaryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSubscriptionSummaryRequest>(create);
+  static GetSubscriptionSummaryRequest? _defaultInstance;
+}
+
+class GetSubscriptionSummaryResponse extends $pb.GeneratedMessage {
+  factory GetSubscriptionSummaryResponse({
+    $core.int? activeCount,
+    $core.int? expiringCount,
+    $core.double? totalMonthlySpend,
+    $core.Iterable<SubscriptionTypeSummary>? byType,
+  }) {
+    final $result = create();
+    if (activeCount != null) {
+      $result.activeCount = activeCount;
+    }
+    if (expiringCount != null) {
+      $result.expiringCount = expiringCount;
+    }
+    if (totalMonthlySpend != null) {
+      $result.totalMonthlySpend = totalMonthlySpend;
+    }
+    if (byType != null) {
+      $result.byType.addAll(byType);
+    }
+    return $result;
+  }
+  GetSubscriptionSummaryResponse._() : super();
+  factory GetSubscriptionSummaryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSubscriptionSummaryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSubscriptionSummaryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'activeCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'expiringCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalMonthlySpend', $pb.PbFieldType.OD)
+    ..pc<SubscriptionTypeSummary>(4, _omitFieldNames ? '' : 'byType', $pb.PbFieldType.PM, subBuilder: SubscriptionTypeSummary.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSubscriptionSummaryResponse clone() => GetSubscriptionSummaryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSubscriptionSummaryResponse copyWith(void Function(GetSubscriptionSummaryResponse) updates) => super.copyWith((message) => updates(message as GetSubscriptionSummaryResponse)) as GetSubscriptionSummaryResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetSubscriptionSummaryResponse create() => GetSubscriptionSummaryResponse._();
+  GetSubscriptionSummaryResponse createEmptyInstance() => create();
+  static $pb.PbList<GetSubscriptionSummaryResponse> createRepeated() => $pb.PbList<GetSubscriptionSummaryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetSubscriptionSummaryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSubscriptionSummaryResponse>(create);
+  static GetSubscriptionSummaryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get activeCount => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set activeCount($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasActiveCount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearActiveCount() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get expiringCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set expiringCount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasExpiringCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearExpiringCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get totalMonthlySpend => $_getN(2);
+  @$pb.TagNumber(3)
+  set totalMonthlySpend($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalMonthlySpend() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalMonthlySpend() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<SubscriptionTypeSummary> get byType => $_getList(3);
+}
+
+class MonthlySubscriptionSpending extends $pb.GeneratedMessage {
+  factory MonthlySubscriptionSpending({
+    $core.String? month,
+    $core.double? total,
+  }) {
+    final $result = create();
+    if (month != null) {
+      $result.month = month;
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  MonthlySubscriptionSpending._() : super();
+  factory MonthlySubscriptionSpending.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MonthlySubscriptionSpending.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MonthlySubscriptionSpending', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'month')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MonthlySubscriptionSpending clone() => MonthlySubscriptionSpending()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MonthlySubscriptionSpending copyWith(void Function(MonthlySubscriptionSpending) updates) => super.copyWith((message) => updates(message as MonthlySubscriptionSpending)) as MonthlySubscriptionSpending;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MonthlySubscriptionSpending create() => MonthlySubscriptionSpending._();
+  MonthlySubscriptionSpending createEmptyInstance() => create();
+  static $pb.PbList<MonthlySubscriptionSpending> createRepeated() => $pb.PbList<MonthlySubscriptionSpending>();
+  @$core.pragma('dart2js:noInline')
+  static MonthlySubscriptionSpending getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MonthlySubscriptionSpending>(create);
+  static MonthlySubscriptionSpending? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get month => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set month($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMonth() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMonth() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get total => $_getN(1);
+  @$pb.TagNumber(2)
+  set total($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+class GetSubscriptionSpendingRequest extends $pb.GeneratedMessage {
+  factory GetSubscriptionSpendingRequest({
+    $core.int? months,
+  }) {
+    final $result = create();
+    if (months != null) {
+      $result.months = months;
+    }
+    return $result;
+  }
+  GetSubscriptionSpendingRequest._() : super();
+  factory GetSubscriptionSpendingRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSubscriptionSpendingRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSubscriptionSpendingRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'months', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSubscriptionSpendingRequest clone() => GetSubscriptionSpendingRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSubscriptionSpendingRequest copyWith(void Function(GetSubscriptionSpendingRequest) updates) => super.copyWith((message) => updates(message as GetSubscriptionSpendingRequest)) as GetSubscriptionSpendingRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetSubscriptionSpendingRequest create() => GetSubscriptionSpendingRequest._();
+  GetSubscriptionSpendingRequest createEmptyInstance() => create();
+  static $pb.PbList<GetSubscriptionSpendingRequest> createRepeated() => $pb.PbList<GetSubscriptionSpendingRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetSubscriptionSpendingRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSubscriptionSpendingRequest>(create);
+  static GetSubscriptionSpendingRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get months => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set months($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMonths() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMonths() => clearField(1);
+}
+
+class GetSubscriptionSpendingResponse extends $pb.GeneratedMessage {
+  factory GetSubscriptionSpendingResponse({
+    $core.double? totalAllTime,
+    $core.double? totalThisMonth,
+    $core.Map<$core.String, $core.double>? byType,
+    $core.Iterable<MonthlySubscriptionSpending>? monthlyTrend,
+  }) {
+    final $result = create();
+    if (totalAllTime != null) {
+      $result.totalAllTime = totalAllTime;
+    }
+    if (totalThisMonth != null) {
+      $result.totalThisMonth = totalThisMonth;
+    }
+    if (byType != null) {
+      $result.byType.addAll(byType);
+    }
+    if (monthlyTrend != null) {
+      $result.monthlyTrend.addAll(monthlyTrend);
+    }
+    return $result;
+  }
+  GetSubscriptionSpendingResponse._() : super();
+  factory GetSubscriptionSpendingResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSubscriptionSpendingResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSubscriptionSpendingResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'totalAllTime', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalThisMonth', $pb.PbFieldType.OD)
+    ..m<$core.String, $core.double>(3, _omitFieldNames ? '' : 'byType', entryClassName: 'GetSubscriptionSpendingResponse.ByTypeEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('utilitypayments'))
+    ..pc<MonthlySubscriptionSpending>(4, _omitFieldNames ? '' : 'monthlyTrend', $pb.PbFieldType.PM, subBuilder: MonthlySubscriptionSpending.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSubscriptionSpendingResponse clone() => GetSubscriptionSpendingResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSubscriptionSpendingResponse copyWith(void Function(GetSubscriptionSpendingResponse) updates) => super.copyWith((message) => updates(message as GetSubscriptionSpendingResponse)) as GetSubscriptionSpendingResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetSubscriptionSpendingResponse create() => GetSubscriptionSpendingResponse._();
+  GetSubscriptionSpendingResponse createEmptyInstance() => create();
+  static $pb.PbList<GetSubscriptionSpendingResponse> createRepeated() => $pb.PbList<GetSubscriptionSpendingResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetSubscriptionSpendingResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSubscriptionSpendingResponse>(create);
+  static GetSubscriptionSpendingResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.double get totalAllTime => $_getN(0);
+  @$pb.TagNumber(1)
+  set totalAllTime($core.double v) { $_setDouble(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTotalAllTime() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTotalAllTime() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get totalThisMonth => $_getN(1);
+  @$pb.TagNumber(2)
+  set totalThisMonth($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalThisMonth() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalThisMonth() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.Map<$core.String, $core.double> get byType => $_getMap(2);
+
+  @$pb.TagNumber(4)
+  $core.List<MonthlySubscriptionSpending> get monthlyTrend => $_getList(3);
 }
 
 

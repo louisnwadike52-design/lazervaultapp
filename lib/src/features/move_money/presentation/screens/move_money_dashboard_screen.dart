@@ -27,7 +27,6 @@ import '../../domain/entities/mandate_entity.dart';
 import '../../cubit/move_money_state.dart';
 import '../../domain/entities/move_transfer.dart';
 import '../widgets/mandate_management_bottomsheet.dart';
-import '../widgets/mandate_setup_bottomsheet.dart';
 import '../widgets/move_account_card.dart';
 import '../widgets/move_status_badge.dart';
 import '../../services/move_transfer_pdf_service.dart';
@@ -184,7 +183,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'Move Money',
+          'Beam',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -197,27 +196,35 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
         listeners: [
           BlocListener<OpenBankingCubit, OpenBankingState>(
             listenWhen: (prev, curr) =>
-                curr is AccountLinked || curr is AccountUnlinked,
+                curr is AccountLinked ||
+                curr is AccountLinkedWithMandate ||
+                curr is AccountUnlinked,
             listener: (context, state) async {
-              if (state is AccountLinked) {
+              if (state is AccountLinkedWithMandate) {
+                // Auto-mandate flow: mandate created automatically
+                final mandateCubit = context.read<MandateCubit>();
                 final authState = context.read<AuthenticationCubit>().state;
                 if (authState is AuthenticationSuccess) {
-                  final mandateCubit = context.read<MandateCubit>();
-                  final user = authState.profile.user;
-                  await showMandateSetupBottomSheet(
-                    context: context,
-                    linkedAccountId: state.account.id,
-                    userId: authState.profile.userId,
-                    bankName: state.account.bankName,
-                    accountName: state.account.accountName,
-                    userEmail: user.email,
-                    userName: '${user.firstName} ${user.lastName}'.trim(),
-                    userPhone: user.phoneNumber,
-                  );
                   mandateCubit.fetchUserMandates(
                     userId: authState.profile.userId,
                   );
                 }
+                Get.snackbar(
+                  'Account Linked',
+                  state.mandateFailed
+                      ? '${state.account.bankName} linked. Auto-debit setup pending — tap account to retry.'
+                      : '${state.account.bankName} linked with auto-debit enabled.',
+                  backgroundColor: state.mandateFailed
+                      ? const Color(0xFFFB923C)
+                      : const Color(0xFF10B981),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.BOTTOM,
+                  duration: const Duration(seconds: 3),
+                );
+                _loadData();
+              } else if (state is AccountLinked) {
+                // Legacy flow: no auto-mandate
+                _loadData();
               } else if (state is AccountUnlinked) {
                 Get.snackbar(
                   'Account Unlinked',
@@ -376,7 +383,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                             color: Colors.white, size: 22.sp),
                         SizedBox(width: 10.w),
                         Text(
-                          'Move Money Now',
+                          'Move Money',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 16.sp,
@@ -1391,32 +1398,39 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           ),
           borderRadius: BorderRadius.circular(16.r),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Beam Your Funds',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    'Instantly move money across banks and LazerVault wallets.',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 16.w),
             Icon(
               Icons.swap_horiz_rounded,
               color: Colors.white.withValues(alpha: 0.85),
-              size: 32.sp,
-            ),
-            SizedBox(height: 12.h),
-            Text(
-              'Move money between\nyour accounts',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-                height: 1.35,
-              ),
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              'Transfer funds across banks or to LazerVault users.',
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w400,
-              ),
+              size: 40.sp,
             ),
           ],
         ),
@@ -2545,7 +2559,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                   transfer: transfer,
                   userName: userName,
                 );
-                Navigator.of(ctx).pop();
+                if (ctx.mounted) Navigator.of(ctx).pop();
                 Get.snackbar(
                   'Downloaded',
                   'Receipt saved to Downloads',
@@ -2589,7 +2603,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                   transfer: transfer,
                   userName: userName,
                 );
-                Navigator.of(ctx).pop();
+                if (ctx.mounted) Navigator.of(ctx).pop();
               } catch (e) {
                 Get.snackbar(
                   'Error',
@@ -2638,7 +2652,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                   sourceAccountName: sourceName,
                   destinationAccountName: destName,
                 );
-                Navigator.of(ctx).pop();
+                if (ctx.mounted) Navigator.of(ctx).pop();
                 Get.snackbar(
                   'Downloaded',
                   'Receipt saved to Downloads',
@@ -2684,7 +2698,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                   sourceAccountName: sourceName,
                   destinationAccountName: destName,
                 );
-                Navigator.of(ctx).pop();
+                if (ctx.mounted) Navigator.of(ctx).pop();
               } catch (e) {
                 Get.snackbar(
                   'Error',

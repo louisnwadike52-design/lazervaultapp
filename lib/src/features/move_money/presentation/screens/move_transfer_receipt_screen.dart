@@ -440,15 +440,17 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                         userName: userName,
                       );
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Failed to share receipt',
-                            style: GoogleFonts.inter(),
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Failed to share receipt',
+                              style: GoogleFonts.inter(),
+                            ),
+                            backgroundColor: const Color(0xFFEF4444),
                           ),
-                          backgroundColor: const Color(0xFFEF4444),
-                        ),
-                      );
+                        );
+                      }
                     }
                   },
                   icon: Icon(Icons.share_rounded, size: 18.sp),

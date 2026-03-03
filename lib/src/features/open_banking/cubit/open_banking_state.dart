@@ -4,8 +4,8 @@ import '../domain/entities/deposit.dart';
 import '../domain/entities/withdrawal.dart';
 import '../domain/entities/credit_score.dart';
 import '../domain/entities/credit_score_ai_insights.dart';
-import '../domain/entities/external_bank_transaction.dart';
 import '../data/errors/banking_errors.dart';
+import '../../move_money/domain/entities/mandate_entity.dart';
 
 /// Error type classification for UI handling
 enum BankingErrorType {
@@ -29,6 +29,9 @@ enum BankingErrorType {
 
   /// Needs mandate - user must set up direct debit mandate
   needsMandate,
+
+  /// Bank connection expired - needs re-linking
+  reauthorizationRequired,
 
   /// General error - show generic message
   general,
@@ -79,11 +82,39 @@ class AccountLinked extends OpenBankingState {
   List<Object?> get props => [account, isNewAccount];
 }
 
+/// Account linked with auto-mandate result
+class AccountLinkedWithMandate extends OpenBankingState {
+  final LinkedBankAccount account;
+  final MandateEntity? mandate;
+  final bool mandateFailed;
+  final String? mandateError;
+
+  const AccountLinkedWithMandate({
+    required this.account,
+    this.mandate,
+    this.mandateFailed = false,
+    this.mandateError,
+  });
+
+  @override
+  List<Object?> get props => [account, mandate, mandateFailed, mandateError];
+}
+
 /// Account unlinked
 class AccountUnlinked extends OpenBankingState {
   final String accountId;
 
   const AccountUnlinked({required this.accountId});
+
+  @override
+  List<Object?> get props => [accountId];
+}
+
+/// Balance refresh in progress for a specific account
+class BalanceRefreshing extends OpenBankingState {
+  final String accountId;
+
+  const BalanceRefreshing({required this.accountId});
 
   @override
   List<Object?> get props => [accountId];
@@ -225,6 +256,7 @@ class OpenBankingError extends OpenBankingState {
       AccountFrozenException() => BankingErrorType.accountIssue,
       UnauthorizedException() => BankingErrorType.unauthorized,
       NeedsMandateException() => BankingErrorType.needsMandate,
+      ReauthorizationRequiredException() => BankingErrorType.reauthorizationRequired,
       _ => BankingErrorType.general,
     };
   }

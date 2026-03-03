@@ -153,6 +153,13 @@ class TransferCubit extends Cubit<TransferState> {
     }
   }
 
+  /// Reset state to initial (prevents stale success/failure from re-firing listeners)
+  void resetState() {
+    if (!isClosed) {
+      emit(const TransferInitial());
+    }
+  }
+
   /// Convert PaymentsTransferResult to TransferEntity for state
   TransferEntity _toEntity(PaymentsTransferResult result) {
     final amountMinor = result.amount ?? 0;

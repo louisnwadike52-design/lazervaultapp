@@ -181,7 +181,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       'familyId': widget.familyId,
                       'member': member,
                     },
-                  );
+                  )?.then((result) {
+                    if (result == true) _loadFamilyAccount();
+                  });
                 },
               ),
               SizedBox(height: 12.h),
@@ -879,6 +881,18 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             ),
             SizedBox(height: 20.h),
 
+            if (account.status == FamilyAccountStatus.active) ...[
+              _buildOption(
+                Icons.swap_horiz,
+                'Change Distribution Mode',
+                'Switch how funds are distributed',
+                () {
+                  Get.back();
+                  _showDistributionModePicker(account);
+                },
+              ),
+              SizedBox(height: 12.h),
+            ],
             _buildOption(
               account.status == FamilyAccountStatus.active
                   ? Icons.ac_unit
@@ -909,6 +923,166 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             ),
             SizedBox(height: 20.h),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showDistributionModePicker(FamilyAccount account) {
+    FundDistributionMode selectedMode = account.fundDistributionMode;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0A0A0A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'Change Distribution Mode',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Current: ${account.fundDistributionMode.displayName}',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13.sp),
+              ),
+              SizedBox(height: 20.h),
+              ...FundDistributionMode.values.map((mode) {
+                final isSelected = selectedMode == mode;
+                final isCurrent = account.fundDistributionMode == mode;
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: InkWell(
+                    onTap: () => setSheetState(() => selectedMode = mode),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF2D2B6B).withValues(alpha: 0.3)
+                            : const Color(0xFF1F1F1F),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF7C6BF0)
+                              : Colors.white.withValues(alpha: 0.1),
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                            color: isSelected ? const Color(0xFF7C6BF0) : Colors.white.withValues(alpha: 0.4),
+                            size: 20.sp,
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      mode.displayName,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    if (isCurrent) ...[
+                                      SizedBox(width: 8.w),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF7C6BF0).withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(4.r),
+                                        ),
+                                        child: Text(
+                                          'Current',
+                                          style: TextStyle(
+                                            color: const Color(0xFFB8ABFF),
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  mode.description,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    fontSize: 12.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              SizedBox(height: 8.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: selectedMode == account.fundDistributionMode
+                      ? null
+                      : () {
+                          Get.back();
+                          _cubit.updateDistributionMode(
+                            familyId: widget.familyId,
+                            fundDistributionMode: selectedMode.value,
+                          );
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Update Distribution Mode',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.h),
+            ],
+          ),
         ),
       ),
     );
@@ -1138,6 +1312,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
               );
               _loadFamilyAccount();
+            } else if (state is FundDistributionModeUpdated) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Distribution mode updated successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              _loadFamilyAccount();
             } else if (state is FamilyAccountDeleted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -1324,45 +1506,39 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           SizedBox(height: 20.h),
 
           // Account Status
-          Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: account.status == FamilyAccountStatus.active
-                  ? Colors.green.withValues(alpha: 0.1)
-                  : Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: account.status == FamilyAccountStatus.active
-                    ? Colors.green.withValues(alpha: 0.3)
-                    : Colors.blue.withValues(alpha: 0.3),
-                width: 1,
+          Builder(builder: (context) {
+            final (statusColor, statusIcon, statusLabel) = switch (account.status) {
+              FamilyAccountStatus.active => (Colors.green, Icons.check_circle, 'Account Active'),
+              FamilyAccountStatus.frozen => (Colors.blue, Icons.ac_unit, 'Account Frozen'),
+              FamilyAccountStatus.pendingSetup => (const Color(0xFFFB923C), Icons.settings, 'Pending Setup'),
+              FamilyAccountStatus.closed => (Colors.red, Icons.cancel, 'Account Closed'),
+            };
+            return Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: statusColor.withValues(alpha: 0.3),
+                  width: 1,
+                ),
               ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  account.status == FamilyAccountStatus.active
-                      ? Icons.check_circle
-                      : Icons.ac_unit,
-                  color: account.status == FamilyAccountStatus.active
-                      ? Colors.green
-                      : Colors.blue,
-                  size: 20.sp,
-                ),
-                SizedBox(width: 12.w),
-                Text(
-                  account.status == FamilyAccountStatus.active
-                      ? 'Account Active'
-                      : 'Account Frozen',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+              child: Row(
+                children: [
+                  Icon(statusIcon, color: statusColor, size: 20.sp),
+                  SizedBox(width: 12.w),
+                  Text(
+                    statusLabel,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          }),
           SizedBox(height: 20.h),
 
           // Settings Info
@@ -1375,6 +1551,18 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             ),
           ),
           SizedBox(height: 12.h),
+          _buildInfoRow(
+            Icons.category_outlined,
+            'Distribution Mode',
+            account.fundDistributionMode.displayName,
+          ),
+          SizedBox(height: 8.h),
+          _buildInfoRow(
+            Icons.visibility_outlined,
+            'Spending Visibility',
+            account.spendingVisibilityEnabled ? 'Enabled' : 'Disabled',
+          ),
+          SizedBox(height: 8.h),
           _buildInfoRow(
             Icons.people_outline,
             'Member Contributions',
@@ -2013,7 +2201,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   ),
                 ],
               ),
-            ] else
+            ] else ...[
               // Invitation Status Info
               SizedBox(height: 8.h),
               Text(
@@ -2024,6 +2212,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   fontWeight: FontWeight.w500,
                 ),
               ),
+            ],
           ],
         ),
       ),

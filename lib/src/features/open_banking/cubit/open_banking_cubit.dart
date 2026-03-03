@@ -10,8 +10,6 @@ import '../domain/entities/deposit.dart';
 import '../domain/entities/withdrawal.dart';
 import '../domain/entities/credit_score.dart';
 import '../domain/entities/credit_score_ai_insights.dart';
-import '../domain/entities/sync_results.dart';
-import '../domain/entities/external_bank_transaction.dart';
 import 'open_banking_state.dart';
 
 /// Cubit for managing open banking operations
@@ -59,9 +57,18 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         config = await _restDataSource!.getConnectWidgetConfig(accessToken);
       }
       if (isClosed) return;
+      final publicKey = config['public_key'];
+      final appId = config['app_id'];
+      if (publicKey == null || appId == null) {
+        emit(const OpenBankingError(
+          message: 'Failed to load bank connection settings',
+          operation: 'getConnectConfig',
+        ));
+        return;
+      }
       emit(ConnectConfigLoaded(
-        publicKey: config['public_key']!,
-        appId: config['app_id']!,
+        publicKey: publicKey,
+        appId: appId,
       ));
     } catch (e) {
       if (isClosed) return;
@@ -69,12 +76,17 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     }
   }
 
-  /// Link a bank account using Mono Connect code
+  /// Link a bank account using Mono Connect code.
+  /// Automatically creates a GSM mandate for the linked account.
   Future<void> linkAccount({
     required String userId,
     required String code,
     required String accessToken,
     bool setAsDefault = false,
+    bool autoCreateMandate = true,
+    String? userEmail,
+    String? userName,
+    String? userPhone,
   }) async {
     if (isClosed) return;
     emit(AccountLinkingInProgress());
@@ -109,10 +121,67 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       }
 
       if (isClosed) return;
-      emit(AccountLinked(account: account, isNewAccount: existingIndex < 0));
+
+      // Auto-create GSM mandate for seamless recurring debits
+      if (autoCreateMandate && _grpcDataSource != null) {
+        try {
+          final mandateResult = await _grpcDataSource!.createMandate(
+            userId: userId,
+            linkedAccountId: account.id,
+            mandateType: 'gsm',
+            userEmail: userEmail,
+            userName: userName,
+            userPhone: userPhone,
+          );
+          if (isClosed) return;
+          emit(AccountLinkedWithMandate(
+            account: account,
+            mandate: mandateResult.mandate,
+          ));
+        } catch (_) {
+          if (isClosed) return;
+          // Mandate creation failed — account is still linked, just no auto-debit yet
+          emit(AccountLinkedWithMandate(
+            account: account,
+            mandateFailed: true,
+            mandateError: 'Auto-debit setup pending. You can set it up later.',
+          ));
+        }
+      } else {
+        emit(AccountLinked(account: account, isNewAccount: existingIndex < 0));
+      }
     } catch (e) {
       if (isClosed) return;
       _emitError(e, operation: 'linkAccount');
+    }
+  }
+
+  /// Reauthorize a linked account that has an expired bank session
+  Future<void> reauthorizeAccount({
+    required String accountId,
+    required String userId,
+    required String accessToken,
+  }) async {
+    if (isClosed) return;
+    emit(OpenBankingLoading());
+
+    try {
+      if (useGrpc && _grpcDataSource != null) {
+        final token = await _grpcDataSource!.getReauthorizationToken(accountId: accountId);
+        if (isClosed) return;
+        emit(ReauthorizationTokenReceived(accountId: accountId, token: token));
+      } else {
+        final token = await _restDataSource!.getReauthorizationToken(
+          accountId: accountId,
+          userId: userId,
+          accessToken: accessToken,
+        );
+        if (isClosed) return;
+        emit(ReauthorizationTokenReceived(accountId: accountId, token: token));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      _emitError(e, operation: 'reauthorizeAccount');
     }
   }
 
@@ -244,6 +313,9 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     required String userId,
     required String accessToken,
   }) async {
+    if (isClosed) return;
+    emit(BalanceRefreshing(accountId: accountId));
+
     try {
       final double newBalance;
       if (useGrpc && _grpcDataSource != null) {
@@ -275,6 +347,15 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       if (isClosed) return;
       emit(BalanceRefreshed(accountId: accountId, newBalance: newBalance));
     } catch (e) {
+      // If reauthorization is required, update local account status
+      if (e is ReauthorizationRequiredException) {
+        final index = _linkedAccounts.indexWhere((a) => a.id == accountId);
+        if (index >= 0) {
+          _linkedAccounts[index] = _linkedAccounts[index].copyWith(
+            status: LinkedAccountStatus.reauthorize,
+          );
+        }
+      }
       if (isClosed) return;
       _emitError(e, operation: 'refreshBalance');
     }

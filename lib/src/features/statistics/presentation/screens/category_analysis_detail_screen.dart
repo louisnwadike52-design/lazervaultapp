@@ -58,6 +58,18 @@ String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
       w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
 };
 
+/// Returns true for platform/internal fee categories that should be
+/// hidden from the UI breakdown (totals still include them).
+bool _isPlatformFee(String categoryName) {
+  final n = categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
+  return const {
+    'fee', 'fees', 'service_fees', 'service_fee',
+    'transfer_fee', 'transfer_fees', 'exchange_margin',
+    'exchange_fee', 'platform_fee', 'platform_fees',
+    'processing_fee', 'processing_fees', 'commission', 'commissions',
+  }.contains(n);
+}
+
 class CategoryAnalysisDetailScreen extends StatefulWidget {
   final String analysisType;
 
@@ -389,9 +401,13 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
 
   Widget _buildPieChart(StatisticsLoaded state) {
     final catAnalytics = state.categoryAnalytics;
-    final categories = isIncome
+    final rawCategories = isIncome
         ? (catAnalytics?.incomeCategories ?? [])
         : (catAnalytics?.expenseCategories ?? []);
+    // Hide platform fees from expense display (totals still include them)
+    final categories = isIncome
+        ? rawCategories
+        : rawCategories.where((c) => !_isPlatformFee(c.categoryName)).toList();
     final total = isIncome
         ? (catAnalytics?.totalIncome ?? 0.0)
         : (catAnalytics?.totalExpenses ?? 0.0);
@@ -496,9 +512,13 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
 
   Widget _buildCategoryList(StatisticsLoaded state) {
     final catAnalytics = state.categoryAnalytics;
-    final categories = isIncome
+    final rawCategories = isIncome
         ? (catAnalytics?.incomeCategories ?? [])
         : (catAnalytics?.expenseCategories ?? []);
+    // Hide platform fees from expense display (totals still include them)
+    final categories = isIncome
+        ? rawCategories
+        : rawCategories.where((c) => !_isPlatformFee(c.categoryName)).toList();
     final total = isIncome
         ? (catAnalytics?.totalIncome ?? 0.0)
         : (catAnalytics?.totalExpenses ?? 0.0);

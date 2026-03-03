@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
@@ -26,6 +28,8 @@ import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
+import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
+import 'package:lazervault/src/features/widgets/budget_override_dialog.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:uuid/uuid.dart';
 
@@ -70,6 +74,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   bool _isRecurringEnabled = false;
   RecurringTransferConfig? _recurringConfig;
 
+  // Budget enforcement state
+  BudgetValidationResult? _lastBudgetResult;
+
   // Tracks whether we're waiting for both transfer + recurring setup to complete
   // before navigating to receipt. Prevents recurring error being lost during navigation.
   bool _recurringSetupPending = false;
@@ -85,6 +92,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   String? _createdRecurringTransferId;
   int _recurringRetryCount = 0;
   static const _maxRecurringRetries = 2;
+
+  // Tracks the pending recipient save so we can await it before navigation.
+  // Prevents race condition where Get.offAllNamed disposes the tree before
+  // the fire-and-forget save completes (especially when recurring is enabled).
+  Future<void>? _pendingRecipientSave;
 
   // --- Fetch Accounts on Init ---
   @override
@@ -108,6 +120,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           _amountController.text = _formatAmount();
         }
         _autoShowConfirm = args['autoShowConfirm'] == true;
+
+        // Check for existing recurring transfer for this recipient
+        if (args['checkRecurring'] == true && _recipient != null) {
+          _loadRecurringForRecipient(_recipient!.accountNumber);
+        }
       } else if (args is RecipientModel) {
         _recipient = args;
       }
@@ -151,7 +168,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               currentState is AccountBalanceUpdated)) {
         _autoConfirmTriggered = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showTransferConfirmation(currentState);
+          if (mounted) _showTransferConfirmation(currentState);
         });
       }
     }
@@ -177,15 +194,53 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
   }
 
+  /// Load any active recurring transfer for the given recipient account number.
+  /// If found, auto-enable recurring with the existing config.
+  void _loadRecurringForRecipient(String recipientAccountNumber) {
+    try {
+      final recurringCubit = context.read<RecurringTransferCubit>();
+      recurringCubit.loadByRecipient(recipientAccountNumber);
+      // The BlocListener for RecurringTransferCubit will handle the result —
+      // we listen for RecurringTransferListLoaded in the existing listener.
+      // Add a one-time stream listener here since we need to catch the state.
+      late final void Function(RecurringTransferState) listener;
+      listener = (state) {
+        if (state is RecurringTransferListLoaded) {
+          final activeTransfers = state.transfers.where((t) => t.isActive).toList();
+          if (activeTransfers.isNotEmpty && mounted) {
+            setState(() {
+              _isRecurringEnabled = true;
+              _recurringConfig = RecurringTransferConfig.fromEntity(activeTransfers.first);
+            });
+          }
+        }
+      };
+      // Listen once via stream
+      recurringCubit.stream.firstWhere(
+        (s) => s is RecurringTransferListLoaded || s is RecurringTransferError,
+      ).then((state) {
+        if (state is RecurringTransferListLoaded) {
+          listener(state);
+        }
+      }).catchError((_) {});
+    } catch (_) {
+      // RecurringTransferCubit not available — silently skip
+    }
+  }
+
   // --- Input and Formatting Logic (Updated for Minor Units) ---
 
   void _onNumberPress(String value) {
+    // Dismiss keyboard if open (user switching from keyboard to pad)
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
       if (value == '<') {
         if (amount.isNotEmpty) {
           amount = amount.substring(0, amount.length - 1);
         }
       } else {
+        // Prevent leading zeros (e.g., "007" → just "7")
+        if (amount == '0' && value == '0') return;
         // Prevent excessive length (e.g., 8 digits for £99999.99)
         if (amount.length < 8) {
           amount += value;
@@ -193,15 +248,68 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       }
       // Update controller to show formatted value
       _amountController.text = _formatAmount();
+      // Move cursor to end so next keyboard input appends correctly
+      _amountController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _amountController.text.length),
+      );
+    });
+  }
+
+  /// Handle direct keyboard input in the amount field.
+  /// User types in major units (e.g., "50" or "20.50"),
+  /// which gets converted to minor units internally.
+  void _onAmountFieldChanged(String text) {
+    // Strip any formatting characters (commas, spaces)
+    final cleaned = text.replaceAll(',', '').replaceAll(' ', '').trim();
+    if (cleaned.isEmpty) {
+      setState(() => amount = '');
+      return;
+    }
+
+    // Reject multiple decimal points (e.g., "10.5.3")
+    if ('.'.allMatches(cleaned).length > 1) return;
+
+    // Limit to 2 decimal places
+    final dotIndex = cleaned.indexOf('.');
+    if (dotIndex != -1 && cleaned.length - dotIndex - 1 > 2) return;
+
+    final majorValue = double.tryParse(cleaned);
+    if (majorValue == null || majorValue < 0) return;
+
+    // Use integer arithmetic to avoid floating-point rounding errors:
+    // Split on decimal and compute minor units from whole + fractional parts.
+    final int minorUnits;
+    if (dotIndex == -1) {
+      // No decimal — whole number of major units
+      final whole = int.tryParse(cleaned);
+      if (whole == null) return;
+      minorUnits = whole * 100;
+    } else {
+      final wholePart = int.tryParse(cleaned.substring(0, dotIndex)) ?? 0;
+      final fracStr = cleaned.substring(dotIndex + 1).padRight(2, '0');
+      final fracPart = int.tryParse(fracStr) ?? 0;
+      minorUnits = wholePart * 100 + fracPart;
+    }
+
+    // Cap at 8 digits of minor units (99999999 = 999,999.99)
+    if (minorUnits > 99999999) return;
+
+    setState(() {
+      amount = minorUnits.toString();
     });
   }
 
   void _setQuickAmount(int value) {
+    // Dismiss keyboard if open
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
       // Convert major unit value to minor unit string (e.g., 20 -> "2000")
       amount = '${value}00';
       // Update controller to show formatted value
       _amountController.text = _formatAmount();
+      _amountController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _amountController.text.length),
+      );
     });
   }
 
@@ -533,7 +641,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   }
 
   // Updated to use AccountSummaryEntity from AccountCardsSummaryCubit state
-  void _showTransferConfirmation(AccountCardsSummaryState accountState) {
+  Future<void> _showTransferConfirmation(AccountCardsSummaryState accountState) async {
     // COMPREHENSIVE EDGE CASE VALIDATION
 
     // 1. Validate amount is not empty and parseable
@@ -684,6 +792,77 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         colorText: Colors.white,
       );
       return;
+    }
+
+    // 9. Budget enforcement check
+    _lastBudgetResult = null;
+    if (selectedCategory != null) {
+      final budgetCubit = context.read<BudgetCubit>();
+      final budgetResult = await budgetCubit.validateCategoryBudget(
+        budgetCategory: selectedCategory!.budgetCategory,
+        amountMinor: int.parse(amount),
+        currency: accountCurrency,
+      );
+
+      if (budgetResult != null) {
+        _lastBudgetResult = budgetResult;
+
+        // STRICT mode: blocked — show override dialog
+        if (budgetResult.shouldBlockTransaction) {
+          if (!mounted) return;
+          final budgetName = budgetResult.matchingBudgets.isNotEmpty
+              ? budgetResult.matchingBudgets.first.budgetName
+              : selectedCategory!.displayName;
+          final budgetId = budgetResult.matchingBudgets.isNotEmpty
+              ? budgetResult.matchingBudgets.first.budgetId
+              : '';
+
+          final action = await BudgetOverrideDialog.show(
+            context,
+            budgetName: budgetName,
+            currentSpent: budgetResult.currentSpent,
+            budgetLimit: budgetResult.budgetLimit,
+            transactionAmount: transferAmountMajor,
+            percentageUsed: budgetResult.percentageUsed,
+            currency: accountCurrency,
+            budgetId: budgetId,
+          );
+
+          if (action == null || action == BudgetOverrideAction.cancel) {
+            return; // User cancelled
+          }
+
+          if (action == BudgetOverrideAction.increaseBudget && budgetId.isNotEmpty) {
+            // Calculate suggested increase (amount that would cover the transaction)
+            final overage = budgetResult.currentSpent + transferAmountMajor - budgetResult.budgetLimit;
+            final increaseAmount = overage > 0 ? overage * 1.2 : transferAmountMajor; // 20% buffer
+            final newLimit = budgetResult.budgetLimit + increaseAmount;
+            await budgetCubit.updateBudget(
+              budgetId: budgetId,
+              amount: newLimit,
+            );
+            // Re-validate after increase
+            final retryResult = await budgetCubit.validateCategoryBudget(
+              budgetCategory: selectedCategory!.budgetCategory,
+              amountMinor: int.parse(amount),
+              currency: accountCurrency,
+            );
+            _lastBudgetResult = retryResult;
+            if (retryResult != null && retryResult.shouldBlockTransaction) {
+              if (!mounted) return;
+              Get.snackbar(
+                'Still Exceeds Budget',
+                'The increased budget is still not enough.',
+                backgroundColor: const Color(0xFFEF4444),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.BOTTOM,
+              );
+              return;
+            }
+          }
+          // BudgetOverrideAction.overrideOnce — proceed with transaction
+        }
+      }
     }
 
     // Determine transfer type based on recipient
@@ -883,6 +1062,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                             ],
                           ),
                         ),
+                        // Budget warning (flexible mode exceeded or near limit)
+                        if (_lastBudgetResult != null && _lastBudgetResult!.shouldShowWarning)
+                          Padding(
+                            padding: EdgeInsets.only(top: 12.h),
+                            child: CompactBudgetWarning(
+                              percentageUsed: _lastBudgetResult!.percentageUsed,
+                              status: _lastBudgetResult!.status,
+                              validationResult: _lastBudgetResult,
+                            ),
+                          ),
                         if (scheduledDate != null)
                           Padding(
                             padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -989,6 +1178,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                               );
                             },
                           ),
+                        // Save Recipient is handled in the user confirmation bottom sheet
                       ],
                     ),
                   ),
@@ -1199,6 +1389,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         ? '${selectedCategory!.displayName}: ${reference.isNotEmpty ? reference : "Transfer"}'
         : (reference.isNotEmpty ? reference : 'Transfer');
 
+    // Re-validate scheduled date hasn't become stale while user was in PIN flow
+    if (scheduledDate != null && !scheduledDate!.isAfter(DateTime.now())) {
+      throw Exception('Scheduled time has passed. Please select a new time.');
+    }
+
     // Get recipient account number
     // For internal transfers: use accountNumber which contains LazerVault account number
     // For external transfers: use accountNumber which is the external bank account number
@@ -1309,8 +1504,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       },
     };
 
-    Future.delayed(const Duration(milliseconds: 200), () {
+    // Reset transfer cubit state to prevent stale success from re-firing
+    // listeners when this screen is revisited
+    context.read<TransferCubit>().resetState();
+
+    Future.delayed(const Duration(milliseconds: 200), () async {
       if (mounted) {
+        // Ensure pending recipient save completes before disposing widget tree
+        if (_pendingRecipientSave != null) {
+          await _pendingRecipientSave;
+        }
         Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
       }
     });
@@ -1571,7 +1774,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         }
       },
       child: BlocConsumer<TransferCubit, TransferState>(
-      // Now directly consumes the cubit from context
+      // Only fire listener on actual state transitions (prevents re-firing on rebuild)
+      listenWhen: (previous, current) => previous != current,
       listener: (context, transferState) {
         // Access AccountCardsSummaryCubit state inside the listener
         // AccountCardsSummaryCubit is still provided higher up (likely main.dart or AppRouter itself)
@@ -1633,7 +1837,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   currency: _recipient!.currency ?? activeAccountCurrency,
                 );
                 final addRecipientUseCase = serviceLocator<AddRecipientUseCase>();
-                addRecipientUseCase(
+                _pendingRecipientSave = addRecipientUseCase(
                   recipient: recipientToSave,
                   accessToken: accessToken,
                 ).then((result) {
@@ -1644,6 +1848,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                       // Update local reference so subsequent transfers
                       // recognize this recipient as already saved.
                       _recipient = saved;
+
+                      // Refresh recipient list so the new recipient shows up
+                      // when navigating back to select recipients screen.
+                      try {
+                        final recipientCubit = context.read<RecipientCubit>();
+                        recipientCubit.getRecipients(
+                          accessToken: accessToken,
+                          countryCode: serviceLocator<LocaleManager>().currentCountry,
+                          currency: activeAccountCurrency,
+                        );
+                      } catch (_) {
+                        // RecipientCubit may not be in tree — safe to ignore
+                      }
                     },
                   );
                 });
@@ -1781,8 +1998,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   });
                 } else {
                   // No recurring or already resolved — navigate immediately
-                  Future.delayed(const Duration(milliseconds: 200), () {
+                  Future.delayed(const Duration(milliseconds: 200), () async {
                     if (mounted) {
+                      // Ensure pending recipient save completes before disposing widget tree
+                      if (_pendingRecipientSave != null) {
+                        await _pendingRecipientSave;
+                      }
                       Get.offAllNamed(AppRoutes.transferProof,
                           arguments: transferDetails);
                     }
@@ -1923,7 +2144,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                     accountState is AccountBalanceUpdated)) {
               _autoConfirmTriggered = true;
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                _showTransferConfirmation(accountState);
+                if (mounted) _showTransferConfirmation(accountState);
               });
             }
           },
@@ -2054,33 +2275,37 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                       ],
                                   ),
                                 )),
-                                Container(
-                                  width: 40.w,
-                                  height: 40.h,
-                                  padding: const EdgeInsets.all(2.0),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
-                                  ),
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors
-                                        .blueGrey[700], // Slightly darker grey
-                                    child: Text(
-                                        _recipient!.name.isNotEmpty
-                                            ? _recipient!.name[0]
-                                                .toUpperCase()
-                                            : '?',
-                                        style: const TextStyle(
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 40.w,
+                                      height: 40.h,
+                                      padding: const EdgeInsets.all(2.0),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.08),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: CircleAvatar(
+                                        backgroundColor: Colors.blueGrey[700],
+                                        child: Text(
+                                          _recipient!.name.isNotEmpty
+                                              ? _recipient!.name[0].toUpperCase()
+                                              : '?',
+                                          style: const TextStyle(
                                             color: Colors.white,
-                                            fontWeight: FontWeight.bold)),
-                                  ),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -2149,12 +2374,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         ),
                                       ),
                                       const SizedBox(width: 12),
-                                      // Editable amount field (read-only - use custom buttons)
+                                      // Editable amount field — supports both keyboard and number pad input
                                       Expanded(
                                         child: TextField(
                                           controller: _amountController,
-                                          readOnly: true,
-                                          showCursor: false,
+                                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                                          ],
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 24,
@@ -2170,7 +2397,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                             ),
                                             contentPadding: EdgeInsets.zero,
                                           ),
-                                          // Remove onChanged since input is via custom buttons only
+                                          onChanged: _onAmountFieldChanged,
                                         ),
                                       ),
                                     ],

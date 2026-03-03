@@ -220,12 +220,24 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
   Future<PayRunEntity> createPayRun({
     required String payPeriodStart,
     required String payPeriodEnd,
+    String name = '',
+    List<String> employeeIds = const [],
+    bool isRecurring = false,
+    int recurrenceFrequency = 0,
+    bool autoApprove = false,
   }) async {
     return retryWithBackoff(
       operation: () async {
         final request = payroll_pb.CreatePayRunRequest()
           ..payPeriodStart = payPeriodStart
-          ..payPeriodEnd = payPeriodEnd;
+          ..payPeriodEnd = payPeriodEnd
+          ..name = name
+          ..isRecurring = isRecurring
+          ..recurrenceFrequency = payroll_pb.RecurrenceFrequency.valueOf(recurrenceFrequency) ?? payroll_pb.RecurrenceFrequency.RECURRENCE_FREQUENCY_NONE
+          ..autoApprove = autoApprove;
+        if (employeeIds.isNotEmpty) {
+          request.employeeIds.addAll(employeeIds);
+        }
 
         final options = await _callOptionsHelper.withAuth();
         final response = await _client.createPayRun(
@@ -514,6 +526,7 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
     return PayRunEntity(
       id: proto.id,
       businessId: proto.businessId,
+      name: proto.name,
       payPeriodStart: proto.payPeriodStart,
       payPeriodEnd: proto.payPeriodEnd,
       status: _payRunStatusFromProto(proto.status),
@@ -523,12 +536,30 @@ class PayrollRepositoryGrpcImpl implements PayrollRepository {
       totalEmployerContributions:
           proto.totalEmployerContributions.toInt() / 100.0,
       employeeCount: proto.employeeCount,
+      isRecurring: proto.isRecurring,
+      recurrenceFrequency: _recurrenceFrequencyFromProto(proto.recurrenceFrequency),
+      nextScheduledDate: proto.nextScheduledDate.isNotEmpty ? proto.nextScheduledDate : null,
+      autoApprove: proto.autoApprove,
+      employeeIds: proto.employeeIds.toList(),
       createdBy: proto.createdBy,
       approvedBy: proto.approvedBy.isNotEmpty ? proto.approvedBy : null,
       createdAt: proto.createdAt.toDateTime(),
       processedAt:
           proto.hasProcessedAt() ? proto.processedAt.toDateTime() : null,
     );
+  }
+
+  RecurrenceFrequency _recurrenceFrequencyFromProto(payroll_pb.RecurrenceFrequency proto) {
+    switch (proto) {
+      case payroll_pb.RecurrenceFrequency.RECURRENCE_FREQUENCY_WEEKLY:
+        return RecurrenceFrequency.weekly;
+      case payroll_pb.RecurrenceFrequency.RECURRENCE_FREQUENCY_BIWEEKLY:
+        return RecurrenceFrequency.biweekly;
+      case payroll_pb.RecurrenceFrequency.RECURRENCE_FREQUENCY_MONTHLY:
+        return RecurrenceFrequency.monthly;
+      default:
+        return RecurrenceFrequency.none;
+    }
   }
 
   PaySlipEntity _paySlipFromProto(payroll_pb.PaySlip proto) {

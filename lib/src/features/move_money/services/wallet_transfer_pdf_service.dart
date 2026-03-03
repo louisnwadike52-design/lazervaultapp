@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -246,7 +245,7 @@ class WalletTransferPdfService {
                 child: pw.Column(
                   children: [
                     _buildDetailRow('Amount', _formatCurrency(amount, currency)),
-                    _buildDetailRow('Fee', '${currency} 0.00'),
+                    _buildDetailRow('Fee', '$currency 0.00'),
                     pw.Divider(color: PdfColors.grey300),
                     pw.SizedBox(height: 4),
                     _buildDetailRow('Total', _formatCurrency(amount, currency),

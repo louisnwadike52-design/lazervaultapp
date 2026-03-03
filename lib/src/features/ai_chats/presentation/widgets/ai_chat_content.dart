@@ -1,16 +1,20 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
@@ -68,6 +72,11 @@ class ChatMessage {
   final ChatMessageType type;
   final List<ActionButtonEntity>? actionButtons;
   final ConfirmationDataEntity? confirmationData;
+  final String? mediaType;
+  final String? mediaUrl;
+  final String? localMediaPath;
+  final int? audioDurationMs;
+  final String? transcript;
 
   ChatMessage({
     required this.text,
@@ -76,6 +85,11 @@ class ChatMessage {
     this.type = ChatMessageType.text,
     this.actionButtons,
     this.confirmationData,
+    this.mediaType,
+    this.mediaUrl,
+    this.localMediaPath,
+    this.audioDurationMs,
+    this.transcript,
   });
 
   factory ChatMessage.fromEntity(ChatMessageEntity entity) {
@@ -86,6 +100,11 @@ class ChatMessage {
       type: entity.type,
       actionButtons: entity.actionButtons,
       confirmationData: entity.confirmationData,
+      mediaType: entity.mediaType,
+      mediaUrl: entity.mediaUrl,
+      localMediaPath: entity.localMediaPath,
+      audioDurationMs: entity.audioDurationMs,
+      transcript: entity.transcript,
     );
   }
 }
@@ -153,6 +172,15 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   bool _isPinMode = false; // Hides chat history when entering a PIN
   late AnimationController _typingDotsController;
   AiChatSettings _settings = AiChatSettings();
+
+  // Media state
+  final ImagePicker _imagePicker = ImagePicker();
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  bool _isRecording = false;
+  bool _isPickingMedia = false;
+  Duration _recordingDuration = Duration.zero;
+  Timer? _recordingTimer;
+  static const _maxRecordingDuration = Duration(minutes: 5);
   final List<String> _defaultSuggestions = [
     "How do I send money internationally?",
     "What are the best investment options?",
@@ -198,6 +226,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     _messageController.dispose();
     _scrollController.dispose();
     _typingDotsController.dispose();
+    _recordingTimer?.cancel();
+    if (_isRecording) {
+      _audioRecorder.stop();
+    }
+    _audioRecorder.dispose();
     super.dispose();
   }
 
@@ -256,95 +289,138 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     }
   }
 
+  String _inferMimeType(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.gif')) return 'image/gif';
+    return 'image/jpeg';
+  }
+
   Future<void> _handleImagePicker() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      if (!mounted) return;
-      setState(() => _isAttaching = true); // Local UI state for preview
-
-      Get.bottomSheet(
-        _buildImagePreviewSheet(File(image.path)),
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
-      ).whenComplete(() {
-        if (_isAttaching && mounted) { // If sheet closed without sending
-          setState(() => _isAttaching = false);
-        }
-      });
+    if (_isPickingMedia) return;
+    _isPickingMedia = true;
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (picked != null && mounted) {
+        final authState = context.read<AuthenticationCubit>().state;
+        if (authState is! AuthenticationSuccess) return;
+        context.read<AIChatCubit>().sendMediaMessage(
+          mediaType: 'image',
+          localFilePath: picked.path,
+          mimeType: picked.mimeType ?? _inferMimeType(picked.path),
+          accessToken: authState.profile.session.accessToken,
+          text: _messageController.text.trim(),
+        );
+        _messageController.clear();
+        _scrollToBottom(isDelayed: true);
+      }
+    } catch (_) {
+      // Picker cancelled or permission denied
+    } finally {
+      _isPickingMedia = false;
     }
   }
 
-  Widget _buildImagePreviewSheet(File image) {
-    final captionController = TextEditingController();
-    return Container(
-      height: 0.4.sh,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 40.w,
-            height: 4.h,
-            margin: EdgeInsets.symmetric(vertical: 12.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2.r),
-            ),
+  Future<void> _handleCameraCapture() async {
+    if (_isPickingMedia) return;
+    _isPickingMedia = true;
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (picked != null && mounted) {
+        final authState = context.read<AuthenticationCubit>().state;
+        if (authState is! AuthenticationSuccess) return;
+        context.read<AIChatCubit>().sendMediaMessage(
+          mediaType: 'image',
+          localFilePath: picked.path,
+          mimeType: picked.mimeType ?? _inferMimeType(picked.path),
+          accessToken: authState.profile.session.accessToken,
+          text: _messageController.text.trim(),
+        );
+        _messageController.clear();
+        _scrollToBottom(isDelayed: true);
+      }
+    } catch (_) {
+      // Picker cancelled or permission denied
+    } finally {
+      _isPickingMedia = false;
+    }
+  }
+
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      await _stopRecording();
+    } else {
+      await _startRecording();
+    }
+  }
+
+  Future<void> _startRecording() async {
+    if (_isRecording) return;
+    final hasPermission = await _audioRecorder.hasPermission();
+    if (!hasPermission) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Microphone permission is required for voice notes'),
+            backgroundColor: Color(0xFFEF4444),
           ),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: Image.file(image, fit: BoxFit.contain),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: captionController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Add a caption...',
-                      hintStyle: const TextStyle(color: Colors.white54),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24.r),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.1),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                GestureDetector(
-                  onTap: () {
-                    final caption = captionController.text;
-                    captionController.dispose();
-                    Get.back();
-                    // _isAttaching is set to false within _handleSubmitted
-                    _handleSubmitted(caption, image: image);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(12.w),
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.send_rounded, color: Colors.white, size: 20.sp),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      }
+      return;
+    }
+    final dir = await getTemporaryDirectory();
+    final path =
+        '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    await _audioRecorder.start(
+      const RecordConfig(encoder: AudioEncoder.aacLc),
+      path: path,
     );
+    setState(() {
+      _isRecording = true;
+      _recordingDuration = Duration.zero;
+    });
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() => _recordingDuration += const Duration(seconds: 1));
+      if (_recordingDuration >= _maxRecordingDuration) {
+        _stopRecording();
+      }
+    });
+  }
+
+  Future<void> _stopRecording() async {
+    _recordingTimer?.cancel();
+    _recordingTimer = null;
+    if (!_isRecording) return;
+    final path = await _audioRecorder.stop();
+    final durationMs = _recordingDuration.inMilliseconds;
+    setState(() {
+      _isRecording = false;
+      _recordingDuration = Duration.zero;
+    });
+    if (path != null && mounted && durationMs > 500) {
+      final authState = context.read<AuthenticationCubit>().state;
+      if (authState is! AuthenticationSuccess) return;
+      context.read<AIChatCubit>().sendMediaMessage(
+        mediaType: 'voice',
+        localFilePath: path,
+        mimeType: 'audio/mp4',
+        accessToken: authState.profile.session.accessToken,
+        audioDurationMs: durationMs,
+      );
+      _scrollToBottom(isDelayed: true);
+    }
   }
 
   void _showOptionsSheet() {
@@ -445,7 +521,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     buffer.writeln('${'─' * 40}\n');
 
     for (final msg in messages) {
-      final sender = msg.isUser ? 'You' : 'LazerAI';
+      final sender = msg.isUser ? 'You' : 'NOVA';
       final time = '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}';
       buffer.writeln('[$time] $sender:');
       buffer.writeln(msg.text);
@@ -754,7 +830,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'LazerAI Assistant',
+                'NOVA',
                 style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
               ),
               // Pass isTyping down
@@ -859,7 +935,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
      // Add initial bot message if the list is empty
      if (messages.isEmpty) {
         messages.add(ChatMessage(
-          text: "Hello! I'm your LazerAI financial assistant. How can I help you today?",
+          text: "Hello! I'm NOVA, your financial assistant. How can I help you today?",
           isUser: false,
           timestamp: DateTime.now(),
         ));
@@ -907,6 +983,17 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         child: Column(
           crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
+            if (message.mediaType != null) ...[
+              ChatMediaBubble(
+                mediaType: message.mediaType,
+                localMediaPath: message.localMediaPath,
+                mediaUrl: message.mediaUrl,
+                audioDurationMs: message.audioDurationMs,
+                transcript: message.transcript,
+                isUser: isUser,
+              ),
+              if (message.text.isNotEmpty) SizedBox(height: 4.h),
+            ],
             if (message.text.isNotEmpty)
               Stack(
                 clipBehavior: Clip.none,
@@ -1256,25 +1343,58 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                 },
               ),
             ),
-          Row(
-            children: [
-              _buildAttachButton(),
-              SizedBox(width: 8.w),
-              _buildMicButton(),
-              SizedBox(width: 8.w),
-              Expanded(child: _buildTextField()),
-              SizedBox(width: 8.w),
-              _buildSendButton(),
-            ],
-          ),
+          if (_isRecording)
+            _buildRecordingIndicator()
+          else
+            Row(
+              children: [
+                _buildAttachButton(),
+                SizedBox(width: 8.w),
+                _buildMicButton(),
+                SizedBox(width: 8.w),
+                Expanded(child: _buildTextField()),
+                SizedBox(width: 8.w),
+                _buildSendButton(),
+              ],
+            ),
         ],
       ),
     );
   }
 
   Widget _buildAttachButton() {
-    return GestureDetector(
-      onTap: _handleImagePicker,
+    return PopupMenuButton<String>(
+      onSelected: (value) {
+        if (value == 'gallery') {
+          _handleImagePicker();
+        } else if (value == 'camera') {
+          _handleCameraCapture();
+        }
+      },
+      color: const Color(0xFF2D2D2D),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'gallery',
+          child: Row(
+            children: [
+              Icon(Icons.photo_library, color: Colors.blue[300], size: 20.sp),
+              SizedBox(width: 8.w),
+              Text('Gallery', style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'camera',
+          child: Row(
+            children: [
+              Icon(Icons.camera_alt, color: Colors.green[300], size: 20.sp),
+              SizedBox(width: 8.w),
+              Text('Camera', style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+            ],
+          ),
+        ),
+      ],
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), shape: BoxShape.circle),
@@ -1285,14 +1405,77 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   Widget _buildMicButton() {
     return GestureDetector(
-      onTap: () {
-        Get.snackbar('Info', 'Voice input is currently disabled.', snackPosition: SnackPosition.BOTTOM);
-      },
+      onTap: _toggleRecording,
       child: Container(
         padding: EdgeInsets.all(10.w),
-        decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.1), shape: BoxShape.circle),
-        child: Icon(Icons.mic_off, color: Colors.grey, size: 20.sp),
+        decoration: BoxDecoration(
+          color: _isRecording ? Colors.red.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          _isRecording ? Icons.stop : Icons.mic,
+          color: _isRecording ? Colors.red : Colors.white.withValues(alpha: 0.7),
+          size: 20.sp,
+        ),
       ),
+    );
+  }
+
+  Widget _buildRecordingIndicator() {
+    final minutes = _recordingDuration.inMinutes.toString().padLeft(2, '0');
+    final seconds = (_recordingDuration.inSeconds % 60).toString().padLeft(2, '0');
+    return Row(
+      children: [
+        Container(
+          width: 12.w,
+          height: 12.w,
+          decoration: const BoxDecoration(
+            color: Colors.red,
+            shape: BoxShape.circle,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Text(
+          '$minutes:$seconds',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const Spacer(),
+        GestureDetector(
+          onTap: () {
+            _recordingTimer?.cancel();
+            _recordingTimer = null;
+            _audioRecorder.stop();
+            setState(() {
+              _isRecording = false;
+              _recordingDuration = Duration.zero;
+            });
+          },
+          child: Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.delete_outline, color: Colors.red[300], size: 20.sp),
+          ),
+        ),
+        SizedBox(width: 8.w),
+        GestureDetector(
+          onTap: _stopRecording,
+          child: Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.send_rounded, color: Colors.white, size: 20.sp),
+          ),
+        ),
+      ],
     );
   }
 

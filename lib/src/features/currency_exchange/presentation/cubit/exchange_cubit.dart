@@ -60,6 +60,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
 
     final currenciesResult = await _repository.getSupportedCurrencies();
     final recentResult = await _repository.getRecentExchanges(limit: 3);
+    if (isClosed) return;
 
     // If both fail, show error
     if (currenciesResult.isLeft() && recentResult.isLeft()) {
@@ -134,6 +135,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       toCurrency: _toCurrency,
       amount: amt > 0 ? amt : null,
     );
+    if (isClosed) return;
 
     result.fold(
       (failure) => emit(ExchangeError(failure.message)),
@@ -161,6 +163,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       toCurrency: _toCurrency,
       amount: amt > 0 ? amt : null,
     );
+    if (isClosed) return;
 
     result.fold(
       (failure) {
@@ -201,26 +204,31 @@ class ExchangeCubit extends Cubit<ExchangeState> {
   Future<void> convertCurrency({
     required String verificationToken,
   }) async {
+    print('[ExchangeCubit] convertCurrency called: $_fromCurrency -> $_toCurrency, amount=$_amount');
+
     // Fetch fresh rate immediately before executing to avoid stale rates
     final freshRateResult = await _repository.getExchangeRate(
       fromCurrency: _fromCurrency,
       toCurrency: _toCurrency,
       amount: _amount > 0 ? _amount : null,
     );
+    if (isClosed) { print('[ExchangeCubit] CLOSED after rate fetch'); return; }
 
     final freshRate = freshRateResult.fold(
-      (failure) => null,
-      (rate) => rate,
+      (failure) { print('[ExchangeCubit] Fresh rate FAILED: ${failure.message}'); return null; },
+      (rate) { print('[ExchangeCubit] Fresh rate OK: rateId=${rate.rateId}, rate=${rate.rate}'); return rate; },
     );
 
     if (freshRate != null) {
       _currentRate = freshRate;
     } else if (_currentRate == null || _currentRate!.isExpired) {
+      print('[ExchangeCubit] No rate available, emitting error');
       emit(const ExchangeError('No exchange rate available. Please refresh.'));
       return;
     }
 
     final idempotencyKey = const Uuid().v4();
+    print('[ExchangeCubit] Calling convertCurrency API: rateId=${_currentRate!.rateId}, idempotencyKey=$idempotencyKey');
 
     final result = await _repository.convertCurrency(
       fromCurrency: _fromCurrency,
@@ -230,10 +238,15 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       idempotencyKey: idempotencyKey,
       rateId: _currentRate!.rateId,
     );
+    if (isClosed) { print('[ExchangeCubit] CLOSED after convert call'); return; }
 
     result.fold(
-      (failure) => emit(ExchangeError(failure.message)),
+      (failure) {
+        print('[ExchangeCubit] Convert FAILED: ${failure.message}');
+        emit(ExchangeError(failure.message));
+      },
       (transaction) {
+        print('[ExchangeCubit] Convert SUCCESS: id=${transaction.id}, status=${transaction.status}, isCompleted=${transaction.isCompleted}');
         if (transaction.isCompleted) {
           emit(ExchangeSuccess(transaction: transaction));
         } else {
@@ -264,6 +277,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       toCurrency: _toCurrency,
       amount: _amount > 0 ? _amount : null,
     );
+    if (isClosed) return;
 
     final freshRate = freshRateResult.fold(
       (failure) => null,
@@ -296,6 +310,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       recipientCountry: recipientCountry,
       recipientEmail: recipientEmail,
     );
+    if (isClosed) return;
 
     result.fold(
       (failure) => emit(ExchangeError(failure.message)),
@@ -318,6 +333,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     _pollTimer?.cancel();
 
     _pollTimer = Timer.periodic(_pollInterval, (timer) async {
+      if (isClosed) { timer.cancel(); return; }
       _pollCount++;
 
       if (_pollCount > _maxPollAttempts) {
@@ -326,6 +342,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
         final result = await _repository.getTransactionStatus(
           transactionId: transactionId,
         );
+        if (isClosed) return;
         result.fold(
           (failure) => emit(ExchangeError(
             'Transfer is still processing. Check your exchange history for updates.',
@@ -346,6 +363,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       final result = await _repository.getTransactionStatus(
         transactionId: transactionId,
       );
+      if (isClosed) { timer.cancel(); return; }
 
       result.fold(
         (failure) {
@@ -394,6 +412,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     emit(ExchangeLoading());
 
     final result = await _repository.getRecentExchanges(limit: limit);
+    if (isClosed) return;
 
     result.fold(
       (failure) => emit(ExchangeError(failure.message)),
@@ -413,6 +432,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     emit(ExchangeLoading());
 
     final result = await _repository.getSupportedCurrencies();
+    if (isClosed) return;
 
     result.fold(
       (failure) => emit(ExchangeError(failure.message)),

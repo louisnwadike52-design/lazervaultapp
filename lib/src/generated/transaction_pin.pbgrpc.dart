@@ -61,6 +61,30 @@ class TransactionPinServiceClient extends $grpc.Client {
       '/auth.TransactionPinService/CompleteForgotPin',
       ($1.CompleteForgotPinRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $1.CompleteForgotPinResponse.fromBuffer(value));
+  static final _$getUserChannelPins = $grpc.ClientMethod<$1.GetUserChannelPinsRequest, $1.GetUserChannelPinsResponse>(
+      '/auth.TransactionPinService/GetUserChannelPins',
+      ($1.GetUserChannelPinsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.GetUserChannelPinsResponse.fromBuffer(value));
+  static final _$createChannelRegistration = $grpc.ClientMethod<$1.CreateChannelRegistrationRequest, $1.CreateChannelRegistrationResponse>(
+      '/auth.TransactionPinService/CreateChannelRegistration',
+      ($1.CreateChannelRegistrationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.CreateChannelRegistrationResponse.fromBuffer(value));
+  static final _$verifyChannelOTP = $grpc.ClientMethod<$1.VerifyChannelOTPRequest, $1.VerifyChannelOTPResponse>(
+      '/auth.TransactionPinService/VerifyChannelOTP',
+      ($1.VerifyChannelOTPRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.VerifyChannelOTPResponse.fromBuffer(value));
+  static final _$getChannelRegistrations = $grpc.ClientMethod<$1.GetChannelRegistrationsRequest, $1.GetChannelRegistrationsResponse>(
+      '/auth.TransactionPinService/GetChannelRegistrations',
+      ($1.GetChannelRegistrationsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.GetChannelRegistrationsResponse.fromBuffer(value));
+  static final _$deactivateChannel = $grpc.ClientMethod<$1.DeactivateChannelRequest, $1.DeactivateChannelResponse>(
+      '/auth.TransactionPinService/DeactivateChannel',
+      ($1.DeactivateChannelRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.DeactivateChannelResponse.fromBuffer(value));
+  static final _$resolvePhoneToUser = $grpc.ClientMethod<$1.ResolvePhoneToUserRequest, $1.ResolvePhoneToUserResponse>(
+      '/auth.TransactionPinService/ResolvePhoneToUser',
+      ($1.ResolvePhoneToUserRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.ResolvePhoneToUserResponse.fromBuffer(value));
 
   TransactionPinServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -106,6 +130,30 @@ class TransactionPinServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$1.CompleteForgotPinResponse> completeForgotPin($1.CompleteForgotPinRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$completeForgotPin, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.GetUserChannelPinsResponse> getUserChannelPins($1.GetUserChannelPinsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserChannelPins, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.CreateChannelRegistrationResponse> createChannelRegistration($1.CreateChannelRegistrationRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createChannelRegistration, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.VerifyChannelOTPResponse> verifyChannelOTP($1.VerifyChannelOTPRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$verifyChannelOTP, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.GetChannelRegistrationsResponse> getChannelRegistrations($1.GetChannelRegistrationsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getChannelRegistrations, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.DeactivateChannelResponse> deactivateChannel($1.DeactivateChannelRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deactivateChannel, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.ResolvePhoneToUserResponse> resolvePhoneToUser($1.ResolvePhoneToUserRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$resolvePhoneToUser, request, options: options);
   }
 }
 
@@ -184,6 +232,48 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $1.CompleteForgotPinRequest.fromBuffer(value),
         ($1.CompleteForgotPinResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.GetUserChannelPinsRequest, $1.GetUserChannelPinsResponse>(
+        'GetUserChannelPins',
+        getUserChannelPins_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.GetUserChannelPinsRequest.fromBuffer(value),
+        ($1.GetUserChannelPinsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.CreateChannelRegistrationRequest, $1.CreateChannelRegistrationResponse>(
+        'CreateChannelRegistration',
+        createChannelRegistration_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.CreateChannelRegistrationRequest.fromBuffer(value),
+        ($1.CreateChannelRegistrationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.VerifyChannelOTPRequest, $1.VerifyChannelOTPResponse>(
+        'VerifyChannelOTP',
+        verifyChannelOTP_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.VerifyChannelOTPRequest.fromBuffer(value),
+        ($1.VerifyChannelOTPResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.GetChannelRegistrationsRequest, $1.GetChannelRegistrationsResponse>(
+        'GetChannelRegistrations',
+        getChannelRegistrations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.GetChannelRegistrationsRequest.fromBuffer(value),
+        ($1.GetChannelRegistrationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.DeactivateChannelRequest, $1.DeactivateChannelResponse>(
+        'DeactivateChannel',
+        deactivateChannel_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.DeactivateChannelRequest.fromBuffer(value),
+        ($1.DeactivateChannelResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.ResolvePhoneToUserRequest, $1.ResolvePhoneToUserResponse>(
+        'ResolvePhoneToUser',
+        resolvePhoneToUser_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.ResolvePhoneToUserRequest.fromBuffer(value),
+        ($1.ResolvePhoneToUserResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$1.CreateTransactionPinResponse> createTransactionPin_Pre($grpc.ServiceCall call, $async.Future<$1.CreateTransactionPinRequest> request) async {
@@ -226,6 +316,30 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
     return completeForgotPin(call, await request);
   }
 
+  $async.Future<$1.GetUserChannelPinsResponse> getUserChannelPins_Pre($grpc.ServiceCall call, $async.Future<$1.GetUserChannelPinsRequest> request) async {
+    return getUserChannelPins(call, await request);
+  }
+
+  $async.Future<$1.CreateChannelRegistrationResponse> createChannelRegistration_Pre($grpc.ServiceCall call, $async.Future<$1.CreateChannelRegistrationRequest> request) async {
+    return createChannelRegistration(call, await request);
+  }
+
+  $async.Future<$1.VerifyChannelOTPResponse> verifyChannelOTP_Pre($grpc.ServiceCall call, $async.Future<$1.VerifyChannelOTPRequest> request) async {
+    return verifyChannelOTP(call, await request);
+  }
+
+  $async.Future<$1.GetChannelRegistrationsResponse> getChannelRegistrations_Pre($grpc.ServiceCall call, $async.Future<$1.GetChannelRegistrationsRequest> request) async {
+    return getChannelRegistrations(call, await request);
+  }
+
+  $async.Future<$1.DeactivateChannelResponse> deactivateChannel_Pre($grpc.ServiceCall call, $async.Future<$1.DeactivateChannelRequest> request) async {
+    return deactivateChannel(call, await request);
+  }
+
+  $async.Future<$1.ResolvePhoneToUserResponse> resolvePhoneToUser_Pre($grpc.ServiceCall call, $async.Future<$1.ResolvePhoneToUserRequest> request) async {
+    return resolvePhoneToUser(call, await request);
+  }
+
   $async.Future<$1.CreateTransactionPinResponse> createTransactionPin($grpc.ServiceCall call, $1.CreateTransactionPinRequest request);
   $async.Future<$1.VerifyTransactionPinResponse> verifyTransactionPin($grpc.ServiceCall call, $1.VerifyTransactionPinRequest request);
   $async.Future<$1.ChangeTransactionPinResponse> changeTransactionPin($grpc.ServiceCall call, $1.ChangeTransactionPinRequest request);
@@ -236,4 +350,10 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
   $async.Future<$1.VerifyPinOTPResponse> verifyPinOTP($grpc.ServiceCall call, $1.VerifyPinOTPRequest request);
   $async.Future<$1.GetPinOTPChannelsResponse> getPinOTPChannels($grpc.ServiceCall call, $1.GetPinOTPChannelsRequest request);
   $async.Future<$1.CompleteForgotPinResponse> completeForgotPin($grpc.ServiceCall call, $1.CompleteForgotPinRequest request);
+  $async.Future<$1.GetUserChannelPinsResponse> getUserChannelPins($grpc.ServiceCall call, $1.GetUserChannelPinsRequest request);
+  $async.Future<$1.CreateChannelRegistrationResponse> createChannelRegistration($grpc.ServiceCall call, $1.CreateChannelRegistrationRequest request);
+  $async.Future<$1.VerifyChannelOTPResponse> verifyChannelOTP($grpc.ServiceCall call, $1.VerifyChannelOTPRequest request);
+  $async.Future<$1.GetChannelRegistrationsResponse> getChannelRegistrations($grpc.ServiceCall call, $1.GetChannelRegistrationsRequest request);
+  $async.Future<$1.DeactivateChannelResponse> deactivateChannel($grpc.ServiceCall call, $1.DeactivateChannelRequest request);
+  $async.Future<$1.ResolvePhoneToUserResponse> resolvePhoneToUser($grpc.ServiceCall call, $1.ResolvePhoneToUserRequest request);
 }

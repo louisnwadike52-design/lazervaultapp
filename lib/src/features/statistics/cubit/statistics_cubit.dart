@@ -7,7 +7,8 @@ import 'statistics_state.dart';
 /// Cubit for managing statistics state
 class StatisticsCubit extends Cubit<StatisticsState> {
   final FinancialAnalyticsRepository analyticsRepository;
-  String _currentPeriod = 'month';
+  String _currentPeriod = 'week'; // Changed from 'month' to 'week' - default to weekly date range
+  bool _includeExternalBanks = true; // Default to including external banks
   bool _isLoading = false;
   final _periodDebouncer = Debouncer.typing();
 
@@ -19,6 +20,20 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   Future<void> close() {
     _periodDebouncer.dispose();
     return super.close();
+  }
+
+  /// Toggle external bank transactions inclusion
+  void toggleExternalBanks(bool include) {
+    _includeExternalBanks = include;
+    _periodDebouncer.runAsync(() async {
+      if (state is StatisticsLoaded) {
+        final currentState = state as StatisticsLoaded;
+        await loadStatistics(
+          startDate: currentState.startDate,
+          endDate: currentState.endDate,
+        );
+      }
+    });
   }
 
   /// Change the analytics period (week/month/quarter/year) and reload
@@ -48,16 +63,28 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       if (isClosed) return;
       emit(const StatisticsLoading(loadingMessage: 'Loading statistics...'));
 
-      // Default to current month if no dates provided
-      final start = startDate ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
-      final end = endDate ?? DateTime.now();
+      // Default to current week if no dates provided (last 7 days to now)
+      final now = DateTime.now();
+      final start = startDate ?? now.subtract(const Duration(days: 7));
+      final end = endDate ?? now;
 
       // Load core analytics (these are required for the page)
       final coreResults = await Future.wait([
-        analyticsRepository.getFinancialAnalytics(period: _currentPeriod),
-        analyticsRepository.getCategoryAnalytics(startDate: start, endDate: end),
+        analyticsRepository.getFinancialAnalytics(
+          period: _currentPeriod,
+          includeExternalBanks: _includeExternalBanks,
+        ),
+        analyticsRepository.getCategoryAnalytics(
+          startDate: start,
+          endDate: end,
+          includeExternalBanks: _includeExternalBanks,
+        ),
         analyticsRepository.getMonthlyTrends(months: 6),
-        analyticsRepository.getExpenseTimeSeries(startDate: start, endDate: end),
+        analyticsRepository.getExpenseTimeSeries(
+          startDate: start,
+          endDate: end,
+          includeExternalBanks: _includeExternalBanks,
+        ),
       ]);
 
       // Load failed transactions separately — non-fatal if this fails
@@ -66,6 +93,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         failedTransactions = await analyticsRepository.getFailedTransactions(
           startDate: start,
           endDate: end,
+          includeExternalBanks: _includeExternalBanks,
         );
       } catch (_) {
         // Silently ignore — failed transactions card simply won't show
@@ -86,6 +114,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         expenseTimeSeries: expenseTimeSeries,
         failedTransactions: failedTransactions,
         currentPeriod: _currentPeriod,
+        includeExternalBanks: _includeExternalBanks,
       ));
     } catch (e, stackTrace) {
       if (isClosed) return;

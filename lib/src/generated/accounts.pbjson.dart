@@ -871,6 +871,8 @@ const GetTransactionHistoryRequest$json = {
     {'1': 'end_date', '3': 7, '4': 1, '5': 9, '10': 'endDate'},
     {'1': 'limit', '3': 8, '4': 1, '5': 5, '10': 'limit'},
     {'1': 'offset', '3': 9, '4': 1, '5': 5, '10': 'offset'},
+    {'1': 'include_external_banks', '3': 10, '4': 1, '5': 8, '10': 'includeExternalBanks'},
+    {'1': 'counterparty_account', '3': 11, '4': 1, '5': 9, '10': 'counterpartyAccount'},
   ],
 };
 
@@ -880,7 +882,9 @@ final $typed_data.Uint8List getTransactionHistoryRequestDescriptor = $convert.ba
     '91bnRJZBISCgR0eXBlGAIgASgJUgR0eXBlEhoKCGNhdGVnb3J5GAMgASgJUghjYXRlZ29yeRIW'
     'CgZzdGF0dXMYBCABKAlSBnN0YXR1cxIhCgxzZXJ2aWNlX25hbWUYBSABKAlSC3NlcnZpY2VOYW'
     '1lEh0KCnN0YXJ0X2RhdGUYBiABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgHIAEoCVIHZW5k'
-    'RGF0ZRIUCgVsaW1pdBgIIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAkgASgFUgZvZmZzZXQ=');
+    'RGF0ZRIUCgVsaW1pdBgIIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAkgASgFUgZvZmZzZXQSNAoWaW'
+    '5jbHVkZV9leHRlcm5hbF9iYW5rcxgKIAEoCFIUaW5jbHVkZUV4dGVybmFsQmFua3MSMQoUY291'
+    'bnRlcnBhcnR5X2FjY291bnQYCyABKAlSE2NvdW50ZXJwYXJ0eUFjY291bnQ=');
 
 @$core.Deprecated('Use getTransactionHistoryResponseDescriptor instead')
 const GetTransactionHistoryResponse$json = {
@@ -907,6 +911,7 @@ const GetTransactionStatisticsRequest$json = {
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'start_date', '3': 2, '4': 1, '5': 9, '10': 'startDate'},
     {'1': 'end_date', '3': 3, '4': 1, '5': 9, '10': 'endDate'},
+    {'1': 'include_external_banks', '3': 4, '4': 1, '5': 8, '10': 'includeExternalBanks'},
   ],
 };
 
@@ -914,7 +919,8 @@ const GetTransactionStatisticsRequest$json = {
 final $typed_data.Uint8List getTransactionStatisticsRequestDescriptor = $convert.base64Decode(
     'Ch9HZXRUcmFuc2FjdGlvblN0YXRpc3RpY3NSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCW'
     'FjY291bnRJZBIdCgpzdGFydF9kYXRlGAIgASgJUglzdGFydERhdGUSGQoIZW5kX2RhdGUYAyAB'
-    'KAlSB2VuZERhdGU=');
+    'KAlSB2VuZERhdGUSNAoWaW5jbHVkZV9leHRlcm5hbF9iYW5rcxgEIAEoCFIUaW5jbHVkZUV4dG'
+    'VybmFsQmFua3M=');
 
 @$core.Deprecated('Use getTransactionStatisticsResponseDescriptor instead')
 const GetTransactionStatisticsResponse$json = {
@@ -1682,6 +1688,7 @@ const GetFinancialAnalyticsRequest$json = {
     {'1': 'period', '3': 2, '4': 1, '5': 9, '10': 'period'},
     {'1': 'start_date', '3': 3, '4': 1, '5': 9, '10': 'startDate'},
     {'1': 'end_date', '3': 4, '4': 1, '5': 9, '10': 'endDate'},
+    {'1': 'include_external_banks', '3': 5, '4': 1, '5': 8, '10': 'includeExternalBanks'},
   ],
 };
 
@@ -1689,7 +1696,8 @@ const GetFinancialAnalyticsRequest$json = {
 final $typed_data.Uint8List getFinancialAnalyticsRequestDescriptor = $convert.base64Decode(
     'ChxHZXRGaW5hbmNpYWxBbmFseXRpY3NSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY2'
     '91bnRJZBIWCgZwZXJpb2QYAiABKAlSBnBlcmlvZBIdCgpzdGFydF9kYXRlGAMgASgJUglzdGFy'
-    'dERhdGUSGQoIZW5kX2RhdGUYBCABKAlSB2VuZERhdGU=');
+    'dERhdGUSGQoIZW5kX2RhdGUYBCABKAlSB2VuZERhdGUSNAoWaW5jbHVkZV9leHRlcm5hbF9iYW'
+    '5rcxgFIAEoCFIUaW5jbHVkZUV4dGVybmFsQmFua3M=');
 
 @$core.Deprecated('Use getFinancialAnalyticsResponseDescriptor instead')
 const GetFinancialAnalyticsResponse$json = {
@@ -1756,6 +1764,7 @@ const GetCategoryAnalyticsRequest$json = {
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'start_date', '3': 2, '4': 1, '5': 9, '10': 'startDate'},
     {'1': 'end_date', '3': 3, '4': 1, '5': 9, '10': 'endDate'},
+    {'1': 'include_external_banks', '3': 4, '4': 1, '5': 8, '10': 'includeExternalBanks'},
   ],
 };
 
@@ -1763,7 +1772,8 @@ const GetCategoryAnalyticsRequest$json = {
 final $typed_data.Uint8List getCategoryAnalyticsRequestDescriptor = $convert.base64Decode(
     'ChtHZXRDYXRlZ29yeUFuYWx5dGljc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
     'VudElkEh0KCnN0YXJ0X2RhdGUYAiABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgDIAEoCVIH'
-    'ZW5kRGF0ZQ==');
+    'ZW5kRGF0ZRI0ChZpbmNsdWRlX2V4dGVybmFsX2JhbmtzGAQgASgIUhRpbmNsdWRlRXh0ZXJuYW'
+    'xCYW5rcw==');
 
 @$core.Deprecated('Use getCategoryAnalyticsResponseDescriptor instead')
 const GetCategoryAnalyticsResponse$json = {
@@ -1849,6 +1859,7 @@ const GetExpenseTimeSeriesRequest$json = {
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'start_date', '3': 2, '4': 1, '5': 9, '10': 'startDate'},
     {'1': 'end_date', '3': 3, '4': 1, '5': 9, '10': 'endDate'},
+    {'1': 'include_external_banks', '3': 4, '4': 1, '5': 8, '10': 'includeExternalBanks'},
   ],
 };
 
@@ -1856,7 +1867,8 @@ const GetExpenseTimeSeriesRequest$json = {
 final $typed_data.Uint8List getExpenseTimeSeriesRequestDescriptor = $convert.base64Decode(
     'ChtHZXRFeHBlbnNlVGltZVNlcmllc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
     'VudElkEh0KCnN0YXJ0X2RhdGUYAiABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgDIAEoCVIH'
-    'ZW5kRGF0ZQ==');
+    'ZW5kRGF0ZRI0ChZpbmNsdWRlX2V4dGVybmFsX2JhbmtzGAQgASgIUhRpbmNsdWRlRXh0ZXJuYW'
+    'xCYW5rcw==');
 
 @$core.Deprecated('Use getExpenseTimeSeriesResponseDescriptor instead')
 const GetExpenseTimeSeriesResponse$json = {

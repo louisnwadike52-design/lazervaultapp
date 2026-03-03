@@ -235,7 +235,6 @@ const BuyAirtimeRequest$json = {
     {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'country_code', '3': 9, '4': 1, '5': 9, '10': 'countryCode'},
     {'1': 'operator_id', '3': 10, '4': 1, '5': 9, '10': 'operatorId'},
-    {'1': 'reloadly_operator_id', '3': 11, '4': 1, '5': 9, '10': 'reloadlyOperatorId'},
   ],
 };
 
@@ -247,8 +246,7 @@ final $typed_data.Uint8List buyAirtimeRequestDescriptor = $convert.base64Decode(
     'gJUgpkYXRhUGxhbklkEiUKDnRyYW5zYWN0aW9uX2lkGAYgASgJUg10cmFuc2FjdGlvbklkEi0K'
     'EnZlcmlmaWNhdGlvbl90b2tlbhgHIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW4SJwoPaWRlbXBvdG'
     'VuY3lfa2V5GAggASgJUg5pZGVtcG90ZW5jeUtleRIhCgxjb3VudHJ5X2NvZGUYCSABKAlSC2Nv'
-    'dW50cnlDb2RlEh8KC29wZXJhdG9yX2lkGAogASgJUgpvcGVyYXRvcklkEjAKFHJlbG9hZGx5X2'
-    '9wZXJhdG9yX2lkGAsgASgJUhJyZWxvYWRseU9wZXJhdG9ySWQ=');
+    'dW50cnlDb2RlEh8KC29wZXJhdG9yX2lkGAogASgJUgpvcGVyYXRvcklk');
 
 @$core.Deprecated('Use buyAirtimeResponseDescriptor instead')
 const BuyAirtimeResponse$json = {
@@ -1008,4 +1006,176 @@ final $typed_data.Uint8List getInternetPackagesResponseDescriptor = $convert.bas
     'ChtHZXRJbnRlcm5ldFBhY2thZ2VzUmVzcG9uc2USPAoIcGFja2FnZXMYASADKAsyIC51dGlsaX'
     'R5cGF5bWVudHMuSW50ZXJuZXRQYWNrYWdlUghwYWNrYWdlcxIUCgV0b3RhbBgCIAEoBVIFdG90'
     'YWw=');
+
+@$core.Deprecated('Use activeSubscriptionDescriptor instead')
+const ActiveSubscription$json = {
+  '1': 'ActiveSubscription',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'subscription_type', '3': 2, '4': 1, '5': 9, '10': 'subscriptionType'},
+    {'1': 'provider_id', '3': 3, '4': 1, '5': 9, '10': 'providerId'},
+    {'1': 'provider_name', '3': 4, '4': 1, '5': 9, '10': 'providerName'},
+    {'1': 'plan_name', '3': 5, '4': 1, '5': 9, '10': 'planName'},
+    {'1': 'amount', '3': 6, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'customer_number', '3': 8, '4': 1, '5': 9, '10': 'customerNumber'},
+    {'1': 'status', '3': 9, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'purchased_at', '3': 10, '4': 1, '5': 9, '10': 'purchasedAt'},
+    {'1': 'expires_at', '3': 11, '4': 1, '5': 9, '10': 'expiresAt'},
+    {'1': 'validity_days', '3': 12, '4': 1, '5': 5, '10': 'validityDays'},
+    {'1': 'renewal_date', '3': 13, '4': 1, '5': 9, '10': 'renewalDate'},
+    {'1': 'token', '3': 14, '4': 1, '5': 9, '10': 'token'},
+    {'1': 'units', '3': 15, '4': 1, '5': 1, '10': 'units'},
+    {'1': 'progress_percentage', '3': 16, '4': 1, '5': 1, '10': 'progressPercentage'},
+    {'1': 'days_remaining', '3': 17, '4': 1, '5': 5, '10': 'daysRemaining'},
+    {'1': 'payment_reference', '3': 18, '4': 1, '5': 9, '10': 'paymentReference'},
+  ],
+};
+
+/// Descriptor for `ActiveSubscription`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List activeSubscriptionDescriptor = $convert.base64Decode(
+    'ChJBY3RpdmVTdWJzY3JpcHRpb24SDgoCaWQYASABKAlSAmlkEisKEXN1YnNjcmlwdGlvbl90eX'
+    'BlGAIgASgJUhBzdWJzY3JpcHRpb25UeXBlEh8KC3Byb3ZpZGVyX2lkGAMgASgJUgpwcm92aWRl'
+    'cklkEiMKDXByb3ZpZGVyX25hbWUYBCABKAlSDHByb3ZpZGVyTmFtZRIbCglwbGFuX25hbWUYBS'
+    'ABKAlSCHBsYW5OYW1lEhYKBmFtb3VudBgGIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAcgASgJ'
+    'UghjdXJyZW5jeRInCg9jdXN0b21lcl9udW1iZXIYCCABKAlSDmN1c3RvbWVyTnVtYmVyEhYKBn'
+    'N0YXR1cxgJIAEoCVIGc3RhdHVzEiEKDHB1cmNoYXNlZF9hdBgKIAEoCVILcHVyY2hhc2VkQXQS'
+    'HQoKZXhwaXJlc19hdBgLIAEoCVIJZXhwaXJlc0F0EiMKDXZhbGlkaXR5X2RheXMYDCABKAVSDH'
+    'ZhbGlkaXR5RGF5cxIhCgxyZW5ld2FsX2RhdGUYDSABKAlSC3JlbmV3YWxEYXRlEhQKBXRva2Vu'
+    'GA4gASgJUgV0b2tlbhIUCgV1bml0cxgPIAEoAVIFdW5pdHMSLwoTcHJvZ3Jlc3NfcGVyY2VudG'
+    'FnZRgQIAEoAVIScHJvZ3Jlc3NQZXJjZW50YWdlEiUKDmRheXNfcmVtYWluaW5nGBEgASgFUg1k'
+    'YXlzUmVtYWluaW5nEisKEXBheW1lbnRfcmVmZXJlbmNlGBIgASgJUhBwYXltZW50UmVmZXJlbm'
+    'Nl');
+
+@$core.Deprecated('Use getActiveSubscriptionsRequestDescriptor instead')
+const GetActiveSubscriptionsRequest$json = {
+  '1': 'GetActiveSubscriptionsRequest',
+  '2': [
+    {'1': 'subscription_type', '3': 1, '4': 1, '5': 9, '10': 'subscriptionType'},
+    {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 3, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetActiveSubscriptionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getActiveSubscriptionsRequestDescriptor = $convert.base64Decode(
+    'Ch1HZXRBY3RpdmVTdWJzY3JpcHRpb25zUmVxdWVzdBIrChFzdWJzY3JpcHRpb25fdHlwZRgBIA'
+    'EoCVIQc3Vic2NyaXB0aW9uVHlwZRIUCgVsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMg'
+    'ASgFUgZvZmZzZXQ=');
+
+@$core.Deprecated('Use getActiveSubscriptionsResponseDescriptor instead')
+const GetActiveSubscriptionsResponse$json = {
+  '1': 'GetActiveSubscriptionsResponse',
+  '2': [
+    {'1': 'subscriptions', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.ActiveSubscription', '10': 'subscriptions'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetActiveSubscriptionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getActiveSubscriptionsResponseDescriptor = $convert.base64Decode(
+    'Ch5HZXRBY3RpdmVTdWJzY3JpcHRpb25zUmVzcG9uc2USSQoNc3Vic2NyaXB0aW9ucxgBIAMoCz'
+    'IjLnV0aWxpdHlwYXltZW50cy5BY3RpdmVTdWJzY3JpcHRpb25SDXN1YnNjcmlwdGlvbnMSFAoF'
+    'dG90YWwYAiABKAVSBXRvdGFs');
+
+@$core.Deprecated('Use subscriptionTypeSummaryDescriptor instead')
+const SubscriptionTypeSummary$json = {
+  '1': 'SubscriptionTypeSummary',
+  '2': [
+    {'1': 'type', '3': 1, '4': 1, '5': 9, '10': 'type'},
+    {'1': 'count', '3': 2, '4': 1, '5': 5, '10': 'count'},
+    {'1': 'total_spend', '3': 3, '4': 1, '5': 1, '10': 'totalSpend'},
+  ],
+};
+
+/// Descriptor for `SubscriptionTypeSummary`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List subscriptionTypeSummaryDescriptor = $convert.base64Decode(
+    'ChdTdWJzY3JpcHRpb25UeXBlU3VtbWFyeRISCgR0eXBlGAEgASgJUgR0eXBlEhQKBWNvdW50GA'
+    'IgASgFUgVjb3VudBIfCgt0b3RhbF9zcGVuZBgDIAEoAVIKdG90YWxTcGVuZA==');
+
+@$core.Deprecated('Use getSubscriptionSummaryRequestDescriptor instead')
+const GetSubscriptionSummaryRequest$json = {
+  '1': 'GetSubscriptionSummaryRequest',
+};
+
+/// Descriptor for `GetSubscriptionSummaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSubscriptionSummaryRequestDescriptor = $convert.base64Decode(
+    'Ch1HZXRTdWJzY3JpcHRpb25TdW1tYXJ5UmVxdWVzdA==');
+
+@$core.Deprecated('Use getSubscriptionSummaryResponseDescriptor instead')
+const GetSubscriptionSummaryResponse$json = {
+  '1': 'GetSubscriptionSummaryResponse',
+  '2': [
+    {'1': 'active_count', '3': 1, '4': 1, '5': 5, '10': 'activeCount'},
+    {'1': 'expiring_count', '3': 2, '4': 1, '5': 5, '10': 'expiringCount'},
+    {'1': 'total_monthly_spend', '3': 3, '4': 1, '5': 1, '10': 'totalMonthlySpend'},
+    {'1': 'by_type', '3': 4, '4': 3, '5': 11, '6': '.utilitypayments.SubscriptionTypeSummary', '10': 'byType'},
+  ],
+};
+
+/// Descriptor for `GetSubscriptionSummaryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSubscriptionSummaryResponseDescriptor = $convert.base64Decode(
+    'Ch5HZXRTdWJzY3JpcHRpb25TdW1tYXJ5UmVzcG9uc2USIQoMYWN0aXZlX2NvdW50GAEgASgFUg'
+    'thY3RpdmVDb3VudBIlCg5leHBpcmluZ19jb3VudBgCIAEoBVINZXhwaXJpbmdDb3VudBIuChN0'
+    'b3RhbF9tb250aGx5X3NwZW5kGAMgASgBUhF0b3RhbE1vbnRobHlTcGVuZBJBCgdieV90eXBlGA'
+    'QgAygLMigudXRpbGl0eXBheW1lbnRzLlN1YnNjcmlwdGlvblR5cGVTdW1tYXJ5UgZieVR5cGU=');
+
+@$core.Deprecated('Use monthlySubscriptionSpendingDescriptor instead')
+const MonthlySubscriptionSpending$json = {
+  '1': 'MonthlySubscriptionSpending',
+  '2': [
+    {'1': 'month', '3': 1, '4': 1, '5': 9, '10': 'month'},
+    {'1': 'total', '3': 2, '4': 1, '5': 1, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `MonthlySubscriptionSpending`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List monthlySubscriptionSpendingDescriptor = $convert.base64Decode(
+    'ChtNb250aGx5U3Vic2NyaXB0aW9uU3BlbmRpbmcSFAoFbW9udGgYASABKAlSBW1vbnRoEhQKBX'
+    'RvdGFsGAIgASgBUgV0b3RhbA==');
+
+@$core.Deprecated('Use getSubscriptionSpendingRequestDescriptor instead')
+const GetSubscriptionSpendingRequest$json = {
+  '1': 'GetSubscriptionSpendingRequest',
+  '2': [
+    {'1': 'months', '3': 1, '4': 1, '5': 5, '10': 'months'},
+  ],
+};
+
+/// Descriptor for `GetSubscriptionSpendingRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSubscriptionSpendingRequestDescriptor = $convert.base64Decode(
+    'Ch5HZXRTdWJzY3JpcHRpb25TcGVuZGluZ1JlcXVlc3QSFgoGbW9udGhzGAEgASgFUgZtb250aH'
+    'M=');
+
+@$core.Deprecated('Use getSubscriptionSpendingResponseDescriptor instead')
+const GetSubscriptionSpendingResponse$json = {
+  '1': 'GetSubscriptionSpendingResponse',
+  '2': [
+    {'1': 'total_all_time', '3': 1, '4': 1, '5': 1, '10': 'totalAllTime'},
+    {'1': 'total_this_month', '3': 2, '4': 1, '5': 1, '10': 'totalThisMonth'},
+    {'1': 'by_type', '3': 3, '4': 3, '5': 11, '6': '.utilitypayments.GetSubscriptionSpendingResponse.ByTypeEntry', '10': 'byType'},
+    {'1': 'monthly_trend', '3': 4, '4': 3, '5': 11, '6': '.utilitypayments.MonthlySubscriptionSpending', '10': 'monthlyTrend'},
+  ],
+  '3': [GetSubscriptionSpendingResponse_ByTypeEntry$json],
+};
+
+@$core.Deprecated('Use getSubscriptionSpendingResponseDescriptor instead')
+const GetSubscriptionSpendingResponse_ByTypeEntry$json = {
+  '1': 'ByTypeEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 1, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `GetSubscriptionSpendingResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSubscriptionSpendingResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRTdWJzY3JpcHRpb25TcGVuZGluZ1Jlc3BvbnNlEiQKDnRvdGFsX2FsbF90aW1lGAEgAS'
+    'gBUgx0b3RhbEFsbFRpbWUSKAoQdG90YWxfdGhpc19tb250aBgCIAEoAVIOdG90YWxUaGlzTW9u'
+    'dGgSVQoHYnlfdHlwZRgDIAMoCzI8LnV0aWxpdHlwYXltZW50cy5HZXRTdWJzY3JpcHRpb25TcG'
+    'VuZGluZ1Jlc3BvbnNlLkJ5VHlwZUVudHJ5UgZieVR5cGUSUQoNbW9udGhseV90cmVuZBgEIAMo'
+    'CzIsLnV0aWxpdHlwYXltZW50cy5Nb250aGx5U3Vic2NyaXB0aW9uU3BlbmRpbmdSDG1vbnRobH'
+    'lUcmVuZBo5CgtCeVR5cGVFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoAVIF'
+    'dmFsdWU6AjgB');
 

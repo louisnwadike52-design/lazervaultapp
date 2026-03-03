@@ -1122,6 +1122,8 @@ message GetTransactionHistoryRequest {
   string end_date = 7;
   int32 limit = 8;
   int32 offset = 9;
+  bool include_external_banks = 10;     // Include external bank transactions (default: true)
+  string counterparty_account = 11;     // Optional filter: filter by counterparty account number
 }
 
 message GetTransactionHistoryResponse {

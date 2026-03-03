@@ -208,6 +208,15 @@ class FamilyAccountSetupCompleted extends FamilyAccountState {
   List<Object?> get props => [familyAccount];
 }
 
+class FundDistributionModeUpdated extends FamilyAccountState {
+  final FamilyAccount familyAccount;
+
+  const FundDistributionModeUpdated(this.familyAccount);
+
+  @override
+  List<Object?> get props => [familyAccount];
+}
+
 // Error State
 class FamilyAccountError extends FamilyAccountState {
   final String message;

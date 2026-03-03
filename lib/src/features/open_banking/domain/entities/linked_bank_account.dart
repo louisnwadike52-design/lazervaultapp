@@ -41,6 +41,7 @@ class LinkedBankAccount extends Equatable {
   final DateTime linkedAt;
   final DateTime? balanceUpdatedAt;
   final DateTime? lastUsedAt;
+  final DateTime? lastBalanceRefreshAt;
 
   const LinkedBankAccount({
     required this.id,
@@ -59,6 +60,7 @@ class LinkedBankAccount extends Equatable {
     required this.linkedAt,
     this.balanceUpdatedAt,
     this.lastUsedAt,
+    this.lastBalanceRefreshAt,
   });
 
   /// Check if the account is active
@@ -66,6 +68,13 @@ class LinkedBankAccount extends Equatable {
 
   /// Check if the account needs reauthorization
   bool get needsReauthorization => status == LinkedAccountStatus.reauthorize;
+
+  /// Check if the balance is stale (> 5 minutes since last refresh)
+  bool get isBalanceStale {
+    final refreshTime = lastBalanceRefreshAt ?? balanceUpdatedAt;
+    if (refreshTime == null) return true;
+    return DateTime.now().difference(refreshTime).inMinutes > 5;
+  }
 
   /// Get formatted balance
   String get formattedBalance {
@@ -104,6 +113,9 @@ class LinkedBankAccount extends Equatable {
       lastUsedAt: json['last_used_at'] != null
           ? DateTime.parse(json['last_used_at'] as String)
           : null,
+      lastBalanceRefreshAt: json['last_balance_refresh_at'] != null
+          ? DateTime.parse(json['last_balance_refresh_at'] as String)
+          : null,
     );
   }
 
@@ -125,6 +137,7 @@ class LinkedBankAccount extends Equatable {
       'linked_at': linkedAt.toIso8601String(),
       'balance_updated_at': balanceUpdatedAt?.toIso8601String(),
       'last_used_at': lastUsedAt?.toIso8601String(),
+      'last_balance_refresh_at': lastBalanceRefreshAt?.toIso8601String(),
     };
   }
 
@@ -145,6 +158,7 @@ class LinkedBankAccount extends Equatable {
     DateTime? linkedAt,
     DateTime? balanceUpdatedAt,
     DateTime? lastUsedAt,
+    DateTime? lastBalanceRefreshAt,
   }) {
     return LinkedBankAccount(
       id: id ?? this.id,
@@ -163,6 +177,7 @@ class LinkedBankAccount extends Equatable {
       linkedAt: linkedAt ?? this.linkedAt,
       balanceUpdatedAt: balanceUpdatedAt ?? this.balanceUpdatedAt,
       lastUsedAt: lastUsedAt ?? this.lastUsedAt,
+      lastBalanceRefreshAt: lastBalanceRefreshAt ?? this.lastBalanceRefreshAt,
     );
   }
 
@@ -184,5 +199,6 @@ class LinkedBankAccount extends Equatable {
         linkedAt,
         balanceUpdatedAt,
         lastUsedAt,
+        lastBalanceRefreshAt,
       ];
 }

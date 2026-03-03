@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:lazervault/core/services/chat_session_manager.dart';
 import '../domain/usecases/process_ai_chat_usecase.dart';
@@ -159,6 +162,118 @@ class AIChatCubit extends Cubit<AIChatState> {
           emit(AIChatMessageError(
               errorMessage: response.msg.isNotEmpty ? response.msg : "AI service returned an error.",
               messages: List.from(_currentMessages)));
+        }
+      },
+    );
+  }
+
+  /// Maximum media file size (10MB for images, 25MB for audio).
+  static const int _maxImageSize = 10 * 1024 * 1024;
+  static const int _maxAudioSize = 25 * 1024 * 1024;
+
+  /// Send a media message (image or voice note) through the Chat Agent Gateway.
+  Future<void> sendMediaMessage({
+    required String mediaType,
+    required String localFilePath,
+    required String mimeType,
+    required String accessToken,
+    String text = '',
+    int? audioDurationMs,
+  }) async {
+    // Validate file exists and check size
+    final file = File(localFilePath);
+    if (!file.existsSync()) {
+      if (isClosed) return;
+      emit(AIChatMessageError(
+        errorMessage: 'The media file could not be found. Please try again.',
+        messages: List.from(_currentMessages),
+      ));
+      return;
+    }
+
+    final fileSize = file.lengthSync();
+    final maxSize = mediaType == 'image' ? _maxImageSize : _maxAudioSize;
+    if (fileSize > maxSize) {
+      final maxMB = maxSize ~/ (1024 * 1024);
+      if (isClosed) return;
+      emit(AIChatMessageError(
+        errorMessage: 'File is too large (max ${maxMB}MB). Please choose a smaller file.',
+        messages: List.from(_currentMessages),
+      ));
+      return;
+    }
+    if (fileSize == 0) {
+      if (isClosed) return;
+      emit(AIChatMessageError(
+        errorMessage: 'The file appears to be empty. Please try again.',
+        messages: List.from(_currentMessages),
+      ));
+      return;
+    }
+
+    // Read file and base64-encode
+    final bytes = await file.readAsBytes();
+    if (isClosed) return;
+    final base64Data = base64Encode(bytes);
+
+    // Add user message with media preview immediately
+    final displayText = text.isNotEmpty
+        ? text
+        : (mediaType == 'image' ? 'Sent an image' : 'Sent a voice note');
+    final userMessage = ChatMessageEntity(
+      text: displayText,
+      isUser: true,
+      timestamp: DateTime.now(),
+      mediaType: mediaType,
+      localMediaPath: localFilePath,
+      audioDurationMs: audioDurationMs,
+    );
+    _currentMessages.add(userMessage);
+    if (isClosed) return;
+    emit(AIChatMessageLoading(messages: List.from(_currentMessages)));
+
+    // Ensure we have a deterministic session ID
+    if (_sessionId == null && _chatSessionManager != null) {
+      _sessionId = await _chatSessionManager!.getGeneralSessionId();
+    }
+
+    final result = await _processChatUseCase(
+      query: text,
+      accessToken: accessToken,
+      sessionId: _sessionId,
+      sourceContext: 'general',
+      language: 'en',
+      mediaBase64: base64Data,
+      mediaType: mediaType,
+      mediaMimeType: mimeType,
+    );
+
+    if (isClosed) return;
+    result.fold(
+      (failure) {
+        emit(AIChatMessageError(
+          errorMessage: failure.message,
+          messages: List.from(_currentMessages),
+        ));
+      },
+      (response) {
+        if (response.success) {
+          if (response.sessionId.isNotEmpty) {
+            _sessionId = response.sessionId;
+          }
+          final aiMessage = ChatMessageEntity(
+            text: response.response,
+            isUser: false,
+            timestamp: DateTime.now(),
+            sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
+          );
+          _currentMessages.add(aiMessage);
+          emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
+        } else {
+          emit(AIChatMessageError(
+            errorMessage: response.msg.isNotEmpty ? response.msg : 'AI service returned an error.',
+            messages: List.from(_currentMessages),
+          ));
         }
       },
     );

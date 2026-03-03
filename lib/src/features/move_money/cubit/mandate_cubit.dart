@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_grpc_datasource.dart';
 
@@ -160,6 +162,147 @@ class MandateCubit extends Cubit<MandateState> {
     }
   }
 
+  /// Recreate a mandate for an account (cancel old one first if needed).
+  Future<void> recreateMandateForAccount({
+    required String userId,
+    required String linkedAccountId,
+    String? userEmail,
+    String? userName,
+    String? userPhone,
+  }) async {
+    if (_operationInProgress) return;
+    _operationInProgress = true;
+    emit(MandateLoading());
+
+    try {
+      // Cancel existing mandate if there is one
+      final existing = _mandatesByAccountId[linkedAccountId];
+      if (existing != null &&
+          existing.status != MandateStatus.cancelled &&
+          existing.status != MandateStatus.expired) {
+        try {
+          await _dataSource.cancelMandate(
+            mandateId: existing.id,
+            userId: userId,
+          );
+        } catch (_) {
+          // Ignore cancel failure — proceed to create new one
+        }
+      }
+
+      // Create new GSM mandate
+      final result = await _dataSource.createMandate(
+        userId: userId,
+        linkedAccountId: linkedAccountId,
+        mandateType: 'gsm',
+        userEmail: userEmail,
+        userName: userName,
+        userPhone: userPhone,
+      );
+
+      _mandatesByAccountId[linkedAccountId] = result.mandate;
+      emit(MandateCreated(
+        mandate: result.mandate,
+        needsAuthorization: result.needsAuthorization,
+        authorizationUrl: result.authorizationUrl,
+      ));
+    } catch (e) {
+      emit(MandateError(message: 'Failed to recreate mandate: $e'));
+    } finally {
+      _operationInProgress = false;
+    }
+  }
+
+  /// Ensure a mandate is active for the given account.
+  /// Returns (mandate, needsWait) — needsWait is true for e-mandate 24h scenarios.
+  Future<(MandateEntity?, bool)> ensureMandateActive({
+    required String userId,
+    required String linkedAccountId,
+    String? userEmail,
+    String? userName,
+    String? userPhone,
+  }) async {
+    final existing = _mandatesByAccountId[linkedAccountId];
+
+    // Already active
+    if (existing != null && existing.isActive) {
+      return (existing, false);
+    }
+
+    // Activating — just needs time
+    if (existing != null && existing.isActivating) {
+      return (existing, true);
+    }
+
+    // Missing, expired, cancelled, or rejected — create new
+    try {
+      final result = await _dataSource.createMandate(
+        userId: userId,
+        linkedAccountId: linkedAccountId,
+        mandateType: 'gsm',
+        userEmail: userEmail,
+        userName: userName,
+        userPhone: userPhone,
+      );
+
+      _mandatesByAccountId[linkedAccountId] = result.mandate;
+
+      if (!isClosed) {
+        emit(MandateCreated(
+          mandate: result.mandate,
+          needsAuthorization: result.needsAuthorization,
+          authorizationUrl: result.authorizationUrl,
+        ));
+      }
+
+      return (result.mandate, result.mandate.isActivating);
+    } catch (_) {
+      return (null, false);
+    }
+  }
+
+  /// Poll mandate status until it becomes active (for e-mandate 24h wait).
+  Timer? _mandatePollTimer;
+
+  void pollMandateStatus({
+    required String mandateId,
+    required String userId,
+  }) {
+    _mandatePollTimer?.cancel();
+    _mandatePollTimer = Timer.periodic(const Duration(seconds: 60), (timer) async {
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
+
+      try {
+        final mandate = await _dataSource.getMandate(
+          mandateId: mandateId,
+          userId: userId,
+        );
+
+        _mandatesByAccountId[mandate.linkedAccountId] = mandate;
+
+        if (mandate.isActive) {
+          timer.cancel();
+          if (!isClosed) {
+            emit(MandateCreated(
+              mandate: mandate,
+              needsAuthorization: false,
+            ));
+          }
+        }
+      } catch (_) {
+        // Continue polling on transient errors
+      }
+    });
+  }
+
+  void stopPolling() {
+    _mandatePollTimer?.cancel();
+    _mandatePollTimer = null;
+  }
+
   /// Prefer active/readyToDebit mandates over others.
   bool _isBetterMandate(MandateEntity candidate, MandateEntity existing) {
     if (candidate.isActive && !existing.isActive) return true;
@@ -167,5 +310,11 @@ class MandateCubit extends Cubit<MandateState> {
       return true;
     }
     return false;
+  }
+
+  @override
+  Future<void> close() {
+    _mandatePollTimer?.cancel();
+    return super.close();
   }
 }

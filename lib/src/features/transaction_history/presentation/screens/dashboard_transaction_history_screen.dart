@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_card.dart';
@@ -25,6 +27,7 @@ class _DashboardTransactionHistoryScreenState
     extends State<DashboardTransactionHistoryScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  final Debouncer _searchDebouncer = Debouncer.search();
 
   TransactionFilters? _activeFilters;
 
@@ -39,6 +42,7 @@ class _DashboardTransactionHistoryScreenState
   void dispose() {
     _scrollController.dispose();
     _searchController.dispose();
+    _searchDebouncer.dispose();
     super.dispose();
   }
 
@@ -90,7 +94,274 @@ class _DashboardTransactionHistoryScreenState
   }
 
   void _onTransactionTap(UnifiedTransaction transaction) {
-    TransactionReceiptRouter.navigateToReceipt(transaction);
+    _showTransactionDetailDialog(transaction);
+  }
+
+  void _showTransactionDetailDialog(UnifiedTransaction tx) {
+    final isIncoming = tx.flow == TransactionFlow.incoming;
+    final dateStr = DateFormat('EEEE, dd MMM yyyy \'at\' HH:mm').format(tx.createdAt);
+    final symbol = tx.currency == 'NGN'
+        ? '\u20A6'
+        : tx.currency == 'USD'
+            ? '\$'
+            : tx.currency;
+    final amtStr = '${isIncoming ? '+' : ''}$symbol${tx.amount.toStringAsFixed(2)}';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 40.w,
+              height: 4.h,
+              margin: EdgeInsets.only(bottom: 16.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+
+            // Service icon
+            Container(
+              width: 52.w,
+              height: 52.w,
+              decoration: BoxDecoration(
+                color: tx.serviceColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                tx.serviceIcon,
+                color: tx.serviceColor,
+                size: 24.sp,
+              ),
+            ),
+            SizedBox(height: 12.h),
+
+            // Title
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Text(
+                tx.title,
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontFamily: 'Inter',
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+
+            if (tx.description != null) ...[
+              SizedBox(height: 4.h),
+              Text(
+                tx.description!,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: const Color(0xFF8E8E93),
+                  fontFamily: 'Inter',
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+
+            SizedBox(height: 8.h),
+
+            // Amount
+            Text(
+              amtStr,
+              style: TextStyle(
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w700,
+                color: isIncoming ? const Color(0xFF34C759) : Colors.white,
+                fontFamily: 'Inter',
+              ),
+            ),
+            SizedBox(height: 6.h),
+
+            // Date
+            Text(
+              dateStr,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: const Color(0xFF8E8E93),
+                fontFamily: 'Inter',
+              ),
+            ),
+            SizedBox(height: 6.h),
+
+            // Status chip
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: tx.status.color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                tx.status.displayName,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                  color: tx.status.color,
+                  fontFamily: 'Inter',
+                ),
+              ),
+            ),
+
+            // Reference
+            if (tx.transactionReference != null) ...[
+              SizedBox(height: 12.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Ref: ',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: const Color(0xFF8E8E93),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(
+                      tx.transactionReference!,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Inter',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            // Counterparty
+            if (tx.counterpartyName != null) ...[
+              SizedBox(height: 8.h),
+              Text(
+                '${isIncoming ? 'From' : 'To'}: ${tx.counterpartyName}',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: const Color(0xFF8E8E93),
+                  fontFamily: 'Inter',
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+
+            SizedBox(height: 20.h),
+
+            // Action buttons
+            Row(
+              children: [
+                // Repeat transaction
+                if (tx.serviceType == TransactionServiceType.transfer && !isIncoming)
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        // Navigate to send funds with prefilled data
+                        Get.toNamed(
+                          '/initiate-send-funds',
+                          arguments: <String, dynamic>{
+                            'prefillAmount': (tx.amount * 100).toInt(),
+                            'prefillCurrency': tx.currency,
+                            'autoShowConfirm': true,
+                            if (tx.counterpartyName != null)
+                              'recipientName': tx.counterpartyName,
+                            if (tx.counterpartyAccount != null)
+                              'recipientAccount': tx.counterpartyAccount,
+                          },
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF581CD9),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.replay, color: Colors.white, size: 18.sp),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Repeat',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                fontFamily: 'Inter',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                if (tx.serviceType == TransactionServiceType.transfer && !isIncoming)
+                  SizedBox(width: 12.w),
+                // View receipt
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      TransactionReceiptRouter.navigateToReceipt(tx);
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.receipt_outlined, color: Colors.white, size: 18.sp),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'Receipt',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              fontFamily: 'Inter',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 8.h),
+          ],
+        ),
+      ),
+    );
   }
 
   Map<DateTime, List<UnifiedTransaction>> _groupByDate(
@@ -116,13 +387,16 @@ class _DashboardTransactionHistoryScreenState
             TransactionSearchBar(
               controller: _searchController,
               onChanged: (query) {
-                final merged = (_activeFilters ?? const TransactionFilters())
-                    .copyWith(searchQuery: query.isNotEmpty ? query : null);
-                if (merged.hasFilters) {
-                  context.read<TransactionHistoryCubit>().applyFilters(merged);
-                } else {
-                  context.read<TransactionHistoryCubit>().clearFilters();
-                }
+                _searchDebouncer.run(() {
+                  if (!mounted) return;
+                  final merged = (_activeFilters ?? const TransactionFilters())
+                      .copyWith(searchQuery: query.isNotEmpty ? query : null);
+                  if (merged.hasFilters) {
+                    context.read<TransactionHistoryCubit>().applyFilters(merged);
+                  } else {
+                    context.read<TransactionHistoryCubit>().clearFilters();
+                  }
+                });
               },
               onClear: () {
                 _searchController.clear();

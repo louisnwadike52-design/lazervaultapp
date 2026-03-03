@@ -54,6 +54,11 @@ class ChatMessageEntity extends Equatable {
   final ConfirmationDataEntity? confirmationData;
   final String? conversationState;
   final String? sessionId;
+  final String? mediaType;
+  final String? mediaUrl;
+  final String? localMediaPath;
+  final int? audioDurationMs;
+  final String? transcript;
 
   const ChatMessageEntity({
     required this.text,
@@ -67,6 +72,11 @@ class ChatMessageEntity extends Equatable {
     this.confirmationData,
     this.conversationState,
     this.sessionId,
+    this.mediaType,
+    this.mediaUrl,
+    this.localMediaPath,
+    this.audioDurationMs,
+    this.transcript,
   });
 
   ChatMessageEntity copyWith({
@@ -81,6 +91,11 @@ class ChatMessageEntity extends Equatable {
     ConfirmationDataEntity? confirmationData,
     String? conversationState,
     String? sessionId,
+    String? mediaType,
+    String? mediaUrl,
+    String? localMediaPath,
+    int? audioDurationMs,
+    String? transcript,
   }) {
     return ChatMessageEntity(
       text: text ?? this.text,
@@ -94,6 +109,11 @@ class ChatMessageEntity extends Equatable {
       confirmationData: confirmationData ?? this.confirmationData,
       conversationState: conversationState ?? this.conversationState,
       sessionId: sessionId ?? this.sessionId,
+      mediaType: mediaType ?? this.mediaType,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      localMediaPath: localMediaPath ?? this.localMediaPath,
+      audioDurationMs: audioDurationMs ?? this.audioDurationMs,
+      transcript: transcript ?? this.transcript,
     );
   }
 
@@ -107,5 +127,7 @@ class ChatMessageEntity extends Equatable {
         requiresConfirmation,
         conversationState,
         sessionId,
+        mediaType,
+        localMediaPath,
       ];
 }

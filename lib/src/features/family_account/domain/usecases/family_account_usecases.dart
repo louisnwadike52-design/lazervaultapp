@@ -454,3 +454,31 @@ class SetupFamilyAccountParams {
     this.allocations = const [],
   });
 }
+
+// Update Fund Distribution Mode Use Case
+class UpdateFundDistributionModeUseCase extends UseCase<FamilyAccount, UpdateFundDistributionModeParams> {
+  final FamilyAccountRepository repository;
+
+  UpdateFundDistributionModeUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, FamilyAccount>> call(UpdateFundDistributionModeParams params) {
+    return repository.updateFundDistributionMode(
+      familyId: params.familyId,
+      fundDistributionMode: params.fundDistributionMode,
+      allocations: params.allocations,
+    );
+  }
+}
+
+class UpdateFundDistributionModeParams {
+  final String familyId;
+  final String fundDistributionMode;
+  final List<MemberAllocationEntry> allocations;
+
+  UpdateFundDistributionModeParams({
+    required this.familyId,
+    required this.fundDistributionMode,
+    this.allocations = const [],
+  });
+}

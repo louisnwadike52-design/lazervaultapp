@@ -268,6 +268,21 @@ class UnauthorizedException extends BankingException {
       'Your session has expired. Please log in again.';
 }
 
+/// Reauthorization required - bank connection expired, needs re-linking
+class ReauthorizationRequiredException extends BankingException {
+  const ReauthorizationRequiredException({
+    required super.message,
+    super.details,
+  }) : super(
+          code: 'REAUTHORIZATION_REQUIRED',
+          isRetryable: false,
+        );
+
+  @override
+  String get userMessage =>
+      'Your bank connection has expired. Please re-link this account.';
+}
+
 /// Needs mandate error - user needs to set up direct debit mandate
 class NeedsMandateException extends BankingException {
   final String? mandateId;
@@ -334,10 +349,13 @@ class BankingErrorParser {
       // Body is not valid JSON
     }
 
+    // grpc-gateway returns camelCase JSON; also handle snake_case from custom REST
     final errorCode = data?['error_code'] as String? ??
+        data?['errorCode'] as String? ??
         data?['code'] as String? ??
         BankingErrorCode.unknown;
     final errorMessage = data?['error_message'] as String? ??
+        data?['errorMessage'] as String? ??
         data?['message'] as String? ??
         'An error occurred';
 

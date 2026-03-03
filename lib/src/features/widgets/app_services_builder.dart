@@ -31,8 +31,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   final DashboardStateManager _stateManager = serviceLocator<DashboardStateManager>();
   final AccountManager _accountManager = serviceLocator<AccountManager>();
   StreamSubscription<String?>? _accountSubscription;
-  bool _isBusinessAccount = false;
-  bool _isFamilyAccount = false;
+  VirtualAccountType? _activeAccountType;
   bool _isFamilyPendingSetup = false;
   String? _activeFamilyAccountId;
   bool _isResolvingFamilyId = false;
@@ -101,6 +100,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.whatsappIntegration,
         serviceImg: AppServiceImg.whatsappIntegration),
     AppService(
+        serviceName: AppServiceName.phoneBanking,
+        serviceImg: AppServiceImg.phoneBanking),
+    AppService(
         serviceName: AppServiceName.idPay,
         serviceImg: AppServiceImg.idPay),
   ];
@@ -126,6 +128,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.expenses,
         serviceImg: AppServiceImg.expenses),
     AppService(
+        serviceName: AppServiceName.inventory,
+        serviceImg: AppServiceImg.inventory),
+    AppService(
+        serviceName: AppServiceName.tax,
+        serviceImg: AppServiceImg.tax),
+    AppService(
         serviceName: AppServiceName.batchTransfer,
         serviceImg: AppServiceImg.batchTransfer),
     AppService(
@@ -133,10 +141,157 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceImg: AppServiceImg.sendFunds),
   ];
 
+  // Savings account services (8 services — 1 page)
+  static const List<AppService> _savingsServices = [
+    AppService(
+        serviceName: AppServiceName.sendFunds,
+        serviceImg: AppServiceImg.sendFunds),
+    AppService(
+        serviceName: AppServiceName.autoSave,
+        serviceImg: AppServiceImg.autoSave),
+    AppService(
+        serviceName: AppServiceName.lockFunds,
+        serviceImg: AppServiceImg.lockFunds),
+    AppService(
+        serviceName: AppServiceName.payBills,
+        serviceImg: AppServiceImg.payBills),
+    AppService(
+        serviceName: AppServiceName.insurance,
+        serviceImg: AppServiceImg.insurance),
+    AppService(
+        serviceName: AppServiceName.exchange,
+        serviceImg: AppServiceImg.exchange),
+    AppService(
+        serviceName: AppServiceName.crowdfund,
+        serviceImg: AppServiceImg.crowdfund),
+    AppService(
+        serviceName: AppServiceName.airtime,
+        serviceImg: AppServiceImg.airtime),
+  ];
+
+  // Investment account services (7 services — 1 page)
+  static const List<AppService> _investmentServices = [
+    AppService(
+        serviceName: AppServiceName.invest,
+        serviceImg: AppServiceImg.invest),
+    AppService(
+        serviceName: AppServiceName.stocks,
+        serviceImg: AppServiceImg.stocks),
+    AppService(
+        serviceName: AppServiceName.crypto,
+        serviceImg: AppServiceImg.crypto),
+    AppService(
+        serviceName: AppServiceName.exchange,
+        serviceImg: AppServiceImg.exchange),
+    AppService(
+        serviceName: AppServiceName.sendFunds,
+        serviceImg: AppServiceImg.sendFunds),
+    AppService(
+        serviceName: AppServiceName.autoSave,
+        serviceImg: AppServiceImg.autoSave),
+    AppService(
+        serviceName: AppServiceName.lockFunds,
+        serviceImg: AppServiceImg.lockFunds),
+  ];
+
+  // Multi-currency wallet services — USD/GBP/EUR (8 services — 1 page)
+  static const List<AppService> _multiCurrencyServices = [
+    AppService(
+        serviceName: AppServiceName.sendFunds,
+        serviceImg: AppServiceImg.sendFunds),
+    AppService(
+        serviceName: AppServiceName.exchange,
+        serviceImg: AppServiceImg.exchange),
+    AppService(
+        serviceName: AppServiceName.batchTransfer,
+        serviceImg: AppServiceImg.batchTransfer),
+    AppService(
+        serviceName: AppServiceName.payBills,
+        serviceImg: AppServiceImg.payBills),
+    AppService(
+        serviceName: AppServiceName.invoice,
+        serviceImg: AppServiceImg.invoice),
+    AppService(
+        serviceName: AppServiceName.qrPay,
+        serviceImg: AppServiceImg.qrPay),
+    AppService(
+        serviceName: AppServiceName.giftCards,
+        serviceImg: AppServiceImg.giftCards),
+    AppService(
+        serviceName: AppServiceName.tagPay,
+        serviceImg: AppServiceImg.tagPay),
+  ];
+
+  // Family account services — active, setup complete (8 services — 1 page)
+  static const List<AppService> _familyServices = [
+    AppService(
+        serviceName: AppServiceName.sendFunds,
+        serviceImg: AppServiceImg.sendFunds),
+    AppService(
+        serviceName: AppServiceName.payBills,
+        serviceImg: AppServiceImg.payBills),
+    AppService(
+        serviceName: AppServiceName.airtime,
+        serviceImg: AppServiceImg.airtime),
+    AppService(
+        serviceName: AppServiceName.tagPay,
+        serviceImg: AppServiceImg.tagPay),
+    AppService(
+        serviceName: AppServiceName.autoSave,
+        serviceImg: AppServiceImg.autoSave),
+    AppService(
+        serviceName: AppServiceName.insurance,
+        serviceImg: AppServiceImg.insurance),
+    AppService(
+        serviceName: AppServiceName.qrPay,
+        serviceImg: AppServiceImg.qrPay),
+    AppService(
+        serviceName: AppServiceName.exchange,
+        serviceImg: AppServiceImg.exchange),
+  ];
+
   List<AppService> get _activeServices {
-    if (_isBusinessAccount) return _businessServices;
-    return _personalServices;
+    switch (_activeAccountType) {
+      case VirtualAccountType.business:
+        return _businessServices;
+      case VirtualAccountType.savings:
+        return _savingsServices;
+      case VirtualAccountType.investment:
+        return _investmentServices;
+      case VirtualAccountType.usd:
+      case VirtualAccountType.gbp:
+      case VirtualAccountType.eur:
+        return _multiCurrencyServices;
+      case VirtualAccountType.family:
+        return _familyServices;
+      default:
+        return _personalServices;
+    }
   }
+
+  String get _headerTitle => switch (_activeAccountType) {
+        VirtualAccountType.business => "Business Services",
+        VirtualAccountType.savings => "Savings Services",
+        VirtualAccountType.investment => "Investment Services",
+        VirtualAccountType.usd ||
+        VirtualAccountType.gbp ||
+        VirtualAccountType.eur =>
+          "Wallet Services",
+        VirtualAccountType.family => "Family Services",
+        _ => "Quick Services",
+      };
+
+  Color get _accentColor => switch (_activeAccountType) {
+        VirtualAccountType.business => const Color(0xFF3B82F6),
+        VirtualAccountType.savings => const Color(0xFF10B981),
+        VirtualAccountType.investment => const Color(0xFFF59E0B),
+        VirtualAccountType.usd ||
+        VirtualAccountType.gbp ||
+        VirtualAccountType.eur =>
+          const Color(0xFF14B8A6),
+        VirtualAccountType.family => const Color(0xFF2D2B6B),
+        _ => const Color.fromARGB(255, 78, 3, 208),
+      };
 
   @override
   void initState() {
@@ -155,6 +310,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   }
 
   void _checkActiveAccountType() {
+    if (!mounted) return;
     final activeId = _accountManager.activeAccountId;
     if (activeId == null) return;
 
@@ -162,27 +318,27 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     try {
       final cubitState = context.read<AccountCardsSummaryCubit>().state;
       if (cubitState is AccountCardsSummaryLoaded) {
-        final activeAccount = cubitState.accountSummaries.firstWhere(
+        final summaries = cubitState.accountSummaries;
+        if (summaries.isEmpty) return;
+
+        final activeAccount = summaries.firstWhere(
           (a) => a.id == activeId,
-          orElse: () => cubitState.accountSummaries.first,
+          orElse: () => summaries.first,
         );
-        final isBusiness =
-            activeAccount.accountTypeEnum == VirtualAccountType.business;
-        final isFamily =
-            activeAccount.accountTypeEnum == VirtualAccountType.family;
+        final accountType = activeAccount.accountTypeEnum;
+        final isFamily = accountType == VirtualAccountType.family;
         final isFamilyPending = isFamily &&
             (activeAccount.isFamilyPendingSetup || !activeAccount.isFamilyAccount);
         final familyId = isFamily ? activeAccount.familyAccountId : null;
 
-        if (isBusiness != _isBusinessAccount ||
-            isFamily != _isFamilyAccount ||
+        if (accountType != _activeAccountType ||
             isFamilyPending != _isFamilyPendingSetup) {
           setState(() {
-            _isBusinessAccount = isBusiness;
-            _isFamilyAccount = isFamily;
+            _activeAccountType = accountType;
             _isFamilyPendingSetup = isFamilyPending;
             _activeFamilyAccountId = familyId;
             _currentIndex = 0; // Reset carousel position on account type switch
+            _stateManager.setServicesCarouselIndex(0);
           });
         }
       }
@@ -229,18 +385,21 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   @override
   Widget build(BuildContext context) {
     // Show family setup CTA when active account is a pending family account
-    if (_isFamilyAccount && _isFamilyPendingSetup) {
+    if (_activeAccountType == VirtualAccountType.family && _isFamilyPendingSetup) {
       return _buildFamilySetupCTA();
     }
 
     final servicePages = _getServicePages();
     final carouselHeight = _calculateCarouselHeight(context);
     final activeServices = _activeServices;
-    final accentColor = _isBusinessAccount
-        ? const Color(0xFF3B82F6) // Blue for business
-        : (_isFamilyAccount
-            ? const Color(0xFF2D6B6B) // Teal for family
-            : const Color.fromARGB(255, 78, 3, 208)); // Purple for personal
+    final accentColor = _accentColor;
+
+    // Clamp index to valid range in case page count changed
+    final maxIndex = servicePages.length - 1;
+    if (_currentIndex > maxIndex) {
+      _currentIndex = maxIndex.clamp(0, maxIndex);
+      _stateManager.setServicesCarouselIndex(_currentIndex);
+    }
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
@@ -266,9 +425,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               Row(
                 children: [
                   Text(
-                    _isBusinessAccount
-                        ? "Business Services"
-                        : (_isFamilyAccount ? "Family Services" : "Quick Services"),
+                    _headerTitle,
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
@@ -276,7 +433,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                       letterSpacing: 0.5,
                     ),
                   ),
-                  if (_isBusinessAccount) ...[
+                  if (_activeAccountType == VirtualAccountType.business) ...[
                     SizedBox(width: 6.w),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
@@ -296,7 +453,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   ],
                 ],
               ),
-              if (!_isBusinessAccount)
+              if (_activeAccountType != VirtualAccountType.business)
                 GestureDetector(
                   onTap: () => showAllServicesBottomSheet(context, activeServices),
                   child: Container(
@@ -403,12 +560,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1A4747), Color(0xFF2D6B6B)],
+          colors: [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A4747).withValues(alpha: 0.3),
+            color: const Color(0xFF1A1A3E).withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -491,7 +648,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF1A4747),
+                foregroundColor: const Color(0xFF1A1A3E),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24.r),
                 ),
@@ -503,7 +660,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                       height: 20.h,
                       child: const CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Color(0xFF1A4747),
+                        color: Color(0xFF1A1A3E),
                       ),
                     )
                   : Row(

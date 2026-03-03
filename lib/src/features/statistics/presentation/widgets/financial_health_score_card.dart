@@ -215,7 +215,6 @@ class _FinancialHealthScoreCardState extends State<FinancialHealthScoreCard>
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 16.w),
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),

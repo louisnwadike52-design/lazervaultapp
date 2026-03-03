@@ -235,6 +235,7 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
   }
 
   /// Custom retry logic for transfers - don't retry business logic failures
+  /// or any error from operations that consume single-use verification tokens.
   bool _shouldRetryTransfer(dynamic error) {
     if (error is ServerException) {
       final message = error.message?.toLowerCase() ?? '';
@@ -244,7 +245,11 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           message.contains('denied') ||
           message.contains('duplicate') ||
           message.contains('limit') ||
-          message.contains('frozen')) {
+          message.contains('frozen') ||
+          message.contains('could not be completed') ||
+          message.contains('already used') ||
+          message.contains('token') ||
+          message.contains('verification')) {
         return false;
       }
     }

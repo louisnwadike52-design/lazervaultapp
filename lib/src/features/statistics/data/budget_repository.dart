@@ -1,3 +1,4 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/src/generated/statistics.pbgrpc.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/core/services/account_manager.dart';
@@ -20,6 +21,25 @@ class BudgetRepository {
         _accountManager = accountManager,
         _callOptionsHelper = callOptionsHelper;
 
+  /// Validate a category budget before a transaction
+  Future<pb.ValidateCategoryBudgetResponse> validateCategoryBudget({
+    required int budgetCategory,
+    required int amountMinor,
+    required String currency,
+  }) async {
+    return _callOptionsHelper.executeWithTokenRotation(() async {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final request = pb.ValidateCategoryBudgetRequest()
+        ..budgetCategory = budgetCategory
+        ..amountMinor = Int64(amountMinor)
+        ..currency = currency;
+
+      return retryWithBackoff(
+        operation: () => _grpcClient.validateCategoryBudget(request, options: callOptions),
+      );
+    });
+  }
+
   /// Create a new budget
   Future<pb.CreateBudgetResponse> createBudget({
     required String name,
@@ -31,6 +51,7 @@ class BudgetRepository {
     DateTime? endDate,
     bool enableAlerts = true,
     double alertThreshold = 80.0,
+    pb.BudgetEnforcementMode enforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE,
   }) async {
     return _callOptionsHelper.executeWithTokenRotation(() async {
       final callOptions = await _callOptionsHelper.withAuth();
@@ -41,7 +62,8 @@ class BudgetRepository {
         ..category = category
         ..period = period
         ..enableAlerts = enableAlerts
-        ..alertThreshold = alertThreshold;
+        ..alertThreshold = alertThreshold
+        ..enforcementMode = enforcementMode;
 
       if (startDate != null) {
         request.startDate = Timestamp.fromDateTime(startDate);
@@ -104,6 +126,7 @@ class BudgetRepository {
     DateTime? endDate,
     bool? enableAlerts,
     double? alertThreshold,
+    pb.BudgetEnforcementMode? enforcementMode,
   }) async {
     return _callOptionsHelper.executeWithTokenRotation(() async {
       final callOptions = await _callOptionsHelper.withAuth();
@@ -129,6 +152,9 @@ class BudgetRepository {
       }
       if (alertThreshold != null) {
         request.alertThreshold = alertThreshold;
+      }
+      if (enforcementMode != null) {
+        request.enforcementMode = enforcementMode;
       }
 
       return retryWithBackoff(

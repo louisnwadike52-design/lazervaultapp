@@ -21,6 +21,9 @@ abstract class GeneralChatRepository {
     String language = 'en',
     String locale = 'en-NG',
     Map<String, dynamic> metadata = const {},
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   });
 
   /// Clear conversation state from Redis
@@ -48,6 +51,9 @@ class GeneralChatRepositoryImpl implements GeneralChatRepository {
     String language = 'en',
     String locale = 'en-NG',
     Map<String, dynamic> metadata = const {},
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   }) async {
     try {
       final request = GeneralChatRequest(
@@ -59,6 +65,9 @@ class GeneralChatRepositoryImpl implements GeneralChatRepository {
         language: language,
         locale: locale,
         metadata: metadata,
+        mediaBase64: mediaBase64,
+        mediaType: mediaType,
+        mediaMimeType: mediaMimeType,
       );
 
       final response = await dataSource.processChat(request);

@@ -158,7 +158,7 @@ class _MoveNoTransfersEmptyState extends MoveEmptyState {
           title: 'No Transfers Yet',
           description:
               'Your move money transfer history will appear here once you make your first transfer.',
-          actionText: 'Move Money',
+          actionText: 'Transfer',
           onAction: onStartTransfer,
         );
 }

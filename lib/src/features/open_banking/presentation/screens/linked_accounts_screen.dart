@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import '../../domain/entities/linked_bank_account.dart';
@@ -27,17 +29,50 @@ class LinkedAccountsScreen extends StatefulWidget {
 }
 
 class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
+  String? _highlightAccountId;
+
   @override
   void initState() {
     super.initState();
+    _extractArguments();
     _fetchAccounts();
   }
 
-  void _fetchAccounts() {
-    context.read<OpenBankingCubit>().fetchLinkedAccounts(
-          userId: widget.userId,
-          accessToken: widget.accessToken,
-        );
+  void _extractArguments() {
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      _highlightAccountId = args['highlightAccountId'] as String?;
+    }
+  }
+
+  Future<void> _fetchAccounts() async {
+    final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
+    final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+
+    if (userId.isNotEmpty && accessToken.isNotEmpty) {
+      context.read<OpenBankingCubit>().fetchLinkedAccounts(
+            userId: userId,
+            accessToken: accessToken,
+          );
+    }
+  }
+
+  Future<String> _getUserId() async {
+    try {
+      final secureStorage = serviceLocator<SecureStorageService>();
+      return await secureStorage.getUserId() ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Future<String> _getAccessToken() async {
+    try {
+      final secureStorage = serviceLocator<SecureStorageService>();
+      return await secureStorage.getAccessToken() ?? '';
+    } catch (_) {
+      return '';
+    }
   }
 
   void _navigateToLinkBank() async {
@@ -82,28 +117,40 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
     );
 
     if (confirm == true && mounted) {
-      context.read<OpenBankingCubit>().unlinkAccount(
+      final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
+      final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+      if (userId.isNotEmpty && accessToken.isNotEmpty) {
+        context.read<OpenBankingCubit>().unlinkAccount(
+              accountId: account.id,
+              userId: userId,
+              accessToken: accessToken,
+            );
+      }
+    }
+  }
+
+  void _onSetDefault(LinkedBankAccount account) async {
+    final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
+    final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+    if (userId.isNotEmpty && accessToken.isNotEmpty) {
+      context.read<OpenBankingCubit>().setDefaultAccount(
             accountId: account.id,
-            userId: widget.userId,
-            accessToken: widget.accessToken,
+            userId: userId,
+            accessToken: accessToken,
           );
     }
   }
 
-  void _onSetDefault(LinkedBankAccount account) {
-    context.read<OpenBankingCubit>().setDefaultAccount(
-          accountId: account.id,
-          userId: widget.userId,
-          accessToken: widget.accessToken,
-        );
-  }
-
-  void _onRefreshBalance(LinkedBankAccount account) {
-    context.read<OpenBankingCubit>().refreshBalance(
-          accountId: account.id,
-          userId: widget.userId,
-          accessToken: widget.accessToken,
-        );
+  void _onRefreshBalance(LinkedBankAccount account) async {
+    final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
+    final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
+    if (userId.isNotEmpty && accessToken.isNotEmpty) {
+      context.read<OpenBankingCubit>().refreshBalance(
+            accountId: account.id,
+            userId: userId,
+            accessToken: accessToken,
+          );
+    }
   }
 
   @override
@@ -125,10 +172,59 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       body: BlocConsumer<OpenBankingCubit, OpenBankingState>(
         listener: (context, state) {
           if (state is OpenBankingError) {
+            if (state.errorType == BankingErrorType.reauthorizationRequired) {
+              // Show a more prominent error for expired bank connections
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    'Your bank connection has expired. Please unlink and re-link this account.',
+                  ),
+                  backgroundColor: Colors.orange,
+                  duration: const Duration(seconds: 5),
+                  action: SnackBarAction(
+                    label: 'Refresh List',
+                    textColor: Colors.white,
+                    onPressed: _fetchAccounts,
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  action: state.isRetryable
+                      ? SnackBarAction(
+                          label: 'Retry',
+                          textColor: Colors.white,
+                          onPressed: _fetchAccounts,
+                        )
+                      : null,
+                ),
+              );
+            }
+          } else if (state is OpenBankingOffline) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('No internet connection'),
+                backgroundColor: Colors.orange,
+                action: SnackBarAction(
+                  label: 'Retry',
+                  textColor: Colors.white,
+                  onPressed: _fetchAccounts,
+                ),
+              ),
+            );
+          } else if (state is ServiceUnavailable) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.orange,
+                action: SnackBarAction(
+                  label: 'Retry',
+                  textColor: Colors.white,
+                  onPressed: _fetchAccounts,
+                ),
               ),
             );
           } else if (state is AccountUnlinked) {
@@ -141,11 +237,14 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
             _fetchAccounts();
           } else if (state is BalanceRefreshed) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Balance refreshed'),
+              SnackBar(
+                content: Text(
+                  'Balance updated: ${_formatCurrency(state.newBalance)}',
+                ),
                 backgroundColor: Colors.green,
               ),
             );
+            _fetchAccounts(); // Refresh list with updated balance
           }
         },
         builder: (context, state) {
@@ -154,6 +253,9 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
           }
 
           final accounts = context.read<OpenBankingCubit>().linkedAccounts;
+          final refreshingAccountId = state is BalanceRefreshing
+              ? state.accountId
+              : null;
 
           if (accounts.isEmpty) {
             return _buildEmptyState();
@@ -167,13 +269,17 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                   itemCount: accounts.length,
                   itemBuilder: (context, index) {
                     final account = accounts[index];
+                    final isRefreshing = refreshingAccountId == account.id;
                     return GestureDetector(
                       onTap: () => _showAccountDetailSheet(account),
                       child: LinkedAccountCard(
                         account: account,
+                        isRefreshing: isRefreshing,
                         onUnlink: () => _onUnlink(account),
                         onSetDefault: () => _onSetDefault(account),
-                        onRefreshBalance: () => _onRefreshBalance(account),
+                        onRefreshBalance: isRefreshing
+                            ? null
+                            : () => _onRefreshBalance(account),
                       ),
                     );
                   },
@@ -197,6 +303,11 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
   // ---------------------------------------------------------------------------
   // Account detail bottom sheet
   // ---------------------------------------------------------------------------
+
+  String _formatCurrency(double amount) {
+    final formatter = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 2);
+    return formatter.format(amount);
+  }
 
   String _formatDate(DateTime date) {
     return DateFormat('MMM d, yyyy HH:mm').format(date);
@@ -317,10 +428,16 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                       _buildSheetDivider(),
                       _buildDetailRow(
                         'Status',
-                        account.isActive ? 'Active' : 'Inactive',
-                        valueColor: account.isActive
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFEF4444),
+                        account.needsReauthorization
+                            ? 'Needs Re-linking'
+                            : account.isActive
+                                ? 'Active'
+                                : 'Inactive',
+                        valueColor: account.needsReauthorization
+                            ? Colors.orange
+                            : account.isActive
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFEF4444),
                       ),
                       if (account.isDefault) ...[
                         _buildSheetDivider(),
@@ -375,21 +492,36 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                     if (!account.isDefault) SizedBox(width: 12.w),
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          _onRefreshBalance(account);
-                        },
-                        icon: Icon(Icons.refresh_rounded, size: 18.sp),
+                        onPressed: account.needsReauthorization
+                            ? null
+                            : () {
+                                Navigator.of(ctx).pop();
+                                _onRefreshBalance(account);
+                              },
+                        icon: Icon(
+                          account.needsReauthorization
+                              ? Icons.link_off_rounded
+                              : Icons.refresh_rounded,
+                          size: 18.sp,
+                        ),
                         label: Text(
-                          'Refresh Balance',
+                          account.needsReauthorization
+                              ? 'Re-link Required'
+                              : 'Refresh Balance',
                           style: GoogleFonts.inter(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF10B981),
-                          side: const BorderSide(color: Color(0xFF10B981)),
+                          foregroundColor: account.needsReauthorization
+                              ? Colors.orange
+                              : const Color(0xFF10B981),
+                          side: BorderSide(
+                            color: account.needsReauthorization
+                                ? Colors.orange
+                                : const Color(0xFF10B981),
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),

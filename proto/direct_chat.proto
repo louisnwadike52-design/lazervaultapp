@@ -1,0 +1,54 @@
+syntax = "proto3";
+package directchat;
+option go_package = "lazervaultGo/pb";
+
+import "google/protobuf/struct.proto";
+
+service DirectChatService {
+  rpc SendDirectMessage(SendDirectMessageRequest) returns (SendDirectMessageResponse);
+  rpc GetDirectChatHistory(GetDirectChatHistoryRequest) returns (GetDirectChatHistoryResponse);
+}
+
+message SendDirectMessageRequest {
+  string message = 1;
+  string session_id = 2;
+  string source_context = 3;
+  string language = 4;
+  string locale = 5;
+  string account_id = 6;
+  string user_country = 7;
+  string currency = 8;
+  google.protobuf.Struct entities = 9;
+  string response_style_instruction = 10;
+}
+
+message SendDirectMessageResponse {
+  string message_id = 1;
+  string response = 2;
+  string service_routed_to = 3;
+  string session_id = 4;
+  google.protobuf.Struct entities = 5;
+  string conversation_state = 6;
+}
+
+message GetDirectChatHistoryRequest {
+  string session_id = 1;
+  string source_context = 2;
+  string locale = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message DirectChatHistoryMessage {
+  string role = 1;
+  string content = 2;
+  string service = 3;
+  string source_context = 4;
+  string created_at = 5;
+}
+
+message GetDirectChatHistoryResponse {
+  repeated DirectChatHistoryMessage messages = 1;
+  int32 total = 2;
+  string session_id = 3;
+}

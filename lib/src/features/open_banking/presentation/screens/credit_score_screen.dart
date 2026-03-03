@@ -122,14 +122,9 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                   state.scores.lazervaultScore,
                 );
           }
-          if (state is OpenBankingError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+          // OpenBankingError is handled in the builder via _buildErrorState()
+          // which shows an appropriate in-page empty state (no credit score,
+          // no linked accounts, etc.) — no snackbar needed.
         },
         buildWhen: (previous, current) =>
             current is CreditScoreLoaded ||
@@ -1146,8 +1141,14 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
   }
 
   Widget _buildErrorState(OpenBankingError state) {
-    final isNoLinkedBank = state.message.toLowerCase().contains('no linked bank') ||
-        state.message.toLowerCase().contains('linked account');
+    final msg = state.message.toLowerCase();
+    final isNoLinkedBank = msg.contains('no linked bank') ||
+        msg.contains('linked account');
+    final isNoScore = msg.contains('not found') ||
+        msg.contains('no credit score') ||
+        msg.contains('no score') ||
+        state.errorType == BankingErrorType.accountIssue;
+    final isEmptyState = isNoLinkedBank || isNoScore;
 
     return Center(
       child: Padding(
@@ -1156,45 +1157,60 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              isNoLinkedBank ? Icons.account_balance_rounded : Icons.error_outline,
-              color: isNoLinkedBank ? const Color(0xFF3B82F6) : Colors.white60,
+              isNoLinkedBank
+                  ? Icons.account_balance_rounded
+                  : isNoScore
+                      ? Icons.score_outlined
+                      : Icons.error_outline,
+              color: isEmptyState ? const Color(0xFF3B82F6) : Colors.white60,
               size: 48.r,
             ),
             SizedBox(height: 16.h),
             Text(
               isNoLinkedBank
                   ? 'Link a bank account to generate your credit score'
-                  : state.message,
+                  : isNoScore
+                      ? 'No Credit Score Yet'
+                      : state.message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 14.sp,
+                color: isEmptyState ? Colors.white : const Color(0xFF9CA3AF),
+                fontSize: isEmptyState ? 18.sp : 14.sp,
+                fontWeight: isEmptyState ? FontWeight.bold : FontWeight.normal,
               ),
             ),
-            if (isNoLinkedBank) ...[
-              SizedBox(height: 8.h),
-              Text(
-                'We analyze your transaction history to calculate a personalized credit score with insights and tips.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 12.sp,
-                ),
+            SizedBox(height: 8.h),
+            Text(
+              isNoLinkedBank
+                  ? 'We analyze your transaction history to calculate a personalized credit score with insights and tips.'
+                  : isNoScore
+                      ? 'Your credit score will be generated as you use LazerVault. Keep transacting to build your score.'
+                      : '',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: const Color(0xFF6B7280),
+                fontSize: 12.sp,
               ),
-            ],
+            ),
             SizedBox(height: 24.h),
             ElevatedButton(
               onPressed: () {
-                if (isNoLinkedBank) {
+                if (isEmptyState) {
                   Navigator.of(context).pop();
                 } else {
-                  context.read<OpenBankingCubit>().fetchCreditScore(
-                        userId: widget.userId,
-                      );
+                  if (widget.showAllSources) {
+                    context.read<OpenBankingCubit>().fetchMultiSourceCreditScores(
+                          userId: widget.userId,
+                        );
+                  } else {
+                    context.read<OpenBankingCubit>().fetchCreditScore(
+                          userId: widget.userId,
+                        );
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isNoLinkedBank
+                backgroundColor: isEmptyState
                     ? const Color(0xFF10B981)
                     : const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
@@ -1203,7 +1219,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               ),
-              child: Text(isNoLinkedBank ? 'Go Back & Link Bank' : 'Retry'),
+              child: Text(isEmptyState ? 'Go Back' : 'Retry'),
             ),
           ],
         ),

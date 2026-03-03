@@ -33,5 +33,29 @@ class ReferralStatus extends $pb.ProtobufEnum {
   const ReferralStatus._($core.int v, $core.String n) : super(v, n);
 }
 
+/// Point source types
+class PointSource extends $pb.ProtobufEnum {
+  static const PointSource POINT_SOURCE_REFERRAL = PointSource._(0, _omitEnumNames ? '' : 'POINT_SOURCE_REFERRAL');
+  static const PointSource POINT_SOURCE_SIGNUP_BONUS = PointSource._(1, _omitEnumNames ? '' : 'POINT_SOURCE_SIGNUP_BONUS');
+  static const PointSource POINT_SOURCE_FIRST_TRANSACTION = PointSource._(2, _omitEnumNames ? '' : 'POINT_SOURCE_FIRST_TRANSACTION');
+  static const PointSource POINT_SOURCE_MONTHLY_ACTIVE = PointSource._(3, _omitEnumNames ? '' : 'POINT_SOURCE_MONTHLY_ACTIVE');
+  static const PointSource POINT_SOURCE_ACHIEVEMENT = PointSource._(4, _omitEnumNames ? '' : 'POINT_SOURCE_ACHIEVEMENT');
+  static const PointSource POINT_SOURCE_REDEMPTION = PointSource._(5, _omitEnumNames ? '' : 'POINT_SOURCE_REDEMPTION');
+
+  static const $core.List<PointSource> values = <PointSource> [
+    POINT_SOURCE_REFERRAL,
+    POINT_SOURCE_SIGNUP_BONUS,
+    POINT_SOURCE_FIRST_TRANSACTION,
+    POINT_SOURCE_MONTHLY_ACTIVE,
+    POINT_SOURCE_ACHIEVEMENT,
+    POINT_SOURCE_REDEMPTION,
+  ];
+
+  static final $core.Map<$core.int, PointSource> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static PointSource? valueOf($core.int value) => _byValue[value];
+
+  const PointSource._($core.int v, $core.String n) : super(v, n);
+}
+
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

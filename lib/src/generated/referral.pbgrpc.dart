@@ -53,6 +53,18 @@ class ReferralServiceClient extends $grpc.Client {
       '/pb.ReferralService/CreditReferralRewards',
       ($0.CreditReferralRewardsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.CreditReferralRewardsResponse.fromBuffer(value));
+  static final _$getMyPointsBalance = $grpc.ClientMethod<$0.GetMyPointsBalanceRequest, $0.GetMyPointsBalanceResponse>(
+      '/pb.ReferralService/GetMyPointsBalance',
+      ($0.GetMyPointsBalanceRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetMyPointsBalanceResponse.fromBuffer(value));
+  static final _$getMyPointsHistory = $grpc.ClientMethod<$0.GetMyPointsHistoryRequest, $0.GetMyPointsHistoryResponse>(
+      '/pb.ReferralService/GetMyPointsHistory',
+      ($0.GetMyPointsHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetMyPointsHistoryResponse.fromBuffer(value));
+  static final _$getPointsConfig = $grpc.ClientMethod<$0.GetPointsConfigRequest, $0.GetPointsConfigResponse>(
+      '/pb.ReferralService/GetPointsConfig',
+      ($0.GetPointsConfigRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetPointsConfigResponse.fromBuffer(value));
 
   ReferralServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -90,6 +102,18 @@ class ReferralServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.CreditReferralRewardsResponse> creditReferralRewards($0.CreditReferralRewardsRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$creditReferralRewards, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetMyPointsBalanceResponse> getMyPointsBalance($0.GetMyPointsBalanceRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMyPointsBalance, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetMyPointsHistoryResponse> getMyPointsHistory($0.GetMyPointsHistoryRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMyPointsHistory, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetPointsConfigResponse> getPointsConfig($0.GetPointsConfigRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getPointsConfig, request, options: options);
   }
 }
 
@@ -154,6 +178,27 @@ abstract class ReferralServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.CreditReferralRewardsRequest.fromBuffer(value),
         ($0.CreditReferralRewardsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyPointsBalanceRequest, $0.GetMyPointsBalanceResponse>(
+        'GetMyPointsBalance',
+        getMyPointsBalance_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMyPointsBalanceRequest.fromBuffer(value),
+        ($0.GetMyPointsBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyPointsHistoryRequest, $0.GetMyPointsHistoryResponse>(
+        'GetMyPointsHistory',
+        getMyPointsHistory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMyPointsHistoryRequest.fromBuffer(value),
+        ($0.GetMyPointsHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetPointsConfigRequest, $0.GetPointsConfigResponse>(
+        'GetPointsConfig',
+        getPointsConfig_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetPointsConfigRequest.fromBuffer(value),
+        ($0.GetPointsConfigResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.ValidateReferralCodeResponse> validateReferralCode_Pre($grpc.ServiceCall call, $async.Future<$0.ValidateReferralCodeRequest> request) async {
@@ -188,6 +233,18 @@ abstract class ReferralServiceBase extends $grpc.Service {
     return creditReferralRewards(call, await request);
   }
 
+  $async.Future<$0.GetMyPointsBalanceResponse> getMyPointsBalance_Pre($grpc.ServiceCall call, $async.Future<$0.GetMyPointsBalanceRequest> request) async {
+    return getMyPointsBalance(call, await request);
+  }
+
+  $async.Future<$0.GetMyPointsHistoryResponse> getMyPointsHistory_Pre($grpc.ServiceCall call, $async.Future<$0.GetMyPointsHistoryRequest> request) async {
+    return getMyPointsHistory(call, await request);
+  }
+
+  $async.Future<$0.GetPointsConfigResponse> getPointsConfig_Pre($grpc.ServiceCall call, $async.Future<$0.GetPointsConfigRequest> request) async {
+    return getPointsConfig(call, await request);
+  }
+
   $async.Future<$0.ValidateReferralCodeResponse> validateReferralCode($grpc.ServiceCall call, $0.ValidateReferralCodeRequest request);
   $async.Future<$0.GetMyReferralCodeResponse> getMyReferralCode($grpc.ServiceCall call, $0.GetMyReferralCodeRequest request);
   $async.Future<$0.GetMyReferralStatsResponse> getMyReferralStats($grpc.ServiceCall call, $0.GetMyReferralStatsRequest request);
@@ -196,4 +253,7 @@ abstract class ReferralServiceBase extends $grpc.Service {
   $async.Future<$0.GetCountryRewardConfigResponse> getCountryRewardConfig($grpc.ServiceCall call, $0.GetCountryRewardConfigRequest request);
   $async.Future<$0.RecordReferralResponse> recordReferral($grpc.ServiceCall call, $0.RecordReferralRequest request);
   $async.Future<$0.CreditReferralRewardsResponse> creditReferralRewards($grpc.ServiceCall call, $0.CreditReferralRewardsRequest request);
+  $async.Future<$0.GetMyPointsBalanceResponse> getMyPointsBalance($grpc.ServiceCall call, $0.GetMyPointsBalanceRequest request);
+  $async.Future<$0.GetMyPointsHistoryResponse> getMyPointsHistory($grpc.ServiceCall call, $0.GetMyPointsHistoryRequest request);
+  $async.Future<$0.GetPointsConfigResponse> getPointsConfig($grpc.ServiceCall call, $0.GetPointsConfigRequest request);
 }

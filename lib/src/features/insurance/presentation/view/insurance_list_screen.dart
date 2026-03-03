@@ -234,7 +234,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           ),
           MicroserviceChatIcon(
             serviceName: 'Insurance',
-            sourceContext: 'financial_products',
+            sourceContext: 'insurance',
           ),
           SizedBox(width: 8.w),
           GestureDetector(

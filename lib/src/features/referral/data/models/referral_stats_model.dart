@@ -5,6 +5,7 @@ class ReferralStatsModel extends ReferralStatsEntity {
   const ReferralStatsModel({
     required super.totalReferrals,
     required super.pendingReferrals,
+    super.completedReferrals,
     required super.totalRewardsEarned,
     required super.pendingRewards,
     required super.currency,
@@ -14,7 +15,8 @@ class ReferralStatsModel extends ReferralStatsEntity {
   factory ReferralStatsModel.fromProto(proto.ReferralStats protoStats) {
     return ReferralStatsModel(
       totalReferrals: protoStats.totalReferrals.toInt(),
-      pendingReferrals: 0, // Not tracked in proto, always 0
+      pendingReferrals: protoStats.pendingReferrals,
+      completedReferrals: protoStats.completedReferrals,
       totalRewardsEarned: protoStats.totalRewardsEarned,
       pendingRewards: protoStats.pendingRewards,
       currency: protoStats.currency,

@@ -831,34 +831,28 @@ class _AddRecipientState extends State<AddRecipient> {
     bool isSaved = false;
     bool isFavorite = false;
     String? alias;
+    final sheetKey = GlobalKey<UsernameRecipientConfirmationSheetState>();
 
     await Get.bottomSheet(
       PopScope(
         canPop: true,
-        child: StatefulBuilder(
-          builder: (context, setSheetState) {
-            return UsernameRecipientConfirmationSheet(
-              user: selectedUser,
-              accountNumber: accountNumber,
-              onConfirm: () {
-                setSheetState(() {
-                  confirmed = true;
-                  // Get the save/favorite/alias state from the sheet before closing
-                  final sheetState = context
-                      .findAncestorStateOfType<
-                          UsernameRecipientConfirmationSheetState>();
-                  if (sheetState != null) {
-                    isSaved = sheetState.isSaved;
-                    isFavorite = sheetState.isFavorite;
-                    alias = sheetState.alias;
-                  }
-                });
-                Get.back();
-              },
-              onCancel: () {
-                Get.back();
-              },
-            );
+        child: UsernameRecipientConfirmationSheet(
+          key: sheetKey,
+          user: selectedUser,
+          accountNumber: accountNumber,
+          onConfirm: () {
+            confirmed = true;
+            // Read save/favorite/alias state directly via GlobalKey
+            final sheetState = sheetKey.currentState;
+            if (sheetState != null) {
+              isSaved = sheetState.isSaved;
+              isFavorite = sheetState.isFavorite;
+              alias = sheetState.alias;
+            }
+            Get.back();
+          },
+          onCancel: () {
+            Get.back();
           },
         ),
       ),

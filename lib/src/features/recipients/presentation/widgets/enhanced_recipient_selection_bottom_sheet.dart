@@ -931,20 +931,22 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
   Widget _buildRecipientItem(RecipientModel recipient) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: EdgeInsets.only(bottom: 4.h),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: ListTile(
+        dense: true,
+        visualDensity: const VisualDensity(vertical: -2),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 8.h,
+          horizontal: 12.w,
+          vertical: 2.h,
         ),
         leading: Container(
-          width: 48.w,
-          height: 48.w,
+          width: 36.w,
+          height: 36.w,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.blue[600]!, Colors.blue[400]!],
@@ -956,7 +958,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
               recipient.name.isNotEmpty ? recipient.name.substring(0, 1).toUpperCase() : 'R',
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 18.sp,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -966,42 +968,33 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
           recipient.name,
           style: GoogleFonts.inter(
             color: Colors.black87,
-            fontSize: 16.sp,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              recipient.accountNumber.length > 4
-                ? '••• ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}'
-                : recipient.accountNumber,
-              style: GoogleFonts.inter(
-                color: Colors.grey[400],
-                fontSize: 14.sp,
-              ),
-            ),
-            if (recipient.bankName.isNotEmpty)
-              Text(
-                recipient.bankName,
-                style: GoogleFonts.inter(
-                  color: Colors.grey[500],
-                  fontSize: 12.sp,
-                ),
-              ),
-          ],
+        subtitle: Text(
+          [
+            recipient.accountNumber.length > 4
+              ? '••• ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}'
+              : recipient.accountNumber,
+            if (recipient.bankName.isNotEmpty) recipient.bankName,
+          ].join(' · '),
+          style: GoogleFonts.inter(
+            color: Colors.grey[500],
+            fontSize: 12.sp,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (recipient.isFavorite)
-              Icon(Icons.favorite, color: Colors.red[400], size: 20.sp),
-            SizedBox(width: 8.w),
+              Icon(Icons.favorite, color: Colors.red[400], size: 16.sp),
             Icon(
-              Icons.keyboard_arrow_right,
+              Icons.chevron_right,
               color: Colors.grey[400],
-              size: 24.sp,
+              size: 20.sp,
             ),
           ],
         ),
@@ -1015,20 +1008,22 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
   Widget _buildLazertagUserItem(LazertagUser user) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: EdgeInsets.only(bottom: 4.h),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: ListTile(
+        dense: true,
+        visualDensity: const VisualDensity(vertical: -2),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 8.h,
+          horizontal: 12.w,
+          vertical: 2.h,
         ),
         leading: Container(
-          width: 48.w,
-          height: 48.w,
+          width: 36.w,
+          height: 36.w,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.purple[600]!, Colors.purple[400]!],
@@ -1045,7 +1040,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                       user.name.isNotEmpty ? user.name.substring(0, 1).toUpperCase() : '@',
                       style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 18.sp,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1057,7 +1052,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                   user.name.isNotEmpty ? user.name.substring(0, 1).toUpperCase() : '@',
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 18.sp,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1070,7 +1065,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                 user.name,
                 style: GoogleFonts.inter(
                   color: Colors.black87,
-                  fontSize: 16.sp,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1079,48 +1074,43 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
               Icon(
                 Icons.verified,
                 color: const Color(0xFF4E03D0),
-                size: 16.sp,
+                size: 14.sp,
               ),
           ],
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        subtitle: Row(
           children: [
-            Row(
-              children: [
-                Text(
-                  user.displayUsername,
-                  style: GoogleFonts.inter(
-                    color: Colors.purple[300],
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Container(
-                  width: 8.w,
-                  height: 8.w,
-                  decoration: BoxDecoration(
-                    color: user.isOnline ? Colors.green[400] : Colors.grey[600],
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                SizedBox(width: 4.w),
-                Text(
-                  user.isOnline ? 'Online' : 'Offline',
-                  style: GoogleFonts.inter(
-                    color: user.isOnline ? Colors.green[400] : Colors.grey[500],
-                    fontSize: 12.sp,
-                  ),
-                ),
-              ],
+            Text(
+              user.displayUsername,
+              style: GoogleFonts.inter(
+                color: Colors.purple[300],
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Container(
+              width: 6.w,
+              height: 6.w,
+              decoration: BoxDecoration(
+                color: user.isOnline ? Colors.green[400] : Colors.grey[600],
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(width: 3.w),
+            Text(
+              user.isOnline ? 'Online' : 'Offline',
+              style: GoogleFonts.inter(
+                color: user.isOnline ? Colors.green[400] : Colors.grey[500],
+                fontSize: 11.sp,
+              ),
             ),
           ],
         ),
         trailing: Icon(
-          Icons.keyboard_arrow_right,
+          Icons.chevron_right,
           color: Colors.grey[400],
-          size: 24.sp,
+          size: 20.sp,
         ),
         onTap: () {
           if (widget.onLazertagUserSelected != null) {
@@ -1134,20 +1124,22 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
   Widget _buildContactItem(DeviceContact contact) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: EdgeInsets.only(bottom: 4.h),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: ListTile(
+        dense: true,
+        visualDensity: const VisualDensity(vertical: -2),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 8.h,
+          horizontal: 12.w,
+          vertical: 2.h,
         ),
         leading: Container(
-          width: 48.w,
-          height: 48.w,
+          width: 36.w,
+          height: 36.w,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.green[600]!, Colors.green[400]!],
@@ -1159,7 +1151,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
               contact.initials,
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 18.sp,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1169,35 +1161,26 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
           contact.name,
           style: GoogleFonts.inter(
             color: Colors.black87,
-            fontSize: 16.sp,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (contact.phoneNumber != null)
-              Text(
-                contact.phoneNumber!,
-                style: GoogleFonts.inter(
-                  color: Colors.grey[400],
-                  fontSize: 14.sp,
-                ),
-              ),
-            if (contact.email != null)
-              Text(
-                contact.email!,
-                style: GoogleFonts.inter(
-                  color: Colors.grey[500],
-                  fontSize: 12.sp,
-                ),
-              ),
-          ],
+        subtitle: Text(
+          [
+            if (contact.phoneNumber != null) contact.phoneNumber!,
+            if (contact.email != null) contact.email!,
+          ].join(' · '),
+          style: GoogleFonts.inter(
+            color: Colors.grey[500],
+            fontSize: 12.sp,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         trailing: Icon(
-          Icons.keyboard_arrow_right,
+          Icons.chevron_right,
           color: Colors.grey[400],
-          size: 24.sp,
+          size: 20.sp,
         ),
         onTap: () {
           if (widget.onContactSelected != null) {

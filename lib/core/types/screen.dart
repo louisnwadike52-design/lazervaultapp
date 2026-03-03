@@ -215,7 +215,7 @@ enum ScreenName {
   transactionHistory('Transaction History'),
   aiChat('AI Chat'),
   currencyExchange('Currency Exchange'),
-  moveMoney('Move Money'),
+  moveMoney('Beam'),
   lifeStyle('Life Style'),
   crowdfund('Crowdfunding');
 

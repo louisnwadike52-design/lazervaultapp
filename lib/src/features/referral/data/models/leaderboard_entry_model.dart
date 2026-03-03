@@ -22,10 +22,12 @@ class LeaderboardEntryModel extends LeaderboardEntryEntity {
       username: protoEntry.username,
       firstName: protoEntry.firstName,
       lastName: protoEntry.lastName,
-      profilePicture: null, // Not included in proto
+      profilePicture: protoEntry.profilePicture.isNotEmpty
+          ? protoEntry.profilePicture
+          : null,
       totalReferrals: protoEntry.totalReferrals.toInt(),
-      totalRewardsEarned: 0, // Not included in proto
-      currency: 'GBP', // Not included in proto, use default
+      totalRewardsEarned: protoEntry.totalRewardsEarned,
+      currency: protoEntry.currency.isNotEmpty ? protoEntry.currency : 'NGN',
     );
   }
 }

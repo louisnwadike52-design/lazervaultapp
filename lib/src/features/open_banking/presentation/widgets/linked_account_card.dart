@@ -5,6 +5,7 @@ import '../../domain/entities/linked_bank_account.dart';
 /// Card widget to display a linked bank account
 class LinkedAccountCard extends StatelessWidget {
   final LinkedBankAccount account;
+  final bool isRefreshing;
   final VoidCallback? onUnlink;
   final VoidCallback? onSetDefault;
   final VoidCallback? onRefreshBalance;
@@ -12,6 +13,7 @@ class LinkedAccountCard extends StatelessWidget {
   const LinkedAccountCard({
     super.key,
     required this.account,
+    this.isRefreshing = false,
     this.onUnlink,
     this.onSetDefault,
     this.onRefreshBalance,
@@ -216,15 +218,28 @@ class LinkedAccountCard extends StatelessWidget {
                           ),
                           tooltip: 'Set as default',
                         ),
-                      IconButton(
-                        onPressed: onRefreshBalance,
-                        icon: Icon(
-                          Icons.refresh,
-                          color: const Color(0xFF9CA3AF),
-                          size: 20.sp,
-                        ),
-                        tooltip: 'Refresh balance',
-                      ),
+                      isRefreshing
+                          ? Padding(
+                              padding: EdgeInsets.all(12.w),
+                              child: SizedBox(
+                                width: 20.sp,
+                                height: 20.sp,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: const Color(0xFF3B82F6),
+                                  backgroundColor: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
+                                ),
+                              ),
+                            )
+                          : IconButton(
+                              onPressed: onRefreshBalance,
+                              icon: Icon(
+                                Icons.refresh,
+                                color: const Color(0xFF9CA3AF),
+                                size: 20.sp,
+                              ),
+                              tooltip: 'Refresh balance',
+                            ),
                       PopupMenuButton<String>(
                         color: const Color(0xFF1F1F1F),
                         icon: Icon(

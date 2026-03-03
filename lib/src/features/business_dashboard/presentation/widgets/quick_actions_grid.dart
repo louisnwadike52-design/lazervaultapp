@@ -59,6 +59,25 @@ class QuickActionsGrid extends StatelessWidget {
             ),
           ],
         ),
+        SizedBox(height: 10.h),
+        Row(
+          children: [
+            Expanded(
+              child: _ActionButton(
+                icon: Icons.inventory_2_rounded,
+                label: 'Inventory',
+                color: const Color(0xFF06B6D4),
+                onTap: () => Get.toNamed(AppRoutes.inventory),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            const Expanded(child: SizedBox()),
+            SizedBox(width: 10.w),
+            const Expanded(child: SizedBox()),
+            SizedBox(width: 10.w),
+            const Expanded(child: SizedBox()),
+          ],
+        ),
       ],
     );
   }

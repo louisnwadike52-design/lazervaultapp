@@ -224,6 +224,11 @@ class PayrollCubit extends Cubit<PayrollState> {
   Future<void> createPayRun({
     required String start,
     required String end,
+    String name = '',
+    List<String> employeeIds = const [],
+    bool isRecurring = false,
+    int recurrenceFrequency = 0,
+    bool autoApprove = false,
   }) async {
     try {
       if (isClosed) return;
@@ -231,6 +236,11 @@ class PayrollCubit extends Cubit<PayrollState> {
       final payRun = await _repository.createPayRun(
         payPeriodStart: start,
         payPeriodEnd: end,
+        name: name,
+        employeeIds: employeeIds,
+        isRecurring: isRecurring,
+        recurrenceFrequency: recurrenceFrequency,
+        autoApprove: autoApprove,
       );
       if (isClosed) return;
       emit(PayRunCreated(

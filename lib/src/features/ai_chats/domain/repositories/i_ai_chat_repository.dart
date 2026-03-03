@@ -12,6 +12,9 @@ abstract class IAiChatRepository {
     String? sessionId,
     String? sourceContext,
     String? language,
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   });
 
   Future<Either<Failure, List<ChatMessageEntity>>> getChatHistory({

@@ -6,6 +6,7 @@ import 'package:lazervault/src/features/statistics/data/budget_repository.dart';
 import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
+import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
 
 /// Cubit for managing budget state
 ///
@@ -73,6 +74,44 @@ class BudgetCubit extends Cubit<BudgetState> {
     }
   }
 
+  /// Validate a category budget before a transaction.
+  /// Returns null on failure (allows transaction to proceed — budget validation
+  /// should never block if the service is down).
+  Future<BudgetValidationResult?> validateCategoryBudget({
+    required int budgetCategory,
+    required int amountMinor,
+    required String currency,
+  }) async {
+    try {
+      final response = await _budgetRepository.validateCategoryBudget(
+        budgetCategory: budgetCategory,
+        amountMinor: amountMinor,
+        currency: currency,
+      );
+
+      return BudgetValidationResult(
+        allowed: response.allowed,
+        reason: response.reason,
+        currentSpent: response.currentSpent,
+        budgetLimit: response.budgetLimit,
+        percentageUsed: response.percentageUsed,
+        remaining: response.remaining,
+        matchingBudgets: response.matchingBudgets.map((b) => BudgetInfo(
+          budgetId: b.budgetId,
+          budgetName: b.budgetName,
+          amount: b.amount,
+          spent: b.spent,
+          percentage: b.percentage,
+          daysRemaining: b.daysRemaining,
+          currency: b.currency,
+        )).toList(),
+      );
+    } catch (e) {
+      developer.log('Budget validation failed', name: 'BudgetCubit', error: e);
+      return null;
+    }
+  }
+
   /// Create a new budget
   Future<void> createBudget({
     required String name,
@@ -84,6 +123,7 @@ class BudgetCubit extends Cubit<BudgetState> {
     DateTime? endDate,
     bool enableAlerts = true,
     double alertThreshold = 80.0,
+    pb.BudgetEnforcementMode enforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE,
   }) async {
     emit(const BudgetLoading(message: 'Creating budget...'));
     try {
@@ -97,6 +137,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         endDate: endDate,
         enableAlerts: enableAlerts,
         alertThreshold: alertThreshold,
+        enforcementMode: enforcementMode,
       );
 
       if (response.success) {
@@ -121,6 +162,7 @@ class BudgetCubit extends Cubit<BudgetState> {
     DateTime? endDate,
     bool? enableAlerts,
     double? alertThreshold,
+    pb.BudgetEnforcementMode? enforcementMode,
   }) async {
     emit(const BudgetLoading(message: 'Updating budget...'));
     try {
@@ -133,6 +175,7 @@ class BudgetCubit extends Cubit<BudgetState> {
         endDate: endDate,
         enableAlerts: enableAlerts,
         alertThreshold: alertThreshold,
+        enforcementMode: enforcementMode,
       );
 
       if (response.success) {

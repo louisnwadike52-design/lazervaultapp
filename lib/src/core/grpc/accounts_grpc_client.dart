@@ -35,21 +35,25 @@ class AccountsGrpcClient {
   /// - [endDate]: Optional end date for filtering
   /// - [limit]: Maximum number of transactions to return (default: 20)
   /// - [offset]: Number of transactions to skip (for pagination)
+  /// - [includeExternalBanks]: Include external bank transactions (default: true)
   Future<GetTransactionHistoryResponse> getTransactionHistory({
     required String accountId,
     String? type,
     String? category,
     String? status,
     String? serviceName,
+    String? counterpartyAccount,
     DateTime? startDate,
     DateTime? endDate,
     int limit = 20,
     int offset = 0,
+    bool includeExternalBanks = true,
   }) async {
     final request = GetTransactionHistoryRequest()
       ..accountId = accountId
       ..limit = limit
-      ..offset = offset;
+      ..offset = offset
+      ..includeExternalBanks = includeExternalBanks;
 
     if (type != null && type.isNotEmpty) {
       request.type = type;
@@ -65,6 +69,10 @@ class AccountsGrpcClient {
 
     if (serviceName != null && serviceName.isNotEmpty) {
       request.serviceName = serviceName;
+    }
+
+    if (counterpartyAccount != null && counterpartyAccount.isNotEmpty) {
+      request.counterpartyAccount = counterpartyAccount;
     }
 
     if (startDate != null) {
@@ -97,13 +105,16 @@ class AccountsGrpcClient {
   /// - [accountId]: The account ID to get statistics for
   /// - [startDate]: Optional start date for filtering
   /// - [endDate]: Optional end date for filtering
+  /// - [includeExternalBanks]: Include external bank transactions (default: true)
   Future<GetTransactionStatisticsResponse> getTransactionStatistics({
     required String accountId,
     DateTime? startDate,
     DateTime? endDate,
+    bool includeExternalBanks = true,
   }) async {
     final request = GetTransactionStatisticsRequest()
-      ..accountId = accountId;
+      ..accountId = accountId
+      ..includeExternalBanks = includeExternalBanks;
 
     if (startDate != null) {
       request.startDate = _dateTimeToString(startDate);
@@ -260,10 +271,12 @@ class AccountsGrpcClient {
     String period = 'month',
     DateTime? startDate,
     DateTime? endDate,
+    bool includeExternalBanks = true,
   }) async {
     final request = GetFinancialAnalyticsRequest()
       ..accountId = accountId
-      ..period = period;
+      ..period = period
+      ..includeExternalBanks = includeExternalBanks;
 
     if (startDate != null) {
       request.startDate = _dateTimeToString(startDate);
@@ -286,9 +299,11 @@ class AccountsGrpcClient {
     required String accountId,
     DateTime? startDate,
     DateTime? endDate,
+    bool includeExternalBanks = true,
   }) async {
     final request = GetCategoryAnalyticsRequest()
-      ..accountId = accountId;
+      ..accountId = accountId
+      ..includeExternalBanks = includeExternalBanks;
 
     if (startDate != null) {
       request.startDate = _dateTimeToString(startDate);
@@ -329,9 +344,11 @@ class AccountsGrpcClient {
     required String accountId,
     DateTime? startDate,
     DateTime? endDate,
+    bool includeExternalBanks = true,
   }) async {
     final request = GetExpenseTimeSeriesRequest()
-      ..accountId = accountId;
+      ..accountId = accountId
+      ..includeExternalBanks = includeExternalBanks;
 
     if (startDate != null) {
       request.startDate = _dateTimeToString(startDate);

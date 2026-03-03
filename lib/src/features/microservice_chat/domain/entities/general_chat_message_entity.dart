@@ -7,6 +7,11 @@ class GeneralChatMessageEntity extends Equatable {
   final DateTime timestamp;
   final String? serviceRoutedTo;
   final Map<String, dynamic>? metadata;
+  final String? mediaType; // 'image' | 'voice' | null
+  final String? mediaUrl; // Server URL for stored media
+  final String? localMediaPath; // Local file path (before upload / for preview)
+  final int? audioDurationMs; // Voice note duration in milliseconds
+  final String? transcript; // Voice note transcription text
 
   const GeneralChatMessageEntity({
     required this.text,
@@ -14,10 +19,15 @@ class GeneralChatMessageEntity extends Equatable {
     required this.timestamp,
     this.serviceRoutedTo,
     this.metadata,
+    this.mediaType,
+    this.mediaUrl,
+    this.localMediaPath,
+    this.audioDurationMs,
+    this.transcript,
   });
 
   @override
-  List<Object?> get props => [text, isUser, timestamp, serviceRoutedTo];
+  List<Object?> get props => [text, isUser, timestamp, serviceRoutedTo, mediaType];
 
   GeneralChatMessageEntity copyWith({
     String? text,
@@ -25,6 +35,11 @@ class GeneralChatMessageEntity extends Equatable {
     DateTime? timestamp,
     String? serviceRoutedTo,
     Map<String, dynamic>? metadata,
+    String? mediaType,
+    String? mediaUrl,
+    String? localMediaPath,
+    int? audioDurationMs,
+    String? transcript,
   }) {
     return GeneralChatMessageEntity(
       text: text ?? this.text,
@@ -32,6 +47,11 @@ class GeneralChatMessageEntity extends Equatable {
       timestamp: timestamp ?? this.timestamp,
       serviceRoutedTo: serviceRoutedTo ?? this.serviceRoutedTo,
       metadata: metadata ?? this.metadata,
+      mediaType: mediaType ?? this.mediaType,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      localMediaPath: localMediaPath ?? this.localMediaPath,
+      audioDurationMs: audioDurationMs ?? this.audioDurationMs,
+      transcript: transcript ?? this.transcript,
     );
   }
 }

@@ -16,10 +16,14 @@ class MicroserviceChatScreen extends StatelessWidget {
     final serviceName = arguments['serviceName'] ?? 'Service';
     final sourceContext = arguments['sourceContext'] ?? 'dashboard';
 
+    // Read auth cubit from the widget tree (the actual authenticated instance),
+    // NOT from serviceLocator which creates a new unauthenticated factory instance.
+    final authCubit = context.read<AuthenticationCubit>();
+
     return BlocProvider(
       create: (_) => MicroserviceChatCubit(
         sendMessageUseCase: serviceLocator<SendMicroserviceChatMessageUseCase>(),
-        authCubit: serviceLocator<AuthenticationCubit>(),
+        authCubit: authCubit,
         sourceContext: sourceContext,
       )..initializeChat(),
       child: MicroserviceChatContent(

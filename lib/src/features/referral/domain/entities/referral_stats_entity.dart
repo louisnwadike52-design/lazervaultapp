@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class ReferralStatsEntity extends Equatable {
   final int totalReferrals;
   final int pendingReferrals;
+  final int completedReferrals;
   final int totalRewardsEarned;
   final int pendingRewards;
   final String currency;
@@ -10,6 +11,7 @@ class ReferralStatsEntity extends Equatable {
   const ReferralStatsEntity({
     required this.totalReferrals,
     required this.pendingReferrals,
+    this.completedReferrals = 0,
     required this.totalRewardsEarned,
     required this.pendingRewards,
     required this.currency,
@@ -18,6 +20,7 @@ class ReferralStatsEntity extends Equatable {
   ReferralStatsEntity copyWith({
     int? totalReferrals,
     int? pendingReferrals,
+    int? completedReferrals,
     int? totalRewardsEarned,
     int? pendingRewards,
     String? currency,
@@ -25,6 +28,7 @@ class ReferralStatsEntity extends Equatable {
     return ReferralStatsEntity(
       totalReferrals: totalReferrals ?? this.totalReferrals,
       pendingReferrals: pendingReferrals ?? this.pendingReferrals,
+      completedReferrals: completedReferrals ?? this.completedReferrals,
       totalRewardsEarned: totalRewardsEarned ?? this.totalRewardsEarned,
       pendingRewards: pendingRewards ?? this.pendingRewards,
       currency: currency ?? this.currency,
@@ -35,6 +39,7 @@ class ReferralStatsEntity extends Equatable {
   List<Object?> get props => [
         totalReferrals,
         pendingReferrals,
+        completedReferrals,
         totalRewardsEarned,
         pendingRewards,
         currency,
@@ -42,6 +47,6 @@ class ReferralStatsEntity extends Equatable {
 
   @override
   String toString() {
-    return 'ReferralStatsEntity(totalReferrals: $totalReferrals, pendingReferrals: $pendingReferrals, totalRewardsEarned: $totalRewardsEarned, pendingRewards: $pendingRewards, currency: $currency)';
+    return 'ReferralStatsEntity(totalReferrals: $totalReferrals, pendingReferrals: $pendingReferrals, completedReferrals: $completedReferrals, totalRewardsEarned: $totalRewardsEarned, pendingRewards: $pendingRewards, currency: $currency)';
   }
 }

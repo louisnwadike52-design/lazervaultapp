@@ -34,6 +34,7 @@ class StatisticsLoaded extends StatisticsState {
   final accounts_pb.GetExpenseTimeSeriesResponse? expenseTimeSeries;
   final accounts_pb.GetTransactionHistoryResponse? failedTransactions;
   final String currentPeriod;
+  final bool includeExternalBanks;
 
   const StatisticsLoaded({
     required this.startDate,
@@ -44,6 +45,7 @@ class StatisticsLoaded extends StatisticsState {
     this.expenseTimeSeries,
     this.failedTransactions,
     this.currentPeriod = 'month',
+    this.includeExternalBanks = true,
   });
 
   @override
@@ -56,6 +58,7 @@ class StatisticsLoaded extends StatisticsState {
         expenseTimeSeries,
         failedTransactions,
         currentPeriod,
+        includeExternalBanks,
       ];
 
   /// Create a copy with updated fields
@@ -68,6 +71,7 @@ class StatisticsLoaded extends StatisticsState {
     accounts_pb.GetExpenseTimeSeriesResponse? expenseTimeSeries,
     accounts_pb.GetTransactionHistoryResponse? failedTransactions,
     String? currentPeriod,
+    bool? includeExternalBanks,
   }) {
     return StatisticsLoaded(
       startDate: startDate ?? this.startDate,
@@ -78,6 +82,7 @@ class StatisticsLoaded extends StatisticsState {
       expenseTimeSeries: expenseTimeSeries ?? this.expenseTimeSeries,
       failedTransactions: failedTransactions ?? this.failedTransactions,
       currentPeriod: currentPeriod ?? this.currentPeriod,
+      includeExternalBanks: includeExternalBanks ?? this.includeExternalBanks,
     );
   }
 }

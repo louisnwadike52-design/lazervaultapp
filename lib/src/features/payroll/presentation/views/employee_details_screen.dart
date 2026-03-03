@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/employee_entity.dart';
 import '../cubit/payroll_cubit.dart';
 import '../cubit/payroll_state.dart';
+import 'edit_employee_screen.dart';
 
 class EmployeeDetailsScreen extends StatelessWidget {
   final EmployeeEntity employee;
@@ -328,7 +329,24 @@ class EmployeeDetailsScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: isLoading
                         ? null
-                        : () => Navigator.of(context).pop(),
+                        : () async {
+                            final result = await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<PayrollCubit>(),
+                                  child: EditEmployeeScreen(
+                                      employee: employee),
+                                ),
+                              ),
+                            );
+                            if (result == true) {
+                              // Refresh employee data after edit
+                              if (context.mounted) {
+                                context.read<PayrollCubit>().getEmployee(
+                                    employee.id);
+                              }
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3B82F6),
                       disabledBackgroundColor:

@@ -210,15 +210,49 @@ class OpenBankingGrpcDataSource {
       });
 
       if (!response.success) {
-        throw GenericBankingException(
-          code: response.errorCode,
-          message: response.errorMessage,
-        );
+        throw _mapRefreshError(response.errorCode, response.errorMessage);
       }
 
       return response.newBalance.toInt() / 100; // Convert from kobo to Naira
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'refreshLinkedAccountBalance');
+    }
+  }
+
+  /// Map refresh balance error codes to specific exceptions
+  BankingException _mapRefreshError(String errorCode, String errorMessage) {
+    switch (errorCode) {
+      case 'REAUTHORIZATION_REQUIRED':
+        return ReauthorizationRequiredException(
+          message: errorMessage.isNotEmpty
+              ? errorMessage
+              : 'Your bank connection has expired. Please re-link this account.',
+        );
+      case 'ACCOUNT_NOT_FOUND':
+        return AccountNotFoundException(
+          message: errorMessage.isNotEmpty
+              ? errorMessage
+              : 'Linked account not found.',
+        );
+      case 'NOT_CONFIGURED':
+        return ServiceUnavailableException(
+          message: 'Open banking is not available at this time.',
+        );
+      case 'PROVIDER_ERROR':
+        return GenericBankingException(
+          code: errorCode,
+          message: errorMessage.isNotEmpty
+              ? errorMessage
+              : 'Unable to reach your bank right now. Please try again later.',
+          isRetryable: true,
+        );
+      default:
+        return GenericBankingException(
+          code: errorCode,
+          message: errorMessage.isNotEmpty
+              ? errorMessage
+              : 'Failed to refresh balance. Please try again.',
+        );
     }
   }
 
@@ -730,6 +764,35 @@ class OpenBankingGrpcDataSource {
       return true;
     }
     return false;
+  }
+
+  // =====================================================
+  // REAUTHORIZATION
+  // =====================================================
+
+  /// Get reauthorization token for re-linking an expired account
+  Future<String> getReauthorizationToken({
+    required String accountId,
+  }) async {
+    final callOptions = await _callOptionsHelper.withAuth();
+    final response = await _client.getReauthorizationToken(
+      banking_pb.GetReauthorizationTokenRequest(
+        accountId: accountId,
+      ),
+      options: callOptions.mergedWith(
+        CallOptions(timeout: const Duration(seconds: 15)),
+      ),
+    );
+
+    if (!response.success) {
+      throw Exception(
+        response.errorMessage.isNotEmpty
+            ? response.errorMessage
+            : 'Failed to get reauthorization token',
+      );
+    }
+
+    return response.token;
   }
 
   // =====================================================

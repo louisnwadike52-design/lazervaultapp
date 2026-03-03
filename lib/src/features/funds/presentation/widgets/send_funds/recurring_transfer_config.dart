@@ -14,6 +14,21 @@ class RecurringTransferConfig {
     this.endDate,
   });
 
+  /// Create a config from an existing recurring transfer entity.
+  factory RecurringTransferConfig.fromEntity(RecurringTransferEntity entity) {
+    // Parse "HH:mm" string to TimeOfDay
+    final parts = entity.scheduleTime.split(':');
+    final hour = parts.isNotEmpty ? int.tryParse(parts[0]) ?? 9 : 9;
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+
+    return RecurringTransferConfig(
+      frequency: entity.frequency,
+      scheduleDay: entity.scheduleDay,
+      scheduleTime: TimeOfDay(hour: hour, minute: minute),
+      endDate: entity.endDate,
+    );
+  }
+
   String get scheduleTimeString {
     final h = scheduleTime.hour.toString().padLeft(2, '0');
     final m = scheduleTime.minute.toString().padLeft(2, '0');

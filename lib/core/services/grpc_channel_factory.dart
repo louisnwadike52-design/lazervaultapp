@@ -116,6 +116,16 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Business Gateway');
   }
 
+  /// Creates Chat Proxy Gateway gRPC channel (Direct Service Chat)
+  /// gRPC Port: 50074
+  static ClientChannel createChatProxyChannel() {
+    final host = dotenv.env['CHAT_PROXY_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['CHAT_PROXY_GRPC_PORT'] ?? '50074');
+
+    print("Creating Chat Proxy Gateway Channel -> $host:$port");
+    return _createChannel(host, port, 'Chat Proxy Gateway');
+  }
+
   /// Creates Banking Service gRPC channel (Transfers, Virtual Accounts, Bank Verification)
   /// gRPC Port: 50073
   static ClientChannel createBankingChannel() {

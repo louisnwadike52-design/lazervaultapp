@@ -20,6 +20,9 @@ abstract class SendGeneralChatMessageUseCase {
     String language = 'en',
     String locale = 'en-NG',
     Map<String, dynamic> metadata = const {},
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   });
 }
 
@@ -38,6 +41,9 @@ class SendGeneralChatMessageUseCaseImpl implements SendGeneralChatMessageUseCase
     String language = 'en',
     String locale = 'en-NG',
     Map<String, dynamic> metadata = const {},
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   }) async {
     return await repository.sendMessage(
       message: message,
@@ -48,6 +54,9 @@ class SendGeneralChatMessageUseCaseImpl implements SendGeneralChatMessageUseCase
       language: language,
       locale: locale,
       metadata: metadata,
+      mediaBase64: mediaBase64,
+      mediaType: mediaType,
+      mediaMimeType: mediaMimeType,
     );
   }
 }

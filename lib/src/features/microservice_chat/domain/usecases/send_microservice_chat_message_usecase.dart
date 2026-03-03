@@ -15,6 +15,9 @@ class SendMicroserviceChatMessageUseCase {
     required String sourceContext,
     String language = 'en',
     String locale = 'en-NG',
+    String? mediaBase64,
+    String? mediaType,
+    String? mediaMimeType,
   }) {
     return repository.processMessage(
       message: message,
@@ -24,6 +27,9 @@ class SendMicroserviceChatMessageUseCase {
       sourceContext: sourceContext,
       language: language,
       locale: locale,
+      mediaBase64: mediaBase64,
+      mediaType: mediaType,
+      mediaMimeType: mediaMimeType,
     );
   }
 }

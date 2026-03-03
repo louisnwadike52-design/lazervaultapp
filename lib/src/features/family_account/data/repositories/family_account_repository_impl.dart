@@ -416,4 +416,31 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
       return Left(ServerFailure(message: e.toString(), statusCode: 500));
     }
   }
+
+  @override
+  Future<Either<Failure, FamilyAccount>> updateFundDistributionMode({
+    required String familyId,
+    required String fundDistributionMode,
+    List<MemberAllocationEntry> allocations = const [],
+  }) async {
+    try {
+      final protoAllocations = allocations.map((a) => MemberAllocationProto(
+        memberId: a.memberId,
+        amount: a.amount,
+      )).toList();
+
+      final account = await remoteDataSource.updateFundDistributionMode(
+        familyId: familyId,
+        fundDistributionMode: fundDistributionMode,
+        allocations: protoAllocations,
+      );
+      return Right(account.toDomain());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
 }
