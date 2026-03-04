@@ -3435,6 +3435,12 @@ GetPage(
           AuthenticationSuccess s => s.profile.userId,
           _ => '',
         };
+        // Extract current user's name for backend caching (so the other user sees our name)
+        final currentUserName = switch (authCubit.state) {
+          AuthenticationAuthenticated s => '${s.profile.user.firstName} ${s.profile.user.lastName}'.trim(),
+          AuthenticationSuccess s => '${s.profile.user.firstName} ${s.profile.user.lastName}'.trim(),
+          _ => '',
+        };
         return BlocProvider(
           create: (_) => P2PChatCubit(
             repository: serviceLocator(),
@@ -3449,6 +3455,9 @@ GetPage(
                   (Get.arguments as Map<String, dynamic>?)?['otherUserName'],
               otherUserAvatar:
                   (Get.arguments as Map<String, dynamic>?)?['otherUserAvatar'],
+              myName: currentUserName.isNotEmpty ? currentUserName : null,
+              isSavedRecipient:
+                  (Get.arguments as Map<String, dynamic>?)?['isSavedRecipient'] == true,
             ),
           child: const P2PChatPage(),
         );

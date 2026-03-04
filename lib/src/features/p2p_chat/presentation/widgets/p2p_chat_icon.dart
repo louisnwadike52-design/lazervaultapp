@@ -86,6 +86,7 @@ class _P2PChatIconState extends State<P2PChatIcon> {
           arguments: {
             'otherUserId': userId,
             'otherUserName': widget.otherUserName,
+            'isSavedRecipient': true,
           },
         );
       }

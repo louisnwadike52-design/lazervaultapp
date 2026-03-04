@@ -27,6 +27,7 @@ class P2PChatRepositoryImpl implements P2PChatRepository {
     String? otherUserAvatar,
     String? myName,
     String? myAvatar,
+    bool isSavedRecipient = false,
   }) async {
     final token = await _getToken();
     return _remoteDatasource.getOrCreateConversation(
@@ -36,6 +37,7 @@ class P2PChatRepositoryImpl implements P2PChatRepository {
       otherUserAvatar: otherUserAvatar,
       myName: myName,
       myAvatar: myAvatar,
+      isSavedRecipient: isSavedRecipient,
     );
   }
 

@@ -40,6 +40,7 @@ class P2PChatRemoteDatasource {
     String? otherUserAvatar,
     String? myName,
     String? myAvatar,
+    bool isSavedRecipient = false,
   }) async {
     final response = await _client
         .post(
@@ -51,6 +52,7 @@ class P2PChatRemoteDatasource {
             if (otherUserAvatar != null) 'other_user_avatar': otherUserAvatar,
             if (myName != null) 'my_name': myName,
             if (myAvatar != null) 'my_avatar': myAvatar,
+            if (isSavedRecipient) 'is_saved_recipient': true,
           }),
         )
         .timeout(_timeout);

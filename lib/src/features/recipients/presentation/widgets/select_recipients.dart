@@ -890,15 +890,17 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                           // Show bank name next to account number if not LazerVault
                           if (recipient.bankName.toLowerCase() != 'lazervault') ...[
                             SizedBox(width: 8.w),
-                            Text(
-                              '• ${recipient.bankName}',
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                color: Colors.grey[500],
-                                fontWeight: FontWeight.w500,
+                            Flexible(
+                              child: Text(
+                                '• ${recipient.bankName}',
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.grey[500],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ],

@@ -8,6 +8,7 @@ abstract class P2PChatRepository {
     String? otherUserAvatar,
     String? myName,
     String? myAvatar,
+    bool isSavedRecipient = false,
   });
   Future<List<P2PConversationEntity>> listConversations({int page = 1, int limit = 20});
   Future<List<P2PConversationEntity>> listConnections({int page = 1, int limit = 20});

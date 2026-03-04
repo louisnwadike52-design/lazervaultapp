@@ -87,6 +87,15 @@ class BalanceWebSocketCubit extends Cubit<BalanceWebSocketState> {
     ));
   }
 
+  /// Clear the last update so listeners don't re-fire on widget rebuild.
+  void clearLastUpdate() {
+    emit(BalanceWebSocketState(
+      connectionState: state.connectionState,
+      errorMessage: state.errorMessage,
+      lastUpdate: null,
+    ));
+  }
+
   /// Check if currently connected
   bool get isConnected => _wsService.isConnected;
 

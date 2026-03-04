@@ -57,6 +57,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     String? otherUserAvatar,
     String? myName,
     String? myAvatar,
+    bool isSavedRecipient = false,
   }) async {
     // If currentUserId wasn't available at construction time (e.g. factory DI),
     // fetch it from secure storage.
@@ -90,6 +91,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
         otherUserAvatar: otherUserAvatar,
         myName: myName,
         myAvatar: myAvatar,
+        isSavedRecipient: isSavedRecipient,
       );
       _conversationId = conversation.id;
 
@@ -187,18 +189,20 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       });
 
       // Merge transfer history from accounts-service (best-effort, non-blocking)
-      final chatMessages = messages.reversed.toList(); // Chronological order
+      // First, deduplicate legacy transfer_sent/transfer_received pairs from backend
+      final chatMessages = _deduplicateLegacyTransfers(messages.reversed.toList());
       List<P2PMessageEntity> allMessages = chatMessages;
       try {
         final transferMessages = await _fetchTransfersWithUser(otherUserId, otherUserName);
         if (transferMessages.isNotEmpty) {
           // Deduplicate: skip transfers already present as chat transfer messages
+          // Normalize refs by stripping "-recv" suffix for comparison
           final existingRefs = chatMessages
               .where((m) => m.isTransfer && m.transferRef != null)
-              .map((m) => m.transferRef)
+              .map((m) => _baseTransferRef(m.transferRef!))
               .toSet();
           final newTransfers = transferMessages
-              .where((t) => t.transferRef == null || !existingRefs.contains(t.transferRef))
+              .where((t) => t.transferRef == null || !existingRefs.contains(_baseTransferRef(t.transferRef!)))
               .toList();
           allMessages = [...chatMessages, ...newTransfers];
           allMessages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
@@ -206,6 +210,10 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       } catch (e) {
         debugPrint('P2PChatCubit: Failed to fetch transfers: $e');
       }
+
+      // Mark all messages as read when opening the conversation
+      // Find the last message from the other user and mark it as read
+      _markConversationAsRead(allMessages);
 
       emit(P2PChatLoaded(
         messages: allMessages,
@@ -253,6 +261,31 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       }
     } catch (_) {
       // WebSocket failure is non-fatal — REST fallback will handle messages
+    }
+  }
+
+  /// Mark all unread messages in the conversation as read.
+  /// Finds the last message from the other user and marks up to it as read.
+  void _markConversationAsRead(List<P2PMessageEntity> messages) {
+    if (_conversationId == null) return;
+
+    // Find the last message sent by the other user
+    P2PMessageEntity? lastOtherMessage;
+    for (int i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].senderId != _currentUserId) {
+        lastOtherMessage = messages[i];
+        break;
+      }
+    }
+
+    if (lastOtherMessage == null) return;
+
+    // Fire-and-forget mark read (both HTTP and WebSocket for reliability)
+    try {
+      _repository.markRead(_conversationId!, lastOtherMessage.id);
+      _wsService.markRead(_conversationId!, lastOtherMessage.id);
+    } catch (_) {
+      // Non-critical — unread badge may not clear but chat still works
     }
   }
 
@@ -362,10 +395,10 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       // Only increment page on success
       _currentPage = nextPage;
 
-      final allMessages = [
+      final allMessages = _deduplicateLegacyTransfers([
         ...olderMessages.reversed,
         ...currentState.messages,
-      ];
+      ]);
 
       _safeEmit(P2PChatLoaded(
         messages: allMessages,
@@ -426,7 +459,6 @@ class P2PChatCubit extends Cubit<P2PChatState> {
       }
 
       final isSent = tx.type.toLowerCase() == 'debit';
-      final messageType = isSent ? 'transfer_sent' : 'transfer_received';
       // Amount is in major units (double) from proto; convert to minor units (kobo)
       final amountMinor = (tx.amount * 100).toInt();
 
@@ -441,7 +473,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
         id: 'transfer_${tx.id}',
         conversationId: _conversationId ?? '',
         senderId: isSent ? _currentUserId : otherUserId,
-        messageType: messageType,
+        messageType: 'transfer',
         content: tx.description.isNotEmpty ? tx.description : null,
         transferRef: tx.reference,
         transferAmount: amountMinor,
@@ -455,15 +487,53 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     return transfers;
   }
 
+  /// Strip legacy "-recv" suffix from a transfer ref to get the base reference.
+  static String _baseTransferRef(String ref) =>
+      ref.endsWith('-recv') ? ref.substring(0, ref.length - 5) : ref;
+
+  /// Deduplicate legacy transfer_sent/transfer_received pairs.
+  /// For pairs sharing the same base transferRef (one with "-recv" suffix),
+  /// keep only the transfer_sent one — display logic handles perspective via senderId.
+  List<P2PMessageEntity> _deduplicateLegacyTransfers(List<P2PMessageEntity> messages) {
+    final recvRefs = <String>{};
+    for (final m in messages) {
+      if (m.messageType == 'transfer_received' && m.transferRef != null) {
+        // Strip "-recv" suffix to get the base ref
+        final baseRef = m.transferRef!.endsWith('-recv')
+            ? m.transferRef!.substring(0, m.transferRef!.length - 5)
+            : m.transferRef!;
+        recvRefs.add(baseRef);
+      }
+    }
+    if (recvRefs.isEmpty) return messages;
+
+    return messages.where((m) {
+      if (m.messageType != 'transfer_received') return true;
+      // Remove transfer_received if there's a matching transfer_sent
+      final baseRef = m.transferRef != null && m.transferRef!.endsWith('-recv')
+          ? m.transferRef!.substring(0, m.transferRef!.length - 5)
+          : m.transferRef;
+      final hasSentPair = messages.any((other) =>
+          other.messageType == 'transfer_sent' && other.transferRef == baseRef);
+      return !hasSentPair;
+    }).toList();
+  }
+
   void _addMessage(P2PMessageEntity message) {
     final currentState = state;
     if (currentState is P2PChatLoaded) {
-      // Don't add duplicates (check by clientMessageId or id)
+      // Don't add duplicates (check by id, clientMessageId, or transferRef)
       final exists = currentState.messages.any((m) =>
           m.id == message.id ||
           (message.clientMessageId != null &&
               message.clientMessageId!.isNotEmpty &&
-              m.clientMessageId == message.clientMessageId));
+              m.clientMessageId == message.clientMessageId) ||
+          (message.isTransfer &&
+              message.transferRef != null &&
+              message.transferRef!.isNotEmpty &&
+              m.isTransfer &&
+              m.transferRef != null &&
+              _baseTransferRef(m.transferRef!) == _baseTransferRef(message.transferRef!)));
       if (exists) return;
 
       // Insert in chronological order
