@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/types/transaction_service_mapping.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/features/transaction_history/data/datasources/transaction_history_cache_datasource.dart';
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
 
@@ -472,6 +473,18 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     const genericAccountNames = {'Personal', 'Savings', 'Business', 'USD Wallet', 'GBP Wallet', 'GHS Wallet', 'KES Wallet', 'ZAR Wallet'};
     if (counterpartyName != null && genericAccountNames.contains(counterpartyName)) {
       counterpartyName = null;
+    }
+
+    // Resolve bank name from bank_code if bank_name is not already set
+    if (metadata['bank_name'] == null || (metadata['bank_name'] as String).isEmpty) {
+      final bankCode = metadata['bank_code'] as String?
+          ?? metadata['destination_bank_code'] as String?;
+      if (bankCode != null && bankCode.isNotEmpty) {
+        final resolvedName = BanksData.getBankNameByCode(bankCode);
+        if (resolvedName != null) {
+          metadata['bank_name'] = resolvedName;
+        }
+      }
     }
 
     // Generate title, enriched with counterparty name for transfers

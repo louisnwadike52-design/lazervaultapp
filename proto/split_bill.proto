@@ -1,0 +1,232 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "split-bill-service/proto";
+
+// SplitBillService - Split bills among multiple participants
+service SplitBillService {
+  // Create a split bill among multiple participants
+  rpc CreateSplitBill(CreateSplitBillRequest) returns (CreateSplitBillResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/split-bill/create"
+      body: "*"
+    };
+  }
+
+  // Get a specific split bill by ID
+  rpc GetSplitBill(GetSplitBillRequest) returns (GetSplitBillResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/split-bill/{split_bill_id}"
+    };
+  }
+
+  // Get split bills I created
+  rpc GetMyCreatedSplitBills(GetMySplitBillsRequest) returns (GetSplitBillsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/split-bills/created"
+    };
+  }
+
+  // Get split bills where I am a participant
+  rpc GetMyIncomingSplitBills(GetMySplitBillsRequest) returns (GetSplitBillsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/split-bills/incoming"
+    };
+  }
+
+  // Pay my share of a split bill
+  rpc PaySplitBillShare(PaySplitBillShareRequest) returns (PaySplitBillShareResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/split-bill/pay"
+      body: "*"
+    };
+  }
+
+  // Cancel a split bill (creator only)
+  rpc CancelSplitBill(CancelSplitBillRequest) returns (CancelSplitBillResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/split-bill/cancel"
+      body: "*"
+    };
+  }
+
+  // Decline my share of a split bill
+  rpc DeclineSplitBillShare(DeclineSplitBillShareRequest) returns (DeclineSplitBillShareResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/split-bill/decline"
+      body: "*"
+    };
+  }
+
+  // Send reminder to unpaid participants
+  rpc SendSplitBillReminder(SendSplitBillReminderRequest) returns (SendSplitBillReminderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/split-bill/remind"
+      body: "*"
+    };
+  }
+}
+
+// Enums
+enum SplitBillStatus {
+  SPLIT_BILL_STATUS_ACTIVE = 0;
+  SPLIT_BILL_STATUS_COMPLETED = 1;
+  SPLIT_BILL_STATUS_CANCELLED = 2;
+  SPLIT_BILL_STATUS_EXPIRED = 3;
+}
+
+enum SplitBillParticipantStatus {
+  SPLIT_BILL_PARTICIPANT_STATUS_PENDING = 0;
+  SPLIT_BILL_PARTICIPANT_STATUS_PAID = 1;
+  SPLIT_BILL_PARTICIPANT_STATUS_DECLINED = 2;
+}
+
+enum SplitMethod {
+  SPLIT_METHOD_EQUAL = 0;
+  SPLIT_METHOD_CUSTOM = 1;
+  SPLIT_METHOD_PERCENTAGE = 2;
+}
+
+// Messages
+
+message SplitBill {
+  string id = 1;
+  string creator_id = 2;
+  string creator_username = 3;
+  string creator_name = 4;
+  double total_amount = 5;
+  double creator_share = 6;
+  string currency = 7;
+  string description = 8;
+  SplitMethod split_method = 9;
+  SplitBillStatus status = 10;
+  string reference = 11;
+  int32 total_participants = 12;
+  int32 paid_count = 13;
+  double paid_amount = 14;
+  repeated SplitBillParticipant participants = 15;
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp updated_at = 17;
+}
+
+message SplitBillParticipant {
+  string id = 1;
+  string split_bill_id = 2;
+  string user_id = 3;
+  string username = 4;
+  string display_name = 5;
+  double amount = 6;
+  double percentage = 7;
+  SplitBillParticipantStatus status = 8;
+  string transaction_reference = 9;
+  google.protobuf.Timestamp paid_at = 10;
+}
+
+message SplitBillParticipantInput {
+  string username = 1;
+  double amount = 2;
+  double percentage = 3;
+}
+
+message SplitBillTransaction {
+  string id = 1;
+  string payer_id = 2;
+  string payer_username = 3;
+  string payer_name = 4;
+  string recipient_id = 5;
+  string recipient_username = 6;
+  string recipient_name = 7;
+  double amount = 8;
+  string currency = 9;
+  string description = 10;
+  string status = 11;
+  string reference = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp completed_at = 14;
+}
+
+// Request/Response messages
+
+message CreateSplitBillRequest {
+  double total_amount = 1;
+  string currency = 2;
+  string description = 3;
+  SplitMethod split_method = 4;
+  double creator_share = 5;
+  repeated SplitBillParticipantInput participants = 6;
+}
+
+message CreateSplitBillResponse {
+  bool success = 1;
+  string message = 2;
+  SplitBill split_bill = 3;
+}
+
+message GetSplitBillRequest {
+  string split_bill_id = 1;
+}
+
+message GetSplitBillResponse {
+  bool success = 1;
+  string message = 2;
+  SplitBill split_bill = 3;
+}
+
+message GetMySplitBillsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  SplitBillStatus status = 3;
+}
+
+message GetSplitBillsResponse {
+  repeated SplitBill split_bills = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 total_pages = 4;
+}
+
+message PaySplitBillShareRequest {
+  string split_bill_id = 1;
+  string source_account_id = 2;
+  string transaction_pin = 3;
+}
+
+message PaySplitBillShareResponse {
+  bool success = 1;
+  string message = 2;
+  SplitBillTransaction transaction = 3;
+  SplitBill split_bill = 4;
+}
+
+message CancelSplitBillRequest {
+  string split_bill_id = 1;
+}
+
+message CancelSplitBillResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message DeclineSplitBillShareRequest {
+  string split_bill_id = 1;
+  string reason = 2;
+}
+
+message DeclineSplitBillShareResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SendSplitBillReminderRequest {
+  string split_bill_id = 1;
+}
+
+message SendSplitBillReminderResponse {
+  bool success = 1;
+  string message = 2;
+  int32 reminders_sent = 3;
+}

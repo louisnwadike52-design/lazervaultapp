@@ -18,6 +18,7 @@ class RecipientModel {
   final String? iban;
   final String? alias;
   final String? type;
+  final String? internalUserId;
 
   const RecipientModel({
     required this.id,
@@ -36,6 +37,7 @@ class RecipientModel {
     this.iban,
     this.alias,
     this.type,
+    this.internalUserId,
   });
 
   factory RecipientModel.fromProto(proto.Recipient recipient) {
@@ -44,6 +46,11 @@ class RecipientModel {
     if (recipient.bankName.toLowerCase() == 'lazervault') {
       resolvedType = 'internal';
     }
+
+    // Extract internal user ID (string UUID)
+    final internalUid = recipient.internalUserId.isNotEmpty
+        ? recipient.internalUserId
+        : null;
 
     return RecipientModel(
       id: recipient.id.toString(),
@@ -61,6 +68,7 @@ class RecipientModel {
       iban: recipient.iban.isNotEmpty ? recipient.iban : null,
       alias: recipient.alias.isNotEmpty ? recipient.alias : null,
       type: resolvedType,
+      internalUserId: internalUid,
     );
   }
 
@@ -82,6 +90,7 @@ class RecipientModel {
       iban: json['iban'] as String?,
       alias: json['alias'] as String?,
       type: json['type'] as String?,
+      internalUserId: json['internalUserId'] as String?,
     );
   }
 
@@ -103,6 +112,7 @@ class RecipientModel {
       'iban': iban,
       'alias': alias,
       'type': type,
+      'internalUserId': internalUserId,
     };
   }
 
@@ -142,6 +152,7 @@ class RecipientModel {
     String? iban,
     String? alias,
     String? type,
+    String? internalUserId,
   }) {
     return RecipientModel(
       id: id ?? this.id,
@@ -160,6 +171,7 @@ class RecipientModel {
       iban: iban ?? this.iban,
       alias: alias ?? this.alias,
       type: type ?? this.type,
+      internalUserId: internalUserId ?? this.internalUserId,
     );
   }
 } 

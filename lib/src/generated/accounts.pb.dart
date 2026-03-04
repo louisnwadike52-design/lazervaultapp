@@ -6030,6 +6030,8 @@ class CreditBalanceRequest extends $pb.GeneratedMessage {
     $core.String? metadata,
     $core.String? serviceName,
     $core.String? idempotencyKey,
+    $core.String? counterpartyName,
+    $core.String? counterpartyAccount,
   }) {
     final $result = create();
     if (accountId != null) {
@@ -6062,6 +6064,12 @@ class CreditBalanceRequest extends $pb.GeneratedMessage {
     if (idempotencyKey != null) {
       $result.idempotencyKey = idempotencyKey;
     }
+    if (counterpartyName != null) {
+      $result.counterpartyName = counterpartyName;
+    }
+    if (counterpartyAccount != null) {
+      $result.counterpartyAccount = counterpartyAccount;
+    }
     return $result;
   }
   CreditBalanceRequest._() : super();
@@ -6079,6 +6087,8 @@ class CreditBalanceRequest extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'metadata')
     ..aOS(9, _omitFieldNames ? '' : 'serviceName')
     ..aOS(10, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(11, _omitFieldNames ? '' : 'counterpartyName')
+    ..aOS(12, _omitFieldNames ? '' : 'counterpartyAccount')
     ..hasRequiredFields = false
   ;
 
@@ -6192,6 +6202,24 @@ class CreditBalanceRequest extends $pb.GeneratedMessage {
   $core.bool hasIdempotencyKey() => $_has(9);
   @$pb.TagNumber(10)
   void clearIdempotencyKey() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get counterpartyName => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set counterpartyName($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCounterpartyName() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCounterpartyName() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get counterpartyAccount => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set counterpartyAccount($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasCounterpartyAccount() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearCounterpartyAccount() => clearField(12);
 }
 
 class CreditBalanceResponse extends $pb.GeneratedMessage {
@@ -6329,6 +6357,8 @@ class DebitBalanceRequest extends $pb.GeneratedMessage {
     $core.String? idempotencyKey,
     $core.bool? requireHold,
     $core.String? holdId,
+    $core.String? counterpartyName,
+    $core.String? counterpartyAccount,
   }) {
     final $result = create();
     if (accountId != null) {
@@ -6367,6 +6397,12 @@ class DebitBalanceRequest extends $pb.GeneratedMessage {
     if (holdId != null) {
       $result.holdId = holdId;
     }
+    if (counterpartyName != null) {
+      $result.counterpartyName = counterpartyName;
+    }
+    if (counterpartyAccount != null) {
+      $result.counterpartyAccount = counterpartyAccount;
+    }
     return $result;
   }
   DebitBalanceRequest._() : super();
@@ -6386,6 +6422,8 @@ class DebitBalanceRequest extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'idempotencyKey')
     ..aOB(11, _omitFieldNames ? '' : 'requireHold')
     ..aOS(12, _omitFieldNames ? '' : 'holdId')
+    ..aOS(13, _omitFieldNames ? '' : 'counterpartyName')
+    ..aOS(14, _omitFieldNames ? '' : 'counterpartyAccount')
     ..hasRequiredFields = false
   ;
 
@@ -6517,6 +6555,24 @@ class DebitBalanceRequest extends $pb.GeneratedMessage {
   $core.bool hasHoldId() => $_has(11);
   @$pb.TagNumber(12)
   void clearHoldId() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get counterpartyName => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set counterpartyName($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasCounterpartyName() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearCounterpartyName() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get counterpartyAccount => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set counterpartyAccount($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasCounterpartyAccount() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCounterpartyAccount() => clearField(14);
 }
 
 class DebitBalanceResponse extends $pb.GeneratedMessage {

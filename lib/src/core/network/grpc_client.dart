@@ -17,6 +17,7 @@ import '../../generated/giftcards.pbgrpc.dart';
 import '../../generated/lock_funds.pbgrpc.dart';
 import '../../generated/insurance.pbgrpc.dart';
 import '../../generated/contactless_payment.pbgrpc.dart';
+import '../../generated/split_bill.pbgrpc.dart';
 import '../../generated/utility-payments.pbgrpc.dart';
 
 class GrpcClient {
@@ -37,6 +38,7 @@ class GrpcClient {
   late LockFundsServiceClient _lockFundsClient;
   late InsuranceServiceClient _insuranceClient;
   late ContactlessPaymentServiceClient _contactlessPaymentClient;
+  late SplitBillServiceClient _splitBillClient;
   late UtilityPaymentsServiceClient _utilityPaymentsClient;
 
   final FlutterSecureStorage _secureStorage;
@@ -70,6 +72,7 @@ class GrpcClient {
     _lockFundsClient = LockFundsServiceClient(_channel);
     _insuranceClient = InsuranceServiceClient(_channel);
     _contactlessPaymentClient = ContactlessPaymentServiceClient(_channel);
+    _splitBillClient = SplitBillServiceClient(_channel);
     _utilityPaymentsClient = UtilityPaymentsServiceClient(_channel);
   }
 
@@ -90,6 +93,7 @@ class GrpcClient {
   LockFundsServiceClient get lockFundsClient => _lockFundsClient;
   InsuranceServiceClient get insuranceClient => _insuranceClient;
   ContactlessPaymentServiceClient get contactlessPaymentClient => _contactlessPaymentClient;
+  SplitBillServiceClient get splitBillClient => _splitBillClient;
   UtilityPaymentsServiceClient get utilityPaymentsClient => _utilityPaymentsClient;
 
   /// Get call options with authentication token

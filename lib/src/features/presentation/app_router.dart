@@ -63,7 +63,12 @@ import 'package:lazervault/src/features/recipients/presentation/view/add_recipie
 import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/qr_scanner_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/my_qr_code_screen.dart';
-import 'package:lazervault/src/features/funds/presentation/view/split_bills/split_bills_screen.dart';
+import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_cubit.dart';
+import 'package:lazervault/src/features/split_bills/presentation/view/split_bill_home_screen.dart';
+import 'package:lazervault/src/features/split_bills/presentation/view/create_split_bill_screen.dart';
+import 'package:lazervault/src/features/split_bills/presentation/view/split_bill_detail_screen.dart';
+import 'package:lazervault/src/features/split_bills/presentation/view/pay_split_bill_screen.dart';
+import 'package:lazervault/src/features/split_bills/presentation/view/split_bill_receipt_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_processing_screen.dart';
@@ -444,6 +449,16 @@ import 'package:lazervault/src/features/business_analytics/presentation/cubit/bu
 import 'package:lazervault/src/features/business_analytics/presentation/views/analytics_screen.dart';
 
 import 'package:lazervault/src/features/presentation/views/debug_settings_screen.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/pages/financial_connections_screen.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/pages/p2p_chat_page.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_cubit.dart';
+import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 
 // Social Linking imports
 import 'package:lazervault/src/features/social_linking/presentation/screens/linked_accounts_screen.dart';
@@ -596,14 +611,34 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.splitBills,
+      page: () => const SplitBillHomeScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createSplitBill,
       page: () => MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => serviceLocator<RecipientCubit>()),
-          BlocProvider(create: (_) => serviceLocator<TransferCubit>()),
+          BlocProvider(create: (_) => serviceLocator<SplitBillCubit>()),
+          BlocProvider(create: (_) => serviceLocator<TagPayCubit>()),
         ],
-        child: const SplitBillsScreen(),
+        child: const CreateSplitBillScreen(),
       ),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.splitBillDetail,
+      page: () => const SplitBillDetailScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.paySplitBill,
+      page: () => const PaySplitBillScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.splitBillReceipt,
+      page: () => const SplitBillReceiptScreen(),
+      transition: Transition.zoom,
     ),
     GetPage(
       name: AppRoutes.invoice,
@@ -3377,6 +3412,45 @@ GetPage(
         return ChannelPinSetupScreen(
           channelType: args['channelType'] as String,
           isChange: args['isChange'] as bool? ?? false,
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
+    // P2P Chat Routes
+    GetPage(
+      name: AppRoutes.financialConnections,
+      page: () => BlocProvider.value(
+        value: serviceLocator<P2PConversationsCubit>(),
+        child: const FinancialConnectionsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.p2pChat,
+      page: () {
+        final authCubit = serviceLocator<AuthenticationCubit>();
+        final currentUserId = switch (authCubit.state) {
+          AuthenticationAuthenticated s => s.profile.userId,
+          AuthenticationSuccess s => s.profile.userId,
+          _ => '',
+        };
+        return BlocProvider(
+          create: (_) => P2PChatCubit(
+            repository: serviceLocator(),
+            wsService: serviceLocator<P2PChatWebSocketService>(),
+            secureStorage: serviceLocator<SecureStorageService>(),
+            accountsClient: serviceLocator<AccountsGrpcClient>(),
+            accountManager: serviceLocator<AccountManager>(),
+            currentUserId: currentUserId,
+          )..initializeChat(
+              (Get.arguments as Map<String, dynamic>?)?['otherUserId'] ?? '',
+              otherUserName:
+                  (Get.arguments as Map<String, dynamic>?)?['otherUserName'],
+              otherUserAvatar:
+                  (Get.arguments as Map<String, dynamic>?)?['otherUserAvatar'],
+            ),
+          child: const P2PChatPage(),
         );
       },
       transition: Transition.rightToLeft,

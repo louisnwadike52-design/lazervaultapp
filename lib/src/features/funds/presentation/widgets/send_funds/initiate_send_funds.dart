@@ -31,6 +31,7 @@ import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
 import 'package:lazervault/src/features/widgets/budget_override_dialog.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:uuid/uuid.dart';
 
 class InitiateSendFunds extends StatefulWidget {
@@ -1519,6 +1520,26 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     });
   }
 
+  /// Non-blocking: ensure a P2P financial connection exists for internal recipients.
+  /// Fire-and-forget — never blocks the transfer flow.
+  void _ensureFinancialConnection({
+    required String otherUserId,
+    required String otherUserName,
+  }) {
+    Future(() async {
+      try {
+        final repo = serviceLocator<P2PChatRepository>();
+        await repo.getOrCreateConversation(
+          otherUserId,
+          otherUserName: otherUserName,
+        );
+        debugPrint('[P2P] Financial connection ensured for $otherUserName');
+      } catch (e) {
+        debugPrint('[P2P] Non-blocking connection creation failed: $e');
+      }
+    });
+  }
+
   /// Fire deferred recurring setup. Extracted to allow retry on failure.
   void _fireRecurringSetup(BuildContext context) {
     if (_recurringConfig == null || _pendingRecurringTransactionId == null) {
@@ -1868,6 +1889,18 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             }
           }
           // --- End Save Recipient ---
+
+          // --- Non-blocking: Ensure P2P financial connection for internal recipients ---
+          if (_recipient != null &&
+              _recipient!.internalUserId != null &&
+              _recipient!.internalUserId!.isNotEmpty &&
+              _recipient!.bankName == 'LazerVault') {
+            _ensureFinancialConnection(
+              otherUserId: _recipient!.internalUserId!,
+              otherUserName: _recipient!.name,
+            );
+          }
+          // --- End P2P Connection ---
 
           // --- Refresh Account Summaries ---
           // Refresh immediately (no delay) since this widget will be disposed

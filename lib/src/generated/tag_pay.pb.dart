@@ -661,7 +661,7 @@ class MoneyRequest extends $pb.GeneratedMessage {
   $1.Timestamp ensureExpiresAt() => $_ensure(13);
 }
 
-/// User Tag Entity - Simple tag system
+/// User Tag Entity
 class UserTag extends $pb.GeneratedMessage {
   factory UserTag({
     $core.String? id,
@@ -884,7 +884,7 @@ class UserTag extends $pb.GeneratedMessage {
   $1.Timestamp ensurePaidAt() => $_ensure(12);
 }
 
-/// Create Tag Pay
+/// Request/Response messages
 class CreateTagPayRequest extends $pb.GeneratedMessage {
   factory CreateTagPayRequest({
     $core.String? tagPay,
@@ -1043,7 +1043,6 @@ class CreateTagPayResponse extends $pb.GeneratedMessage {
   TagPay ensureTagPay() => $_ensure(2);
 }
 
-/// Get Tag Pay
 class GetTagPayRequest extends $pb.GeneratedMessage {
   factory GetTagPayRequest({
     $core.String? tagPay,
@@ -1174,7 +1173,6 @@ class GetTagPayResponse extends $pb.GeneratedMessage {
   TagPay ensureTagPay() => $_ensure(2);
 }
 
-/// Check Tag Pay Availability
 class CheckTagPayAvailabilityRequest extends $pb.GeneratedMessage {
   factory CheckTagPayAvailabilityRequest({
     $core.String? tagPay,
@@ -1297,7 +1295,6 @@ class CheckTagPayAvailabilityResponse extends $pb.GeneratedMessage {
   $core.List<$core.String> get suggestions => $_getList(2);
 }
 
-/// Search Tag Pay
 class SearchTagPayRequest extends $pb.GeneratedMessage {
   factory SearchTagPayRequest({
     $core.String? query,
@@ -1420,7 +1417,6 @@ class SearchTagPayResponse extends $pb.GeneratedMessage {
   void clearTotal() => clearField(2);
 }
 
-/// Send Money using Tag Pay
 class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
   factory SendMoneyTagPayRequest({
     $core.String? receiverTagPay,
@@ -1621,7 +1617,6 @@ class SendMoneyTagPayResponse extends $pb.GeneratedMessage {
   TagPayTransaction ensureTransaction() => $_ensure(2);
 }
 
-/// Request Money using Tag Pay
 class RequestMoneyTagPayRequest extends $pb.GeneratedMessage {
   factory RequestMoneyTagPayRequest({
     $core.String? requesteeTagPay,
@@ -1794,7 +1789,6 @@ class RequestMoneyTagPayResponse extends $pb.GeneratedMessage {
   MoneyRequest ensureMoneyRequest() => $_ensure(2);
 }
 
-/// Get Tag Pay Transactions
 class GetTagPayTransactionsRequest extends $pb.GeneratedMessage {
   factory GetTagPayTransactionsRequest({
     $core.int? page,
@@ -1959,7 +1953,6 @@ class GetTagPayTransactionsResponse extends $pb.GeneratedMessage {
   void clearTotalPages() => clearField(4);
 }
 
-/// Accept Money Request
 class AcceptMoneyRequestRequest extends $pb.GeneratedMessage {
   factory AcceptMoneyRequestRequest({
     $core.String? requestId,
@@ -2118,7 +2111,6 @@ class AcceptMoneyRequestResponse extends $pb.GeneratedMessage {
   TagPayTransaction ensureTransaction() => $_ensure(2);
 }
 
-/// Decline Money Request
 class DeclineMoneyRequestRequest extends $pb.GeneratedMessage {
   factory DeclineMoneyRequestRequest({
     $core.String? requestId,
@@ -2247,7 +2239,6 @@ class DeclineMoneyRequestResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
-/// Get Pending Money Requests
 class GetPendingMoneyRequestsRequest extends $pb.GeneratedMessage {
   factory GetPendingMoneyRequestsRequest({
     $core.int? page,
@@ -2412,7 +2403,6 @@ class GetPendingMoneyRequestsResponse extends $pb.GeneratedMessage {
   void clearTotalPages() => clearField(4);
 }
 
-/// Create Tag
 class CreateTagRequest extends $pb.GeneratedMessage {
   factory CreateTagRequest({
     $core.String? taggedUserTagPay,
@@ -2585,7 +2575,6 @@ class CreateTagResponse extends $pb.GeneratedMessage {
   UserTag ensureTag() => $_ensure(2);
 }
 
-/// Get My Tags
 class GetMyTagsRequest extends $pb.GeneratedMessage {
   factory GetMyTagsRequest({
     $core.int? page,
@@ -2750,7 +2739,6 @@ class GetMyTagsResponse extends $pb.GeneratedMessage {
   void clearTotalPages() => clearField(4);
 }
 
-/// Pay Tag
 class PayTagRequest extends $pb.GeneratedMessage {
   factory PayTagRequest({
     $core.String? tagId,
@@ -2909,7 +2897,6 @@ class PayTagResponse extends $pb.GeneratedMessage {
   TagPayTransaction ensureTransaction() => $_ensure(2);
 }
 
-/// Search Users for Tagging
 class SearchUsersForTagRequest extends $pb.GeneratedMessage {
   factory SearchUsersForTagRequest({
     $core.String? query,
@@ -3138,7 +3125,6 @@ class SearchUsersForTagResponse extends $pb.GeneratedMessage {
   $core.List<UserSearchResult> get users => $_getList(0);
 }
 
-/// Batch Create Tags
 class BatchCreateTagsRequest extends $pb.GeneratedMessage {
   factory BatchCreateTagsRequest({
     $core.Iterable<$core.String>? taggedUserTagPays,
