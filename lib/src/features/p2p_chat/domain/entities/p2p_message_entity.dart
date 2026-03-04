@@ -28,11 +28,12 @@ class P2PMessageEntity {
   });
 
   bool get isText => messageType == 'text';
+  bool get isTransferGeneric => messageType == 'transfer';
   bool get isTransferSent => messageType == 'transfer_sent';
   bool get isTransferReceived => messageType == 'transfer_received';
   bool get isTransferRequest => messageType == 'transfer_request';
   bool get isSystem => messageType == 'system';
-  bool get isTransfer => isTransferSent || isTransferReceived || isTransferRequest;
+  bool get isTransfer => isTransferGeneric || isTransferSent || isTransferReceived || isTransferRequest;
 
   /// Transfer amount in major units (e.g., Naira). Returns null if no amount.
   double? get transferAmountMajor =>

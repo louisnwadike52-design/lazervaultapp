@@ -878,6 +878,7 @@ class _FinancialConnectionsScreenState
       arguments: {
         'otherUserId': userId,
         'otherUserName': name.isNotEmpty ? name : 'Unknown',
+        'isSavedRecipient': true,
       },
     )?.then((_) {
       if (mounted) _refreshAll();
@@ -896,6 +897,7 @@ class _FinancialConnectionsScreenState
         'otherUserId': userId,
         'otherUserName': name,
         'otherUserAvatar': user['profile_picture'] as String?,
+        'isSavedRecipient': false,
       },
     )?.then((_) {
       if (mounted) _refreshAll();

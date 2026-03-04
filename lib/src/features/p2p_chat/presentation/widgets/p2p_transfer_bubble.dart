@@ -6,11 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart' as grpc_helper;
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/get_recipients_usecase.dart';
+import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
+import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 
 class P2PTransferBubble extends StatelessWidget {
   final P2PMessageEntity message;
@@ -30,9 +33,23 @@ class P2PTransferBubble extends StatelessWidget {
   String get _displayName =>
       otherUserName.isNotEmpty ? otherUserName : 'Unknown User';
 
+  /// Whether this transfer was sent by the current user.
+  /// For all transfer types (new "transfer" and legacy "transfer_sent"/"transfer_received"),
+  /// we derive from `isMe` (senderId == currentUserId) since senderId is always the money sender.
+  /// After legacy dedup, both users see the same message, so isMe correctly gives the perspective.
+  bool get _isSentByMe => isMe;
+
+  /// Clean transfer reference — strips legacy "-recv" suffix for display/receipt.
+  String? get _cleanTransferRef {
+    final ref = message.transferRef;
+    if (ref == null) return null;
+    return ref.endsWith('-recv') ? ref.substring(0, ref.length - 5) : ref;
+  }
+
   /// Whether "Send Again" should be offered for this transfer.
   bool get _canSendAgain {
-    if (!message.isTransferSent || !isMe) return false;
+    if (!isMe) return false;
+    if (message.isTransferRequest) return false;
     if (otherUserId == null || otherUserId!.isEmpty) return false;
     // Don't offer for failed or pending transfers
     final status = message.transferStatus?.toLowerCase();
@@ -44,7 +61,7 @@ class P2PTransferBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSent = message.isTransferSent;
+    final isSent = _isSentByMe;
     final isRequest = message.isTransferRequest;
 
     final Color iconColor;
@@ -181,7 +198,7 @@ class P2PTransferBubble extends StatelessWidget {
   }
 
   void _showTransferDetailsSheet(BuildContext context) {
-    final isSent = message.isTransferSent;
+    final isSent = _isSentByMe;
     final currency = message.transferCurrency ?? 'NGN';
     final amount = message.transferAmountMajor;
     final formattedAmount = amount != null
@@ -211,7 +228,7 @@ class P2PTransferBubble extends StatelessWidget {
         statusColor = const Color(0xFF10B981);
     }
 
-    final ref = message.transferRef;
+    final ref = _cleanTransferRef;
     final canSendAgain = _canSendAgain;
 
     showModalBottomSheet(
@@ -324,12 +341,59 @@ class P2PTransferBubble extends StatelessWidget {
               DateFormat('MMM d, yyyy \'at\' HH:mm').format(message.createdAt),
             ),
             SizedBox(height: 24.h),
+            // View Receipt button — for all completed transfers
+            if (transferStatus == null ||
+                transferStatus.isEmpty ||
+                transferStatus == 'completed' ||
+                transferStatus == 'success')
+              Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48.h,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      Get.toNamed(
+                        AppRoutes.transferProof,
+                        arguments: <String, dynamic>{
+                          'amount': message.transferAmountMajor ?? 0,
+                          'currency': currency,
+                          'reference': ref ?? '',
+                          'recipientName': isSent ? _displayName : 'You',
+                          'senderName': isSent ? 'You' : _displayName,
+                          'timestamp': message.createdAt,
+                          'status': statusLabel.toLowerCase(),
+                          'type': isSent ? 'debit' : 'credit',
+                        },
+                      );
+                    },
+                    icon: Icon(Icons.receipt_long, size: 18.w),
+                    label: Text(
+                      'View Receipt',
+                      style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ),
             // Send Again button — only for completed transfers the current user sent
             if (canSendAgain)
               _SendAgainButton(
                 otherUserId: otherUserId!,
                 otherUserName: _displayName,
                 transferAmount: message.transferAmount,
+                transferCurrency: message.transferCurrency,
                 onDismiss: () => Navigator.of(ctx).pop(),
               ),
             if (canSendAgain) SizedBox(height: 12.h),
@@ -423,19 +487,20 @@ class P2PTransferBubble extends StatelessWidget {
   }
 }
 
-/// Stateful button that async-resolves the saved recipient before navigating.
-/// Needed because the transfer bubble is a StatelessWidget and recipient lookup
-/// requires an async API call.
+/// Stateful button that async-resolves the recipient before navigating.
+/// First tries saved recipients, then falls back to resolving account via gRPC.
 class _SendAgainButton extends StatefulWidget {
   final String otherUserId;
   final String otherUserName;
   final int? transferAmount;
+  final String? transferCurrency;
   final VoidCallback onDismiss;
 
   const _SendAgainButton({
     required this.otherUserId,
     required this.otherUserName,
     required this.transferAmount,
+    this.transferCurrency,
     required this.onDismiss,
   });
 
@@ -451,8 +516,8 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
     setState(() => _isLoading = true);
 
     try {
-      // Try to find the full saved recipient (with accountNumber) from backend
-      final recipient = await _lookupSavedRecipient();
+      // Try saved recipient first, then resolve account directly
+      final recipient = await _lookupSavedRecipient() ?? await _resolveRecipientFromAccount();
 
       if (!mounted) return;
       try {
@@ -462,23 +527,22 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
       }
 
       if (recipient != null) {
-        // Found saved recipient with full data — navigate to send funds
         final args = <String, dynamic>{
           'recipient': recipient,
         };
-        // Only pre-fill amount if we have a valid one
         if (widget.transferAmount != null && widget.transferAmount! > 0) {
           args['prefillAmount'] = widget.transferAmount;
         }
+        if (widget.transferCurrency != null) {
+          args['prefillCurrency'] = widget.transferCurrency;
+        }
         Get.toNamed(AppRoutes.initiateSendFunds, arguments: args);
       } else {
-        // No saved recipient found — show snackbar and don't navigate
-        // (The user hasn't saved this recipient, so we can't pre-fill account number)
         Get.snackbar(
-          'Recipient Not Saved',
-          'Save ${widget.otherUserName} as a recipient first to use Send Again.',
+          'Error',
+          'Could not resolve recipient account. Try again.',
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF2D2D2D).withOpacity(0.95),
+          backgroundColor: const Color(0xFFEF4444).withOpacity(0.9),
           colorText: Colors.white,
           duration: const Duration(seconds: 3),
         );
@@ -488,9 +552,7 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
       if (!mounted) return;
       try {
         widget.onDismiss();
-      } catch (_) {
-        // Bottom sheet may already be dismissed by user swipe
-      }
+      } catch (_) {}
       Get.snackbar(
         'Error',
         'Could not load recipient details. Try again.',
@@ -526,14 +588,12 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
       return result.fold(
         (failure) => null,
         (recipients) {
-          // Find by internalUserId match
           for (final r in recipients) {
             if (r.internalUserId == widget.otherUserId &&
                 r.accountNumber.isNotEmpty) {
               return r;
             }
           }
-          // Fallback: find by name + LazerVault bank
           for (final r in recipients) {
             if (r.bankName == 'LazerVault' &&
                 r.name.toLowerCase() == widget.otherUserName.toLowerCase() &&
@@ -547,6 +607,36 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
     } catch (_) {
       return null;
     }
+  }
+
+  /// Resolve the user's account via gRPC and construct a RecipientModel directly.
+  Future<RecipientModel?> _resolveRecipientFromAccount() async {
+    try {
+      final client = serviceLocator<accounts_grpc.AccountsServiceClient>();
+      final helper = serviceLocator<grpc_helper.GrpcCallOptionsHelper>();
+      final callOptions = await helper.withAuth();
+      final response = await client.getUserAccounts(
+        accounts_pb.GetUserAccountsRequest(targetUserId: widget.otherUserId),
+        options: callOptions,
+      );
+      if (response.accounts.isNotEmpty) {
+        final account = response.accounts.first;
+        return RecipientModel(
+          id: '',
+          name: widget.otherUserName,
+          accountNumber: account.accountNumber,
+          bankName: 'LazerVault',
+          sortCode: '',
+          isFavorite: false,
+          isSaved: false,
+          internalUserId: widget.otherUserId,
+          currency: account.currency.isNotEmpty ? account.currency : null,
+        );
+      }
+    } catch (e) {
+      debugPrint('[P2P] Account resolution failed: $e');
+    }
+    return null;
   }
 
   @override

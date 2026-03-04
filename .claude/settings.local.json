@@ -18,7 +18,12 @@
       "Bash(pgrep:*)",
       "Bash(flutter devices:*)",
       "Bash(chmod:*)",
-      "Bash(./start_webhooks.sh)"
+      "Bash(./start_webhooks.sh)",
+      "Bash(flutter run:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(flutter build:*)",
+      "Bash(flutter install:*)",
+      "Bash(adb:*)"
     ],
     "deny": [],
     "ask": []

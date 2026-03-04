@@ -161,35 +161,37 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
         // Note: The AccountCarousel handles real-time balance updates directly
         // via animated counters - NO server refresh needed, WebSocket is the source of truth
         BlocListener<BalanceWebSocketCubit, BalanceWebSocketState>(
+          listenWhen: (previous, current) =>
+              current.lastUpdate != null && current.lastUpdate != previous.lastUpdate,
           listener: (context, wsState) {
-            if (wsState.lastUpdate != null) {
-              final event = wsState.lastUpdate!;
-              debugPrint('_DashboardCardSummaryView: WebSocket balance update - ${event.eventType}: ${event.newBalance} ${event.currency}');
-              // Show snackbar for transfer events when user is on dashboard
-              if (event.eventType == 'transfer_out' || event.eventType == 'transfer') {
-                if (event.status == 'completed') {
-                  LVSnackbar.showSuccess(
-                    title: 'Transfer Completed',
-                    message: event.amount != null
-                        ? 'Transfer of ${event.currency} ${event.amount!.toStringAsFixed(2)} successful'
-                        : 'Your transfer was successful',
-                  );
-                } else if (event.status == 'failed') {
-                  LVSnackbar.showError(
-                    title: 'Transfer Failed',
-                    message: 'Transfer could not be completed. Funds returned to your account.',
-                    duration: const Duration(seconds: 5),
-                  );
-                }
-              } else if (event.eventType == 'transfer_in' || event.eventType == 'deposit') {
+            final event = wsState.lastUpdate!;
+            debugPrint('_DashboardCardSummaryView: WebSocket balance update - ${event.eventType}: ${event.newBalance} ${event.currency}');
+            // Show snackbar for transfer events when user is on dashboard
+            if (event.eventType == 'transfer_out' || event.eventType == 'transfer') {
+              if (event.status == 'completed') {
                 LVSnackbar.showSuccess(
-                  title: 'Funds Received',
+                  title: 'Transfer Completed',
                   message: event.amount != null
-                      ? '${event.currency} ${event.amount!.toStringAsFixed(2)} received'
-                      : 'New funds received',
+                      ? 'Transfer of ${event.currency} ${event.amount!.toStringAsFixed(2)} successful'
+                      : 'Your transfer was successful',
+                );
+              } else if (event.status == 'failed') {
+                LVSnackbar.showError(
+                  title: 'Transfer Failed',
+                  message: 'Transfer could not be completed. Funds returned to your account.',
+                  duration: const Duration(seconds: 5),
                 );
               }
+            } else if (event.eventType == 'transfer_in' || event.eventType == 'deposit') {
+              LVSnackbar.showSuccess(
+                title: 'Funds Received',
+                message: event.amount != null
+                    ? '${event.currency} ${event.amount!.toStringAsFixed(2)} received'
+                    : 'New funds received',
+              );
             }
+            // Clear consumed update so it doesn't re-fire on widget rebuild
+            context.read<BalanceWebSocketCubit>().clearLastUpdate();
           },
         ),
       ],
