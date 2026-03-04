@@ -8,6 +8,12 @@ import 'package:lazervault/core/services/grpc_channel_factory.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/dashboard_state_manager.dart';
+import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
+import 'package:lazervault/src/features/p2p_chat/data/datasources/p2p_chat_remote_datasource.dart';
+import 'package:lazervault/src/features/p2p_chat/data/repositories/p2p_chat_repository_impl.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_cubit.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
@@ -366,6 +372,12 @@ import 'package:lazervault/src/features/tag_pay/data/repositories/tag_pay_reposi
 import 'package:lazervault/src/features/tag_pay/domain/repositories/tag_pay_repository.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
 // End Tag Pay Imports
+
+// Split Bills Imports
+import 'package:lazervault/src/features/split_bills/data/repositories/split_bill_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/split_bills/domain/repositories/split_bill_repository.dart';
+import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_cubit.dart';
+// End Split Bills Imports
 
 // QR Payment Imports
 import 'package:lazervault/src/features/qr_payment/data/datasources/qr_payment_remote_datasource.dart';
@@ -1788,6 +1800,18 @@ Future<void> init() async {
     mutationQueue: serviceLocator<MutationQueue>(),
   ));
 
+  // ================== Feature: Split Bills ==================
+
+  serviceLocator.registerLazySingleton<SplitBillRepository>(
+    () => SplitBillRepositoryGrpcImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  serviceLocator.registerFactory(() => SplitBillCubit(
+    repository: serviceLocator<SplitBillRepository>(),
+  ));
+
   // ================== Feature: Wallet Transfer (own accounts) ==================
 
   serviceLocator.registerFactory(() => WalletTransferCubit(
@@ -3105,6 +3129,44 @@ Future<void> init() async {
   // Mandate Cubit (lazy singleton — shared mandate state across screens)
   serviceLocator.registerLazySingleton<MandateCubit>(
     () => MandateCubit(serviceLocator<OpenBankingGrpcDataSource>()),
+  );
+
+  // ================== Feature: P2P Chat ==================
+
+  // WebSocket Service (singleton — shared connection)
+  serviceLocator.registerLazySingleton<P2PChatWebSocketService>(
+    () => P2PChatWebSocketService(),
+  );
+
+  // Data Source
+  serviceLocator.registerLazySingleton<P2PChatRemoteDatasource>(
+    () => P2PChatRemoteDatasource(),
+  );
+
+  // Repository
+  serviceLocator.registerLazySingleton<P2PChatRepository>(
+    () => P2PChatRepositoryImpl(
+      remoteDatasource: serviceLocator<P2PChatRemoteDatasource>(),
+      secureStorage: serviceLocator<SecureStorageService>(),
+    ),
+  );
+
+  // Cubits
+  serviceLocator.registerFactory<P2PChatCubit>(
+    () => P2PChatCubit(
+      repository: serviceLocator<P2PChatRepository>(),
+      wsService: serviceLocator<P2PChatWebSocketService>(),
+      secureStorage: serviceLocator<SecureStorageService>(),
+      accountsClient: serviceLocator<AccountsGrpcClient>(),
+      accountManager: serviceLocator<AccountManager>(),
+      currentUserId: '',  // Set at runtime via cubit
+    ),
+  );
+
+  serviceLocator.registerLazySingleton<P2PConversationsCubit>(
+    () => P2PConversationsCubit(
+      repository: serviceLocator<P2PChatRepository>(),
+    ),
   );
 
   print("Dependency Injection Initialized with Hierarchical Order");

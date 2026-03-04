@@ -1127,6 +1127,8 @@ const CreditBalanceRequest$json = {
     {'1': 'metadata', '3': 8, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'service_name', '3': 9, '4': 1, '5': 9, '10': 'serviceName'},
     {'1': 'idempotency_key', '3': 10, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'counterparty_name', '3': 11, '4': 1, '5': 9, '10': 'counterpartyName'},
+    {'1': 'counterparty_account', '3': 12, '4': 1, '5': 9, '10': 'counterpartyAccount'},
   ],
 };
 
@@ -1137,7 +1139,9 @@ final $typed_data.Uint8List creditBalanceRequestDescriptor = $convert.base64Deco
     'bmN5GAQgASgJUghjdXJyZW5jeRIcCglyZWZlcmVuY2UYBSABKAlSCXJlZmVyZW5jZRISCgR0eX'
     'BlGAYgASgJUgR0eXBlEiAKC2Rlc2NyaXB0aW9uGAcgASgJUgtkZXNjcmlwdGlvbhIaCghtZXRh'
     'ZGF0YRgIIAEoCVIIbWV0YWRhdGESIQoMc2VydmljZV9uYW1lGAkgASgJUgtzZXJ2aWNlTmFtZR'
-    'InCg9pZGVtcG90ZW5jeV9rZXkYCiABKAlSDmlkZW1wb3RlbmN5S2V5');
+    'InCg9pZGVtcG90ZW5jeV9rZXkYCiABKAlSDmlkZW1wb3RlbmN5S2V5EisKEWNvdW50ZXJwYXJ0'
+    'eV9uYW1lGAsgASgJUhBjb3VudGVycGFydHlOYW1lEjEKFGNvdW50ZXJwYXJ0eV9hY2NvdW50GA'
+    'wgASgJUhNjb3VudGVycGFydHlBY2NvdW50');
 
 @$core.Deprecated('Use creditBalanceResponseDescriptor instead')
 const CreditBalanceResponse$json = {
@@ -1176,6 +1180,8 @@ const DebitBalanceRequest$json = {
     {'1': 'idempotency_key', '3': 10, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'require_hold', '3': 11, '4': 1, '5': 8, '10': 'requireHold'},
     {'1': 'hold_id', '3': 12, '4': 1, '5': 9, '10': 'holdId'},
+    {'1': 'counterparty_name', '3': 13, '4': 1, '5': 9, '10': 'counterpartyName'},
+    {'1': 'counterparty_account', '3': 14, '4': 1, '5': 9, '10': 'counterpartyAccount'},
   ],
 };
 
@@ -1187,7 +1193,9 @@ final $typed_data.Uint8List debitBalanceRequestDescriptor = $convert.base64Decod
     'UYBiABKAlSBHR5cGUSIAoLZGVzY3JpcHRpb24YByABKAlSC2Rlc2NyaXB0aW9uEhoKCG1ldGFk'
     'YXRhGAggASgJUghtZXRhZGF0YRIhCgxzZXJ2aWNlX25hbWUYCSABKAlSC3NlcnZpY2VOYW1lEi'
     'cKD2lkZW1wb3RlbmN5X2tleRgKIAEoCVIOaWRlbXBvdGVuY3lLZXkSIQoMcmVxdWlyZV9ob2xk'
-    'GAsgASgIUgtyZXF1aXJlSG9sZBIXCgdob2xkX2lkGAwgASgJUgZob2xkSWQ=');
+    'GAsgASgIUgtyZXF1aXJlSG9sZBIXCgdob2xkX2lkGAwgASgJUgZob2xkSWQSKwoRY291bnRlcn'
+    'BhcnR5X25hbWUYDSABKAlSEGNvdW50ZXJwYXJ0eU5hbWUSMQoUY291bnRlcnBhcnR5X2FjY291'
+    'bnQYDiABKAlSE2NvdW50ZXJwYXJ0eUFjY291bnQ=');
 
 @$core.Deprecated('Use debitBalanceResponseDescriptor instead')
 const DebitBalanceResponse$json = {

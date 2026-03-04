@@ -12,6 +12,10 @@ abstract class AppRoutes {
   static const String qrScanner = '/qr-scanner';
   static const String myQRCode = '/my-qr-code';
   static const String splitBills = '/split-bills';
+  static const String createSplitBill = '/split-bills/create';
+  static const String splitBillDetail = '/split-bills/detail';
+  static const String paySplitBill = '/split-bills/pay';
+  static const String splitBillReceipt = '/split-bills/receipt';
   static const String invoice = '/invoice';
   static const String invoiceList = '/invoice/list';
   static const String createInvoice = '/invoice/create';
@@ -403,6 +407,10 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   // Microservice Chat Routes
   static const String microserviceChat = '/microservice-chat';
   static const String generalChat = '/general-chat';
+
+  // P2P Chat Routes
+  static const String financialConnections = '/financial-connections';
+  static const String p2pChat = '/p2p-chat';
 
   // Two-Factor Authentication Routes
   static const String twoFactorSetup = '/auth/2fa/setup';

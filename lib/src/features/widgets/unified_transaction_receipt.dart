@@ -315,7 +315,22 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   Widget _buildDetailsCard() {
+    // Extract bank name from metadata for display alongside counterparty info
+    final bankName = tx.metadata?['bank_name'] as String?
+        ?? tx.metadata?['destination_bank_name'] as String?
+        ?? tx.metadata?['recipient_bank_name'] as String?;
+
     final rows = <_DetailEntry>[
+      // Counterparty info (recipient/sender details)
+      if (tx.counterpartyName != null && tx.counterpartyName!.isNotEmpty)
+        _DetailEntry(
+          tx.flow == TransactionFlow.incoming ? 'From' : 'To',
+          tx.counterpartyName!,
+        ),
+      if (tx.counterpartyAccount != null && tx.counterpartyAccount!.isNotEmpty)
+        _DetailEntry('Account', tx.counterpartyAccount!),
+      if (bankName != null && bankName.isNotEmpty)
+        _DetailEntry('Bank', bankName),
       if (tx.description != null)
         _DetailEntry('Description', tx.description!),
       if (tx.transactionReference != null)
@@ -340,8 +355,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         ),
     ];
 
-    // Add metadata rows (skip internal keys already shown above)
-    const _hiddenKeys = {'scheduledAt', 'status'};
+    // Add metadata rows (skip internal/already-shown keys)
+    const _hiddenKeys = {
+      'scheduledAt', 'status',
+      'balance_before', 'balance_after',
+      'bank_name', 'destination_bank_name', 'recipient_bank_name',
+      'bank_code', 'destination_bank_code',
+      'recipient_name', 'counterparty_name',
+      'recipient_account', 'counterparty_account',
+    };
     if (tx.metadata != null) {
       for (final entry in tx.metadata!.entries) {
         if (_hiddenKeys.contains(entry.key)) continue;

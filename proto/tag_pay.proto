@@ -1,70 +1,148 @@
 syntax = "proto3";
 
 package pb;
-option go_package = "lazervaultGo/pb";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "common.proto";
+
+option go_package = "tag-pay-service/proto";
 
 // TagPay Service - Instant money transfer using username tags
 service TagPayService {
   // Create or update a user's tag
-  rpc CreateTagPay(CreateTagPayRequest) returns (CreateTagPayResponse);
+  rpc CreateTagPay(CreateTagPayRequest) returns (CreateTagPayResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/create"
+      body: "*"
+    };
+  }
 
   // Get tag by username
-  rpc GetTagPay(GetTagPayRequest) returns (GetTagPayResponse);
+  rpc GetTagPay(GetTagPayRequest) returns (GetTagPayResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/{tag_pay}"
+    };
+  }
 
   // Check if tag is available
-  rpc CheckTagPayAvailability(CheckTagPayAvailabilityRequest) returns (CheckTagPayAvailabilityResponse);
+  rpc CheckTagPayAvailability(CheckTagPayAvailabilityRequest) returns (CheckTagPayAvailabilityResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/check/{tag_pay}"
+    };
+  }
 
   // Search for users by tag
-  rpc SearchTagPay(SearchTagPayRequest) returns (SearchTagPayResponse);
+  rpc SearchTagPay(SearchTagPayRequest) returns (SearchTagPayResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/search"
+    };
+  }
 
   // Send money using tag
-  rpc SendMoneyTagPay(SendMoneyTagPayRequest) returns (SendMoneyTagPayResponse);
+  rpc SendMoneyTagPay(SendMoneyTagPayRequest) returns (SendMoneyTagPayResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/send"
+      body: "*"
+    };
+  }
 
   // Request money using tag
-  rpc RequestMoneyTagPay(RequestMoneyTagPayRequest) returns (RequestMoneyTagPayResponse);
+  rpc RequestMoneyTagPay(RequestMoneyTagPayRequest) returns (RequestMoneyTagPayResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/request"
+      body: "*"
+    };
+  }
 
   // Get user's tag transactions
-  rpc GetTagPayTransactions(GetTagPayTransactionsRequest) returns (GetTagPayTransactionsResponse);
+  rpc GetTagPayTransactions(GetTagPayTransactionsRequest) returns (GetTagPayTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/transactions"
+    };
+  }
 
   // Accept money request
-  rpc AcceptMoneyRequest(AcceptMoneyRequestRequest) returns (AcceptMoneyRequestResponse);
+  rpc AcceptMoneyRequest(AcceptMoneyRequestRequest) returns (AcceptMoneyRequestResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/request/accept"
+      body: "*"
+    };
+  }
 
   // Decline money request
-  rpc DeclineMoneyRequest(DeclineMoneyRequestRequest) returns (DeclineMoneyRequestResponse);
+  rpc DeclineMoneyRequest(DeclineMoneyRequestRequest) returns (DeclineMoneyRequestResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/request/decline"
+      body: "*"
+    };
+  }
 
   // Get pending money requests
-  rpc GetPendingMoneyRequests(GetPendingMoneyRequestsRequest) returns (GetPendingMoneyRequestsResponse);
+  rpc GetPendingMoneyRequests(GetPendingMoneyRequestsRequest) returns (GetPendingMoneyRequestsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/requests/pending"
+    };
+  }
 
   // Create a tag for another user (tag them with an amount)
-  rpc CreateTag(CreateTagRequest) returns (CreateTagResponse);
+  rpc CreateTag(CreateTagRequest) returns (CreateTagResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/tag/create"
+      body: "*"
+    };
+  }
 
   // Get all tags (backward compatibility - returns outgoing tags)
-  rpc GetMyTags(GetMyTagsRequest) returns (GetMyTagsResponse);
+  rpc GetMyTags(GetMyTagsRequest) returns (GetMyTagsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/tags"
+    };
+  }
 
   // Get tags I created (I owe them money)
-  rpc GetMyOutgoingTags(GetMyTagsRequest) returns (GetMyTagsResponse);
+  rpc GetMyOutgoingTags(GetMyTagsRequest) returns (GetMyTagsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/tags/outgoing"
+    };
+  }
 
   // Get tags others created for me (they owe me money)
-  rpc GetMyIncomingTags(GetMyTagsRequest) returns (GetMyTagsResponse);
+  rpc GetMyIncomingTags(GetMyTagsRequest) returns (GetMyTagsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/tags/incoming"
+    };
+  }
 
-  // Pay a specific tag with one click (no transaction PIN required)
-  rpc PayTag(PayTagRequest) returns (PayTagResponse);
+  // Pay a specific tag with one click
+  rpc PayTag(PayTagRequest) returns (PayTagResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/tag/pay"
+      body: "*"
+    };
+  }
 
   // Search users by username or name for tagging
-  rpc SearchUsers(SearchUsersForTagRequest) returns (SearchUsersForTagResponse);
+  rpc SearchUsers(SearchUsersForTagRequest) returns (SearchUsersForTagResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tagpay/users/search"
+    };
+  }
 
-  // Batch create tags for multiple users at once
-  rpc BatchCreateTags(BatchCreateTagsRequest) returns (BatchCreateTagsResponse);
+  // Batch create tags for multiple users
+  rpc BatchCreateTags(BatchCreateTagsRequest) returns (BatchCreateTagsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/tag/batch-create"
+      body: "*"
+    };
+  }
+
 }
 
 // Tag Pay Entity
 message TagPay {
   string id = 1;
   string user_id = 2;
-  string tag_pay = 3; // e.g., "johndoe" (username)
+  string tag_pay = 3;
   string display_name = 4;
   string avatar_url = 5;
   bool is_active = 6;
@@ -109,13 +187,13 @@ message MoneyRequest {
   google.protobuf.Timestamp expires_at = 14;
 }
 
-// User Tag Entity - Simple tag system
+// User Tag Entity
 message UserTag {
   string id = 1;
-  string tagger_id = 2; // User who created the tag
+  string tagger_id = 2;
   string tagger_tag_pay = 3;
   string tagger_name = 4;
-  string tagged_user_id = 5; // User who was tagged
+  string tagged_user_id = 5;
   string tagged_user_tag_pay = 6;
   string tagged_user_name = 7;
   double amount = 8;
@@ -157,7 +235,8 @@ enum TagStatus {
   TAG_STATUS_CANCELLED = 2;
 }
 
-// Create Tag Pay
+
+// Request/Response messages
 message CreateTagPayRequest {
   string tag_pay = 1;
   string display_name = 2;
@@ -170,7 +249,6 @@ message CreateTagPayResponse {
   TagPay tag_pay = 3;
 }
 
-// Get Tag Pay
 message GetTagPayRequest {
   string tag_pay = 1;
 }
@@ -181,7 +259,6 @@ message GetTagPayResponse {
   TagPay tag_pay = 3;
 }
 
-// Check Tag Pay Availability
 message CheckTagPayAvailabilityRequest {
   string tag_pay = 1;
 }
@@ -192,7 +269,6 @@ message CheckTagPayAvailabilityResponse {
   repeated string suggestions = 3;
 }
 
-// Search Tag Pay
 message SearchTagPayRequest {
   string query = 1;
   int32 limit = 2;
@@ -203,14 +279,13 @@ message SearchTagPayResponse {
   int32 total = 2;
 }
 
-// Send Money using Tag Pay
 message SendMoneyTagPayRequest {
   string receiver_tag_pay = 1;
   double amount = 2;
   string currency = 3;
   string description = 4;
-  string source_account_id = 5; // Account to debit from
-  string transaction_pin = 6; // For security
+  string source_account_id = 5;
+  string transaction_pin = 6;
 }
 
 message SendMoneyTagPayResponse {
@@ -219,7 +294,6 @@ message SendMoneyTagPayResponse {
   TagPayTransaction transaction = 3;
 }
 
-// Request Money using Tag Pay
 message RequestMoneyTagPayRequest {
   string requestee_tag_pay = 1;
   double amount = 2;
@@ -233,11 +307,10 @@ message RequestMoneyTagPayResponse {
   MoneyRequest money_request = 3;
 }
 
-// Get Tag Pay Transactions
 message GetTagPayTransactionsRequest {
   int32 page = 1;
   int32 limit = 2;
-  TagPayTransactionType type = 3; // Optional filter
+  TagPayTransactionType type = 3;
 }
 
 message GetTagPayTransactionsResponse {
@@ -247,10 +320,9 @@ message GetTagPayTransactionsResponse {
   int32 total_pages = 4;
 }
 
-// Accept Money Request
 message AcceptMoneyRequestRequest {
   string request_id = 1;
-  string source_account_id = 2; // Account to debit from
+  string source_account_id = 2;
   string transaction_pin = 3;
 }
 
@@ -260,7 +332,6 @@ message AcceptMoneyRequestResponse {
   TagPayTransaction transaction = 3;
 }
 
-// Decline Money Request
 message DeclineMoneyRequestRequest {
   string request_id = 1;
   string reason = 2;
@@ -271,11 +342,10 @@ message DeclineMoneyRequestResponse {
   string message = 2;
 }
 
-// Get Pending Money Requests
 message GetPendingMoneyRequestsRequest {
   int32 page = 1;
   int32 limit = 2;
-  bool incoming = 3; // true for requests TO user, false for requests FROM user
+  bool incoming = 3;
 }
 
 message GetPendingMoneyRequestsResponse {
@@ -285,9 +355,8 @@ message GetPendingMoneyRequestsResponse {
   int32 total_pages = 4;
 }
 
-// Create Tag
 message CreateTagRequest {
-  string tagged_user_tag_pay = 1; // Username of user to tag
+  string tagged_user_tag_pay = 1;
   double amount = 2;
   string currency = 3;
   string description = 4;
@@ -299,11 +368,10 @@ message CreateTagResponse {
   UserTag tag = 3;
 }
 
-// Get My Tags
 message GetMyTagsRequest {
   int32 page = 1;
   int32 limit = 2;
-  TagStatus status = 3; // Optional filter
+  TagStatus status = 3;
 }
 
 message GetMyTagsResponse {
@@ -313,10 +381,9 @@ message GetMyTagsResponse {
   int32 total_pages = 4;
 }
 
-// Pay Tag
 message PayTagRequest {
   string tag_id = 1;
-  string source_account_id = 2; // Account to debit from
+  string source_account_id = 2;
   string transaction_pin = 3;
 }
 
@@ -326,7 +393,6 @@ message PayTagResponse {
   TagPayTransaction transaction = 3;
 }
 
-// Search Users for Tagging
 message SearchUsersForTagRequest {
   string query = 1;
   int32 limit = 2;
@@ -345,7 +411,6 @@ message SearchUsersForTagResponse {
   repeated UserSearchResult users = 1;
 }
 
-// Batch Create Tags
 message BatchCreateTagsRequest {
   repeated string tagged_user_tag_pays = 1;
   double amount = 2;
@@ -359,3 +424,4 @@ message BatchCreateTagsResponse {
   repeated UserTag tags = 3;
   repeated string failed_users = 4;
 }
+

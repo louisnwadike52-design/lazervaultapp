@@ -111,6 +111,19 @@ class BanksData {
     return bank.isNotEmpty ? bank['code'] : null;
   }
 
+  /// Get bank name by code (searches all countries)
+  static String? getBankNameByCode(String bankCode) {
+    for (final country in ['NG', 'GB', 'US', 'GH', 'KE', 'ZA']) {
+      final banks = getBanksForCountry(country);
+      for (final bank in banks) {
+        if (bank['code'] == bankCode) {
+          return bank['name'];
+        }
+      }
+    }
+    return null;
+  }
+
   // ============================================================
   // NIGERIAN BANKS - Real Nigerian banks with Flutterwave codes
   // ============================================================

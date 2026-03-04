@@ -22,7 +22,7 @@ const Recipient$json = {
     {'1': 'is_favorite', '3': 3, '4': 1, '5': 8, '10': 'isFavorite'},
     {'1': 'type', '3': 4, '4': 1, '5': 9, '10': 'type'},
     {'1': 'internal_account_id', '3': 5, '4': 1, '5': 4, '9': 0, '10': 'internalAccountId', '17': true},
-    {'1': 'internal_user_id', '3': 6, '4': 1, '5': 4, '9': 1, '10': 'internalUserId', '17': true},
+    {'1': 'internal_user_id', '3': 6, '4': 1, '5': 9, '10': 'internalUserId'},
     {'1': 'account_number', '3': 7, '4': 1, '5': 9, '10': 'accountNumber'},
     {'1': 'sort_code', '3': 8, '4': 1, '5': 9, '10': 'sortCode'},
     {'1': 'bank_name', '3': 9, '4': 1, '5': 9, '10': 'bankName'},
@@ -39,7 +39,6 @@ const Recipient$json = {
   ],
   '8': [
     {'1': '_internal_account_id'},
-    {'1': '_internal_user_id'},
   ],
 };
 
@@ -47,17 +46,16 @@ const Recipient$json = {
 final $typed_data.Uint8List recipientDescriptor = $convert.base64Decode(
     'CglSZWNpcGllbnQSDgoCaWQYASABKARSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSHwoLaXNfZm'
     'F2b3JpdGUYAyABKAhSCmlzRmF2b3JpdGUSEgoEdHlwZRgEIAEoCVIEdHlwZRIzChNpbnRlcm5h'
-    'bF9hY2NvdW50X2lkGAUgASgESABSEWludGVybmFsQWNjb3VudElkiAEBEi0KEGludGVybmFsX3'
-    'VzZXJfaWQYBiABKARIAVIOaW50ZXJuYWxVc2VySWSIAQESJQoOYWNjb3VudF9udW1iZXIYByAB'
-    'KAlSDWFjY291bnROdW1iZXISGwoJc29ydF9jb2RlGAggASgJUghzb3J0Q29kZRIbCgliYW5rX2'
-    '5hbWUYCSABKAlSCGJhbmtOYW1lEiEKDGNvdW50cnlfY29kZRgKIAEoCVILY291bnRyeUNvZGUS'
-    'FAoFZW1haWwYDSABKAlSBWVtYWlsEiEKDHBob25lX251bWJlchgOIAEoCVILcGhvbmVOdW1iZX'
-    'ISGgoIY3VycmVuY3kYDyABKAlSCGN1cnJlbmN5Eh0KCnN3aWZ0X2NvZGUYECABKAlSCXN3aWZ0'
-    'Q29kZRISCgRpYmFuGBEgASgJUgRpYmFuEhQKBWFsaWFzGBIgASgJUgVhbGlhcxIZCghpc19zYX'
-    'ZlZBgTIAEoCFIHaXNTYXZlZBI5CgpjcmVhdGVkX2F0GAsgASgLMhouZ29vZ2xlLnByb3RvYnVm'
-    'LlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG'
-    '9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXRCFgoUX2ludGVybmFsX2FjY291bnRfaWRCEwoRX2lu'
-    'dGVybmFsX3VzZXJfaWQ=');
+    'bF9hY2NvdW50X2lkGAUgASgESABSEWludGVybmFsQWNjb3VudElkiAEBEigKEGludGVybmFsX3'
+    'VzZXJfaWQYBiABKAlSDmludGVybmFsVXNlcklkEiUKDmFjY291bnRfbnVtYmVyGAcgASgJUg1h'
+    'Y2NvdW50TnVtYmVyEhsKCXNvcnRfY29kZRgIIAEoCVIIc29ydENvZGUSGwoJYmFua19uYW1lGA'
+    'kgASgJUghiYW5rTmFtZRIhCgxjb3VudHJ5X2NvZGUYCiABKAlSC2NvdW50cnlDb2RlEhQKBWVt'
+    'YWlsGA0gASgJUgVlbWFpbBIhCgxwaG9uZV9udW1iZXIYDiABKAlSC3Bob25lTnVtYmVyEhoKCG'
+    'N1cnJlbmN5GA8gASgJUghjdXJyZW5jeRIdCgpzd2lmdF9jb2RlGBAgASgJUglzd2lmdENvZGUS'
+    'EgoEaWJhbhgRIAEoCVIEaWJhbhIUCgVhbGlhcxgSIAEoCVIFYWxpYXMSGQoIaXNfc2F2ZWQYEy'
+    'ABKAhSB2lzU2F2ZWQSOQoKY3JlYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l'
+    'c3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLl'
+    'RpbWVzdGFtcFIJdXBkYXRlZEF0QhYKFF9pbnRlcm5hbF9hY2NvdW50X2lk');
 
 @$core.Deprecated('Use createRecipientRequestDescriptor instead')
 const CreateRecipientRequest$json = {

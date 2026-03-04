@@ -31,7 +31,7 @@ message Recipient {
 
   // Fields for INTERNAL recipients
   optional uint64 internal_account_id = 5; // ID of the linked internal account
-  optional uint64 internal_user_id = 6;    // ID of the owner of the linked internal account
+  string internal_user_id = 6;              // UUID of the owner of the linked internal account
 
   // Fields for EXTERNAL recipients
   string account_number = 7; // Consider masking in responses if sensitive

@@ -22,6 +22,9 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/recipien
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/widgets/p2p_chat_icon.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_state.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
 import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
@@ -293,8 +296,70 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                               iconColor: Color(0xFF8B5CF6),
                               isDirect: true,
                               agentDescription: 'I can help you send money, set up recurring transfers, check transfer history, view fees, and more.',
-                              size: 34,
-                              iconSize: 16,
+                              size: 38,
+                              iconSize: 18,
+                            ),
+                            SizedBox(width: 8.w),
+                            // Financial Connections (P2P Chat) icon with unread badge
+                            BlocBuilder<P2PConversationsCubit, P2PConversationsState>(
+                              bloc: serviceLocator<P2PConversationsCubit>(),
+                              builder: (context, p2pState) {
+                                final unreadCount = p2pState is P2PConversationsLoaded
+                                    ? p2pState.totalUnread + p2pState.requestCount
+                                    : 0;
+                                return GestureDetector(
+                                  onTap: () => Get.toNamed(AppRoutes.financialConnections),
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Container(
+                                        width: 38.w,
+                                        height: 38.w,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.15),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white.withValues(alpha: 0.3),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.chat_outlined,
+                                          color: Colors.white,
+                                          size: 18.sp,
+                                        ),
+                                      ),
+                                      if (unreadCount > 0)
+                                        Positioned(
+                                          right: -4,
+                                          top: -4,
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: unreadCount > 9 ? 4.w : 0,
+                                            ),
+                                            constraints: BoxConstraints(
+                                              minWidth: 18.w,
+                                              minHeight: 18.w,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFEF4444),
+                                              borderRadius: BorderRadius.circular(9.r),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              unreadCount > 99 ? '99+' : '$unreadCount',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10.sp,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
                             SizedBox(width: 8.w),
                             ServiceVoiceButton(
@@ -859,6 +924,14 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                       ),
                     ),
                   ),
+                ),
+
+                // P2P chat button (all recipients — dialog for external)
+                P2PChatIcon(
+                  otherUserId: recipient.internalUserId,
+                  otherUserName: recipient.name,
+                  isInternal: recipient.type == 'internal',
+                  accountNumber: recipient.accountNumber,
                 ),
 
                 // More options button (three-dot menu)

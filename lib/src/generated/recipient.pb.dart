@@ -26,7 +26,7 @@ class Recipient extends $pb.GeneratedMessage {
     $core.bool? isFavorite,
     $core.String? type,
     $fixnum.Int64? internalAccountId,
-    $fixnum.Int64? internalUserId,
+    $core.String? internalUserId,
     $core.String? accountNumber,
     $core.String? sortCode,
     $core.String? bankName,
@@ -111,7 +111,7 @@ class Recipient extends $pb.GeneratedMessage {
     ..aOB(3, _omitFieldNames ? '' : 'isFavorite')
     ..aOS(4, _omitFieldNames ? '' : 'type')
     ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'internalAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'internalUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(6, _omitFieldNames ? '' : 'internalUserId')
     ..aOS(7, _omitFieldNames ? '' : 'accountNumber')
     ..aOS(8, _omitFieldNames ? '' : 'sortCode')
     ..aOS(9, _omitFieldNames ? '' : 'bankName')
@@ -196,9 +196,9 @@ class Recipient extends $pb.GeneratedMessage {
   void clearInternalAccountId() => clearField(5);
 
   @$pb.TagNumber(6)
-  $fixnum.Int64 get internalUserId => $_getI64(5);
+  $core.String get internalUserId => $_getSZ(5);
   @$pb.TagNumber(6)
-  set internalUserId($fixnum.Int64 v) { $_setInt64(5, v); }
+  set internalUserId($core.String v) { $_setString(5, v); }
   @$pb.TagNumber(6)
   $core.bool hasInternalUserId() => $_has(5);
   @$pb.TagNumber(6)
