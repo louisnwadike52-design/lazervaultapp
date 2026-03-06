@@ -217,6 +217,8 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
             'message_count': conversationState.messageCount,
             'key_entities': conversationState.keyEntities,
             'isSystemMessage': false,
+            if (response.receiptData != null)
+              'receipt_data': response.receiptData,
           },
         );
         updatedMessages.add(botMessage);

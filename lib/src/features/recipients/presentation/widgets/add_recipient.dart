@@ -902,6 +902,8 @@ class _AddRecipientState extends State<AddRecipient> {
       countryCode: countryCode,
       currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: selectedUser.email.isNotEmpty ? selectedUser.email : null,
+      type: 'internal', // Explicitly set type for LazerVault users
+      internalUserId: selectedUser.userId,
     );
 
     // Navigate directly to send funds with temporary recipient
@@ -1159,6 +1161,8 @@ class _AddRecipientState extends State<AddRecipient> {
       countryCode: countryCode,
       currency: CountryConfigs.getByCode(countryCode ?? 'NG')?.currency ?? 'NGN',
       email: _selectedUser!.email.isNotEmpty ? _selectedUser!.email : null,
+      type: 'internal', // Explicitly set type for LazerVault users
+      internalUserId: _selectedUser!.userId,
     );
 
     // Navigate directly to send funds with temporary recipient
@@ -2099,6 +2103,8 @@ class _AddRecipientState extends State<AddRecipient> {
       isFavorite: false,
       isSaved: false,
       countryCode: countryCode,
+      type: 'internal', // Explicitly set type for LazerVault users
+      internalUserId: matchedUser.userId,
     );
 
     // Navigate to initiate send funds with recipient data
@@ -3019,6 +3025,7 @@ class _AddRecipientState extends State<AddRecipient> {
       alias: alias,
       countryCode: 'NG',
       currency: 'NGN',
+      type: 'external', // Explicitly set type for external bank recipients
     );
 
     // Navigate to payment screen with temporary recipient
@@ -3770,33 +3777,35 @@ class _AddRecipientState extends State<AddRecipient> {
 
   /// Show account confirmation bottomsheet after successful verification
   void _showAccountConfirmationBottomSheet(AccountVerificationResult result) {
+    final sheetKey = GlobalKey<AccountConfirmationBottomSheetState>();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       isDismissible: false,
-      builder: (context) {
+      builder: (sheetContext) {
         return AccountConfirmationBottomSheet(
+          key: sheetKey,
           accountNumber: result.accountNumber,
           accountName: result.accountName,
           bankName: result.bankName,
           bankCode: result.bankCode,
           onConfirm: () {
-            // Get save/favorite/alias status from bottomsheet
-            final bottomSheet = context.findAncestorStateOfType<AccountConfirmationBottomSheetState>();
-            final isSaved = bottomSheet?.isSaved ?? false;
-            final isFavorite = bottomSheet?.isFavorite ?? false;
-            final alias = bottomSheet?.alias;
+            // Get save/favorite/alias status from bottomsheet via GlobalKey
+            final sheetState = sheetKey.currentState;
+            final isSaved = sheetState?.isSaved ?? false;
+            final isFavorite = sheetState?.isFavorite ?? false;
+            final alias = sheetState?.alias;
 
             // Close bottomsheet
-            Navigator.pop(context);
+            Navigator.pop(sheetContext);
 
             // Proceed to payment WITHOUT saving to DB (Lemfi-style)
             _proceedToPayment(result, isSaved, isFavorite, alias);
           },
           onCancel: () {
             // Close bottomsheet and reset verification
-            Navigator.pop(context);
+            Navigator.pop(sheetContext);
             setState(() {
               _verificationResult = null;
             });
@@ -3821,6 +3830,7 @@ class _AddRecipientState extends State<AddRecipient> {
       alias: alias,
       countryCode: 'NG',
       currency: 'NGN',
+      type: 'external', // Explicitly set type for external bank recipients
     );
 
     // Navigate to payment screen with temporary recipient

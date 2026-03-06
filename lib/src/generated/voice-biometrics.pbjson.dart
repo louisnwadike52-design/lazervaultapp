@@ -33,6 +33,62 @@ final $typed_data.Uint8List verificationStatusDescriptor = $convert.base64Decode
     'T05fTk9fRU5ST0xMTUVOVBADEh0KGVZFUklGSUNBVElPTl9QT09SX1FVQUxJVFkQBBIiCh5WRV'
     'JJRklDQVRJT05fVEhSRVNIT0xEX05PVF9NRVQQBQ==');
 
+@$core.Deprecated('Use voiceAudioChunkDescriptor instead')
+const VoiceAudioChunk$json = {
+  '1': 'VoiceAudioChunk',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'audio_data', '3': 2, '4': 1, '5': 12, '10': 'audioData'},
+    {'1': 'sequence_number', '3': 3, '4': 1, '5': 3, '10': 'sequenceNumber'},
+    {'1': 'is_final', '3': 4, '4': 1, '5': 8, '10': 'isFinal'},
+    {'1': 'format', '3': 5, '4': 1, '5': 11, '6': '.voicebiometrics.AudioFormat', '10': 'format'},
+    {'1': 'metadata', '3': 6, '4': 3, '5': 11, '6': '.voicebiometrics.VoiceAudioChunk.MetadataEntry', '10': 'metadata'},
+  ],
+  '3': [VoiceAudioChunk_MetadataEntry$json],
+};
+
+@$core.Deprecated('Use voiceAudioChunkDescriptor instead')
+const VoiceAudioChunk_MetadataEntry$json = {
+  '1': 'MetadataEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `VoiceAudioChunk`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List voiceAudioChunkDescriptor = $convert.base64Decode(
+    'Cg9Wb2ljZUF1ZGlvQ2h1bmsSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEh0KCmF1ZGlvX2RhdG'
+    'EYAiABKAxSCWF1ZGlvRGF0YRInCg9zZXF1ZW5jZV9udW1iZXIYAyABKANSDnNlcXVlbmNlTnVt'
+    'YmVyEhkKCGlzX2ZpbmFsGAQgASgIUgdpc0ZpbmFsEjQKBmZvcm1hdBgFIAEoCzIcLnZvaWNlYm'
+    'lvbWV0cmljcy5BdWRpb0Zvcm1hdFIGZm9ybWF0EkoKCG1ldGFkYXRhGAYgAygLMi4udm9pY2Vi'
+    'aW9tZXRyaWNzLlZvaWNlQXVkaW9DaHVuay5NZXRhZGF0YUVudHJ5UghtZXRhZGF0YRo7Cg1NZX'
+    'RhZGF0YUVudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgJUgV2YWx1ZToCOAE=');
+
+@$core.Deprecated('Use verifyVoiceStreamResponseDescriptor instead')
+const VerifyVoiceStreamResponse$json = {
+  '1': 'VerifyVoiceStreamResponse',
+  '2': [
+    {'1': 'verified', '3': 1, '4': 1, '5': 8, '10': 'verified'},
+    {'1': 'similarity_score', '3': 2, '4': 1, '5': 2, '10': 'similarityScore'},
+    {'1': 'confidence', '3': 3, '4': 1, '5': 2, '10': 'confidence'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.voicebiometrics.VerificationStatus', '10': 'status'},
+    {'1': 'needs_more_audio', '3': 6, '4': 1, '5': 8, '10': 'needsMoreAudio'},
+    {'1': 'chunks_processed', '3': 7, '4': 1, '5': 5, '10': 'chunksProcessed'},
+  ],
+};
+
+/// Descriptor for `VerifyVoiceStreamResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyVoiceStreamResponseDescriptor = $convert.base64Decode(
+    'ChlWZXJpZnlWb2ljZVN0cmVhbVJlc3BvbnNlEhoKCHZlcmlmaWVkGAEgASgIUgh2ZXJpZmllZB'
+    'IpChBzaW1pbGFyaXR5X3Njb3JlGAIgASgCUg9zaW1pbGFyaXR5U2NvcmUSHgoKY29uZmlkZW5j'
+    'ZRgDIAEoAlIKY29uZmlkZW5jZRIYCgdtZXNzYWdlGAQgASgJUgdtZXNzYWdlEjsKBnN0YXR1cx'
+    'gFIAEoDjIjLnZvaWNlYmlvbWV0cmljcy5WZXJpZmljYXRpb25TdGF0dXNSBnN0YXR1cxIoChBu'
+    'ZWVkc19tb3JlX2F1ZGlvGAYgASgIUg5uZWVkc01vcmVBdWRpbxIpChBjaHVua3NfcHJvY2Vzc2'
+    'VkGAcgASgFUg9jaHVua3NQcm9jZXNzZWQ=');
+
 @$core.Deprecated('Use enrollVoiceRequestDescriptor instead')
 const EnrollVoiceRequest$json = {
   '1': 'EnrollVoiceRequest',

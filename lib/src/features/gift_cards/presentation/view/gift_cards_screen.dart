@@ -174,7 +174,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     Get.bottomSheet(
       FractionallySizedBox(
         heightFactor: 0.85,
-        child: VoiceCommandSheet(suggestions: giftCardSuggestions),
+        child: VoiceCommandSheet(),
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

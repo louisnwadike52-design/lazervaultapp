@@ -138,7 +138,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
               if (Navigator.of(context).canPop()) {
                 Get.back();
               } else {
-                Get.offAllNamed(AppRoutes.home);
+                Get.offAllNamed(AppRoutes.dashboard);
               }
             },
             child: Container(

@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
@@ -1013,8 +1014,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         MarkdownBody(
-                          data: message.text,
-                          selectable: true,
+                          data: isUser ? maskIfPin(message.text) : message.text,
+                          selectable: !isUser || !isPinText(message.text),
                           styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
                             p: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Colors.white,

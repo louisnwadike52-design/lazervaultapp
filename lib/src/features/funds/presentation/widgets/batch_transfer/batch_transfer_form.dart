@@ -213,6 +213,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
       email: user.email,
       phoneNumber: user.phoneNumber,
       type: 'internal',
+      internalUserId: user.userId,
     );
   }
 

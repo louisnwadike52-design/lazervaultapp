@@ -109,6 +109,8 @@ import 'package:lazervault/src/features/recipients/data/repositories/recipient_r
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
+import 'package:lazervault/src/features/voice/cubit/voice_settings_cubit.dart';
+import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
@@ -643,8 +645,8 @@ Future<void> init() async {
   // Register Voice Biometrics Service
   serviceLocator.registerLazySingleton<VoiceBiometricsService>(
     () => VoiceBiometricsService(
-      baseUrl: 'http://10.0.2.2:8888', // Android emulator
-      // baseUrl: 'http://localhost:8888', // iOS simulator
+      baseUrl: 'http://10.0.2.2:3010', // Android emulator
+      // baseUrl: 'http://localhost:3010', // iOS simulator
       client: serviceLocator<http.Client>(),
     ),
   );
@@ -890,9 +892,15 @@ Future<void> init() async {
     () => ReferralServiceClient(serviceLocator<ClientChannel>()),
   );
 
+
+  // Voice Biometrics Service Channel - Direct connection to voice-biometrics-service (port 50060)
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createVoiceBiometricsChannel(),
+    instanceName: 'voiceBiometricsChannel',
+  );
   // Voice Biometrics Service Client
   serviceLocator.registerLazySingleton<VoiceBiometricsServiceClient>(
-    () => VoiceBiometricsServiceClient(serviceLocator<ClientChannel>()),
+    () => VoiceBiometricsServiceClient(serviceLocator<ClientChannel>(instanceName: 'voiceBiometricsChannel')),
   );
 
   // Notifications Service Client - Uses Core Gateway (50070)
@@ -2182,6 +2190,19 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<VoiceSessionCubit>(
     () => VoiceSessionCubit(),
   );
+
+  // Voice Settings Service and Cubit
+//   serviceLocator.registerLazySingleton<VoiceSettingsService>(
+//     () => VoiceSettingsService()
+//       dotenv.env['VOICE_SETTINGS_URL'] ??
+//           dotenv.env['AUTH_GATEWAY_URL'] ??
+//           'http://localhost:7878', // Falls back to core gateway which proxies to auth-service
+//     ),
+//   );
+// 
+//   serviceLocator.registerFactory<VoiceSettingsCubit>(
+//     () => VoiceSettingsCubit(serviceLocator<VoiceSettingsService>()),
+//   );
 
   // Voice Enrollment Repository - with real gRPC backend integration
   serviceLocator.registerLazySingleton<VoiceEnrollmentRepository>(

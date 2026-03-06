@@ -390,6 +390,21 @@ class VoiceBiometricsService {
     throw VoiceBiometricsException('Max retries exceeded');
   }
 
+
+  /// Check if the voice biometrics service is available
+  Future<bool> isServiceAvailable() async {
+    try {
+      final uri = Uri.parse('$baseUrl/health');
+      final response = await _client.get(uri).timeout(
+        const Duration(seconds: 5),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('VoiceBiometricsService: Service unavailable: $e');
+      return false;
+    }
+  }
+
   /// Dispose resources
   void dispose() {
     _client.close();

@@ -272,7 +272,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
     Get.bottomSheet(
       FractionallySizedBox(
         heightFactor: 0.85,
-        child: VoiceCommandSheet(suggestions: stocksSuggestions),
+        child: VoiceCommandSheet(),
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

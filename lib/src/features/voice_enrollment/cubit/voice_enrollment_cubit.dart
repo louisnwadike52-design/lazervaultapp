@@ -244,6 +244,112 @@ class VoiceEnrollmentCubit extends Cubit<VoiceEnrollmentState> {
     emit(VoiceEnrollmentInitial(currentStep: 0, totalSteps: 3));
   }
 
+  // ── Carousel-mode methods ──
+
+  /// Start enrollment in carousel mode (single screen with PageView)
+  Future<void> startCarouselEnrollment() async {
+    _currentStep = 0;
+    _recordedSamples.clear();
+    await _clearSavedProgress();
+    emit(VoiceEnrollmentCarouselState(activePage: 0));
+  }
+
+  /// Update the active carousel page
+  void setActivePage(int page) {
+    final current = state;
+    if (current is VoiceEnrollmentCarouselState) {
+      emit(current.copyWith(activePage: page));
+    }
+  }
+
+  /// Record sample for a specific carousel page index
+  Future<void> recordSample(int index) async {
+    final current = state;
+    if (current is! VoiceEnrollmentCarouselState) return;
+    if (current.isRecording || current.isProcessing) return;
+
+    try {
+      final hasPermission = await _repository.checkMicrophonePermission();
+      if (!hasPermission) {
+        emit(VoiceEnrollmentPermissionDenied());
+        return;
+      }
+
+      final recordingStream = await _repository.startRecording();
+
+      emit(current.copyWith(isRecording: true, soundLevel: 0.0));
+
+      _soundLevelSubscription = recordingStream.soundLevel.listen((level) {
+        if (state is VoiceEnrollmentCarouselState) {
+          final s = state as VoiceEnrollmentCarouselState;
+          if (s.isRecording) {
+            emit(s.copyWith(soundLevel: level));
+          }
+        }
+      });
+
+      // Auto-stop after 5 seconds
+      _recordingTimer = Timer(const Duration(seconds: 5), () {
+        stopCarouselRecording(index);
+      });
+    } catch (e) {
+      emit(VoiceEnrollmentError(
+        message: 'Failed to start recording: ${e.toString()}',
+      ));
+    }
+  }
+
+  /// Stop carousel recording and mark sample as completed
+  Future<void> stopCarouselRecording(int index) async {
+    final current = state;
+    if (current is! VoiceEnrollmentCarouselState) return;
+    if (!current.isRecording) return;
+
+    try {
+      _recordingTimer?.cancel();
+      await _soundLevelSubscription?.cancel();
+
+      final audioFile = await _repository.stopRecording();
+
+      // Replace or add sample at index
+      while (_recordedSamples.length <= index) {
+        _recordedSamples.add(audioFile); // placeholder
+      }
+      _recordedSamples[index] = audioFile;
+
+      emit(current.copyWith(isRecording: false, isProcessing: true));
+
+      // Brief processing delay
+      await Future.delayed(const Duration(milliseconds: 400));
+
+      final updatedCompleted = List<bool>.from(current.sampleCompleted);
+      updatedCompleted[index] = true;
+
+      _currentStep = index;
+      await _saveProgress();
+
+      final newState = VoiceEnrollmentCarouselState(
+        activePage: current.activePage,
+        sampleCompleted: updatedCompleted,
+        isRecording: false,
+        soundLevel: 0.0,
+        isProcessing: false,
+      );
+
+      // If all 3 completed, auto-enroll
+      if (newState.allCompleted) {
+        emit(newState);
+        await _enrollVoice();
+      } else {
+        emit(newState);
+      }
+    } catch (e) {
+      emit(VoiceEnrollmentError(
+        message: 'Failed to process recording: ${e.toString()}',
+      ));
+    }
+  }
+
   @override
   Future<void> close() {
     _recordingTimer?.cancel();

@@ -392,6 +392,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String voiceEnrollment = '/voice/enrollment';
   static const String voiceActivationPrompt = '/voice/activation-prompt';
   static const String voiceVerification = '/voice/verification';
+  static const String voiceSettings = '/voice/settings';
 
   // Family Account Routes
   static const String familyAccounts = '/family/accounts';

@@ -78,22 +78,22 @@ class AccountConfirmationBottomSheetState
 
           // Content
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(height: 8.h),
+                SizedBox(height: 12.h),
 
                 // Account Details Card
                 _buildAccountDetailsCard(),
 
-                SizedBox(height: 8.h),
+                SizedBox(height: 16.h),
 
                 // Warning Info Box
                 _buildInfoBox(),
 
-                SizedBox(height: 6.h),
+                SizedBox(height: 16.h),
 
                 // Favorite Toggle
                 _buildFavoriteToggle(),
@@ -104,7 +104,7 @@ class AccountConfirmationBottomSheetState
             ),
           ),
 
-          SizedBox(height: 4.h),
+          SizedBox(height: 12.h),
 
           // Bottom Action Buttons
           _buildBottomActions(),
@@ -116,10 +116,10 @@ class AccountConfirmationBottomSheetState
   Widget _buildDragHandle() {
     return Container(
       width: 36.w,
-      height: 3.h,
-      margin: EdgeInsets.symmetric(vertical: 6.h),
+      height: 4.h,
+      margin: EdgeInsets.only(top: 10.h, bottom: 6.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFE5E7EB),
+        color: const Color(0xFFD1D5DB),
         borderRadius: BorderRadius.circular(2.r),
       ),
     );
@@ -127,15 +127,15 @@ class AccountConfirmationBottomSheetState
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       child: Row(
         children: [
           // Success Icon with animation
           ScaleTransition(
             scale: _scaleAnimation,
             child: Container(
-              width: 28.w,
-              height: 28.h,
+              width: 36.w,
+              height: 36.h,
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
@@ -143,18 +143,18 @@ class AccountConfirmationBottomSheetState
               child: Icon(
                 Icons.check_circle,
                 color: const Color(0xFF10B981),
-                size: 18.sp,
+                size: 22.sp,
               ),
             ),
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 10.w),
 
           // Title
           Expanded(
             child: Text(
               'Account Verified',
               style: TextStyle(
-                fontSize: 15.sp,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF111827),
               ),
@@ -167,7 +167,7 @@ class AccountConfirmationBottomSheetState
             child: Icon(
               Icons.close,
               color: const Color(0xFF6B7280),
-              size: 18.sp,
+              size: 20.sp,
             ),
           ),
         ],
@@ -177,7 +177,7 @@ class AccountConfirmationBottomSheetState
 
   Widget _buildAccountDetailsCard() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -187,12 +187,12 @@ class AccountConfirmationBottomSheetState
             const Color(0xFF5F14E1),
           ],
         ),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4E03D0).withValues(alpha: 0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -203,25 +203,25 @@ class AccountConfirmationBottomSheetState
           Row(
             children: [
               Container(
-                width: 24.w,
-                height: 24.h,
+                width: 36.w,
+                height: 36.w,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(5.r),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   Icons.account_balance,
                   color: Colors.white,
-                  size: 13.sp,
+                  size: 18.sp,
                 ),
               ),
-              SizedBox(width: 8.w),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   widget.bankName,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 12.sp,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -229,90 +229,67 @@ class AccountConfirmationBottomSheetState
             ],
           ),
 
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 6.h),
-            child: Container(
-              height: 1,
-              color: Colors.white.withValues(alpha: 0.15),
+          SizedBox(height: 14.h),
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
+          SizedBox(height: 14.h),
+
+          // Account holder
+          Text(
+            'Account Holder',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            widget.accountName.toUpperCase(),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
             ),
           ),
 
-          // Account holder + account number in a compact 2-column layout
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Account holder
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Account Holder',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      widget.accountName.toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 8.w),
-              // Account number
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Account No.',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      widget.accountNumber,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          SizedBox(height: 14.h),
+
+          // Account number
+          Text(
+            'Account No.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 11.sp,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            widget.accountNumber,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.8,
+            ),
           ),
 
           // Alias display
           if (_alias != null && _alias!.isNotEmpty) ...[
-            SizedBox(height: 6.h),
+            SizedBox(height: 8.h),
             Row(
               children: [
                 Icon(
                   Icons.label_outline,
-                  color: Colors.white.withValues(alpha: 0.9),
-                  size: 12.sp,
+                  color: Colors.white70,
+                  size: 14.sp,
                 ),
-                SizedBox(width: 4.w),
+                SizedBox(width: 6.w),
                 Text(
                   'Alias: $_alias',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 11.sp,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -326,10 +303,10 @@ class AccountConfirmationBottomSheetState
 
   Widget _buildInfoBox() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: const Color(0xFFFEF3C7),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(
           color: const Color(0xFFFBBF24),
           width: 1,
@@ -340,16 +317,16 @@ class AccountConfirmationBottomSheetState
           Icon(
             Icons.info_outline,
             color: const Color(0xFFD97706),
-            size: 14.sp,
+            size: 18.sp,
           ),
-          SizedBox(width: 6.w),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               'Double-check the name matches the intended recipient.',
               style: TextStyle(
                 color: const Color(0xFF92400E),
-                fontSize: 11.sp,
-                height: 1.2,
+                fontSize: 12.sp,
+                height: 1.4,
               ),
             ),
           ),
@@ -364,27 +341,27 @@ class AccountConfirmationBottomSheetState
       children: [
         // Save Recipient toggle
         SizedBox(
-          height: 36.h,
+          height: 40.h,
           child: Row(
             children: [
               Icon(
                 _isSaved ? Icons.bookmark : Icons.bookmark_outline,
-                color: _isSaved ? const Color(0xFF4E03D0) : const Color(0xFF6B7280),
-                size: 16.sp,
+                color: _isSaved ? const Color(0xFF4E03D0) : const Color(0xFF9CA3AF),
+                size: 20.sp,
               ),
-              SizedBox(width: 6.w),
+              SizedBox(width: 8.w),
               Expanded(
                 child: Text(
                   'Save Recipient',
                   style: TextStyle(
-                    color: const Color(0xFF111827),
-                    fontSize: 12.sp,
+                    color: const Color(0xFF374151),
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
               Transform.scale(
-                scale: 0.75,
+                scale: 0.85,
                 child: Switch(
                   value: _isSaved,
                   onChanged: (value) {
@@ -403,27 +380,27 @@ class AccountConfirmationBottomSheetState
         // Add to Favorites toggle (only visible when saved)
         if (_isSaved)
           SizedBox(
-            height: 36.h,
+            height: 40.h,
             child: Row(
               children: [
                 Icon(
                   _isFavorite ? Icons.star : Icons.star_outline,
-                  color: _isFavorite ? const Color(0xFFF59E0B) : const Color(0xFF6B7280),
-                  size: 16.sp,
+                  color: _isFavorite ? const Color(0xFFF59E0B) : const Color(0xFF9CA3AF),
+                  size: 20.sp,
                 ),
-                SizedBox(width: 6.w),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     'Add to Favorites',
                     style: TextStyle(
-                      color: const Color(0xFF111827),
-                      fontSize: 12.sp,
+                      color: const Color(0xFF374151),
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
                 Transform.scale(
-                  scale: 0.75,
+                  scale: 0.85,
                   child: Switch(
                     value: _isFavorite,
                     onChanged: (value) {
@@ -513,16 +490,10 @@ class AccountConfirmationBottomSheetState
 
   Widget _buildBottomActions() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 6,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        border: Border(top: BorderSide(color: const Color(0xFFF3F4F6), width: 1)),
       ),
       child: SafeArea(
         child: Row(
@@ -532,27 +503,27 @@ class AccountConfirmationBottomSheetState
               child: OutlinedButton(
                 onPressed: widget.onCancel,
                 style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10.h),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   side: const BorderSide(
                     color: Color(0xFFE5E7EB),
                     width: 1.5,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
                 child: Text(
                   'Cancel',
                   style: TextStyle(
                     color: const Color(0xFF374151),
-                    fontSize: 13.sp,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
 
-            SizedBox(width: 10.w),
+            SizedBox(width: 12.w),
 
             // Confirm button
             Expanded(
@@ -560,10 +531,10 @@ class AccountConfirmationBottomSheetState
               child: ElevatedButton(
                 onPressed: widget.onConfirm,
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10.h),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   backgroundColor: const Color(0xFF4E03D0),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   elevation: 2,
                 ),
@@ -574,15 +545,15 @@ class AccountConfirmationBottomSheetState
                       'Confirm',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 13.sp,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 4.w),
+                    SizedBox(width: 6.w),
                     Icon(
                       Icons.check_circle_outline,
                       color: Colors.white,
-                      size: 16.sp,
+                      size: 18.sp,
                     ),
                   ],
                 ),

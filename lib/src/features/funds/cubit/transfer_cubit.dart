@@ -110,6 +110,8 @@ class TransferCubit extends Cubit<TransferState> {
   Future<void> sendFunds({
     required String fromAccountId,
     required String toAccountNumber,
+    String? toAccountId,              // Account UUID for internal transfers
+    required String type,              // "internal" or "external" - PRIMARY KEY
     required double amount,             // Amount in major units (e.g., 100.50)
     required String description,
     required String transactionId,
@@ -123,6 +125,8 @@ class TransferCubit extends Cubit<TransferState> {
       final result = await paymentsTransferDataSource.sendFunds(
         fromAccountId: fromAccountId,
         toAccountNumber: toAccountNumber,
+        toAccountId: toAccountId,
+        type: type,  // REQUIRED: "internal" or "external"
         amount: amount,
         description: description,
         transactionId: transactionId,

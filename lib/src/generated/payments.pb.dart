@@ -496,6 +496,8 @@ class SendFundsRequest extends $pb.GeneratedMessage {
     $core.String? verificationToken,
     $core.String? destinationBankCode,
     $core.String? beneficiaryName,
+    $core.String? toAccountId,
+    $core.String? type,
   }) {
     final $result = create();
     if (fromAccountId != null) {
@@ -522,6 +524,12 @@ class SendFundsRequest extends $pb.GeneratedMessage {
     if (beneficiaryName != null) {
       $result.beneficiaryName = beneficiaryName;
     }
+    if (toAccountId != null) {
+      $result.toAccountId = toAccountId;
+    }
+    if (type != null) {
+      $result.type = type;
+    }
     return $result;
   }
   SendFundsRequest._() : super();
@@ -537,6 +545,8 @@ class SendFundsRequest extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'verificationToken')
     ..aOS(7, _omitFieldNames ? '' : 'destinationBankCode')
     ..aOS(8, _omitFieldNames ? '' : 'beneficiaryName')
+    ..aOS(9, _omitFieldNames ? '' : 'toAccountId')
+    ..aOS(10, _omitFieldNames ? '' : 'type')
     ..hasRequiredFields = false
   ;
 
@@ -634,6 +644,24 @@ class SendFundsRequest extends $pb.GeneratedMessage {
   $core.bool hasBeneficiaryName() => $_has(7);
   @$pb.TagNumber(8)
   void clearBeneficiaryName() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get toAccountId => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set toAccountId($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasToAccountId() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearToAccountId() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get type => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set type($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasType() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearType() => clearField(10);
 }
 
 class SendFundsResponse extends $pb.GeneratedMessage {

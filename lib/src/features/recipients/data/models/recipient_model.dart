@@ -43,6 +43,7 @@ class RecipientModel {
   factory RecipientModel.fromProto(proto.Recipient recipient) {
     // Determine type: LazerVault bank recipients are internal, not external
     String? resolvedType = recipient.type.isNotEmpty ? recipient.type : null;
+    print("DEBUG RecipientModel.fromProto: name: ${recipient.name}, bank: ${recipient.bankName}, proto.type: '${recipient.type}', resolvedType: $resolvedType");
     if (recipient.bankName.toLowerCase() == 'lazervault') {
       resolvedType = 'internal';
     }

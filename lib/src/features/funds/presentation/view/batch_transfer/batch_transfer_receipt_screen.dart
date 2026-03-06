@@ -79,7 +79,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   }
 
   void _navigateToDashboard() {
-    Get.offAllNamed(AppRoutes.home);
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 
   // --- Status helpers ---

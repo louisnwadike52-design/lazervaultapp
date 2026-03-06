@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/microservice_chat_cubit.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/microservice_chat_state.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/entities/microservice_chat_message_entity.dart';
@@ -35,6 +36,7 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
   final ScrollController _scrollController = ScrollController();
   late AnimationController _typingDotsController;
   String? _userAvatarUrl;
+  bool _isPinMode = false;
 
   // Media state
   final ImagePicker _imagePicker = ImagePicker();
@@ -407,7 +409,7 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                       message.text != 'Sent a voice note') ...[
                     isUser
                         ? Text(
-                            message.text,
+                            maskIfPin(message.text),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 15,
@@ -555,8 +557,11 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                     child: TextField(
                       controller: _textController,
                       style: const TextStyle(color: Colors.white),
+                      obscureText: _isPinMode,
+                      obscuringCharacter: '*',
+                      keyboardType: _isPinMode ? TextInputType.number : TextInputType.text,
                       decoration: InputDecoration(
-                        hintText: 'Type your message...',
+                        hintText: _isPinMode ? 'Enter your PIN...' : 'Type your message...',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         filled: true,
                         fillColor: Colors.grey[800],
@@ -570,11 +575,18 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                         ),
                       ),
                       minLines: 1,
-                      maxLines: 4,
+                      maxLines: _isPinMode ? 1 : 4,
+                      onChanged: (text) {
+                        final looksLikePin = RegExp(r'^\d{4,6}$').hasMatch(text.trim());
+                        if (looksLikePin != _isPinMode) {
+                          setState(() => _isPinMode = looksLikePin);
+                        }
+                      },
                       onSubmitted: (text) {
                         if (text.trim().isNotEmpty && state is! MicroserviceChatMessageLoading) {
                           context.read<MicroserviceChatCubit>().sendMessage(text);
                           _textController.clear();
+                          if (_isPinMode) setState(() => _isPinMode = false);
                         }
                       },
                     ),

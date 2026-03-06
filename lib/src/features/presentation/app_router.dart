@@ -109,6 +109,9 @@ import 'package:lazervault/src/features/cards/presentation/view/card_creation_fo
 import 'package:lazervault/src/features/cards/presentation/view/card_creation_receipt_screen.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_screen.dart';
+import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
+import 'package:lazervault/src/features/voice/screens/voice_settings_screen.dart';
+import 'package:lazervault/src/features/voice/cubit/voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice_activation/presentation/voice_activation_prompt_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_carousel.dart';
@@ -2683,7 +2686,15 @@ GetPage(
       name: AppRoutes.voiceEnrollment,
       page: () => BlocProvider(
         create: (_) => serviceLocator<VoiceEnrollmentCubit>(),
-        child: const VoiceEnrollmentScreen(),
+        child: const VoiceEnrollmentCarouselScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.voiceSettings,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<VoiceSettingsCubit>(),
+        child: const VoiceSettingsScreen(),
       ),
       transition: Transition.rightToLeft,
     ),

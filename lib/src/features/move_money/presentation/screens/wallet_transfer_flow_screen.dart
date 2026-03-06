@@ -214,6 +214,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
         context.read<WalletTransferCubit>().transferBetweenAccounts(
               fromAccountId: source.id,
               toAccountNumber: toAccountNumber,
+              type: 'internal',
               amount: amount,
               description: description,
               transactionId: transactionId,

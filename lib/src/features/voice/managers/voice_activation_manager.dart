@@ -1,34 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
-import 'package:lazervault/src/features/voice/presentation/screens/voice_verification_screen.dart';
-import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_screen.dart';
+import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
 
 /// Voice Activation Manager
-/// Orchestrates the complete voice activation flow:
-/// 1. Check enrollment status
-/// 2. Prompt for enrollment if not enrolled
-/// 3. Verify voice before granting access
+/// Orchestrates voice enrollment flow.
+/// Verification happens automatically in the background during voice sessions.
 class VoiceActivationManager {
   final VoiceBiometricsService _voiceService = GetIt.I<VoiceBiometricsService>();
 
+  /// Check if the voice biometrics service is available
+  Future<bool> isServiceAvailable() async {
+    try {
+      return await _voiceService.isServiceAvailable();
+    } catch (e) {
+      print('VoiceActivationManager: Service unavailable: $e');
+      return false;
+    }
+  }
   /// Check if user has enrolled voice
   Future<bool> isVoiceEnrolled(String userId) async {
     try {
       final status = await _voiceService.checkEnrollmentStatus(userId);
+      print('VoiceActivationManager: Enrollment status for $userId: ${status.isEnrolled}');
       return status.isEnrolled;
     } catch (e) {
+      // Log the error for debugging
+      print('VoiceActivationManager: Error checking enrollment status: $e');
       // On error, assume not enrolled to be safe
       return false;
     }
   }
 
-  /// Activate voice features with complete flow
-  /// Returns true if voice is activated/verified, false otherwise
+  /// Activate voice features - check enrollment and prompt if needed.
+  /// Returns true if enrolled, false if enrollment is required.
+  ///
+  /// Note: Voice verification now happens automatically in the background
+  /// during voice sessions via the voice-agent-gateway. The user will only
+  /// be notified if verification fails.
   Future<bool> activateVoice(
     BuildContext context,
     String userId, {
-    bool forceVerification = false,
     VoidCallback? onSuccess,
   }) async {
     // Check enrollment status
@@ -37,21 +49,20 @@ class VoiceActivationManager {
     if (!isEnrolled) {
       if (!context.mounted) return false;
       // User needs to enroll first
-      return _showEnrollmentPrompt(context, userId);
+      return _showEnrollmentPrompt(context, userId, onSuccess);
     }
 
-    // User is enrolled, verify voice
-    if (forceVerification) {
-      if (!context.mounted) return false;
-      return _showVerificationScreen(context, userId, onSuccess);
-    }
-
-    // Allow access (caller can decide if they want to verify)
+    // User is enrolled - verification will happen in background during session
+    if (onSuccess != null) onSuccess();
     return true;
   }
 
   /// Show enrollment prompt with explanation
-  bool _showEnrollmentPrompt(BuildContext context, String userId) {
+  bool _showEnrollmentPrompt(
+    BuildContext context,
+    String userId,
+    VoidCallback? onEnrollmentSuccess,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -91,7 +102,7 @@ class VoiceActivationManager {
             BulletPoint(text: 'Pay bills and manage investments'),
             SizedBox(height: 16),
             Text(
-              'The process takes about 2 minutes and requires recording 5 voice samples.',
+              'The process takes less than a minute and requires recording 3 voice samples.',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
@@ -111,11 +122,15 @@ class VoiceActivationManager {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => VoiceEnrollmentScreen(
+                  builder: (context) => VoiceEnrollmentCarouselScreen(
                     userId: userId,
                     onEnrollmentComplete: () {
-                      // Navigate back after enrollment
+                      // Navigate back after enrollment and call success callback
                       Navigator.pop(context);
+                      // Call the original success callback to continue with voice flow
+                      if (onEnrollmentSuccess != null) {
+                        onEnrollmentSuccess();
+                      }
                     },
                   ),
                 ),
@@ -132,39 +147,6 @@ class VoiceActivationManager {
     );
 
     return false;
-  }
-
-  /// Show verification screen
-  bool _showVerificationScreen(
-    BuildContext context,
-    String userId,
-    VoidCallback? onSuccess,
-  ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VoiceVerificationScreen(
-          userId: userId,
-          onVerificationSuccess: onSuccess,
-          onEnrollmentRequired: () {
-            // Navigate to enrollment if verification fails due to no enrollment
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => VoiceEnrollmentScreen(
-                  userId: userId,
-                  onEnrollmentComplete: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-
-    return false; // Will return true via callback if successful
   }
 
   /// Quick check enrollment without prompting
@@ -231,7 +213,7 @@ class VoiceActivationManager {
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => VoiceEnrollmentScreen(
+          builder: (context) => VoiceEnrollmentCarouselScreen(
             userId: userId,
           ),
         ),
@@ -269,7 +251,6 @@ class BulletPoint extends StatelessWidget {
 enum VoiceActivationStatus {
   notEnrolled,
   enrolled,
-  verified,
   error,
 }
 
@@ -300,11 +281,6 @@ class VoiceActivationStatusBadge extends StatelessWidget {
         color = Colors.blue;
         label = 'Voice Active';
         icon = Icons.mic_rounded;
-        break;
-      case VoiceActivationStatus.verified:
-        color = Colors.green;
-        label = 'Verified';
-        icon = Icons.verified_rounded;
         break;
       case VoiceActivationStatus.error:
         color = Colors.red;

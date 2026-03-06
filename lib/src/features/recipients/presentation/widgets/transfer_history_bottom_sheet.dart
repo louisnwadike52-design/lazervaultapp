@@ -572,6 +572,7 @@ class _TransferHistoryItem extends StatelessWidget {
                     bankName: 'LazerVault',
                     isFavorite: false,
                     sortCode: '',
+                    type: 'internal',
                   );
                   Get.toNamed(
                     AppRoutes.initiateSendFunds,

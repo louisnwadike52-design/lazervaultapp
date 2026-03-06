@@ -29,6 +29,10 @@ class VoiceBiometricsServiceClient extends $grpc.Client {
       '/voicebiometrics.VoiceBiometricsService/VerifyVoice',
       ($0.VerifyVoiceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.VerifyVoiceResponse.fromBuffer(value));
+  static final _$verifyVoiceStream = $grpc.ClientMethod<$0.VoiceAudioChunk, $0.VerifyVoiceStreamResponse>(
+      '/voicebiometrics.VoiceBiometricsService/VerifyVoiceStream',
+      ($0.VoiceAudioChunk value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.VerifyVoiceStreamResponse.fromBuffer(value));
   static final _$checkEnrollmentStatus = $grpc.ClientMethod<$0.CheckEnrollmentStatusRequest, $0.CheckEnrollmentStatusResponse>(
       '/voicebiometrics.VoiceBiometricsService/CheckEnrollmentStatus',
       ($0.CheckEnrollmentStatusRequest value) => value.writeToBuffer(),
@@ -58,6 +62,10 @@ class VoiceBiometricsServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.VerifyVoiceResponse> verifyVoice($0.VerifyVoiceRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyVoice, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.VerifyVoiceStreamResponse> verifyVoiceStream($async.Stream<$0.VoiceAudioChunk> request, {$grpc.CallOptions? options}) {
+    return $createStreamingCall(_$verifyVoiceStream, request, options: options).single;
   }
 
   $grpc.ResponseFuture<$0.CheckEnrollmentStatusResponse> checkEnrollmentStatus($0.CheckEnrollmentStatusRequest request, {$grpc.CallOptions? options}) {
@@ -96,6 +104,13 @@ abstract class VoiceBiometricsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.VerifyVoiceRequest.fromBuffer(value),
         ($0.VerifyVoiceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.VoiceAudioChunk, $0.VerifyVoiceStreamResponse>(
+        'VerifyVoiceStream',
+        verifyVoiceStream,
+        true,
+        false,
+        ($core.List<$core.int> value) => $0.VoiceAudioChunk.fromBuffer(value),
+        ($0.VerifyVoiceStreamResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CheckEnrollmentStatusRequest, $0.CheckEnrollmentStatusResponse>(
         'CheckEnrollmentStatus',
         checkEnrollmentStatus_Pre,
@@ -152,6 +167,7 @@ abstract class VoiceBiometricsServiceBase extends $grpc.Service {
 
   $async.Future<$0.EnrollVoiceResponse> enrollVoice($grpc.ServiceCall call, $0.EnrollVoiceRequest request);
   $async.Future<$0.VerifyVoiceResponse> verifyVoice($grpc.ServiceCall call, $0.VerifyVoiceRequest request);
+  $async.Future<$0.VerifyVoiceStreamResponse> verifyVoiceStream($grpc.ServiceCall call, $async.Stream<$0.VoiceAudioChunk> request);
   $async.Future<$0.CheckEnrollmentStatusResponse> checkEnrollmentStatus($grpc.ServiceCall call, $0.CheckEnrollmentStatusRequest request);
   $async.Future<$0.DeleteVoiceEnrollmentResponse> deleteVoiceEnrollment($grpc.ServiceCall call, $0.DeleteVoiceEnrollmentRequest request);
   $async.Future<$0.UpdateVoiceEnrollmentResponse> updateVoiceEnrollment($grpc.ServiceCall call, $0.UpdateVoiceEnrollmentRequest request);

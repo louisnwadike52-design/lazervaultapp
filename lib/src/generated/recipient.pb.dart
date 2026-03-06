@@ -344,6 +344,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     $core.String? iban,
     $core.String? alias,
     $core.bool? isSaved,
+    $core.String? internalUserId,
   }) {
     final $result = create();
     if (name != null) {
@@ -391,6 +392,9 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     if (isSaved != null) {
       $result.isSaved = isSaved;
     }
+    if (internalUserId != null) {
+      $result.internalUserId = internalUserId;
+    }
     return $result;
   }
   CreateRecipientRequest._() : super();
@@ -413,6 +417,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     ..aOS(13, _omitFieldNames ? '' : 'iban')
     ..aOS(14, _omitFieldNames ? '' : 'alias')
     ..aOB(15, _omitFieldNames ? '' : 'isSaved')
+    ..aOS(16, _omitFieldNames ? '' : 'internalUserId')
     ..hasRequiredFields = false
   ;
 
@@ -572,6 +577,15 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
   $core.bool hasIsSaved() => $_has(14);
   @$pb.TagNumber(15)
   void clearIsSaved() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get internalUserId => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set internalUserId($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasInternalUserId() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearInternalUserId() => clearField(16);
 }
 
 class CreateRecipientResponse extends $pb.GeneratedMessage {
