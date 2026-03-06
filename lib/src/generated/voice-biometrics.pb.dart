@@ -18,6 +18,258 @@ import 'voice-biometrics.pbenum.dart';
 
 export 'voice-biometrics.pbenum.dart';
 
+/// Stream-based verification - audio chunk for streaming
+class VoiceAudioChunk extends $pb.GeneratedMessage {
+  factory VoiceAudioChunk({
+    $core.String? userId,
+    $core.List<$core.int>? audioData,
+    $fixnum.Int64? sequenceNumber,
+    $core.bool? isFinal,
+    AudioFormat? format,
+    $core.Map<$core.String, $core.String>? metadata,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (audioData != null) {
+      $result.audioData = audioData;
+    }
+    if (sequenceNumber != null) {
+      $result.sequenceNumber = sequenceNumber;
+    }
+    if (isFinal != null) {
+      $result.isFinal = isFinal;
+    }
+    if (format != null) {
+      $result.format = format;
+    }
+    if (metadata != null) {
+      $result.metadata.addAll(metadata);
+    }
+    return $result;
+  }
+  VoiceAudioChunk._() : super();
+  factory VoiceAudioChunk.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VoiceAudioChunk.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VoiceAudioChunk', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'audioData', $pb.PbFieldType.OY)
+    ..aInt64(3, _omitFieldNames ? '' : 'sequenceNumber')
+    ..aOB(4, _omitFieldNames ? '' : 'isFinal')
+    ..aOM<AudioFormat>(5, _omitFieldNames ? '' : 'format', subBuilder: AudioFormat.create)
+    ..m<$core.String, $core.String>(6, _omitFieldNames ? '' : 'metadata', entryClassName: 'VoiceAudioChunk.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('voicebiometrics'))
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VoiceAudioChunk clone() => VoiceAudioChunk()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VoiceAudioChunk copyWith(void Function(VoiceAudioChunk) updates) => super.copyWith((message) => updates(message as VoiceAudioChunk)) as VoiceAudioChunk;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static VoiceAudioChunk create() => VoiceAudioChunk._();
+  VoiceAudioChunk createEmptyInstance() => create();
+  static $pb.PbList<VoiceAudioChunk> createRepeated() => $pb.PbList<VoiceAudioChunk>();
+  @$core.pragma('dart2js:noInline')
+  static VoiceAudioChunk getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VoiceAudioChunk>(create);
+  static VoiceAudioChunk? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.List<$core.int> get audioData => $_getN(1);
+  @$pb.TagNumber(2)
+  set audioData($core.List<$core.int> v) { $_setBytes(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAudioData() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAudioData() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get sequenceNumber => $_getI64(2);
+  @$pb.TagNumber(3)
+  set sequenceNumber($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSequenceNumber() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSequenceNumber() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get isFinal => $_getBF(3);
+  @$pb.TagNumber(4)
+  set isFinal($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIsFinal() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIsFinal() => clearField(4);
+
+  @$pb.TagNumber(5)
+  AudioFormat get format => $_getN(4);
+  @$pb.TagNumber(5)
+  set format(AudioFormat v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasFormat() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFormat() => clearField(5);
+  @$pb.TagNumber(5)
+  AudioFormat ensureFormat() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  $core.Map<$core.String, $core.String> get metadata => $_getMap(5);
+}
+
+/// Stream-based verification response
+class VerifyVoiceStreamResponse extends $pb.GeneratedMessage {
+  factory VerifyVoiceStreamResponse({
+    $core.bool? verified,
+    $core.double? similarityScore,
+    $core.double? confidence,
+    $core.String? message,
+    VerificationStatus? status,
+    $core.bool? needsMoreAudio,
+    $core.int? chunksProcessed,
+  }) {
+    final $result = create();
+    if (verified != null) {
+      $result.verified = verified;
+    }
+    if (similarityScore != null) {
+      $result.similarityScore = similarityScore;
+    }
+    if (confidence != null) {
+      $result.confidence = confidence;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (needsMoreAudio != null) {
+      $result.needsMoreAudio = needsMoreAudio;
+    }
+    if (chunksProcessed != null) {
+      $result.chunksProcessed = chunksProcessed;
+    }
+    return $result;
+  }
+  VerifyVoiceStreamResponse._() : super();
+  factory VerifyVoiceStreamResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyVoiceStreamResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyVoiceStreamResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'voicebiometrics'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'verified')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'similarityScore', $pb.PbFieldType.OF)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OF)
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..e<VerificationStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: VerificationStatus.VERIFICATION_UNKNOWN, valueOf: VerificationStatus.valueOf, enumValues: VerificationStatus.values)
+    ..aOB(6, _omitFieldNames ? '' : 'needsMoreAudio')
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'chunksProcessed', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyVoiceStreamResponse clone() => VerifyVoiceStreamResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyVoiceStreamResponse copyWith(void Function(VerifyVoiceStreamResponse) updates) => super.copyWith((message) => updates(message as VerifyVoiceStreamResponse)) as VerifyVoiceStreamResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static VerifyVoiceStreamResponse create() => VerifyVoiceStreamResponse._();
+  VerifyVoiceStreamResponse createEmptyInstance() => create();
+  static $pb.PbList<VerifyVoiceStreamResponse> createRepeated() => $pb.PbList<VerifyVoiceStreamResponse>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyVoiceStreamResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyVoiceStreamResponse>(create);
+  static VerifyVoiceStreamResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get verified => $_getBF(0);
+  @$pb.TagNumber(1)
+  set verified($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasVerified() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearVerified() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get similarityScore => $_getN(1);
+  @$pb.TagNumber(2)
+  set similarityScore($core.double v) { $_setFloat(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSimilarityScore() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSimilarityScore() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get confidence => $_getN(2);
+  @$pb.TagNumber(3)
+  set confidence($core.double v) { $_setFloat(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasConfidence() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearConfidence() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  VerificationStatus get status => $_getN(4);
+  @$pb.TagNumber(5)
+  set status(VerificationStatus v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasStatus() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearStatus() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get needsMoreAudio => $_getBF(5);
+  @$pb.TagNumber(6)
+  set needsMoreAudio($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasNeedsMoreAudio() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearNeedsMoreAudio() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get chunksProcessed => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set chunksProcessed($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasChunksProcessed() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearChunksProcessed() => clearField(7);
+}
+
 /// Enroll voice request
 class EnrollVoiceRequest extends $pb.GeneratedMessage {
   factory EnrollVoiceRequest({

@@ -114,7 +114,9 @@ class RecipientRepositoryImpl implements IRecipientRepository {
           ..sortCode = recipient.sortCode
           ..isFavorite = recipient.isFavorite
           ..isSaved = recipient.isSaved
-          ..type = 'external';
+          ..type = recipient.type ?? 'external';
+
+        print("DEBUG RecipientRepository: Creating recipient - name: ${recipient.name}, bank: ${recipient.bankName}, type: ${recipient.type}, request.type: ${request.type}");
 
         if (recipient.countryCode != null) {
           request.countryCode = recipient.countryCode!;
@@ -136,6 +138,9 @@ class RecipientRepositoryImpl implements IRecipientRepository {
         }
         if (recipient.alias != null && recipient.alias!.isNotEmpty) {
           request.alias = recipient.alias!;
+        }
+        if (recipient.internalUserId != null && recipient.internalUserId!.isNotEmpty) {
+          request.internalUserId = recipient.internalUserId!;
         }
 
         final callOptions = await _callOptionsHelper.withAuth();

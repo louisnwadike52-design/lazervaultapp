@@ -3,6 +3,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/ai_chats/cubit/ai_chat_cubit.dart';
 import 'package:lazervault/src/features/ai_chats/cubit/ai_chat_state.dart';
 import 'package:lazervault/src/features/ai_chats/domain/entities/ai_chat_message_entity.dart';
@@ -22,6 +23,7 @@ class ChatbotTransferScreen extends StatefulWidget {
 class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _isPinMode = false;
 
   // --- Bottom Navigation Items ---
   int _currentIndex = 0;
@@ -85,6 +87,7 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
     if (messageText.isEmpty) return;
 
     _messageController.clear();
+    if (_isPinMode) setState(() => _isPinMode = false);
     FocusScope.of(context).unfocus();
 
     final authState = context.read<AuthenticationCubit>().state;
@@ -283,9 +286,22 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                         controller: _messageController,
                         style: const TextStyle(color: Colors.white),
                         textInputAction: TextInputAction.send,
-                        onSubmitted: (text) => _handleSubmitted(text),
+                        obscureText: _isPinMode,
+                        obscuringCharacter: '*',
+                        keyboardType: _isPinMode ? TextInputType.number : TextInputType.text,
+                        maxLines: _isPinMode ? 1 : null,
+                        onSubmitted: (text) {
+                          _handleSubmitted(text);
+                          if (_isPinMode) setState(() => _isPinMode = false);
+                        },
+                        onChanged: (text) {
+                          final looksLikePin = RegExp(r'^\d{4,6}$').hasMatch(text.trim());
+                          if (looksLikePin != _isPinMode) {
+                            setState(() => _isPinMode = looksLikePin);
+                          }
+                        },
                         decoration: InputDecoration(
-                          hintText: 'Type a message...',
+                          hintText: _isPinMode ? 'Enter your PIN...' : 'Type a message...',
                           hintStyle: TextStyle(color: Colors.white54),
                           border: InputBorder.none,
                         ),
@@ -371,8 +387,8 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                     if (message.confirmationData != null)
                       _buildConfirmationDetails(message.confirmationData!),
                     MarkdownBody(
-                      data: message.text,
-                      selectable: true,
+                      data: isUser ? maskIfPin(message.text) : message.text,
+                      selectable: !isUser || !isPinText(message.text),
                       styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
                         p: Theme.of(context).textTheme.bodyMedium?.copyWith(color: isUser ? Colors.white70 : Colors.white),
                         code: Theme.of(context).textTheme.bodyMedium?.copyWith(

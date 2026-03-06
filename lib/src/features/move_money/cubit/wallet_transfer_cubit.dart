@@ -12,6 +12,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
   Future<void> transferBetweenAccounts({
     required String fromAccountId,
     required String toAccountNumber,
+    required String type,  // "internal" or "external" - PRIMARY KEY
     required double amount,
     required String description,
     required String transactionId,
@@ -26,6 +27,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
       final result = await paymentsTransferDataSource.sendFunds(
         fromAccountId: fromAccountId,
         toAccountNumber: toAccountNumber,
+        type: type,
         amount: amount,
         description: description,
         transactionId: transactionId,

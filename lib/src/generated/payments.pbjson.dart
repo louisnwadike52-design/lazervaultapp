@@ -129,6 +129,8 @@ const SendFundsRequest$json = {
   '2': [
     {'1': 'from_account_id', '3': 1, '4': 1, '5': 9, '10': 'fromAccountId'},
     {'1': 'to_account_number', '3': 2, '4': 1, '5': 9, '10': 'toAccountNumber'},
+    {'1': 'to_account_id', '3': 9, '4': 1, '5': 9, '10': 'toAccountId'},
+    {'1': 'type', '3': 10, '4': 1, '5': 9, '10': 'type'},
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
     {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
@@ -141,12 +143,13 @@ const SendFundsRequest$json = {
 /// Descriptor for `SendFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List sendFundsRequestDescriptor = $convert.base64Decode(
     'ChBTZW5kRnVuZHNSZXF1ZXN0EiYKD2Zyb21fYWNjb3VudF9pZBgBIAEoCVINZnJvbUFjY291bn'
-    'RJZBIqChF0b19hY2NvdW50X251bWJlchgCIAEoCVIPdG9BY2NvdW50TnVtYmVyEhYKBmFtb3Vu'
-    'dBgDIAEoAVIGYW1vdW50EiAKC2Rlc2NyaXB0aW9uGAQgASgJUgtkZXNjcmlwdGlvbhIlCg50cm'
-    'Fuc2FjdGlvbl9pZBgFIAEoCVINdHJhbnNhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4Y'
-    'BiABKAlSEXZlcmlmaWNhdGlvblRva2VuEjIKFWRlc3RpbmF0aW9uX2JhbmtfY29kZRgHIAEoCV'
-    'ITZGVzdGluYXRpb25CYW5rQ29kZRIpChBiZW5lZmljaWFyeV9uYW1lGAggASgJUg9iZW5lZmlj'
-    'aWFyeU5hbWU=');
+    'RJZBIqChF0b19hY2NvdW50X251bWJlchgCIAEoCVIPdG9BY2NvdW50TnVtYmVyEiIKDXRvX2Fj'
+    'Y291bnRfaWQYCSABKAlSC3RvQWNjb3VudElkEhIKBHR5cGUYCiABKAlSBHR5cGUSFgoGYW1vdW'
+    '50GAMgASgBUgZhbW91bnQSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEiUKDnRy'
+    'YW5zYWN0aW9uX2lkGAUgASgJUg10cmFuc2FjdGlvbklkEi0KEnZlcmlmaWNhdGlvbl90b2tlbh'
+    'gGIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW4SMgoVZGVzdGluYXRpb25fYmFua19jb2RlGAcgASgJ'
+    'UhNkZXN0aW5hdGlvbkJhbmtDb2RlEikKEGJlbmVmaWNpYXJ5X25hbWUYCCABKAlSD2JlbmVmaW'
+    'NpYXJ5TmFtZQ==');
 
 @$core.Deprecated('Use sendFundsResponseDescriptor instead')
 const SendFundsResponse$json = {

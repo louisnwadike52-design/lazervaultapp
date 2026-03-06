@@ -242,7 +242,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
     Get.bottomSheet(
       FractionallySizedBox(
         heightFactor: 0.85,
-        child: VoiceCommandSheet(suggestions: currencyExchangeSuggestions),
+        child: VoiceCommandSheet(),
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -896,7 +896,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           child: Container(
             width: double.infinity,
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(dialogContext).size.height * 0.92,
+              maxHeight: MediaQuery.of(dialogContext).size.height * 0.78,
             ),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.95),
@@ -914,12 +914,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   child: Column(
                     children: [
                       Container(
-                        width: 64.w,
-                        height: 64.w,
+                        width: 44.w,
+                        height: 44.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
@@ -934,14 +934,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                               Border.all(color: Colors.white.withValues(alpha: 0.2)),
                         ),
                         child: const Icon(Icons.send_rounded,
-                            color: Colors.white, size: 32),
+                            color: Colors.white, size: 22),
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 10.h),
                       const Text(
                         'Transfer Confirmation',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: 17,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -950,15 +950,15 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 ),
                 Flexible(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
                     child: Column(
                       children: [
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          padding: EdgeInsets.all(16.w),
+                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                           child: Column(
                             children: [
                               _buildConfirmationRow(
@@ -1009,12 +1009,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                 builder: (context, feeState) {
                                   if (feeState is TransferFeeLoading) {
                                     return Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 8.h),
+                                      padding: EdgeInsets.symmetric(vertical: 4.h),
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text('Transfer Fee',
-                                              style: TextStyle(color: Colors.white70, fontSize: 14.sp)),
+                                              style: TextStyle(color: Colors.white70, fontSize: 12.sp)),
                                           SizedBox(
                                             width: 16, height: 16,
                                             child: CircularProgressIndicator(
@@ -1066,7 +1066,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                         // Budget warning (flexible mode exceeded or near limit)
                         if (_lastBudgetResult != null && _lastBudgetResult!.shouldShowWarning)
                           Padding(
-                            padding: EdgeInsets.only(top: 12.h),
+                            padding: EdgeInsets.only(top: 8.h),
                             child: CompactBudgetWarning(
                               percentageUsed: _lastBudgetResult!.percentageUsed,
                               status: _lastBudgetResult!.status,
@@ -1075,9 +1075,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                           ),
                         if (scheduledDate != null)
                           Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            padding: EdgeInsets.symmetric(vertical: 10.h),
                             child: Container(
-                              padding: EdgeInsets.all(12.w),
+                              padding: EdgeInsets.all(10.w),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF2962FF).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
@@ -1106,9 +1106,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                           StatefulBuilder(
                             builder: (context, setRecurringState) {
                               return Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8.h),
+                                padding: EdgeInsets.symmetric(vertical: 4.h),
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(12),
@@ -1185,7 +1185,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(24.w),
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
                   child: Column(
                     children: [
                       // Use StatefulBuilder to manage the button loading state locally
@@ -1403,9 +1403,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // Execute the immediate transfer first
     print("_executeTransferWithPin: Calling TransferCubit.sendFunds...");
     print("_executeTransferWithPin: fromAccountId=$fromAccountId, toAccountNumber=$toAccountNumber, amount=$amountMajor");
+    final transferType = (_recipient!.type == 'internal' || _recipient!.bankName.toLowerCase() == 'lazervault')
+        ? 'internal'
+        : 'external';
     context.read<TransferCubit>().sendFunds(
       fromAccountId: fromAccountId,
       toAccountNumber: toAccountNumber,
+      toAccountId: transferType == 'internal'
+          ? (_recipient!.internalUserId ?? toAccountNumber)
+          : null,
+      type: transferType,
       amount: amountMajor,
       description: narration,
       transactionId: transactionId,
@@ -1695,14 +1702,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           label,
           style: TextStyle(
             color: Colors.white70,
-            fontSize: 14.sp,
+            fontSize: 12.sp,
           ),
         ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 4.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment:
-              CrossAxisAlignment.start, // Align items at the start
+              CrossAxisAlignment.start,
           children: [
             if (name.isNotEmpty)
               Expanded(
@@ -1710,25 +1717,24 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   name,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: isTotal ? 18.sp : 16.sp,
+                    fontSize: isTotal ? 15.sp : 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 2, // Allow wrapping slightly
+                  maxLines: 2,
                 ),
               ),
             if (name.isNotEmpty && detail.isNotEmpty)
-              SizedBox(width: 8.w), // Add spacing
-            // Allow detail text to take space but align right
+              SizedBox(width: 8.w),
             if (detail.isNotEmpty)
               Expanded(
                 flex:
-                    name.isNotEmpty ? 1 : 2, // Give more space if name is empty
+                    name.isNotEmpty ? 1 : 2,
                 child: Text(
                   detail,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: isTotal ? 18.sp : 16.sp,
+                    fontSize: isTotal ? 15.sp : 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.end,
@@ -1739,7 +1745,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         if (!isTotal)
           Divider(
             color: Colors.white.withValues(alpha: 0.1),
-            height: 24.h,
+            height: 16.h,
             thickness: 1,
           ),
       ],
@@ -2233,78 +2239,25 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         SizedBox(height: 4.h),
-                                        // Show selected account type and number
-                                        Builder(
-                                          builder: (context) {
-                                            final summaries = switch (accountState) {
-                                              AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
-                                              AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
-                                              _ => <AccountSummaryEntity>[],
-                                            };
-                                            if (summaries.isNotEmpty &&
-                                                selectedCardIndex < summaries.length)
-                                              return Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              // Account type badge
-                                              Builder(
-                                                builder: (context) {
-                                                  final account = summaries[selectedCardIndex];
-                                                  String accountTypeDisplay = 'Personal';
-                                                  Color accountTypeColor = Colors.blue;
-
-                                                  final accountTypeLower = account.accountType.toLowerCase();
-                                                  if (accountTypeLower.contains('saving')) {
-                                                    accountTypeDisplay = 'Savings';
-                                                    accountTypeColor = Colors.green;
-                                                  } else if (accountTypeLower.contains('investment')) {
-                                                    accountTypeDisplay = 'Investment';
-                                                    accountTypeColor = Colors.orange;
-                                                  } else if (accountTypeLower.contains('personal')) {
-                                                    accountTypeDisplay = 'Personal';
-                                                    accountTypeColor = Colors.blue;
-                                                  }
-
-                                                  return Container(
-                                                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                                                    decoration: BoxDecoration(
-                                                      color: accountTypeColor.withValues(alpha: 0.2),
-                                                      borderRadius: BorderRadius.circular(8),
-                                                    ),
-                                                    child: Text(
-                                                      accountTypeDisplay,
-                                                      style: TextStyle(
-                                                        color: accountTypeColor,
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                              SizedBox(width: 6.w),
-                                              Text(
-                                                '•••• ${summaries[selectedCardIndex].accountNumberLast4}',
-                                                style: TextStyle(
-                                                  color: Colors.white.withValues(alpha: 0.7),
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        else
-                                          return Text(
-                                            _recipient!.accountNumber.length > 4
-                                                ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
-                                                : _recipient!.accountNumber,
-                                            style: TextStyle(
-                                              color: Colors.white.withValues(alpha: 0.7),
-                                              fontSize: 12,
-                                            ),
-                                          );
-                                          },
+                                        // Show recipient account number and bank
+                                        Text(
+                                          _recipient!.accountNumber,
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.7),
+                                            fontSize: 12,
+                                          ),
                                         ),
+                                        if (_recipient!.bankName.isNotEmpty)
+                                          Padding(
+                                            padding: EdgeInsets.only(top: 2.h),
+                                            child: Text(
+                                              _recipient!.bankName,
+                                              style: TextStyle(
+                                                color: Colors.white.withValues(alpha: 0.5),
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                          ),
                                       ],
                                   ),
                                 )),

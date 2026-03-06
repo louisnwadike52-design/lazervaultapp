@@ -136,6 +136,17 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Banking Service');
   }
 
+  /// Creates Voice Biometrics Service gRPC channel (Voice enrollment and verification)
+  /// gRPC Port: 50060
+  /// Direct connection to voice-biometrics-service (not via gateway)
+  static ClientChannel createVoiceBiometricsChannel() {
+    final host = dotenv.env['VOICE_BIOMETRICS_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['VOICE_BIOMETRICS_PORT'] ?? '50060');
+
+    print("🎙️ Creating Voice Biometrics Service Channel → $host:$port");
+    return _createChannel(host, port, 'Voice Biometrics Service');
+  }
+
   /// Internal method to create channel with standard production-grade options
   /// Includes gzip compression for 60-80% payload reduction on low-bandwidth networks
   static ClientChannel _createChannel(String host, int port, String name) {

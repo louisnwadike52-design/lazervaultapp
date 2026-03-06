@@ -145,7 +145,7 @@ class _BatchTransferProcessingScreenState
         Get.snackbar('Error', 'Missing transfer data. Please try again.',
             backgroundColor: btRed,
             colorText: Colors.white);
-        Get.offAllNamed(AppRoutes.home);
+        Get.offAllNamed(AppRoutes.dashboard);
       });
       return;
     }
@@ -283,7 +283,7 @@ class _BatchTransferProcessingScreenState
   }
 
   void _navigateToDashboard() {
-    Get.offAllNamed(AppRoutes.home);
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 
   void _updateAccountBalance(BatchTransferEntity response) {

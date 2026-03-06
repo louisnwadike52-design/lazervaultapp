@@ -73,7 +73,9 @@ abstract class IPaymentsTransferDataSource {
   /// Uses Transfer Gateway (port 50076) -> Core-Payment-Service (port 50053)
   Future<PaymentsTransferResult> sendFunds({
     required String fromAccountId,      // Source account to debit
-    required String toAccountNumber,    // Destination account number (internal or external)
+    required String toAccountNumber,    // Destination account number (for external transfers)
+    String? toAccountId,               // Account UUID (for internal transfers)
+    required String type,               // "internal" or "external" - PRIMARY KEY
     required double amount,             // Amount in major units (e.g., 100.50)
     required String description,        // Transfer description
     required String transactionId,      // Transaction ID for PIN verification
@@ -125,6 +127,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
   Future<PaymentsTransferResult> sendFunds({
     required String fromAccountId,
     required String toAccountNumber,
+    String? toAccountId,  // Account UUID for internal transfers (preferred)
+    required String type,  // "internal" or "external" - PRIMARY KEY
     required double amount,
     required String description,
     required String transactionId,
@@ -136,6 +140,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
         final request = payments.SendFundsRequest(
           fromAccountId: fromAccountId,
           toAccountNumber: toAccountNumber,
+          toAccountId: toAccountId ?? '',
+          type: type,  // "internal" or "external"
           amount: amount,
           description: description,
           transactionId: transactionId,

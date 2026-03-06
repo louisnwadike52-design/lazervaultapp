@@ -1,5 +1,12 @@
 part of 'voice_enrollment_cubit.dart';
 
+/// Enrollment phrases used across states
+const List<String> enrollmentPhrases = [
+  'My voice is my password',
+  'I authorize LazerVault transactions',
+  'Banking by voice is secure and convenient',
+];
+
 /// Base state for voice enrollment
 abstract class VoiceEnrollmentState {}
 
@@ -13,11 +20,7 @@ class VoiceEnrollmentInitial extends VoiceEnrollmentState {
     this.totalSteps = 3,
   });
 
-  List<String> get phrases => [
-    'My voice is my password',
-    'I authorize LazerVault transactions',
-    'Banking by voice is secure and convenient',
-  ];
+  List<String> get phrases => enrollmentPhrases;
 
   String get currentPhrase => phrases[currentStep];
 }
@@ -39,11 +42,7 @@ class VoiceEnrollmentRecording extends VoiceEnrollmentState {
     this.soundLevel = 0.0,
   });
 
-  List<String> get phrases => [
-    'My voice is my password',
-    'I authorize LazerVault transactions',
-    'Banking by voice is secure and convenient',
-  ];
+  List<String> get phrases => enrollmentPhrases;
 
   String get currentPhrase => phrases[currentStep];
 
@@ -103,4 +102,42 @@ class VoiceEnrollmentPermissionDenied extends VoiceEnrollmentState {
   VoiceEnrollmentPermissionDenied({
     this.message = 'Microphone permission is required for voice enrollment',
   });
+}
+
+/// Carousel state — drives the single-screen carousel enrollment UI
+class VoiceEnrollmentCarouselState extends VoiceEnrollmentState {
+  final int activePage;
+  final List<bool> sampleCompleted;
+  final bool isRecording;
+  final double soundLevel;
+  final bool isProcessing;
+
+  VoiceEnrollmentCarouselState({
+    this.activePage = 0,
+    List<bool>? sampleCompleted,
+    this.isRecording = false,
+    this.soundLevel = 0.0,
+    this.isProcessing = false,
+  }) : sampleCompleted = sampleCompleted ?? [false, false, false];
+
+  int get completedCount => sampleCompleted.where((s) => s).length;
+  bool get allCompleted => sampleCompleted.every((s) => s);
+  String get currentPhrase => enrollmentPhrases[activePage];
+  bool get currentPageCompleted => sampleCompleted[activePage];
+
+  VoiceEnrollmentCarouselState copyWith({
+    int? activePage,
+    List<bool>? sampleCompleted,
+    bool? isRecording,
+    double? soundLevel,
+    bool? isProcessing,
+  }) {
+    return VoiceEnrollmentCarouselState(
+      activePage: activePage ?? this.activePage,
+      sampleCompleted: sampleCompleted ?? List.from(this.sampleCompleted),
+      isRecording: isRecording ?? this.isRecording,
+      soundLevel: soundLevel ?? this.soundLevel,
+      isProcessing: isProcessing ?? this.isProcessing,
+    );
+  }
 }

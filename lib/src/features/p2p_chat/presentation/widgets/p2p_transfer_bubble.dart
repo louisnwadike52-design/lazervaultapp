@@ -629,6 +629,7 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
           sortCode: '',
           isFavorite: false,
           isSaved: false,
+          type: 'internal',
           internalUserId: widget.otherUserId,
           currency: account.currency.isNotEmpty ? account.currency : null,
         );

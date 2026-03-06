@@ -99,7 +99,6 @@ class ServiceVoiceButton extends StatelessWidget {
         heightFactor: 0.85,
         child: VoiceCommandSheet(
           serviceName: serviceName,
-          suggestions: serviceSuggestions,
         ),
       ),
       isScrollControlled: true,

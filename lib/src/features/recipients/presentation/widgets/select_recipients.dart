@@ -77,10 +77,10 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
   /// Get initials from name - capitalize first letter of each word
   String _getInitials(String name) {
-    final parts = name.trim().split(' ');
+    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.length >= 2) {
       return '${parts[0][0].toUpperCase()}${parts[1][0].toUpperCase()}';
-    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+    } else if (parts.isNotEmpty) {
       return parts[0][0].toUpperCase();
     }
     return '??';
@@ -1732,6 +1732,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         countryCode: _currentCountry,
         currency: currency,
         email: user.email.isNotEmpty ? user.email : null,
+        type: 'internal',
+        internalUserId: user.userId,
       );
       Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
     }
@@ -2739,6 +2741,8 @@ class _SelectRecipientsState extends State<SelectRecipients> {
             countryCode: _currentCountry,
             currency: currency,
             profileImageUrl: matchedUser.profilePicture,
+            type: 'internal',
+            internalUserId: matchedUser.userId,
           );
 
           final arguments = <String, dynamic>{'recipient': recipient};
@@ -2925,6 +2929,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       isSaved: false,
       countryCode: _currentCountry,
       currency: currency,
+      type: 'internal',
     );
     Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
   }

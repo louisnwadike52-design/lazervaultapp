@@ -105,6 +105,7 @@ class GeneralChatResponse {
   final bool? shouldSwitchService;
   final String? previousService;
   final String timestamp;
+  final Map<String, dynamic>? receiptData;
 
   GeneralChatResponse({
     required this.response,
@@ -114,6 +115,7 @@ class GeneralChatResponse {
     this.shouldSwitchService,
     this.previousService,
     required this.timestamp,
+    this.receiptData,
   });
 
   factory GeneralChatResponse.fromJson(Map<String, dynamic> json) {
@@ -129,6 +131,7 @@ class GeneralChatResponse {
       shouldSwitchService: json['should_switch_service'] as bool?,
       previousService: json['previous_service'] as String?,
       timestamp: json['timestamp'] as String? ?? '',
+      receiptData: json['receipt_data'] as Map<String, dynamic>?,
     );
   }
 }

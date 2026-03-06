@@ -1,0 +1,1092 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
+import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
+import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_language_picker.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_user_search_dialog.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_summary_card.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_pin_entry_dialog.dart';
+
+class VoiceCommandSheet extends StatefulWidget {
+  final String? serviceName;
+
+  const VoiceCommandSheet({
+    super.key,
+    this.serviceName,
+  });
+
+  @override
+  State<VoiceCommandSheet> createState() => _VoiceCommandSheetState();
+}
+
+class _VoiceCommandSheetState extends State<VoiceCommandSheet>
+    with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _waveController;
+  late AnimationController _glowController;
+  final VoiceActivationManager _voiceActivationManager = VoiceActivationManager();
+
+  bool _isDialogShowing = false;
+
+  @override
+  }
+
+  Future<void> _checkVoiceActivation() async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+
+    final userId = authState.profile.userId;
+    print('VoiceCommandSheet: Checking voice activation for user $userId');
+
+    try {
+      final activated = await _voiceActivationManager.activateVoice(
+        context,
+        userId,
+        onSuccess: () {
+          if (mounted) {
+            _proceedAfterEnrollment();
+          }
+        },
+      );
+
+      if (!activated && mounted) {
+        // User cancelled or enrollment not completed - close the sheet
+        print('VoiceCommandSheet: Activation not completed, closing sheet');
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      // Show error to user if enrollment check fails
+      print('VoiceCommandSheet: Error during activation check: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Voice service unavailable. Please ensure all services are running.'),
+            backgroundColor: const Color(0xFFEF4444),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Close',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
+        );
+        // Close sheet after showing error
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) Navigator.of(context).pop();
+        });
+      }
+    }
+  }
+
+  /// After enrollment check, verify language selection.
+  /// If not selected, show language picker. If yes, start session.
+  Future<void> _proceedAfterEnrollment() async {
+    final cubit = context.read<VoiceSessionCubit>();
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+
+    // Check if we need to reconnect (cubit might be in disconnected state)
+    final currentState = cubit.state;
+    print('VoiceCommandSheet: Current cubit state: ${currentState.runtimeType}');
+
+    // Load language preferences and available languages
+    final userCountry = authState.profile.user.country ?? 'NG';
+    await cubit.loadLanguagePreferences(userCountry);
+
+    if (!cubit.hasLanguageSelected) {
+      // Show language selection
+      cubit.showLanguageSelection();
+    } else {
+      // Language already selected, start session
+      print('VoiceCommandSheet: Starting voice session with language ${cubit.selectedLanguageCode}');
+      _startVoiceSession(authState.profile.session.accessToken);
+    }
+  }
+
+  void _startVoiceSession(String? token) {
+    if (token == null || token.isEmpty) return;
+    context.read<VoiceSessionCubit>().startVoiceSession(
+      accessToken: token,
+      serviceName: widget.serviceName,
+    );
+  }
+
+  void _onLanguageSelected(VoiceLanguage language) async {
+    final cubit = context.read<VoiceSessionCubit>();
+    await cubit.setLanguage(language.code);
+
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+
+    _startVoiceSession(authState.profile.session.accessToken);
+  }
+
+  void _showLanguagePicker() async {
+    final cubit = context.read<VoiceSessionCubit>();
+    final selected = await VoiceLanguagePicker.show(
+      context,
+      languages: cubit.availableLanguages,
+      selectedLanguageCode: cubit.selectedLanguageCode,
+    );
+    if (selected != null && mounted) {
+      _onLanguageSelected(selected);
+    }
+  }
+
+  void _showVoiceCustomization() async {
+    final cubit = context.read<VoiceSessionCubit>();
+    final lang = cubit.selectedLanguage;
+    if (lang == null || !lang.supportsVoiceCustomization) return;
+
+    final selected = await VoiceCustomizationSheet.show(
+      context,
+      voices: lang.availableVoices,
+      selectedVoiceId: cubit.selectedVoiceId,
+      provider: lang.provider,
+    );
+    if (selected != null && mounted) {
+      await cubit.setVoice(selected.id);
+    }
+  }
+
+  void _startAnimations() {
+    _pulseController.repeat(reverse: true);
+    _waveController.repeat();
+    _glowController.repeat(reverse: true);
+  }
+
+  void _stopAnimations() {
+    _pulseController.stop();
+    _waveController.stop();
+    _glowController.stop();
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _waveController.dispose();
+    _glowController.dispose();
+    context.read<VoiceSessionCubit>().disconnectFromLiveKitRoom();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<VoiceSessionCubit, VoiceSessionState>(
+      listener: (context, state) {
+        if (state is VoiceSessionLanguageSelection) {
+          // Language selection is handled in the builder
+        } else if (state is VoiceSessionCredentialsLoaded) {
+          context.read<VoiceSessionCubit>().connectToLiveKitRoom(
+                state.roomName,
+                state.livekitToken,
+                state.livekitUrl,
+              );
+        } else if (state is VoiceSessionCredentialsError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+        } else if (state is VoiceSessionError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+        } else if (state is VoiceSessionVerificationFailed) {
+          // Voice biometrics verification failed - show error and close
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: const Color(0xFFEF4444),
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: 'Close',
+                textColor: Colors.white,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          );
+          // Auto-close after a brief delay
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            if (mounted) Navigator.of(context).pop();
+          });
+        } else if (state is VoiceSessionMicPermissionDenied) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Microphone permission denied. Enable in settings.'),
+              backgroundColor: Color(0xFFFB923C),
+            ),
+          );
+        } else if (state is VoiceSessionUserSearchRequired) {
+          _showUserSearchDialog(context, state.users, state.query);
+        } else if (state is VoiceSessionTransferConfirmation) {
+          _showTransferSummaryDialog(context, state.transferDetails);
+        } else if (state is VoiceSessionPinRequired) {
+          _showPinEntryDialog(context, state.transactionPayload);
+        } else if (state is VoiceSessionTransactionSuccess) {
+          final ref = state.result['reference'] as String? ?? '';
+          final success = state.result['success'] as bool? ?? true;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(success
+                  ? 'Transfer completed! Ref: $ref'
+                  : 'Transfer failed: ${state.result['error'] ?? 'Unknown error'}'),
+              backgroundColor: success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+            ),
+          );
+        }
+
+        // Manage animations based on state
+        if (state is VoiceSessionConnected ||
+            state is VoiceSessionLocalUserSpeaking ||
+            state is VoiceSessionAgentProcessing ||
+            state is VoiceSessionLocalUserNotSpeaking ||
+            state is VoiceSessionUserSearchRequired ||
+            state is VoiceSessionTransferConfirmation ||
+            state is VoiceSessionPinRequired ||
+            state is VoiceSessionTransactionSuccess) {
+          _startAnimations();
+        } else if (state is! VoiceSessionLanguageSelection) {
+          _stopAnimations();
+        }
+      },
+      builder: (context, state) {
+        // Language selection screen
+        if (state is VoiceSessionLanguageSelection) {
+          return _buildLanguageSelectionView(state);
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0D0D0F),
+                Color(0xFF0A0A0C),
+                Color(0xFF050507),
+              ],
+            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                // Drag handle
+                Container(
+                  width: 36.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+
+                // Top bar: settings + language indicator + close button
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Row(
+                    children: [
+                      // Settings button (opens voice settings)
+                      _buildSettingsButton(),
+                      SizedBox(width: 8.w),
+                      // Language indicator
+                      _buildLanguageIndicator(),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () {
+                          context.read<VoiceSessionCubit>().disconnectFromLiveKitRoom();
+                          Get.back();
+                        },
+                        child: Container(
+                          width: 36.w,
+                          height: 36.w,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.06),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close_rounded,
+                            color: Colors.white.withValues(alpha: 0.5),
+                            size: 18.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Spacer(flex: 2),
+
+                // Central voice orb
+                _buildVoiceOrb(state),
+
+                SizedBox(height: 32.h),
+
+                // Status text
+                _buildStatusSection(state),
+
+                const Spacer(flex: 3),
+
+                // Bottom action bar
+                _buildBottomBar(state),
+
+                SizedBox(height: 12.h),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Settings button to open voice settings screen
+  Widget _buildSettingsButton() {
+    return GestureDetector(
+      onTap: () => Get.toNamed('/voice/settings'),
+      child: Container(
+        width: 36.w,
+        height: 36.w,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.settings_rounded,
+          color: Colors.white.withValues(alpha: 0.5),
+          size: 18.sp,
+        ),
+      ),
+    );
+  }
+
+  /// Language indicator chip shown during active session.
+  Widget _buildLanguageIndicator() {
+    final cubit = context.read<VoiceSessionCubit>();
+    final lang = cubit.selectedLanguage;
+    if (lang == null) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: _showLanguagePicker,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.translate_rounded,
+              color: const Color(0xFF3B82F6),
+              size: 14.sp,
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              lang.nativeName,
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (lang.supportsVoiceCustomization) ...[
+              SizedBox(width: 4.w),
+              GestureDetector(
+                onTap: _showVoiceCustomization,
+                child: Icon(
+                  Icons.tune_rounded,
+                  color: Colors.white.withValues(alpha: 0.35),
+                  size: 14.sp,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Full-screen language selection view (shown before session starts).
+  Widget _buildLanguageSelectionView(VoiceSessionLanguageSelection state) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF0D0D0F),
+            Color(0xFF0A0A0C),
+            Color(0xFF050507),
+          ],
+        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            // Drag handle
+            Container(
+              width: 36.w,
+              height: 4.h,
+              margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+
+            // Close button
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: Container(
+                      width: 36.w,
+                      height: 36.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 18.sp,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 24.h),
+
+            // Voice icon
+            Container(
+              width: 72.w,
+              height: 72.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              ),
+              child: Icon(
+                Icons.mic_rounded,
+                color: const Color(0xFF3B82F6),
+                size: 32.sp,
+              ),
+            ),
+
+            SizedBox(height: 20.h),
+
+            // Title
+            Text(
+              'Choose Your Language',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 22.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+
+            SizedBox(height: 8.h),
+
+            Text(
+              'The assistant will listen and speak\nin your chosen language',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.45),
+                fontSize: 14.sp,
+              ),
+            ),
+
+            SizedBox(height: 24.h),
+
+            // Language list
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                itemCount: state.availableLanguages.length,
+                itemBuilder: (context, index) {
+                  final lang = state.availableLanguages[index];
+                  return _buildLanguageSelectionTile(lang);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageSelectionTile(VoiceLanguage lang) {
+    return GestureDetector(
+      onTap: () => _onLanguageSelected(lang),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.translate_rounded,
+                  color: const Color(0xFF3B82F6),
+                  size: 22.sp,
+                ),
+              ),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lang.nativeName,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Row(
+                    children: [
+                      Text(
+                        lang.name,
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withValues(alpha: 0.45),
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                      // Provider badge
+                      if (lang.provider.isNotEmpty) ...[
+                        SizedBox(width: 6.w),
+                        _buildProviderBadge(lang.provider),
+                      ],
+                      // Voice count
+                      if (lang.availableVoices.isNotEmpty) ...[
+                        SizedBox(width: 6.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6.w,
+                            vertical: 2.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Text(
+                            '${lang.availableVoices.length} voice${lang.availableVoices.length == 1 ? "" : "s"}',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981),
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.white.withValues(alpha: 0.2),
+              size: 16.sp,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVoiceOrb(VoiceSessionState state) {
+    final isActive = state is VoiceSessionConnected ||
+        state is VoiceSessionLocalUserSpeaking ||
+        state is VoiceSessionAgentProcessing ||
+        state is VoiceSessionLocalUserNotSpeaking ||
+        state is VoiceSessionUserSearchRequired ||
+        state is VoiceSessionTransferConfirmation ||
+        state is VoiceSessionPinRequired ||
+        state is VoiceSessionTransactionSuccess;
+
+    final isSpeaking = state is VoiceSessionLocalUserSpeaking;
+    final isProcessing = state is VoiceSessionAgentProcessing;
+    final isLoading = state is VoiceSessionLoadingCredentials ||
+        state is VoiceSessionConnectingToRoom ||
+        state is VoiceSessionMicPermissionGranted;
+    final isError = state is VoiceSessionCredentialsError ||
+        state is VoiceSessionError ||
+        state is VoiceSessionMicPermissionDenied;
+
+    if (isLoading) {
+      return SizedBox(
+        width: 160.w,
+        height: 160.w,
+        child: Center(
+          child: SizedBox(
+            width: 80.w,
+            height: 80.w,
+            child: CircularProgressIndicator(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.7),
+              strokeWidth: 2.5,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (isError) {
+      return Container(
+        width: 120.w,
+        height: 120.w,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFFEF4444).withValues(alpha: 0.08),
+          border: Border.all(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+            width: 1.5,
+          ),
+        ),
+        child: Icon(
+          state is VoiceSessionMicPermissionDenied
+              ? Icons.mic_off_rounded
+              : Icons.error_outline_rounded,
+          color: const Color(0xFFEF4444),
+          size: 36.sp,
+        ),
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([_pulseController, _waveController, _glowController]),
+      builder: (context, child) {
+        final pulseValue = _pulseController.value;
+        final waveValue = _waveController.value;
+        final glowValue = _glowController.value;
+
+        return SizedBox(
+          width: 200.w,
+          height: 200.w,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outer wave rings
+              if (isActive) ...[
+                _buildWaveRing(180.w, waveValue, isSpeaking ? 0.25 : 0.1),
+                _buildWaveRing(160.w, (waveValue + 0.33) % 1.0, isSpeaking ? 0.2 : 0.08),
+                _buildWaveRing(140.w, (waveValue + 0.66) % 1.0, isSpeaking ? 0.15 : 0.06),
+              ],
+
+              // Glow
+              if (isActive)
+                Container(
+                  width: 120.w,
+                  height: 120.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getOrbColor(state).withValues(
+                          alpha: 0.15 + (glowValue * (isSpeaking ? 0.25 : 0.1)),
+                        ),
+                        blurRadius: 30 + (glowValue * 20),
+                        spreadRadius: glowValue * 10,
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Main orb
+              Transform.scale(
+                scale: isActive ? 1.0 + (pulseValue * (isSpeaking ? 0.08 : 0.03)) : 1.0,
+                child: Container(
+                  width: 100.w,
+                  height: 100.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        _getOrbColor(state).withValues(alpha: 0.3),
+                        _getOrbColor(state).withValues(alpha: 0.15),
+                        _getOrbColor(state).withValues(alpha: 0.05),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                    border: Border.all(
+                      color: _getOrbColor(state).withValues(
+                        alpha: 0.3 + (isActive ? pulseValue * 0.3 : 0),
+                      ),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      isProcessing
+                          ? Icons.auto_awesome_rounded
+                          : isSpeaking
+                              ? Icons.graphic_eq_rounded
+                              : Icons.mic_rounded,
+                      color: _getOrbColor(state).withValues(alpha: 0.9),
+                      size: 32.sp,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWaveRing(double size, double animValue, double maxOpacity) {
+    final opacity = (sin(animValue * pi * 2) * 0.5 + 0.5) * maxOpacity;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withValues(alpha: opacity),
+          width: 1,
+        ),
+      ),
+    );
+  }
+
+  Color _getOrbColor(VoiceSessionState state) {
+    if (state is VoiceSessionLocalUserSpeaking) return const Color(0xFF10B981);
+    if (state is VoiceSessionAgentProcessing) return const Color(0xFF8B5CF6);
+    return const Color(0xFF3B82F6);
+  }
+
+  Widget _buildStatusSection(VoiceSessionState state) {
+    String title;
+    String subtitle;
+    Color titleColor = Colors.white;
+
+    if (state is VoiceSessionLoadingCredentials) {
+      title = 'Initializing';
+      subtitle = 'Setting up your voice session';
+    } else if (state is VoiceSessionConnectingToRoom ||
+        state is VoiceSessionMicPermissionGranted) {
+      title = 'Connecting';
+      subtitle = 'Establishing secure connection';
+    } else if (state is VoiceSessionCredentialsError || state is VoiceSessionError) {
+      title = 'Connection Error';
+      subtitle = 'Please try again';
+      titleColor = const Color(0xFFEF4444);
+    } else if (state is VoiceSessionMicPermissionDenied) {
+      title = 'Microphone Denied';
+      subtitle = 'Enable in device settings';
+      titleColor = const Color(0xFFFB923C);
+    } else if (state is VoiceSessionLocalUserSpeaking) {
+      title = 'Listening';
+      subtitle = 'Speak naturally, I\'m here';
+      titleColor = const Color(0xFF10B981);
+    } else if (state is VoiceSessionAgentProcessing) {
+      title = 'Thinking';
+      subtitle = 'Processing your request';
+      titleColor = const Color(0xFF8B5CF6);
+    } else if (state is VoiceSessionUserSearchRequired) {
+      title = 'Select Recipient';
+      subtitle = 'Choose from the results above';
+      titleColor = const Color(0xFF3B82F6);
+    } else if (state is VoiceSessionTransferConfirmation) {
+      title = 'Confirm Transfer';
+      subtitle = 'Review the details above';
+      titleColor = const Color(0xFFFB923C);
+    } else if (state is VoiceSessionPinRequired) {
+      title = 'Enter PIN';
+      subtitle = 'Complete your transaction';
+      titleColor = const Color(0xFF3B82F6);
+    } else if (state is VoiceSessionTransactionSuccess) {
+      final success = (state as VoiceSessionTransactionSuccess).result['success'] as bool? ?? true;
+      title = success ? 'Transfer Complete' : 'Transfer Failed';
+      subtitle = success ? 'Your transaction was successful' : 'Please try again';
+      titleColor = success ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    } else if (state is VoiceSessionConnected || state is VoiceSessionLocalUserNotSpeaking) {
+      title = 'Ready';
+      subtitle = 'How can I help you?';
+    } else if (state is VoiceSessionDisconnected) {
+      title = 'Disconnected';
+      subtitle = 'Session ended';
+    } else {
+      title = 'Voice Assistant';
+      subtitle = 'Powered by LazerVault AI';
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 40.w),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w600,
+              color: titleColor,
+              letterSpacing: -0.5,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              color: Colors.white.withValues(alpha: 0.45),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(VoiceSessionState state) {
+    final isActive = state is VoiceSessionConnected ||
+        state is VoiceSessionLocalUserSpeaking ||
+        state is VoiceSessionAgentProcessing ||
+        state is VoiceSessionLocalUserNotSpeaking ||
+        state is VoiceSessionUserSearchRequired ||
+        state is VoiceSessionTransferConfirmation ||
+        state is VoiceSessionPinRequired ||
+        state is VoiceSessionTransactionSuccess;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // End session button
+          GestureDetector(
+            onTap: () {
+              context.read<VoiceSessionCubit>().disconnectFromLiveKitRoom();
+              Get.back();
+            },
+            child: Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.call_end_rounded,
+                color: const Color(0xFFEF4444),
+                size: 24.sp,
+              ),
+            ),
+          ),
+
+          if (isActive) ...[
+            SizedBox(width: 24.w),
+
+            // Mute toggle (placeholder for future)
+            GestureDetector(
+              onTap: () {
+                // TODO: toggle mute
+              },
+              child: Container(
+                width: 56.w,
+                height: 56.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.06),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.mic_rounded,
+                  color: Colors.white.withValues(alpha: 0.6),
+                  size: 24.sp,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── Visual feedback dialog methods ──
+
+  void _dismissActiveDialog() {
+    if (_isDialogShowing && mounted) {
+      Navigator.of(context).pop();
+      _isDialogShowing = false;
+    }
+  }
+
+  void _showUserSearchDialog(BuildContext context, List<Map<String, dynamic>> users, String query) {
+    // Dismiss any existing dialog first to prevent stacking
+    _dismissActiveDialog();
+    _isDialogShowing = true;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => VoiceUserSearchDialog(
+        users: users,
+        query: query,
+        onUserSelected: (userId, username) {
+          _isDialogShowing = false;
+          Navigator.of(context).pop();
+          context.read<VoiceSessionCubit>().selectUser(userId, username);
+        },
+        onCancel: () {
+          _isDialogShowing = false;
+          Navigator.of(context).pop();
+          context.read<VoiceSessionCubit>().cancelVoiceAction();
+        },
+      ),
+    ).whenComplete(() {
+      // Handle dismissal via back button or swipe
+      _isDialogShowing = false;
+    });
+  }
+
+  void _showTransferSummaryDialog(BuildContext context, Map<String, dynamic> details) {
+    _dismissActiveDialog();
+    _isDialogShowing = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => VoiceTransferSummaryCard(
+        transferDetails: details,
+        onConfirm: () {
+          _isDialogShowing = false;
+          Navigator.of(context).pop();
+          context.read<VoiceSessionCubit>().confirmTransfer();
+        },
+        onCancel: () {
+          _isDialogShowing = false;
+          Navigator.of(context).pop();
+          context.read<VoiceSessionCubit>().cancelVoiceAction();
+        },
+      ),
+    ).whenComplete(() {
+      _isDialogShowing = false;
+    });
+  }
+
+  void _showPinEntryDialog(BuildContext context, Map<String, dynamic> payload) {
+    _dismissActiveDialog();
+    _isDialogShowing = true;
+
+    final authState = context.read<AuthenticationCubit>().state;
+    final token = authState is AuthenticationSuccess
+        ? authState.profile.session.accessToken
+        : '';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => VoicePinEntryDialog(
+        transactionPayload: payload,
+        accessToken: token,
+        onComplete: (success, {reference, error}) {
+          _isDialogShowing = false;
+          Navigator.of(context).pop();
+          context.read<VoiceSessionCubit>().notifyPinCompleted(
+            success,
+            reference: reference,
+            error: error,
+          );
+        },
+      ),
+    ).whenComplete(() {
+      _isDialogShowing = false;
+    });
+  }
+
+  Widget _buildProviderBadge(String provider) {
+    Color badgeColor;
+    String label;
+    switch (provider) {
+      case 'elevenlabs':
+        badgeColor = const Color(0xFF3B82F6);
+        label = 'ElevenLabs';
+        break;
+      case 'yarngpt':
+        badgeColor = const Color(0xFF10B981);
+        label = 'YarnGPT';
+        break;
+      case 'openai':
+        badgeColor = const Color(0xFF8B5CF6);
+        label = 'OpenAI';
+        break;
+      default:
+        badgeColor = const Color(0xFF6B7280);
+        label = provider;
+    }
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4.r),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          color: badgeColor.withValues(alpha: 0.8),
+          fontSize: 9.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
