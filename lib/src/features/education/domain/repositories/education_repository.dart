@@ -7,10 +7,12 @@ abstract class EducationRepository {
   Future<Either<Failure, List<EducationProviderEntity>>> getProviders({bool activeOnly = true});
   Future<Either<Failure, EducationPurchaseEntity>> purchasePin({
     required String serviceId,
+    required String variationCode,
     required int quantity,
     required String phone,
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String billersCode = '',
   });
 }

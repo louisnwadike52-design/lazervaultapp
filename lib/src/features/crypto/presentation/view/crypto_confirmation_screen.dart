@@ -111,6 +111,9 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
   }
 
   void _processTransaction() async {
+    // Prevent double-tap: if already processing or completed, ignore
+    if (_isProcessing || _isCompleted) return;
+
     if (_rateCountdown <= 0) {
       // Rate expired, refresh
       _resetRateCountdown();
@@ -224,7 +227,9 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: !_isProcessing, // Prevent back navigation during transaction processing
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: Container(
         decoration: BoxDecoration(
@@ -264,6 +269,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -333,7 +339,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
             const Color(0xFF1F1F1F),
           ],
           begin: Alignment.topLeft,
@@ -482,12 +488,12 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
                   _getPaymentMethodIcon(),
-                  color: const Color(0xFF6C5CE7),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                   size: 24.sp,
                 ),
               ),
@@ -652,7 +658,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _processTransaction,
+        onPressed: (_isProcessing || _isCompleted) ? null : _processTransaction,
         style: ElevatedButton.styleFrom(
           backgroundColor: _getTransactionTypeColor(),
           padding: EdgeInsets.symmetric(vertical: 18.h),
@@ -692,7 +698,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
                   child: Icon(
                     Icons.sync,
                     size: 48.sp,
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                   ),
                 );
               },
@@ -807,7 +813,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
               'Transaction ID: $_transactionId',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -834,7 +840,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 18.sp : 14.sp,
             fontWeight: FontWeight.w600,
-            color: isTotal ? const Color(0xFF6C5CE7) : Colors.white,
+            color: isTotal ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
           ),
         ),
       ],
@@ -848,7 +854,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       case CryptoTransactionType.sell:
         return Colors.red;
       case CryptoTransactionType.swap:
-        return const Color(0xFF6C5CE7);
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 

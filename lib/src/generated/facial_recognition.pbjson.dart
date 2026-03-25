@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: facial_recognition.proto
-//
-// @dart = 2.12
+// Generated from facial_recognition.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -20,10 +21,22 @@ const RegisterFaceRequest$json = {
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'user_id'},
     {'1': 'face_id', '3': 2, '4': 1, '5': 9, '10': 'face_id'},
     {'1': 'allow_duplicates', '3': 3, '4': 1, '5': 8, '10': 'allow_duplicates'},
-    {'1': 'duplicate_threshold', '3': 4, '4': 1, '5': 1, '10': 'duplicate_threshold'},
+    {
+      '1': 'duplicate_threshold',
+      '3': 4,
+      '4': 1,
+      '5': 1,
+      '10': 'duplicate_threshold'
+    },
     {'1': 'image_data', '3': 5, '4': 1, '5': 12, '10': 'image_data'},
     {'1': 'image_filename', '3': 6, '4': 1, '5': 9, '10': 'image_filename'},
-    {'1': 'image_content_type', '3': 7, '4': 1, '5': 9, '10': 'image_content_type'},
+    {
+      '1': 'image_content_type',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'image_content_type'
+    },
   ],
   '7': {},
 };
@@ -47,8 +60,21 @@ const RegisterFaceResponse$json = {
     {'1': 'face_id', '3': 2, '4': 1, '5': 9, '10': 'faceId'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
     {'1': 'error', '3': 4, '4': 1, '5': 9, '10': 'error'},
-    {'1': 'num_faces_detected', '3': 5, '4': 1, '5': 5, '10': 'numFacesDetected'},
-    {'1': 'duplicate_details', '3': 6, '4': 1, '5': 11, '6': '.pb.DuplicateDetails', '10': 'duplicateDetails'},
+    {
+      '1': 'num_faces_detected',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '10': 'numFacesDetected'
+    },
+    {
+      '1': 'duplicate_details',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.DuplicateDetails',
+      '10': 'duplicateDetails'
+    },
   ],
 };
 
@@ -68,7 +94,13 @@ const VerifyFaceRequest$json = {
     {'1': 'threshold', '3': 2, '4': 1, '5': 1, '10': 'threshold'},
     {'1': 'image_data', '3': 3, '4': 1, '5': 12, '10': 'image_data'},
     {'1': 'image_filename', '3': 4, '4': 1, '5': 9, '10': 'image_filename'},
-    {'1': 'image_content_type', '3': 5, '4': 1, '5': 9, '10': 'image_content_type'},
+    {
+      '1': 'image_content_type',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '10': 'image_content_type'
+    },
   ],
   '7': {},
 };
@@ -112,8 +144,22 @@ const DuplicateDetails$json = {
     {'1': 'is_duplicate', '3': 1, '4': 1, '5': 8, '10': 'isDuplicate'},
     {'1': 'threshold', '3': 2, '4': 1, '5': 1, '10': 'threshold'},
     {'1': 'total_matches', '3': 3, '4': 1, '5': 5, '10': 'totalMatches'},
-    {'1': 'primary_match', '3': 4, '4': 1, '5': 11, '6': '.pb.PrimaryMatch', '10': 'primaryMatch'},
-    {'1': 'all_matches', '3': 5, '4': 3, '5': 11, '6': '.pb.Match', '10': 'allMatches'},
+    {
+      '1': 'primary_match',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.PrimaryMatch',
+      '10': 'primaryMatch'
+    },
+    {
+      '1': 'all_matches',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.Match',
+      '10': 'allMatches'
+    },
     {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
     {'1': 'security_note', '3': 7, '4': 1, '5': 9, '10': 'securityNote'},
   ],
@@ -168,8 +214,8 @@ const HealthCheckRequest$json = {
 };
 
 /// Descriptor for `HealthCheckRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List healthCheckRequestDescriptor = $convert.base64Decode(
-    'ChJIZWFsdGhDaGVja1JlcXVlc3Q=');
+final $typed_data.Uint8List healthCheckRequestDescriptor =
+    $convert.base64Decode('ChJIZWFsdGhDaGVja1JlcXVlc3Q=');
 
 @$core.Deprecated('Use healthCheckResponseDescriptor instead')
 const HealthCheckResponse$json = {
@@ -178,7 +224,14 @@ const HealthCheckResponse$json = {
     {'1': 'healthy', '3': 1, '4': 1, '5': 8, '10': 'healthy'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'service_version', '3': 3, '4': 1, '5': 9, '10': 'service_version'},
-    {'1': 'timestamp', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
+    {
+      '1': 'timestamp',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'timestamp'
+    },
   ],
 };
 
@@ -188,4 +241,3 @@ final $typed_data.Uint8List healthCheckResponseDescriptor = $convert.base64Decod
     'FnZRgCIAEoCVIHbWVzc2FnZRIoCg9zZXJ2aWNlX3ZlcnNpb24YAyABKAlSD3NlcnZpY2VfdmVy'
     'c2lvbhI4Cgl0aW1lc3RhbXAYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl0aW'
     '1lc3RhbXA=');
-

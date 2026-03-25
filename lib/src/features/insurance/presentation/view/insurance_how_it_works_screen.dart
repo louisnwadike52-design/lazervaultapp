@@ -105,7 +105,7 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
@@ -373,12 +373,12 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
                     width: 48.w,
                     height: 48.w,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                      color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(
                       Icons.handshake,
-                      color: const Color(0xFF8B5CF6),
+                      color: const Color.fromARGB(255, 78, 3, 208),
                       size: 24.sp,
                     ),
                   ),
@@ -538,7 +538,7 @@ class InsuranceHowItWorksScreen extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
             ),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [

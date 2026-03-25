@@ -363,7 +363,7 @@ class _TaxCalendarScreenState extends State<TaxCalendarScreen> {
       case TaxType.wht:
         return const Color(0xFFFB923C);
       case TaxType.cit:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 

@@ -41,44 +41,11 @@ class VoiceCustomizationSheet extends StatelessWidget {
     );
   }
 
-  String get _providerTitle {
-    switch (provider) {
-      case 'elevenlabs':
-        return 'ElevenLabs Voices';
-      case 'yarngpt':
-        return 'Nigerian Language Voices';
-      case 'openai':
-        return 'OpenAI Voices';
-      default:
-        return 'Available Voices';
-    }
-  }
+  String get _title => 'Available Voices';
 
-  String get _providerSubtitle {
-    switch (provider) {
-      case 'elevenlabs':
-        return 'High-quality streaming voices';
-      case 'yarngpt':
-        return 'Native Nigerian language voices';
-      case 'openai':
-        return 'Multilingual voices';
-      default:
-        return 'Select a voice for the assistant';
-    }
-  }
+  String get _subtitle => 'Select a voice for the assistant';
 
-  Color get _providerColor {
-    switch (provider) {
-      case 'elevenlabs':
-        return const Color(0xFF3B82F6);
-      case 'yarngpt':
-        return const Color(0xFF10B981);
-      case 'openai':
-        return const Color(0xFF8B5CF6);
-      default:
-        return const Color(0xFF6B7280);
-    }
-  }
+  Color get _accentColor => const Color(0xFF3B82F6);
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +82,7 @@ class VoiceCustomizationSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _providerTitle,
+                          _title,
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 20.sp,
@@ -124,9 +91,9 @@ class VoiceCustomizationSheet extends StatelessWidget {
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          _providerSubtitle,
+                          _subtitle,
                           style: GoogleFonts.inter(
-                            color: _providerColor.withValues(alpha: 0.7),
+                            color: _accentColor.withValues(alpha: 0.7),
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w500,
                           ),
@@ -155,13 +122,13 @@ class VoiceCustomizationSheet extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: _providerColor.withValues(alpha: 0.12),
+                      color: _accentColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Text(
                       '${voices.length} voice${voices.length == 1 ? "" : "s"} available',
                       style: GoogleFonts.inter(
-                        color: _providerColor,
+                        color: _accentColor,
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -234,12 +201,12 @@ class VoiceCustomizationSheet extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? _providerColor.withValues(alpha: 0.12)
+              ? _accentColor.withValues(alpha: 0.12)
               : Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: isSelected
-                ? _providerColor.withValues(alpha: 0.4)
+                ? _accentColor.withValues(alpha: 0.4)
                 : Colors.white.withValues(alpha: 0.06),
             width: 1.5,
           ),
@@ -253,7 +220,7 @@ class VoiceCustomizationSheet extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? _providerColor.withValues(alpha: 0.2)
+                    ? _accentColor.withValues(alpha: 0.2)
                     : Colors.white.withValues(alpha: 0.06),
               ),
               child: Center(
@@ -289,17 +256,17 @@ class VoiceCustomizationSheet extends StatelessWidget {
                             vertical: 2.h,
                           ),
                           decoration: BoxDecoration(
-                            color: _providerColor.withValues(alpha: 0.15),
+                            color: _accentColor.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(4.r),
                             border: Border.all(
-                              color: _providerColor.withValues(alpha: 0.3),
+                              color: _accentColor.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
                           child: Text(
                             'CURRENT',
                             style: GoogleFonts.inter(
-                              color: _providerColor,
+                              color: _accentColor,
                               fontSize: 9.sp,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.5,
@@ -331,7 +298,7 @@ class VoiceCustomizationSheet extends StatelessWidget {
                 width: 28.w,
                 height: 28.w,
                 decoration: BoxDecoration(
-                  color: _providerColor,
+                  color: _accentColor,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -371,7 +338,7 @@ class VoiceCustomizationSheet extends StatelessWidget {
     return Icon(
       iconData,
       color: isSelected
-          ? _providerColor
+          ? _accentColor
           : Colors.white.withValues(alpha: 0.4),
       size: 22.sp,
     );

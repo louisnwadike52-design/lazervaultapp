@@ -1,4 +1,4 @@
-/// Lock funds entity with locale-aware currency formatting
+/// PiggyVault (Lock Funds) entity with locale-aware currency formatting
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 
 /// Lock types following PiggyVest-style naming
@@ -45,19 +45,6 @@ enum LockType {
     }
   }
 
-  String get description {
-    switch (this) {
-      case LockType.savings:
-        return 'Lock your funds for a fixed period and earn competitive interest. Early withdrawal incurs a penalty.';
-      case LockType.investment:
-        return 'Our premium lock with highest interest rates. Perfect for long-term wealth building.';
-      case LockType.emergencyFund:
-        return 'Save with flexibility. Withdraw anytime without penalties. Lower interest rate.';
-      case LockType.goalBased:
-        return 'Set a savings goal and deadline. Perfect for planned purchases like vacations, gadgets, or events.';
-    }
-  }
-
   String get icon {
     switch (this) {
       case LockType.savings:
@@ -71,87 +58,175 @@ enum LockType {
     }
   }
 
-  /// Interest rate per annum
-  double get baseInterestRate {
+  String get description {
     switch (this) {
       case LockType.savings:
-        return 10.0; // 10% p.a. like PiggyVest SafeLock
+        return 'Lock for a fixed period and earn competitive interest. Early withdrawal has a penalty.';
       case LockType.investment:
-        return 15.0; // 15% p.a. premium rate
+        return 'Premium lock with the highest interest rates. Best returns for long-term commitment.';
       case LockType.emergencyFund:
-        return 4.0;  // 4% p.a. for flex
+        return 'Flexible savings with instant withdrawal. Zero penalties. Perfect for rainy day funds.';
       case LockType.goalBased:
-        return 8.0;  // 8% p.a. for targets
+        return 'Save towards a specific goal with a deadline. Small early withdrawal penalty.';
     }
   }
+
+  /// Base interest rate per annum (fallback when backend config unavailable)
+  double get baseInterestRate => fallbackBaseRate;
+
+  /// Maximum possible interest rate
+  double get maxInterestRate => fallbackMaxRate;
 
   /// Penalty percentage for early withdrawal
-  double get earlyUnlockPenalty {
-    switch (this) {
-      case LockType.savings:
-        return 5.0;  // 5% penalty for SafeLock
-      case LockType.investment:
-        return 15.0; // 15% penalty for Vault (higher commitment)
-      case LockType.emergencyFund:
-        return 0.0;  // No penalty for Flex
-      case LockType.goalBased:
-        return 3.0;  // 3% penalty for Target
-    }
-  }
+  double get earlyUnlockPenalty => fallbackPenalty;
 
   /// Minimum lock duration in days
-  int get minimumDurationDays {
-    switch (this) {
-      case LockType.savings:
-        return 10;   // Minimum 10 days for SafeLock
-      case LockType.investment:
-        return 90;   // Minimum 90 days for Vault
-      case LockType.emergencyFund:
-        return 0;    // No minimum for Flex
-      case LockType.goalBased:
-        return 7;    // Minimum 7 days for Target
-    }
-  }
+  int get minimumDurationDays => fallbackMinDuration;
 
   /// Maximum lock duration in days
-  int get maximumDurationDays {
-    switch (this) {
-      case LockType.savings:
-        return 1000; // ~2.7 years for SafeLock
-      case LockType.investment:
-        return 1825; // 5 years for Vault
-      case LockType.emergencyFund:
-        return 0;    // No max for Flex (always accessible)
-      case LockType.goalBased:
-        return 730;  // 2 years for Target
-    }
-  }
+  int get maximumDurationDays => fallbackMaxDuration;
 
   /// Whether this lock type allows early withdrawal
-  bool get allowsEarlyWithdrawal {
+  bool get allowsEarlyWithdrawal => fallbackAllowsEarlyWithdrawal;
+
+  /// Whether this lock type supports auto-renewal
+  bool get supportsAutoRenew => fallbackSupportsAutoRenew;
+
+  /// Whether this lock type qualifies for upfront interest payment (180+ days)
+  bool get supportsUpfrontInterest {
     switch (this) {
       case LockType.savings:
-        return true;  // With penalty
+        return true;
       case LockType.investment:
-        return false; // No early withdrawal for Vault
+        return true;
       case LockType.emergencyFund:
-        return true;  // Always accessible
+        return false;
       case LockType.goalBased:
-        return true;  // With penalty
+        return true;
     }
   }
 
-  /// Whether this lock type supports auto-renewal
-  bool get supportsAutoRenew {
+  /// Whether this lock type supports top-up
+  bool get supportsTopUp {
+    switch (this) {
+      case LockType.savings:
+        return false;
+      case LockType.investment:
+        return false;
+      case LockType.emergencyFund:
+        return true;
+      case LockType.goalBased:
+        return true;
+    }
+  }
+
+  /// Whether this lock type supports auto-save
+  bool get supportsAutoSave {
+    switch (this) {
+      case LockType.savings:
+        return true;
+      case LockType.investment:
+        return false;
+      case LockType.emergencyFund:
+        return true;
+      case LockType.goalBased:
+        return true;
+    }
+  }
+
+  /// Fallback base interest rate (used when backend config is unavailable)
+  double get fallbackBaseRate {
+    switch (this) {
+      case LockType.savings:
+        return 10.0;
+      case LockType.investment:
+        return 15.0;
+      case LockType.emergencyFund:
+        return 4.0;
+      case LockType.goalBased:
+        return 8.0;
+    }
+  }
+
+  /// Fallback max interest rate
+  double get fallbackMaxRate {
+    switch (this) {
+      case LockType.savings:
+        return 13.0;
+      case LockType.investment:
+        return 18.0;
+      case LockType.emergencyFund:
+        return 4.0;
+      case LockType.goalBased:
+        return 11.0;
+    }
+  }
+
+  /// Fallback penalty rate
+  double get fallbackPenalty {
+    switch (this) {
+      case LockType.savings:
+        return 5.0;
+      case LockType.investment:
+        return 15.0;
+      case LockType.emergencyFund:
+        return 0.0;
+      case LockType.goalBased:
+        return 3.0;
+    }
+  }
+
+  /// Fallback min duration
+  int get fallbackMinDuration {
+    switch (this) {
+      case LockType.savings:
+        return 10;
+      case LockType.investment:
+        return 90;
+      case LockType.emergencyFund:
+        return 0;
+      case LockType.goalBased:
+        return 7;
+    }
+  }
+
+  /// Fallback max duration
+  int get fallbackMaxDuration {
+    switch (this) {
+      case LockType.savings:
+        return 1000;
+      case LockType.investment:
+        return 1825;
+      case LockType.emergencyFund:
+        return 0;
+      case LockType.goalBased:
+        return 730;
+    }
+  }
+
+  bool get fallbackAllowsEarlyWithdrawal {
+    switch (this) {
+      case LockType.savings:
+        return true;
+      case LockType.investment:
+        return false;
+      case LockType.emergencyFund:
+        return true;
+      case LockType.goalBased:
+        return true;
+    }
+  }
+
+  bool get fallbackSupportsAutoRenew {
     switch (this) {
       case LockType.savings:
         return true;
       case LockType.investment:
         return true;
       case LockType.emergencyFund:
-        return false; // Flex doesn't need renewal
+        return false;
       case LockType.goalBased:
-        return false; // Target has deadline, no renewal
+        return false;
     }
   }
 }
@@ -191,6 +266,111 @@ enum LockStatus {
   bool get isTerminal => this == LockStatus.unlocked || this == LockStatus.cancelled;
 }
 
+/// Backend-configurable PiggyVault product configuration
+class PiggyVaultConfig {
+  final String id;
+  final String lockType;
+  final String currency;
+  final String displayName;
+  final double baseInterestRate; // Decimal (0.10 = 10%)
+  final double maxInterestRate;
+  final double earlyWithdrawalPenalty;
+  final int minDurationDays;
+  final int maxDurationDays;
+  final double minAmount;
+  final double maxAmount;
+  final bool allowsEarlyWithdrawal;
+  final bool supportsAutoRenew;
+  final bool supportsTopUp;
+  final bool supportsAutoSave;
+  final bool supportsUpfrontInterest;
+  final String durationBonusTiers; // JSON string
+  final bool isActive;
+  final String description;
+
+  const PiggyVaultConfig({
+    required this.id,
+    required this.lockType,
+    required this.currency,
+    required this.displayName,
+    required this.baseInterestRate,
+    required this.maxInterestRate,
+    required this.earlyWithdrawalPenalty,
+    required this.minDurationDays,
+    required this.maxDurationDays,
+    required this.minAmount,
+    this.maxAmount = 0,
+    required this.allowsEarlyWithdrawal,
+    required this.supportsAutoRenew,
+    this.supportsTopUp = false,
+    this.supportsAutoSave = false,
+    this.supportsUpfrontInterest = false,
+    this.durationBonusTiers = '[]',
+    this.isActive = true,
+    this.description = '',
+  });
+
+  /// Base rate as percentage (e.g. 10.0 for 10%)
+  double get baseRatePercent => baseInterestRate * 100;
+
+  /// Max rate as percentage (e.g. 13.0 for 13%)
+  double get maxRatePercent => maxInterestRate * 100;
+
+  /// Penalty as percentage (e.g. 5.0 for 5%)
+  double get penaltyPercent => earlyWithdrawalPenalty * 100;
+
+  /// Display string for interest range (e.g. "10% - 13% p.a.")
+  String get interestRangeText {
+    if (baseRatePercent == maxRatePercent) {
+      return '${baseRatePercent.toStringAsFixed(0)}% p.a.';
+    }
+    return '${baseRatePercent.toStringAsFixed(0)}% - ${maxRatePercent.toStringAsFixed(0)}% p.a.';
+  }
+}
+
+/// Lock fund auto-save configuration
+class LockFundAutoSaveConfig {
+  final String id;
+  final String lockFundId;
+  final String sourceAccountId;
+  final double amount;
+  final String frequency; // "daily", "weekly", "monthly"
+  final String status; // "active", "paused", "stopped"
+  final DateTime? nextRunAt;
+  final DateTime? lastRunAt;
+  final double totalSaved;
+  final int runCount;
+
+  const LockFundAutoSaveConfig({
+    required this.id,
+    required this.lockFundId,
+    required this.sourceAccountId,
+    required this.amount,
+    required this.frequency,
+    required this.status,
+    this.nextRunAt,
+    this.lastRunAt,
+    this.totalSaved = 0,
+    this.runCount = 0,
+  });
+
+  bool get isActive => status == 'active';
+  bool get isPaused => status == 'paused';
+
+  String get frequencyDisplayName {
+    switch (frequency) {
+      case 'daily':
+        return 'Daily';
+      case 'weekly':
+        return 'Weekly';
+      case 'monthly':
+        return 'Monthly';
+      default:
+        return frequency;
+    }
+  }
+}
+
 class LockFund {
   final String id;
   final String userId;
@@ -218,9 +398,9 @@ class LockFund {
   final double totalValue;
   final bool canUnlockEarly;
 
-  // Account tracking - where funds flow from/to
-  final String? sourceAccountId;      // Account funds were debited from
-  final String? destinationAccountId; // Account to credit on unlock (defaults to source)
+  // Account tracking
+  final String? sourceAccountId;
+  final String? destinationAccountId;
 
   const LockFund({
     required this.id,
@@ -311,7 +491,7 @@ class LockFund {
   bool get canRenew => status == LockStatus.matured || isMatured;
   bool get isTerminal => status.isTerminal;
 
-  /// Formatted amount with currency symbol (e.g., "₦1,000.00")
+  /// Formatted amount with currency symbol
   String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount, currency);
 
   /// Formatted total value (principal + interest) with currency symbol
@@ -357,7 +537,7 @@ class LockFund {
   /// Early withdrawal penalty amount
   double get earlyWithdrawalPenalty => amount * (earlyUnlockPenaltyPercent / 100);
 
-  /// Amount returned after early withdrawal (principal - penalty + accrued interest)
+  /// Amount returned after early withdrawal
   double get earlyWithdrawalAmount => amount - earlyWithdrawalPenalty + accruedInterest;
 }
 
@@ -395,6 +575,8 @@ class InterestCalculation {
   final double principalAmount;
   final double interestAmount;
   final double totalAmount;
+  final bool isUpfrontInterest;
+  final int lockDurationDays;
 
   const InterestCalculation({
     required this.interestRate,
@@ -404,5 +586,9 @@ class InterestCalculation {
     required this.principalAmount,
     required this.interestAmount,
     required this.totalAmount,
+    this.isUpfrontInterest = false,
+    this.lockDurationDays = 0,
   });
+
+  bool get qualifiesForUpfrontInterest => lockDurationDays >= 180;
 }

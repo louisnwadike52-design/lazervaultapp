@@ -1,19 +1,22 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: facial_recognition.proto
-//
-// @dart = 2.12
+// Generated from facial_recognition.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
+export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 /// Register Face Request
 class RegisterFaceRequest extends $pb.GeneratedMessage {
@@ -26,128 +29,125 @@ class RegisterFaceRequest extends $pb.GeneratedMessage {
     $core.String? imageFilename,
     $core.String? imageContentType,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (faceId != null) {
-      $result.faceId = faceId;
-    }
-    if (allowDuplicates != null) {
-      $result.allowDuplicates = allowDuplicates;
-    }
-    if (duplicateThreshold != null) {
-      $result.duplicateThreshold = duplicateThreshold;
-    }
-    if (imageData != null) {
-      $result.imageData = imageData;
-    }
-    if (imageFilename != null) {
-      $result.imageFilename = imageFilename;
-    }
-    if (imageContentType != null) {
-      $result.imageContentType = imageContentType;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (faceId != null) result.faceId = faceId;
+    if (allowDuplicates != null) result.allowDuplicates = allowDuplicates;
+    if (duplicateThreshold != null)
+      result.duplicateThreshold = duplicateThreshold;
+    if (imageData != null) result.imageData = imageData;
+    if (imageFilename != null) result.imageFilename = imageFilename;
+    if (imageContentType != null) result.imageContentType = imageContentType;
+    return result;
   }
-  RegisterFaceRequest._() : super();
-  factory RegisterFaceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RegisterFaceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegisterFaceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  RegisterFaceRequest._();
+
+  factory RegisterFaceRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RegisterFaceRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RegisterFaceRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'user_id')
     ..aOS(2, _omitFieldNames ? '' : 'face_id')
     ..aOB(3, _omitFieldNames ? '' : 'allow_duplicates')
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'duplicate_threshold', $pb.PbFieldType.OD)
-    ..a<$core.List<$core.int>>(5, _omitFieldNames ? '' : 'image_data', $pb.PbFieldType.OY)
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'duplicate_threshold', $pb.PbFieldType.OD)
+    ..a<$core.List<$core.int>>(
+        5, _omitFieldNames ? '' : 'image_data', $pb.PbFieldType.OY)
     ..aOS(6, _omitFieldNames ? '' : 'image_filename')
     ..aOS(7, _omitFieldNames ? '' : 'image_content_type')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   RegisterFaceRequest clone() => RegisterFaceRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RegisterFaceRequest copyWith(void Function(RegisterFaceRequest) updates) => super.copyWith((message) => updates(message as RegisterFaceRequest)) as RegisterFaceRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RegisterFaceRequest copyWith(void Function(RegisterFaceRequest) updates) =>
+      super.copyWith((message) => updates(message as RegisterFaceRequest))
+          as RegisterFaceRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static RegisterFaceRequest create() => RegisterFaceRequest._();
+  @$core.override
   RegisterFaceRequest createEmptyInstance() => create();
-  static $pb.PbList<RegisterFaceRequest> createRepeated() => $pb.PbList<RegisterFaceRequest>();
+  static $pb.PbList<RegisterFaceRequest> createRepeated() =>
+      $pb.PbList<RegisterFaceRequest>();
   @$core.pragma('dart2js:noInline')
-  static RegisterFaceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterFaceRequest>(create);
+  static RegisterFaceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RegisterFaceRequest>(create);
   static RegisterFaceRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get faceId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set faceId($core.String v) { $_setString(1, v); }
+  set faceId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasFaceId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFaceId() => clearField(2);
+  void clearFaceId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.bool get allowDuplicates => $_getBF(2);
   @$pb.TagNumber(3)
-  set allowDuplicates($core.bool v) { $_setBool(2, v); }
+  set allowDuplicates($core.bool value) => $_setBool(2, value);
   @$pb.TagNumber(3)
   $core.bool hasAllowDuplicates() => $_has(2);
   @$pb.TagNumber(3)
-  void clearAllowDuplicates() => clearField(3);
+  void clearAllowDuplicates() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get duplicateThreshold => $_getN(3);
   @$pb.TagNumber(4)
-  set duplicateThreshold($core.double v) { $_setDouble(3, v); }
+  set duplicateThreshold($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasDuplicateThreshold() => $_has(3);
   @$pb.TagNumber(4)
-  void clearDuplicateThreshold() => clearField(4);
+  void clearDuplicateThreshold() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.List<$core.int> get imageData => $_getN(4);
   @$pb.TagNumber(5)
-  set imageData($core.List<$core.int> v) { $_setBytes(4, v); }
+  set imageData($core.List<$core.int> value) => $_setBytes(4, value);
   @$pb.TagNumber(5)
   $core.bool hasImageData() => $_has(4);
   @$pb.TagNumber(5)
-  void clearImageData() => clearField(5);
+  void clearImageData() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get imageFilename => $_getSZ(5);
   @$pb.TagNumber(6)
-  set imageFilename($core.String v) { $_setString(5, v); }
+  set imageFilename($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasImageFilename() => $_has(5);
   @$pb.TagNumber(6)
-  void clearImageFilename() => clearField(6);
+  void clearImageFilename() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.String get imageContentType => $_getSZ(6);
   @$pb.TagNumber(7)
-  set imageContentType($core.String v) { $_setString(6, v); }
+  set imageContentType($core.String value) => $_setString(6, value);
   @$pb.TagNumber(7)
   $core.bool hasImageContentType() => $_has(6);
   @$pb.TagNumber(7)
-  void clearImageContentType() => clearField(7);
+  void clearImageContentType() => $_clearField(7);
 }
 
 /// Register Face Response
@@ -160,115 +160,114 @@ class RegisterFaceResponse extends $pb.GeneratedMessage {
     $core.int? numFacesDetected,
     DuplicateDetails? duplicateDetails,
   }) {
-    final $result = create();
-    if (success != null) {
-      $result.success = success;
-    }
-    if (faceId != null) {
-      $result.faceId = faceId;
-    }
-    if (message != null) {
-      $result.message = message;
-    }
-    if (error != null) {
-      $result.error = error;
-    }
-    if (numFacesDetected != null) {
-      $result.numFacesDetected = numFacesDetected;
-    }
-    if (duplicateDetails != null) {
-      $result.duplicateDetails = duplicateDetails;
-    }
-    return $result;
+    final result = create();
+    if (success != null) result.success = success;
+    if (faceId != null) result.faceId = faceId;
+    if (message != null) result.message = message;
+    if (error != null) result.error = error;
+    if (numFacesDetected != null) result.numFacesDetected = numFacesDetected;
+    if (duplicateDetails != null) result.duplicateDetails = duplicateDetails;
+    return result;
   }
-  RegisterFaceResponse._() : super();
-  factory RegisterFaceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RegisterFaceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegisterFaceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  RegisterFaceResponse._();
+
+  factory RegisterFaceResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RegisterFaceResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RegisterFaceResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'faceId')
     ..aOS(3, _omitFieldNames ? '' : 'message')
     ..aOS(4, _omitFieldNames ? '' : 'error')
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'numFacesDetected', $pb.PbFieldType.O3)
-    ..aOM<DuplicateDetails>(6, _omitFieldNames ? '' : 'duplicateDetails', subBuilder: DuplicateDetails.create)
-    ..hasRequiredFields = false
-  ;
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'numFacesDetected', $pb.PbFieldType.O3)
+    ..aOM<DuplicateDetails>(6, _omitFieldNames ? '' : 'duplicateDetails',
+        subBuilder: DuplicateDetails.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  RegisterFaceResponse clone() => RegisterFaceResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RegisterFaceResponse copyWith(void Function(RegisterFaceResponse) updates) => super.copyWith((message) => updates(message as RegisterFaceResponse)) as RegisterFaceResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RegisterFaceResponse clone() =>
+      RegisterFaceResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RegisterFaceResponse copyWith(void Function(RegisterFaceResponse) updates) =>
+      super.copyWith((message) => updates(message as RegisterFaceResponse))
+          as RegisterFaceResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static RegisterFaceResponse create() => RegisterFaceResponse._();
+  @$core.override
   RegisterFaceResponse createEmptyInstance() => create();
-  static $pb.PbList<RegisterFaceResponse> createRepeated() => $pb.PbList<RegisterFaceResponse>();
+  static $pb.PbList<RegisterFaceResponse> createRepeated() =>
+      $pb.PbList<RegisterFaceResponse>();
   @$core.pragma('dart2js:noInline')
-  static RegisterFaceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterFaceResponse>(create);
+  static RegisterFaceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RegisterFaceResponse>(create);
   static RegisterFaceResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
+  set success($core.bool value) => $_setBool(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => clearField(1);
+  void clearSuccess() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get faceId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set faceId($core.String v) { $_setString(1, v); }
+  set faceId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasFaceId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFaceId() => clearField(2);
+  void clearFaceId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get message => $_getSZ(2);
   @$pb.TagNumber(3)
-  set message($core.String v) { $_setString(2, v); }
+  set message($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasMessage() => $_has(2);
   @$pb.TagNumber(3)
-  void clearMessage() => clearField(3);
+  void clearMessage() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get error => $_getSZ(3);
   @$pb.TagNumber(4)
-  set error($core.String v) { $_setString(3, v); }
+  set error($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasError() => $_has(3);
   @$pb.TagNumber(4)
-  void clearError() => clearField(4);
+  void clearError() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.int get numFacesDetected => $_getIZ(4);
   @$pb.TagNumber(5)
-  set numFacesDetected($core.int v) { $_setSignedInt32(4, v); }
+  set numFacesDetected($core.int value) => $_setSignedInt32(4, value);
   @$pb.TagNumber(5)
   $core.bool hasNumFacesDetected() => $_has(4);
   @$pb.TagNumber(5)
-  void clearNumFacesDetected() => clearField(5);
+  void clearNumFacesDetected() => $_clearField(5);
 
   @$pb.TagNumber(6)
   DuplicateDetails get duplicateDetails => $_getN(5);
   @$pb.TagNumber(6)
-  set duplicateDetails(DuplicateDetails v) { setField(6, v); }
+  set duplicateDetails(DuplicateDetails value) => $_setField(6, value);
   @$pb.TagNumber(6)
   $core.bool hasDuplicateDetails() => $_has(5);
   @$pb.TagNumber(6)
-  void clearDuplicateDetails() => clearField(6);
+  void clearDuplicateDetails() => $_clearField(6);
   @$pb.TagNumber(6)
   DuplicateDetails ensureDuplicateDetails() => $_ensure(5);
 }
@@ -282,102 +281,101 @@ class VerifyFaceRequest extends $pb.GeneratedMessage {
     $core.String? imageFilename,
     $core.String? imageContentType,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (threshold != null) {
-      $result.threshold = threshold;
-    }
-    if (imageData != null) {
-      $result.imageData = imageData;
-    }
-    if (imageFilename != null) {
-      $result.imageFilename = imageFilename;
-    }
-    if (imageContentType != null) {
-      $result.imageContentType = imageContentType;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (threshold != null) result.threshold = threshold;
+    if (imageData != null) result.imageData = imageData;
+    if (imageFilename != null) result.imageFilename = imageFilename;
+    if (imageContentType != null) result.imageContentType = imageContentType;
+    return result;
   }
-  VerifyFaceRequest._() : super();
-  factory VerifyFaceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VerifyFaceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyFaceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  VerifyFaceRequest._();
+
+  factory VerifyFaceRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory VerifyFaceRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'VerifyFaceRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'user_id')
     ..a<$core.double>(2, _omitFieldNames ? '' : 'threshold', $pb.PbFieldType.OD)
-    ..a<$core.List<$core.int>>(3, _omitFieldNames ? '' : 'image_data', $pb.PbFieldType.OY)
+    ..a<$core.List<$core.int>>(
+        3, _omitFieldNames ? '' : 'image_data', $pb.PbFieldType.OY)
     ..aOS(4, _omitFieldNames ? '' : 'image_filename')
     ..aOS(5, _omitFieldNames ? '' : 'image_content_type')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   VerifyFaceRequest clone() => VerifyFaceRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  VerifyFaceRequest copyWith(void Function(VerifyFaceRequest) updates) => super.copyWith((message) => updates(message as VerifyFaceRequest)) as VerifyFaceRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  VerifyFaceRequest copyWith(void Function(VerifyFaceRequest) updates) =>
+      super.copyWith((message) => updates(message as VerifyFaceRequest))
+          as VerifyFaceRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyFaceRequest create() => VerifyFaceRequest._();
+  @$core.override
   VerifyFaceRequest createEmptyInstance() => create();
-  static $pb.PbList<VerifyFaceRequest> createRepeated() => $pb.PbList<VerifyFaceRequest>();
+  static $pb.PbList<VerifyFaceRequest> createRepeated() =>
+      $pb.PbList<VerifyFaceRequest>();
   @$core.pragma('dart2js:noInline')
-  static VerifyFaceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyFaceRequest>(create);
+  static VerifyFaceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<VerifyFaceRequest>(create);
   static VerifyFaceRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.double get threshold => $_getN(1);
   @$pb.TagNumber(2)
-  set threshold($core.double v) { $_setDouble(1, v); }
+  set threshold($core.double value) => $_setDouble(1, value);
   @$pb.TagNumber(2)
   $core.bool hasThreshold() => $_has(1);
   @$pb.TagNumber(2)
-  void clearThreshold() => clearField(2);
+  void clearThreshold() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.List<$core.int> get imageData => $_getN(2);
   @$pb.TagNumber(3)
-  set imageData($core.List<$core.int> v) { $_setBytes(2, v); }
+  set imageData($core.List<$core.int> value) => $_setBytes(2, value);
   @$pb.TagNumber(3)
   $core.bool hasImageData() => $_has(2);
   @$pb.TagNumber(3)
-  void clearImageData() => clearField(3);
+  void clearImageData() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get imageFilename => $_getSZ(3);
   @$pb.TagNumber(4)
-  set imageFilename($core.String v) { $_setString(3, v); }
+  set imageFilename($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasImageFilename() => $_has(3);
   @$pb.TagNumber(4)
-  void clearImageFilename() => clearField(4);
+  void clearImageFilename() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get imageContentType => $_getSZ(4);
   @$pb.TagNumber(5)
-  set imageContentType($core.String v) { $_setString(4, v); }
+  set imageContentType($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasImageContentType() => $_has(4);
   @$pb.TagNumber(5)
-  void clearImageContentType() => clearField(5);
+  void clearImageContentType() => $_clearField(5);
 }
 
 /// Verify Face Response
@@ -392,141 +390,134 @@ class VerifyFaceResponse extends $pb.GeneratedMessage {
     $core.String? message,
     $core.String? error,
   }) {
-    final $result = create();
-    if (success != null) {
-      $result.success = success;
-    }
-    if (verified != null) {
-      $result.verified = verified;
-    }
-    if (confidence != null) {
-      $result.confidence = confidence;
-    }
-    if (matchedFaceId != null) {
-      $result.matchedFaceId = matchedFaceId;
-    }
-    if (threshold != null) {
-      $result.threshold = threshold;
-    }
-    if (distance != null) {
-      $result.distance = distance;
-    }
-    if (message != null) {
-      $result.message = message;
-    }
-    if (error != null) {
-      $result.error = error;
-    }
-    return $result;
+    final result = create();
+    if (success != null) result.success = success;
+    if (verified != null) result.verified = verified;
+    if (confidence != null) result.confidence = confidence;
+    if (matchedFaceId != null) result.matchedFaceId = matchedFaceId;
+    if (threshold != null) result.threshold = threshold;
+    if (distance != null) result.distance = distance;
+    if (message != null) result.message = message;
+    if (error != null) result.error = error;
+    return result;
   }
-  VerifyFaceResponse._() : super();
-  factory VerifyFaceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VerifyFaceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyFaceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  VerifyFaceResponse._();
+
+  factory VerifyFaceResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory VerifyFaceResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'VerifyFaceResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOB(2, _omitFieldNames ? '' : 'verified')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'matchedFaceId')
     ..a<$core.double>(5, _omitFieldNames ? '' : 'threshold', $pb.PbFieldType.OD)
     ..a<$core.double>(6, _omitFieldNames ? '' : 'distance', $pb.PbFieldType.OD)
     ..aOS(7, _omitFieldNames ? '' : 'message')
     ..aOS(8, _omitFieldNames ? '' : 'error')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   VerifyFaceResponse clone() => VerifyFaceResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  VerifyFaceResponse copyWith(void Function(VerifyFaceResponse) updates) => super.copyWith((message) => updates(message as VerifyFaceResponse)) as VerifyFaceResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  VerifyFaceResponse copyWith(void Function(VerifyFaceResponse) updates) =>
+      super.copyWith((message) => updates(message as VerifyFaceResponse))
+          as VerifyFaceResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyFaceResponse create() => VerifyFaceResponse._();
+  @$core.override
   VerifyFaceResponse createEmptyInstance() => create();
-  static $pb.PbList<VerifyFaceResponse> createRepeated() => $pb.PbList<VerifyFaceResponse>();
+  static $pb.PbList<VerifyFaceResponse> createRepeated() =>
+      $pb.PbList<VerifyFaceResponse>();
   @$core.pragma('dart2js:noInline')
-  static VerifyFaceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyFaceResponse>(create);
+  static VerifyFaceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<VerifyFaceResponse>(create);
   static VerifyFaceResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
+  set success($core.bool value) => $_setBool(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => clearField(1);
+  void clearSuccess() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.bool get verified => $_getBF(1);
   @$pb.TagNumber(2)
-  set verified($core.bool v) { $_setBool(1, v); }
+  set verified($core.bool value) => $_setBool(1, value);
   @$pb.TagNumber(2)
   $core.bool hasVerified() => $_has(1);
   @$pb.TagNumber(2)
-  void clearVerified() => clearField(2);
+  void clearVerified() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get confidence => $_getN(2);
   @$pb.TagNumber(3)
-  set confidence($core.double v) { $_setDouble(2, v); }
+  set confidence($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasConfidence() => $_has(2);
   @$pb.TagNumber(3)
-  void clearConfidence() => clearField(3);
+  void clearConfidence() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get matchedFaceId => $_getSZ(3);
   @$pb.TagNumber(4)
-  set matchedFaceId($core.String v) { $_setString(3, v); }
+  set matchedFaceId($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasMatchedFaceId() => $_has(3);
   @$pb.TagNumber(4)
-  void clearMatchedFaceId() => clearField(4);
+  void clearMatchedFaceId() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get threshold => $_getN(4);
   @$pb.TagNumber(5)
-  set threshold($core.double v) { $_setDouble(4, v); }
+  set threshold($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasThreshold() => $_has(4);
   @$pb.TagNumber(5)
-  void clearThreshold() => clearField(5);
+  void clearThreshold() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.double get distance => $_getN(5);
   @$pb.TagNumber(6)
-  set distance($core.double v) { $_setDouble(5, v); }
+  set distance($core.double value) => $_setDouble(5, value);
   @$pb.TagNumber(6)
   $core.bool hasDistance() => $_has(5);
   @$pb.TagNumber(6)
-  void clearDistance() => clearField(6);
+  void clearDistance() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.String get message => $_getSZ(6);
   @$pb.TagNumber(7)
-  set message($core.String v) { $_setString(6, v); }
+  set message($core.String value) => $_setString(6, value);
   @$pb.TagNumber(7)
   $core.bool hasMessage() => $_has(6);
   @$pb.TagNumber(7)
-  void clearMessage() => clearField(7);
+  void clearMessage() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $core.String get error => $_getSZ(7);
   @$pb.TagNumber(8)
-  set error($core.String v) { $_setString(7, v); }
+  set error($core.String value) => $_setString(7, value);
   @$pb.TagNumber(8)
   $core.bool hasError() => $_has(7);
   @$pb.TagNumber(8)
-  void clearError() => clearField(8);
+  void clearError() => $_clearField(8);
 }
 
 /// Duplicate Details for Registration
@@ -540,124 +531,120 @@ class DuplicateDetails extends $pb.GeneratedMessage {
     $core.String? message,
     $core.String? securityNote,
   }) {
-    final $result = create();
-    if (isDuplicate != null) {
-      $result.isDuplicate = isDuplicate;
-    }
-    if (threshold != null) {
-      $result.threshold = threshold;
-    }
-    if (totalMatches != null) {
-      $result.totalMatches = totalMatches;
-    }
-    if (primaryMatch != null) {
-      $result.primaryMatch = primaryMatch;
-    }
-    if (allMatches != null) {
-      $result.allMatches.addAll(allMatches);
-    }
-    if (message != null) {
-      $result.message = message;
-    }
-    if (securityNote != null) {
-      $result.securityNote = securityNote;
-    }
-    return $result;
+    final result = create();
+    if (isDuplicate != null) result.isDuplicate = isDuplicate;
+    if (threshold != null) result.threshold = threshold;
+    if (totalMatches != null) result.totalMatches = totalMatches;
+    if (primaryMatch != null) result.primaryMatch = primaryMatch;
+    if (allMatches != null) result.allMatches.addAll(allMatches);
+    if (message != null) result.message = message;
+    if (securityNote != null) result.securityNote = securityNote;
+    return result;
   }
-  DuplicateDetails._() : super();
-  factory DuplicateDetails.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DuplicateDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DuplicateDetails', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  DuplicateDetails._();
+
+  factory DuplicateDetails.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DuplicateDetails.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DuplicateDetails',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'isDuplicate')
     ..a<$core.double>(2, _omitFieldNames ? '' : 'threshold', $pb.PbFieldType.OD)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'totalMatches', $pb.PbFieldType.O3)
-    ..aOM<PrimaryMatch>(4, _omitFieldNames ? '' : 'primaryMatch', subBuilder: PrimaryMatch.create)
-    ..pc<Match>(5, _omitFieldNames ? '' : 'allMatches', $pb.PbFieldType.PM, subBuilder: Match.create)
+    ..aOM<PrimaryMatch>(4, _omitFieldNames ? '' : 'primaryMatch',
+        subBuilder: PrimaryMatch.create)
+    ..pc<Match>(5, _omitFieldNames ? '' : 'allMatches', $pb.PbFieldType.PM,
+        subBuilder: Match.create)
     ..aOS(6, _omitFieldNames ? '' : 'message')
     ..aOS(7, _omitFieldNames ? '' : 'securityNote')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   DuplicateDetails clone() => DuplicateDetails()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  DuplicateDetails copyWith(void Function(DuplicateDetails) updates) => super.copyWith((message) => updates(message as DuplicateDetails)) as DuplicateDetails;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DuplicateDetails copyWith(void Function(DuplicateDetails) updates) =>
+      super.copyWith((message) => updates(message as DuplicateDetails))
+          as DuplicateDetails;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static DuplicateDetails create() => DuplicateDetails._();
+  @$core.override
   DuplicateDetails createEmptyInstance() => create();
-  static $pb.PbList<DuplicateDetails> createRepeated() => $pb.PbList<DuplicateDetails>();
+  static $pb.PbList<DuplicateDetails> createRepeated() =>
+      $pb.PbList<DuplicateDetails>();
   @$core.pragma('dart2js:noInline')
-  static DuplicateDetails getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DuplicateDetails>(create);
+  static DuplicateDetails getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DuplicateDetails>(create);
   static DuplicateDetails? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get isDuplicate => $_getBF(0);
   @$pb.TagNumber(1)
-  set isDuplicate($core.bool v) { $_setBool(0, v); }
+  set isDuplicate($core.bool value) => $_setBool(0, value);
   @$pb.TagNumber(1)
   $core.bool hasIsDuplicate() => $_has(0);
   @$pb.TagNumber(1)
-  void clearIsDuplicate() => clearField(1);
+  void clearIsDuplicate() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.double get threshold => $_getN(1);
   @$pb.TagNumber(2)
-  set threshold($core.double v) { $_setDouble(1, v); }
+  set threshold($core.double value) => $_setDouble(1, value);
   @$pb.TagNumber(2)
   $core.bool hasThreshold() => $_has(1);
   @$pb.TagNumber(2)
-  void clearThreshold() => clearField(2);
+  void clearThreshold() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.int get totalMatches => $_getIZ(2);
   @$pb.TagNumber(3)
-  set totalMatches($core.int v) { $_setSignedInt32(2, v); }
+  set totalMatches($core.int value) => $_setSignedInt32(2, value);
   @$pb.TagNumber(3)
   $core.bool hasTotalMatches() => $_has(2);
   @$pb.TagNumber(3)
-  void clearTotalMatches() => clearField(3);
+  void clearTotalMatches() => $_clearField(3);
 
   @$pb.TagNumber(4)
   PrimaryMatch get primaryMatch => $_getN(3);
   @$pb.TagNumber(4)
-  set primaryMatch(PrimaryMatch v) { setField(4, v); }
+  set primaryMatch(PrimaryMatch value) => $_setField(4, value);
   @$pb.TagNumber(4)
   $core.bool hasPrimaryMatch() => $_has(3);
   @$pb.TagNumber(4)
-  void clearPrimaryMatch() => clearField(4);
+  void clearPrimaryMatch() => $_clearField(4);
   @$pb.TagNumber(4)
   PrimaryMatch ensurePrimaryMatch() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $core.List<Match> get allMatches => $_getList(4);
+  $pb.PbList<Match> get allMatches => $_getList(4);
 
   @$pb.TagNumber(6)
   $core.String get message => $_getSZ(5);
   @$pb.TagNumber(6)
-  set message($core.String v) { $_setString(5, v); }
+  set message($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasMessage() => $_has(5);
   @$pb.TagNumber(6)
-  void clearMessage() => clearField(6);
+  void clearMessage() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.String get securityNote => $_getSZ(6);
   @$pb.TagNumber(7)
-  set securityNote($core.String v) { $_setString(6, v); }
+  set securityNote($core.String value) => $_setString(6, value);
   @$pb.TagNumber(7)
   $core.bool hasSecurityNote() => $_has(6);
   @$pb.TagNumber(7)
-  void clearSecurityNote() => clearField(7);
+  void clearSecurityNote() => $_clearField(7);
 }
 
 /// Primary Match Details
@@ -668,89 +655,90 @@ class PrimaryMatch extends $pb.GeneratedMessage {
     $core.double? confidence,
     $core.String? registeredAt,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (faceId != null) {
-      $result.faceId = faceId;
-    }
-    if (confidence != null) {
-      $result.confidence = confidence;
-    }
-    if (registeredAt != null) {
-      $result.registeredAt = registeredAt;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (faceId != null) result.faceId = faceId;
+    if (confidence != null) result.confidence = confidence;
+    if (registeredAt != null) result.registeredAt = registeredAt;
+    return result;
   }
-  PrimaryMatch._() : super();
-  factory PrimaryMatch.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PrimaryMatch.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PrimaryMatch', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  PrimaryMatch._();
+
+  factory PrimaryMatch.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PrimaryMatch.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PrimaryMatch',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'faceId')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'registeredAt')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   PrimaryMatch clone() => PrimaryMatch()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  PrimaryMatch copyWith(void Function(PrimaryMatch) updates) => super.copyWith((message) => updates(message as PrimaryMatch)) as PrimaryMatch;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PrimaryMatch copyWith(void Function(PrimaryMatch) updates) =>
+      super.copyWith((message) => updates(message as PrimaryMatch))
+          as PrimaryMatch;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static PrimaryMatch create() => PrimaryMatch._();
+  @$core.override
   PrimaryMatch createEmptyInstance() => create();
-  static $pb.PbList<PrimaryMatch> createRepeated() => $pb.PbList<PrimaryMatch>();
+  static $pb.PbList<PrimaryMatch> createRepeated() =>
+      $pb.PbList<PrimaryMatch>();
   @$core.pragma('dart2js:noInline')
-  static PrimaryMatch getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PrimaryMatch>(create);
+  static PrimaryMatch getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PrimaryMatch>(create);
   static PrimaryMatch? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get faceId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set faceId($core.String v) { $_setString(1, v); }
+  set faceId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasFaceId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFaceId() => clearField(2);
+  void clearFaceId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get confidence => $_getN(2);
   @$pb.TagNumber(3)
-  set confidence($core.double v) { $_setDouble(2, v); }
+  set confidence($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasConfidence() => $_has(2);
   @$pb.TagNumber(3)
-  void clearConfidence() => clearField(3);
+  void clearConfidence() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get registeredAt => $_getSZ(3);
   @$pb.TagNumber(4)
-  set registeredAt($core.String v) { $_setString(3, v); }
+  set registeredAt($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasRegisteredAt() => $_has(3);
   @$pb.TagNumber(4)
-  void clearRegisteredAt() => clearField(4);
+  void clearRegisteredAt() => $_clearField(4);
 }
 
 /// Match Details
@@ -761,121 +749,128 @@ class Match extends $pb.GeneratedMessage {
     $core.double? confidence,
     $core.String? registeredAt,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (faceId != null) {
-      $result.faceId = faceId;
-    }
-    if (confidence != null) {
-      $result.confidence = confidence;
-    }
-    if (registeredAt != null) {
-      $result.registeredAt = registeredAt;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (faceId != null) result.faceId = faceId;
+    if (confidence != null) result.confidence = confidence;
+    if (registeredAt != null) result.registeredAt = registeredAt;
+    return result;
   }
-  Match._() : super();
-  factory Match.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Match.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Match', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  Match._();
+
+  factory Match.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory Match.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Match',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'faceId')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'confidence', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'registeredAt')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   Match clone() => Match()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Match copyWith(void Function(Match) updates) => super.copyWith((message) => updates(message as Match)) as Match;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Match copyWith(void Function(Match) updates) =>
+      super.copyWith((message) => updates(message as Match)) as Match;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static Match create() => Match._();
+  @$core.override
   Match createEmptyInstance() => create();
   static $pb.PbList<Match> createRepeated() => $pb.PbList<Match>();
   @$core.pragma('dart2js:noInline')
-  static Match getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Match>(create);
+  static Match getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Match>(create);
   static Match? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get faceId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set faceId($core.String v) { $_setString(1, v); }
+  set faceId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasFaceId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFaceId() => clearField(2);
+  void clearFaceId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get confidence => $_getN(2);
   @$pb.TagNumber(3)
-  set confidence($core.double v) { $_setDouble(2, v); }
+  set confidence($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasConfidence() => $_has(2);
   @$pb.TagNumber(3)
-  void clearConfidence() => clearField(3);
+  void clearConfidence() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get registeredAt => $_getSZ(3);
   @$pb.TagNumber(4)
-  set registeredAt($core.String v) { $_setString(3, v); }
+  set registeredAt($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasRegisteredAt() => $_has(3);
   @$pb.TagNumber(4)
-  void clearRegisteredAt() => clearField(4);
+  void clearRegisteredAt() => $_clearField(4);
 }
 
 /// Health Check Request
 class HealthCheckRequest extends $pb.GeneratedMessage {
   factory HealthCheckRequest() => create();
-  HealthCheckRequest._() : super();
-  factory HealthCheckRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory HealthCheckRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'HealthCheckRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..hasRequiredFields = false
-  ;
+  HealthCheckRequest._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  factory HealthCheckRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory HealthCheckRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HealthCheckRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   HealthCheckRequest clone() => HealthCheckRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  HealthCheckRequest copyWith(void Function(HealthCheckRequest) updates) => super.copyWith((message) => updates(message as HealthCheckRequest)) as HealthCheckRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HealthCheckRequest copyWith(void Function(HealthCheckRequest) updates) =>
+      super.copyWith((message) => updates(message as HealthCheckRequest))
+          as HealthCheckRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static HealthCheckRequest create() => HealthCheckRequest._();
+  @$core.override
   HealthCheckRequest createEmptyInstance() => create();
-  static $pb.PbList<HealthCheckRequest> createRepeated() => $pb.PbList<HealthCheckRequest>();
+  static $pb.PbList<HealthCheckRequest> createRepeated() =>
+      $pb.PbList<HealthCheckRequest>();
   @$core.pragma('dart2js:noInline')
-  static HealthCheckRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HealthCheckRequest>(create);
+  static HealthCheckRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HealthCheckRequest>(create);
   static HealthCheckRequest? _defaultInstance;
 }
 
@@ -887,93 +882,95 @@ class HealthCheckResponse extends $pb.GeneratedMessage {
     $core.String? serviceVersion,
     $1.Timestamp? timestamp,
   }) {
-    final $result = create();
-    if (healthy != null) {
-      $result.healthy = healthy;
-    }
-    if (message != null) {
-      $result.message = message;
-    }
-    if (serviceVersion != null) {
-      $result.serviceVersion = serviceVersion;
-    }
-    if (timestamp != null) {
-      $result.timestamp = timestamp;
-    }
-    return $result;
+    final result = create();
+    if (healthy != null) result.healthy = healthy;
+    if (message != null) result.message = message;
+    if (serviceVersion != null) result.serviceVersion = serviceVersion;
+    if (timestamp != null) result.timestamp = timestamp;
+    return result;
   }
-  HealthCheckResponse._() : super();
-  factory HealthCheckResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory HealthCheckResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'HealthCheckResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  HealthCheckResponse._();
+
+  factory HealthCheckResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory HealthCheckResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HealthCheckResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'healthy')
     ..aOS(2, _omitFieldNames ? '' : 'message')
     ..aOS(3, _omitFieldNames ? '' : 'service_version')
-    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'timestamp',
+        subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   HealthCheckResponse clone() => HealthCheckResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  HealthCheckResponse copyWith(void Function(HealthCheckResponse) updates) => super.copyWith((message) => updates(message as HealthCheckResponse)) as HealthCheckResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HealthCheckResponse copyWith(void Function(HealthCheckResponse) updates) =>
+      super.copyWith((message) => updates(message as HealthCheckResponse))
+          as HealthCheckResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static HealthCheckResponse create() => HealthCheckResponse._();
+  @$core.override
   HealthCheckResponse createEmptyInstance() => create();
-  static $pb.PbList<HealthCheckResponse> createRepeated() => $pb.PbList<HealthCheckResponse>();
+  static $pb.PbList<HealthCheckResponse> createRepeated() =>
+      $pb.PbList<HealthCheckResponse>();
   @$core.pragma('dart2js:noInline')
-  static HealthCheckResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HealthCheckResponse>(create);
+  static HealthCheckResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HealthCheckResponse>(create);
   static HealthCheckResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get healthy => $_getBF(0);
   @$pb.TagNumber(1)
-  set healthy($core.bool v) { $_setBool(0, v); }
+  set healthy($core.bool value) => $_setBool(0, value);
   @$pb.TagNumber(1)
   $core.bool hasHealthy() => $_has(0);
   @$pb.TagNumber(1)
-  void clearHealthy() => clearField(1);
+  void clearHealthy() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
   @$pb.TagNumber(2)
-  set message($core.String v) { $_setString(1, v); }
+  set message($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMessage() => clearField(2);
+  void clearMessage() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get serviceVersion => $_getSZ(2);
   @$pb.TagNumber(3)
-  set serviceVersion($core.String v) { $_setString(2, v); }
+  set serviceVersion($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasServiceVersion() => $_has(2);
   @$pb.TagNumber(3)
-  void clearServiceVersion() => clearField(3);
+  void clearServiceVersion() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $1.Timestamp get timestamp => $_getN(3);
   @$pb.TagNumber(4)
-  set timestamp($1.Timestamp v) { setField(4, v); }
+  set timestamp($1.Timestamp value) => $_setField(4, value);
   @$pb.TagNumber(4)
   $core.bool hasTimestamp() => $_has(3);
   @$pb.TagNumber(4)
-  void clearTimestamp() => clearField(4);
+  void clearTimestamp() => $_clearField(4);
   @$pb.TagNumber(4)
   $1.Timestamp ensureTimestamp() => $_ensure(3);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const $core.bool _omitFieldNames =
+    $core.bool.fromEnvironment('protobuf.omit_field_names');
+const $core.bool _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');

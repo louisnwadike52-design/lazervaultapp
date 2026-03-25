@@ -50,14 +50,17 @@ class _EducationPaymentProcessingScreenState
     final transactionId = _params!['transactionId'] as String;
     final verificationToken = _params!['verificationToken'] as String;
     final idempotencyKey = _params!['idempotencyKey'] as String;
+    final billersCode = _params!['billersCode'] as String? ?? '';
 
     context.read<EducationCubit>().purchasePin(
           serviceId: provider.serviceId,
+          variationCode: provider.variationCode,
           quantity: quantity,
           phone: phone,
           transactionId: transactionId,
           verificationToken: verificationToken,
           idempotencyKey: idempotencyKey,
+          billersCode: billersCode,
         );
   }
 
@@ -261,7 +264,7 @@ class _EducationPaymentProcessingScreenState
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                      colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -374,7 +377,7 @@ class _EducationPaymentProcessingScreenState
             child: Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                 ),
                 borderRadius: BorderRadius.circular(4.r),
               ),

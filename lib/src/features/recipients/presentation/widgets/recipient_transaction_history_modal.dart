@@ -492,7 +492,7 @@ class _TransactionItem extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Row(
@@ -500,14 +500,14 @@ class _TransactionItem extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.repeat_rounded,
-                                color: const Color(0xFF8B5CF6),
+                                color: const Color.fromARGB(255, 78, 3, 208),
                                 size: 10.sp,
                               ),
                               SizedBox(width: 3.w),
                               Text(
                                 matchingRecurring!.frequency.label,
                                 style: TextStyle(
-                                  color: const Color(0xFF8B5CF6),
+                                  color: const Color.fromARGB(255, 78, 3, 208),
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -659,10 +659,10 @@ class _TransactionItem extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -670,14 +670,14 @@ class _TransactionItem extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.repeat_rounded,
-                      color: const Color(0xFF8B5CF6),
+                      color: const Color.fromARGB(255, 78, 3, 208),
                       size: 14.sp,
                     ),
                     SizedBox(width: 6.w),
                     Text(
                       matchingRecurring!.scheduleDescription,
                       style: TextStyle(
-                        color: const Color(0xFF8B5CF6),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
                       ),

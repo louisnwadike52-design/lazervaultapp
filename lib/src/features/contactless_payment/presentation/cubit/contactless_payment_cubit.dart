@@ -35,7 +35,54 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       return (ContactlessErrorType.sessionExpired, false);
     }
 
-    if (errorMessage.contains('not found') || errorMessage.contains('404')) {
+    // Account-related errors must be checked BEFORE generic "not found"
+    if (errorMessage.contains('account not found') ||
+        errorMessage.contains('receiver account') ||
+        errorMessage.contains('payer account') ||
+        errorMessage.contains('account does not belong') ||
+        errorMessage.contains('account is not active')) {
+      return (ContactlessErrorType.accountNotFound, false);
+    }
+
+    if (errorMessage.contains('account_id') ||
+        errorMessage.contains('account id required')) {
+      return (ContactlessErrorType.accountRequired, false);
+    }
+
+    if (errorMessage.contains('already been paid') ||
+        errorMessage.contains('already completed')) {
+      return (ContactlessErrorType.sessionAlreadyPaid, false);
+    }
+
+    if (errorMessage.contains('being processed by another') ||
+        errorMessage.contains('currently being processed')) {
+      return (ContactlessErrorType.sessionAlreadyProcessing, false);
+    }
+
+    if (errorMessage.contains('has been cancelled') ||
+        errorMessage.contains('session cancelled')) {
+      return (ContactlessErrorType.sessionCancelled, false);
+    }
+
+    if (errorMessage.contains('cannot be processed')) {
+      return (ContactlessErrorType.sessionAlreadyPaid, false);
+    }
+
+    if (errorMessage.contains('not in pending')) {
+      return (ContactlessErrorType.sessionAlreadyPaid, false);
+    }
+
+    if (errorMessage.contains('cannot pay yourself') ||
+        errorMessage.contains('self-payment')) {
+      return (ContactlessErrorType.selfPayment, false);
+    }
+
+    if (errorMessage.contains('currency mismatch')) {
+      return (ContactlessErrorType.currencyMismatch, false);
+    }
+
+    // Session not found - only for actual session lookup failures
+    if (errorMessage.contains('session not found') || errorMessage.contains('404')) {
       return (ContactlessErrorType.sessionNotFound, false);
     }
 
@@ -73,6 +120,20 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
         return 'Payment session has expired. Please create a new payment request';
       case ContactlessErrorType.sessionNotFound:
         return 'Payment session not found or has been cancelled';
+      case ContactlessErrorType.accountNotFound:
+        return 'Account not found or inactive. Please select a valid account';
+      case ContactlessErrorType.accountRequired:
+        return 'No active account selected. Please go back to the home screen and select an account';
+      case ContactlessErrorType.selfPayment:
+        return 'You cannot pay yourself';
+      case ContactlessErrorType.sessionAlreadyPaid:
+        return 'This payment has already been completed';
+      case ContactlessErrorType.sessionAlreadyProcessing:
+        return 'This payment is currently being processed by another payer';
+      case ContactlessErrorType.sessionCancelled:
+        return 'This payment request has been cancelled by the receiver';
+      case ContactlessErrorType.currencyMismatch:
+        return 'Your account currency does not match the payment currency';
       case ContactlessErrorType.pinValidationFailed:
         return 'Invalid PIN. Please try again';
       case ContactlessErrorType.accountLocked:
@@ -162,10 +223,35 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       if (isClosed) return;
 
       // Check if session is expired
-      if (session.expiresAt.isBefore(DateTime.now())) {
+      if (session.isExpired || session.expiresAt.isBefore(DateTime.now())) {
         emit(SessionExpired(
           sessionId: sessionId,
           message: 'This payment request has expired',
+        ));
+        return;
+      }
+
+      // Check if session has already been completed/cancelled/is being processed
+      if (session.isCompleted) {
+        emit(const ContactlessPaymentError(
+          'This payment has already been completed',
+          errorType: ContactlessErrorType.sessionAlreadyPaid,
+        ));
+        return;
+      }
+
+      if (session.isCancelled) {
+        emit(const ContactlessPaymentError(
+          'This payment request has been cancelled by the receiver',
+          errorType: ContactlessErrorType.sessionCancelled,
+        ));
+        return;
+      }
+
+      if (session.isProcessing) {
+        emit(const ContactlessPaymentError(
+          'This payment is currently being processed by another payer',
+          errorType: ContactlessErrorType.sessionAlreadyProcessing,
         ));
         return;
       }

@@ -108,8 +108,8 @@ class _DonationProcessingScreenState extends State<DonationProcessingScreen>
                     ScaleTransition(
                       scale: _scaleAnimation,
                       child: Container(
-                        width: 120.w,
-                        height: 120.h,
+                        width: 96.w,
+                        height: 96.h,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
@@ -133,34 +133,34 @@ class _DonationProcessingScreenState extends State<DonationProcessingScreen>
                               ? Icons.check_circle
                               : Icons.volunteer_activism,
                           color: Colors.white,
-                          size: 60.sp,
+                          size: 48.sp,
                         ),
                       ),
                     ),
-                    SizedBox(height: 40.h),
+                    SizedBox(height: 28.h),
                     // Current step text
                     Text(
                       currentStep,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20.sp,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 8.h),
                     Text(
                       'Please wait while we process your donation',
                       style: TextStyle(
                         color: Colors.grey[500],
-                        fontSize: 14.sp,
+                        fontSize: 13.sp,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 40.h),
+                    SizedBox(height: 28.h),
                     // Progress indicator
                     _buildProgressSteps(currentStepIndex, totalSteps),
-                    SizedBox(height: 40.h),
+                    SizedBox(height: 28.h),
                     // Linear progress
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10.r),

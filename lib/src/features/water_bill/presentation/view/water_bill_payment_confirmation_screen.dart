@@ -59,6 +59,15 @@ class _WaterBillPaymentConfirmationScreenState extends State<WaterBillPaymentCon
     });
 
     final accountId = GetIt.instance<AccountManager>().activeAccountId ?? '';
+    if (accountId.isEmpty) {
+      setState(() {
+        _isProcessing = false;
+      });
+      Get.snackbar('Error', 'No active account selected',
+          colorText: Colors.white,
+          backgroundColor: const Color(0xFFEF4444));
+      return;
+    }
 
     context.read<WaterBillCubit>().initiatePayment(
           providerCode: provider.providerCode,

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/src/features/ai_chats/cubit/ai_chat_cubit.dart';
 import 'package:lazervault/src/features/ai_chats/cubit/ai_chat_state.dart';
 import 'package:lazervault/src/features/ai_chats/domain/entities/ai_chat_message_entity.dart';
@@ -126,7 +127,7 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -154,7 +155,10 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                 // Build messages list from state
                 final messageEntities = state.messages;
 
-                return _buildMessagesList(messageEntities);
+                // Hide chat history when user is entering a PIN
+                return _isPinMode
+                    ? _buildPinOverlay()
+                    : _buildMessagesList(messageEntities);
               },
             ),
           ),
@@ -177,10 +181,14 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: InvoiceThemeColors.primaryPurple,
+                  width: 1.5,
+                ),
               ),
-              child: Icon(Icons.smart_toy_rounded, color: Colors.white, size: 24.sp),
+              child: Icon(Icons.smart_toy_rounded, color: InvoiceThemeColors.gradientPurple, size: 24.sp),
             ),
             SizedBox(width: 12.w),
             Column(
@@ -192,7 +200,7 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                 ),
                 Text(
                   'Tell me what to send',
-                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                  style: TextStyle(color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -241,7 +249,7 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
+                        color: isSelected ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15) : Colors.transparent,
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Column(
@@ -249,14 +257,14 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                         children: [
                           Icon(
                             item.icon,
-                            color: isSelected ? Colors.blue : Colors.grey,
+                            color: isSelected ? InvoiceThemeColors.gradientPurple : InvoiceThemeColors.textGray500,
                             size: 20.sp,
                           ),
                           SizedBox(height: 4.h),
                           Text(
                             item.label,
                             style: TextStyle(
-                              color: isSelected ? Colors.blue : Colors.grey,
+                              color: isSelected ? InvoiceThemeColors.gradientPurple : InvoiceThemeColors.textGray500,
                               fontSize: 11.sp,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                             ),
@@ -278,9 +286,9 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 16.w),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
+                        color: InvoiceThemeColors.secondaryBackground,
                         borderRadius: BorderRadius.circular(24.r),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(color: InvoiceThemeColors.borderColor),
                       ),
                       child: TextField(
                         controller: _messageController,
@@ -314,8 +322,22 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                     child: Container(
                       padding: EdgeInsets.all(14.w),
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            InvoiceThemeColors.primaryPurple,
+                            InvoiceThemeColors.gradientPurple,
+                          ],
+                        ),
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Icon(Icons.send_rounded, color: Colors.white, size: 20.sp),
                     ),
@@ -325,6 +347,41 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPinOverlay() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.lock_rounded, color: InvoiceThemeColors.primaryPurple, size: 48.sp),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Secure PIN Entry',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Chat hidden for your security',
+            style: TextStyle(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 14.sp,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -373,7 +430,7 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: isUser ? Colors.blue.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.1),
+                  color: isUser ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2) : InvoiceThemeColors.secondaryBackground,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(16.r),
                     topRight: Radius.circular(16.r),
@@ -415,8 +472,12 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
       padding: EdgeInsets.all(12.w),
       margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

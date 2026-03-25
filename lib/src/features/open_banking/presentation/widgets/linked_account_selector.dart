@@ -150,7 +150,7 @@ class LinkedAccountSelector extends StatelessWidget {
                           vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -158,7 +158,7 @@ class LinkedAccountSelector extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 9.sp,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF6C5CE7),
+                            color: const Color.fromARGB(255, 78, 3, 208),
                           ),
                         ),
                       ),
@@ -219,7 +219,7 @@ class LinkedAccountSelector extends StatelessWidget {
           children: [
             Icon(
               Icons.add_circle_outline,
-              color: const Color(0xFF6C5CE7),
+              color: const Color.fromARGB(255, 78, 3, 208),
               size: 20.sp,
             ),
             SizedBox(width: 8.w),
@@ -228,7 +228,7 @@ class LinkedAccountSelector extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
               ),
             ),
           ],
@@ -279,7 +279,7 @@ class LinkedAccountSelector extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Link Bank Account'),
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF6C5CE7),
+                foregroundColor: const Color.fromARGB(255, 78, 3, 208),
               ),
             ),
           ],
@@ -310,6 +310,6 @@ class LinkedAccountSelector extends StatelessWidget {
     if (name.contains('opay')) return const Color(0xFF1BB066);
     if (name.contains('palmpay')) return const Color(0xFF6F42C1);
     if (name.contains('moniepoint')) return const Color(0xFF2F3292);
-    return const Color(0xFF6C5CE7);
+    return const Color.fromARGB(255, 78, 3, 208);
   }
 }

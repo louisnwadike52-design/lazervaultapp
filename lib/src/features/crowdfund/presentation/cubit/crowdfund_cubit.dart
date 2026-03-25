@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/cache/cache_config.dart';
 import '../../../../../core/cache/swr_cache_manager.dart';
+import '../../../../../core/utils/user_friendly_error.dart';
 import '../../data/services/crowdfund_report_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/entities/notification_channel_entities.dart';
@@ -100,7 +101,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
               isStale: result.isStale,
             ));
           } else if (result.hasError) {
-            emit(CrowdfundError(message: result.error.toString()));
+            emit(CrowdfundError(message: getUserFriendlyErrorMessage(result.error)));
           }
         }
       } else {
@@ -123,7 +124,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: e.toString()));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e)));
     }
   }
 
@@ -209,7 +210,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
             ));
           } else if (result.hasError) {
             emit(CrowdfundError(
-                message: 'Search failed: ${result.error.toString()}'));
+                message: getUserFriendlyErrorMessage(result.error, fallback: 'Search failed. Please try again.')));
           }
         }
       } else {
@@ -229,7 +230,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Search failed: ${e.toString()}'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Search failed. Please try again.')));
     }
   }
 
@@ -287,7 +288,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
               ));
             }
           } else if (result.hasError) {
-            emit(CrowdfundError(message: result.error.toString()));
+            emit(CrowdfundError(message: getUserFriendlyErrorMessage(result.error)));
           }
         }
       } else {
@@ -316,7 +317,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: e.toString()));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e)));
     }
   }
 
@@ -366,7 +367,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         ));
       } else {
         if (isClosed) return;
-        emit(CrowdfundError(message: 'Failed to create crowdfund: $e'));
+        emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Failed to create crowdfund. Please try again.')));
       }
     }
   }
@@ -403,7 +404,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(CrowdfundUpdated(crowdfund));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to update crowdfund: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Failed to update crowdfund. Please try again.')));
     }
   }
 
@@ -421,7 +422,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       await loadCrowdfunds();
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to delete crowdfund: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Failed to delete crowdfund. Please try again.')));
     }
   }
 
@@ -431,7 +432,8 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    String? sourceAccountId,
+    required String sourceAccountId,
+    required String transactionPin,
   }) async {
     try {
       // Step 1: Verifying donation
@@ -457,6 +459,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         message: message,
         isAnonymous: isAnonymous,
         sourceAccountId: sourceAccountId,
+        transactionPin: transactionPin,
       );
 
       // Step 3: Updating crowdfund
@@ -494,7 +497,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Donation failed: ${e.toString()}'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Donation failed. Please try again.')));
     }
   }
 
@@ -530,7 +533,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to load donations: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load donations. Please try again.")));
     }
   }
 
@@ -556,7 +559,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to load donations: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load your donations. Please try again.")));
     }
   }
 
@@ -572,7 +575,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(ReceiptGenerated(receipt));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to generate receipt: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't generate receipt. Please try again.")));
     }
   }
 
@@ -598,7 +601,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to load receipts: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load receipts. Please try again.")));
     }
   }
 
@@ -614,7 +617,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(StatisticsLoaded(statistics));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to load statistics: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load statistics. Please try again.")));
     }
   }
 
@@ -649,7 +652,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(MyCrowdfundsLoaded(crowdfunds));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to load your campaigns: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load your campaigns. Please try again.")));
     }
   }
 
@@ -678,7 +681,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(WithdrawalCompleted(result));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Withdrawal failed: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Withdrawal failed. Please try again.')));
     }
   }
 
@@ -695,7 +698,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(CampaignWalletBalanceLoaded(balance));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to load wallet balance: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load wallet balance. Please try again.")));
     }
   }
 
@@ -716,7 +719,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(NotificationChannelsLoaded(channels));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to load notification channels: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load notification channels. Please try again.")));
     }
   }
 
@@ -732,6 +735,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     String? slackWebhookUrl,
     String? slackWorkspaceName,
     String? slackChannelName,
+    String? whatsappRecipientId,
     List<NotificationEventType>? enabledEvents,
   }) async {
     if (connectNotificationChannelUseCase == null) return;
@@ -750,6 +754,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         slackWebhookUrl: slackWebhookUrl,
         slackWorkspaceName: slackWorkspaceName,
         slackChannelName: slackChannelName,
+        whatsappRecipientId: whatsappRecipientId,
         enabledEvents: enabledEvents,
       );
 
@@ -757,7 +762,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(NotificationChannelConnected(channel));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to connect channel: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't connect channel. Please try again.")));
     }
   }
 
@@ -774,7 +779,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(NotificationChannelDisconnected(channelId));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to disconnect channel: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't disconnect channel. Please try again.")));
     }
   }
 
@@ -801,7 +806,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(NotificationChannelUpdated(channel));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to update channel: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't update channel. Please try again.")));
     }
   }
 
@@ -815,7 +820,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       emit(NotificationChannelTested(success: success, channelId: channelId));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: 'Failed to test channel: $e'));
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't test channel. Please try again.")));
     }
   }
 
@@ -880,7 +885,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundError(
-        message: 'Failed to generate report: ${e.toString()}',
+        message: getUserFriendlyErrorMessage(e, fallback: "Couldn't generate report. Please try again."),
         errorCode: 'REPORT_GENERATION_ERROR',
       ));
     }
@@ -903,7 +908,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundReportShareError(
-        message: 'Failed to share to WhatsApp: $e',
+        message: getUserFriendlyErrorMessage(e, fallback: "Couldn't share to WhatsApp. Please try again."),
         platform: 'WhatsApp',
       ));
     }
@@ -926,7 +931,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundReportShareError(
-        message: 'Failed to share to Facebook: $e',
+        message: getUserFriendlyErrorMessage(e, fallback: "Couldn't share to Facebook. Please try again."),
         platform: 'Facebook',
       ));
     }
@@ -949,7 +954,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundReportShareError(
-        message: 'Failed to share to Telegram: $e',
+        message: getUserFriendlyErrorMessage(e, fallback: "Couldn't share to Telegram. Please try again."),
         platform: 'Telegram',
       ));
     }
@@ -972,7 +977,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundReportShareError(
-        message: 'Failed to share to Twitter: $e',
+        message: getUserFriendlyErrorMessage(e, fallback: "Couldn't share to Twitter. Please try again."),
         platform: 'Twitter',
       ));
     }
@@ -995,7 +1000,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundReportShareError(
-        message: 'Failed to share report: $e',
+        message: getUserFriendlyErrorMessage(e, fallback: "Couldn't share report. Please try again."),
         platform: 'General',
       ));
     }

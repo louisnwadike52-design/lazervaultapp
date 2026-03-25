@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import '../cubit/business_analytics_cubit.dart';
 import '../cubit/business_analytics_state.dart';
 import '../widgets/analytics_period_selector.dart';
@@ -25,6 +27,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    final accountManager = serviceLocator<AccountManager>();
+    final cubit = context.read<BusinessAnalyticsCubit>();
+    final accountId = accountManager.activeAccountId;
+    if (accountId != null) {
+      cubit.setAccountId(accountId);
+      cubit.loadAnalytics();
+    }
   }
 
   @override
@@ -94,8 +104,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildInitialState() {
-    return const Center(
-      child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.analytics_rounded,
+            size: 48.sp,
+            color: const Color(0xFF9CA3AF),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Select a business account to view analytics',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

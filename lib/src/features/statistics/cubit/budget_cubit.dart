@@ -470,6 +470,59 @@ class BudgetCubit extends Cubit<BudgetState> {
     }
   }
 
+  /// Load categories from ALL services (for budget creation which spans all services).
+  /// Deduplicates by budgetCategory to avoid showing duplicate budget categories.
+  Future<List<ServiceCategory>> loadAllServiceCategories() async {
+    const allKey = '_all_services';
+    if (_categoryCache.containsKey(allKey)) {
+      return _categoryCache[allKey]!;
+    }
+    if (_pendingLoads.containsKey(allKey)) {
+      return _pendingLoads[allKey]!;
+    }
+    final future = _fetchAllServiceCategories();
+    _pendingLoads[allKey] = future;
+    try {
+      return await future;
+    } finally {
+      _pendingLoads.remove(allKey);
+    }
+  }
+
+  Future<List<ServiceCategory>> _fetchAllServiceCategories() async {
+    const serviceNames = ['transfer', 'bill_payment', 'investment', 'commerce'];
+
+    // Fetch all services in parallel
+    final results = await Future.wait(
+      serviceNames.map((service) async {
+        try {
+          return await loadServiceCategories(service);
+        } catch (e) {
+          developer.log('Failed to load categories for $service', name: 'BudgetCubit', error: e);
+          return <ServiceCategory>[];
+        }
+      }),
+    );
+
+    final allCategories = <ServiceCategory>[];
+    final seenBudgetCategories = <int>{};
+    for (final categories in results) {
+      for (final cat in categories) {
+        if (!seenBudgetCategories.contains(cat.budgetCategory)) {
+          seenBudgetCategories.add(cat.budgetCategory);
+          allCategories.add(cat);
+        }
+      }
+    }
+
+    if (allCategories.isEmpty) {
+      return ServiceCategory.commonTransferCategories;
+    }
+
+    _categoryCache['_all_services'] = allCategories;
+    return allCategories;
+  }
+
   /// Create a custom category and clear cache
   Future<ServiceCategory?> createCustomCategory({
     required String serviceName,

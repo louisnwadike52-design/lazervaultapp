@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:lazervault/core/utils/grpc_error_handler.dart';
 import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
 
 sealed class TransferState extends Equatable {
@@ -27,11 +28,23 @@ final class TransferSuccess extends TransferState {
 
 final class TransferFailure extends TransferState {
   final String message;
+  final bool isRetryable;
+  final bool isKYCError;
 
-  const TransferFailure({required this.message});
+  const TransferFailure({required this.message, this.isRetryable = false, this.isKYCError = false});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isRetryable, isKYCError];
+}
+
+/// Emitted when a transfer fails specifically due to an incorrect PIN.
+final class TransferPinFailure extends TransferState {
+  final PinFailureInfo pinInfo;
+
+  const TransferPinFailure({required this.pinInfo});
+
+  @override
+  List<Object?> get props => [pinInfo.isLocked, pinInfo.attemptsRemaining, pinInfo.message];
 }
 
 // Fee lookup states

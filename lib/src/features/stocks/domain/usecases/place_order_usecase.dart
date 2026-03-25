@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../entities/stock_entity.dart';
 import '../repositories/i_stock_repository.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 
 class PlaceOrderUseCase {
   final IStockRepository repository;
@@ -14,6 +14,9 @@ class PlaceOrderUseCase {
     required OrderSide side,
     required int quantity,
     double? price,
+    double? quantityExact,
+    String? transactionId,
+    String? verificationToken,
   }) async {
     return await repository.placeOrder(
       symbol: symbol,
@@ -21,6 +24,9 @@ class PlaceOrderUseCase {
       side: side,
       quantity: quantity,
       price: price,
+      quantityExact: quantityExact,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
     );
   }
 } 

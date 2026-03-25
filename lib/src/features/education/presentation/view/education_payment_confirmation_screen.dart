@@ -23,6 +23,7 @@ class _EducationPaymentConfirmationScreenState
   late int _quantity;
   late String _phone;
   late double _totalAmount;
+  String? _billersCode;
   bool _isProcessing = false;
 
   @override
@@ -42,6 +43,7 @@ class _EducationPaymentConfirmationScreenState
       _quantity = args['quantity'] as int;
       _phone = args['phone'] as String;
       _totalAmount = args['totalAmount'] as double;
+      _billersCode = args['billersCode'] as String?;
     }
   }
 
@@ -76,6 +78,7 @@ class _EducationPaymentConfirmationScreenState
           'transactionId': transactionId,
           'verificationToken': verificationToken,
           'idempotencyKey': idempotencyKey,
+          if (_billersCode != null) 'billersCode': _billersCode,
         });
       },
     );
@@ -147,7 +150,7 @@ class _EducationPaymentConfirmationScreenState
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -201,6 +204,10 @@ class _EducationPaymentConfirmationScreenState
           _buildDetailRow('Quantity', '$_quantity ${_quantity == 1 ? 'PIN' : 'PINs'}'),
           _buildDivider(),
           _buildDetailRow('Phone Number', _phone),
+          if (_billersCode != null && _billersCode!.isNotEmpty) ...[
+            _buildDivider(),
+            _buildDetailRow('JAMB Profile Code', _billersCode!),
+          ],
           _buildDivider(),
           _buildDetailRow('Unit Price', '\u20A6${_formatAmount(_provider.amount)}'),
           _buildDivider(),

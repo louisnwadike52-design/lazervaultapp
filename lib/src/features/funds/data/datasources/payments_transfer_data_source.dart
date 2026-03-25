@@ -81,6 +81,7 @@ abstract class IPaymentsTransferDataSource {
     required String transactionId,      // Transaction ID for PIN verification
     required String verificationToken,  // Token from TransactionPinService
     DateTime? scheduledAt,              // Optional: schedule for future execution
+    int? expenseCategory,              // Budget category enum value selected by user
   });
 
   /// Get payment/transfer history
@@ -134,6 +135,7 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     required String transactionId,
     required String verificationToken,
     DateTime? scheduledAt,
+    int? expenseCategory,
   }) async {
     return await RetryPolicy.critical.execute(
       () async {
@@ -146,6 +148,7 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           description: description,
           transactionId: transactionId,
           verificationToken: verificationToken,
+          expenseCategory: expenseCategory ?? 0,
         );
 
         try {

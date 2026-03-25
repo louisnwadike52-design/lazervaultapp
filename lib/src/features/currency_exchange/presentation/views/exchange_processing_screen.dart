@@ -37,9 +37,22 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
       _isConversion = args['isConversion'] as bool? ?? true;
     }
 
-    if (_transactionId.isNotEmpty) {
-      context.read<ExchangeCubit>().pollTransactionStatus(_transactionId);
+    if (_transactionId.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.exchangeHome);
+          Get.snackbar(
+            'Error',
+            'Missing transaction ID',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: const Color(0xFFEF4444),
+            colorText: Colors.white,
+          );
+        }
+      });
+      return;
     }
+    context.read<ExchangeCubit>().pollTransactionStatus(_transactionId);
   }
 
   @override
@@ -54,6 +67,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
       backgroundColor: const Color(0xFF0A0A0A),
       body: BlocListener<ExchangeCubit, ExchangeState>(
         listener: (context, state) {
+          if (!mounted) return;
           if (state is ExchangeSuccess) {
             Get.offNamed(
               AppRoutes.exchangeReceipt,

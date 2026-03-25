@@ -86,7 +86,7 @@
 
 ### 5. LiveKit (External) ⚙️ CONFIGURED
 **Status:** 🟡 External service (not local)
-**URL:** `wss://lazervault-sgb9bwog.livekit.cloud`
+**URL:** `wss://lazervault-n2v3ezlv.livekit.cloud`
 **API Key:** Configured
 **Use Case:** Video/Audio calls
 

@@ -9,7 +9,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 ///
 /// Architecture Notes:
 /// - Transaction history is integrated into the accounts microservice
-/// - Locale is derived from the account (not passed as parameter)
+/// - Locale can be passed explicitly; falls back to account locale on the backend
 /// - Each account has an associated locale (en-US, en-NG, fr-FR, etc.)
 class AccountsGrpcClient {
   final AccountsServiceClient _client;
@@ -23,7 +23,7 @@ class AccountsGrpcClient {
 
   /// Get transaction history for an account
   ///
-  /// The locale is automatically derived from the account's locale setting.
+  /// Locale can be passed explicitly; falls back to account locale on backend.
   ///
   /// Parameters:
   /// - [accountId]: The account ID to get transactions for
@@ -48,12 +48,17 @@ class AccountsGrpcClient {
     int limit = 20,
     int offset = 0,
     bool includeExternalBanks = true,
+    String? locale,
   }) async {
     final request = GetTransactionHistoryRequest()
       ..accountId = accountId
       ..limit = limit
       ..offset = offset
       ..includeExternalBanks = includeExternalBanks;
+
+    if (locale != null && locale.isNotEmpty) {
+      request.locale = locale;
+    }
 
     if (type != null && type.isNotEmpty) {
       request.type = type;
@@ -111,10 +116,14 @@ class AccountsGrpcClient {
     DateTime? startDate,
     DateTime? endDate,
     bool includeExternalBanks = true,
+    String? locale,
   }) async {
     final request = GetTransactionStatisticsRequest()
-      ..accountId = accountId
-      ..includeExternalBanks = includeExternalBanks;
+      ..accountId = accountId;
+
+    if (locale != null && locale.isNotEmpty) {
+      request.locale = locale;
+    }
 
     if (startDate != null) {
       request.startDate = _dateTimeToString(startDate);
@@ -272,11 +281,15 @@ class AccountsGrpcClient {
     DateTime? startDate,
     DateTime? endDate,
     bool includeExternalBanks = true,
+    String? locale,
   }) async {
     final request = GetFinancialAnalyticsRequest()
       ..accountId = accountId
-      ..period = period
-      ..includeExternalBanks = includeExternalBanks;
+      ..period = period;
+
+    if (locale != null && locale.isNotEmpty) {
+      request.locale = locale;
+    }
 
     if (startDate != null) {
       request.startDate = _dateTimeToString(startDate);
@@ -300,10 +313,14 @@ class AccountsGrpcClient {
     DateTime? startDate,
     DateTime? endDate,
     bool includeExternalBanks = true,
+    String? locale,
   }) async {
     final request = GetCategoryAnalyticsRequest()
-      ..accountId = accountId
-      ..includeExternalBanks = includeExternalBanks;
+      ..accountId = accountId;
+
+    if (locale != null && locale.isNotEmpty) {
+      request.locale = locale;
+    }
 
     if (startDate != null) {
       request.startDate = _dateTimeToString(startDate);
@@ -325,10 +342,15 @@ class AccountsGrpcClient {
   Future<GetMonthlyTrendsResponse> getMonthlyTrends({
     required String accountId,
     int months = 6,
+    String? locale,
   }) async {
     final request = GetMonthlyTrendsRequest()
       ..accountId = accountId
       ..months = months;
+
+    if (locale != null && locale.isNotEmpty) {
+      request.locale = locale;
+    }
 
     final options = await _callOptionsHelper.withAuth();
 
@@ -345,10 +367,14 @@ class AccountsGrpcClient {
     DateTime? startDate,
     DateTime? endDate,
     bool includeExternalBanks = true,
+    String? locale,
   }) async {
     final request = GetExpenseTimeSeriesRequest()
-      ..accountId = accountId
-      ..includeExternalBanks = includeExternalBanks;
+      ..accountId = accountId;
+
+    if (locale != null && locale.isNotEmpty) {
+      request.locale = locale;
+    }
 
     if (startDate != null) {
       request.startDate = _dateTimeToString(startDate);

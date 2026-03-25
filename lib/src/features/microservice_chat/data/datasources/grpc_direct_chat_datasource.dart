@@ -55,7 +55,7 @@ class GrpcDirectChatDataSource implements MicroserviceChatDataSource {
         return await _client.sendDirectMessage(
           grpcReq,
           options: callOptions.mergedWith(
-            CallOptions(timeout: const Duration(seconds: 35)),
+            CallOptions(timeout: const Duration(seconds: 70)),
           ),
         );
       });
@@ -139,12 +139,22 @@ class GrpcDirectChatDataSource implements MicroserviceChatDataSource {
       });
 
       final messages = response.messages.map((msg) {
+        // Extract entities from history message (contains _receipt_data for receipts)
+        Map<String, dynamic>? msgEntities;
+        if (msg.hasEntities()) {
+          try {
+            msgEntities = _structToMap(msg.entities);
+          } catch (_) {
+            msgEntities = null;
+          }
+        }
         return ChatHistoryMessage(
           role: msg.role,
           content: msg.content,
           service: msg.service,
           sourceContext: msg.sourceContext,
           timestamp: msg.createdAt,
+          entities: msgEntities,
         );
       }).toList();
 

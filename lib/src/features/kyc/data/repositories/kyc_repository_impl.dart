@@ -55,12 +55,12 @@ class KYCRepositoryImpl implements KYCRepository {
         targetTier: targetTier,
       );
       return Right(KYCInitiationResponse(
-        success: data['success'] as bool,
+        success: data['success'] as bool? ?? false,
         sessionId: data['session_id'] as String?,
         requiredDocuments:
-            (data['required_documents'] as List<dynamic>).cast<String>(),
+            (data['required_documents'] as List<dynamic>? ?? []).cast<String>(),
         requiredFields:
-            (data['required_fields'] as List<dynamic>).cast<String>(),
+            (data['required_fields'] as List<dynamic>? ?? []).cast<String>(),
         redirectUrl: data['redirect_url'] as String?,
       ));
     } on APIException catch (e) {
@@ -82,10 +82,7 @@ class KYCRepositoryImpl implements KYCRepository {
       return Right(VerifyIDResponse(
         success: data['success'] as bool,
         message: data['message'] as String?,
-        status: data['status'] as KYCStatus? ??
-            (data['status'] as String == 'in_progress'
-                ? KYCStatus.inProgress
-                : KYCStatus.approved),
+        status: _parseKYCStatus(data['status']),
         currentTier: data['current_tier'] as KYCTier? ?? KYCTier.tier1,
         verifiedAt: DateTime.now(),
         reference: data['reference'] as String?,
@@ -107,10 +104,10 @@ class KYCRepositoryImpl implements KYCRepository {
     try {
       final data = await grpcDataSource.uploadDocument(request);
       return Right(VerifyIDResponse(
-        success: data['success'] as bool,
+        success: data['success'] as bool? ?? false,
         message: data['message'] as String?,
-        status: data['status'] as KYCStatus? ?? KYCStatus.inProgress,
-        currentTier: KYCTier.tier1,
+        status: _parseKYCStatus(data['status']),
+        currentTier: data['current_tier'] as KYCTier? ?? KYCTier.tier1,
         verifiedAt: DateTime.now(),
       ));
     } on APIException catch (e) {
@@ -155,12 +152,139 @@ class KYCRepositoryImpl implements KYCRepository {
         skipTier2: skipTier2,
       );
       return Right(SkipKYCResponse(
-        success: data['success'] as bool,
+        success: data['success'] as bool? ?? false,
         assignedTier: data['assigned_tier'] as KYCTier? ?? KYCTier.tier1,
-        message: data['message'] as String,
+        message: (data['message'] as String?) ?? 'KYC upgrade skipped',
         nextSteps:
-            (data['next_steps'] as List<dynamic>).cast<String>(),
+            (data['next_steps'] as List<dynamic>? ?? []).cast<String>(),
       ));
+    } on APIException catch (e) {
+      return Left(APIFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(APIFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, VerificationSession>> createVerificationSession({
+    required String userId,
+    required KYCTier targetTier,
+    required String countryCode,
+    required IDType idType,
+    required String idNumber,
+    required String firstName,
+    required String lastName,
+    required String dateOfBirth,
+    String? phoneNumber,
+  }) async {
+    try {
+      final session = await grpcDataSource.createVerificationSession(
+        userId: userId,
+        targetTier: targetTier == KYCTier.tier1
+            ? 1
+            : targetTier == KYCTier.tier2
+                ? 2
+                : 3,
+        countryCode: countryCode,
+        idType: idType.name,
+        idNumber: idNumber,
+        firstName: firstName,
+        lastName: lastName,
+        dateOfBirth: dateOfBirth,
+        phoneNumber: phoneNumber,
+      );
+      return Right(session);
+    } on APIException catch (e) {
+      return Left(APIFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(APIFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ConfirmVerificationResult>> confirmVerification({
+    required String verificationId,
+    required String provider,
+    String? providerAuthCode,
+    Map<String, String>? metadata,
+  }) async {
+    try {
+      final result = await grpcDataSource.confirmVerification(
+        verificationId: verificationId,
+        provider: provider,
+        providerAuthCode: providerAuthCode,
+        metadata: metadata,
+      );
+      return Right(result);
+    } on APIException catch (e) {
+      return Left(APIFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(APIFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, DocumentUploadURL>> getDocumentUploadURL({
+    required String documentType,
+    required String contentType,
+  }) async {
+    try {
+      final uploadURL = await grpcDataSource.getDocumentUploadURL(
+        documentType: documentType,
+        contentType: contentType,
+      );
+      return Right(uploadURL);
+    } on APIException catch (e) {
+      return Left(APIFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(APIFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> submitDocumentsForReview({
+    required String userId,
+    required List<DocumentSubmissionItem> documents,
+  }) async {
+    try {
+      final message = await grpcDataSource.submitDocumentsForReview(
+        userId: userId,
+        documents: documents,
+      );
+      return Right(message);
+    } on APIException catch (e) {
+      return Left(APIFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(APIFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> confirmBVNName({
+    required String verificationId,
+    required String action,
+  }) async {
+    try {
+      final message = await grpcDataSource.confirmBVNName(
+        verificationId: verificationId,
+        action: action,
+      );
+      return Right(message);
     } on APIException catch (e) {
       return Left(APIFailure(message: e.message, statusCode: e.statusCode));
     } catch (e) {
@@ -201,8 +325,8 @@ class KYCRepositoryImpl implements KYCRepository {
       dailyTransactionLimit: data['daily_transaction_limit'] as int? ?? 0,
       dailyReceiveLimit: data['daily_receive_limit'] as int? ?? 0,
       maxBalance: data['max_balance'] as int? ?? 0,
-      verifiedAt: data['verified_at'] as DateTime?,
-      expiresAt: data['expires_at'] as DateTime?,
+      verifiedAt: _parseDateTime(data['verified_at']),
+      expiresAt: _parseDateTime(data['expires_at']),
       isCurrent: data['is_current'] as bool? ?? false,
       isLocked: data['is_locked'] as bool? ?? false,
     );
@@ -210,14 +334,44 @@ class KYCRepositoryImpl implements KYCRepository {
 
   VerificationDocument _parseDocument(Map<String, dynamic> data) {
     return VerificationDocument(
-      id: data['id'] as String,
+      id: (data['id'] as String?) ?? '',
       documentType: data['document_type'] as IDType? ?? IDType.unknown,
-      documentUrl: data['document_url'] as String,
+      documentUrl: (data['document_url'] as String?) ?? '',
       status: data['status'] as DocumentStatus? ?? DocumentStatus.pendingUpload,
-      uploadedAt: data['uploaded_at'] as DateTime?,
-      verifiedAt: data['verified_at'] as DateTime?,
+      uploadedAt: _parseDateTime(data['uploaded_at']),
+      verifiedAt: _parseDateTime(data['verified_at']),
       rejectionReason: data['rejection_reason'] as String?,
     );
+  }
+
+  KYCStatus _parseKYCStatus(dynamic value) {
+    if (value is KYCStatus) return value;
+    if (value is String) {
+      switch (value) {
+        case 'not_started':
+          return KYCStatus.notStarted;
+        case 'in_progress':
+          return KYCStatus.inProgress;
+        case 'pending_review':
+          return KYCStatus.pendingReview;
+        case 'approved':
+          return KYCStatus.approved;
+        case 'rejected':
+          return KYCStatus.rejected;
+        case 'expired':
+          return KYCStatus.expired;
+        default:
+          return KYCStatus.notStarted;
+      }
+    }
+    return KYCStatus.notStarted;
+  }
+
+  DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value);
+    return null;
   }
 
   CountryKYCRequirements _parseCountryRequirements(

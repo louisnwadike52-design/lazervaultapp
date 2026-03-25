@@ -109,9 +109,9 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
       return 'Maximum amount is ${_formatCurrency(
         _maxAmount, _sourceAccount?.currency ?? 'NGN')}';
     }
-    if (_sourceAccount != null && amount > _sourceAccount!.balance) {
+    if (_sourceAccount != null && amount > _sourceAccount!.availableBalance) {
       return 'Insufficient balance (${_formatCurrency(
-        _sourceAccount!.balance, _sourceAccount!.currency)})';
+        _sourceAccount!.availableBalance, _sourceAccount!.currency)})';
     }
     return null;
   }
@@ -121,7 +121,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
     if (amount == null || amount < _minAmount || amount > _maxAmount) {
       return false;
     }
-    if (_sourceAccount != null && amount > _sourceAccount!.balance) {
+    if (_sourceAccount != null && amount > _sourceAccount!.availableBalance) {
       return false;
     }
     return true;
@@ -655,7 +655,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      _formatCurrency(account.balance, account.currency),
+                      _formatCurrency(account.availableBalance, account.currency),
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
@@ -770,7 +770,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                       ),
                     ),
                     subtitle: Text(
-                      _formatCurrency(account.balance, account.currency),
+                      _formatCurrency(account.availableBalance, account.currency),
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
@@ -921,7 +921,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                             ),
                             Text(
                               _formatCurrency(
-                                  source.balance, source.currency),
+                                  source.availableBalance, source.currency),
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF9CA3AF),
                                 fontSize: 12.sp,
@@ -947,7 +947,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                               textAlign: TextAlign.right,
                             ),
                             Text(
-                              _formatCurrency(destination.balance,
+                              _formatCurrency(destination.availableBalance,
                                   destination.currency),
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF9CA3AF),
@@ -1046,7 +1046,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
 
                 // Available balance hint
                 Text(
-                  'Available: ${_formatCurrency(source.balance, source.currency)}',
+                  'Available: ${_formatCurrency(source.availableBalance, source.currency)}',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF6B7280),
                     fontSize: 12.sp,
@@ -1059,7 +1059,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                   spacing: 10.w,
                   runSpacing: 10.h,
                   children: [5000, 10000, 20000, 50000].map((amount) {
-                    final enabled = amount <= source.balance;
+                    final enabled = amount <= source.availableBalance;
                     return GestureDetector(
                       onTap: enabled
                           ? () {

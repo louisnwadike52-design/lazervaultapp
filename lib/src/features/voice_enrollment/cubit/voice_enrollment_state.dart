@@ -7,6 +7,18 @@ const List<String> enrollmentPhrases = [
   'Banking by voice is secure and convenient',
 ];
 
+/// Voice enrollment status stages for settings screen display
+enum VoiceEnrollmentStage {
+  /// No enrollment exists
+  notEnrolled,
+  /// Enrollment started but not completed (user quit mid-process)
+  partiallyEnrolled,
+  /// Voice registered in vector DB (recognition works)
+  voiceRegistered,
+  /// Voice registered + custom voice cloning completed
+  fullyEnrolled,
+}
+
 /// Base state for voice enrollment
 abstract class VoiceEnrollmentState {}
 
@@ -22,7 +34,10 @@ class VoiceEnrollmentInitial extends VoiceEnrollmentState {
 
   List<String> get phrases => enrollmentPhrases;
 
-  String get currentPhrase => phrases[currentStep];
+  String get currentPhrase =>
+      currentStep >= 0 && currentStep < phrases.length
+          ? phrases[currentStep]
+          : phrases[0];
 }
 
 /// Loading state - processing enrollment
@@ -44,7 +59,10 @@ class VoiceEnrollmentRecording extends VoiceEnrollmentState {
 
   List<String> get phrases => enrollmentPhrases;
 
-  String get currentPhrase => phrases[currentStep];
+  String get currentPhrase =>
+      currentStep >= 0 && currentStep < phrases.length
+          ? phrases[currentStep]
+          : phrases[0];
 
   VoiceEnrollmentRecording copyWith({double? soundLevel}) {
     return VoiceEnrollmentRecording(
@@ -84,14 +102,48 @@ class VoiceEnrollmentSuccess extends VoiceEnrollmentState {
   });
 }
 
+/// Poor quality state - enrollment succeeded but quality is too low
+class VoiceEnrollmentPoorQuality extends VoiceEnrollmentState {
+  final String enrollmentId;
+  final double qualityScore;
+
+  VoiceEnrollmentPoorQuality({
+    required this.enrollmentId,
+    required this.qualityScore,
+  });
+}
+
 /// Error state - enrollment failed
 class VoiceEnrollmentError extends VoiceEnrollmentState {
   final String message;
   final String? errorCode;
+  /// Whether the error occurred during re-enrollment (so UI can show appropriate recovery)
+  final bool duringReEnrollment;
 
   VoiceEnrollmentError({
     required this.message,
     this.errorCode,
+    this.duringReEnrollment = false,
+  });
+}
+
+/// Skipped state — user opted out of voice auth after poor quality
+class VoiceEnrollmentSkipped extends VoiceEnrollmentState {
+  final String enrollmentId;
+  final double qualityScore;
+
+  VoiceEnrollmentSkipped({
+    required this.enrollmentId,
+    required this.qualityScore,
+  });
+}
+
+/// Replacing existing voice profile (auto-delete + re-enroll)
+class VoiceEnrollmentReplacing extends VoiceEnrollmentState {
+  final String message;
+
+  VoiceEnrollmentReplacing({
+    this.message = 'Replacing existing voice profile...',
   });
 }
 
@@ -122,8 +174,14 @@ class VoiceEnrollmentCarouselState extends VoiceEnrollmentState {
 
   int get completedCount => sampleCompleted.where((s) => s).length;
   bool get allCompleted => sampleCompleted.every((s) => s);
-  String get currentPhrase => enrollmentPhrases[activePage];
-  bool get currentPageCompleted => sampleCompleted[activePage];
+  String get currentPhrase =>
+      activePage >= 0 && activePage < enrollmentPhrases.length
+          ? enrollmentPhrases[activePage]
+          : enrollmentPhrases[0];
+  bool get currentPageCompleted =>
+      activePage >= 0 && activePage < sampleCompleted.length
+          ? sampleCompleted[activePage]
+          : false;
 
   VoiceEnrollmentCarouselState copyWith({
     int? activePage,

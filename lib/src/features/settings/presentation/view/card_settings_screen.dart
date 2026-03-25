@@ -662,7 +662,7 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
       case 'checking':
         return const Color(0xFF3B82F6);
       case 'business':
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
       default:
         return const Color(0xFF4E03D0);
     }

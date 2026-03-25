@@ -127,7 +127,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     final random = Random();
     const colors = [
       Color(0xFF6366F1),
-      Color(0xFF8B5CF6),
+      Color.fromARGB(255, 78, 3, 208),
       Color(0xFF10B981),
       Color(0xFFF59E0B),
       Color(0xFFEC4899),
@@ -471,7 +471,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                           width: 18.sp,
                                           height: 18.sp,
                                           child: const CircularProgressIndicator(
-                                            color: Color(0xFF8B5CF6),
+                                            color: Color.fromARGB(255, 78, 3, 208),
                                             strokeWidth: 2,
                                           ),
                                         )
@@ -484,9 +484,9 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                     ),
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF8B5CF6),
+                                    foregroundColor: const Color.fromARGB(255, 78, 3, 208),
                                     side: const BorderSide(
-                                      color: Color(0xFF8B5CF6),
+                                      color: Color.fromARGB(255, 78, 3, 208),
                                       width: 1.5,
                                     ),
                                     shape: RoundedRectangleBorder(
@@ -508,7 +508,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                         width: 18.sp,
                                         height: 18.sp,
                                         child: const CircularProgressIndicator(
-                                          color: Color(0xFF8B5CF6),
+                                          color: Color.fromARGB(255, 78, 3, 208),
                                           strokeWidth: 2,
                                         ),
                                       )
@@ -521,9 +521,9 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                   ),
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color(0xFF8B5CF6),
+                                  foregroundColor: const Color.fromARGB(255, 78, 3, 208),
                                   side: const BorderSide(
-                                    color: Color(0xFF8B5CF6),
+                                    color: Color.fromARGB(255, 78, 3, 208),
                                     width: 1.5,
                                   ),
                                   shape: RoundedRectangleBorder(
@@ -543,7 +543,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                   gradient: const LinearGradient(
                                     colors: [
                                       Color(0xFF6366F1),
-                                      Color(0xFF8B5CF6),
+                                      Color.fromARGB(255, 78, 3, 208),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(14.r),
@@ -741,7 +741,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
               color: const Color(0xFF6366F1).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, size: 18.sp, color: const Color(0xFF8B5CF6)),
+            child: Icon(icon, size: 18.sp, color: const Color.fromARGB(255, 78, 3, 208)),
           ),
           SizedBox(width: 12.w),
         ],
@@ -785,7 +785,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Icon(Icons.tag_rounded,
-              size: 18.sp, color: const Color(0xFF8B5CF6)),
+              size: 18.sp, color: const Color.fromARGB(255, 78, 3, 208)),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -825,7 +825,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
             child: Icon(
               Icons.copy_rounded,
               size: 16.sp,
-              color: const Color(0xFF8B5CF6),
+              color: const Color.fromARGB(255, 78, 3, 208),
             ),
           ),
         ),

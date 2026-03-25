@@ -243,7 +243,7 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
           ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -252,7 +252,7 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
           children: [
             Row(
               children: [
-                Icon(Icons.auto_awesome, color: const Color(0xFF8B5CF6), size: 20.sp),
+                Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -326,7 +326,7 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
               height: 18.w,
               child: const CircularProgressIndicator(
                 strokeWidth: 2,
-                color: Color(0xFF8B5CF6),
+                color: Color.fromARGB(255, 78, 3, 208),
               ),
             ),
             SizedBox(width: 12.w),
@@ -356,7 +356,7 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
             ),
             GestureDetector(
               onTap: _loadAIAnalysis,
-              child: Text('Retry', style: TextStyle(color: const Color(0xFF8B5CF6), fontSize: 12.sp, fontWeight: FontWeight.w600)),
+              child: Text('Retry', style: TextStyle(color: const Color.fromARGB(255, 78, 3, 208), fontSize: 12.sp, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -376,19 +376,19 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
           ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.auto_awesome, color: const Color(0xFF8B5CF6), size: 20.sp),
+            Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
             SizedBox(width: 10.w),
             Text(
               'Get AI Spending Analysis',
               style: TextStyle(
-                color: const Color(0xFF8B5CF6),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -401,11 +401,11 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
 
   Widget _buildPieChart(StatisticsLoaded state) {
     final catAnalytics = state.categoryAnalytics;
-    final rawCategories = isIncome
-        ? (catAnalytics?.incomeCategories ?? [])
-        : (catAnalytics?.expenseCategories ?? []);
+    final List<accounts_pb.CategoryBreakdownItem> rawCategories = isIncome
+        ? List<accounts_pb.CategoryBreakdownItem>.from(catAnalytics?.incomeCategories ?? <accounts_pb.CategoryBreakdownItem>[])
+        : List<accounts_pb.CategoryBreakdownItem>.from(catAnalytics?.expenseCategories ?? <accounts_pb.CategoryBreakdownItem>[]);
     // Hide platform fees from expense display (totals still include them)
-    final categories = isIncome
+    final List<accounts_pb.CategoryBreakdownItem> categories = isIncome
         ? rawCategories
         : rawCategories.where((c) => !_isPlatformFee(c.categoryName)).toList();
     final total = isIncome
@@ -512,11 +512,11 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
 
   Widget _buildCategoryList(StatisticsLoaded state) {
     final catAnalytics = state.categoryAnalytics;
-    final rawCategories = isIncome
-        ? (catAnalytics?.incomeCategories ?? [])
-        : (catAnalytics?.expenseCategories ?? []);
+    final List<accounts_pb.CategoryBreakdownItem> rawCategories = isIncome
+        ? List<accounts_pb.CategoryBreakdownItem>.from(catAnalytics?.incomeCategories ?? <accounts_pb.CategoryBreakdownItem>[])
+        : List<accounts_pb.CategoryBreakdownItem>.from(catAnalytics?.expenseCategories ?? <accounts_pb.CategoryBreakdownItem>[]);
     // Hide platform fees from expense display (totals still include them)
-    final categories = isIncome
+    final List<accounts_pb.CategoryBreakdownItem> categories = isIncome
         ? rawCategories
         : rawCategories.where((c) => !_isPlatformFee(c.categoryName)).toList();
     final total = isIncome
@@ -764,10 +764,10 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
       margin: EdgeInsets.only(top: 10.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.15),
           width: 1,
         ),
       ),
@@ -777,12 +777,12 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
           // AI analysis text
           Row(
             children: [
-              Icon(Icons.auto_awesome, color: const Color(0xFF8B5CF6), size: 14.sp),
+              Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 14.sp),
               SizedBox(width: 6.w),
               Text(
                 'AI Analysis',
                 style: TextStyle(
-                  color: const Color(0xFF8B5CF6),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),

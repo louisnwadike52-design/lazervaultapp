@@ -45,7 +45,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
 
   /// Check if an account has sufficient balance for the lock amount
   bool _hasSufficientBalance(AccountSummaryEntity account, double amount) {
-    return account.balance >= amount;
+    return account.availableBalance >= amount;
   }
 
   /// Check if account currency matches lock currency
@@ -90,7 +90,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -130,6 +130,12 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
               // Account Selector
               _buildAccountSelector(amount, currency, cubit),
 
+              // Upfront Interest Destination Account (for long-term locks)
+              if (cubit.qualifiesForUpfrontInterest) ...[
+                SizedBox(height: 24.h),
+                _buildInterestDestinationSelector(currency, cubit),
+              ],
+
               SizedBox(height: 24.h),
 
               // Security Notice
@@ -140,26 +146,159 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.security_rounded,
+                      cubit.qualifiesForUpfrontInterest
+                          ? Icons.bolt_rounded
+                          : Icons.security_rounded,
                       color: const Color(0xFF10B981),
                       size: 20.sp,
                     ),
                     SizedBox(width: 12.w),
                     Expanded(
                       child: Text(
-                        'Your funds are secured and will earn interest during the lock period',
+                        cubit.qualifiesForUpfrontInterest
+                            ? 'Your interest will be credited upfront to your selected account immediately after locking your funds.'
+                            : 'Your funds are secured and will earn interest during the lock period.',
                         style: GoogleFonts.inter(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF10B981),
+                          height: 1.4,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInterestDestinationSelector(
+      String currency, CreateLockCubit cubit) {
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      builder: (context, state) {
+        if (state is! AccountCardsSummaryLoaded) {
+          return const SizedBox.shrink();
+        }
+
+        final accounts = state.accountSummaries
+            .where((a) => _currencyMatches(a, currency))
+            .toList();
+
+        if (accounts.isEmpty) return const SizedBox.shrink();
+
+        // Default to first account (savings) if not set
+        final selectedInterestAccount =
+            cubit.interestDestinationAccountId ?? accounts.first.id;
+
+        return Container(
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF6366F1).withValues(alpha: 0.1),
+                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.bolt_rounded,
+                    color: const Color(0xFF6366F1),
+                    size: 20.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Upfront Interest Destination',
+                      style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Select which account to receive your upfront interest payment',
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF9CA3AF),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              ...accounts.map((account) {
+                final isSelected = selectedInterestAccount == account.id;
+                return GestureDetector(
+                  onTap: () {
+                    cubit.updateInterestDestinationAccount(account.id);
+                  },
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 8.h),
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFF6366F1).withValues(alpha: 0.15)
+                          : Colors.white.withValues(alpha: 0.03),
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFF6366F1)
+                            : Colors.transparent,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet,
+                          color: isSelected
+                              ? const Color(0xFF6366F1)
+                              : const Color(0xFF9CA3AF),
+                          size: 20.sp,
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            account.accountType,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (isSelected)
+                          Icon(
+                            Icons.check_circle,
+                            color: const Color(0xFF6366F1),
+                            size: 20.sp,
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
             ],
           ),
         );
@@ -387,7 +526,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    CurrencySymbols.formatAmountWithCurrency(account.balance, account.currency),
+                    CurrencySymbols.formatAmountWithCurrency(account.availableBalance, account.currency),
                     style: GoogleFonts.inter(
                       color: !hasSufficientBalance
                           ? const Color(0xFF9CA3AF).withValues(alpha: 0.5)
@@ -453,7 +592,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(account.balance, account.currency),
+                  CurrencySymbols.formatAmountWithCurrency(account.availableBalance, account.currency),
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
                     fontSize: 13.sp,
@@ -511,7 +650,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           ),
           SizedBox(height: 8.h),
           Text(
-            'You need an account to create a lock fund. Please create an account first.',
+            'You need an account to create a PiggyVault. Please create an account first.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),

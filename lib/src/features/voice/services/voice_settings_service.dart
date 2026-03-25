@@ -1,7 +1,7 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import '../../../../core/config/api_config.dart';
 import '../../../../core/services/injection_container.dart';
 import '../../../../../core/services/secure_storage_service.dart';
 import '../../../../core/utils/logger.dart';
@@ -11,34 +11,48 @@ import '../models/voice_settings_models.dart';
 /// Handles fetching languages, voices, and managing user voice preferences
 class VoiceSettingsService {
   final http.Client _client;
-  final String _baseUrl;
+  final String _languageApiUrl;
+  final String _voiceGatewayUrl;
   final GetIt _getIt;
 
   VoiceSettingsService([
     http.Client? client,
     GetIt? getIt,
-  ])   : _client = client ?? http.Client(),
+  ])  : _client = client ?? http.Client(),
         _getIt = getIt ?? serviceLocator,
-        _baseUrl = 'http://10.0.2.2:3013'; // Voice Language API
+        _languageApiUrl = dotenv.env['VOICE_LANGUAGE_API_URL'] ?? 'http://localhost:3013',
+        _voiceGatewayUrl = dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'http://localhost:3010';
 
-  Future<List<VoiceLanguage>> getSupportedLanguages() async {
+  Future<List<VoiceLanguage>> getSupportedLanguages({String country = 'NG'}) async {
     try {
       final token = await _getAuthToken();
       final response = await _client.get(
-        Uri.parse('$_baseUrl/languages'),
+        Uri.parse('$_languageApiUrl/api/v1/voice/languages?country=$country'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final languages = (data['languages'] as List<dynamic>?)
-                ?.map((e) => VoiceLanguage.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [];
-        return languages;
+        final languagesJson = data['languages'] as List<dynamic>? ?? [];
+        return languagesJson.map((e) {
+          final map = e as Map<String, dynamic>;
+          return VoiceLanguage(
+            id: 0,
+            code: map['code'] as String? ?? '',
+            name: map['name'] as String? ?? '',
+            nativeName: map['nativeName'] as String? ?? map['name'] as String? ?? '',
+            flagEmoji: map['flag'] as String?,
+            ttsProvider: map['provider'] as String? ?? 'openai',
+            supportsCustomVoice: map['supportsVoiceCustomization'] as bool? ?? false,
+            supportsVoiceCloning: map['supportsVoiceCloning'] as bool? ?? false,
+            cloningProvider: map['cloningProvider'] as String?,
+            requiresTranslation: false,
+            displayOrder: 0,
+          );
+        }).toList();
       } else {
         AppLogger.error('Failed to fetch languages: ${response.statusCode}');
         return [];
@@ -53,23 +67,35 @@ class VoiceSettingsService {
     try {
       final token = await _getAuthToken();
       final response = await _client.get(
-        Uri.parse('$_baseUrl/voices?language=$languageCode'),
+        Uri.parse('$_languageApiUrl/api/v1/voice/languages/$languageCode'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final voices = (data['voices'] as List<dynamic>?)
-                ?.map((e) => VoiceOption.fromJson(
-                      e as Map<String, dynamic>,
-                      languageCode,
-                    ))
-                .toList() ??
-            [];
-        return voices;
+        final voicesJson = data['availableVoices'] as List<dynamic>? ?? [];
+        int idx = 0;
+        return voicesJson.map((e) {
+          final map = e as Map<String, dynamic>;
+          return VoiceOption(
+            id: idx++,
+            languageCode: languageCode,
+            provider: data['provider'] as String? ?? 'openai',
+            voiceId: map['id'] as String? ?? '',
+            name: map['name'] as String? ?? '',
+            gender: map['gender'] as String?,
+            description: map['accent'] as String?,
+            previewUrl: map['previewUrl'] as String?,
+            isCustomCapable: false,
+            displayOrder: idx,
+          );
+        }).toList();
+      } else if (response.statusCode == 404) {
+        AppLogger.error('Language $languageCode not found');
+        return [];
       } else {
         AppLogger.error('Failed to fetch voices: ${response.statusCode}');
         return [];
@@ -80,201 +106,44 @@ class VoiceSettingsService {
     }
   }
 
-  Future<List<UserVoiceSetting>> getUserVoiceSettings() async {
+  /// Get custom voice cloning status for a user
+  Future<CustomVoiceStatus?> getCustomVoiceStatus(String userId) async {
     try {
       final token = await _getAuthToken();
-      if (token == null) return [];
-
       final response = await _client.get(
-        Uri.parse('$_baseUrl/settings'),
+        Uri.parse('$_voiceGatewayUrl/voice/clone/status/$userId'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final settings = (data['settings'] as List<dynamic>?)
-                ?.map((e) => UserVoiceSetting.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [];
-        return settings;
-      } else {
-        AppLogger.error('Failed to fetch voice settings: ${response.statusCode}');
-        return [];
+        return CustomVoiceStatus.fromJson(data);
       }
+      return null;
     } catch (e) {
-      AppLogger.error('Error fetching voice settings', error: e);
-      return [];
+      AppLogger.error('Error fetching custom voice status', error: e);
+      return null;
     }
   }
 
-  Future<bool> updateVoiceSettings({
-    required String languageCode,
-    required String voiceProvider,
-    String? voiceId,
-    bool useCustomVoice = false,
-    String? customVoiceUrl,
-    double? voiceTemperature,
-  }) async {
+  /// Enable or disable custom voice for a user
+  Future<bool> setCustomVoiceEnabled(String userId, bool enabled) async {
     try {
       final token = await _getAuthToken();
-      if (token == null) return false;
-
-      final body = json.encode({
-        'language_code': languageCode,
-        'voice_provider': voiceProvider,
-        if (voiceId != null) 'voice_id': voiceId,
-        'use_custom_voice': useCustomVoice,
-        if (customVoiceUrl != null) 'custom_voice_url': customVoiceUrl,
-        if (voiceTemperature != null) 'voice_temperature': voiceTemperature,
-      });
-
-      final response = await _client.put(
-        Uri.parse('$_baseUrl/settings'),
+      final response = await _client.post(
+        Uri.parse('$_voiceGatewayUrl/voice/clone/enable/$userId?enabled=$enabled'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
-        body: body,
-      );
-
+      ).timeout(const Duration(seconds: 8));
       return response.statusCode == 200;
     } catch (e) {
-      AppLogger.error('Error updating voice settings', error: e);
+      AppLogger.error('Error setting custom voice enabled', error: e);
       return false;
-    }
-  }
-
-  Future<VoiceEnrollmentSession?> startVoiceEnrollment() async {
-    try {
-      final token = await _getAuthToken();
-      if (token == null) return null;
-
-      final response = await _client.post(
-        Uri.parse('$_baseUrl/enrollment/start'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        return VoiceEnrollmentSession.fromJson(data);
-      } else {
-        return null;
-      }
-    } catch (e) {
-      AppLogger.error('Error starting enrollment', error: e);
-      return null;
-    }
-  }
-
-  Future<Map<String, dynamic>?> submitEnrollmentSample({
-    required String sessionToken,
-    required String audioDataBase64,
-    required int stepNumber,
-  }) async {
-    try {
-      final token = await _getAuthToken();
-      if (token == null) return null;
-
-      final response = await _client.post(
-        Uri.parse('$_baseUrl/enrollment/submit'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({
-          'session_token': sessionToken,
-          'audio_data': audioDataBase64,
-          'step_number': stepNumber,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body) as Map<String, dynamic>;
-      } else {
-        return null;
-      }
-    } catch (e) {
-      AppLogger.error('Error submitting enrollment sample', error: e);
-      return null;
-    }
-  }
-
-  Future<VoiceAuthenticationResult?> authenticateVoice({
-    required String audioDataBase64,
-    String? userId,
-  }) async {
-    try {
-      final token = await _getAuthToken();
-      if (token == null) return null;
-
-      final response = await _client.post(
-        Uri.parse('$_baseUrl/authenticate'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({
-          'audio_data': audioDataBase64,
-          if (userId != null) 'user_id': userId,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        return VoiceAuthenticationResult.fromJson(data);
-      } else {
-        return VoiceAuthenticationResult(
-          success: false,
-          confidence: 0,
-          message: 'Authentication failed',
-        );
-      }
-    } catch (e) {
-      AppLogger.error('Error authenticating voice', error: e);
-      return VoiceAuthenticationResult(
-        success: false,
-        confidence: 0,
-        message: 'Authentication error: $e',
-      );
-    }
-  }
-
-  Future<CustomVoiceGenerationResponse?> generateCustomVoice({
-    required String sessionToken,
-    required String provider, // 'elevenlabs' or 'xtts'
-  }) async {
-    try {
-      final token = await _getAuthToken();
-      if (token == null) return null;
-
-      final response = await _client.post(
-        Uri.parse('$_baseUrl/custom-voice/generate'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({
-          'session_token': sessionToken,
-          'provider': provider,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        return CustomVoiceGenerationResponse.fromJson(data);
-      } else {
-        return null;
-      }
-    } catch (e) {
-      AppLogger.error('Error generating custom voice', error: e);
-      return null;
     }
   }
 

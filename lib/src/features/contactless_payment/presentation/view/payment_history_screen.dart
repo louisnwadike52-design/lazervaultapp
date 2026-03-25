@@ -125,7 +125,7 @@ class _PaymentHistoryViewState extends State<_PaymentHistoryView>
                     controller: _tabController,
                     indicator: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                       ),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -350,7 +350,7 @@ class _TransactionCard extends StatelessWidget {
       case 'shopping':
         return const Color(0xFFEC4899);
       case 'services':
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
       case 'bills':
         return const Color(0xFFEF4444);
       default:
@@ -625,7 +625,7 @@ class _SessionCard extends StatelessWidget {
       case PaymentSessionStatus.read:
         return const Color(0xFF3B82F6);
       case PaymentSessionStatus.processing:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
       case PaymentSessionStatus.completed:
         return const Color(0xFF10B981);
       case PaymentSessionStatus.cancelled:
@@ -941,7 +941,7 @@ class _ErrorState extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                 ),

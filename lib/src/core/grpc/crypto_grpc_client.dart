@@ -426,6 +426,24 @@ class CryptoGrpcClient {
     }
   }
 
+  /// Toggle favorite - adds or removes a crypto from user's default favorites watchlist
+  ///
+  /// [cryptoId] - Cryptocurrency ID (e.g., 'bitcoin', 'ethereum')
+  /// Returns `isFavorite` = true if added to favorites, false if removed
+  Future<ToggleFavoriteResponse> toggleFavorite({
+    required String cryptoId,
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = ToggleFavoriteRequest()
+        ..cryptoId = cryptoId;
+      final response = await _client.toggleFavorite(request, options: options);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Close the gRPC channel
   Future<void> close() async {
     await _channel.shutdown();

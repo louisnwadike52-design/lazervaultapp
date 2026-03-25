@@ -303,12 +303,12 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           child: ElevatedButton(
             onPressed: _downloadReceipt,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
-              foregroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+              foregroundColor: const Color.fromARGB(255, 78, 3, 208),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                side: BorderSide(color: const Color(0xFF6C5CE7).withValues(alpha: 0.3)),
+                side: BorderSide(color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)),
               ),
               elevation: 0,
             ),
@@ -333,7 +333,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           child: ElevatedButton(
             onPressed: _shareReceipt,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -461,7 +461,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           child: ElevatedButton(
             onPressed: () => Get.to(() => const CryptoTransactionHistoryScreen()),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -523,7 +523,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
               style: GoogleFonts.inter(
                 fontSize: isTotal ? 18.sp : 14.sp,
                 fontWeight: FontWeight.w600,
-                color: isTotal ? const Color(0xFF6C5CE7) : Colors.white,
+                color: isTotal ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
               ),
             ),
             if (canCopy) ...[
@@ -533,7 +533,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
                 child: Icon(
                   Icons.copy,
                   size: 16.sp,
-                  color: const Color(0xFF6C5CE7),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ),
             ],
@@ -571,7 +571,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
                 child: Icon(
                   Icons.copy,
                   size: 14.sp,
-                  color: const Color(0xFF6C5CE7),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ),
             ],
@@ -689,8 +689,8 @@ Powered by LazerVault - Your trusted crypto platform
     Get.snackbar(
       'Download',
       'Receipt saved to Downloads',
-      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
-      colorText: const Color(0xFF6C5CE7),
+      backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+      colorText: const Color.fromARGB(255, 78, 3, 208),
       duration: const Duration(seconds: 3),
     );
   }

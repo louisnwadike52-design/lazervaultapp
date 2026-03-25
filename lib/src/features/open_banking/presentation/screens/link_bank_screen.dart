@@ -232,7 +232,7 @@ class _LinkBankScreenState extends State<LinkBankScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Link Your Bank'),
-        backgroundColor: const Color(0xFF6C5CE7),
+        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -277,7 +277,7 @@ class _LinkBankScreenState extends State<LinkBankScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const CircularProgressIndicator(
-                    color: Color(0xFF6C5CE7),
+                    color: Color.fromARGB(255, 78, 3, 208),
                   ),
                   SizedBox(height: 16.h),
                   Text(
@@ -300,7 +300,7 @@ class _LinkBankScreenState extends State<LinkBankScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const CircularProgressIndicator(
-                    color: Color(0xFF6C5CE7),
+                    color: Color.fromARGB(255, 78, 3, 208),
                   ),
                   SizedBox(height: 16.h),
                   Text(
@@ -323,7 +323,7 @@ class _LinkBankScreenState extends State<LinkBankScreen> {
                   color: Colors.white.withValues(alpha: 0.8),
                   child: const Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFF6C5CE7),
+                      color: Color.fromARGB(255, 78, 3, 208),
                     ),
                   ),
                 ),

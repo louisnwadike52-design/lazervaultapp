@@ -322,7 +322,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
             width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7),
+              color: const Color.fromARGB(255, 78, 3, 208),
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
@@ -384,7 +384,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
               child: LinearProgressIndicator(
                 backgroundColor: Colors.grey[200],
                 valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFF6C5CE7),
+                  Color.fromARGB(255, 78, 3, 208),
                 ),
               ),
             ),
@@ -450,7 +450,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
                     _controller.loadRequest(Uri.parse(widget.paymentUrl));
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C5CE7),
+                    backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                   ),
                   child: const Text('Retry'),
                 ),

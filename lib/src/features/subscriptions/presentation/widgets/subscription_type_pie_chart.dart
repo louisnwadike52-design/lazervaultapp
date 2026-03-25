@@ -12,7 +12,7 @@ class SubscriptionTypePieChart extends StatelessWidget {
 
   static const Map<String, Color> _typeColors = {
     'data': Color(0xFF3B82F6),
-    'cable_tv': Color(0xFF8B5CF6),
+    'cable_tv': Color.fromARGB(255, 78, 3, 208),
     'internet': Color(0xFFF59E0B),
     'electricity': Color(0xFFEF4444),
     'airtime': Color(0xFF10B981),

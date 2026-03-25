@@ -52,6 +52,10 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
         throw Exception('Microphone permission not granted');
       }
 
+      // Stop any previous amplitude timer to prevent duplicates
+      _amplitudeTimer?.cancel();
+      _amplitudeTimer = null;
+
       // Check if recorder is already recording
       if (await _recorder.isRecording()) {
         await _recorder.stop();
@@ -80,6 +84,10 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
         stop: () => stopRecording(),
       );
     } catch (e) {
+      // Clean up amplitude timer if recording setup failed after timer started
+      _amplitudeTimer?.cancel();
+      _amplitudeTimer = null;
+      _currentRecordingPath = null;
       throw Exception('Failed to start recording: $e');
     }
   }
@@ -118,19 +126,33 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
       _amplitudeTimer?.cancel();
       _amplitudeTimer = null;
 
-      // Stop recording
+      // Reset amplitude visualization to 0
+      if (!_amplitudeController.isClosed) {
+        _amplitudeController.add(0.0);
+      }
+
+      // Capture the path before any state changes
+      final recordingPath = _currentRecordingPath;
+
+      // Stop recording — the recorder.stop() may return the path as well
+      String? stoppedPath;
       if (await _recorder.isRecording()) {
-        await _recorder.stop();
+        stoppedPath = await _recorder.stop();
       }
 
-      // Verify file exists
-      if (_currentRecordingPath == null) {
-        throw Exception('No recording path available');
+      // Use the path from stop() if our stored path is null (race condition guard)
+      final finalPath = recordingPath ?? stoppedPath;
+
+      if (finalPath == null || finalPath.isEmpty) {
+        throw Exception(
+          'No recording path available. The recorder may not have been started properly. '
+          'Please try recording again.',
+        );
       }
 
-      final file = File(_currentRecordingPath!);
+      final file = File(finalPath);
       if (!await file.exists()) {
-        throw Exception('Recording file not found at $_currentRecordingPath');
+        throw Exception('Recording file not found at $finalPath');
       }
 
       // Log file size for debugging
@@ -139,7 +161,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
 
       // Validate file size (should be at least 10KB for a meaningful recording)
       if (fileSize < 10000) {
-        throw Exception('Recording too short or empty ($fileSize bytes)');
+        throw Exception('Recording too short or empty ($fileSize bytes). Please speak louder and try again.');
       }
 
       // Reset path for next recording
@@ -147,6 +169,20 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
 
       return file;
     } catch (e) {
+      // Clean up orphaned temp file on error
+      final orphanPath = _currentRecordingPath;
+      if (orphanPath != null) {
+        try {
+          final orphanFile = File(orphanPath);
+          if (await orphanFile.exists()) {
+            await orphanFile.delete();
+          }
+        } catch (_) {
+          // Best effort cleanup
+        }
+      }
+      // Reset path on error to allow fresh start
+      _currentRecordingPath = null;
       throw Exception('Failed to stop recording: $e');
     }
   }
@@ -277,7 +313,8 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
       );
     } on GrpcError catch (e) {
       print('❌ gRPC Error during enrollment: ${e.code} - ${e.message}');
-      throw Exception('Voice enrollment failed: ${e.message}');
+      // Include gRPC status code for upstream error classification
+      throw Exception('Voice enrollment failed [code=${e.code}]: ${e.message}');
     } catch (e) {
       print('❌ Error during enrollment: $e');
       throw Exception('Voice enrollment failed: $e');

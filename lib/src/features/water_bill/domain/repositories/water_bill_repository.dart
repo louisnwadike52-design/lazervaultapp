@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../entities/water_provider_entity.dart';
 import '../entities/customer_validation_result.dart';
 import '../entities/water_payment_entity.dart';

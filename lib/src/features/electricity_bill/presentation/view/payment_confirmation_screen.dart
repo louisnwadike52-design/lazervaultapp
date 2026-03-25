@@ -365,10 +365,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     }
 
     // C5: Check balance before proceeding
-    if (_selectedAccount != null && _selectedAccount!.balance < _totalAmount) {
+    if (_selectedAccount != null && _selectedAccount!.availableBalance < _totalAmount) {
       Get.snackbar(
         'Insufficient Balance',
-        'Your account balance (\u20A6${_selectedAccount!.balance.toStringAsFixed(2)}) is less than the total amount (\u20A6${_totalAmount.toStringAsFixed(2)})',
+        'Your account balance (\u20A6${_selectedAccount!.availableBalance.toStringAsFixed(2)}) is less than the total amount (\u20A6${_totalAmount.toStringAsFixed(2)})',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -828,7 +828,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                'Balance: \u20A6${_selectedAccount!.balance.toStringAsFixed(2)}',
+                                'Balance: \u20A6${_selectedAccount!.availableBalance.toStringAsFixed(2)}',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF9CA3AF),
                                   fontSize: 12.sp,
@@ -960,7 +960,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                               ),
                             ),
                             Text(
-                              '\u20A6${account.balance.toStringAsFixed(2)}',
+                              '\u20A6${account.availableBalance.toStringAsFixed(2)}',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF9CA3AF),
                                 fontSize: 12.sp,

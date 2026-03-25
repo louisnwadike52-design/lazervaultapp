@@ -7,7 +7,8 @@ import '../../cubit/create_lock_cubit.dart';
 
 /// Lock type selection screen - Step 1 of 5
 ///
-/// Allows user to select from 4 lock types with interest rates displayed
+/// Displays rates dynamically from backend PiggyVault configs.
+/// Falls back to hardcoded enum values when backend is unavailable.
 class LockTypeSelector extends StatelessWidget {
   const LockTypeSelector({super.key});
 
@@ -33,7 +34,7 @@ class LockTypeSelector extends StatelessWidget {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Select the type of lock fund that suits your financial goals',
+                'Select a PiggyVault that suits your financial goals',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
@@ -41,49 +42,31 @@ class LockTypeSelector extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 24.h),
-              _buildLockTypeCard(
-                context: context,
-                lockType: LockType.savings,
-                icon: Icons.savings_rounded,
-                title: 'Savings Lock',
-                description: 'Safe and steady growth for your savings',
-                baseRate: LockType.savings.baseInterestRate,
-                isSelected: selectedType == LockType.savings,
-                onTap: () => cubit.updateLockType(LockType.savings),
-              ),
-              SizedBox(height: 16.h),
-              _buildLockTypeCard(
-                context: context,
-                lockType: LockType.investment,
-                icon: Icons.trending_up_rounded,
-                title: 'Investment Lock',
-                description: 'Higher returns for long-term wealth building',
-                baseRate: LockType.investment.baseInterestRate,
-                isSelected: selectedType == LockType.investment,
-                onTap: () => cubit.updateLockType(LockType.investment),
-              ),
-              SizedBox(height: 16.h),
-              _buildLockTypeCard(
-                context: context,
-                lockType: LockType.emergencyFund,
-                icon: Icons.emergency_rounded,
-                title: 'Emergency Fund',
-                description: 'Quick access with minimal penalty for emergencies',
-                baseRate: LockType.emergencyFund.baseInterestRate,
-                isSelected: selectedType == LockType.emergencyFund,
-                onTap: () => cubit.updateLockType(LockType.emergencyFund),
-              ),
-              SizedBox(height: 16.h),
-              _buildLockTypeCard(
-                context: context,
-                lockType: LockType.goalBased,
-                icon: Icons.flag_rounded,
-                title: 'Goal-Based Lock',
-                description: 'Save for specific goals like vacation or gadgets',
-                baseRate: LockType.goalBased.baseInterestRate,
-                isSelected: selectedType == LockType.goalBased,
-                onTap: () => cubit.updateLockType(LockType.goalBased),
-              ),
+              // Build cards dynamically from available lock types
+              // Only show active types from backend config
+              for (final entry in [
+                (LockType.savings, Icons.savings_rounded, false),
+                (LockType.investment, Icons.trending_up_rounded, true),
+                (LockType.emergencyFund, Icons.emergency_rounded, false),
+                (LockType.goalBased, Icons.flag_rounded, false),
+              ]) ...[
+                if (cubit.isTypeActive(entry.$1))
+                  _buildLockTypeCard(
+                    context: context,
+                    lockType: entry.$1,
+                    icon: entry.$2,
+                    // All display values come from cubit (backend config → fallback)
+                    title: cubit.getDisplayName(entry.$1),
+                    description: cubit.getDescription(entry.$1),
+                    baseRate: cubit.getBaseRate(entry.$1),
+                    maxRate: cubit.getMaxRate(entry.$1),
+                    isPremium: entry.$3,
+                    isSelected: selectedType == entry.$1,
+                    onTap: () => cubit.updateLockType(entry.$1),
+                  ),
+                if (cubit.isTypeActive(entry.$1))
+                  SizedBox(height: 16.h),
+              ],
             ],
           ),
         );
@@ -98,9 +81,14 @@ class LockTypeSelector extends StatelessWidget {
     required String title,
     required String description,
     required double baseRate,
+    double? maxRate,
+    bool isPremium = false,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final rateText = maxRate != null && maxRate != baseRate
+        ? '${baseRate.toStringAsFixed(0)}-${maxRate.toStringAsFixed(0)}%'
+        : '${baseRate.toStringAsFixed(0)}%';
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -109,7 +97,7 @@ class LockTypeSelector extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: isSelected
-                ? [const Color(0xFF6366F1), const Color(0xFF8B5CF6)]
+                ? [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)]
                 : [const Color(0xFF2A2A3E), const Color(0xFF1F1F35)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -167,16 +155,19 @@ class LockTypeSelector extends StatelessWidget {
                             vertical: 6.h,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981)
-                                .withValues(alpha: isSelected ? 0.3 : 0.2),
+                            color: isPremium
+                                ? const Color(0xFFF59E0B).withValues(alpha: isSelected ? 0.3 : 0.2)
+                                : const Color(0xFF10B981).withValues(alpha: isSelected ? 0.3 : 0.2),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
-                            '${baseRate.toStringAsFixed(1)}% APY',
+                            '$rateText p.a.',
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF10B981),
+                              color: isPremium
+                                  ? const Color(0xFFF59E0B)
+                                  : const Color(0xFF10B981),
                             ),
                           ),
                         ),

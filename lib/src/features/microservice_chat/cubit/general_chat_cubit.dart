@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import '../domain/entities/general_chat_message_entity.dart';
 import '../domain/usecases/send_general_chat_message_usecase.dart';
 import '../domain/usecases/load_microservice_chat_history_usecase.dart';
@@ -34,6 +36,9 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
   String? _currentService;
   final List<String> _conversationServices = [];
 
+  /// Guard against concurrent sendMessage calls from rapid taps.
+  bool _isSending = false;
+
   GeneralChatCubit({
     required this.sendMessageUseCase,
     this.loadHistoryUseCase,
@@ -54,6 +59,7 @@ class GeneralChatCubit extends Cubit<GeneralChatState> {
     _currentMessages = [];
     _currentService = null;
     _conversationServices.clear();
+    _isSending = false;
     emit(GeneralChatInitial(messages: _currentMessages));
 
     // Add welcome message for Enhanced Gateway
@@ -109,10 +115,17 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         if (history.isNotEmpty) {
           // Map MicroserviceChatMessageEntity to GeneralChatMessageEntity
           final historyMessages = history.map((msg) => GeneralChatMessageEntity(
-            text: msg.text,
+            text: msg.isUser ? maskIfPin(msg.text) : msg.text,
             isUser: msg.isUser,
             timestamp: msg.timestamp,
             serviceRoutedTo: msg.serviceRoutedTo,
+            metadata: msg.metadata,
+            // Preserve media fields from history
+            mediaType: msg.mediaType,
+            mediaUrl: msg.mediaUrl,
+            localMediaPath: msg.localMediaPath,
+            audioDurationMs: msg.audioDurationMs,
+            transcript: msg.transcript,
           )).toList();
 
           // Replace welcome message with actual history
@@ -127,8 +140,10 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
   }
 
   Future<void> sendMessage(String text) async {
-    if (text.trim().isEmpty) return;
+    if (text.trim().isEmpty || _isSending) return;
+    _isSending = true;
 
+    try {
     final authState = authCubit.state;
     if (authState is! AuthenticationSuccess) {
       emit(GeneralChatError(
@@ -204,6 +219,12 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         }
 
         // Add bot response with enhanced metadata
+        // Debug log receipt data ALWAYS
+        print('🧾 [RECEIPT] response.receiptData is null: ${response.receiptData == null}');
+        if (response.receiptData != null) {
+          print('🧾 [RECEIPT] Receipt data keys: ${response.receiptData!.keys}');
+        }
+
         final botMessage = GeneralChatMessageEntity(
           text: response.response,
           isUser: false,
@@ -222,6 +243,14 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
           },
         );
         updatedMessages.add(botMessage);
+        print('🧾 [RECEIPT] Bot message metadata keys: ${botMessage.metadata?.keys.toList()}');
+        print('🧾 [RECEIPT] Bot message has receipt_data: ${botMessage.metadata?['receipt_data'] != null}');
+
+        // Invalidate recipient cache after successful transfer (auto-save may have added a new one)
+        if (response.receiptData != null) {
+          print('🧾 [RECEIPT] Invalidating transfer caches...');
+          _invalidateTransferRelatedCaches();
+        }
 
         _currentMessages = updatedMessages;
         emit(GeneralChatSuccess(
@@ -237,6 +266,9 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         ));
       },
     );
+    } finally {
+      _isSending = false;
+    }
   }
 
   /// Maximum media file size (10MB for images, 25MB for audio).
@@ -251,6 +283,10 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
     String text = '',
     int? audioDurationMs,
   }) async {
+    if (_isSending) return;
+    _isSending = true;
+
+    try {
     final authState = authCubit.state;
     if (authState is! AuthenticationSuccess) {
       emit(GeneralChatError(
@@ -332,6 +368,21 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         ));
       },
       (response) {
+        // Update the user message with the media URL returned by backend
+        // The backend stores media and returns the URL in metadata.media.url
+        final mediaMetadata = response.metadata?['media'] as Map<String, dynamic>?;
+        final mediaUrl = mediaMetadata?['url'] as String?;
+
+        // Find and update the user message we added earlier
+        final userMsgIndex = _currentMessages.indexWhere(
+          (m) => m.isUser && m.timestamp == _currentMessages.lastWhere((m) => m.isUser).timestamp,
+        );
+
+        if (userMsgIndex >= 0 && mediaUrl != null) {
+          final updatedUserMsg = _currentMessages[userMsgIndex].copyWith(mediaUrl: mediaUrl);
+          _currentMessages[userMsgIndex] = updatedUserMsg;
+        }
+
         final botMessage = GeneralChatMessageEntity(
           text: response.response,
           isUser: false,
@@ -346,6 +397,21 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
         ));
       },
     );
+    } finally {
+      _isSending = false;
+    }
+  }
+
+  /// Invalidate caches after a successful chatbot transfer (auto-saved recipient).
+  void _invalidateTransferRelatedCaches() {
+    try {
+      final cacheManager = serviceLocator<SWRCacheManager>();
+      cacheManager.invalidatePattern('recipients:');
+      cacheManager.invalidatePattern('accounts:');
+      cacheManager.invalidatePattern('transactions:');
+    } catch (_) {
+      // Non-blocking
+    }
   }
 
   void clearChat() {

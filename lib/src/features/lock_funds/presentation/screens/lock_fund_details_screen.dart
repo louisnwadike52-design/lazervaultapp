@@ -9,6 +9,8 @@ import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import 'lock_withdrawal_screen.dart';
+import 'lock_fund_topup_screen.dart';
+import 'lock_fund_autosave_screen.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class LockFundDetailsScreen extends StatefulWidget {
@@ -222,7 +224,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           end: Alignment.bottomRight,
           colors: [
             const Color(0xFF6366F1),
-            const Color(0xFF8B5CF6),
+            const Color.fromARGB(255, 78, 3, 208),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
@@ -670,7 +672,34 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             ],
           ),
         ] else if (lock.isActive) ...[
-          // Active - show break lock button if allowed
+          // Active - show TopUp + AutoSave + Break Lock buttons
+          Row(
+            children: [
+              // TopUp button (for Flex, Target)
+              if (lock.lockType == LockType.emergencyFund || lock.lockType == LockType.goalBased)
+                Expanded(
+                  child: _buildActionButton(
+                    'Top Up',
+                    Icons.add_circle_outline,
+                    const Color(0xFF6366F1),
+                    () => _showTopUpScreen(),
+                  ),
+                ),
+              if (lock.lockType == LockType.emergencyFund || lock.lockType == LockType.goalBased)
+                SizedBox(width: 12.w),
+              // AutoSave button
+              Expanded(
+                child: _buildActionButton(
+                  'Auto-Save',
+                  Icons.autorenew,
+                  const Color(0xFF3B82F6),
+                  () => _showAutoSaveScreen(),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          // Break lock / withdraw button
           if (lock.lockType.allowsEarlyWithdrawal)
             _buildActionButton(
               lock.lockType == LockType.emergencyFund ? 'Withdraw' : 'Break Lock',
@@ -753,7 +782,6 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
 
   void _showRenewDialog() {
     HapticFeedback.mediumImpact();
-    // TODO: Implement renew dialog
     Get.snackbar(
       'Coming Soon',
       'Lock renewal will be available soon',
@@ -761,5 +789,42 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
     );
+  }
+
+  void _showTopUpScreen() {
+    HapticFeedback.mediumImpact();
+    final lockFundsCubit = context.read<LockFundsCubit>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: lockFundsCubit,
+          child: LockFundTopUpScreen(lockFund: widget.lockFund),
+        ),
+      ),
+    ).then((result) {
+      if (result == true) {
+        // Refresh the details
+        lockFundsCubit.loadLockFundDetails(widget.lockFund.id);
+      }
+    });
+  }
+
+  void _showAutoSaveScreen() {
+    HapticFeedback.mediumImpact();
+    final lockFundsCubit = context.read<LockFundsCubit>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: lockFundsCubit,
+          child: LockFundAutoSaveScreen(lockFund: widget.lockFund),
+        ),
+      ),
+    ).then((result) {
+      if (result == true) {
+        lockFundsCubit.loadLockFundDetails(widget.lockFund.id);
+      }
+    });
   }
 }

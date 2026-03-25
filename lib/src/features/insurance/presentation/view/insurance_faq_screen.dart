@@ -427,7 +427,7 @@ class _InsuranceFaqScreenState extends State<InsuranceFaqScreen> {
                           style: GoogleFonts.inter(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF8B5CF6),
+                            color: const Color.fromARGB(255, 78, 3, 208),
                           ),
                         ),
                       ),

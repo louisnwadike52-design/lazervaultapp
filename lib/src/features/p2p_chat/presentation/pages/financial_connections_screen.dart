@@ -886,7 +886,11 @@ class _FinancialConnectionsScreenState
   }
 
   void _onUserTapped(Map<String, dynamic> user) {
-    final userId = user['user_id'] as String? ?? user['id'] as String? ?? '';
+    // gRPC-Gateway returns camelCase JSON keys; also handle snake_case for safety
+    final userId = user['userId'] as String?
+        ?? user['user_id'] as String?
+        ?? user['id'] as String?
+        ?? '';
     final name = _getUserDisplayName(user);
 
     if (userId.isEmpty) return;
@@ -896,7 +900,8 @@ class _FinancialConnectionsScreenState
       arguments: {
         'otherUserId': userId,
         'otherUserName': name,
-        'otherUserAvatar': user['profile_picture'] as String?,
+        'otherUserAvatar': user['profilePicture'] as String?
+            ?? user['profile_picture'] as String?,
         'isSavedRecipient': false,
       },
     )?.then((_) {
@@ -905,8 +910,13 @@ class _FinancialConnectionsScreenState
   }
 
   String _getUserDisplayName(Map<String, dynamic> user) {
-    final first = user['first_name'] as String? ?? '';
-    final last = user['last_name'] as String? ?? '';
+    // gRPC-Gateway returns camelCase JSON keys; also handle snake_case for safety
+    final first = user['firstName'] as String?
+        ?? user['first_name'] as String?
+        ?? '';
+    final last = user['lastName'] as String?
+        ?? user['last_name'] as String?
+        ?? '';
     final full = '$first $last'.trim();
     if (full.isNotEmpty) return full;
     return user['username'] as String? ?? 'Unknown';

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import '../../cubit/stock_cubit.dart';
+import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -31,6 +34,9 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   String _tradeType = 'buy';
   double _amount = 0.0;
   int _shares = 0;
+  double _sharesExact = 0;
+  OrderType _orderType = OrderType.market;
+  double? _limitPrice;
   double _fees = 0.0;
   double _estimatedTotal = 0.0;
   String _paymentMethod = '';
@@ -54,6 +60,12 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     _tradeType = args['tradeType'] ?? 'buy';
     _amount = args['amount'] ?? 0.0;
     _shares = args['shares'] ?? 0;
+    _sharesExact = (args['sharesExact'] as num?)?.toDouble() ??
+        (_shares > 0 ? _shares.toDouble() : 0);
+    _orderType = args['orderType'] is OrderType
+        ? args['orderType'] as OrderType
+        : OrderType.market;
+    _limitPrice = args['limitPrice'] as double?;
     _fees = args['fees'] ?? 0.0;
     _estimatedTotal = args['estimatedTotal'] ?? 0.0;
     _paymentMethod = args['paymentMethod'] ?? '';
@@ -118,27 +130,57 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     }
   }
 
-  /// Execute stock trade with verification token
-  void _executeTradeWithToken(String transactionId, String verificationToken) async {
+  /// Execute stock trade with verification token (investment-gateway / investments-service).
+  Future<void> _executeTradeWithToken(String transactionId, String verificationToken) async {
+    if (_selectedStock == null || _sharesExact <= 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid stock or quantity')),
+        );
+      }
+      return;
+    }
+
     setState(() {
       _isProcessing = true;
     });
 
     _processingController.repeat();
 
-    // Simulate processing time (in real implementation, this would call your backend API with verification token)
-    await Future.delayed(const Duration(seconds: 3));
+    final cubit = context.read<StockCubit>();
+    final side = _tradeType == 'sell' ? OrderSide.sell : OrderSide.buy;
+    final price = _orderType == OrderType.market ? null : (_limitPrice ?? _selectedStock!.currentPrice);
+
+    await cubit.placeOrder(
+      symbol: _selectedStock!.symbol,
+      type: _orderType,
+      side: side,
+      quantity: _shares > 0 ? _shares : 1,
+      quantityExact: _sharesExact,
+      price: price,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+    );
 
     _processingController.stop();
 
-    setState(() {
-      _isProcessing = false;
-      _isCompleted = true;
-      _transactionId = transactionId;
-    });
+    if (!mounted) return;
 
-    // TODO: In production, call your stock trade API with verification token
-    // The verification token should be included in the API call for backend validation
+    final st = cubit.state;
+    if (st is OrderSuccess) {
+      setState(() {
+        _isProcessing = false;
+        _isCompleted = true;
+        _transactionId = transactionId;
+      });
+    } else if (st is OrderFailed) {
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(st.message)),
+      );
+    } else {
+      setState(() => _isProcessing = false);
+    }
   }
 
   void _goToHome() {

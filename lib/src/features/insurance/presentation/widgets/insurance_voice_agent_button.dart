@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart' as livekit;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Voice agent button for insurance management conversations
 /// Connects to the insurance-voice-agent microservice via LiveKit
@@ -49,11 +50,9 @@ class _InsuranceVoiceAgentButtonState extends State<InsuranceVoiceAgentButton>
     setState(() => _isConnecting = true);
 
     try {
-      // Get LiveKit URL from environment
-      const livekitUrl = String.fromEnvironment(
-        'LIVEKIT_URL',
-        defaultValue: 'wss://lazervault-sgb9bwog.livekit.cloud',
-      );
+      // Get LiveKit URL from environment (required - will throw if not set)
+      final livekitUrl = dotenv.env['LIVEKIT_URL'] ??
+          (throw Exception('LIVEKIT_URL environment variable is not set'));
 
       // Create room
       _room = livekit.Room(
@@ -197,11 +196,9 @@ class _InsuranceVoiceAgentControlState extends State<InsuranceVoiceAgentControl>
   }
 
   Future<void> _connect() async {
-    // Similar connection logic as button
-    const livekitUrl = String.fromEnvironment(
-      'LIVEKIT_URL',
-      defaultValue: 'wss://lazervault-sgb9bwog.livekit.cloud',
-    );
+    // Get LiveKit URL from environment (required - will throw if not set)
+    final livekitUrl = dotenv.env['LIVEKIT_URL'] ??
+        (throw Exception('LIVEKIT_URL environment variable is not set'));
 
     try {
       _room = livekit.Room(

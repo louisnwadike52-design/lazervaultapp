@@ -143,18 +143,33 @@ class AIChatCubit extends Cubit<AIChatState> {
             _sessionId = response.sessionId;
           }
 
+          // Extract receipt_data from entities (passed as JSON string via _receipt_data key)
+          Map<String, dynamic>? receiptData;
+          final entitiesMap = response.entities.isNotEmpty
+              ? Map<String, String>.from(response.entities)
+              : null;
+          if (entitiesMap != null && entitiesMap.containsKey('_receipt_data')) {
+            try {
+              receiptData = jsonDecode(entitiesMap['_receipt_data']!) as Map<String, dynamic>;
+            } catch (_) {
+              // Ignore malformed receipt data
+            }
+            entitiesMap.remove('_receipt_data');
+          }
+
           final aiMessageEntity = ChatMessageEntity(
             text: response.response,
             isUser: false,
             timestamp: DateTime.now(),
             type: messageType,
             intent: response.intent.isNotEmpty ? response.intent : null,
-            entities: response.entities.isNotEmpty ? Map<String, String>.from(response.entities) : null,
+            entities: entitiesMap != null && entitiesMap.isNotEmpty ? entitiesMap : null,
             requiresConfirmation: response.requiresConfirmation,
             actionButtons: actionButtons,
             confirmationData: confirmationData,
             conversationState: response.conversationState.isNotEmpty ? response.conversationState : null,
             sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
+            receiptData: receiptData,
           );
           _currentMessages.add(aiMessageEntity);
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
@@ -261,11 +276,21 @@ class AIChatCubit extends Cubit<AIChatState> {
           if (response.sessionId.isNotEmpty) {
             _sessionId = response.sessionId;
           }
+
+          // Extract receipt_data for media responses too
+          Map<String, dynamic>? mediaReceiptData;
+          if (response.entities.containsKey('_receipt_data')) {
+            try {
+              mediaReceiptData = jsonDecode(response.entities['_receipt_data']!) as Map<String, dynamic>;
+            } catch (_) {}
+          }
+
           final aiMessage = ChatMessageEntity(
             text: response.response,
             isUser: false,
             timestamp: DateTime.now(),
             sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
+            receiptData: mediaReceiptData,
           );
           _currentMessages.add(aiMessage);
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));

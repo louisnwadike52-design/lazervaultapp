@@ -90,6 +90,7 @@ class ServiceCategory {
     final iconMap = {
       'restaurant': Icons.restaurant,
       'shopping_bag': Icons.shopping_bag,
+      'shopping_cart': Icons.shopping_cart,
       'home': Icons.home,
       'card_giftcard': Icons.card_giftcard,
       'directions_car': Icons.directions_car,
@@ -103,11 +104,22 @@ class ServiceCategory {
       'trending_up': Icons.trending_up,
       'category': Icons.category,
       'currency_bitcoin': Icons.currency_bitcoin,
+      'flight': Icons.flight,
+      'security': Icons.security,
+      'spa': Icons.spa,
+      'subscriptions': Icons.subscriptions,
+      'movie': Icons.movie,
+      'local_gas_station': Icons.local_gas_station,
+      'receipt': Icons.receipt,
+      'qr_code_2': Icons.qr_code_2,
+      'description': Icons.description,
+      'account_balance': Icons.account_balance,
     };
     return iconMap[iconStr] ?? Icons.category;
   }
 
-  /// Common transfer categories (fallback when backend unreachable)
+  /// Common transfer categories (fallback when backend unreachable).
+  /// Must stay in sync with statistics-service seeds/categories.go.
   static const commonTransferCategories = [
     ServiceCategory(
       id: 'cat-food',
@@ -119,6 +131,15 @@ class ServiceCategory {
       color: Color(0xFFFF6B6B),
     ),
     ServiceCategory(
+      id: 'cat-transport',
+      serviceName: 'transfer',
+      subCategoryName: 'transport',
+      budgetCategory: 2,
+      displayName: 'Transportation',
+      iconName: 'directions_car',
+      color: Color(0xFF4ECDC4),
+    ),
+    ServiceCategory(
       id: 'cat-shopping',
       serviceName: 'transfer',
       subCategoryName: 'shopping',
@@ -126,6 +147,51 @@ class ServiceCategory {
       displayName: 'Shopping',
       iconName: 'shopping_bag',
       color: Color(0xFF45B7D1),
+    ),
+    ServiceCategory(
+      id: 'cat-entertainment',
+      serviceName: 'transfer',
+      subCategoryName: 'entertainment',
+      budgetCategory: 4,
+      displayName: 'Entertainment',
+      iconName: 'movie',
+      color: Color(0xFFA29BFE),
+    ),
+    ServiceCategory(
+      id: 'cat-healthcare',
+      serviceName: 'transfer',
+      subCategoryName: 'healthcare',
+      budgetCategory: 6,
+      displayName: 'Healthcare',
+      iconName: 'medical_services',
+      color: Color(0xFFFECA57),
+    ),
+    ServiceCategory(
+      id: 'cat-education',
+      serviceName: 'transfer',
+      subCategoryName: 'education',
+      budgetCategory: 7,
+      displayName: 'Education',
+      iconName: 'school',
+      color: Color(0xFFDDA0DD),
+    ),
+    ServiceCategory(
+      id: 'cat-travel',
+      serviceName: 'transfer',
+      subCategoryName: 'travel',
+      budgetCategory: 8,
+      displayName: 'Travel',
+      iconName: 'flight',
+      color: Color(0xFFFF7043),
+    ),
+    ServiceCategory(
+      id: 'cat-groceries',
+      serviceName: 'transfer',
+      subCategoryName: 'groceries',
+      budgetCategory: 9,
+      displayName: 'Groceries',
+      iconName: 'shopping_cart',
+      color: Color(0xFF66BB6A),
     ),
     ServiceCategory(
       id: 'cat-rent',
@@ -137,6 +203,15 @@ class ServiceCategory {
       color: Color(0xFFBB8FCE),
     ),
     ServiceCategory(
+      id: 'cat-insurance',
+      serviceName: 'transfer',
+      subCategoryName: 'insurance',
+      budgetCategory: 11,
+      displayName: 'Insurance',
+      iconName: 'security',
+      color: Color(0xFF5C6BC0),
+    ),
+    ServiceCategory(
       id: 'cat-gifts',
       serviceName: 'transfer',
       subCategoryName: 'gifts',
@@ -146,22 +221,22 @@ class ServiceCategory {
       color: Color(0xFFFF6B9D),
     ),
     ServiceCategory(
-      id: 'cat-transport',
+      id: 'cat-personal-care',
       serviceName: 'transfer',
-      subCategoryName: 'transport',
-      budgetCategory: 2,
-      displayName: 'Transportation',
-      iconName: 'directions_car',
-      color: Color(0xFF4ECDC4),
+      subCategoryName: 'personal_care',
+      budgetCategory: 14,
+      displayName: 'Personal Care',
+      iconName: 'spa',
+      color: Color(0xFFEC407A),
     ),
     ServiceCategory(
-      id: 'cat-healthcare',
+      id: 'cat-subscriptions',
       serviceName: 'transfer',
-      subCategoryName: 'healthcare',
-      budgetCategory: 6,
-      displayName: 'Healthcare',
-      iconName: 'medical_services',
-      color: Color(0xFFFECA57),
+      subCategoryName: 'subscriptions',
+      budgetCategory: 15,
+      displayName: 'Subscriptions',
+      iconName: 'subscriptions',
+      color: Color(0xFFAB47BC),
     ),
     ServiceCategory(
       id: 'cat-other',
@@ -221,19 +296,28 @@ class _CategorySelectionBottomSheetState
     extends State<CategorySelectionBottomSheet> {
   bool _showCustomInput = false;
   final TextEditingController _customNameController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   bool _isCreating = false;
+  String _searchQuery = '';
 
   @override
   void dispose() {
     _customNameController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final items = widget.categories ?? ServiceCategory.commonTransferCategories;
+    final filteredItems = _searchQuery.isEmpty
+        ? items
+        : items.where((c) =>
+            c.displayName.toLowerCase().contains(_searchQuery) ||
+            c.subCategoryName.toLowerCase().contains(_searchQuery)).toList();
 
     return Container(
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
@@ -253,7 +337,7 @@ class _CategorySelectionBottomSheetState
           ),
           // Header
           Padding(
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w, 12.w),
             child: Row(
               children: [
                 Icon(
@@ -291,62 +375,134 @@ class _CategorySelectionBottomSheetState
           if (_showCustomInput)
             _buildCustomCategoryInput()
           else ...[
-            // Categories Grid
+            // Search bar
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: TextField(
+                controller: _searchController,
+                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                decoration: InputDecoration(
+                  hintText: 'Search categories...',
+                  hintStyle: TextStyle(color: const Color(0xFF6B7280), fontSize: 14.sp),
+                  prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
+                  filled: true,
+                  fillColor: const Color(0xFF2D2D2D),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  isDense: true,
+                ),
+                onChanged: (value) {
+                  setState(() => _searchQuery = value.toLowerCase());
+                },
+              ),
+            ),
+            SizedBox(height: 12.h),
+            // Categories List (searchable, scrollable)
             Flexible(
-              child: GridView.builder(
+              child: ListView.builder(
                 shrinkWrap: true,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 1,
-                  crossAxisSpacing: 12.w,
-                  mainAxisSpacing: 12.h,
-                ),
-                itemCount: items.length,
+                itemCount: filteredItems.length + 1, // +1 for "Create custom" option
                 itemBuilder: (context, index) {
-                  final category = items[index];
-                  final isSelected = widget.selectedCategory?.id == category.id;
-
-                  return GestureDetector(
-                    onTap: () {
-                      if (category.subCategoryName == 'other') {
-                        setState(() => _showCustomInput = true);
-                        return;
-                      }
-                      widget.onSelected(category);
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? category.color.withValues(alpha: 0.2)
-                            : const Color(0xFF2D2D2D),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: isSelected ? category.color : Colors.transparent,
-                          width: 2,
+                  if (index == filteredItems.length) {
+                    // "Create custom category" option at bottom
+                    return Padding(
+                      padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
+                      child: GestureDetector(
+                        onTap: () => setState(() => _showCustomInput = true),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D2D2D),
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.add_circle_outline, color: const Color(0xFF3B82F6), size: 22.sp),
+                              SizedBox(width: 12.w),
+                              Text(
+                                'Create Custom Category',
+                                style: TextStyle(
+                                  color: const Color(0xFF3B82F6),
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            category.iconData,
-                            color: isSelected ? category.color : const Color(0xFF9CA3AF),
-                            size: 24.sp,
+                    );
+                  }
+
+                  final category = filteredItems[index];
+                  final isSelected = widget.selectedCategory?.id == category.id;
+
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 4.h),
+                    child: GestureDetector(
+                      onTap: () => widget.onSelected(category),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? category.color.withValues(alpha: 0.15)
+                              : const Color(0xFF2D2D2D),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: isSelected ? category.color : Colors.transparent,
+                            width: isSelected ? 1.5 : 0,
                           ),
-                          SizedBox(height: 8.h),
-                          Text(
-                            category.displayName,
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w500,
-                              color: isSelected ? category.color : Colors.white,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36.w,
+                              height: 36.w,
+                              decoration: BoxDecoration(
+                                color: category.color.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                              child: Icon(
+                                category.iconData,
+                                color: isSelected ? category.color : const Color(0xFF9CA3AF),
+                                size: 20.sp,
+                              ),
                             ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: Text(
+                                category.displayName,
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                  color: isSelected ? category.color : Colors.white,
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(Icons.check_circle, color: category.color, size: 20.sp),
+                            if (category.isCustom)
+                              Padding(
+                                padding: EdgeInsets.only(left: 8.w),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
+                                  child: Text(
+                                    'Custom',
+                                    style: TextStyle(color: const Color(0xFF3B82F6), fontSize: 10.sp),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   );

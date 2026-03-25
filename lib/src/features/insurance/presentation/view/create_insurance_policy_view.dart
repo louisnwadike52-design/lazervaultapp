@@ -828,7 +828,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
@@ -1497,7 +1497,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   height: 36.w,
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
-                                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                                     ),
                                     borderRadius: BorderRadius.circular(8.r),
                                   ),
@@ -1621,7 +1621,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                                 ),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
@@ -1679,10 +1679,10 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -1690,7 +1690,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                   children: [
                     Icon(
                       Icons.add_circle_outline,
-                      color: const Color(0xFF8B5CF6),
+                      color: const Color.fromARGB(255, 78, 3, 208),
                       size: 14.sp,
                     ),
                     SizedBox(width: 4.w),
@@ -1698,7 +1698,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                       'Add Fields',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: const Color(0xFF8B5CF6),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -1865,7 +1865,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                         children: [
                           Icon(
                             Icons.add_box,
-                            color: const Color(0xFF8B5CF6),
+                            color: const Color.fromARGB(255, 78, 3, 208),
                             size: 24.sp,
                           ),
                           SizedBox(width: 12.w),
@@ -1883,7 +1883,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                             '${tempSelectedFields.length} selected',
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
-                              color: const Color(0xFF8B5CF6),
+                              color: const Color.fromARGB(255, 78, 3, 208),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -1915,7 +1915,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                               padding: EdgeInsets.all(16.w),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF8B5CF6).withValues(alpha: 0.1)
+                                    ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
                                     : Colors.transparent,
                                 border: Border(
                                   bottom: BorderSide(
@@ -1930,12 +1930,12 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                     height: 24.w,
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? const Color(0xFF8B5CF6)
+                                          ? const Color.fromARGB(255, 78, 3, 208)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(4.r),
                                       border: Border.all(
                                         color: isSelected
-                                            ? const Color(0xFF8B5CF6)
+                                            ? const Color.fromARGB(255, 78, 3, 208)
                                             : Colors.white.withValues(alpha: 0.3),
                                       ),
                                     ),
@@ -1950,7 +1950,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   SizedBox(width: 16.w),
                                   Icon(
                                     field['icon'] as IconData,
-                                    color: const Color(0xFF8B5CF6),
+                                    color: const Color.fromARGB(255, 78, 3, 208),
                                     size: 20.sp,
                                   ),
                                   SizedBox(width: 12.w),
@@ -2003,7 +2003,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: const Color(0xFF8B5CF6),
+                                  color: const Color.fromARGB(255, 78, 3, 208),
                                 ),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
@@ -2013,7 +2013,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                   'Cancel',
                                   style: GoogleFonts.inter(
                                     fontSize: 16.sp,
-                                    color: const Color(0xFF8B5CF6),
+                                    color: const Color.fromARGB(255, 78, 3, 208),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -2025,7 +2025,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                                  colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
                                 ),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),

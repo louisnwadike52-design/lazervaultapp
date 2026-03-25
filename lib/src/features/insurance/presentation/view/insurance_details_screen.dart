@@ -328,7 +328,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 height: 60.w,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(30.r),
                 ),
@@ -371,7 +371,10 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 color: Colors.white.withValues(alpha: 0.1),
               ),
               Expanded(
-                child: _buildOverviewItem('Coverage', '\$${(insurance.coverageAmount / 1000).toStringAsFixed(0)}K'),
+                child: _buildOverviewItem('Coverage',
+                  insurance.coverageAmount >= 1000
+                    ? '\$${(insurance.coverageAmount / 1000).toStringAsFixed(0)}K'
+                    : '\$${insurance.coverageAmount.toStringAsFixed(0)}'),
               ),
               Container(
                 width: 1.w,
@@ -379,7 +382,12 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 color: Colors.white.withValues(alpha: 0.1),
               ),
               Expanded(
-                child: _buildOverviewItem('Expires', '${insurance.daysUntilExpiry} days'),
+                child: _buildOverviewItem('Expires',
+                  insurance.daysUntilExpiry < 0
+                    ? 'Expired'
+                    : insurance.daysUntilExpiry == 0
+                      ? 'Today'
+                      : '${insurance.daysUntilExpiry} days'),
               ),
             ],
           ),
@@ -427,7 +435,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         color = const Color(0xFF6B7280);
         break;
       case InsuranceStatus.suspended:
-        color = const Color(0xFF8B5CF6);
+        color = const Color.fromARGB(255, 78, 3, 208);
         break;
     }
 
@@ -460,7 +468,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         controller: _tabController,
         indicator: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
           ),
           borderRadius: BorderRadius.circular(12.r),
         ),
@@ -498,15 +506,15 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
           ]),
           SizedBox(height: 24.h),
           _buildCoverageSection('Coverage Details', [
-            _buildInfoRow('Deductible', '\$${insurance.coverageDetails['deductible']?.toStringAsFixed(2) ?? '0.00'}'),
-            _buildInfoRow('Coverage Limit', '\$${insurance.coverageDetails['coverage_limit']?.toStringAsFixed(2) ?? '0.00'}'),
+            _buildInfoRow('Deductible', '\$${_safeDouble(insurance.coverageDetails['deductible']).toStringAsFixed(2)}'),
+            _buildInfoRow('Coverage Limit', '\$${_safeDouble(insurance.coverageDetails['coverage_limit']).toStringAsFixed(2)}'),
             _buildInfoRow('Currency', insurance.currency),
           ]),
           SizedBox(height: 24.h),
           _buildCoverageSection('Policy Dates', [
-            _buildInfoRow('Start Date', '${insurance.startDate.day}/${insurance.startDate.month}/${insurance.startDate.year}'),
-            _buildInfoRow('End Date', '${insurance.endDate.day}/${insurance.endDate.month}/${insurance.endDate.year}'),
-            _buildInfoRow('Next Payment', '${insurance.nextPaymentDate.day}/${insurance.nextPaymentDate.month}/${insurance.nextPaymentDate.year}'),
+            _buildInfoRow('Start Date', _formatDate(insurance.startDate)),
+            _buildInfoRow('End Date', _formatDate(insurance.endDate)),
+            _buildInfoRow('Next Payment', _formatDate(insurance.nextPaymentDate)),
           ]),
           if (insurance.beneficiaries.isNotEmpty) ...[
             SizedBox(height: 24.h),
@@ -514,7 +522,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
           ],
           if (insurance.coverageDetails['features'] != null) ...[
             SizedBox(height: 24.h),
-            _buildFeaturesSection(List<String>.from(insurance.coverageDetails['features'])),
+            _buildFeaturesSection(_safeStringList(insurance.coverageDetails['features'])),
           ],
           if (insurance.description != null) ...[
             SizedBox(height: 24.h),
@@ -860,7 +868,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         color = const Color(0xFF6B7280);
         break;
       case PaymentStatus.refunded:
-        color = const Color(0xFF8B5CF6);
+        color = const Color.fromARGB(255, 78, 3, 208);
         break;
     }
 
@@ -1013,7 +1021,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
                 ),
               ),
               Text(
-                '${claim.incidentDate.day}/${claim.incidentDate.month}/${claim.incidentDate.year}',
+                _formatDate(claim.incidentDate),
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   color: Colors.white,
@@ -1043,7 +1051,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         color = const Color(0xFFEF4444);
         break;
       case ClaimStatus.settled:
-        color = const Color(0xFF8B5CF6);
+        color = const Color.fromARGB(255, 78, 3, 208);
         break;
       case ClaimStatus.cancelled:
         color = const Color(0xFF6B7280);
@@ -1175,7 +1183,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
               gradient: LinearGradient(
                 colors: [
                   const Color(0xFF6366F1),
-                  const Color(0xFF8B5CF6),
+                  const Color.fromARGB(255, 78, 3, 208),
                 ],
               ),
               borderRadius: BorderRadius.circular(30.r),
@@ -1210,6 +1218,27 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         return const SizedBox.shrink();
       },
     );
+  }
+
+  /// Safely parse a dynamic value to double, defaulting to 0
+  double _safeDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  /// Safely cast a dynamic value to List<String>
+  List<String> _safeStringList(dynamic value) {
+    if (value == null) return [];
+    if (value is List) return value.map((e) => e.toString()).toList();
+    return [];
+  }
+
+  /// Format a date with zero-padded day/month
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   void _handleMenuAction(String action, Insurance insurance) {

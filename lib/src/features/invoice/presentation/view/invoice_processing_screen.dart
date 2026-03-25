@@ -29,6 +29,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
     with TickerProviderStateMixin {
   late AnimationController _processingController;
   late AnimationController _fadeController;
+  final List<Timer> _timers = [];
 
   String get _currencySymbol {
     switch (widget.invoice.currency.toUpperCase()) {
@@ -122,27 +123,27 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
   }
 
   void _startProcessingSimulation() {
-    Timer(const Duration(seconds: 1), () {
+    _timers.add(Timer(const Duration(seconds: 1), () {
       if (mounted && !_isCompleted) {
         _updateStatus(
             InvoiceProcessingStatus.validating, 'Validating payment...');
       }
-    });
+    }));
 
-    Future.delayed(const Duration(milliseconds: 2500), () {
+    _timers.add(Timer(const Duration(milliseconds: 2500), () {
       if (mounted && !_isCompleted) {
         _updateStatus(
             InvoiceProcessingStatus.processing, 'Processing payment...');
       }
-    });
+    }));
 
-    Future.delayed(const Duration(milliseconds: 4000), () {
+    _timers.add(Timer(const Duration(milliseconds: 4000), () {
       if (mounted && !_isCompleted) {
         _updateStatus(
             InvoiceProcessingStatus.completed, 'Payment successful!');
         _completePayment();
       }
-    });
+    }));
   }
 
   void _updateStatus(InvoiceProcessingStatus status, String message) {
@@ -159,18 +160,28 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
     _processingController.stop();
     _pulseController.stop();
 
-    Future.delayed(const Duration(milliseconds: 800), () {
+    _timers.add(Timer(const Duration(milliseconds: 800), () {
       if (mounted) {
+        // Pass as Map for consistency with preview screen's argument handling
+        // Service fee is already paid, so newlyCreated is false
         Get.offNamed(
           AppRoutes.invoicePreview,
-          arguments: widget.invoice,
+          arguments: {
+            'invoice': widget.invoice,
+            'isNewlyCreated': false,
+            'serviceFeePaid': true,
+          },
         );
       }
-    });
+    }));
   }
 
   @override
   void dispose() {
+    for (final timer in _timers) {
+      timer.cancel();
+    }
+    _timers.clear();
     _processingController.dispose();
     _fadeController.dispose();
     _pulseController.dispose();

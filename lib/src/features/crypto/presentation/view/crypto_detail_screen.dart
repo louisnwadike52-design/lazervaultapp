@@ -5,9 +5,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
-import 'dart:math' as math;
 import '../../cubit/crypto_cubit.dart';
+import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../../domain/entities/price_point.dart';
+import '../../domain/entities/crypto_entity.dart' show CryptoHolding;
 import 'buy_crypto_screen.dart';
 import 'sell_crypto_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -25,25 +27,10 @@ class CryptoDetailScreen extends StatefulWidget {
 class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _animationController;
-  
-  final List<String> _timeframes = ['1H', '4H', '1D', '1W', '1M', '3M', '6M', '1Y', 'ALL'];
+
+  final List<String> _timeframes = ['1D', '7D', '30D', '90D', '1Y', 'ALL'];
   String _selectedTimeframe = '1D';
   bool _isInWatchlist = false;
-  
-  // Technical Indicators
-  final List<String> _selectedIndicators = [];
-  final List<String> _availableIndicators = [
-    'SMA', 'EMA', 'MACD', 'RSI', 'Bollinger Bands', 'Volume', 'Stochastic'
-  ];
-
-  // Mock data for demonstration
-  final List<FlSpot> _mockPriceData = [
-    FlSpot(0, 65000), FlSpot(1, 65200), FlSpot(2, 65800), FlSpot(3, 66100),
-    FlSpot(4, 66500), FlSpot(5, 66200), FlSpot(6, 66800), FlSpot(7, 67200),
-    FlSpot(8, 67000), FlSpot(9, 67500), FlSpot(10, 67800), FlSpot(11, 68200),
-    FlSpot(12, 68000), FlSpot(13, 68500), FlSpot(14, 68900), FlSpot(15, 69200),
-    FlSpot(16, 69000), FlSpot(17, 69400), FlSpot(18, 69800), FlSpot(19, 70200),
-  ];
 
   @override
   void initState() {
@@ -58,16 +45,28 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _animationController.forward();
   }
 
   void _setupTabController() {
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this); // Changed from 3 to 2 tabs
   }
 
   void _loadCryptoDetails() {
-    // Load crypto details, price history, etc.
+    context.read<CryptoCubit>().loadCryptoDetails(widget.crypto.id, timeframe: _timeframeToRange(_selectedTimeframe));
+  }
+
+  String _timeframeToRange(String timeframe) {
+    switch (timeframe) {
+      case '1D': return '1';
+      case '7D': return '7';
+      case '30D': return '30';
+      case '90D': return '90';
+      case '1Y': return '365';
+      case 'ALL': return 'max';
+      default: return '7';
+    }
   }
 
   @override
@@ -103,8 +102,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   controller: _tabController,
                   children: [
                     _buildOverviewTab(),
-                    _buildAnalysisTab(),
-                    _buildNewsTab(),
+                    _buildStatsTab(),
                   ],
                 ),
               ),
@@ -214,52 +212,46 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
         dividerColor: Colors.transparent,
         tabs: const [
           Tab(text: 'Overview'),
-          Tab(text: 'Analysis'),
-          Tab(text: 'News'),
+          Tab(text: 'Stats'),
         ],
       ),
     );
   }
 
   Widget _buildOverviewTab() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          _buildPriceHeader(),
-          _buildAdvancedChart(),
-          _buildActionButtons(),
-          _buildKeyDataPoints(),
-          _buildTechnicalAnalysisGauge(),
-          _buildMarketOrderBook(),
-          _buildMarketStats(),
-          _buildPortfolioSection(),
-          _buildAboutSection(),
-        ],
-      ),
+    return BlocBuilder<CryptoCubit, CryptoState>(
+      builder: (context, state) {
+        List<PricePoint> priceHistory = [];
+
+        if (state is CryptoDetailsLoaded) {
+          priceHistory = state.priceHistory;
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildPriceHeader(),
+              _buildAdvancedChart(priceHistory),
+              _buildActionButtons(),
+              _buildKeyDataPoints(),
+              _buildMarketStats(),
+              _buildPortfolioSection(),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildAnalysisTab() {
+  Widget _buildStatsTab() {
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.w),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTechnicalAnalysisSection(),
-          SizedBox(height: 20.h),
-          _buildIndicatorsSection(),
-          SizedBox(height: 20.h),
-          _buildSentimentSection(),
+          _buildMarketStatsSection(),
+          SizedBox(height: 16.h),
+          _buildPerformanceSection(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNewsTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        children: List.generate(5, (index) => _buildNewsItem(index)),
       ),
     );
   }
@@ -380,7 +372,40 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     );
   }
 
-  Widget _buildAdvancedChart() {
+  Widget _buildAdvancedChart(List<PricePoint> priceHistory) {
+    final chartData = _generateChartData(priceHistory);
+
+    if (chartData.isEmpty) {
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        height: 320.h,
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.show_chart,
+                size: 48.sp,
+                color: Colors.grey[600],
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                'Chart data unavailable',
+                style: GoogleFonts.inter(
+                  color: Colors.grey[400],
+                  fontSize: 14.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       height: 320.h,
@@ -426,7 +451,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
                       color: _getCryptoColor().withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8.r),                    ),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -451,7 +477,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
               ],
             ),
           ),
-          
+
           // Timeframe selector
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -465,6 +491,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       setState(() {
                         _selectedTimeframe = timeframe;
                       });
+                      _loadCryptoDetails();
                     },
                     child: Container(
                       margin: EdgeInsets.only(right: 8.w),
@@ -472,14 +499,6 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       decoration: BoxDecoration(
                         color: isSelected ? _getCryptoColor().withValues(alpha: 0.2) : Colors.transparent,
                         borderRadius: BorderRadius.circular(6.r),
-                        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
                       ),
                       child: Text(
                         timeframe,
@@ -495,7 +514,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
               ),
             ),
           ),
-          
+
           // Chart area
           Expanded(
             child: Container(
@@ -505,7 +524,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: false,
-                    horizontalInterval: 1000,
+                    horizontalInterval: _calculateChartInterval(chartData),
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
                         color: Colors.white.withValues(alpha: 0.05),
@@ -516,12 +535,12 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   titlesData: FlTitlesData(show: false),
                   borderData: FlBorderData(show: false),
                   minX: 0,
-                  maxX: _mockPriceData.length.toDouble() - 1,
-                  minY: _mockPriceData.map((spot) => spot.y).reduce((a, b) => a < b ? a : b) * 0.98,
-                  maxY: _mockPriceData.map((spot) => spot.y).reduce((a, b) => a > b ? a : b) * 1.02,
+                  maxX: (chartData.length - 1).toDouble().clamp(1, double.infinity),
+                  minY: _getMinY(chartData),
+                  maxY: _getMaxY(chartData),
                   lineBarsData: [
                     LineChartBarData(
-                      spots: _mockPriceData,
+                      spots: chartData,
                       isCurved: true,
                       gradient: LinearGradient(
                         colors: [
@@ -551,7 +570,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                         return touchedBarSpots.map((barSpot) {
                           return LineTooltipItem(
-                            '${CurrencySymbols.currentSymbol}${barSpot.y.toStringAsFixed(0)}',
+                            '${CurrencySymbols.currentSymbol}${barSpot.y.toStringAsFixed(2)}',
                             GoogleFonts.inter(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -568,6 +587,41 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
         ],
       ),
     );
+  }
+
+  List<FlSpot> _generateChartData(List<PricePoint> priceHistory) {
+    if (priceHistory.isEmpty) {
+      // Return empty list - will show empty state
+      return [];
+    }
+
+    return priceHistory.asMap().entries.map((entry) {
+      final index = entry.key;
+      final point = entry.value;
+      return FlSpot(index.toDouble(), point.price);
+    }).toList();
+  }
+
+  double _calculateChartInterval(List<FlSpot> data) {
+    if (data.isEmpty) return 1000;
+    final prices = data.map((e) => e.y).toList();
+    final minPrice = prices.reduce((a, b) => a < b ? a : b);
+    final maxPrice = prices.reduce((a, b) => a > b ? a : b);
+    final range = maxPrice - minPrice;
+    if (range == 0) return 1000;
+    return range / 4;
+  }
+
+  double _getMinY(List<FlSpot> data) {
+    if (data.isEmpty) return 0;
+    final minPrice = data.map((e) => e.y).reduce((a, b) => a < b ? a : b);
+    return minPrice * 0.98;
+  }
+
+  double _getMaxY(List<FlSpot> data) {
+    if (data.isEmpty) return 100000;
+    final maxPrice = data.map((e) => e.y).reduce((a, b) => a > b ? a : b);
+    return maxPrice * 1.02;
   }
 
   Widget _buildActionButtons() {
@@ -706,26 +760,20 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     );
   }
 
-  Widget _buildPortfolioSection() {
+  Widget _buildKeyDataPoints() {
     return Container(
-      margin: EdgeInsets.all(16.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Your Portfolio',
+            'Key Data Points',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,
@@ -733,29 +781,212 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
             ),
           ),
           SizedBox(height: 16.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildPortfolioItem('Holdings', '0.5 ${widget.crypto.symbol.toUpperCase()}'),
-              ),
-              Expanded(
-                child: _buildPortfolioItem('Value', '\$${(widget.crypto.currentPrice * 0.5).toStringAsFixed(2)}'),
-              ),
-            ],
+          _buildDataPoint('24h High', widget.crypto.high24h > 0
+              ? '${CurrencySymbols.currentSymbol}${widget.crypto.high24h.toStringAsFixed(2)}'
+              : 'N/A'),
+          _buildDataPoint('24h Low', widget.crypto.low24h > 0
+              ? '${CurrencySymbols.currentSymbol}${widget.crypto.low24h.toStringAsFixed(2)}'
+              : 'N/A'),
+          _buildDataPoint('Market Cap Rank', '#${widget.crypto.marketCapRank}'),
+          if (widget.crypto.ath != null)
+            _buildDataPoint('All-Time High', '${CurrencySymbols.currentSymbol}${widget.crypto.ath!.toStringAsFixed(2)}'),
+          if (widget.crypto.atl != null)
+            _buildDataPoint('All-Time Low', '${CurrencySymbols.currentSymbol}${widget.crypto.atl!.toStringAsFixed(2)}'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataPoint(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 14.sp,
+            ),
           ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildPortfolioItem('Avg. Cost', '\$${(widget.crypto.currentPrice * 0.95).toStringAsFixed(2)}'),
-              ),
-              Expanded(
-                child: _buildPortfolioItem('P&L', '+\$${(widget.crypto.currentPrice * 0.025).toStringAsFixed(2)}', isPositive: true),
-              ),
-            ],
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPortfolioSection() {
+    return BlocBuilder<CryptoCubit, CryptoState>(
+      builder: (context, state) {
+        if (state is! CryptosLoaded) {
+          return const SizedBox.shrink();
+        }
+
+        final holdings = state.holdings;
+        final userHolding = holdings.cast<CryptoHolding?>().firstWhere(
+          (h) => h?.cryptoId == widget.crypto.id,
+          orElse: () => null,
+        );
+
+        if (userHolding == null) {
+          return Container(
+            margin: EdgeInsets.all(16.w),
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet,
+                      color: Colors.grey[600],
+                      size: 20.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Your Portfolio',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.grey[600],
+                        size: 32.sp,
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'No ${widget.crypto.symbol.toUpperCase()} holdings',
+                        style: GoogleFonts.inter(
+                          color: Colors.grey[400],
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Start trading to see your portfolio here',
+                        style: GoogleFonts.inter(
+                          color: Colors.grey[500],
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final pnlColor = userHolding.totalGainLoss >= 0 ? Colors.green : Colors.red;
+
+        return Container(
+          margin: EdgeInsets.all(16.w),
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet,
+                    color: _getCryptoColor(),
+                    size: 20.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'Your Portfolio',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildPortfolioItem('Holdings', '${userHolding.quantity.toStringAsFixed(6)} ${userHolding.cryptoSymbol.toUpperCase()}'),
+                  ),
+                  Expanded(
+                    child: _buildPortfolioItem('Value', '${CurrencySymbols.currentSymbol}${userHolding.totalValue.toStringAsFixed(2)}'),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildPortfolioItem('Avg. Cost', '${CurrencySymbols.currentSymbol}${userHolding.averagePrice.toStringAsFixed(2)}'),
+                  ),
+                  Expanded(
+                    child: _buildPortfolioItem(
+                      'P&L',
+                      '${CurrencySymbols.currentSymbol}${userHolding.totalGainLoss.abs().toStringAsFixed(2)}',
+                      isPositive: userHolding.totalGainLoss >= 0,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: pnlColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      userHolding.totalGainLoss >= 0 ? Icons.trending_up : Icons.trending_down,
+                      color: pnlColor,
+                      size: 16.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      '${userHolding.totalGainLossPercentage >= 0 ? '+' : ''}${userHolding.totalGainLossPercentage.toStringAsFixed(2)}%',
+                      style: GoogleFonts.inter(
+                        color: pnlColor,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -785,55 +1016,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     );
   }
 
-  Widget _buildAboutSection() {
-    return Container(
-      margin: EdgeInsets.all(16.w),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'About ${widget.crypto.name}',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'This is a detailed description of ${widget.crypto.name} and its key features, use cases, and market position.',
-            style: GoogleFonts.inter(
-              color: Colors.grey[300],
-              fontSize: 14.sp,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildKeyDataPoints() {
-    // Calculate mock data based on current price
-    final currentPrice = widget.crypto.currentPrice;
-    final volume = widget.crypto.totalVolume;
-    final previousClose = currentPrice * (1 + (math.Random().nextDouble() - 0.5) * 0.02);
-    final open = currentPrice * (1 + (math.Random().nextDouble() - 0.5) * 0.015);
-    final dayLow = currentPrice * 0.985;
-    final dayHigh = currentPrice * 1.015;
-
+  Widget _buildMarketStatsSection() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       padding: EdgeInsets.all(20.w),
@@ -860,13 +1043,17 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
             ),
           ),
           SizedBox(height: 20.h),
-          _buildDataPointRow('Volume', '${(volume / 1e9).toStringAsFixed(2)}B'),
+          _buildDataPointRow('Volume', '${_formatLargeNumber(widget.crypto.totalVolume)}'),
           SizedBox(height: 16.h),
-          _buildDataPointRow('Previous close', '${CurrencySymbols.currentSymbol}${previousClose.toStringAsFixed(2)} ${CurrencySymbols.currentCurrency}'),
-          SizedBox(height: 16.h),
-          _buildDataPointRow('Open', '${CurrencySymbols.currentSymbol}${open.toStringAsFixed(2)} ${CurrencySymbols.currentCurrency}'),
-          SizedBox(height: 16.h),
-          _buildDataPointRow('Day\'s range', '${CurrencySymbols.currentSymbol}${dayLow.toStringAsFixed(2)} — ${CurrencySymbols.currentSymbol}${dayHigh.toStringAsFixed(2)} ${CurrencySymbols.currentCurrency}'),
+          _buildDataPointRow('Day\'s Range', '${CurrencySymbols.currentSymbol}${widget.crypto.low24h.toStringAsFixed(2)} — ${CurrencySymbols.currentSymbol}${widget.crypto.high24h.toStringAsFixed(2)}'),
+          if (widget.crypto.ath != null) ...[
+            SizedBox(height: 16.h),
+            _buildDataPointRow('All-Time High', '${CurrencySymbols.currentSymbol}${widget.crypto.ath!.toStringAsFixed(2)}'),
+          ],
+          if (widget.crypto.atl != null) ...[
+            SizedBox(height: 16.h),
+            _buildDataPointRow('All-Time Low', '${CurrencySymbols.currentSymbol}${widget.crypto.atl!.toStringAsFixed(2)}'),
+          ],
         ],
       ),
     );
@@ -896,445 +1083,110 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     );
   }
 
-  Widget _buildTechnicalAnalysisGauge() {
+  String _formatLargeNumber(double number) {
+    if (number >= 1e12) {
+      return '${CurrencySymbols.currentSymbol}${(number / 1e12).toStringAsFixed(2)}T';
+    } else if (number >= 1e9) {
+      return '${CurrencySymbols.currentSymbol}${(number / 1e9).toStringAsFixed(2)}B';
+    } else if (number >= 1e6) {
+      return '${CurrencySymbols.currentSymbol}${(number / 1e6).toStringAsFixed(2)}M';
+    } else if (number >= 1e3) {
+      return '${CurrencySymbols.currentSymbol}${(number / 1e3).toStringAsFixed(2)}K';
+    } else {
+      return '${CurrencySymbols.currentSymbol}${number.toStringAsFixed(2)}';
+    }
+  }
+
+  Widget _buildPerformanceSection() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Technicals',
+            'Price Performance',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 30.h),
-          Center(
-            child: Column(
-              children: [
-                SizedBox(
-                  width: 200.w,
-                  height: 120.h,
-                  child: CustomPaint(
-                    painter: TechnicalGaugePainter(),
-                    size: Size(200.w, 120.h),
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                Text(
-                  'Buy',
-                  style: GoogleFonts.inter(
-                    color: Colors.blue,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 30.h),
-          GestureDetector(
-            onTap: () {
-              // Navigate to more technical analysis
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'More technicals',
-                  style: GoogleFonts.inter(
-                    color: Colors.blue,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.blue,
-                  size: 16.sp,
-                ),
-              ],
-            ),
-          ),
+          SizedBox(height: 20.h),
+          _buildPerformanceItem('24 Hours', widget.crypto.priceChangePercentage24h),
+          if (widget.crypto.priceChangePercentage7d != null)
+            _buildPerformanceItem('7 Days', widget.crypto.priceChangePercentage7d!),
+          if (widget.crypto.priceChangePercentage30d != null)
+            _buildPerformanceItem('30 Days', widget.crypto.priceChangePercentage30d!),
+          if (widget.crypto.priceChangePercentage1y != null)
+            _buildPerformanceItem('1 Year', widget.crypto.priceChangePercentage1y!),
         ],
       ),
     );
   }
 
-  Widget _buildMarketOrderBook() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Order Book',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      'Bids',
-                      style: GoogleFonts.inter(
-                        color: Colors.green,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    ...List.generate(5, (index) {
-                      final price = widget.crypto.currentPrice * (1 - (index + 1) * 0.001);
-                      final volume = (math.Random().nextDouble() * 10).toStringAsFixed(2);
-                      return _buildOrderBookRow(
-                        '${CurrencySymbols.currentSymbol}${price.toStringAsFixed(2)}',
-                        volume,
-                        Colors.green.withValues(alpha: 0.1),
-                        Colors.green,
-                      );
-                    }),
-                  ],
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      'Asks',
-                      style: GoogleFonts.inter(
-                        color: Colors.red,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    ...List.generate(5, (index) {
-                      final price = widget.crypto.currentPrice * (1 + (index + 1) * 0.001);
-                      final volume = (math.Random().nextDouble() * 10).toStringAsFixed(2);
-                      return _buildOrderBookRow(
-                        '${CurrencySymbols.currentSymbol}${price.toStringAsFixed(2)}',
-                        volume,
-                        Colors.red.withValues(alpha: 0.1),
-                        Colors.red,
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderBookRow(String price, String volume, Color bgColor, Color textColor) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 2.h),
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(4.r),
-      ),
+  Widget _buildStatRowItem(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            price,
+            label,
             style: GoogleFonts.inter(
-              color: textColor,
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w500,
+              color: Colors.grey[400],
+              fontSize: 14.sp,
             ),
           ),
           Text(
-            volume,
-            style: GoogleFonts.inter(
-              color: Colors.grey[300],
-              fontSize: 11.sp,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTechnicalAnalysisSection() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Technical Analysis',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildTechnicalIndicator('RSI (14)', '67.2', 'Neutral'),
-          _buildTechnicalIndicator('MACD', '0.45', 'Bullish'),
-          _buildTechnicalIndicator('Moving Average (20)', '\$${(widget.crypto.currentPrice * 0.98).toStringAsFixed(2)}', 'Above'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTechnicalIndicator(String name, String value, String signal) {
-    Color signalColor = signal == 'Bullish' || signal == 'Above' ? Colors.green : 
-                       signal == 'Bearish' || signal == 'Below' ? Colors.red : Colors.orange;
-    
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              name,
-              style: GoogleFonts.inter(
-                color: Colors.grey[300],
-                fontSize: 12.sp,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-            decoration: BoxDecoration(
-              color: signalColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(4.r),
-            ),
-            child: Text(
-              signal,
-              style: GoogleFonts.inter(
-                color: signalColor,
-                fontSize: 10.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIndicatorsSection() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Technical Indicators',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: _availableIndicators.map((indicator) {
-              final isSelected = _selectedIndicators.contains(indicator);
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    if (isSelected) {
-                      _selectedIndicators.remove(indicator);
-                    } else {
-                      _selectedIndicators.add(indicator);
-                    }
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: isSelected ? _getCryptoColor().withValues(alpha: 0.2) : Colors.transparent,
-                    borderRadius: BorderRadius.circular(6.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: Text(
-                    indicator,
-                    style: GoogleFonts.inter(
-                      color: isSelected ? _getCryptoColor() : Colors.grey[400],
-                      fontSize: 12.sp,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSentimentSection() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Market Sentiment',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSentimentItem('Fear & Greed', '72', 'Greed', Colors.green),
-              ),
-              Expanded(
-                child: _buildSentimentItem('Social Score', '8.4', 'Bullish', Colors.green),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSentimentItem(String label, String value, String sentiment, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            color: Colors.grey[400],
-            fontSize: 12.sp,
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        Text(
-          sentiment,
-          style: GoogleFonts.inter(
-            color: color,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNewsItem(int index) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Sample News Title ${index + 1}',
+            value,
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 8.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPerformanceItem(String timeframe, double changePercent) {
+    final isPositive = changePercent >= 0;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           Text(
-            'This is a sample news description for ${widget.crypto.name} related news item.',
+            timeframe,
             style: GoogleFonts.inter(
-              color: Colors.grey[300],
-              fontSize: 12.sp,
-              height: 1.4,
+              color: Colors.grey[400],
+              fontSize: 14.sp,
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
-            '2 hours ago',
-            style: GoogleFonts.inter(
-              color: Colors.grey[500],
-              fontSize: 10.sp,
-            ),
+          Row(
+            children: [
+              Icon(
+                isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+                color: isPositive ? Colors.green : Colors.red,
+                size: 16.sp,
+              ),
+              SizedBox(width: 4.w),
+              Text(
+                '${isPositive ? '+' : ''}${changePercent.toStringAsFixed(2)}%',
+                style: GoogleFonts.inter(
+                  color: isPositive ? Colors.green : Colors.red,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1360,7 +1212,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       case 'atom':
         return const Color(0xFF2E3148);
       default:
-        return const Color(0xFF6C5CE7);
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 
@@ -1390,102 +1242,4 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       transition: Transition.rightToLeft,
     );
   }
-}
-
-class TechnicalGaugePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height);
-    final radius = size.width / 2 - 10;
-    
-    // Paint for the gauge background
-    final backgroundPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 20
-      ..strokeCap = StrokeCap.round;
-    
-    // Draw gauge segments
-    const double startAngle = math.pi; // Start from left (180 degrees)
-    const double sweepAngle = math.pi; // Half circle (180 degrees)
-    const int segments = 5;
-    const double segmentAngle = sweepAngle / segments;
-    
-    // Colors for each segment: Strong Sell, Sell, Neutral, Buy, Strong Buy
-    final colors = [
-      const Color(0xFFE53E3E), // Strong Sell - Red
-      const Color(0xFFFF6B6B), // Sell - Light Red
-      const Color(0xFFFFBE0B), // Neutral - Yellow
-      const Color(0xFF38A169), // Buy - Green
-      const Color(0xFF2D7D32), // Strong Buy - Dark Green
-    ];
-    
-    // Draw each segment
-    for (int i = 0; i < segments; i++) {
-      backgroundPaint.color = colors[i];
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle + (i * segmentAngle),
-        segmentAngle,
-        false,
-        backgroundPaint,
-      );
-    }
-    
-    // Draw needle pointing to "Buy" position (4th segment)
-    final needlePaint = Paint()
-      ..color = Colors.black
-      ..style = PaintingStyle.fill
-      ..strokeWidth = 3;
-    
-    // Calculate needle angle (pointing to Buy position - 4th segment)
-    final needleAngle = startAngle + (3.2 * segmentAngle); // Slightly into the Buy segment
-    final needleLength = radius - 30;
-    
-    final needleEnd = Offset(
-      center.dx + needleLength * math.cos(needleAngle),
-      center.dy + needleLength * math.sin(needleAngle),
-    );
-    
-    // Draw needle line
-    canvas.drawLine(center, needleEnd, needlePaint);
-    
-    // Draw needle center circle
-    canvas.drawCircle(center, 8, needlePaint);
-    
-    // Draw labels
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
-    
-    final labels = ['Strong sell', 'Sell', 'Neutral', 'Buy', 'Strong buy'];
-    
-    for (int i = 0; i < labels.length; i++) {
-      final labelAngle = startAngle + (i * segmentAngle) + (segmentAngle / 2);
-      final labelRadius = radius + 25;
-      final labelPosition = Offset(
-        center.dx + labelRadius * math.cos(labelAngle),
-        center.dy + labelRadius * math.sin(labelAngle),
-      );
-      
-      textPainter.text = TextSpan(
-        text: labels[i],
-        style: TextStyle(
-          color: Colors.grey[400],
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-        ),
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          labelPosition.dx - textPainter.width / 2,
-          labelPosition.dy - textPainter.height / 2,
-        ),
-      );
-    }
-  }
-  
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 } 

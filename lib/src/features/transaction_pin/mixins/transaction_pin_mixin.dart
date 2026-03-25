@@ -139,9 +139,16 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
             // Execute the payment callback
             try {
               await onPinValidated(result.verificationToken!);
+
+              // Show success phase briefly, then dismiss
+              _pinModalKey.currentState?.setSuccess();
+              await Future.delayed(const Duration(milliseconds: 800));
+              if (mounted) {
+                try { Navigator.of(context).pop(); } catch (_) {}
+              }
               return true;
             } catch (e) {
-              _pinModalKey.currentState?.setFailed('Transfer failed: ${e.toString()}');
+              _pinModalKey.currentState?.setFailed(e.toString().replaceAll('Exception: ', ''));
               await Future.delayed(const Duration(seconds: 2));
               if (mounted) {
                 try { Navigator.of(context).pop(); } catch (_) {}
@@ -351,6 +358,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           maxAttempts: maxAttempts,
           currentAttempt: currentAttempt,
           errorMessage: errorMessage,
+          onForgotPin: () => Get.toNamed(AppRoutes.forgotPin),
         );
 
         if (pin == null) {

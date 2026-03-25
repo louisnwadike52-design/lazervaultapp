@@ -11,11 +11,34 @@ import '../../services/exchange_pdf_service.dart';
 class ExchangeDetailScreen extends StatelessWidget {
   const ExchangeDetailScreen({super.key});
 
-  CurrencyTransaction get _transaction => Get.arguments as CurrencyTransaction;
+  CurrencyTransaction? get _transaction => Get.arguments is CurrencyTransaction
+      ? Get.arguments as CurrencyTransaction
+      : null;
 
   @override
   Widget build(BuildContext context) {
     final tx = _transaction;
+    if (tx == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
+              const SizedBox(height: 16),
+              const Text('Transaction data unavailable', style: TextStyle(color: Colors.white)),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6)),
+                child: const Text('Go to Dashboard', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final isConversion = tx.type == TransactionType.exchange;
 
     return Scaffold(

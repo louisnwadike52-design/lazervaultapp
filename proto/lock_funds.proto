@@ -26,8 +26,6 @@ enum LockStatus {
 }
 
 // Lock fund message
-// The LockFund record acts as a "virtual vault" holding the locked funds.
-// Funds are debited from source_account_id on creation and credited back on unlock.
 message LockFund {
   string id = 1;
   uint64 user_id = 2;
@@ -52,12 +50,12 @@ message LockFund {
   // Computed fields
   int32 days_remaining = 20;
   double progress_percent = 21;
-  double total_value = 22; // amount + accrued_interest
+  double total_value = 22;
   bool can_unlock_early = 23;
 
-  // Account tracking for fund flow
-  string source_account_id = 24;      // Account funds were debited from
-  string destination_account_id = 25; // Account to credit on unlock (defaults to source if empty)
+  // Account tracking
+  string source_account_id = 24;
+  string destination_account_id = 25;
 }
 
 // Lock transaction message
@@ -65,7 +63,7 @@ message LockTransaction {
   string id = 1;
   string lock_fund_id = 2;
   uint64 user_id = 3;
-  string transaction_type = 4; // LOCK, UNLOCK, INTEREST_ACCRUAL
+  string transaction_type = 4;
   double amount = 5;
   string currency = 6;
   string payment_method = 7;
@@ -74,7 +72,46 @@ message LockTransaction {
   string description = 10;
 }
 
-// Create lock fund request
+// === PiggyVault Config (backend-configurable rates) ===
+message PiggyVaultConfig {
+  string id = 1;
+  string lock_type = 2;
+  string currency = 3;
+  string display_name = 4;
+  double base_interest_rate = 5;
+  double max_interest_rate = 6;
+  double early_withdrawal_penalty = 7;
+  int32 min_duration_days = 8;
+  int32 max_duration_days = 9;
+  double min_amount = 10;
+  double max_amount = 11;
+  bool allows_early_withdrawal = 12;
+  bool supports_auto_renew = 13;
+  bool supports_top_up = 14;
+  bool supports_auto_save = 15;
+  bool supports_upfront_interest = 16;
+  string duration_bonus_tiers = 17;
+  bool is_active = 18;
+  string description = 19;
+}
+
+// === Lock Fund AutoSave ===
+message LockFundAutoSave {
+  string id = 1;
+  string lock_fund_id = 2;
+  string source_account_id = 3;
+  double amount = 4;
+  string frequency = 5;
+  string status = 6;
+  string next_run_at = 7;
+  string last_run_at = 8;
+  double total_saved = 9;
+  int32 run_count = 10;
+}
+
+// === CRUD Messages ===
+
+// Create lock fund
 message CreateLockFundRequest {
   LockType lock_type = 1;
   double amount = 2;
@@ -84,11 +121,10 @@ message CreateLockFundRequest {
   string goal_name = 6;
   string goal_description = 7;
   string payment_method = 8;
-  string source_account_id = 9;  // The account ID to debit funds from
-  string transaction_pin = 10;   // Transaction PIN for authorization
+  string source_account_id = 9;
+  string transaction_pin = 10;
 }
 
-// Create lock fund response
 message CreateLockFundResponse {
   bool success = 1;
   string message = 2;
@@ -96,46 +132,41 @@ message CreateLockFundResponse {
   string payment_url = 4;
 }
 
-// Get lock funds request
+// Get lock funds list
 message GetLockFundsRequest {
-  LockStatus status = 1; // Optional filter
+  LockStatus status = 1;
   int32 page = 2;
   int32 per_page = 3;
 }
 
-// Get lock funds response
 message GetLockFundsResponse {
   repeated LockFund lock_funds = 1;
   int32 total_count = 2;
   int32 page = 3;
   int32 total_pages = 4;
-
-  // Summary statistics
   double total_locked_amount = 5;
   double total_accrued_interest = 6;
   int32 active_locks_count = 7;
 }
 
-// Get lock fund by ID request
+// Get single lock fund
 message GetLockFundRequest {
   string lock_fund_id = 1;
 }
 
-// Get lock fund by ID response
 message GetLockFundResponse {
   bool success = 1;
   LockFund lock_fund = 2;
 }
 
-// Unlock fund request
+// Unlock fund
 message UnlockFundRequest {
   string lock_fund_id = 1;
   bool force_early_unlock = 2;
-  string transaction_pin = 3;          // Required for authorization
-  string destination_account_id = 4;   // Optional: override where funds go (defaults to source_account_id)
+  string transaction_pin = 3;
+  string destination_account_id = 4;
 }
 
-// Unlock fund response
 message UnlockFundResponse {
   bool success = 1;
   string message = 2;
@@ -143,17 +174,31 @@ message UnlockFundResponse {
   double penalty_amount = 4;
   double interest_earned = 5;
   LockFund updated_lock_fund = 6;
-  string credited_account_id = 7;      // The account where funds were credited
+  string credited_account_id = 7;
 }
 
-// Get lock transactions request
+// Top up lock fund
+message TopUpLockFundRequest {
+  string lock_fund_id = 1;
+  double amount = 2;
+  string transaction_pin = 3;
+  string source_account_id = 4;
+}
+
+message TopUpLockFundResponse {
+  bool success = 1;
+  string message = 2;
+  LockFund updated_lock_fund = 3;
+  double new_balance = 4;
+}
+
+// Get lock transactions
 message GetLockTransactionsRequest {
-  string lock_fund_id = 1; // Optional filter
+  string lock_fund_id = 1;
   int32 page = 2;
   int32 per_page = 3;
 }
 
-// Get lock transactions response
 message GetLockTransactionsResponse {
   repeated LockTransaction transactions = 1;
   int32 total_count = 2;
@@ -161,50 +206,100 @@ message GetLockTransactionsResponse {
   int32 total_pages = 4;
 }
 
-// Calculate interest request
+// Calculate interest
 message CalculateInterestRequest {
   LockType lock_type = 1;
   double amount = 2;
   int32 lock_duration_days = 3;
 }
 
-// Calculate interest response
 message CalculateInterestResponse {
   double interest_rate = 1;
   double estimated_interest = 2;
   double total_return = 3;
-  double apy = 4; // Annual Percentage Yield
+  double apy = 4;
 }
 
-// Renew lock fund request
+// Renew lock fund
 message RenewLockFundRequest {
   string lock_fund_id = 1;
   int32 new_duration_days = 2;
 }
 
-// Renew lock fund response
 message RenewLockFundResponse {
   bool success = 1;
   string message = 2;
   LockFund renewed_lock_fund = 3;
 }
 
-// Cancel lock fund request
+// Cancel lock fund
 message CancelLockFundRequest {
   string lock_fund_id = 1;
   string reason = 2;
 }
 
-// Cancel lock fund response
 message CancelLockFundResponse {
   bool success = 1;
   string message = 2;
   double refund_amount = 3;
 }
 
-// Lock funds service
+// PiggyVault configs
+message GetPiggyVaultConfigsRequest {
+  string currency = 1;
+}
+
+message GetPiggyVaultConfigsResponse {
+  repeated PiggyVaultConfig configs = 1;
+}
+
+// Lock fund auto-save
+message CreateLockFundAutoSaveRequest {
+  string lock_fund_id = 1;
+  string source_account_id = 2;
+  double amount = 3;
+  string frequency = 4;
+}
+
+message CreateLockFundAutoSaveResponse {
+  bool success = 1;
+  string message = 2;
+  LockFundAutoSave autosave = 3;
+}
+
+message GetLockFundAutoSaveRequest {
+  string lock_fund_id = 1;
+}
+
+message GetLockFundAutoSaveResponse {
+  LockFundAutoSave autosave = 1;
+}
+
+message UpdateLockFundAutoSaveRequest {
+  string autosave_id = 1;
+  double amount = 2;
+  string frequency = 3;
+  string status = 4;
+}
+
+message UpdateLockFundAutoSaveResponse {
+  bool success = 1;
+  string message = 2;
+  LockFundAutoSave autosave = 3;
+}
+
+message DeleteLockFundAutoSaveRequest {
+  string autosave_id = 1;
+}
+
+message DeleteLockFundAutoSaveResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Lock funds service (PiggyVault)
 service LockFundsService {
-  // Create a new lock fund
+  // Create a new PiggyVault lock
   rpc CreateLockFund(CreateLockFundRequest) returns (CreateLockFundResponse) {
     option (google.api.http) = {
       post: "/v1/lock-funds"
@@ -212,24 +307,32 @@ service LockFundsService {
     };
   }
 
-  // Get all lock funds for the user
+  // Get all PiggyVault locks for the user
   rpc GetLockFunds(GetLockFundsRequest) returns (GetLockFundsResponse) {
     option (google.api.http) = {
       get: "/v1/lock-funds"
     };
   }
 
-  // Get lock fund by ID
+  // Get PiggyVault lock by ID
   rpc GetLockFund(GetLockFundRequest) returns (GetLockFundResponse) {
     option (google.api.http) = {
       get: "/v1/lock-funds/{lock_fund_id}"
     };
   }
 
-  // Unlock a fund
+  // Unlock/withdraw funds
   rpc UnlockFund(UnlockFundRequest) returns (UnlockFundResponse) {
     option (google.api.http) = {
       post: "/v1/lock-funds/{lock_fund_id}/unlock"
+      body: "*"
+    };
+  }
+
+  // Top up an existing PiggyVault lock
+  rpc TopUpLockFund(TopUpLockFundRequest) returns (TopUpLockFundResponse) {
+    option (google.api.http) = {
+      post: "/v1/lock-funds/{lock_fund_id}/topup"
       body: "*"
     };
   }
@@ -249,7 +352,7 @@ service LockFundsService {
     };
   }
 
-  // Renew a matured lock fund
+  // Renew a matured lock
   rpc RenewLockFund(RenewLockFundRequest) returns (RenewLockFundResponse) {
     option (google.api.http) = {
       post: "/v1/lock-funds/{lock_fund_id}/renew"
@@ -257,11 +360,45 @@ service LockFundsService {
     };
   }
 
-  // Cancel a lock fund
+  // Cancel a lock
   rpc CancelLockFund(CancelLockFundRequest) returns (CancelLockFundResponse) {
     option (google.api.http) = {
       post: "/v1/lock-funds/{lock_fund_id}/cancel"
       body: "*"
+    };
+  }
+
+  // Get all PiggyVault product configs (backend-configurable rates)
+  rpc GetPiggyVaultConfigs(GetPiggyVaultConfigsRequest) returns (GetPiggyVaultConfigsResponse) {
+    option (google.api.http) = {
+      get: "/v1/piggyvault/configs"
+    };
+  }
+
+  // Auto-save management
+  rpc CreateLockFundAutoSave(CreateLockFundAutoSaveRequest) returns (CreateLockFundAutoSaveResponse) {
+    option (google.api.http) = {
+      post: "/v1/lock-funds/{lock_fund_id}/autosave"
+      body: "*"
+    };
+  }
+
+  rpc GetLockFundAutoSave(GetLockFundAutoSaveRequest) returns (GetLockFundAutoSaveResponse) {
+    option (google.api.http) = {
+      get: "/v1/lock-funds/{lock_fund_id}/autosave"
+    };
+  }
+
+  rpc UpdateLockFundAutoSave(UpdateLockFundAutoSaveRequest) returns (UpdateLockFundAutoSaveResponse) {
+    option (google.api.http) = {
+      put: "/v1/lock-funds/autosave/{autosave_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteLockFundAutoSave(DeleteLockFundAutoSaveRequest) returns (DeleteLockFundAutoSaveResponse) {
+    option (google.api.http) = {
+      delete: "/v1/lock-funds/autosave/{autosave_id}"
     };
   }
 }

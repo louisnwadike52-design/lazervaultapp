@@ -52,7 +52,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       title: 'Confirming Details',
       subtitle: 'Validating payment and account details',
       icon: Icons.verified_user,
-      activeColor: Color(0xFF8B5CF6),
+      activeColor: Color.fromARGB(255, 78, 3, 208),
     ),
     _ProcessingStep(
       title: 'Processing Payment',

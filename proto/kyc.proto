@@ -199,6 +199,112 @@ message GetUserDocumentsResponse {
   repeated VerificationDocument documents = 2;
 }
 
+// === NEW: Async verification session (provider-hosted SDK/WebView) ===
+
+// Create verification session request (replaces direct VerifyID for async providers)
+message CreateVerificationSessionRequest {
+  string user_id = 1;
+  KYCTier target_tier = 2;
+  string country_code = 3;
+  IDType id_type = 4;
+  string id_number = 5;
+  string first_name = 6;
+  string last_name = 7;
+  string date_of_birth = 8;
+  string phone_number = 9;
+}
+
+message CreateVerificationSessionResponse {
+  bool success = 1;
+  string verification_id = 2;
+  string session_url = 3;       // WebView URL (Smile ID, Persona)
+  string session_token = 4;     // SDK token (Onfido, Mono)
+  string provider = 5;          // mono, smile_id, onfido, persona
+  KYCStatus status = 6;
+  string error_message = 7;
+}
+
+// Confirm after SDK/WebView completion
+message ConfirmVerificationRequest {
+  string verification_id = 1;
+  string provider = 2;
+  string provider_auth_code = 3;  // Mono auth code
+  map<string, string> metadata = 4;
+}
+
+message ConfirmVerificationResponse {
+  bool success = 1;
+  KYCStatus status = 2;
+  KYCTier current_tier = 3;
+  string message = 4;
+}
+
+// GCS presigned URL for document upload (Tier 3)
+message GetDocumentUploadURLRequest {
+  string document_type = 1;   // gov_id_front, gov_id_back, selfie, proof_of_address
+  string content_type = 2;    // image/jpeg, image/png, application/pdf
+}
+
+message GetDocumentUploadURLResponse {
+  bool success = 1;
+  string upload_url = 2;
+  string storage_key = 3;
+  int64 expires_at = 4;
+}
+
+// Submit uploaded documents for Tier 3 review
+message SubmitDocumentsForReviewRequest {
+  string user_id = 1;
+  repeated DocumentSubmission documents = 2;
+}
+
+message DocumentSubmission {
+  string storage_key = 1;
+  string document_type = 2;
+  string content_type = 3;
+}
+
+message SubmitDocumentsForReviewResponse {
+  bool success = 1;
+  string message = 2;
+  KYCStatus status = 3;
+}
+
+// === Admin review messages ===
+
+message GetPendingReviewsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetPendingReviewsResponse {
+  bool success = 1;
+  repeated PendingReviewItem items = 2;
+  int32 total = 3;
+}
+
+message PendingReviewItem {
+  string user_id = 1;
+  string user_name = 2;
+  string country_code = 3;
+  KYCTier current_tier = 4;
+  KYCTier target_tier = 5;
+  repeated VerificationDocument documents = 6;
+  google.protobuf.Timestamp submitted_at = 7;
+}
+
+message ReviewDocumentRequest {
+  string document_id = 1;
+  bool approved = 2;
+  string rejection_reason = 3;
+  string admin_notes = 4;
+}
+
+message ReviewDocumentResponse {
+  bool success = 1;
+  string message = 2;
+}
+
 // KYC Service
 service KYCService {
   // Get current KYC status
@@ -250,6 +356,53 @@ service KYCService {
   rpc SkipKYCUpgrade(SkipKYCRequest) returns (SkipKYCResponse) {
     option (google.api.http) = {
       post: "/api/v1/kyc/skip"
+      body: "*"
+    };
+  }
+
+  // Create async verification session (provider-hosted SDK/WebView)
+  rpc CreateVerificationSession(CreateVerificationSessionRequest) returns (CreateVerificationSessionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/verify"
+      body: "*"
+    };
+  }
+
+  // Confirm verification after SDK/WebView completion
+  rpc ConfirmVerification(ConfirmVerificationRequest) returns (ConfirmVerificationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/confirm"
+      body: "*"
+    };
+  }
+
+  // Get presigned GCS upload URL for documents (Tier 3)
+  rpc GetDocumentUploadURL(GetDocumentUploadURLRequest) returns (GetDocumentUploadURLResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/upload-url"
+      body: "*"
+    };
+  }
+
+  // Submit uploaded documents for Tier 3 admin review
+  rpc SubmitDocumentsForReview(SubmitDocumentsForReviewRequest) returns (SubmitDocumentsForReviewResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/submit-documents"
+      body: "*"
+    };
+  }
+
+  // Admin: Get pending reviews
+  rpc GetPendingReviews(GetPendingReviewsRequest) returns (GetPendingReviewsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/kyc/pending"
+    };
+  }
+
+  // Admin: Review a document
+  rpc ReviewDocument(ReviewDocumentRequest) returns (ReviewDocumentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/kyc/review"
       body: "*"
     };
   }

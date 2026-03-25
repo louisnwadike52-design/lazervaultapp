@@ -61,8 +61,10 @@ class Recipient {
       state: json['state'],
       postalCode: json['postalCode'],
       isFavorite: json['isFavorite'] ?? false,
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      lastUsed: json['lastUsed'] != null ? DateTime.parse(json['lastUsed']) : null,
+      createdAt:
+          DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      lastUsed:
+          json['lastUsed'] != null ? DateTime.parse(json['lastUsed']) : null,
       avatarUrl: json['avatarUrl'],
       type: RecipientType.values.firstWhere(
         (e) => e.toString() == 'RecipientType.${json['type']}',
@@ -143,11 +145,11 @@ class Recipient {
   }
 
   String get initials {
-    final names = name.split(' ');
-    if (names.length >= 2) {
-      return '${names[0][0]}${names[1][0]}'.toUpperCase();
-    } else if (names.isNotEmpty) {
-      return names[0][0].toUpperCase();
+    final parts = name.split(' ').where((s) => s.isNotEmpty).toList();
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.isNotEmpty) {
+      return parts[0][0].toUpperCase();
     }
     return 'R';
   }
@@ -172,4 +174,4 @@ enum RecipientType {
   contact,
   saved,
   frequent,
-} 
+}

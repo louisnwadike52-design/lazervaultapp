@@ -500,7 +500,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF6C5CE7),
+          color: const Color.fromARGB(255, 78, 3, 208),
           borderRadius: BorderRadius.circular(10.r),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -566,7 +566,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF6C5CE7),
+          color: Color.fromARGB(255, 78, 3, 208),
         ),
       );
     }
@@ -588,9 +588,9 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                   width: 20.w,
                   height: 20.w,
                   decoration: BoxDecoration(
-                    color: _selectAll ? const Color(0xFF6C5CE7) : Colors.transparent,
+                    color: _selectAll ? const Color.fromARGB(255, 78, 3, 208) : Colors.transparent,
                     border: Border.all(
-                      color: _selectAll ? const Color(0xFF6C5CE7) : Colors.grey[600]!,
+                      color: _selectAll ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[600]!,
                     ),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
@@ -646,12 +646,12 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF6C5CE7).withValues(alpha: 0.1)
+              ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF6C5CE7).withValues(alpha: 0.3)
+                ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)
                 : Colors.transparent,
           ),
         ),
@@ -661,9 +661,9 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
               width: 20.w,
               height: 20.w,
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF6C5CE7) : Colors.transparent,
+                color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF6C5CE7) : Colors.grey[600]!,
+                  color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[600]!,
                 ),
                 borderRadius: BorderRadius.circular(4.r),
               ),
@@ -674,7 +674,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
             SizedBox(width: 12.w),
             CircleAvatar(
               radius: 18.r,
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               backgroundImage: member.profileImage != null
                   ? NetworkImage(member.profileImage!)
                   : null,
@@ -715,7 +715,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                       '@${member.userUsername}',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: const Color(0xFF6C5CE7),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                       ),
                     )
                   else
@@ -873,7 +873,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(
@@ -959,7 +959,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
         child: Center(
           child: Column(
             children: [
-              const CircularProgressIndicator(color: Color(0xFF6C5CE7)),
+              const CircularProgressIndicator(color: Color.fromARGB(255, 78, 3, 208)),
               SizedBox(height: 12.h),
               Text(
                 'Searching...',
@@ -1063,7 +1063,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
           children: [
             CircleAvatar(
               radius: 18.r,
-              backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               backgroundImage: user.profilePicture.isNotEmpty
                   ? NetworkImage(user.profilePicture)
                   : null,
@@ -1073,7 +1073,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF6C5CE7),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                       ),
                     )
                   : null,
@@ -1118,7 +1118,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                     user.searchMatchInfo,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: const Color(0xFF6C5CE7),
+                      color: const Color.fromARGB(255, 78, 3, 208),
                     ),
                   ),
                   if (isAlreadyInContribution) ...[
@@ -1149,7 +1149,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
             if (!isAlreadyInContribution && !isAlreadySelected)
               Icon(
                 Icons.add_circle_outline,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 size: 22.sp,
               )
             else if (isAlreadySelected)
@@ -1229,7 +1229,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
                     color: _fullNameController.text.trim().isNotEmpty
-                        ? const Color(0xFF6C5CE7)
+                        ? const Color.fromARGB(255, 78, 3, 208)
                         : Colors.grey[800],
                     borderRadius: BorderRadius.circular(8.r),
                   ),
@@ -1299,7 +1299,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
             child: ElevatedButton(
               onPressed: _isAdding || !canAdd ? null : _addSelectedMembers,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
@@ -1398,7 +1398,7 @@ class _MemberDetailsSheet extends StatelessWidget {
           // Avatar
           CircleAvatar(
             radius: 40.r,
-            backgroundColor: const Color(0xFF6C5CE7),
+            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
             backgroundImage: member.profileImage != null
                 ? NetworkImage(member.profileImage!)
                 : null,
@@ -1440,7 +1440,7 @@ class _MemberDetailsSheet extends StatelessWidget {
               '@${member.userUsername}',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
               ),
             ),
           SizedBox(height: 8.h),
@@ -1486,7 +1486,7 @@ class _MemberDetailsSheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(

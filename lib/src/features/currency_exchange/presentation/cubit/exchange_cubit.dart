@@ -204,31 +204,30 @@ class ExchangeCubit extends Cubit<ExchangeState> {
   Future<void> convertCurrency({
     required String verificationToken,
   }) async {
-    print('[ExchangeCubit] convertCurrency called: $_fromCurrency -> $_toCurrency, amount=$_amount');
-
-    // Fetch fresh rate immediately before executing to avoid stale rates
+    // Always fetch a fresh rate before finalizing to ensure the user gets
+    // the most accurate conversion. This prevents stale-rate surprises
+    // on transactions that took a while to confirm (PIN entry, etc.).
     final freshRateResult = await _repository.getExchangeRate(
       fromCurrency: _fromCurrency,
       toCurrency: _toCurrency,
       amount: _amount > 0 ? _amount : null,
+      forceRefresh: true,
     );
-    if (isClosed) { print('[ExchangeCubit] CLOSED after rate fetch'); return; }
+    if (isClosed) return;
 
     final freshRate = freshRateResult.fold(
-      (failure) { print('[ExchangeCubit] Fresh rate FAILED: ${failure.message}'); return null; },
-      (rate) { print('[ExchangeCubit] Fresh rate OK: rateId=${rate.rateId}, rate=${rate.rate}'); return rate; },
+      (failure) => null,
+      (rate) => rate,
     );
 
     if (freshRate != null) {
       _currentRate = freshRate;
     } else if (_currentRate == null || _currentRate!.isExpired) {
-      print('[ExchangeCubit] No rate available, emitting error');
       emit(const ExchangeError('No exchange rate available. Please refresh.'));
       return;
     }
 
     final idempotencyKey = const Uuid().v4();
-    print('[ExchangeCubit] Calling convertCurrency API: rateId=${_currentRate!.rateId}, idempotencyKey=$idempotencyKey');
 
     final result = await _repository.convertCurrency(
       fromCurrency: _fromCurrency,
@@ -238,15 +237,11 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       idempotencyKey: idempotencyKey,
       rateId: _currentRate!.rateId,
     );
-    if (isClosed) { print('[ExchangeCubit] CLOSED after convert call'); return; }
+    if (isClosed) return;
 
     result.fold(
-      (failure) {
-        print('[ExchangeCubit] Convert FAILED: ${failure.message}');
-        emit(ExchangeError(failure.message));
-      },
+      (failure) => emit(ExchangeError(failure.message)),
       (transaction) {
-        print('[ExchangeCubit] Convert SUCCESS: id=${transaction.id}, status=${transaction.status}, isCompleted=${transaction.isCompleted}');
         if (transaction.isCompleted) {
           emit(ExchangeSuccess(transaction: transaction));
         } else {
@@ -270,12 +265,16 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     required String recipientCountry,
     String? recipientEmail,
     String? purposeOfPayment,
+    String? recipientRoutingNumber,
+    String? recipientAddress,
   }) async {
-    // Fetch fresh rate immediately before executing to avoid stale rates
+    // Always fetch a fresh rate before finalizing to protect the user
+    // from stale rates that drifted during recipient entry / PIN flow.
     final freshRateResult = await _repository.getExchangeRate(
       fromCurrency: _fromCurrency,
       toCurrency: _toCurrency,
       amount: _amount > 0 ? _amount : null,
+      forceRefresh: true,
     );
     if (isClosed) return;
 
@@ -309,6 +308,8 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       recipientSwiftCode: recipientSwiftCode,
       recipientCountry: recipientCountry,
       recipientEmail: recipientEmail,
+      recipientRoutingNumber: recipientRoutingNumber,
+      recipientAddress: recipientAddress,
     );
     if (isClosed) return;
 
@@ -333,7 +334,10 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     _pollTimer?.cancel();
 
     _pollTimer = Timer.periodic(_pollInterval, (timer) async {
-      if (isClosed) { timer.cancel(); return; }
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
       _pollCount++;
 
       if (_pollCount > _maxPollAttempts) {
@@ -363,7 +367,10 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       final result = await _repository.getTransactionStatus(
         transactionId: transactionId,
       );
-      if (isClosed) { timer.cancel(); return; }
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
 
       result.fold(
         (failure) {
@@ -379,8 +386,13 @@ class ExchangeCubit extends Cubit<ExchangeState> {
               fees: 0,
               totalCost: 0,
               recipient: Recipient(
-                id: '', name: '', email: '', accountNumber: '',
-                bankName: '', countryCode: '', currency: '',
+                id: '',
+                name: '',
+                email: '',
+                accountNumber: '',
+                bankName: '',
+                countryCode: '',
+                currency: '',
                 createdAt: DateTime.now(),
               ),
               status: TransactionStatus.processing,
@@ -404,11 +416,8 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     });
   }
 
-  /// Load exchange history with optional filter.
-  Future<void> loadHistory({
-    ExchangeHistoryFilter filter = ExchangeHistoryFilter.all,
-    int limit = 20,
-  }) async {
+  /// Load exchange history. Fetches all transactions; UI tabs handle type filtering.
+  Future<void> loadHistory({int limit = 50}) async {
     emit(ExchangeLoading());
 
     final result = await _repository.getRecentExchanges(limit: limit);
@@ -417,11 +426,9 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     result.fold(
       (failure) => emit(ExchangeError(failure.message)),
       (transactions) {
-        final filtered = _applyFilter(transactions, filter);
         emit(ExchangeHistoryLoaded(
-          transactions: filtered,
+          transactions: transactions,
           hasMore: transactions.length >= limit,
-          filter: filter,
         ));
       },
     );
@@ -454,26 +461,6 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       amount: _amount,
       convertedAmount: _currentRate?.calculateToAmount(_amount) ?? 0,
     ));
-  }
-
-  List<CurrencyTransaction> _applyFilter(
-    List<CurrencyTransaction> transactions,
-    ExchangeHistoryFilter filter,
-  ) {
-    switch (filter) {
-      case ExchangeHistoryFilter.all:
-        return transactions;
-      case ExchangeHistoryFilter.conversions:
-        return transactions.where((t) => t.type == TransactionType.exchange).toList();
-      case ExchangeHistoryFilter.international:
-        return transactions.where((t) => t.type == TransactionType.send).toList();
-      case ExchangeHistoryFilter.pending:
-        return transactions.where((t) => t.isPending || t.isProcessing).toList();
-      case ExchangeHistoryFilter.completed:
-        return transactions.where((t) => t.isCompleted).toList();
-      case ExchangeHistoryFilter.failed:
-        return transactions.where((t) => t.isFailed).toList();
-    }
   }
 
   @override

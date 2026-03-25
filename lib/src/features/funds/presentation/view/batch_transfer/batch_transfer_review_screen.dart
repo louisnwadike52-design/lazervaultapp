@@ -182,7 +182,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     // Client-side balance check
     final accountManager = GetIt.I<AccountManager>();
     final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
-    final availableBalance = selectedAccount?.balance ?? accountManager.activeAccountDetails?.balance ?? 0.0;
+    final availableBalance = selectedAccount?.availableBalance ?? accountManager.activeAccountDetails?.balance ?? 0.0;
 
     if (totalAmount > availableBalance) {
       setState(() => _isProcessing = false);
@@ -397,7 +397,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   }
 
   Widget _buildSourceAccountCard(AccountSummaryEntity account, double total) {
-    final hasInsufficientBalance = total > account.balance;
+    final hasInsufficientBalance = total > account.availableBalance;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -470,7 +470,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    '$_currencySymbol${account.balance.toStringAsFixed(2)}',
+                    '$_currencySymbol${account.availableBalance.toStringAsFixed(2)}',
                     style: GoogleFonts.inter(
                       color: hasInsufficientBalance ? btRed : btGreen,
                       fontSize: 16.sp,

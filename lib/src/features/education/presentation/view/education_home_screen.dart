@@ -195,7 +195,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

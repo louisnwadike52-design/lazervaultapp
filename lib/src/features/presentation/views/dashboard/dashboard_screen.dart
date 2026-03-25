@@ -8,6 +8,11 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:lazervault/src/features/dashboard/managers/voice_setup_manager.dart';
 import 'package:lazervault/src/features/dashboard/widgets/voice_setup_prompt_modal.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
+import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   static final List<Screen> tabItems = [
@@ -56,11 +61,15 @@ class _DashboardScreenState extends State<DashboardScreen>
     // Check and show voice setup prompt after dashboard loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowVoiceSetup();
+      _checkAutoOpenVoiceSheet();
     });
   }
 
   /// Check if voice setup is needed and show modal prompt
   Future<void> _checkAndShowVoiceSetup() async {
+    // Skip setup prompt if we're auto-opening the voice sheet (enrollment just completed)
+    if (_autoOpenVoiceSheetRequested) return;
+
     final setupManager = VoiceSetupManager(
       voiceManager: VoiceActivationManager(),
     );
@@ -83,6 +92,39 @@ class _DashboardScreenState extends State<DashboardScreen>
         // Do nothing
         break;
     }
+  }
+
+  bool _autoOpenVoiceSheetRequested = false;
+
+  /// Auto-open voice command sheet if navigated with openVoiceSheet argument
+  /// (e.g., after completing voice enrollment via "Start Conversation" button)
+  void _checkAutoOpenVoiceSheet() {
+    final args = Get.arguments;
+    if (args is Map && args['openVoiceSheet'] == true) {
+      _autoOpenVoiceSheetRequested = true;
+      // Delay to let dashboard fully render and avoid collision with voice setup modal
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (!mounted || !_autoOpenVoiceSheetRequested) return;
+        _autoOpenVoiceSheetRequested = false;
+        _openVoiceCommandSheet();
+      });
+    }
+  }
+
+  /// Open the voice command bottom sheet directly (enrollment already verified)
+  void _openVoiceCommandSheet() {
+    Get.bottomSheet(
+      FractionallySizedBox(
+        heightFactor: 0.85,
+        child: VoiceCommandSheet(skipActivationCheck: true),
+      ),
+      isScrollControlled: true,
+      enableDrag: false,
+      isDismissible: false,
+      backgroundColor: Colors.transparent,
+      enterBottomSheetDuration: const Duration(milliseconds: 300),
+      exitBottomSheetDuration: const Duration(milliseconds: 200),
+    );
   }
 
   /// Show voice setup modal bottom sheet
@@ -148,7 +190,16 @@ class _DashboardScreenState extends State<DashboardScreen>
                         physics: const NeverScrollableScrollPhysics(),
               controller: _tabController,
               children: DashboardScreen.tabItems
-                  .map((screen) => screen.widget)
+                  .asMap()
+                  .entries
+                  .map((entry) {
+                    // Pass tab-switch callback to the lifestyle tab so SprayMe
+                    // bottom nav can jump back to any dashboard tab.
+                    if (entry.key == 4) {
+                      return _buildLifestyleTab();
+                    }
+                    return entry.value.widget;
+                  })
                   .toList(),
             ),
             if (_currentIndex >= 2)
@@ -256,10 +307,19 @@ class _DashboardScreenState extends State<DashboardScreen>
       case 3:
         return Icons.swap_horiz_rounded;
       case 4:
+        return Icons.event_note_rounded;
+      case 5:
         return Icons.party_mode;
       default:
         return Icons.circle;
     }
+  }
+
+  Widget _buildLifestyleTab() {
+    return BlocProvider(
+      create: (_) => serviceLocator<LifestyleCubit>()..loadCategories(),
+      child: NewLifestyleScreen(onSwitchTab: _handleOnTabChange),
+    );
   }
 
   // Add this helper method to get tab labels

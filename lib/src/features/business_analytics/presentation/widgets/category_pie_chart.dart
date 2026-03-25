@@ -13,7 +13,7 @@ class CategoryPieChart extends StatelessWidget {
     Color(0xFF10B981),
     Color(0xFFFB923C),
     Color(0xFFEF4444),
-    Color(0xFF8B5CF6),
+    Color.fromARGB(255, 78, 3, 208),
     Color(0xFFEC4899),
     Color(0xFF06B6D4),
     Color(0xFFF59E0B),

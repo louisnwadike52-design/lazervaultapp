@@ -91,7 +91,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     SizedBox(height: 200.h),
                     const Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C5CE7)),
+                        valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
                       ),
                     ),
                   ] else if (state is CryptoError) ...[
@@ -106,7 +106,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showVoiceInputBottomSheet,
-        backgroundColor: const Color(0xFF6C5CE7),
+        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
         child: Icon(
           Icons.mic,
           color: Colors.white,
@@ -169,7 +169,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.mic, color: const Color(0xFF6C5CE7), size: 20.sp),
+                  icon: Icon(Icons.mic, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
                   onPressed: _showVoiceInputBottomSheet,
                 ),
               ),
@@ -188,33 +188,17 @@ class _CryptoScreenState extends State<CryptoScreen>
                   color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Stack(
-                  children: [
-          IconButton(
-                      icon: Icon(Icons.notifications_outlined, 
-                        color: Colors.white, size: 20.sp),
-                      onPressed: () {
-                        Get.snackbar(
-                          'Notifications',
-                          'You have 3 new notifications',
-                          backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
-                          colorText: Colors.white,
-                        );
-                      },
-                    ),
-                    Positioned(
-                      right: 10.w,
-                      top: 10.h,
-                      child: Container(
-                        height: 8.h,
-                        width: 8.w,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: IconButton(
+                  icon: Icon(Icons.notifications_outlined,
+                    color: Colors.white, size: 20.sp),
+                  onPressed: () {
+                    Get.snackbar(
+                      'Notifications',
+                      'No new notifications',
+                      backgroundColor: const Color(0xFF1F1F1F),
+                      colorText: Colors.white,
+                    );
+                  },
                 ),
               ),
               SizedBox(width: 12.w),
@@ -251,7 +235,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         gradient: const LinearGradient(
           colors: [
             Color(0xFF2C3E50),
-            Color(0xFF6C5CE7),
+            Color.fromARGB(255, 78, 3, 208),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -259,7 +243,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -360,13 +344,13 @@ class _CryptoScreenState extends State<CryptoScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
                   '${state.wallets.length} wallets',
                   style: TextStyle(
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -474,7 +458,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             child: _buildQuickActionButton(
               'Swap',
               Icons.swap_horiz,
-              const Color(0xFF6C5CE7),
+              const Color.fromARGB(255, 78, 3, 208),
             ),
           ),
         ],
@@ -599,7 +583,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.add_alert_rounded, color: const Color(0xFF6C5CE7)),
+                icon: Icon(Icons.add_alert_rounded, color: const Color.fromARGB(255, 78, 3, 208)),
                 onPressed: () => Get.to(() => const PriceAlertsScreen()),
               ),
             ],
@@ -639,7 +623,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               children: [
                 Icon(
             type == 'Above' ? Icons.arrow_upward : Icons.arrow_downward,
-            color: isActive ? const Color(0xFF6C5CE7) : Colors.grey,
+            color: isActive ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey,
             size: 20.sp,
           ),
           SizedBox(width: 12.w),
@@ -658,7 +642,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 Text(
                   isActive ? 'Active' : 'Inactive',
                   style: TextStyle(
-                    color: isActive ? const Color(0xFF6C5CE7) : Colors.grey,
+                    color: isActive ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey,
                     fontSize: 12.sp,
                   ),
                 ),
@@ -668,7 +652,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           Switch(
             value: isActive,
             onChanged: (value) {},
-            activeThumbColor: const Color(0xFF6C5CE7),
+            activeThumbColor: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ],
             ),
@@ -702,7 +686,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 child: Text(
                   'Edit',
                   style: TextStyle(
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     fontSize: 14.sp,
                     ),
                   ),
@@ -891,13 +875,19 @@ class _CryptoScreenState extends State<CryptoScreen>
                 ),
               ),
               GestureDetector(
-                onTap: () => Get.to(() => const CryptoTransactionHistoryScreen()),
+                onTap: () {
+                  final cryptoCubit = context.read<CryptoCubit>();
+                  Get.to(() => BlocProvider.value(
+                    value: cryptoCubit,
+                    child: const CryptoTransactionHistoryScreen(),
+                  ));
+                },
                 child: Row(
                   children: [
                     Text(
                       'View All',
                       style: TextStyle(
-                        color: const Color(0xFF6C5CE7),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -905,7 +895,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     SizedBox(width: 4.w),
                     Icon(
                       Icons.arrow_forward_ios,
-                      color: const Color(0xFF6C5CE7),
+                      color: const Color.fromARGB(255, 78, 3, 208),
                       size: 14.sp,
                     ),
                   ],
@@ -1058,8 +1048,8 @@ class _CryptoScreenState extends State<CryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6C5CE7).withValues(alpha: 0.1),
-            const Color(0xFF6C5CE7).withValues(alpha: 0.05),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1172,7 +1162,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                         child: ElevatedButton(
                           onPressed: () => _viewTransactionReceipt(transaction),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6C5CE7),
+                            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                             padding: EdgeInsets.symmetric(vertical: 16.h),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.r),
@@ -1263,7 +1253,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       case CryptoTransactionType.sell:
         return Colors.red;
       case CryptoTransactionType.swap:
-        return const Color(0xFF6C5CE7);
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 
@@ -1338,7 +1328,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 'Secure Wallet',
                 'Multi-layer security',
                 Icons.security,
-                const Color(0xFF6C5CE7),
+                const Color.fromARGB(255, 78, 3, 208),
               ),
               _buildFeatureCard(
                 'Pro Exchange',
@@ -1420,7 +1410,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         Get.snackbar(
           'Coming Soon',
           '$serviceName feature is coming soon!',
-          backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+          backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
           colorText: Colors.white,
         );
     }
@@ -1568,14 +1558,14 @@ class _CryptoScreenState extends State<CryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6C5CE7),
+            const Color.fromARGB(255, 78, 3, 208),
             const Color(0xFF1A237E),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1668,7 +1658,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF6C5CE7),
+                      color: const Color.fromARGB(255, 78, 3, 208),
                     ),
                   ),
                 ),
@@ -1700,7 +1690,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               state.cryptos.length > 1 ? '${CurrencySymbols.currentSymbol}${state.cryptos[1].currentPrice.toStringAsFixed(2)}' : '--',
               state.cryptos.length > 1 ? state.cryptos[1].priceChangePercentage24h : 0.0,
               [0.4, 0.5, 0.3, 0.6, 0.4, 0.5, 0.3],
-              const Color(0xFF6C5CE7),
+              const Color.fromARGB(255, 78, 3, 208),
             ),
           ),
         ],
@@ -1832,7 +1822,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           ElevatedButton(
             onPressed: () => context.read<CryptoCubit>().loadCryptos(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -2245,10 +2235,10 @@ class _CryptoScreenState extends State<CryptoScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: const Color(0xFF6C5CE7), size: 20.sp),
+              child: Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -2363,7 +2353,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       Get.snackbar(
                         'Profile',
                         'Profile management coming soon!',
-                        backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                         colorText: Colors.white,
                       );
                     },
@@ -2377,7 +2367,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       Get.snackbar(
                         'Settings',
                         'Settings coming soon!',
-                        backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                         colorText: Colors.white,
                       );
                     },
@@ -2391,7 +2381,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       Get.snackbar(
                         'Help',
                         'Help center coming soon!',
-                        backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                         colorText: Colors.white,
                       );
                     },
@@ -2431,10 +2421,10 @@ class _CryptoScreenState extends State<CryptoScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Icon(icon, color: const Color(0xFF6C5CE7), size: 20.sp),
+              child: Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
             ),
             SizedBox(width: 16.w),
             Expanded(

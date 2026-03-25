@@ -68,8 +68,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color.fromARGB(255, 78, 3, 208),
-            Color.fromARGB(255, 95, 20, 225),
+            Color.fromARGB(255, 30, 0, 80),
+            Color.fromARGB(255, 45, 10, 110),
           ],
         ),
         borderRadius: BorderRadius.circular(24.r),
@@ -135,8 +135,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.white.withValues(alpha: 0.15),
-                            Colors.white.withValues(alpha: 0.05),
+                            Color.fromARGB(255, 78, 3, 208),
+                            Color.fromARGB(255, 95, 20, 225),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(24.r),
@@ -147,7 +147,7 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

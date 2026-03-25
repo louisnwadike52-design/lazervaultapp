@@ -82,10 +82,10 @@ class _TagPaymentConfirmationScreenState
         return;
       }
 
-      if (selectedAccount.balance < widget.tag.amount) {
+      if (selectedAccount.availableBalance < widget.tag.amount) {
         Get.snackbar(
           'Insufficient Balance',
-          'Your account balance (${selectedAccount.currency} ${selectedAccount.balance.toStringAsFixed(2)}) is less than the payment amount (${widget.tag.formattedAmount})',
+          'Your account balance (${selectedAccount.currency} ${selectedAccount.availableBalance.toStringAsFixed(2)}) is less than the payment amount (${widget.tag.formattedAmount})',
           backgroundColor: const Color(0xFFEF4444),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
@@ -338,10 +338,10 @@ class _TagPaymentConfirmationScreenState
   List<AccountSummaryEntity> _getEligibleAccounts(List<AccountSummaryEntity> all) {
     final eligible = all.where(_canPerformTagPay).toList();
     eligible.sort((a, b) {
-      final aHas = a.balance >= widget.tag.amount ? 1 : 0;
-      final bHas = b.balance >= widget.tag.amount ? 1 : 0;
+      final aHas = a.availableBalance >= widget.tag.amount ? 1 : 0;
+      final bHas = b.availableBalance >= widget.tag.amount ? 1 : 0;
       if (aHas != bHas) return bHas - aHas;
-      return b.balance.compareTo(a.balance);
+      return b.availableBalance.compareTo(a.availableBalance);
     });
     return eligible;
   }
@@ -362,7 +362,7 @@ class _TagPaymentConfirmationScreenState
     return switch (type) {
       VirtualAccountType.personal => const Color(0xFF3B82F6),
       VirtualAccountType.usd => const Color(0xFF10B981),
-      VirtualAccountType.gbp => const Color(0xFF8B5CF6),
+      VirtualAccountType.gbp => const Color.fromARGB(255, 78, 3, 208),
       VirtualAccountType.eur => const Color(0xFF06B6D4),
       VirtualAccountType.family => const Color(0xFFF59E0B),
       VirtualAccountType.main => const Color(0xFF3B82F6),
@@ -414,7 +414,7 @@ class _TagPaymentConfirmationScreenState
           // Auto-select first eligible account with sufficient balance
           if (_selectedAccountId == null) {
             final bestAccount = eligibleAccounts.firstWhere(
-              (a) => a.balance >= widget.tag.amount,
+              (a) => a.availableBalance >= widget.tag.amount,
               orElse: () => eligibleAccounts.first,
             );
             _selectedAccountId = bestAccount.id.toString();
@@ -424,14 +424,14 @@ class _TagPaymentConfirmationScreenState
             (a) => a.id.toString() == _selectedAccountId,
             orElse: () => eligibleAccounts.first,
           );
-          final hasEnough = displayAccount.balance >= widget.tag.amount;
+          final hasEnough = displayAccount.availableBalance >= widget.tag.amount;
           final accentColor = _getAccountColor(displayAccount.accountTypeEnum);
 
           return _buildPaymentCategoryCard(
             icon: _getAccountIcon(displayAccount.accountTypeEnum),
             iconColor: accentColor,
             title: 'Pay with ${displayAccount.accountType}',
-            subtitle: '${displayAccount.currency} ${displayAccount.balance.toStringAsFixed(2)}',
+            subtitle: '${displayAccount.currency} ${displayAccount.availableBalance.toStringAsFixed(2)}',
             insufficientFunds: !hasEnough,
             isSelected: true,
             onTap: () {},
@@ -591,14 +591,14 @@ class _TagPaymentConfirmationScreenState
           title: 'Select Wallet',
           children: accounts.map((account) {
             final isSelected = _selectedAccountId == account.id.toString();
-            final hasEnough = account.balance >= widget.tag.amount;
+            final hasEnough = account.availableBalance >= widget.tag.amount;
             final accentColor = _getAccountColor(account.accountTypeEnum);
 
             return _buildBottomSheetOption(
               icon: _getAccountIcon(account.accountTypeEnum),
               iconColor: accentColor,
               title: account.accountType,
-              subtitle: '${account.currency} ${account.balance.toStringAsFixed(2)}',
+              subtitle: '${account.currency} ${account.availableBalance.toStringAsFixed(2)}',
               insufficientFunds: !hasEnough,
               isSelected: isSelected,
               onTap: () {

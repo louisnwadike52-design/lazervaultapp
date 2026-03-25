@@ -53,7 +53,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
     ('Food', Icons.restaurant_rounded, Color(0xFFEF4444)),
     ('Transport', Icons.directions_car_rounded, Color(0xFF3B82F6)),
     ('Shopping', Icons.shopping_bag_rounded, Color(0xFFF59E0B)),
-    ('Services', Icons.build_rounded, Color(0xFF8B5CF6)),
+    ('Services', Icons.build_rounded, Color.fromARGB(255, 78, 3, 208)),
     ('Bills', Icons.receipt_rounded, Color(0xFF10B981)),
     ('Other', Icons.more_horiz_rounded, Color(0xFF6B7280)),
   ];
@@ -563,7 +563,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
                   decoration: BoxDecoration(
                     gradient: isSelected
                         ? const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                           )
                         : null,
                     color: isSelected

@@ -18,6 +18,13 @@ class MicroserviceChatIcon extends StatelessWidget {
   /// Icon size inside the button (defaults to 24)
   final double? iconSize;
 
+  /// When true, uses dark background with colored border (P2P chat style)
+  final bool useDarkInner;
+
+  /// Accent color for the chat bottom sheet theme (header gradient, bubbles, etc.).
+  /// Falls back to [iconColor] if not set.
+  final Color? chatAccentColor;
+
   const MicroserviceChatIcon({
     super.key,
     required this.serviceName,
@@ -28,6 +35,8 @@ class MicroserviceChatIcon extends StatelessWidget {
     this.isDirect = true,
     this.size,
     this.iconSize,
+    this.useDarkInner = false,
+    this.chatAccentColor,
   });
 
   @override
@@ -39,7 +48,7 @@ class MicroserviceChatIcon extends StatelessWidget {
           serviceName: serviceName,
           sourceContext: sourceContext,
           agentDescription: agentDescription,
-          accentColor: iconColor ?? const Color(0xFF8B5CF6),
+          accentColor: chatAccentColor ?? iconColor ?? const Color.fromARGB(255, 78, 3, 208),
           isDirect: isDirect,
         );
       },
@@ -48,15 +57,19 @@ class MicroserviceChatIcon extends StatelessWidget {
         height: size ?? 50,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: (iconColor ?? const Color(0xFF8B5CF6)).withValues(alpha: 0.1),
+          color: useDarkInner
+              ? Colors.white.withValues(alpha: 0.15)
+              : (iconColor ?? const Color.fromARGB(255, 78, 3, 208)).withValues(alpha: 0.1),
           border: Border.all(
-            color: iconColor ?? const Color(0xFF8B5CF6),
+            color: useDarkInner
+                ? Colors.white.withValues(alpha: 0.3)
+                : (iconColor ?? const Color.fromARGB(255, 78, 3, 208)),
             width: size != null && size! < 40 ? 1.5 : 2,
           ),
         ),
         child: Icon(
           icon,
-          color: iconColor ?? const Color(0xFF8B5CF6),
+          color: iconColor ?? const Color.fromARGB(255, 78, 3, 208),
           size: iconSize ?? 24,
         ),
       ),

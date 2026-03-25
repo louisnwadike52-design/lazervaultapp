@@ -668,7 +668,7 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
           ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -677,7 +677,7 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.auto_awesome, color: const Color(0xFF8B5CF6), size: 20.sp),
+                Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -750,7 +750,7 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
               height: 18.w,
               child: const CircularProgressIndicator(
                 strokeWidth: 2,
-                color: Color(0xFF8B5CF6),
+                color: Color.fromARGB(255, 78, 3, 208),
               ),
             ),
             SizedBox(width: 12.w),
@@ -779,7 +779,7 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
             ),
             GestureDetector(
               onTap: _loadAIAnalysis,
-              child: Text('Retry', style: TextStyle(color: const Color(0xFF8B5CF6), fontSize: 12.sp, fontWeight: FontWeight.w600)),
+              child: Text('Retry', style: TextStyle(color: const Color.fromARGB(255, 78, 3, 208), fontSize: 12.sp, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -798,19 +798,19 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
           ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.auto_awesome, color: const Color(0xFF8B5CF6), size: 20.sp),
+            Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
             SizedBox(width: 10.w),
             Text(
               'Get AI Spending Analysis',
               style: TextStyle(
-                color: const Color(0xFF8B5CF6),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -833,10 +833,10 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
       margin: EdgeInsets.only(top: 8.h),
       padding: EdgeInsets.all(10.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10.r),
         border: Border.all(
-          color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.15),
           width: 1,
         ),
       ),
@@ -845,12 +845,12 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome, color: const Color(0xFF8B5CF6), size: 13.sp),
+              Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 13.sp),
               SizedBox(width: 5.w),
               Text(
                 'AI Analysis',
                 style: TextStyle(
-                  color: const Color(0xFF8B5CF6),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
                 ),

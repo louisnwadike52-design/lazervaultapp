@@ -31,6 +31,9 @@ abstract class IStockRemoteDataSource {
     required OrderSide side,
     required int quantity,
     double? price,
+    double? quantityExact,
+    String? transactionId,
+    String? verificationToken,
   });
 
   Future<List<StockOrderModel>> getOrders({

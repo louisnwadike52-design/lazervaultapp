@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -75,7 +76,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     if (_isAmountInCrypto) {
       return amount;
     }
-    return _selectedHolding != null ? amount / _selectedHolding!.currentPrice : 0.0;
+    if (_selectedHolding == null || _selectedHolding!.currentPrice <= 0) return 0.0;
+    return amount / _selectedHolding!.currentPrice;
   }
 
   double get _fiatAmount {
@@ -499,6 +501,9 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                       child: TextField(
                         controller: _amountController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                        ],
                         style: GoogleFonts.inter(
                           fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
@@ -1104,7 +1109,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   }
 
   void _processSellOrder() {
-    if (_selectedHolding == null || !_hasValidAmount) return;
+    if (_selectedHolding == null || !_hasValidAmount || _isLoading) return;
 
     // Create transaction details
     final fee = _fiatAmount * 0.015; // 1.5% fee

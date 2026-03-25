@@ -168,7 +168,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
   }
 
   Widget _buildExpiryTimer() {
-    if (_qrCode == null || _qrCode!.isStatic) return const SizedBox.shrink();
+    if (_qrCode == null || !_qrCode!.isStatic) return const SizedBox.shrink();
 
     final isExpired = _remainingTime == Duration.zero;
     final minutes = _remainingTime.inMinutes;

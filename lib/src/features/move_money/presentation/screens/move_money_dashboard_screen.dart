@@ -795,7 +795,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      '•••• ${account.accountNumberLast4}  ·  ${_formatCurrency(account.balance, account.currency)}',
+                      '•••• ${account.accountNumberLast4}  ·  ${_formatCurrency(account.availableBalance, account.currency)}',
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
@@ -895,7 +895,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                       ],
                     ),
                     subtitle: Text(
-                      '•••• ${account.accountNumberLast4}  ·  ${_formatCurrency(account.balance, account.currency)}',
+                      '•••• ${account.accountNumberLast4}  ·  ${_formatCurrency(account.availableBalance, account.currency)}',
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,

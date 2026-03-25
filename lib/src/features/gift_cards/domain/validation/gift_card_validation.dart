@@ -316,18 +316,8 @@ class GiftCardValidation {
       ));
     }
 
-    final supportedCurrencies = [
-      'USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD',
-      'CHF', 'CNY', 'NGN', 'ZAR', 'INR',
-    ];
-
-    if (!supportedCurrencies.contains(trimmedCurrency)) {
-      return left(GeneralValidationError(
-        'Currency $trimmedCurrency is not currently supported',
-        'currency',
-      ));
-    }
-
+    // All ISO 4217 currency codes are accepted — Reloadly supports 100+ currencies.
+    // The backend validates currency support for the specific product at purchase time.
     return right(trimmedCurrency);
   }
 
@@ -358,15 +348,8 @@ class GiftCardValidation {
           const GeneralValidationError('Invalid currency', 'currency')));
     }
 
-    // Validate balance
-    final balanceValidation = validateSufficientBalance(
-      purchaseAmount: amount,
-      availableBalance: userBalance,
-    );
-    if (balanceValidation.isLeft()) {
-      return left(balanceValidation.getLeft().getOrElse(() =>
-          const BalanceValidationError('Insufficient balance', 'balance')));
-    }
+    // Balance validation is handled by the backend via accounts-service HoldFunds.
+    // The backend has the authoritative balance and handles cross-currency correctly.
 
     // Validate recipient email if provided
     if (recipientEmail != null && recipientEmail.isNotEmpty) {

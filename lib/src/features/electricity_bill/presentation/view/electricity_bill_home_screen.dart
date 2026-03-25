@@ -1157,7 +1157,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
       Color(0xFF3B82F6),
       Color(0xFF10B981),
       Color(0xFFFB923C),
-      Color(0xFF8B5CF6),
+      Color.fromARGB(255, 78, 3, 208),
       Color(0xFFEF4444),
       Color(0xFF06B6D4),
     ];
@@ -1371,7 +1371,7 @@ class _SmartValidationBottomSheet extends StatelessWidget {
       Color(0xFF3B82F6),
       Color(0xFF10B981),
       Color(0xFFFB923C),
-      Color(0xFF8B5CF6),
+      Color.fromARGB(255, 78, 3, 208),
       Color(0xFFEF4444),
       Color(0xFF06B6D4),
     ];

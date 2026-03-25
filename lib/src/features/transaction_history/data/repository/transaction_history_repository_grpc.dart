@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/types/transaction_service_mapping.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/features/transaction_history/data/datasources/transaction_history_cache_datasource.dart';
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
@@ -16,13 +17,14 @@ import 'package:lazervault/src/features/transaction_history/domain/repository/tr
 ///
 /// Architecture Notes:
 /// - Transaction history is now integrated into the accounts microservice
-/// - Uses account_id from AccountManager (not user_id)
-/// - Locale is automatically derived from the account
+/// - Uses account_id from AccountManager and locale from LocaleManager
+/// - Both active account and active locale are sent to filter results
 /// - Service name filtering allows for service-specific views
 class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   final AccountsGrpcClient grpcClient;
   final TransactionHistoryCacheDataSource cacheDataSource;
   final AccountManager accountManager;
+  final LocaleManager localeManager;
   final FlutterSecureStorage storage;
 
   // Cache TTL - 5 minutes
@@ -31,6 +33,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   TransactionHistoryRepositoryGrpc({
     required this.grpcClient,
     required this.accountManager,
+    required this.localeManager,
     TransactionHistoryCacheDataSource? cacheDataSource,
     FlutterSecureStorage? storage,
   })  : cacheDataSource = cacheDataSource ?? TransactionHistoryCacheDataSource(),
@@ -95,6 +98,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // Fetch from gRPC server
       final response = await grpcClient.getTransactionHistory(
         accountId: accountId,
+        locale: localeManager.currentLocale,
         type: typeFilter,
         category: filters?.serviceTypes?.isNotEmpty == true
             ? _mapServiceTypeToCategory(filters!.serviceTypes!.first)
@@ -196,6 +200,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
 
       final response = await grpcClient.getTransactionHistory(
         accountId: accountId,
+        locale: localeManager.currentLocale,
         serviceName: _mapServiceTypeToServiceName(serviceType),
         status: filters?.statuses?.isNotEmpty == true
             ? _mapStatusToString(filters!.statuses!.first)
@@ -279,6 +284,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // We fetch all transactions and filter locally
       final response = await grpcClient.getTransactionHistory(
         accountId: accountId,
+        locale: localeManager.currentLocale,
         limit: 100, // Fetch a larger set for searching
       );
 
@@ -307,6 +313,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
 
       final response = await grpcClient.getTransactionStatistics(
         accountId: accountId,
+        locale: localeManager.currentLocale,
         startDate: startDate,
         endDate: endDate,
       );
@@ -345,6 +352,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       // Fetch up to 500 transactions for export
       final response = await grpcClient.getTransactionHistory(
         accountId: accountId,
+        locale: localeManager.currentLocale,
         startDate: startDate,
         endDate: endDate,
         limit: 500,
@@ -431,10 +439,14 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
             ? TransactionFlow.outgoing
             : TransactionFlow.neutral;
 
-    // Map service name to service type
-    final serviceType = protoTx.serviceName.isNotEmpty
-        ? _mapServiceNameToServiceType(protoTx.serviceName)
-        : TransactionServiceType.unknown;
+    // Map service name to service type — fallback to category-based inference
+    TransactionServiceType serviceType;
+    if (protoTx.serviceName.isNotEmpty) {
+      serviceType = _mapServiceNameToServiceType(protoTx.serviceName);
+    } else {
+      // Infer service type from category when service_name is missing
+      serviceType = _inferServiceTypeFromCategory(protoTx.category, protoTx.type);
+    }
 
     // Map status
     final status = _mapStatusFromProto(protoTx.status);
@@ -525,8 +537,12 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       return typeLower == 'credit' ? 'Airtime Top-up' : 'Airtime Purchase';
     } else if (categoryLower.contains('transfer')) {
       return typeLower == 'credit' ? 'Transfer Received' : 'Transfer Sent';
-    } else if (categoryLower.contains('gift')) {
+    } else if (categoryLower.contains('gift_card_sell') || categoryLower.contains('sell_payout')) {
+      return 'Gift Card Sale';
+    } else if (categoryLower.contains('hold_capture') && typeLower == 'debit') {
       return 'Gift Card Purchase';
+    } else if (categoryLower.contains('gift')) {
+      return typeLower == 'credit' ? 'Gift Card Refund' : 'Gift Card Purchase';
     } else if (categoryLower.contains('electricity')) {
       return 'Electricity Bill Payment';
     } else if (categoryLower.contains('deposit')) {
@@ -569,6 +585,33 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Infer service type from category when service_name is empty
+  TransactionServiceType _inferServiceTypeFromCategory(String category, String type) {
+    final cat = category.toLowerCase();
+    if (cat.contains('gift_card') || cat.contains('hold_capture') || cat.contains('giftcard')) {
+      return TransactionServiceType.giftCard;
+    } else if (cat.contains('transfer')) {
+      return TransactionServiceType.transfer;
+    } else if (cat.contains('airtime')) {
+      return TransactionServiceType.airtime;
+    } else if (cat.contains('electricity')) {
+      return TransactionServiceType.electricity;
+    } else if (cat.contains('deposit') || (type == 'credit' && cat.contains('fund'))) {
+      return TransactionServiceType.deposit;
+    } else if (cat.contains('withdrawal')) {
+      return TransactionServiceType.withdrawal;
+    } else if (cat.contains('tag')) {
+      return TransactionServiceType.tagPay;
+    } else if (cat.contains('invoice')) {
+      return TransactionServiceType.invoice;
+    } else if (cat.contains('crypto')) {
+      return TransactionServiceType.crypto;
+    } else if (cat.contains('insurance')) {
+      return TransactionServiceType.insurance;
+    }
+    return TransactionServiceType.unknown;
   }
 
   /// Map TransactionServiceType to service name string using centralized mapping

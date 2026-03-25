@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import '../../cubit/crypto_cubit.dart';
+import '../../cubit/crypto_state.dart';
+import '../../domain/entities/crypto_entity.dart' as entities;
 import 'crypto_confirmation_screen.dart';
 import 'crypto_receipt_screen.dart';
 
@@ -18,79 +22,69 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   late TabController _tabController;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   String _selectedFilter = 'All';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  
+
   final List<String> _filters = ['All', 'Buy', 'Sell', 'Swap'];
-  
-  // Mock transaction data
-  final List<CryptoTransactionHistory> _transactions = [
-    CryptoTransactionHistory(
-      id: 'TXN001',
-      type: CryptoTransactionType.buy,
-      cryptoName: 'Bitcoin',
-      cryptoSymbol: 'BTC',
-      amount: '0.005432',
-      gbpAmount: 350.00,
-      status: CryptoTransactionStatus.completed,
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      fee: 5.25,
-    ),
-    CryptoTransactionHistory(
-      id: 'TXN002',
-      type: CryptoTransactionType.sell,
-      cryptoName: 'Ethereum',
-      cryptoSymbol: 'ETH',
-      amount: '0.2145',
-      gbpAmount: 331.25,
-      status: CryptoTransactionStatus.completed,
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      fee: 4.97,
-    ),
-    CryptoTransactionHistory(
-      id: 'TXN003',
-      type: CryptoTransactionType.swap,
-      cryptoName: 'Solana',
-      cryptoSymbol: 'SOL',
-      amount: '2.5',
-      gbpAmount: 392.50,
-      status: CryptoTransactionStatus.pending,
-      timestamp: DateTime.now().subtract(const Duration(days: 2)),
-      fee: 3.92,
-      fromCrypto: 'ETH',
-      toCrypto: 'SOL',
-    ),
-    CryptoTransactionHistory(
-      id: 'TXN004',
-      type: CryptoTransactionType.buy,
-      cryptoName: 'Cardano',
-      cryptoSymbol: 'ADA',
-      amount: '1250.0',
-      gbpAmount: 1112.50,
-      status: CryptoTransactionStatus.completed,
-      timestamp: DateTime.now().subtract(const Duration(days: 3)),
-      fee: 16.69,
-    ),
-    CryptoTransactionHistory(
-      id: 'TXN005',
-      type: CryptoTransactionType.sell,
-      cryptoName: 'Bitcoin',
-      cryptoSymbol: 'BTC',
-      amount: '0.001',
-      gbpAmount: 64.50,
-      status: CryptoTransactionStatus.failed,
-      timestamp: DateTime.now().subtract(const Duration(days: 5)),
-      fee: 0.97,
-    ),
-  ];
+
+  /// Transactions loaded from the backend via CryptoCubit state
+  List<CryptoTransactionHistory> get _transactions {
+    final state = context.read<CryptoCubit>().state;
+    if (state is CryptosLoaded) {
+      return state.transactions.map((t) => CryptoTransactionHistory(
+        id: t.id,
+        type: _mapTransactionType(t.type),
+        cryptoName: t.cryptoName,
+        cryptoSymbol: t.cryptoSymbol,
+        amount: t.quantity.toStringAsFixed(6),
+        gbpAmount: t.totalAmount,
+        status: _mapStatus(t.status),
+        timestamp: t.timestamp,
+        fee: t.fees,
+      )).toList();
+    }
+    return [];
+  }
+
+  CryptoTransactionType _mapTransactionType(entities.TransactionType type) {
+    switch (type) {
+      case entities.TransactionType.buy:
+        return CryptoTransactionType.buy;
+      case entities.TransactionType.sell:
+        return CryptoTransactionType.sell;
+      case entities.TransactionType.swap:
+        return CryptoTransactionType.swap;
+    }
+  }
+
+  CryptoTransactionStatus _mapStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'success':
+        return CryptoTransactionStatus.completed;
+      case 'pending':
+      case 'processing':
+        return CryptoTransactionStatus.pending;
+      case 'failed':
+      case 'error':
+        return CryptoTransactionStatus.failed;
+      default:
+        return CryptoTransactionStatus.completed;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _setupAnimations();
+    // Ensure data is loaded
+    final cubit = context.read<CryptoCubit>();
+    if (cubit.state is! CryptosLoaded) {
+      cubit.loadCryptos();
+    }
   }
 
   void _setupAnimations() {
@@ -149,33 +143,41 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF0A0A0A),
-              const Color(0xFF0A0A0A),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              _buildSearchAndFilter(),
-              _buildSummaryStats(),
-              Expanded(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _buildTransactionList(),
-                ),
+      body: BlocBuilder<CryptoCubit, CryptoState>(
+        builder: (context, state) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF1F1F1F),
+                  const Color(0xFF0A0A0A),
+                  const Color(0xFF0A0A0A),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  _buildSearchAndFilter(),
+                  _buildSummaryStats(),
+                  Expanded(
+                    child: state is CryptoLoading
+                      ? const Center(child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
+                        ))
+                      : FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: _buildTransactionList(),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -270,7 +272,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                     margin: EdgeInsets.symmetric(horizontal: 4.w),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF6C5CE7) : const Color(0xFF1F1F1F),
+                      color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Center(
@@ -654,7 +656,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             child: ElevatedButton(
               onPressed: () => _viewReceipt(transaction),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -770,7 +772,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       case CryptoTransactionType.sell:
         return Colors.red;
       case CryptoTransactionType.swap:
-        return const Color(0xFF6C5CE7);
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 

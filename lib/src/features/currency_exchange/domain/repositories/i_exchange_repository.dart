@@ -1,13 +1,15 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../entities/transaction_entity.dart';
 
 abstract class IExchangeRepository {
-  /// Get real-time exchange rate between two currencies
+  /// Get real-time exchange rate between two currencies.
+  /// [forceRefresh] bypasses any local cache and fetches a fresh rate from the server.
   Future<Either<Failure, ExchangeRate>> getExchangeRate({
     required String fromCurrency,
     required String toCurrency,
     double? amount,
+    bool forceRefresh = false,
   });
 
   /// Initiate an international transfer
@@ -27,6 +29,8 @@ abstract class IExchangeRepository {
     String? recipientSwiftCode,
     String? recipientCountry,
     String? recipientEmail,
+    String? recipientRoutingNumber,
+    String? recipientAddress,
     String? notes,
   });
 
@@ -89,6 +93,9 @@ class ExchangeRate {
   /// For very small rates (e.g., 0.00065 for NGN→USD), uses more decimal places
   /// so users can see the actual conversion rate for their source currency.
   String formatForDisplay() {
+    if (rate <= 0) {
+      return '1 $fromCurrency = -- $toCurrency';
+    }
     if (rate >= 0.01) {
       return '1 $fromCurrency = ${rate.toStringAsFixed(4)} $toCurrency';
     }

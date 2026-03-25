@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,6 +43,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   bool _isRateExpired = false;
   bool _isRefreshingRate = false;
   bool _isPrimaryActionInProgress = false;
+  Timer? _amountDebounce;
 
   @override
   void initState() {
@@ -51,6 +54,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
 
   @override
   void dispose() {
+    _amountDebounce?.cancel();
     _amountController.dispose();
     _amountFocusNode.dispose();
     super.dispose();
@@ -61,8 +65,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   }
 
   void _onAmountChanged() {
-    final amount = double.tryParse(_amountController.text) ?? 0;
-    context.read<ExchangeCubit>().setAmount(amount);
+    _amountDebounce?.cancel();
+    _amountDebounce = Timer(const Duration(milliseconds: 300), () {
+      final amount = double.tryParse(_amountController.text) ?? 0;
+      context.read<ExchangeCubit>().setAmount(amount);
+    });
   }
 
   void _onQuickAmount(double amount) {
@@ -76,17 +83,25 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
 
   Future<void> _fetchRate() async {
     if (_isRefreshingRate) return;
-    setState(() => _isRefreshingRate = true);
-    final amount = double.tryParse(_amountController.text) ?? 0;
-    await context
-        .read<ExchangeCubit>()
-        .fetchRateForHome(forAmount: amount > 0 ? amount : null);
-    if (!mounted) return;
-    final cubit = context.read<ExchangeCubit>();
     setState(() {
-      _isRefreshingRate = false;
-      _isRateExpired = cubit.currentRate == null || cubit.currentRate!.isExpired;
+      _isRefreshingRate = true;
+      _isRateExpired = false;
     });
+    try {
+      final amount = double.tryParse(_amountController.text) ?? 0;
+      await context
+          .read<ExchangeCubit>()
+          .fetchRateForHome(forAmount: amount > 0 ? amount : null);
+    } finally {
+      if (mounted) {
+        final cubit = context.read<ExchangeCubit>();
+        setState(() {
+          _isRefreshingRate = false;
+          _isRateExpired =
+              cubit.currentRate == null || cubit.currentRate!.isExpired;
+        });
+      }
+    }
   }
 
   void _onSwapCurrencies() {
@@ -115,7 +130,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         currencies: filtered,
         selectedCode: isFrom ? cubit.fromCurrency : cubit.toCurrency,
         excludeCode: isFrom ? cubit.toCurrency : cubit.fromCurrency,
-        title: isFrom ? 'Select Source Currency' : 'Select Destination Currency',
+        title:
+            isFrom ? 'Select Source Currency' : 'Select Destination Currency',
         onSelected: (code) {
           if (isFrom) {
             cubit.setCurrencyPair(code, cubit.toCurrency);
@@ -214,8 +230,10 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     required double totalCost,
   }) async {
     try {
-      final accountsClient = serviceLocator<accounts_grpc.AccountsServiceClient>();
-      final callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final accountsClient =
+          serviceLocator<accounts_grpc.AccountsServiceClient>();
+      final callOptions =
+          await serviceLocator<GrpcCallOptionsHelper>().withAuth();
       final response = await accountsClient.getUserAccounts(
         accounts_pb.GetUserAccountsRequest(),
         options: callOptions,
@@ -285,8 +303,13 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
 
     // Generate flag emoji from currency → country code mapping
     const currencyToCountry = {
-      'USD': 'US', 'GBP': 'GB', 'EUR': 'EU', 'NGN': 'NG',
-      'ZAR': 'ZA', 'GHS': 'GH', 'KES': 'KE',
+      'USD': 'US',
+      'GBP': 'GB',
+      'EUR': 'EU',
+      'NGN': 'NG',
+      'ZAR': 'ZA',
+      'GHS': 'GH',
+      'KES': 'KE',
     };
     final countryCode = currencyToCountry[sourceCurrency.toUpperCase()] ?? '';
     final flag = countryCode.isNotEmpty
@@ -472,10 +495,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   Future<void> _executeConversion() async {
     final cubit = context.read<ExchangeCubit>();
 
-    if (!cubit.checkRateValidity()) {
-      setState(() => _isRateExpired = true);
-      return;
-    }
+    // The cubit always fetches a fresh rate inside convertCurrency(),
+    // so we don't block on expired cached rate here.
 
     await validateTransactionPin(
       context: context,
@@ -485,12 +506,10 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       currency: cubit.fromCurrency,
       onPinValidated: (verificationToken) async {
         pinModalKey.currentState?.setProcessing();
-        print('[Exchange] PIN validated, calling convertCurrency...');
 
         await cubit.convertCurrency(verificationToken: verificationToken);
 
         final currentState = cubit.state;
-        print('[Exchange] After convertCurrency, cubit state: ${currentState.runtimeType}');
         if (currentState is ExchangeSuccess) {
           pinModalKey.currentState?.setSuccess();
           await Future.delayed(const Duration(milliseconds: 800));
@@ -549,15 +568,16 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         listener: (context, state) {
           if (state is ExchangeRateExpired) {
             setState(() => _isRateExpired = true);
-          } else if (state is ExchangeHomeWithRate && state.rate != null && !state.rate!.isExpired) {
+          } else if (state is ExchangeHomeWithRate &&
+              state.rate != null &&
+              !state.rate!.isExpired) {
             setState(() => _isRateExpired = false);
           }
         },
         builder: (context, state) {
           if (state is ExchangeLoading) {
             return const Center(
-                child:
-                    CircularProgressIndicator(color: Color(0xFF3B82F6)));
+                child: CircularProgressIndicator(color: Color(0xFF3B82F6)));
           }
 
           if (state is ExchangeError) {
@@ -581,14 +601,12 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline,
-                color: Color(0xFFEF4444), size: 48),
+            const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style:
-                  const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -598,8 +616,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Retry',
-                  style: TextStyle(color: Colors.white)),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -700,8 +717,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                             color: Color(0xFF3B82F6), size: 16),
                         label: const Text(
                           'Get exchange rate',
-                          style: TextStyle(
-                              color: Color(0xFF3B82F6), fontSize: 13),
+                          style:
+                              TextStyle(color: Color(0xFF3B82F6), fontSize: 13),
                         ),
                       ),
                     ),
@@ -719,9 +736,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                   // Recent exchanges section
                   _buildSectionHeader(
                     'Recent Exchanges',
-                    state.recentTransactions.isNotEmpty ? () {
-                      Get.toNamed(AppRoutes.exchangeHistory);
-                    } : null,
+                    state.recentTransactions.isNotEmpty
+                        ? () {
+                            Get.toNamed(AppRoutes.exchangeHistory);
+                          }
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   if (state.recentTransactions.isEmpty)
@@ -1005,18 +1024,16 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Search currency...',
-                      hintStyle:
-                          const TextStyle(color: Color(0xFF6B7280)),
-                      prefixIcon: const Icon(Icons.search,
-                          color: Color(0xFF6B7280)),
+                      hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Color(0xFF6B7280)),
                       filled: true,
                       fillColor: const Color(0xFF0A0A0A),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
                 ],
@@ -1035,27 +1052,23 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                       ? countryCode
                           .toUpperCase()
                           .codeUnits
-                          .map((c) =>
-                              String.fromCharCode(c + 127397))
+                          .map((c) => String.fromCharCode(c + 127397))
                           .join()
                       : '';
 
                   return ListTile(
                     enabled: !isExcluded,
-                    onTap: isExcluded
-                        ? null
-                        : () => widget.onSelected(curr.code),
+                    onTap:
+                        isExcluded ? null : () => widget.onSelected(curr.code),
                     leading: flag.isNotEmpty
-                        ? Text(flag,
-                            style: const TextStyle(fontSize: 24))
+                        ? Text(flag, style: const TextStyle(fontSize: 24))
                         : const Icon(Icons.currency_exchange,
                             color: Color(0xFF9CA3AF)),
                     title: Text(
                       curr.code,
                       style: TextStyle(
-                        color: isExcluded
-                            ? const Color(0xFF6B7280)
-                            : Colors.white,
+                        color:
+                            isExcluded ? const Color(0xFF6B7280) : Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1074,8 +1087,7 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                         : isExcluded
                             ? const Text('Selected',
                                 style: TextStyle(
-                                    color: Color(0xFF6B7280),
-                                    fontSize: 12))
+                                    color: Color(0xFF6B7280), fontSize: 12))
                             : null,
                   );
                 },

@@ -235,7 +235,7 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+            colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF6D28D9)],
           ),
           borderRadius: BorderRadius.circular(16.r),
         ),

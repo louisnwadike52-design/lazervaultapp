@@ -178,6 +178,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildComingSoonBanner(),
           _buildAIAnalysisCard(),
           SizedBox(height: 20.h),
           _buildMarketSentimentCard(),
@@ -196,6 +197,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildComingSoonBanner(),
           _buildActiveSignalsCard(),
           SizedBox(height: 20.h),
           _buildSignalHistoryCard(),
@@ -212,11 +214,61 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildComingSoonBanner(),
           _buildPerformanceMetricsCard(),
           SizedBox(height: 20.h),
           _buildPortfolioAnalysisCard(),
           SizedBox(height: 20.h),
           _buildCorrelationMatrixCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildComingSoonBanner() {
+    return Container(
+      margin: EdgeInsets.only(bottom: 20.h),
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.purple.withValues(alpha: 0.3),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.15),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.rocket_launch, color: Colors.purple, size: 32.sp),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Coming Soon',
+                  style: GoogleFonts.inter(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'AI-powered trading insights and signals are being developed. Stay tuned!',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -265,16 +317,16 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Current Market Outlook: BULLISH',
+                  'Coming Soon',
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
-                    color: Colors.green,
+                    color: Colors.purple,
                   ),
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Our AI models indicate a 78% probability of upward movement in the next 24 hours. Key factors include institutional buying pressure and positive market sentiment.',
+                  'AI-powered market analysis will provide real-time sentiment analysis, trend predictions, and risk assessments based on machine learning models.',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -284,8 +336,6 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
               ],
             ),
           ),
-          SizedBox(height: 16.h),
-          _buildConfidenceIndicator(78),
         ],
       ),
     );

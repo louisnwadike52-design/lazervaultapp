@@ -279,7 +279,7 @@ class _PortfolioRebalanceCarouselState extends State<PortfolioRebalanceCarousel>
                       borderRadius: BorderRadius.circular(4.r),
                       gradient: index <= _currentPage
                           ? const LinearGradient(
-                              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                              colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                             )
                           : null,
                       color: index > _currentPage ? Colors.grey[800] : null,

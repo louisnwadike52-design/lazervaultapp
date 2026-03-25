@@ -135,16 +135,16 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
     });
 
     try {
-      // TODO: Uncomment when proto files are generated
-      // final response = await _voiceClient.startVoiceSession();
-      // setState(() {
-      //   _aiResponse = 'Processing command: $command';
-      // });
+      // Start a voice session for crypto commands
+      final response = await _voiceClient.startVoiceSession(
+        serviceName: 'crypto',
+        preferredAgentLanguage: 'en',
+      );
 
-      // Temporary mock response
-      await Future.delayed(const Duration(seconds: 1));
+      // For now, display connection info
+      // In production, this would connect to LiveKit for real-time voice
       setState(() {
-        _aiResponse = _getMockResponse(command);
+        _aiResponse = _buildResponseFromCommand(command, response);
         _isProcessing = false;
       });
     } catch (e) {
@@ -155,34 +155,41 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
     }
   }
 
-  String _getMockResponse(String command) {
+  String _buildResponseFromCommand(String command, dynamic response) {
     final lowerCommand = command.toLowerCase();
 
+    // If we have a valid response from the voice session service
+    if (response != null && response.hasRoomName()) {
+      // Connected to voice session
+      return 'Voice session connected. Processing: "$command"\n\nRoom: ${response.roomName}\nAgent: ${response.hasAgentId() ? response.agentId : "Crypto Agent"}';
+    }
+
+    // Fallback responses based on command content
     if (lowerCommand.contains('bitcoin') || lowerCommand.contains('btc')) {
       if (lowerCommand.contains('price')) {
-        return 'Bitcoin is currently trading at ${CurrencySymbols.currentSymbol}43,250.50, up 2.73% in the last 24 hours.';
+        return 'I can help you get Bitcoin\'s current price. Let me fetch that from the crypto service...';
       } else if (lowerCommand.contains('buy')) {
-        return 'To buy Bitcoin, please specify the amount you\'d like to purchase.';
+        return 'To buy Bitcoin, I\'ll need to know the amount. You can say "Buy \$100 worth of Bitcoin".';
       }
     }
 
     if (lowerCommand.contains('ethereum') || lowerCommand.contains('eth')) {
       if (lowerCommand.contains('price')) {
-        return 'Ethereum is currently trading at ${CurrencySymbols.currentSymbol}2,650.75, up 2.73% in the last 24 hours.';
+        return 'Let me get Ethereum\'s current price for you...';
       } else if (lowerCommand.contains('buy')) {
         return 'To buy Ethereum, please specify the amount you\'d like to purchase.';
       }
     }
 
     if (lowerCommand.contains('trending')) {
-      return 'The top trending cryptocurrencies are: Bitcoin (BTC), Ethereum (ETH), and Solana (SOL).';
+      return 'Let me fetch the trending cryptocurrencies for you...';
     }
 
     if (lowerCommand.contains('portfolio') || lowerCommand.contains('holdings')) {
-      return 'Your current portfolio value is ${CurrencySymbols.currentSymbol}17,439.49 with a total gain of ${CurrencySymbols.currentSymbol}1,439.49 (9.25%).';
+      return 'Let me retrieve your current crypto portfolio...';
     }
 
-    return 'I\'m here to help with crypto information. You can ask about prices, trending coins, or your portfolio.';
+    return 'I heard: "$command". I\'m connecting to the crypto service to help you with that.';
   }
 
   @override
@@ -263,7 +270,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                               gradient: LinearGradient(
                                 colors: _isListening
                                     ? [
-                                        const Color(0xFF6C5CE7),
+                                        const Color.fromARGB(255, 78, 3, 208),
                                         const Color(0xFF00B4D8),
                                       ]
                                     : [
@@ -274,7 +281,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                               boxShadow: _isListening
                                   ? [
                                       BoxShadow(
-                                        color: const Color(0xFF6C5CE7)
+                                        color: const Color.fromARGB(255, 78, 3, 208)
                                             .withValues(alpha: 0.5),
                                         blurRadius: 30,
                                         spreadRadius: 5,
@@ -306,7 +313,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
                       color: _isListening
-                          ? const Color(0xFF6C5CE7)
+                          ? const Color.fromARGB(255, 78, 3, 208)
                           : Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
@@ -329,7 +336,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                             children: [
                               Icon(
                                 Icons.person,
-                                color: const Color(0xFF6C5CE7),
+                                color: const Color.fromARGB(255, 78, 3, 208),
                                 size: 20.sp,
                               ),
                               SizedBox(width: 8.w),
@@ -338,7 +345,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                                 style: GoogleFonts.inter(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF6C5CE7),
+                                  color: const Color.fromARGB(255, 78, 3, 208),
                                 ),
                               ),
                             ],
@@ -366,13 +373,13 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                             const Color(0xFF00B4D8).withValues(alpha: 0.2),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(16.r),
                         border: Border.all(
-                          color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -383,7 +390,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                             children: [
                               Icon(
                                 Icons.smart_toy,
-                                color: const Color(0xFF6C5CE7),
+                                color: const Color.fromARGB(255, 78, 3, 208),
                                 size: 20.sp,
                               ),
                               SizedBox(width: 8.w),
@@ -392,7 +399,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                                 style: GoogleFonts.inter(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF6C5CE7),
+                                  color: const Color.fromARGB(255, 78, 3, 208),
                                 ),
                               ),
                             ],
@@ -493,7 +500,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
         children: [
           Icon(
             Icons.mic_none,
-            color: const Color(0xFF6C5CE7),
+            color: const Color.fromARGB(255, 78, 3, 208),
             size: 16.sp,
           ),
           SizedBox(width: 8.w),

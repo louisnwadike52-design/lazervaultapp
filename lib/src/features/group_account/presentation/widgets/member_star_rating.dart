@@ -123,7 +123,7 @@ class MemberStarRating extends StatelessWidget {
           SizedBox(height: 8.h),
           _buildFactorBar('Contribution Breadth', rating.breadthScore, const Color(0xFFF59E0B)),
           SizedBox(height: 8.h),
-          _buildFactorBar('Activity Tenure', rating.tenureScore, const Color(0xFF8B5CF6)),
+          _buildFactorBar('Activity Tenure', rating.tenureScore, const Color.fromARGB(255, 78, 3, 208)),
         ],
       ),
     );

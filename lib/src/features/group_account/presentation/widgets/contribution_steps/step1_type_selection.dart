@@ -75,7 +75,7 @@ class Step1TypeSelection extends StatelessWidget {
         break;
       case ContributionType.recurringGoal:
         icon = Icons.repeat;
-        iconColor = const Color(0xFF8B5CF6);
+        iconColor = const Color.fromARGB(255, 78, 3, 208);
         break;
     }
 

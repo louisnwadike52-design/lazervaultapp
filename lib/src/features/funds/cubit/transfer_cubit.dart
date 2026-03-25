@@ -3,6 +3,8 @@ import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:lazervault/core/offline/mutation_queue.dart';
+import 'package:lazervault/core/utils/grpc_error_handler.dart';
+import 'package:lazervault/core/utils/kyc_error_handler.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
@@ -107,6 +109,10 @@ class TransferCubit extends Cubit<TransferState> {
   /// Unified send funds method (works for both internal and external transfers)
   /// Uses Transfer Gateway (port 50076) -> Core-Payment-Service (port 50053)
   /// On network failure, queues the transfer for retry when online.
+  ///
+  /// [availableBalance] - Optional pre-flight check against the source account's
+  /// available balance (in major units). Prevents unnecessary network calls when
+  /// the user clearly doesn't have enough funds.
   Future<void> sendFunds({
     required String fromAccountId,
     required String toAccountNumber,
@@ -117,8 +123,19 @@ class TransferCubit extends Cubit<TransferState> {
     required String transactionId,
     required String verificationToken,
     DateTime? scheduledAt,
+    double? availableBalance,          // Source account available balance (major units)
+    int? expenseCategory,              // Budget category enum value selected by user
   }) async {
     if (isClosed) return;
+
+    // Pre-flight balance check: reject early if amount exceeds available balance
+    if (availableBalance != null && amount > availableBalance) {
+      emit(TransferFailure(
+        message: 'Insufficient available balance. You have ${availableBalance.toStringAsFixed(2)} available.',
+      ));
+      return;
+    }
+
     emit(const TransferLoading());
 
     try {
@@ -132,6 +149,7 @@ class TransferCubit extends Cubit<TransferState> {
         transactionId: transactionId,
         verificationToken: verificationToken,
         scheduledAt: scheduledAt,
+        expenseCategory: expenseCategory,
       );
 
       if (isClosed) return;
@@ -141,18 +159,41 @@ class TransferCubit extends Cubit<TransferState> {
       } else {
         emit(TransferFailure(message: result.errorMessage ?? 'Transfer failed'));
       }
-    } catch (e) {
+    } on GrpcError catch (e) {
       if (isClosed) return;
+
+      // Check for PIN-specific failure first
+      final pinFailure = GrpcErrorHandler.extractPinFailure(e);
+      if (pinFailure != null) {
+        emit(TransferPinFailure(pinInfo: pinFailure));
+        return;
+      }
+
+      // Check for KYC tier insufficient error
+      if (isKYCLimitError(e.message)) {
+        emit(TransferFailure(
+          message: 'Transaction limit reached. Upgrade your account to increase limits.',
+          isKYCError: true,
+        ));
+        return;
+      }
 
       // For financial operations, show clear error and let user retry manually
       // NEVER queue payments offline - security tokens expire, balances change
-      final errorMessage = e.toString();
+      emit(TransferFailure(
+        message: GrpcErrorHandler.userFriendlyMessage(e),
+        isRetryable: GrpcErrorHandler.isRetryable(e),
+      ));
+    } catch (e) {
+      if (isClosed) return;
+
       if (_isNetworkError(e)) {
         emit(const TransferFailure(
           message: 'No internet connection. Please check your network and try again.',
+          isRetryable: true,
         ));
       } else {
-        emit(TransferFailure(message: 'Transfer failed: $errorMessage'));
+        emit(TransferFailure(message: 'Transfer failed. Please try again.'));
       }
     }
   }

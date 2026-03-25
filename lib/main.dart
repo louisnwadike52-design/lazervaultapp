@@ -179,6 +179,14 @@ Future<String> _determineInitialRoute() async {
     // If user was previously logged in but no passcode, go to email sign in
     // This ensures they re-authenticate with email/password
     if (userId != null && userId.isNotEmpty) {
+      // Check if user needs KYC onboarding (just completed signup, hasn't skipped)
+      final hasSkippedKyc = await storage.read(key: 'has_skipped_kyc');
+      final kycOnboardingPending = await storage.read(key: 'kyc_onboarding_pending');
+      if (kycOnboardingPending == 'true' && hasSkippedKyc != 'true') {
+        print('📋 KYC onboarding pending - showing progressive KYC');
+        return AppRoutes.kycProgressive;
+      }
+
       print('🔐 User was previously logged in, requiring re-authentication via email');
       return AppRoutes.emailSignIn;
     }

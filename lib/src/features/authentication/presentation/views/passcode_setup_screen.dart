@@ -21,6 +21,7 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
   bool _skipped = false;
   bool get _fromLoginFlow => (Get.arguments as Map<String, dynamic>?)?['fromLoginFlow'] == true;
   bool get _hasTransactionPin => (Get.arguments as Map<String, dynamic>?)?['hasTransactionPin'] == true;
+  bool get _fromForgotPasscode => (Get.arguments as Map<String, dynamic>?)?['fromForgotPasscode'] == true;
 
   @override
   void initState() {
@@ -62,10 +63,10 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
       listener: (context, state) {
         if (state is AuthenticationSuccess) {
           if (_skipped) {
-            // Skip was pressed, go directly to dashboard
+            // Skip passcode, continue to transaction PIN setup
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                Get.offAllNamed(AppRoutes.dashboard);
+                Get.offNamed(AppRoutes.transactionPinSetup);
               }
             });
           } else if (_fromLoginFlow && _hasTransactionPin) {
@@ -143,7 +144,11 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                           ),
                           SizedBox(height: 40.h),
                           Text(
-                            isConfirmMode ? 'Confirm Passcode' : 'Set Up Passcode',
+                            isConfirmMode
+                                ? 'Confirm Passcode'
+                                : _fromForgotPasscode
+                                    ? 'Reset Your Passcode'
+                                    : 'Set Up Passcode',
                             style: TextStyle(
                               fontSize: 28.sp,
                               fontWeight: FontWeight.bold,
@@ -155,7 +160,9 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                           Text(
                             isConfirmMode
                                 ? 'Enter your passcode again to confirm'
-                                : 'Create a 6-digit passcode for quick login',
+                                : _fromForgotPasscode
+                                    ? 'Create a new 6-digit passcode'
+                                    : 'Create a 6-digit passcode for quick login',
                             style: textTheme.titleMedium?.copyWith(
                               color: Colors.white.withValues(alpha: 0.8),
                             ),
@@ -181,6 +188,19 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                               ),
                             ),
                           ),
+                          // Error message display
+                          if (passcodeState.errorMessage != null) ...[
+                            SizedBox(height: 12.h),
+                            Text(
+                              passcodeState.errorMessage!,
+                              style: TextStyle(
+                                color: Colors.red.shade300,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                           SizedBox(height: 35.h),
                           // Number pad
                           GridView.count(

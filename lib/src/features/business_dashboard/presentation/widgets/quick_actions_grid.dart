@@ -53,7 +53,7 @@ class QuickActionsGrid extends StatelessWidget {
               child: _ActionButton(
                 icon: Icons.analytics_rounded,
                 label: 'Analytics',
-                color: const Color(0xFF8B5CF6),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 onTap: () => Get.toNamed(AppRoutes.businessAnalytics),
               ),
             ),
@@ -71,11 +71,32 @@ class QuickActionsGrid extends StatelessWidget {
               ),
             ),
             SizedBox(width: 10.w),
-            const Expanded(child: SizedBox()),
+            Expanded(
+              child: _ActionButton(
+                icon: Icons.people_rounded,
+                label: 'Customers',
+                color: const Color(0xFF8B5CF6),
+                onTap: () => Get.toNamed(AppRoutes.customers),
+              ),
+            ),
             SizedBox(width: 10.w),
-            const Expanded(child: SizedBox()),
+            Expanded(
+              child: _ActionButton(
+                icon: Icons.groups_rounded,
+                label: 'Groups',
+                color: const Color(0xFFEC4899),
+                onTap: () => Get.toNamed(AppRoutes.groupAccount),
+              ),
+            ),
             SizedBox(width: 10.w),
-            const Expanded(child: SizedBox()),
+            Expanded(
+              child: _ActionButton(
+                icon: Icons.receipt_outlined,
+                label: 'Tax',
+                color: const Color(0xFFFACC15),
+                onTap: () => Get.toNamed(AppRoutes.taxDashboard),
+              ),
+            ),
           ],
         ),
       ],

@@ -156,7 +156,7 @@ class _DepositScreenState extends State<DepositScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Deposit'),
-        backgroundColor: const Color(0xFF6C5CE7),
+        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -254,7 +254,7 @@ class _DepositScreenState extends State<DepositScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
                         borderSide: const BorderSide(
-                          color: Color(0xFF6C5CE7),
+                          color: Color.fromARGB(255, 78, 3, 208),
                           width: 2,
                         ),
                       ),
@@ -308,7 +308,7 @@ class _DepositScreenState extends State<DepositScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
                         borderSide: const BorderSide(
-                          color: Color(0xFF6C5CE7),
+                          color: Color.fromARGB(255, 78, 3, 208),
                           width: 2,
                         ),
                       ),
@@ -324,7 +324,7 @@ class _DepositScreenState extends State<DepositScreen> {
                     child: ElevatedButton(
                       onPressed: _canDeposit(accounts) ? _initiateDeposit : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6C5CE7),
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                         disabledBackgroundColor: Colors.grey[300],
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -382,7 +382,7 @@ class _DepositScreenState extends State<DepositScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -391,7 +391,7 @@ class _DepositScreenState extends State<DepositScreen> {
             width: 48.w,
             height: 48.w,
             decoration: const BoxDecoration(
-              color: Color(0xFF6C5CE7),
+              color: Color.fromARGB(255, 78, 3, 208),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -464,8 +464,8 @@ class _DepositScreenState extends State<DepositScreen> {
           OutlinedButton(
             onPressed: _navigateToLinkBank,
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF6C5CE7),
-              side: const BorderSide(color: Color(0xFF6C5CE7)),
+              foregroundColor: const Color.fromARGB(255, 78, 3, 208),
+              side: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
@@ -609,7 +609,7 @@ class _DepositScreenState extends State<DepositScreen> {
                 Navigator.pop(context, true); // Return to previous screen
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),

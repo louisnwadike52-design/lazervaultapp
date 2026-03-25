@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: voice-biometrics.proto
-//
-// @dart = 2.12
+// Generated from voice-biometrics.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -41,8 +42,22 @@ const VoiceAudioChunk$json = {
     {'1': 'audio_data', '3': 2, '4': 1, '5': 12, '10': 'audioData'},
     {'1': 'sequence_number', '3': 3, '4': 1, '5': 3, '10': 'sequenceNumber'},
     {'1': 'is_final', '3': 4, '4': 1, '5': 8, '10': 'isFinal'},
-    {'1': 'format', '3': 5, '4': 1, '5': 11, '6': '.voicebiometrics.AudioFormat', '10': 'format'},
-    {'1': 'metadata', '3': 6, '4': 3, '5': 11, '6': '.voicebiometrics.VoiceAudioChunk.MetadataEntry', '10': 'metadata'},
+    {
+      '1': 'format',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.voicebiometrics.AudioFormat',
+      '10': 'format'
+    },
+    {
+      '1': 'metadata',
+      '3': 6,
+      '4': 3,
+      '5': 11,
+      '6': '.voicebiometrics.VoiceAudioChunk.MetadataEntry',
+      '10': 'metadata'
+    },
   ],
   '3': [VoiceAudioChunk_MetadataEntry$json],
 };
@@ -74,7 +89,14 @@ const VerifyVoiceStreamResponse$json = {
     {'1': 'similarity_score', '3': 2, '4': 1, '5': 2, '10': 'similarityScore'},
     {'1': 'confidence', '3': 3, '4': 1, '5': 2, '10': 'confidence'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.voicebiometrics.VerificationStatus', '10': 'status'},
+    {
+      '1': 'status',
+      '3': 5,
+      '4': 1,
+      '5': 14,
+      '6': '.voicebiometrics.VerificationStatus',
+      '10': 'status'
+    },
     {'1': 'needs_more_audio', '3': 6, '4': 1, '5': 8, '10': 'needsMoreAudio'},
     {'1': 'chunks_processed', '3': 7, '4': 1, '5': 5, '10': 'chunksProcessed'},
   ],
@@ -95,8 +117,22 @@ const EnrollVoiceRequest$json = {
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'audio_samples', '3': 2, '4': 3, '5': 12, '10': 'audioSamples'},
-    {'1': 'format', '3': 3, '4': 1, '5': 11, '6': '.voicebiometrics.AudioFormat', '10': 'format'},
-    {'1': 'metadata', '3': 4, '4': 3, '5': 11, '6': '.voicebiometrics.EnrollVoiceRequest.MetadataEntry', '10': 'metadata'},
+    {
+      '1': 'format',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.voicebiometrics.AudioFormat',
+      '10': 'format'
+    },
+    {
+      '1': 'metadata',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.voicebiometrics.EnrollVoiceRequest.MetadataEntry',
+      '10': 'metadata'
+    },
   ],
   '3': [EnrollVoiceRequest_MetadataEntry$json],
 };
@@ -128,7 +164,14 @@ const EnrollVoiceResponse$json = {
     {'1': 'samples_count', '3': 3, '4': 1, '5': 5, '10': 'samplesCount'},
     {'1': 'quality_score', '3': 4, '4': 1, '5': 2, '10': 'qualityScore'},
     {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'voice_profile', '3': 6, '4': 1, '5': 11, '6': '.voicebiometrics.VoiceProfile', '10': 'voiceProfile'},
+    {
+      '1': 'voice_profile',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.voicebiometrics.VoiceProfile',
+      '10': 'voiceProfile'
+    },
   ],
 };
 
@@ -146,9 +189,23 @@ const VerifyVoiceRequest$json = {
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'audio_sample', '3': 2, '4': 1, '5': 12, '10': 'audioSample'},
-    {'1': 'format', '3': 3, '4': 1, '5': 11, '6': '.voicebiometrics.AudioFormat', '10': 'format'},
+    {
+      '1': 'format',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.voicebiometrics.AudioFormat',
+      '10': 'format'
+    },
     {'1': 'threshold', '3': 4, '4': 1, '5': 2, '10': 'threshold'},
-    {'1': 'metadata', '3': 5, '4': 3, '5': 11, '6': '.voicebiometrics.VerifyVoiceRequest.MetadataEntry', '10': 'metadata'},
+    {
+      '1': 'metadata',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.voicebiometrics.VerifyVoiceRequest.MetadataEntry',
+      '10': 'metadata'
+    },
   ],
   '3': [VerifyVoiceRequest_MetadataEntry$json],
 };
@@ -180,8 +237,21 @@ const VerifyVoiceResponse$json = {
     {'1': 'similarity_score', '3': 2, '4': 1, '5': 2, '10': 'similarityScore'},
     {'1': 'confidence', '3': 3, '4': 1, '5': 2, '10': 'confidence'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.voicebiometrics.VerificationStatus', '10': 'status'},
-    {'1': 'verification_timestamp', '3': 6, '4': 1, '5': 3, '10': 'verificationTimestamp'},
+    {
+      '1': 'status',
+      '3': 5,
+      '4': 1,
+      '5': 14,
+      '6': '.voicebiometrics.VerificationStatus',
+      '10': 'status'
+    },
+    {
+      '1': 'verification_timestamp',
+      '3': 6,
+      '4': 1,
+      '5': 3,
+      '10': 'verificationTimestamp'
+    },
   ],
 };
 
@@ -202,9 +272,10 @@ const CheckEnrollmentStatusRequest$json = {
 };
 
 /// Descriptor for `CheckEnrollmentStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List checkEnrollmentStatusRequestDescriptor = $convert.base64Decode(
-    'ChxDaGVja0Vucm9sbG1lbnRTdGF0dXNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA'
-    '==');
+final $typed_data.Uint8List checkEnrollmentStatusRequestDescriptor =
+    $convert.base64Decode(
+        'ChxDaGVja0Vucm9sbG1lbnRTdGF0dXNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA'
+        '==');
 
 @$core.Deprecated('Use checkEnrollmentStatusResponseDescriptor instead')
 const CheckEnrollmentStatusResponse$json = {
@@ -215,7 +286,14 @@ const CheckEnrollmentStatusResponse$json = {
     {'1': 'enrolled_at', '3': 3, '4': 1, '5': 3, '10': 'enrolledAt'},
     {'1': 'samples_count', '3': 4, '4': 1, '5': 5, '10': 'samplesCount'},
     {'1': 'quality_score', '3': 5, '4': 1, '5': 2, '10': 'qualityScore'},
-    {'1': 'voice_profile', '3': 6, '4': 1, '5': 11, '6': '.voicebiometrics.VoiceProfile', '10': 'voiceProfile'},
+    {
+      '1': 'voice_profile',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.voicebiometrics.VoiceProfile',
+      '10': 'voiceProfile'
+    },
   ],
 };
 
@@ -236,9 +314,10 @@ const DeleteVoiceEnrollmentRequest$json = {
 };
 
 /// Descriptor for `DeleteVoiceEnrollmentRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteVoiceEnrollmentRequestDescriptor = $convert.base64Decode(
-    'ChxEZWxldGVWb2ljZUVucm9sbG1lbnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA'
-    '==');
+final $typed_data.Uint8List deleteVoiceEnrollmentRequestDescriptor =
+    $convert.base64Decode(
+        'ChxEZWxldGVWb2ljZUVucm9sbG1lbnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA'
+        '==');
 
 @$core.Deprecated('Use deleteVoiceEnrollmentResponseDescriptor instead')
 const DeleteVoiceEnrollmentResponse$json = {
@@ -250,9 +329,10 @@ const DeleteVoiceEnrollmentResponse$json = {
 };
 
 /// Descriptor for `DeleteVoiceEnrollmentResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteVoiceEnrollmentResponseDescriptor = $convert.base64Decode(
-    'Ch1EZWxldGVWb2ljZUVucm9sbG1lbnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
-    'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List deleteVoiceEnrollmentResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1EZWxldGVWb2ljZUVucm9sbG1lbnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+        'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use updateVoiceEnrollmentRequestDescriptor instead')
 const UpdateVoiceEnrollmentRequest$json = {
@@ -260,15 +340,23 @@ const UpdateVoiceEnrollmentRequest$json = {
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'audio_samples', '3': 2, '4': 3, '5': 12, '10': 'audioSamples'},
-    {'1': 'format', '3': 3, '4': 1, '5': 11, '6': '.voicebiometrics.AudioFormat', '10': 'format'},
+    {
+      '1': 'format',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.voicebiometrics.AudioFormat',
+      '10': 'format'
+    },
   ],
 };
 
 /// Descriptor for `UpdateVoiceEnrollmentRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateVoiceEnrollmentRequestDescriptor = $convert.base64Decode(
-    'ChxVcGRhdGVWb2ljZUVucm9sbG1lbnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZB'
-    'IjCg1hdWRpb19zYW1wbGVzGAIgAygMUgxhdWRpb1NhbXBsZXMSNAoGZm9ybWF0GAMgASgLMhwu'
-    'dm9pY2ViaW9tZXRyaWNzLkF1ZGlvRm9ybWF0UgZmb3JtYXQ=');
+final $typed_data.Uint8List updateVoiceEnrollmentRequestDescriptor =
+    $convert.base64Decode(
+        'ChxVcGRhdGVWb2ljZUVucm9sbG1lbnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZB'
+        'IjCg1hdWRpb19zYW1wbGVzGAIgAygMUgxhdWRpb1NhbXBsZXMSNAoGZm9ybWF0GAMgASgLMhwu'
+        'dm9pY2ViaW9tZXRyaWNzLkF1ZGlvRm9ybWF0UgZmb3JtYXQ=');
 
 @$core.Deprecated('Use updateVoiceEnrollmentResponseDescriptor instead')
 const UpdateVoiceEnrollmentResponse$json = {
@@ -276,7 +364,13 @@ const UpdateVoiceEnrollmentResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'new_samples_count', '3': 2, '4': 1, '5': 5, '10': 'newSamplesCount'},
-    {'1': 'updated_quality_score', '3': 3, '4': 1, '5': 2, '10': 'updatedQualityScore'},
+    {
+      '1': 'updated_quality_score',
+      '3': 3,
+      '4': 1,
+      '5': 2,
+      '10': 'updatedQualityScore'
+    },
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -297,16 +391,31 @@ const GetVoiceEnrollmentRequest$json = {
 };
 
 /// Descriptor for `GetVoiceEnrollmentRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getVoiceEnrollmentRequestDescriptor = $convert.base64Decode(
-    'ChlHZXRWb2ljZUVucm9sbG1lbnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
+final $typed_data.Uint8List getVoiceEnrollmentRequestDescriptor =
+    $convert.base64Decode(
+        'ChlHZXRWb2ljZUVucm9sbG1lbnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
 
 @$core.Deprecated('Use getVoiceEnrollmentResponseDescriptor instead')
 const GetVoiceEnrollmentResponse$json = {
   '1': 'GetVoiceEnrollmentResponse',
   '2': [
     {'1': 'exists', '3': 1, '4': 1, '5': 8, '10': 'exists'},
-    {'1': 'voice_profile', '3': 2, '4': 1, '5': 11, '6': '.voicebiometrics.VoiceProfile', '10': 'voiceProfile'},
-    {'1': 'metadata', '3': 3, '4': 1, '5': 11, '6': '.voicebiometrics.EnrollmentMetadata', '10': 'metadata'},
+    {
+      '1': 'voice_profile',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.voicebiometrics.VoiceProfile',
+      '10': 'voiceProfile'
+    },
+    {
+      '1': 'metadata',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.voicebiometrics.EnrollmentMetadata',
+      '10': 'metadata'
+    },
   ],
 };
 
@@ -327,8 +436,43 @@ const VoiceProfile$json = {
     {'1': 'updated_at', '3': 4, '4': 1, '5': 3, '10': 'updatedAt'},
     {'1': 'samples_count', '3': 5, '4': 1, '5': 5, '10': 'samplesCount'},
     {'1': 'quality_score', '3': 6, '4': 1, '5': 2, '10': 'qualityScore'},
-    {'1': 'verification_count', '3': 7, '4': 1, '5': 5, '10': 'verificationCount'},
+    {
+      '1': 'verification_count',
+      '3': 7,
+      '4': 1,
+      '5': 5,
+      '10': 'verificationCount'
+    },
     {'1': 'last_verified_at', '3': 8, '4': 1, '5': 3, '10': 'lastVerifiedAt'},
+    {'1': 'custom_voice_id', '3': 9, '4': 1, '5': 9, '10': 'customVoiceId'},
+    {
+      '1': 'custom_voice_provider',
+      '3': 10,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceProvider'
+    },
+    {
+      '1': 'custom_voice_status',
+      '3': 11,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceStatus'
+    },
+    {
+      '1': 'custom_voice_created_at',
+      '3': 12,
+      '4': 1,
+      '5': 3,
+      '10': 'customVoiceCreatedAt'
+    },
+    {
+      '1': 'custom_voice_error',
+      '3': 13,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceError'
+    },
   ],
 };
 
@@ -339,7 +483,11 @@ final $typed_data.Uint8List voiceProfileDescriptor = $convert.base64Decode(
     'dXBkYXRlZF9hdBgEIAEoA1IJdXBkYXRlZEF0EiMKDXNhbXBsZXNfY291bnQYBSABKAVSDHNhbX'
     'BsZXNDb3VudBIjCg1xdWFsaXR5X3Njb3JlGAYgASgCUgxxdWFsaXR5U2NvcmUSLQoSdmVyaWZp'
     'Y2F0aW9uX2NvdW50GAcgASgFUhF2ZXJpZmljYXRpb25Db3VudBIoChBsYXN0X3ZlcmlmaWVkX2'
-    'F0GAggASgDUg5sYXN0VmVyaWZpZWRBdA==');
+    'F0GAggASgDUg5sYXN0VmVyaWZpZWRBdBImCg9jdXN0b21fdm9pY2VfaWQYCSABKAlSDWN1c3Rv'
+    'bVZvaWNlSWQSMgoVY3VzdG9tX3ZvaWNlX3Byb3ZpZGVyGAogASgJUhNjdXN0b21Wb2ljZVByb3'
+    'ZpZGVyEi4KE2N1c3RvbV92b2ljZV9zdGF0dXMYCyABKAlSEWN1c3RvbVZvaWNlU3RhdHVzEjUK'
+    'F2N1c3RvbV92b2ljZV9jcmVhdGVkX2F0GAwgASgDUhRjdXN0b21Wb2ljZUNyZWF0ZWRBdBIsCh'
+    'JjdXN0b21fdm9pY2VfZXJyb3IYDSABKAlSEGN1c3RvbVZvaWNlRXJyb3I=');
 
 @$core.Deprecated('Use enrollmentMetadataDescriptor instead')
 const EnrollmentMetadata$json = {
@@ -348,7 +496,14 @@ const EnrollmentMetadata$json = {
     {'1': 'device_info', '3': 1, '4': 1, '5': 9, '10': 'deviceInfo'},
     {'1': 'audio_quality', '3': 2, '4': 1, '5': 9, '10': 'audioQuality'},
     {'1': 'sample_ids', '3': 3, '4': 3, '5': 9, '10': 'sampleIds'},
-    {'1': 'custom_fields', '3': 4, '4': 3, '5': 11, '6': '.voicebiometrics.EnrollmentMetadata.CustomFieldsEntry', '10': 'customFields'},
+    {
+      '1': 'custom_fields',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.voicebiometrics.EnrollmentMetadata.CustomFieldsEntry',
+      '10': 'customFields'
+    },
   ],
   '3': [EnrollmentMetadata_CustomFieldsEntry$json],
 };
@@ -389,3 +544,180 @@ final $typed_data.Uint8List audioFormatDescriptor = $convert.base64Decode(
     'VSCnNhbXBsZVJhdGUSGgoIY2hhbm5lbHMYAyABKAVSCGNoYW5uZWxzEhsKCWJpdF9kZXB0aBgE'
     'IAEoBVIIYml0RGVwdGg=');
 
+@$core.Deprecated('Use getCustomVoiceStatusRequestDescriptor instead')
+const GetCustomVoiceStatusRequest$json = {
+  '1': 'GetCustomVoiceStatusRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetCustomVoiceStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCustomVoiceStatusRequestDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRDdXN0b21Wb2ljZVN0YXR1c1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklk');
+
+@$core.Deprecated('Use getCustomVoiceStatusResponseDescriptor instead')
+const GetCustomVoiceStatusResponse$json = {
+  '1': 'GetCustomVoiceStatusResponse',
+  '2': [
+    {'1': 'has_custom_voice', '3': 1, '4': 1, '5': 8, '10': 'hasCustomVoice'},
+    {'1': 'custom_voice_id', '3': 2, '4': 1, '5': 9, '10': 'customVoiceId'},
+    {
+      '1': 'custom_voice_provider',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceProvider'
+    },
+    {
+      '1': 'custom_voice_status',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceStatus'
+    },
+    {
+      '1': 'custom_voice_created_at',
+      '3': 5,
+      '4': 1,
+      '5': 3,
+      '10': 'customVoiceCreatedAt'
+    },
+    {
+      '1': 'custom_voice_error',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceError'
+    },
+    {'1': 'enabled', '3': 7, '4': 1, '5': 8, '10': 'enabled'},
+  ],
+};
+
+/// Descriptor for `GetCustomVoiceStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCustomVoiceStatusResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRDdXN0b21Wb2ljZVN0YXR1c1Jlc3BvbnNlEigKEGhhc19jdXN0b21fdm9pY2UYASABKA'
+    'hSDmhhc0N1c3RvbVZvaWNlEiYKD2N1c3RvbV92b2ljZV9pZBgCIAEoCVINY3VzdG9tVm9pY2VJ'
+    'ZBIyChVjdXN0b21fdm9pY2VfcHJvdmlkZXIYAyABKAlSE2N1c3RvbVZvaWNlUHJvdmlkZXISLg'
+    'oTY3VzdG9tX3ZvaWNlX3N0YXR1cxgEIAEoCVIRY3VzdG9tVm9pY2VTdGF0dXMSNQoXY3VzdG9t'
+    'X3ZvaWNlX2NyZWF0ZWRfYXQYBSABKANSFGN1c3RvbVZvaWNlQ3JlYXRlZEF0EiwKEmN1c3RvbV'
+    '92b2ljZV9lcnJvchgGIAEoCVIQY3VzdG9tVm9pY2VFcnJvchIYCgdlbmFibGVkGAcgASgIUgdl'
+    'bmFibGVk');
+
+@$core.Deprecated('Use setCustomVoiceEnabledRequestDescriptor instead')
+const SetCustomVoiceEnabledRequest$json = {
+  '1': 'SetCustomVoiceEnabledRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'enabled', '3': 2, '4': 1, '5': 8, '10': 'enabled'},
+  ],
+};
+
+/// Descriptor for `SetCustomVoiceEnabledRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setCustomVoiceEnabledRequestDescriptor =
+    $convert.base64Decode(
+        'ChxTZXRDdXN0b21Wb2ljZUVuYWJsZWRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZB'
+        'IYCgdlbmFibGVkGAIgASgIUgdlbmFibGVk');
+
+@$core.Deprecated('Use setCustomVoiceEnabledResponseDescriptor instead')
+const SetCustomVoiceEnabledResponse$json = {
+  '1': 'SetCustomVoiceEnabledResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'custom_voice_status',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceStatus'
+    },
+  ],
+};
+
+/// Descriptor for `SetCustomVoiceEnabledResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setCustomVoiceEnabledResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1TZXRDdXN0b21Wb2ljZUVuYWJsZWRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+        'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USLgoTY3VzdG9tX3ZvaWNlX3N0YXR1cxgDIAEo'
+        'CVIRY3VzdG9tVm9pY2VTdGF0dXM=');
+
+@$core.Deprecated('Use retriggerVoiceCloningRequestDescriptor instead')
+const RetriggerVoiceCloningRequest$json = {
+  '1': 'RetriggerVoiceCloningRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `RetriggerVoiceCloningRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List retriggerVoiceCloningRequestDescriptor =
+    $convert.base64Decode(
+        'ChxSZXRyaWdnZXJWb2ljZUNsb25pbmdSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA'
+        '==');
+
+@$core.Deprecated('Use retriggerVoiceCloningResponseDescriptor instead')
+const RetriggerVoiceCloningResponse$json = {
+  '1': 'RetriggerVoiceCloningResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'custom_voice_status',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceStatus'
+    },
+  ],
+};
+
+/// Descriptor for `RetriggerVoiceCloningResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List retriggerVoiceCloningResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1SZXRyaWdnZXJWb2ljZUNsb25pbmdSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+        'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USLgoTY3VzdG9tX3ZvaWNlX3N0YXR1cxgDIAEo'
+        'CVIRY3VzdG9tVm9pY2VTdGF0dXM=');
+
+@$core.Deprecated('Use updateCloningStatusRequestDescriptor instead')
+const UpdateCloningStatusRequest$json = {
+  '1': 'UpdateCloningStatusRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'voice_id', '3': 2, '4': 1, '5': 9, '10': 'voiceId'},
+    {'1': 'provider', '3': 3, '4': 1, '5': 9, '10': 'provider'},
+    {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'error', '3': 5, '4': 1, '5': 9, '10': 'error'},
+  ],
+};
+
+/// Descriptor for `UpdateCloningStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateCloningStatusRequestDescriptor =
+    $convert.base64Decode(
+        'ChpVcGRhdGVDbG9uaW5nU3RhdHVzUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSGQ'
+        'oIdm9pY2VfaWQYAiABKAlSB3ZvaWNlSWQSGgoIcHJvdmlkZXIYAyABKAlSCHByb3ZpZGVyEhYK'
+        'BnN0YXR1cxgEIAEoCVIGc3RhdHVzEhQKBWVycm9yGAUgASgJUgVlcnJvcg==');
+
+@$core.Deprecated('Use updateCloningStatusResponseDescriptor instead')
+const UpdateCloningStatusResponse$json = {
+  '1': 'UpdateCloningStatusResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'custom_voice_status',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'customVoiceStatus'
+    },
+  ],
+};
+
+/// Descriptor for `UpdateCloningStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateCloningStatusResponseDescriptor =
+    $convert.base64Decode(
+        'ChtVcGRhdGVDbG9uaW5nU3RhdHVzUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEi4KE2N1c3RvbV92b2ljZV9zdGF0dXMYAyABKAlS'
+        'EWN1c3RvbVZvaWNlU3RhdHVz');

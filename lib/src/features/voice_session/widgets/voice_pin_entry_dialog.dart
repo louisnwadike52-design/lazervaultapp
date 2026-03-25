@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,7 +34,9 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
   bool _isProcessing = false;
   String? _errorMessage;
   int _attempts = 0;
+  int _networkRetries = 0;
   static const int _maxAttempts = 3;
+  static const int _maxNetworkRetries = 3;
 
   String get _transferGatewayUrl {
     return dotenv.env['TRANSFER_GATEWAY_URL'] ?? 'http://localhost:8084';
@@ -133,7 +136,7 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
           'X-Account-Id': payload['account_id'] as String? ?? '',
         },
         body: jsonEncode(body),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (!mounted) return;
 
@@ -166,19 +169,23 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
       }
     } catch (e) {
       if (!mounted) return;
-      _attempts++;
-      if (_attempts >= _maxAttempts) {
-        widget.onComplete(false, error: 'Network error after multiple attempts');
-      } else {
-        setState(() {
-          _isProcessing = false;
-          _errorMessage = 'Connection error. Tap to retry. (${_maxAttempts - _attempts} left)';
-          for (final c in _controllers) {
-            c.clear();
-          }
-          _focusNodes[0].requestFocus();
-        });
+      // Network/timeout errors should NOT count as PIN attempts — only wrong PINs should
+      _networkRetries++;
+      if (_networkRetries >= _maxNetworkRetries) {
+        // Too many network failures — notify caller so session can continue
+        widget.onComplete(false, error: 'Network error. Please try again later.');
+        return;
       }
+      setState(() {
+        _isProcessing = false;
+        _errorMessage = e.toString().contains('TimeoutException')
+            ? 'Request timed out. Please try again.'
+            : 'Connection error. Please try again.';
+        for (final c in _controllers) {
+          c.clear();
+        }
+        _focusNodes[0].requestFocus();
+      });
     }
   }
 

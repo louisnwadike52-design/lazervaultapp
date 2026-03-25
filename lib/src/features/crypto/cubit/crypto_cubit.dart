@@ -8,6 +8,10 @@ import 'crypto_state.dart';
 class CryptoCubit extends Cubit<CryptoState> {
   final CryptoRepository repository;
 
+  /// Guard against concurrent financial operations (buy/sell/convert).
+  /// Prevents double-tap / rapid re-invocation from executing two transactions.
+  bool _isTransacting = false;
+
   CryptoCubit({required this.repository}) : super(CryptoInitial());
 
   Future<void> loadCryptos() async {
@@ -66,22 +70,29 @@ class CryptoCubit extends Cubit<CryptoState> {
 
   Future<void> searchCryptos(String query) async {
     try {
-      if (state is CryptosLoaded) {
-        if (isClosed) return;
-        emit((state as CryptosLoaded).copyWith(isSearching: true));
+      final currentState = state;
+      if (currentState is! CryptosLoaded) return;
+      if (isClosed) return;
+      emit(currentState.copyWith(isSearching: true));
 
-        if (query.isEmpty) {
-          final cryptos = await repository.getCryptos();
-          if (isClosed) return;
-          emit((state as CryptosLoaded).copyWith(
+      if (query.isEmpty) {
+        final cryptos = await repository.getCryptos();
+        if (isClosed) return;
+        // Re-check state after async gap -- another emit may have changed it
+        final postState = state;
+        if (postState is CryptosLoaded) {
+          emit(postState.copyWith(
             cryptos: cryptos,
-            searchQuery: null,
+            clearSearchQuery: true,
             isSearching: false,
           ));
-        } else {
-          final searchResults = await repository.searchCryptos(query);
-          if (isClosed) return;
-          emit((state as CryptosLoaded).copyWith(
+        }
+      } else {
+        final searchResults = await repository.searchCryptos(query);
+        if (isClosed) return;
+        final postState = state;
+        if (postState is CryptosLoaded) {
+          emit(postState.copyWith(
             cryptos: searchResults,
             searchQuery: query,
             isSearching: false,
@@ -90,7 +101,13 @@ class CryptoCubit extends Cubit<CryptoState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(CryptoError(message: e.toString()));
+      // On search failure, revert to non-searching state instead of full error
+      final currentState = state;
+      if (currentState is CryptosLoaded) {
+        emit(currentState.copyWith(isSearching: false));
+      } else {
+        emit(CryptoError(message: e.toString()));
+      }
     }
   }
 
@@ -116,25 +133,32 @@ class CryptoCubit extends Cubit<CryptoState> {
 
   Future<void> changeTimeframe(String timeframe) async {
     try {
-      if (state is CryptoDetailsLoaded) {
-        final crypto = (state as CryptoDetailsLoaded).crypto;
-        if (isClosed) return;
-        emit(CryptoLoading());
+      final currentState = state;
+      if (currentState is! CryptoDetailsLoaded) return;
+      final crypto = currentState.crypto;
 
-        final priceHistory = await repository.getCryptoPriceHistory(
-          crypto.id,
-          range: timeframe,
-        );
+      // Keep existing data visible while loading new timeframe instead of
+      // emitting CryptoLoading which would blank the screen.
+      final priceHistory = await repository.getCryptoPriceHistory(
+        crypto.id,
+        range: timeframe,
+      );
 
-        if (isClosed) return;
-        emit(CryptoDetailsLoaded(
-          crypto: crypto,
-          priceHistory: priceHistory,
-          selectedTimeframe: timeframe,
-        ));
-      }
+      if (isClosed) return;
+      emit(CryptoDetailsLoaded(
+        crypto: crypto,
+        priceHistory: priceHistory,
+        selectedTimeframe: timeframe,
+      ));
     } catch (e) {
       if (isClosed) return;
+      // On timeframe change failure, keep existing detail state instead of
+      // navigating to a full-screen error.
+      final currentState = state;
+      if (currentState is CryptoDetailsLoaded) {
+        // Silently keep old data -- user can retry the timeframe tap
+        return;
+      }
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -146,6 +170,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     required String transactionPin,
     String? fiatCurrency,
   }) async {
+    if (_isTransacting) return; // Prevent concurrent buy operations
+    _isTransacting = true;
     try {
       if (isClosed) return;
       emit(CryptoTransactionProcessing(
@@ -206,6 +232,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     } catch (e) {
       if (isClosed) return;
       emit(CryptoError(message: e.toString()));
+    } finally {
+      _isTransacting = false;
     }
   }
 
@@ -216,6 +244,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     required String transactionPin,
     String? fiatCurrency,
   }) async {
+    if (_isTransacting) return; // Prevent concurrent sell operations
+    _isTransacting = true;
     try {
       if (isClosed) return;
       emit(CryptoTransactionProcessing(
@@ -276,6 +306,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     } catch (e) {
       if (isClosed) return;
       emit(CryptoError(message: e.toString()));
+    } finally {
+      _isTransacting = false;
     }
   }
 
@@ -286,6 +318,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     required String transactionPin,
     String? fiatCurrency,
   }) async {
+    if (_isTransacting) return; // Prevent concurrent convert operations
+    _isTransacting = true;
     try {
       if (isClosed) return;
       emit(CryptoTransactionProcessing(
@@ -342,6 +376,8 @@ class CryptoCubit extends Cubit<CryptoState> {
     } catch (e) {
       if (isClosed) return;
       emit(CryptoError(message: e.toString()));
+    } finally {
+      _isTransacting = false;
     }
   }
 

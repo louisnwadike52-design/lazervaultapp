@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/utils/kyc_error_handler.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
@@ -27,12 +28,40 @@ import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dar
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_error_bottomsheet.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
 import 'package:lazervault/src/features/widgets/budget_override_dialog.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:uuid/uuid.dart';
+
+/// Maps a service-category subcategory name to the analytics label that the
+/// accounts-service SQL `subCategoryExpr` expects (e.g. "food" → "Food & Drinks").
+/// These labels must match the CASE expressions in transaction_repository.go.
+String _categoryToAnalyticsLabel(String subCategoryName) {
+  return switch (subCategoryName.toLowerCase()) {
+    'food' => 'Food & Drinks',
+    'shopping' => 'Shopping',
+    'transport' => 'Transportation',
+    'entertainment' => 'Entertainment',
+    'healthcare' => 'Healthcare',
+    'education' => 'Education',
+    'rent' => 'Rent & Mortgage',
+    'gifts' => 'Gifts & Donations',
+    'travel' => 'Travel',
+    'groceries' => 'Groceries',
+    'insurance' => 'Insurance',
+    'personal_care' => 'Personal Care',
+    'subscriptions' => 'Subscriptions',
+    'bills' || 'utilities' => 'Bills & Utilities',
+    _ => subCategoryName
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .join(' '),
+  };
+}
 
 class InitiateSendFunds extends StatefulWidget {
   final RecipientModel? recipient;
@@ -82,6 +111,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   // before navigating to receipt. Prevents recurring error being lost during navigation.
   bool _recurringSetupPending = false;
   bool _transferSucceeded = false;
+  bool _hasNavigatedToReceipt = false;
   TransferSuccess? _pendingTransferSuccess;
 
   // Stored for deferred recurring setup after transfer succeeds
@@ -181,7 +211,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   Future<void> _loadCategories() async {
     try {
       final budgetCubit = context.read<BudgetCubit>();
-      final categories = await budgetCubit.loadServiceCategories('transfer');
+      final categories = await budgetCubit.loadAllServiceCategories();
       if (mounted && categories.isNotEmpty) {
         setState(() {
           _availableCategories = categories;
@@ -485,7 +515,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                     Text(
                       NumberFormat.currency(
                               symbol: _getCurrencySymbol(account.currency), decimalDigits: 2)
-                          .format(account.balance),
+                          .format(account.availableBalance),
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
@@ -721,9 +751,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // 6. CRITICAL: Validate sufficient balance
-    // Note: Backend uses AvailableBalance for the CanDebit check, which is what
-    // the frontend receives as 'balance' field from AccountSummary.
-    double availableBalance = selectedAccount.balance;
+    // Note: Backend uses AvailableBalance for the CanDebit check.
+    // Use availableBalance getter which accounts for held funds.
+    double availableBalance = selectedAccount.availableBalance;
 
     // For external transfers, estimate fee for pre-validation
     // The exact fee will be fetched later, but we use a cached/estimated fee here
@@ -1201,6 +1231,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                               onPressed: isDialogLoading
                                   ? null
                                   : () async {
+                                      // Guard against double-tap: disable button immediately
+                                      if (_isConfirmingTransfer) return;
+                                      setState(() {
+                                        _isConfirmingTransfer = true;
+                                      });
+
                                       print("Dialog Button: Pressed!");
                                       // Generate unique transaction ID
                                       final transactionId = 'transfer_${const Uuid().v4()}';
@@ -1342,6 +1378,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     required String verificationToken,
   }) async {
     print("_executeTransferWithPin: Entered function.");
+    if (!mounted) {
+      print("_executeTransferWithPin: Widget unmounted, aborting.");
+      return;
+    }
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       print("_executeTransferWithPin: Error - Not authenticated.");
@@ -1385,10 +1425,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // Convert minor units to major units for SendFundsRequest (e.g., 10050 -> 100.50)
     double amountMajor = amountMinorUnits / 100.0;
 
-    final reference = _referenceController.text.trim();
-    final narration = selectedCategory != null
-        ? '${selectedCategory!.displayName}: ${reference.isNotEmpty ? reference : "Transfer"}'
-        : (reference.isNotEmpty ? reference : 'Transfer');
+    final userNarration = _referenceController.text.trim();
+    // Build narration with category prefix for statistics subcategory tracking.
+    // The accounts-service SQL subCategoryExpr matches "CategoryName:" prefix patterns.
+    final String narration;
+    if (selectedCategory != null) {
+      final categoryLabel = _categoryToAnalyticsLabel(selectedCategory!.subCategoryName);
+      final detail = userNarration.isNotEmpty ? userNarration : 'Transfer';
+      narration = '$categoryLabel: $detail';
+    } else if (userNarration.isNotEmpty) {
+      narration = userNarration;
+    } else {
+      narration = 'Transfer from LazerVault';
+    }
 
     // Re-validate scheduled date hasn't become stale while user was in PIN flow
     if (scheduledDate != null && !scheduledDate!.isAfter(DateTime.now())) {
@@ -1401,6 +1450,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     final toAccountNumber = _recipient!.accountNumber;
 
     // Execute the immediate transfer first
+    if (!mounted) {
+      print("_executeTransferWithPin: Widget unmounted before transfer, aborting.");
+      return;
+    }
     print("_executeTransferWithPin: Calling TransferCubit.sendFunds...");
     print("_executeTransferWithPin: fromAccountId=$fromAccountId, toAccountNumber=$toAccountNumber, amount=$amountMajor");
     final transferType = (_recipient!.type == 'internal' || _recipient!.bankName.toLowerCase() == 'lazervault')
@@ -1418,6 +1471,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       transactionId: transactionId,
       verificationToken: verificationToken,
       scheduledAt: scheduledDate,
+      expenseCategory: selectedCategory?.budgetCategory,
     );
     print("_executeTransferWithPin: Transfer initiated.");
 
@@ -1439,7 +1493,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   /// Navigate to receipt screen after transfer success.
   /// Called immediately if no recurring setup, or deferred until recurring resolves.
   void _navigateToReceipt(BuildContext context, TransferSuccess transferState) {
-    if (!mounted) return;
+    if (!mounted || _hasNavigatedToReceipt) return;
+    _hasNavigatedToReceipt = true;
 
     final accountState = context.read<AccountCardsSummaryCubit>().state;
     final summaries = switch (accountState) {
@@ -1684,6 +1739,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   void _resetRecurringState() {
     _recurringSetupPending = false;
     _transferSucceeded = false;
+    _hasNavigatedToReceipt = false;
     _pendingTransferSuccess = null;
     _pendingRecurringTransactionId = null;
     _pendingRecurringVerificationToken = null;
@@ -2098,67 +2154,87 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             }
           }
 
-          // ENHANCED ERROR HANDLING
-          String errorTitle = 'Transfer Failed';
-          String errorMessage = transferState.message;
-          Color errorColor = Colors.red.withValues(alpha: 0.7);
-          Duration errorDuration = const Duration(seconds: 4);
-
-          final lowerMessage = transferState.message.toLowerCase();
-
-          if (lowerMessage.contains('insufficient') || lowerMessage.contains('balance')) {
-            errorTitle = 'Insufficient Funds';
-            errorMessage = 'Your account does not have sufficient funds for this transfer. Please check your balance and try again.';
-            errorDuration = const Duration(seconds: 5);
-          } else if (lowerMessage.contains('network') || lowerMessage.contains('connection') || lowerMessage.contains('timeout')) {
-            errorTitle = 'Network Error';
-            errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
-            errorColor = Colors.orange.withValues(alpha: 0.7);
-            errorDuration = const Duration(seconds: 5);
-          } else if ((lowerMessage.contains('auth') || lowerMessage.contains('token') || lowerMessage.contains('unauthorized')) && !lowerMessage.contains('authorization key') && !lowerMessage.contains('provider') && !lowerMessage.contains('flutterwave')) {
-            errorTitle = 'Session Expired';
-            errorMessage = 'Your session has expired. Please log in again.';
-            errorDuration = const Duration(seconds: 6);
-          } else if (lowerMessage.contains('authorization key') || lowerMessage.contains('provider') || lowerMessage.contains('flutterwave error')) {
-            errorTitle = 'Transfer Failed';
-            errorMessage = 'The payment provider encountered an error. Please try again later or contact support.';
-            errorDuration = const Duration(seconds: 5);
-          } else if (lowerMessage.contains('recipient') || lowerMessage.contains('not found')) {
-            errorTitle = 'Recipient Not Found';
-            errorMessage = 'The recipient could not be found. Please verify the recipient details.';
-          } else if (lowerMessage.contains('account') && lowerMessage.contains('not found')) {
-            errorTitle = 'Account Error';
-            errorMessage = 'Source account not found or invalid. Please select another account.';
-          } else if (lowerMessage.contains('limit') || lowerMessage.contains('exceeded')) {
-            errorTitle = 'Transaction Limit Exceeded';
-            errorMessage = 'This transfer exceeds your transaction limits. Please contact support for assistance.';
-            errorDuration = const Duration(seconds: 6);
-          } else if (lowerMessage.contains('frozen') || lowerMessage.contains('locked') || lowerMessage.contains('suspended')) {
-            errorTitle = 'Account Restricted';
-            errorMessage = 'Your account has been temporarily restricted. Please contact support for assistance.';
-            errorDuration = const Duration(seconds: 6);
-          } else if (lowerMessage.contains('invalid') && lowerMessage.contains('amount')) {
-            errorTitle = 'Invalid Amount';
-            errorMessage = 'The transfer amount is invalid. Please enter a valid amount.';
-          } else if (lowerMessage.contains('grpc') || lowerMessage.contains('unavailable')) {
-            errorTitle = 'Service Unavailable';
-            errorMessage = 'The service is temporarily unavailable. Please try again in a few moments.';
-            errorColor = Colors.orange.withValues(alpha: 0.7);
-            errorDuration = const Duration(seconds: 5);
+          // KYC UPGRADE MODAL — show before generic error handling
+          if (transferState.isKYCError && mounted) {
+            handleKYCError(transferState.message, context, 'send money');
+            return; // Don't show snackbar — modal is shown
           }
 
-          Get.snackbar(
-            errorTitle,
-            errorMessage,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: errorColor,
-            colorText: Colors.white,
-            duration: errorDuration,
-            icon: Icon(
-              Icons.error_outline,
-              color: Colors.white,
-            ),
-          );
+          // Show error bottom sheet for financial errors that need user attention,
+          // fall back to snackbar for minor/informational errors.
+          final lowerMessage = transferState.message.toLowerCase();
+          final isFinancialError = lowerMessage.contains('insufficient') ||
+              lowerMessage.contains('balance') ||
+              lowerMessage.contains('daily') ||
+              lowerMessage.contains('limit') ||
+              lowerMessage.contains('exceeded') ||
+              lowerMessage.contains('frozen') ||
+              lowerMessage.contains('locked') ||
+              lowerMessage.contains('suspended') ||
+              lowerMessage.contains('restricted') ||
+              lowerMessage.contains('another transfer') ||
+              lowerMessage.contains('in progress') ||
+              lowerMessage.contains('resource busy') ||
+              lowerMessage.contains('rate limit') ||
+              lowerMessage.contains('too many');
+
+          if (isFinancialError && mounted) {
+            showTransferErrorBottomSheet(
+              context,
+              transferState.message,
+              onRetry: transferState.isRetryable ? () {
+                // User can retry from the current screen
+              } : null,
+            );
+          } else {
+            // Lightweight snackbar for network, session, provider, and generic errors
+            String errorTitle = 'Transfer Failed';
+            String errorMessage = transferState.message;
+            Color errorColor = Colors.red.withValues(alpha: 0.7);
+            Duration errorDuration = const Duration(seconds: 4);
+
+            if (lowerMessage.contains('network') || lowerMessage.contains('connection') || lowerMessage.contains('timeout')) {
+              errorTitle = 'Network Error';
+              errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+              errorColor = Colors.orange.withValues(alpha: 0.7);
+              errorDuration = const Duration(seconds: 5);
+            } else if ((lowerMessage.contains('auth') || lowerMessage.contains('token') || lowerMessage.contains('unauthorized')) && !lowerMessage.contains('authorization key') && !lowerMessage.contains('provider') && !lowerMessage.contains('flutterwave')) {
+              errorTitle = 'Session Expired';
+              errorMessage = 'Your session has expired. Please log in again.';
+              errorDuration = const Duration(seconds: 6);
+            } else if (lowerMessage.contains('authorization key') || lowerMessage.contains('provider') || lowerMessage.contains('flutterwave error')) {
+              errorTitle = 'Transfer Failed';
+              errorMessage = 'The payment provider encountered an error. Please try again later or contact support.';
+              errorDuration = const Duration(seconds: 5);
+            } else if (lowerMessage.contains('recipient') || lowerMessage.contains('not found')) {
+              errorTitle = 'Recipient Not Found';
+              errorMessage = 'The recipient could not be found. Please verify the recipient details.';
+            } else if (lowerMessage.contains('account') && lowerMessage.contains('not found')) {
+              errorTitle = 'Account Error';
+              errorMessage = 'Source account not found or invalid. Please select another account.';
+            } else if (lowerMessage.contains('invalid') && lowerMessage.contains('amount')) {
+              errorTitle = 'Invalid Amount';
+              errorMessage = 'The transfer amount is invalid. Please enter a valid amount.';
+            } else if (lowerMessage.contains('grpc') || lowerMessage.contains('unavailable')) {
+              errorTitle = 'Service Unavailable';
+              errorMessage = 'The service is temporarily unavailable. Please try again in a few moments.';
+              errorColor = Colors.orange.withValues(alpha: 0.7);
+              errorDuration = const Duration(seconds: 5);
+            }
+
+            Get.snackbar(
+              errorTitle,
+              errorMessage,
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: errorColor,
+              colorText: Colors.white,
+              duration: errorDuration,
+              icon: Icon(
+                Icons.error_outline,
+                color: Colors.white,
+              ),
+            );
+          }
         }
       },
       builder: (context, transferState) {
@@ -2205,7 +2281,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             if (summaries.isNotEmpty &&
                 selectedCardIndex < summaries.length) {
               maxAmount =
-                  summaries[selectedCardIndex].balance; // Example: use balance as max
+                  summaries[selectedCardIndex].availableBalance; // Example: use available balance as max
             }
 
             return Scaffold(
@@ -2366,7 +2442,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           controller: _amountController,
                                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                           inputFormatters: [
-                                            FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                                            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
                                           ],
                                           style: const TextStyle(
                                             color: Colors.white,
@@ -2480,7 +2556,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                             decoration: const InputDecoration(
                                               border: InputBorder.none,
                                               hintText:
-                                                  'Add a reference (optional)',
+                                                  'Add narration (optional)',
                                               hintStyle: TextStyle(
                                                 color: Colors.white70,
                                                 fontSize: 14,

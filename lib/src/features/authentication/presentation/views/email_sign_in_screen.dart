@@ -109,8 +109,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 );
 
                 if (fromForgotPasscode) {
-                  // Always go to passcode setup when resetting
-                  Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {'fromLoginFlow': true});
+                  // Go to passcode setup when resetting — pass hasTransactionPin
+                  // so user isn't routed to TX PIN setup if they already have one
+                  Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
+                    'fromLoginFlow': true,
+                    'hasTransactionPin': profile.user.hasTransactionPin,
+                    'fromForgotPasscode': true,
+                  });
                   break;
                 }
 

@@ -8,6 +8,8 @@ class VoiceLanguage {
   final String nativeName;
   final String flag;
   final bool supportsVoiceCustomization;
+  final bool supportsVoiceCloning;
+  final String? cloningProvider;
   final List<VoiceOption> availableVoices;
   final String provider; // "elevenlabs", "yarngpt", "openai"
   final String defaultVoice;
@@ -18,6 +20,8 @@ class VoiceLanguage {
     required this.nativeName,
     required this.flag,
     required this.supportsVoiceCustomization,
+    this.supportsVoiceCloning = false,
+    this.cloningProvider,
     this.availableVoices = const [],
     this.provider = 'openai',
     this.defaultVoice = '',
@@ -31,6 +35,9 @@ class VoiceLanguage {
       flag: json['flag'] as String? ?? '',
       supportsVoiceCustomization:
           json['supportsVoiceCustomization'] as bool? ?? false,
+      supportsVoiceCloning:
+          json['supportsVoiceCloning'] as bool? ?? false,
+      cloningProvider: json['cloningProvider'] as String?,
       availableVoices: (json['availableVoices'] as List<dynamic>?)
               ?.map((v) => VoiceOption.fromJson(v as Map<String, dynamic>))
               .toList() ??
@@ -46,6 +53,8 @@ class VoiceLanguage {
         'nativeName': nativeName,
         'flag': flag,
         'supportsVoiceCustomization': supportsVoiceCustomization,
+        'supportsVoiceCloning': supportsVoiceCloning,
+        'cloningProvider': cloningProvider,
         'availableVoices': availableVoices.map((v) => v.toJson()).toList(),
         'provider': provider,
         'defaultVoice': defaultVoice,
@@ -130,21 +139,17 @@ class VoiceLanguageDefaults {
         nativeName: 'English',
         flag: '',
         supportsVoiceCustomization: true,
-        provider: 'elevenlabs',
-        defaultVoice: '21m00Tcm4TlvDq8ikWAM',
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
+        provider: 'openai',
+        defaultVoice: 'alloy',
         availableVoices: [
-          VoiceOption(id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', gender: 'female', accent: 'American'),
-          VoiceOption(id: '29vD33N1CtxCmqQRPOHJ', name: 'Drew', gender: 'male', accent: 'American'),
-          VoiceOption(id: '2EiwWnXFnvU5JabPnv8n', name: 'Clyde', gender: 'male', accent: 'American'),
-          VoiceOption(id: '5Q0t7uMcjvnagumLfvZi', name: 'Paul', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli', gender: 'female', accent: 'American'),
-          VoiceOption(id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'VR6AewLTigWG4xSOukaG', name: 'Arnold', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', gender: 'male', accent: 'American'),
-          VoiceOption(id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Sam', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
+          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
         ],
       ),
       VoiceLanguage(
@@ -169,6 +174,8 @@ class VoiceLanguageDefaults {
         nativeName: 'Igbo',
         flag: '',
         supportsVoiceCustomization: true,
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
         provider: 'yarngpt',
         defaultVoice: 'igbo_female1',
         availableVoices: [
@@ -183,6 +190,8 @@ class VoiceLanguageDefaults {
         nativeName: 'Hausa',
         flag: '',
         supportsVoiceCustomization: true,
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
         provider: 'yarngpt',
         defaultVoice: 'hausa_female1',
         availableVoices: [
@@ -224,8 +233,18 @@ class VoiceLanguageDefaults {
         nativeName: 'English',
         flag: '',
         supportsVoiceCustomization: true,
-        provider: 'elevenlabs',
-        defaultVoice: '21m00Tcm4TlvDq8ikWAM',
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
+        provider: 'openai',
+        defaultVoice: 'alloy',
+        availableVoices: [
+          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
+          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+        ],
       ),
       VoiceLanguage(
         code: 'es',
@@ -233,6 +252,8 @@ class VoiceLanguageDefaults {
         nativeName: 'Español',
         flag: '',
         supportsVoiceCustomization: true,
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
         provider: 'openai',
         defaultVoice: 'nova',
         availableVoices: [
@@ -252,8 +273,18 @@ class VoiceLanguageDefaults {
         nativeName: 'English',
         flag: '',
         supportsVoiceCustomization: true,
-        provider: 'elevenlabs',
-        defaultVoice: '21m00Tcm4TlvDq8ikWAM',
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
+        provider: 'openai',
+        defaultVoice: 'alloy',
+        availableVoices: [
+          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
+          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+        ],
       ),
     ],
     'GH': [
@@ -263,8 +294,18 @@ class VoiceLanguageDefaults {
         nativeName: 'English',
         flag: '',
         supportsVoiceCustomization: true,
-        provider: 'elevenlabs',
-        defaultVoice: '21m00Tcm4TlvDq8ikWAM',
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
+        provider: 'openai',
+        defaultVoice: 'alloy',
+        availableVoices: [
+          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
+          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+        ],
       ),
     ],
     'KE': [
@@ -274,8 +315,18 @@ class VoiceLanguageDefaults {
         nativeName: 'English',
         flag: '',
         supportsVoiceCustomization: true,
-        provider: 'elevenlabs',
-        defaultVoice: '21m00Tcm4TlvDq8ikWAM',
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
+        provider: 'openai',
+        defaultVoice: 'alloy',
+        availableVoices: [
+          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
+          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+        ],
       ),
     ],
     'ZA': [
@@ -285,8 +336,18 @@ class VoiceLanguageDefaults {
         nativeName: 'English',
         flag: '',
         supportsVoiceCustomization: true,
-        provider: 'elevenlabs',
-        defaultVoice: '21m00Tcm4TlvDq8ikWAM',
+        supportsVoiceCloning: true,
+        cloningProvider: 'elevenlabs',
+        provider: 'openai',
+        defaultVoice: 'alloy',
+        availableVoices: [
+          VoiceOption(id: 'alloy', name: 'Alloy', gender: 'neutral', accent: 'American'),
+          VoiceOption(id: 'echo', name: 'Echo', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'fable', name: 'Fable', gender: 'male', accent: 'British'),
+          VoiceOption(id: 'onyx', name: 'Onyx', gender: 'male', accent: 'American'),
+          VoiceOption(id: 'nova', name: 'Nova', gender: 'female', accent: 'American'),
+          VoiceOption(id: 'shimmer', name: 'Shimmer', gender: 'female', accent: 'American'),
+        ],
       ),
     ],
   };

@@ -70,12 +70,12 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(
               Icons.search,
-              color: const Color(0xFF6C5CE7),
+              color: const Color.fromARGB(255, 78, 3, 208),
               size: 20.sp,
             ),
           ),
@@ -138,7 +138,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
         boxShadow: [
           BoxShadow(
             color: _focusNode.hasFocus
-                ? const Color(0xFF6C5CE7).withValues(alpha: 0.3)
+                ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)
                 : Colors.black.withValues(alpha: 0.15),
             blurRadius: _focusNode.hasFocus ? 12 : 6,
             offset: Offset(0, _focusNode.hasFocus ? 4 : 2),
@@ -210,7 +210,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6C5CE7)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
             ),
             SizedBox(height: 16.h),
             Text(
@@ -284,7 +284,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
               children: [
                 Icon(
                   Icons.lightbulb_outline,
-                  color: const Color(0xFF6C5CE7),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),

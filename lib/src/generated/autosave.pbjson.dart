@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: autosave.proto
-//
-// @dart = 2.12
+// Generated from autosave.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -88,22 +89,77 @@ const AutoSaveRule$json = {
     {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'trigger_type', '3': 5, '4': 1, '5': 14, '6': '.pb.TriggerType', '10': 'triggerType'},
-    {'1': 'amount_type', '3': 6, '4': 1, '5': 14, '6': '.pb.AmountType', '10': 'amountType'},
+    {
+      '1': 'trigger_type',
+      '3': 5,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.TriggerType',
+      '10': 'triggerType'
+    },
+    {
+      '1': 'amount_type',
+      '3': 6,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.AmountType',
+      '10': 'amountType'
+    },
     {'1': 'amount_value', '3': 7, '4': 1, '5': 1, '10': 'amountValue'},
     {'1': 'source_account_id', '3': 8, '4': 1, '5': 9, '10': 'sourceAccountId'},
-    {'1': 'destination_account_id', '3': 9, '4': 1, '5': 9, '10': 'destinationAccountId'},
-    {'1': 'status', '3': 10, '4': 1, '5': 14, '6': '.pb.AutoSaveStatus', '10': 'status'},
-    {'1': 'frequency', '3': 11, '4': 1, '5': 14, '6': '.pb.ScheduleFrequency', '10': 'frequency'},
+    {
+      '1': 'destination_account_id',
+      '3': 9,
+      '4': 1,
+      '5': 9,
+      '10': 'destinationAccountId'
+    },
+    {
+      '1': 'status',
+      '3': 10,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.AutoSaveStatus',
+      '10': 'status'
+    },
+    {
+      '1': 'frequency',
+      '3': 11,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.ScheduleFrequency',
+      '10': 'frequency'
+    },
     {'1': 'schedule_time', '3': 12, '4': 1, '5': 9, '10': 'scheduleTime'},
     {'1': 'schedule_day', '3': 13, '4': 1, '5': 5, '10': 'scheduleDay'},
     {'1': 'round_up_to', '3': 14, '4': 1, '5': 5, '10': 'roundUpTo'},
     {'1': 'target_amount', '3': 15, '4': 1, '5': 1, '10': 'targetAmount'},
     {'1': 'minimum_balance', '3': 16, '4': 1, '5': 1, '10': 'minimumBalance'},
     {'1': 'maximum_per_save', '3': 17, '4': 1, '5': 1, '10': 'maximumPerSave'},
-    {'1': 'created_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
-    {'1': 'last_triggered_at', '3': 20, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastTriggeredAt'},
+    {
+      '1': 'created_at',
+      '3': 18,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 19,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
+    {
+      '1': 'last_triggered_at',
+      '3': 20,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastTriggeredAt'
+    },
     {'1': 'trigger_count', '3': 21, '4': 1, '5': 5, '10': 'triggerCount'},
     {'1': 'total_saved', '3': 22, '4': 1, '5': 1, '10': 'totalSaved'},
   ],
@@ -135,12 +191,39 @@ const CreateAutoSaveRuleRequest$json = {
   '2': [
     {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
     {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'trigger_type', '3': 3, '4': 1, '5': 14, '6': '.pb.TriggerType', '10': 'triggerType'},
-    {'1': 'amount_type', '3': 4, '4': 1, '5': 14, '6': '.pb.AmountType', '10': 'amountType'},
+    {
+      '1': 'trigger_type',
+      '3': 3,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.TriggerType',
+      '10': 'triggerType'
+    },
+    {
+      '1': 'amount_type',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.AmountType',
+      '10': 'amountType'
+    },
     {'1': 'amount_value', '3': 5, '4': 1, '5': 1, '10': 'amountValue'},
     {'1': 'source_account_id', '3': 6, '4': 1, '5': 9, '10': 'sourceAccountId'},
-    {'1': 'destination_account_id', '3': 7, '4': 1, '5': 9, '10': 'destinationAccountId'},
-    {'1': 'frequency', '3': 8, '4': 1, '5': 14, '6': '.pb.ScheduleFrequency', '10': 'frequency'},
+    {
+      '1': 'destination_account_id',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'destinationAccountId'
+    },
+    {
+      '1': 'frequency',
+      '3': 8,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.ScheduleFrequency',
+      '10': 'frequency'
+    },
     {'1': 'schedule_time', '3': 9, '4': 1, '5': 9, '10': 'scheduleTime'},
     {'1': 'schedule_day', '3': 10, '4': 1, '5': 5, '10': 'scheduleDay'},
     {'1': 'round_up_to', '3': 11, '4': 1, '5': 5, '10': 'roundUpTo'},
@@ -173,28 +256,44 @@ const CreateAutoSaveRuleResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
-    {'1': 'rule', '3': 3, '4': 1, '5': 11, '6': '.pb.AutoSaveRule', '10': 'rule'},
+    {
+      '1': 'rule',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AutoSaveRule',
+      '10': 'rule'
+    },
   ],
 };
 
 /// Descriptor for `CreateAutoSaveRuleResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createAutoSaveRuleResponseDescriptor = $convert.base64Decode(
-    'ChpDcmVhdGVBdXRvU2F2ZVJ1bGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-    'AKA21zZxgCIAEoCVIDbXNnEiQKBHJ1bGUYAyABKAsyEC5wYi5BdXRvU2F2ZVJ1bGVSBHJ1bGU=');
+final $typed_data.Uint8List createAutoSaveRuleResponseDescriptor =
+    $convert.base64Decode(
+        'ChpDcmVhdGVBdXRvU2F2ZVJ1bGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+        'AKA21zZxgCIAEoCVIDbXNnEiQKBHJ1bGUYAyABKAsyEC5wYi5BdXRvU2F2ZVJ1bGVSBHJ1bGU=');
 
 @$core.Deprecated('Use getAutoSaveRulesRequestDescriptor instead')
 const GetAutoSaveRulesRequest$json = {
   '1': 'GetAutoSaveRulesRequest',
   '2': [
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
-    {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.pb.AutoSaveStatus', '10': 'status'},
+    {
+      '1': 'status',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.AutoSaveStatus',
+      '10': 'status'
+    },
   ],
 };
 
 /// Descriptor for `GetAutoSaveRulesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAutoSaveRulesRequestDescriptor = $convert.base64Decode(
-    'ChdHZXRBdXRvU2F2ZVJ1bGVzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SW'
-    'QSKgoGc3RhdHVzGAIgASgOMhIucGIuQXV0b1NhdmVTdGF0dXNSBnN0YXR1cw==');
+final $typed_data.Uint8List getAutoSaveRulesRequestDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRBdXRvU2F2ZVJ1bGVzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SW'
+        'QSKgoGc3RhdHVzGAIgASgOMhIucGIuQXV0b1NhdmVTdGF0dXNSBnN0YXR1cw==');
 
 @$core.Deprecated('Use getAutoSaveRulesResponseDescriptor instead')
 const GetAutoSaveRulesResponse$json = {
@@ -202,7 +301,14 @@ const GetAutoSaveRulesResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
-    {'1': 'rules', '3': 3, '4': 3, '5': 11, '6': '.pb.AutoSaveRule', '10': 'rules'},
+    {
+      '1': 'rules',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.AutoSaveRule',
+      '10': 'rules'
+    },
   ],
 };
 
@@ -218,9 +324,23 @@ const UpdateAutoSaveRuleRequest$json = {
     {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
     {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
     {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'amount_type', '3': 4, '4': 1, '5': 14, '6': '.pb.AmountType', '10': 'amountType'},
+    {
+      '1': 'amount_type',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.AmountType',
+      '10': 'amountType'
+    },
     {'1': 'amount_value', '3': 5, '4': 1, '5': 1, '10': 'amountValue'},
-    {'1': 'frequency', '3': 6, '4': 1, '5': 14, '6': '.pb.ScheduleFrequency', '10': 'frequency'},
+    {
+      '1': 'frequency',
+      '3': 6,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.ScheduleFrequency',
+      '10': 'frequency'
+    },
     {'1': 'schedule_time', '3': 7, '4': 1, '5': 9, '10': 'scheduleTime'},
     {'1': 'schedule_day', '3': 8, '4': 1, '5': 5, '10': 'scheduleDay'},
     {'1': 'round_up_to', '3': 9, '4': 1, '5': 5, '10': 'roundUpTo'},
@@ -249,14 +369,22 @@ const UpdateAutoSaveRuleResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
-    {'1': 'rule', '3': 3, '4': 1, '5': 11, '6': '.pb.AutoSaveRule', '10': 'rule'},
+    {
+      '1': 'rule',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AutoSaveRule',
+      '10': 'rule'
+    },
   ],
 };
 
 /// Descriptor for `UpdateAutoSaveRuleResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateAutoSaveRuleResponseDescriptor = $convert.base64Decode(
-    'ChpVcGRhdGVBdXRvU2F2ZVJ1bGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-    'AKA21zZxgCIAEoCVIDbXNnEiQKBHJ1bGUYAyABKAsyEC5wYi5BdXRvU2F2ZVJ1bGVSBHJ1bGU=');
+final $typed_data.Uint8List updateAutoSaveRuleResponseDescriptor =
+    $convert.base64Decode(
+        'ChpVcGRhdGVBdXRvU2F2ZVJ1bGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+        'AKA21zZxgCIAEoCVIDbXNnEiQKBHJ1bGUYAyABKAsyEC5wYi5BdXRvU2F2ZVJ1bGVSBHJ1bGU=');
 
 @$core.Deprecated('Use toggleAutoSaveRuleRequestDescriptor instead')
 const ToggleAutoSaveRuleRequest$json = {
@@ -269,9 +397,10 @@ const ToggleAutoSaveRuleRequest$json = {
 };
 
 /// Descriptor for `ToggleAutoSaveRuleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List toggleAutoSaveRuleRequestDescriptor = $convert.base64Decode(
-    'ChlUb2dnbGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZBIWCg'
-    'ZhY3Rpb24YAiABKAlSBmFjdGlvbjoYkkEVChPSAQdydWxlX2lk0gEGYWN0aW9u');
+final $typed_data.Uint8List toggleAutoSaveRuleRequestDescriptor =
+    $convert.base64Decode(
+        'ChlUb2dnbGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZBIWCg'
+        'ZhY3Rpb24YAiABKAlSBmFjdGlvbjoYkkEVChPSAQdydWxlX2lk0gEGYWN0aW9u');
 
 @$core.Deprecated('Use toggleAutoSaveRuleResponseDescriptor instead')
 const ToggleAutoSaveRuleResponse$json = {
@@ -279,14 +408,22 @@ const ToggleAutoSaveRuleResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
-    {'1': 'rule', '3': 3, '4': 1, '5': 11, '6': '.pb.AutoSaveRule', '10': 'rule'},
+    {
+      '1': 'rule',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AutoSaveRule',
+      '10': 'rule'
+    },
   ],
 };
 
 /// Descriptor for `ToggleAutoSaveRuleResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List toggleAutoSaveRuleResponseDescriptor = $convert.base64Decode(
-    'ChpUb2dnbGVBdXRvU2F2ZVJ1bGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-    'AKA21zZxgCIAEoCVIDbXNnEiQKBHJ1bGUYAyABKAsyEC5wYi5BdXRvU2F2ZVJ1bGVSBHJ1bGU=');
+final $typed_data.Uint8List toggleAutoSaveRuleResponseDescriptor =
+    $convert.base64Decode(
+        'ChpUb2dnbGVBdXRvU2F2ZVJ1bGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+        'AKA21zZxgCIAEoCVIDbXNnEiQKBHJ1bGUYAyABKAsyEC5wYi5BdXRvU2F2ZVJ1bGVSBHJ1bGU=');
 
 @$core.Deprecated('Use deleteAutoSaveRuleRequestDescriptor instead')
 const DeleteAutoSaveRuleRequest$json = {
@@ -298,9 +435,10 @@ const DeleteAutoSaveRuleRequest$json = {
 };
 
 /// Descriptor for `DeleteAutoSaveRuleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteAutoSaveRuleRequestDescriptor = $convert.base64Decode(
-    'ChlEZWxldGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZDoPkk'
-    'EMCgrSAQdydWxlX2lk');
+final $typed_data.Uint8List deleteAutoSaveRuleRequestDescriptor =
+    $convert.base64Decode(
+        'ChlEZWxldGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZDoPkk'
+        'EMCgrSAQdydWxlX2lk');
 
 @$core.Deprecated('Use deleteAutoSaveRuleResponseDescriptor instead')
 const DeleteAutoSaveRuleResponse$json = {
@@ -312,9 +450,10 @@ const DeleteAutoSaveRuleResponse$json = {
 };
 
 /// Descriptor for `DeleteAutoSaveRuleResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteAutoSaveRuleResponseDescriptor = $convert.base64Decode(
-    'ChpEZWxldGVBdXRvU2F2ZVJ1bGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-    'AKA21zZxgCIAEoCVIDbXNn');
+final $typed_data.Uint8List deleteAutoSaveRuleResponseDescriptor =
+    $convert.base64Decode(
+        'ChpEZWxldGVBdXRvU2F2ZVJ1bGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+        'AKA21zZxgCIAEoCVIDbXNn');
 
 @$core.Deprecated('Use autoSaveTransactionDescriptor instead')
 const AutoSaveTransaction$json = {
@@ -324,13 +463,33 @@ const AutoSaveTransaction$json = {
     {'1': 'rule_id', '3': 2, '4': 1, '5': 9, '10': 'ruleId'},
     {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'source_account_id', '3': 4, '4': 1, '5': 9, '10': 'sourceAccountId'},
-    {'1': 'destination_account_id', '3': 5, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    {
+      '1': 'destination_account_id',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '10': 'destinationAccountId'
+    },
     {'1': 'amount', '3': 6, '4': 1, '5': 1, '10': 'amount'},
-    {'1': 'trigger_type', '3': 7, '4': 1, '5': 14, '6': '.pb.TriggerType', '10': 'triggerType'},
+    {
+      '1': 'trigger_type',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.TriggerType',
+      '10': 'triggerType'
+    },
     {'1': 'trigger_reason', '3': 8, '4': 1, '5': 9, '10': 'triggerReason'},
     {'1': 'success', '3': 9, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_message', '3': 10, '4': 1, '5': 9, '10': 'errorMessage'},
-    {'1': 'created_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'created_at',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
   ],
 };
 
@@ -357,10 +516,11 @@ const GetAutoSaveTransactionsRequest$json = {
 };
 
 /// Descriptor for `GetAutoSaveTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAutoSaveTransactionsRequestDescriptor = $convert.base64Decode(
-    'Ch5HZXRBdXRvU2F2ZVRyYW5zYWN0aW9uc1JlcXVlc3QSFwoHcnVsZV9pZBgBIAEoCVIGcnVsZU'
-    'lkEh0KCmFjY291bnRfaWQYAiABKAlSCWFjY291bnRJZBIUCgVsaW1pdBgDIAEoBVIFbGltaXQS'
-    'FgoGb2Zmc2V0GAQgASgFUgZvZmZzZXQ=');
+final $typed_data.Uint8List getAutoSaveTransactionsRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRBdXRvU2F2ZVRyYW5zYWN0aW9uc1JlcXVlc3QSFwoHcnVsZV9pZBgBIAEoCVIGcnVsZU'
+        'lkEh0KCmFjY291bnRfaWQYAiABKAlSCWFjY291bnRJZBIUCgVsaW1pdBgDIAEoBVIFbGltaXQS'
+        'FgoGb2Zmc2V0GAQgASgFUgZvZmZzZXQ=');
 
 @$core.Deprecated('Use getAutoSaveTransactionsResponseDescriptor instead')
 const GetAutoSaveTransactionsResponse$json = {
@@ -368,30 +528,81 @@ const GetAutoSaveTransactionsResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
-    {'1': 'transactions', '3': 3, '4': 3, '5': 11, '6': '.pb.AutoSaveTransaction', '10': 'transactions'},
+    {
+      '1': 'transactions',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.AutoSaveTransaction',
+      '10': 'transactions'
+    },
     {'1': 'total_count', '3': 4, '4': 1, '5': 5, '10': 'totalCount'},
   ],
 };
 
 /// Descriptor for `GetAutoSaveTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAutoSaveTransactionsResponseDescriptor = $convert.base64Decode(
-    'Ch9HZXRBdXRvU2F2ZVRyYW5zYWN0aW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
-    'Nlc3MSEAoDbXNnGAIgASgJUgNtc2cSOwoMdHJhbnNhY3Rpb25zGAMgAygLMhcucGIuQXV0b1Nh'
-    'dmVUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEh8KC3RvdGFsX2NvdW50GAQgASgFUgp0b3RhbE'
-    'NvdW50');
+final $typed_data.Uint8List getAutoSaveTransactionsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9HZXRBdXRvU2F2ZVRyYW5zYWN0aW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
+        'Nlc3MSEAoDbXNnGAIgASgJUgNtc2cSOwoMdHJhbnNhY3Rpb25zGAMgAygLMhcucGIuQXV0b1Nh'
+        'dmVUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEh8KC3RvdGFsX2NvdW50GAQgASgFUgp0b3RhbE'
+        'NvdW50');
 
 @$core.Deprecated('Use autoSaveStatisticsDescriptor instead')
 const AutoSaveStatistics$json = {
   '1': 'AutoSaveStatistics',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {'1': 'active_rules_count', '3': 2, '4': 1, '5': 5, '10': 'activeRulesCount'},
-    {'1': 'total_saved_all_time', '3': 3, '4': 1, '5': 1, '10': 'totalSavedAllTime'},
-    {'1': 'total_saved_this_month', '3': 4, '4': 1, '5': 1, '10': 'totalSavedThisMonth'},
-    {'1': 'total_saved_this_week', '3': 5, '4': 1, '5': 1, '10': 'totalSavedThisWeek'},
-    {'1': 'total_transactions', '3': 6, '4': 1, '5': 5, '10': 'totalTransactions'},
-    {'1': 'average_save_amount', '3': 7, '4': 1, '5': 1, '10': 'averageSaveAmount'},
-    {'1': 'most_active_rule', '3': 8, '4': 1, '5': 11, '6': '.pb.AutoSaveRule', '10': 'mostActiveRule'},
+    {
+      '1': 'active_rules_count',
+      '3': 2,
+      '4': 1,
+      '5': 5,
+      '10': 'activeRulesCount'
+    },
+    {
+      '1': 'total_saved_all_time',
+      '3': 3,
+      '4': 1,
+      '5': 1,
+      '10': 'totalSavedAllTime'
+    },
+    {
+      '1': 'total_saved_this_month',
+      '3': 4,
+      '4': 1,
+      '5': 1,
+      '10': 'totalSavedThisMonth'
+    },
+    {
+      '1': 'total_saved_this_week',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '10': 'totalSavedThisWeek'
+    },
+    {
+      '1': 'total_transactions',
+      '3': 6,
+      '4': 1,
+      '5': 5,
+      '10': 'totalTransactions'
+    },
+    {
+      '1': 'average_save_amount',
+      '3': 7,
+      '4': 1,
+      '5': 1,
+      '10': 'averageSaveAmount'
+    },
+    {
+      '1': 'most_active_rule',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AutoSaveRule',
+      '10': 'mostActiveRule'
+    },
   ],
 };
 
@@ -412,8 +623,8 @@ const GetAutoSaveStatisticsRequest$json = {
 };
 
 /// Descriptor for `GetAutoSaveStatisticsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAutoSaveStatisticsRequestDescriptor = $convert.base64Decode(
-    'ChxHZXRBdXRvU2F2ZVN0YXRpc3RpY3NSZXF1ZXN0');
+final $typed_data.Uint8List getAutoSaveStatisticsRequestDescriptor =
+    $convert.base64Decode('ChxHZXRBdXRvU2F2ZVN0YXRpc3RpY3NSZXF1ZXN0');
 
 @$core.Deprecated('Use getAutoSaveStatisticsResponseDescriptor instead')
 const GetAutoSaveStatisticsResponse$json = {
@@ -421,15 +632,23 @@ const GetAutoSaveStatisticsResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
-    {'1': 'statistics', '3': 3, '4': 1, '5': 11, '6': '.pb.AutoSaveStatistics', '10': 'statistics'},
+    {
+      '1': 'statistics',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AutoSaveStatistics',
+      '10': 'statistics'
+    },
   ],
 };
 
 /// Descriptor for `GetAutoSaveStatisticsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAutoSaveStatisticsResponseDescriptor = $convert.base64Decode(
-    'Ch1HZXRBdXRvU2F2ZVN0YXRpc3RpY3NSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
-    'NzEhAKA21zZxgCIAEoCVIDbXNnEjYKCnN0YXRpc3RpY3MYAyABKAsyFi5wYi5BdXRvU2F2ZVN0'
-    'YXRpc3RpY3NSCnN0YXRpc3RpY3M=');
+final $typed_data.Uint8List getAutoSaveStatisticsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1HZXRBdXRvU2F2ZVN0YXRpc3RpY3NSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+        'NzEhAKA21zZxgCIAEoCVIDbXNnEjYKCnN0YXRpc3RpY3MYAyABKAsyFi5wYi5BdXRvU2F2ZVN0'
+        'YXRpc3RpY3NSCnN0YXRpc3RpY3M=');
 
 @$core.Deprecated('Use triggerAutoSaveRequestDescriptor instead')
 const TriggerAutoSaveRequest$json = {
@@ -437,7 +656,13 @@ const TriggerAutoSaveRequest$json = {
   '2': [
     {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
     {'1': 'custom_amount', '3': 2, '4': 1, '5': 1, '10': 'customAmount'},
-    {'1': 'transaction_pin_token', '3': 15, '4': 1, '5': 9, '10': 'transactionPinToken'},
+    {
+      '1': 'transaction_pin_token',
+      '3': 15,
+      '4': 1,
+      '5': 9,
+      '10': 'transactionPinToken'
+    },
   ],
   '7': {},
 };
@@ -454,7 +679,14 @@ const TriggerAutoSaveResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
-    {'1': 'transaction', '3': 3, '4': 1, '5': 11, '6': '.pb.AutoSaveTransaction', '10': 'transaction'},
+    {
+      '1': 'transaction',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AutoSaveTransaction',
+      '10': 'transaction'
+    },
   ],
 };
 
@@ -463,4 +695,3 @@ final $typed_data.Uint8List triggerAutoSaveResponseDescriptor = $convert.base64D
     'ChdUcmlnZ2VyQXV0b1NhdmVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhAKA2'
     '1zZxgCIAEoCVIDbXNnEjkKC3RyYW5zYWN0aW9uGAMgASgLMhcucGIuQXV0b1NhdmVUcmFuc2Fj'
     'dGlvblILdHJhbnNhY3Rpb24=');
-

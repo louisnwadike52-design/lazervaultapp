@@ -377,7 +377,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                   ),
                 ),
                 child: Icon(
@@ -535,7 +535,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
@@ -597,7 +597,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                       height: 56.h,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                          colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                         ),
                         borderRadius: BorderRadius.circular(16.r),
                       ),

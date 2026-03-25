@@ -10,6 +10,8 @@ import '../cubit/airtime_state.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
 import '../widgets/airtime_step_indicator.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 class RecipientInputScreen extends StatefulWidget {
   const RecipientInputScreen({super.key});
@@ -27,6 +29,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
   NetworkProvider? selectedProvider;
   Country? selectedCountry;
   bool isPhoneValid = false;
+  bool _isBuyForSelf = false; // When true, phone is auto-filled and read-only
 
   @override
   void initState() {
@@ -40,13 +43,36 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     if (args != null) {
       selectedProvider = args['networkProvider'] as NetworkProvider?;
       selectedCountry = args['country'] as Country?;
+      _isBuyForSelf = args['isBuyForSelf'] as bool? ?? false;
 
-      if (args['prefillPhone'] != null) {
+      if (_isBuyForSelf) {
+        // Auto-fill logged-in user's phone number (read-only)
+        final authState = context.read<AuthenticationCubit>().state;
+        String? userPhone;
+        if (authState is AuthenticationAuthenticated) {
+          userPhone = authState.profile.user.phoneNumber;
+        }
+        // Also try from the cubit's convenience getter
+        userPhone ??= context.read<AuthenticationCubit>().state is SignUpInProgress
+            ? (context.read<AuthenticationCubit>().state as SignUpInProgress).phoneNumber
+            : null;
+        if (userPhone != null && userPhone.isNotEmpty) {
+          // Ensure local format (e.g., 08012345678)
+          if (userPhone.startsWith('+234')) {
+            userPhone = '0${userPhone.substring(4)}';
+          } else if (userPhone.startsWith('234') && userPhone.length > 10) {
+            userPhone = '0${userPhone.substring(3)}';
+          }
+          _phoneController.text = userPhone;
+          isPhoneValid = userPhone.length >= 10;
+          _nameController.text = 'Self';
+        }
+      } else if (args['prefillPhone'] != null) {
         _phoneController.text = args['prefillPhone'] as String;
         isPhoneValid = _phoneController.text.length >= 10;
       }
 
-      if (args['prefillName'] != null) {
+      if (!_isBuyForSelf && args['prefillName'] != null) {
         _nameController.text = args['prefillName'] as String;
       }
 
@@ -93,6 +119,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
   }
 
   void _onPhoneChanged() async {
+    if (!mounted) return;
     final phoneNumber = _phoneController.text;
 
     final newIsValid = phoneNumber.length >= 10;
@@ -103,17 +130,133 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     }
 
     if (phoneNumber.length >= 4) {
-      final cubit = context.read<AirtimeCubit>();
-      final countryCode = selectedCountry?.code ?? 'NG';
-      final detectedProvider =
-          await cubit.detectNetworkFromPhoneNumber(phoneNumber, countryCode);
+      try {
+        final cubit = context.read<AirtimeCubit>();
+        final countryCode = selectedCountry?.code ?? 'NG';
+        final detectedProvider =
+            await cubit.detectNetworkFromPhoneNumber(phoneNumber, countryCode);
 
-      if (detectedProvider != null && detectedProvider != selectedProvider) {
-        setState(() {
-          selectedProvider = detectedProvider;
-        });
+        if (!mounted) return;
+        if (detectedProvider != null && detectedProvider != selectedProvider) {
+          final previousProvider = selectedProvider;
+          setState(() {
+            selectedProvider = detectedProvider;
+          });
+          if (previousProvider != null && mounted) {
+            _showNetworkUpdatedDialog(previousProvider, detectedProvider);
+          }
+        }
+      } catch (_) {
+        // Network detection is best-effort; don't block user flow
       }
     }
+  }
+
+  void _showNetworkUpdatedDialog(NetworkProvider oldProvider, NetworkProvider newProvider) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Row(
+          children: [
+            Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFB923C).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(
+                Icons.swap_horiz,
+                color: const Color(0xFFFB923C),
+                size: 20.sp,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Text(
+              'Network Updated',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'The phone number you entered belongs to ${newProvider.name}, not ${oldProvider.name}. The network has been automatically updated.',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF9CA3AF),
+                height: 1.5,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: newProvider.type.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: newProvider.type.color.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32.w,
+                    height: 32.w,
+                    decoration: BoxDecoration(
+                      color: newProvider.type.color,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Text(
+                        newProvider.name.isNotEmpty ? newProvider.name[0] : '?',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Text(
+                    'Now using ${newProvider.name}',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Got it',
+              style: TextStyle(
+                color: const Color(0xFF3B82F6),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _validateAndProceed() {
@@ -217,10 +360,12 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                           ),
                         SizedBox(height: 24.h),
                         _buildPhoneNumberInput(),
-                        SizedBox(height: 20.h),
-                        _buildRecipientNameInput(),
-                        SizedBox(height: 24.h),
-                        _buildQuickContacts(),
+                        if (!_isBuyForSelf) ...[
+                          SizedBox(height: 20.h),
+                          _buildRecipientNameInput(),
+                          SizedBox(height: 24.h),
+                          _buildQuickContacts(),
+                        ],
                         SizedBox(height: 40.h),
                       ],
                     ),
@@ -262,7 +407,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Enter Phone Number',
+                  _isBuyForSelf ? 'Buy for Self' : 'Send Airtime',
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
@@ -271,13 +416,31 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Who would you like to send airtime to?',
+                  _isBuyForSelf
+                      ? 'Buying airtime for your registered number'
+                      : 'Who would you like to send airtime to?',
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: const Color(0xFF9CA3AF),
                   ),
                 ),
               ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Get.until((route) => route.settings.name == AppRoutes.airtime || route.isFirst),
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(
+                Icons.close,
+                color: const Color(0xFF9CA3AF),
+                size: 20.sp,
+              ),
             ),
           ),
         ],
@@ -303,7 +466,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             ),
             child: Center(
               child: Text(
-                selectedProvider!.name.substring(0, 1),
+                selectedProvider!.name.isNotEmpty ? selectedProvider!.name[0] : '?',
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
@@ -366,6 +529,8 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           child: TextField(
             controller: _phoneController,
             focusNode: _phoneFocusNode,
+            readOnly: _isBuyForSelf,
+            enabled: !_isBuyForSelf,
             keyboardType: TextInputType.phone,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
@@ -373,7 +538,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             ],
             style: TextStyle(
               fontSize: 16.sp,
-              color: Colors.white,
+              color: _isBuyForSelf ? const Color(0xFF9CA3AF) : Colors.white,
               fontWeight: FontWeight.w500,
             ),
             decoration: InputDecoration(
@@ -393,6 +558,16 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   ),
                 ),
               ),
+              suffixIcon: _isBuyForSelf
+                  ? Padding(
+                      padding: EdgeInsets.all(12.w),
+                      child: Icon(
+                        Icons.lock_outline,
+                        color: const Color(0xFF9CA3AF),
+                        size: 18.sp,
+                      ),
+                    )
+                  : null,
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 16.w,
@@ -879,14 +1054,14 @@ class _ContactSelectionBottomSheetState
               height: 44.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                 ),
                 borderRadius: BorderRadius.circular(22.r),
               ),
               child: Center(
                 child: Text(
                   contact['avatar'] ??
-                      contact['name']?.substring(0, 1)?.toUpperCase() ??
+                      (contact['name']?.toString().isNotEmpty == true ? contact['name']!.toString()[0].toUpperCase() : null) ??
                       '?',
                   style: TextStyle(
                     color: Colors.white,

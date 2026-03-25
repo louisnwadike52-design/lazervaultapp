@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:lazervault/core/services/locale_manager.dart';
 
 import '../models/crypto_model.dart';
@@ -5,6 +6,7 @@ import '../../domain/entities/global_market_data.dart';
 import '../../domain/entities/price_point.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart' as pb;
+import '../utils/grpc_retry_executor.dart';
 
 abstract class CryptoRemoteDataSource {
   Future<List<CryptoModel>> getCryptos({int page = 1, int perPage = 100});
@@ -19,58 +21,56 @@ abstract class CryptoRemoteDataSource {
 class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
   final CryptoGrpcClient grpcClient;
   final LocaleManager localeManager;
+  final GrpcRetryExecutor _retryExecutor;
 
   CryptoRemoteDataSourceImpl({
     required this.grpcClient,
     required this.localeManager,
-  });
+    GrpcRetryExecutor? retryExecutor,
+  }) : _retryExecutor = retryExecutor ?? const GrpcRetryExecutor();
 
   String get _userCurrency => localeManager.currentCurrency.toLowerCase();
 
   @override
   Future<List<CryptoModel>> getCryptos({int page = 1, int perPage = 100}) async {
-    try {
-      final response = await grpcClient.getCryptos(
+    return _retryExecutor.execute(
+      () => grpcClient.getCryptos(
         page: page,
         perPage: perPage,
         vsCurrency: _userCurrency,
-      );
-
-      return response.cryptos
+      ).then((response) => response.cryptos
           .map((crypto) => _convertProtoToCryptoModel(crypto))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to fetch cryptocurrencies: $e');
-    }
+          .toList()),
+      operationName: 'getCryptos',
+    );
   }
 
   @override
   Future<CryptoModel> getCryptoById(String id) async {
-    try {
-      final response = await grpcClient.getCryptoById(id, vsCurrency: _userCurrency);
-      return _convertProtoToCryptoModel(response.crypto);
-    } catch (e) {
-      throw Exception('Failed to fetch cryptocurrency details: $e');
-    }
+    return _retryExecutor.execute(
+      () => grpcClient.getCryptoById(id, vsCurrency: _userCurrency)
+          .then((response) => _convertProtoToCryptoModel(response.crypto)),
+      operationName: 'getCryptoById',
+    );
   }
 
   @override
   Future<List<CryptoModel>> searchCryptos(String query) async {
-    try {
-      final response = await grpcClient.searchCryptos(query);
-      return response.cryptos
+    return _retryExecutor.execute(
+      () => grpcClient.searchCryptos(query)
+          .then((response) => response.cryptos
           .map((crypto) => _convertProtoToCryptoModel(crypto))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to search cryptocurrencies: $e');
-    }
+          .toList()),
+      operationName: 'searchCryptos',
+      config: RetryConfig.quick, // Search should be fast
+    );
   }
 
   @override
   Future<List<PricePoint>> getCryptoPriceHistory(String id, {String range = '7d'}) async {
-    try {
-      final response = await grpcClient.getCryptoPriceHistory(id, range: range, vsCurrency: _userCurrency);
-      return response.priceHistory
+    return _retryExecutor.execute(
+      () => grpcClient.getCryptoPriceHistory(id, range: range, vsCurrency: _userCurrency)
+          .then((response) => response.priceHistory
           .map((point) => PricePoint(
                 timestamp: point.timestamp.toDateTime(),
                 price: point.price,
@@ -80,33 +80,58 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
                 low: point.low,
                 close: point.close,
               ))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to fetch price history: $e');
-    }
+          .toList()),
+      operationName: 'getCryptoPriceHistory',
+      config: RetryConfig.network, // Price history may take time
+    );
   }
 
   @override
   Future<List<CryptoModel>> getTrendingCryptos() async {
-    try {
-      final response = await grpcClient.getTrendingCryptos(limit: 5);
-      return response.cryptos
+    return _retryExecutor.execute(
+      () => grpcClient.getTrendingCryptos(limit: 5)
+          .then((response) => response.cryptos
           .map((crypto) => _convertProtoToCryptoModel(crypto))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to fetch trending cryptocurrencies: $e');
-    }
+          .toList()),
+      operationName: 'getTrendingCryptos',
+    );
   }
 
   @override
   Future<List<CryptoModel>> getTopCryptos() async {
-    try {
-      final response = await grpcClient.getTopCryptos(limit: 100, vsCurrency: _userCurrency);
-      return response.cryptos
+    return _retryExecutor.execute(
+      () => grpcClient.getTopCryptos(limit: 100, vsCurrency: _userCurrency)
+          .then((response) => response.cryptos
           .map((crypto) => _convertProtoToCryptoModel(crypto))
-          .toList();
+          .toList()),
+      operationName: 'getTopCryptos',
+    );
+  }
+
+  @override
+  Future<GlobalMarketData> getGlobalMarketData() async {
+    // Global market data is less critical - use quick retry config
+    try {
+      final response = await grpcClient.getGlobalMarketData();
+      return GlobalMarketData(
+        totalMarketCap: response.totalMarketCap,
+        totalVolume24h: response.totalVolume24h,
+        marketCapPercentageBtc: response.marketCapPercentageBtc,
+        marketCapPercentageEth: response.marketCapPercentageEth,
+        activeCryptocurrencies: response.activeCryptocurrencies,
+        markets: response.markets,
+        updatedAt: response.hasUpdatedAt()
+            ? response.updatedAt.toDateTime()
+            : DateTime.now(),
+      );
     } catch (e) {
-      throw Exception('Failed to fetch top cryptocurrencies: $e');
+      // Global market data is non-critical - return null on failure
+      developer.log(
+        'getGlobalMarketData failed',
+        name: 'getGlobalMarketData',
+        error: e,
+      );
+      throw Exception(CryptoErrorMessages.translate(e as Exception, operation: 'get global market data'));
     }
   }
 
@@ -153,25 +178,5 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
               ))
           .toList(),
     );
-  }
-
-  @override
-  Future<GlobalMarketData> getGlobalMarketData() async {
-    try {
-      final response = await grpcClient.getGlobalMarketData();
-      return GlobalMarketData(
-        totalMarketCap: response.totalMarketCap,
-        totalVolume24h: response.totalVolume24h,
-        marketCapPercentageBtc: response.marketCapPercentageBtc,
-        marketCapPercentageEth: response.marketCapPercentageEth,
-        activeCryptocurrencies: response.activeCryptocurrencies,
-        markets: response.markets,
-        updatedAt: response.hasUpdatedAt()
-            ? response.updatedAt.toDateTime()
-            : DateTime.now(),
-      );
-    } catch (e) {
-      throw Exception('Failed to fetch global market data: $e');
-    }
   }
 }

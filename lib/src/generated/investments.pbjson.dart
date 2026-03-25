@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: investments.proto
-//
-// @dart = 2.12
+// Generated from investments.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -29,7 +30,13 @@ const Investment$json = {
     {'1': 'current_price', '3': 10, '4': 1, '5': 1, '10': 'currentPrice'},
     {'1': 'current_value', '3': 11, '4': 1, '5': 1, '10': 'currentValue'},
     {'1': 'profit_loss', '3': 12, '4': 1, '5': 1, '10': 'profitLoss'},
-    {'1': 'profit_loss_percentage', '3': 13, '4': 1, '5': 1, '10': 'profitLossPercentage'},
+    {
+      '1': 'profit_loss_percentage',
+      '3': 13,
+      '4': 1,
+      '5': 1,
+      '10': 'profitLossPercentage'
+    },
     {'1': 'status', '3': 14, '4': 1, '5': 9, '10': 'status'},
     {'1': 'metadata', '3': 15, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'created_at', '3': 16, '4': 1, '5': 9, '10': 'createdAt'},
@@ -65,7 +72,13 @@ const StockHolding$json = {
     {'1': 'current_price', '3': 7, '4': 1, '5': 1, '10': 'currentPrice'},
     {'1': 'total_value', '3': 8, '4': 1, '5': 1, '10': 'totalValue'},
     {'1': 'profit_loss', '3': 9, '4': 1, '5': 1, '10': 'profitLoss'},
-    {'1': 'profit_loss_percentage', '3': 10, '4': 1, '5': 1, '10': 'profitLossPercentage'},
+    {
+      '1': 'profit_loss_percentage',
+      '3': 10,
+      '4': 1,
+      '5': 1,
+      '10': 'profitLossPercentage'
+    },
   ],
 };
 
@@ -92,7 +105,13 @@ const CryptoHolding$json = {
     {'1': 'current_price', '3': 7, '4': 1, '5': 1, '10': 'currentPrice'},
     {'1': 'total_value', '3': 8, '4': 1, '5': 1, '10': 'totalValue'},
     {'1': 'profit_loss', '3': 9, '4': 1, '5': 1, '10': 'profitLoss'},
-    {'1': 'profit_loss_percentage', '3': 10, '4': 1, '5': 1, '10': 'profitLossPercentage'},
+    {
+      '1': 'profit_loss_percentage',
+      '3': 10,
+      '4': 1,
+      '5': 1,
+      '10': 'profitLossPercentage'
+    },
   ],
 };
 
@@ -116,7 +135,13 @@ const CreateInvestmentRequest$json = {
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'duration', '3': 5, '4': 1, '5': 9, '10': 'duration'},
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
   ],
 };
 
@@ -132,7 +157,14 @@ final $typed_data.Uint8List createInvestmentRequestDescriptor = $convert.base64D
 const CreateInvestmentResponse$json = {
   '1': 'CreateInvestmentResponse',
   '2': [
-    {'1': 'investment', '3': 1, '4': 1, '5': 11, '6': '.investments.Investment', '10': 'investment'},
+    {
+      '1': 'investment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -165,10 +197,23 @@ final $typed_data.Uint8List getInvestmentsRequestDescriptor = $convert.base64Dec
 const GetInvestmentsResponse$json = {
   '1': 'GetInvestmentsResponse',
   '2': [
-    {'1': 'investments', '3': 1, '4': 3, '5': 11, '6': '.investments.Investment', '10': 'investments'},
+    {
+      '1': 'investments',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investments'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_invested', '3': 3, '4': 1, '5': 1, '10': 'totalInvested'},
-    {'1': 'total_current_value', '3': 4, '4': 1, '5': 1, '10': 'totalCurrentValue'},
+    {
+      '1': 'total_current_value',
+      '3': 4,
+      '4': 1,
+      '5': 1,
+      '10': 'totalCurrentValue'
+    },
     {'1': 'total_profit_loss', '3': 5, '4': 1, '5': 1, '10': 'totalProfitLoss'},
   ],
 };
@@ -198,7 +243,14 @@ final $typed_data.Uint8List getInvestmentRequestDescriptor = $convert.base64Deco
 const GetInvestmentResponse$json = {
   '1': 'GetInvestmentResponse',
   '2': [
-    {'1': 'investment', '3': 1, '4': 1, '5': 11, '6': '.investments.Investment', '10': 'investment'},
+    {
+      '1': 'investment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investment'
+    },
   ],
 };
 
@@ -213,7 +265,13 @@ const CloseInvestmentRequest$json = {
   '2': [
     {'1': 'investment_id', '3': 1, '4': 1, '5': 9, '10': 'investmentId'},
     {'1': 'transaction_id', '3': 2, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 3, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
   ],
 };
 
@@ -227,7 +285,14 @@ final $typed_data.Uint8List closeInvestmentRequestDescriptor = $convert.base64De
 const CloseInvestmentResponse$json = {
   '1': 'CloseInvestmentResponse',
   '2': [
-    {'1': 'investment', '3': 1, '4': 1, '5': 11, '6': '.investments.Investment', '10': 'investment'},
+    {
+      '1': 'investment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investment'
+    },
     {'1': 'final_value', '3': 2, '4': 1, '5': 1, '10': 'finalValue'},
     {'1': 'profit_loss', '3': 3, '4': 1, '5': 1, '10': 'profitLoss'},
     {'1': 'new_balance', '3': 4, '4': 1, '5': 1, '10': 'newBalance'},
@@ -252,7 +317,13 @@ const BuyStockRequest$json = {
     {'1': 'price_per_share', '3': 4, '4': 1, '5': 1, '10': 'pricePerShare'},
     {'1': 'order_type', '3': 5, '4': 1, '5': 9, '10': 'orderType'},
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
   ],
 };
 
@@ -268,8 +339,22 @@ final $typed_data.Uint8List buyStockRequestDescriptor = $convert.base64Decode(
 const BuyStockResponse$json = {
   '1': 'BuyStockResponse',
   '2': [
-    {'1': 'trade', '3': 1, '4': 1, '5': 11, '6': '.investments.Trade', '10': 'trade'},
-    {'1': 'investment', '3': 2, '4': 1, '5': 11, '6': '.investments.Investment', '10': 'investment'},
+    {
+      '1': 'trade',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Trade',
+      '10': 'trade'
+    },
+    {
+      '1': 'investment',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investment'
+    },
     {'1': 'total_cost', '3': 3, '4': 1, '5': 1, '10': 'totalCost'},
     {'1': 'new_balance', '3': 4, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
@@ -293,7 +378,13 @@ const SellStockRequest$json = {
     {'1': 'price_per_share', '3': 4, '4': 1, '5': 1, '10': 'pricePerShare'},
     {'1': 'order_type', '3': 5, '4': 1, '5': 9, '10': 'orderType'},
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
   ],
 };
 
@@ -309,8 +400,22 @@ final $typed_data.Uint8List sellStockRequestDescriptor = $convert.base64Decode(
 const SellStockResponse$json = {
   '1': 'SellStockResponse',
   '2': [
-    {'1': 'trade', '3': 1, '4': 1, '5': 11, '6': '.investments.Trade', '10': 'trade'},
-    {'1': 'investment', '3': 2, '4': 1, '5': 11, '6': '.investments.Investment', '10': 'investment'},
+    {
+      '1': 'trade',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Trade',
+      '10': 'trade'
+    },
+    {
+      '1': 'investment',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investment'
+    },
     {'1': 'total_proceeds', '3': 3, '4': 1, '5': 1, '10': 'totalProceeds'},
     {'1': 'profit_loss', '3': 4, '4': 1, '5': 1, '10': 'profitLoss'},
     {'1': 'new_balance', '3': 5, '4': 1, '5': 1, '10': 'newBalance'},
@@ -335,8 +440,9 @@ const GetStockQuoteRequest$json = {
 };
 
 /// Descriptor for `GetStockQuoteRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getStockQuoteRequestDescriptor = $convert.base64Decode(
-    'ChRHZXRTdG9ja1F1b3RlUmVxdWVzdBIWCgZzeW1ib2wYASABKAlSBnN5bWJvbA==');
+final $typed_data.Uint8List getStockQuoteRequestDescriptor =
+    $convert.base64Decode(
+        'ChRHZXRTdG9ja1F1b3RlUmVxdWVzdBIWCgZzeW1ib2wYASABKAlSBnN5bWJvbA==');
 
 @$core.Deprecated('Use stockQuoteDescriptor instead')
 const StockQuote$json = {
@@ -368,7 +474,14 @@ final $typed_data.Uint8List stockQuoteDescriptor = $convert.base64Decode(
 const GetStockQuoteResponse$json = {
   '1': 'GetStockQuoteResponse',
   '2': [
-    {'1': 'quote', '3': 1, '4': 1, '5': 11, '6': '.investments.StockQuote', '10': 'quote'},
+    {
+      '1': 'quote',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.StockQuote',
+      '10': 'quote'
+    },
   ],
 };
 
@@ -383,18 +496,31 @@ const GetStockPortfolioRequest$json = {
 };
 
 /// Descriptor for `GetStockPortfolioRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getStockPortfolioRequestDescriptor = $convert.base64Decode(
-    'ChhHZXRTdG9ja1BvcnRmb2xpb1JlcXVlc3Q=');
+final $typed_data.Uint8List getStockPortfolioRequestDescriptor =
+    $convert.base64Decode('ChhHZXRTdG9ja1BvcnRmb2xpb1JlcXVlc3Q=');
 
 @$core.Deprecated('Use getStockPortfolioResponseDescriptor instead')
 const GetStockPortfolioResponse$json = {
   '1': 'GetStockPortfolioResponse',
   '2': [
-    {'1': 'holdings', '3': 1, '4': 3, '5': 11, '6': '.investments.StockHolding', '10': 'holdings'},
+    {
+      '1': 'holdings',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.StockHolding',
+      '10': 'holdings'
+    },
     {'1': 'total_value', '3': 2, '4': 1, '5': 1, '10': 'totalValue'},
     {'1': 'total_invested', '3': 3, '4': 1, '5': 1, '10': 'totalInvested'},
     {'1': 'total_profit_loss', '3': 4, '4': 1, '5': 1, '10': 'totalProfitLoss'},
-    {'1': 'profit_loss_percentage', '3': 5, '4': 1, '5': 1, '10': 'profitLossPercentage'},
+    {
+      '1': 'profit_loss_percentage',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '10': 'profitLossPercentage'
+    },
   ],
 };
 
@@ -416,7 +542,13 @@ const BuyCryptoRequest$json = {
     {'1': 'quantity', '3': 4, '4': 1, '5': 1, '10': 'quantity'},
     {'1': 'price_per_unit', '3': 5, '4': 1, '5': 1, '10': 'pricePerUnit'},
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
   ],
 };
 
@@ -432,9 +564,22 @@ final $typed_data.Uint8List buyCryptoRequestDescriptor = $convert.base64Decode(
 const BuyCryptoResponse$json = {
   '1': 'BuyCryptoResponse',
   '2': [
-    {'1': 'investment', '3': 1, '4': 1, '5': 11, '6': '.investments.Investment', '10': 'investment'},
+    {
+      '1': 'investment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investment'
+    },
     {'1': 'total_cost', '3': 2, '4': 1, '5': 1, '10': 'totalCost'},
-    {'1': 'quantity_purchased', '3': 3, '4': 1, '5': 1, '10': 'quantityPurchased'},
+    {
+      '1': 'quantity_purchased',
+      '3': 3,
+      '4': 1,
+      '5': 1,
+      '10': 'quantityPurchased'
+    },
     {'1': 'new_balance', '3': 4, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -456,7 +601,13 @@ const SellCryptoRequest$json = {
     {'1': 'quantity', '3': 3, '4': 1, '5': 1, '10': 'quantity'},
     {'1': 'price_per_unit', '3': 4, '4': 1, '5': 1, '10': 'pricePerUnit'},
     {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
   ],
 };
 
@@ -472,7 +623,14 @@ final $typed_data.Uint8List sellCryptoRequestDescriptor = $convert.base64Decode(
 const SellCryptoResponse$json = {
   '1': 'SellCryptoResponse',
   '2': [
-    {'1': 'investment', '3': 1, '4': 1, '5': 11, '6': '.investments.Investment', '10': 'investment'},
+    {
+      '1': 'investment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investment'
+    },
     {'1': 'total_proceeds', '3': 2, '4': 1, '5': 1, '10': 'totalProceeds'},
     {'1': 'profit_loss', '3': 3, '4': 1, '5': 1, '10': 'profitLoss'},
     {'1': 'new_balance', '3': 4, '4': 1, '5': 1, '10': 'newBalance'},
@@ -493,18 +651,31 @@ const GetCryptoPortfolioRequest$json = {
 };
 
 /// Descriptor for `GetCryptoPortfolioRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCryptoPortfolioRequestDescriptor = $convert.base64Decode(
-    'ChlHZXRDcnlwdG9Qb3J0Zm9saW9SZXF1ZXN0');
+final $typed_data.Uint8List getCryptoPortfolioRequestDescriptor =
+    $convert.base64Decode('ChlHZXRDcnlwdG9Qb3J0Zm9saW9SZXF1ZXN0');
 
 @$core.Deprecated('Use getCryptoPortfolioResponseDescriptor instead')
 const GetCryptoPortfolioResponse$json = {
   '1': 'GetCryptoPortfolioResponse',
   '2': [
-    {'1': 'holdings', '3': 1, '4': 3, '5': 11, '6': '.investments.CryptoHolding', '10': 'holdings'},
+    {
+      '1': 'holdings',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.CryptoHolding',
+      '10': 'holdings'
+    },
     {'1': 'total_value', '3': 2, '4': 1, '5': 1, '10': 'totalValue'},
     {'1': 'total_invested', '3': 3, '4': 1, '5': 1, '10': 'totalInvested'},
     {'1': 'total_profit_loss', '3': 4, '4': 1, '5': 1, '10': 'totalProfitLoss'},
-    {'1': 'profit_loss_percentage', '3': 5, '4': 1, '5': 1, '10': 'profitLossPercentage'},
+    {
+      '1': 'profit_loss_percentage',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '10': 'profitLossPercentage'
+    },
   ],
 };
 
@@ -526,7 +697,13 @@ const ExchangeCurrencyRequest$json = {
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'exchange_rate', '3': 5, '4': 1, '5': 1, '10': 'exchangeRate'},
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
   ],
 };
 
@@ -542,7 +719,14 @@ final $typed_data.Uint8List exchangeCurrencyRequestDescriptor = $convert.base64D
 const ExchangeCurrencyResponse$json = {
   '1': 'ExchangeCurrencyResponse',
   '2': [
-    {'1': 'investment', '3': 1, '4': 1, '5': 11, '6': '.investments.Investment', '10': 'investment'},
+    {
+      '1': 'investment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investment'
+    },
     {'1': 'amount_sent', '3': 2, '4': 1, '5': 1, '10': 'amountSent'},
     {'1': 'amount_received', '3': 3, '4': 1, '5': 1, '10': 'amountReceived'},
     {'1': 'exchange_rate', '3': 4, '4': 1, '5': 1, '10': 'exchangeRate'},
@@ -564,7 +748,13 @@ const GetExchangeRatesRequest$json = {
   '1': 'GetExchangeRatesRequest',
   '2': [
     {'1': 'base_currency', '3': 1, '4': 1, '5': 9, '10': 'baseCurrency'},
-    {'1': 'target_currencies', '3': 2, '4': 3, '5': 9, '10': 'targetCurrencies'},
+    {
+      '1': 'target_currencies',
+      '3': 2,
+      '4': 3,
+      '5': 9,
+      '10': 'targetCurrencies'
+    },
   ],
 };
 
@@ -594,7 +784,14 @@ final $typed_data.Uint8List exchangeRateDescriptor = $convert.base64Decode(
 const GetExchangeRatesResponse$json = {
   '1': 'GetExchangeRatesResponse',
   '2': [
-    {'1': 'rates', '3': 1, '4': 3, '5': 11, '6': '.investments.ExchangeRate', '10': 'rates'},
+    {
+      '1': 'rates',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.ExchangeRate',
+      '10': 'rates'
+    },
     {'1': 'base_currency', '3': 2, '4': 1, '5': 9, '10': 'baseCurrency'},
     {'1': 'timestamp', '3': 3, '4': 1, '5': 9, '10': 'timestamp'},
   ],
@@ -615,15 +812,23 @@ const GetPortfolioRequest$json = {
 };
 
 /// Descriptor for `GetPortfolioRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPortfolioRequestDescriptor = $convert.base64Decode(
-    'ChNHZXRQb3J0Zm9saW9SZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
+final $typed_data.Uint8List getPortfolioRequestDescriptor =
+    $convert.base64Decode(
+        'ChNHZXRQb3J0Zm9saW9SZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
 
 @$core.Deprecated('Use portfolioDescriptor instead')
 const Portfolio$json = {
   '1': 'Portfolio',
   '2': [
     {'1': 'total_value', '3': 1, '4': 1, '5': 1, '10': 'totalValue'},
-    {'1': 'positions', '3': 2, '4': 3, '5': 11, '6': '.investments.Position', '10': 'positions'},
+    {
+      '1': 'positions',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.Position',
+      '10': 'positions'
+    },
   ],
 };
 
@@ -642,7 +847,13 @@ const Position$json = {
     {'1': 'current_price', '3': 4, '4': 1, '5': 1, '10': 'currentPrice'},
     {'1': 'current_value', '3': 5, '4': 1, '5': 1, '10': 'currentValue'},
     {'1': 'profit_loss', '3': 6, '4': 1, '5': 1, '10': 'profitLoss'},
-    {'1': 'profit_loss_percentage', '3': 7, '4': 1, '5': 1, '10': 'profitLossPercentage'},
+    {
+      '1': 'profit_loss_percentage',
+      '3': 7,
+      '4': 1,
+      '5': 1,
+      '10': 'profitLossPercentage'
+    },
   ],
 };
 
@@ -658,14 +869,54 @@ final $typed_data.Uint8List positionDescriptor = $convert.base64Decode(
 const GetPortfolioResponse$json = {
   '1': 'GetPortfolioResponse',
   '2': [
-    {'1': 'portfolio', '3': 1, '4': 1, '5': 11, '6': '.investments.Portfolio', '10': 'portfolio'},
-    {'1': 'stocks', '3': 2, '4': 3, '5': 11, '6': '.investments.StockHolding', '10': 'stocks'},
-    {'1': 'crypto', '3': 3, '4': 3, '5': 11, '6': '.investments.CryptoHolding', '10': 'crypto'},
-    {'1': 'other_investments', '3': 4, '4': 3, '5': 11, '6': '.investments.Investment', '10': 'otherInvestments'},
-    {'1': 'total_portfolio_value', '3': 5, '4': 1, '5': 1, '10': 'totalPortfolioValue'},
+    {
+      '1': 'portfolio',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.Portfolio',
+      '10': 'portfolio'
+    },
+    {
+      '1': 'stocks',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.StockHolding',
+      '10': 'stocks'
+    },
+    {
+      '1': 'crypto',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.CryptoHolding',
+      '10': 'crypto'
+    },
+    {
+      '1': 'other_investments',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'otherInvestments'
+    },
+    {
+      '1': 'total_portfolio_value',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '10': 'totalPortfolioValue'
+    },
     {'1': 'total_invested', '3': 6, '4': 1, '5': 1, '10': 'totalInvested'},
     {'1': 'total_profit_loss', '3': 7, '4': 1, '5': 1, '10': 'totalProfitLoss'},
-    {'1': 'profit_loss_percentage', '3': 8, '4': 1, '5': 1, '10': 'profitLossPercentage'},
+    {
+      '1': 'profit_loss_percentage',
+      '3': 8,
+      '4': 1,
+      '5': 1,
+      '10': 'profitLossPercentage'
+    },
   ],
 };
 
@@ -690,9 +941,10 @@ const GetMarketPricesRequest$json = {
 };
 
 /// Descriptor for `GetMarketPricesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMarketPricesRequestDescriptor = $convert.base64Decode(
-    'ChZHZXRNYXJrZXRQcmljZXNSZXF1ZXN0EiMKDXN0b2NrX3N5bWJvbHMYASADKAlSDHN0b2NrU3'
-    'ltYm9scxIlCg5jcnlwdG9fc3ltYm9scxgCIAMoCVINY3J5cHRvU3ltYm9scw==');
+final $typed_data.Uint8List getMarketPricesRequestDescriptor =
+    $convert.base64Decode(
+        'ChZHZXRNYXJrZXRQcmljZXNSZXF1ZXN0EiMKDXN0b2NrX3N5bWJvbHMYASADKAlSDHN0b2NrU3'
+        'ltYm9scxIlCg5jcnlwdG9fc3ltYm9scxgCIAMoCVINY3J5cHRvU3ltYm9scw==');
 
 @$core.Deprecated('Use marketPriceDescriptor instead')
 const MarketPrice$json = {
@@ -702,7 +954,13 @@ const MarketPrice$json = {
     {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
     {'1': 'price', '3': 3, '4': 1, '5': 1, '10': 'price'},
     {'1': 'change_24h', '3': 4, '4': 1, '5': 1, '10': 'change24h'},
-    {'1': 'change_percentage', '3': 5, '4': 1, '5': 1, '10': 'changePercentage'},
+    {
+      '1': 'change_percentage',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '10': 'changePercentage'
+    },
     {'1': 'timestamp', '3': 6, '4': 1, '5': 9, '10': 'timestamp'},
   ],
 };
@@ -718,8 +976,22 @@ final $typed_data.Uint8List marketPriceDescriptor = $convert.base64Decode(
 const GetMarketPricesResponse$json = {
   '1': 'GetMarketPricesResponse',
   '2': [
-    {'1': 'stock_prices', '3': 1, '4': 3, '5': 11, '6': '.investments.MarketPrice', '10': 'stockPrices'},
-    {'1': 'crypto_prices', '3': 2, '4': 3, '5': 11, '6': '.investments.MarketPrice', '10': 'cryptoPrices'},
+    {
+      '1': 'stock_prices',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.MarketPrice',
+      '10': 'stockPrices'
+    },
+    {
+      '1': 'crypto_prices',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.MarketPrice',
+      '10': 'cryptoPrices'
+    },
     {'1': 'timestamp', '3': 3, '4': 1, '5': 9, '10': 'timestamp'},
   ],
 };
@@ -755,15 +1027,23 @@ final $typed_data.Uint8List getInvestmentHistoryRequestDescriptor = $convert.bas
 const GetInvestmentHistoryResponse$json = {
   '1': 'GetInvestmentHistoryResponse',
   '2': [
-    {'1': 'investments', '3': 1, '4': 3, '5': 11, '6': '.investments.Investment', '10': 'investments'},
+    {
+      '1': 'investments',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.Investment',
+      '10': 'investments'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetInvestmentHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInvestmentHistoryResponseDescriptor = $convert.base64Decode(
-    'ChxHZXRJbnZlc3RtZW50SGlzdG9yeVJlc3BvbnNlEjkKC2ludmVzdG1lbnRzGAEgAygLMhcuaW'
-    '52ZXN0bWVudHMuSW52ZXN0bWVudFILaW52ZXN0bWVudHMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
+final $typed_data.Uint8List getInvestmentHistoryResponseDescriptor =
+    $convert.base64Decode(
+        'ChxHZXRJbnZlc3RtZW50SGlzdG9yeVJlc3BvbnNlEjkKC2ludmVzdG1lbnRzGAEgAygLMhcuaW'
+        '52ZXN0bWVudHMuSW52ZXN0bWVudFILaW52ZXN0bWVudHMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
 
 @$core.Deprecated('Use tradeDescriptor instead')
 const Trade$json = {
@@ -837,7 +1117,14 @@ final $typed_data.Uint8List stockSearchResultDescriptor = $convert.base64Decode(
 const SearchStocksResponse$json = {
   '1': 'SearchStocksResponse',
   '2': [
-    {'1': 'results', '3': 1, '4': 3, '5': 11, '6': '.investments.StockSearchResult', '10': 'results'},
+    {
+      '1': 'results',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.StockSearchResult',
+      '10': 'results'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -856,8 +1143,9 @@ const GetStockDetailsRequest$json = {
 };
 
 /// Descriptor for `GetStockDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getStockDetailsRequestDescriptor = $convert.base64Decode(
-    'ChZHZXRTdG9ja0RldGFpbHNSZXF1ZXN0EhYKBnN5bWJvbBgBIAEoCVIGc3ltYm9s');
+final $typed_data.Uint8List getStockDetailsRequestDescriptor =
+    $convert.base64Decode(
+        'ChZHZXRTdG9ja0RldGFpbHNSZXF1ZXN0EhYKBnN5bWJvbBgBIAEoCVIGc3ltYm9s');
 
 @$core.Deprecated('Use stockDetailDescriptor instead')
 const StockDetail$json = {
@@ -909,14 +1197,22 @@ final $typed_data.Uint8List stockDetailDescriptor = $convert.base64Decode(
 const GetStockDetailsResponse$json = {
   '1': 'GetStockDetailsResponse',
   '2': [
-    {'1': 'stock', '3': 1, '4': 1, '5': 11, '6': '.investments.StockDetail', '10': 'stock'},
+    {
+      '1': 'stock',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.StockDetail',
+      '10': 'stock'
+    },
   ],
 };
 
 /// Descriptor for `GetStockDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getStockDetailsResponseDescriptor = $convert.base64Decode(
-    'ChdHZXRTdG9ja0RldGFpbHNSZXNwb25zZRIuCgVzdG9jaxgBIAEoCzIYLmludmVzdG1lbnRzLl'
-    'N0b2NrRGV0YWlsUgVzdG9jaw==');
+final $typed_data.Uint8List getStockDetailsResponseDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRTdG9ja0RldGFpbHNSZXNwb25zZRIuCgVzdG9jaxgBIAEoCzIYLmludmVzdG1lbnRzLl'
+        'N0b2NrRGV0YWlsUgVzdG9jaw==');
 
 @$core.Deprecated('Use getStockPriceHistoryRequestDescriptor instead')
 const GetStockPriceHistoryRequest$json = {
@@ -931,10 +1227,11 @@ const GetStockPriceHistoryRequest$json = {
 };
 
 /// Descriptor for `GetStockPriceHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getStockPriceHistoryRequestDescriptor = $convert.base64Decode(
-    'ChtHZXRTdG9ja1ByaWNlSGlzdG9yeVJlcXVlc3QSFgoGc3ltYm9sGAEgASgJUgZzeW1ib2wSHA'
-    'oJdGltZWZyYW1lGAIgASgJUgl0aW1lZnJhbWUSFAoFc3RhcnQYAyABKAlSBXN0YXJ0EhAKA2Vu'
-    'ZBgEIAEoCVIDZW5kEhQKBWxpbWl0GAUgASgFUgVsaW1pdA==');
+final $typed_data.Uint8List getStockPriceHistoryRequestDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRTdG9ja1ByaWNlSGlzdG9yeVJlcXVlc3QSFgoGc3ltYm9sGAEgASgJUgZzeW1ib2wSHA'
+        'oJdGltZWZyYW1lGAIgASgJUgl0aW1lZnJhbWUSFAoFc3RhcnQYAyABKAlSBXN0YXJ0EhAKA2Vu'
+        'ZBgEIAEoCVIDZW5kEhQKBWxpbWl0GAUgASgFUgVsaW1pdA==');
 
 @$core.Deprecated('Use priceBarDescriptor instead')
 const PriceBar$json = {
@@ -960,15 +1257,23 @@ final $typed_data.Uint8List priceBarDescriptor = $convert.base64Decode(
 const GetStockPriceHistoryResponse$json = {
   '1': 'GetStockPriceHistoryResponse',
   '2': [
-    {'1': 'bars', '3': 1, '4': 3, '5': 11, '6': '.investments.PriceBar', '10': 'bars'},
+    {
+      '1': 'bars',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.PriceBar',
+      '10': 'bars'
+    },
     {'1': 'symbol', '3': 2, '4': 1, '5': 9, '10': 'symbol'},
   ],
 };
 
 /// Descriptor for `GetStockPriceHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getStockPriceHistoryResponseDescriptor = $convert.base64Decode(
-    'ChxHZXRTdG9ja1ByaWNlSGlzdG9yeVJlc3BvbnNlEikKBGJhcnMYASADKAsyFS5pbnZlc3RtZW'
-    '50cy5QcmljZUJhclIEYmFycxIWCgZzeW1ib2wYAiABKAlSBnN5bWJvbA==');
+final $typed_data.Uint8List getStockPriceHistoryResponseDescriptor =
+    $convert.base64Decode(
+        'ChxHZXRTdG9ja1ByaWNlSGlzdG9yeVJlc3BvbnNlEikKBGJhcnMYASADKAsyFS5pbnZlc3RtZW'
+        '50cy5QcmljZUJhclIEYmFycxIWCgZzeW1ib2wYAiABKAlSBnN5bWJvbA==');
 
 @$core.Deprecated('Use getTopMoversRequestDescriptor instead')
 const GetTopMoversRequest$json = {
@@ -1007,8 +1312,22 @@ final $typed_data.Uint8List topMoverDescriptor = $convert.base64Decode(
 const GetTopMoversResponse$json = {
   '1': 'GetTopMoversResponse',
   '2': [
-    {'1': 'gainers', '3': 1, '4': 3, '5': 11, '6': '.investments.TopMover', '10': 'gainers'},
-    {'1': 'losers', '3': 2, '4': 3, '5': 11, '6': '.investments.TopMover', '10': 'losers'},
+    {
+      '1': 'gainers',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.TopMover',
+      '10': 'gainers'
+    },
+    {
+      '1': 'losers',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.TopMover',
+      '10': 'losers'
+    },
   ],
 };
 
@@ -1069,15 +1388,23 @@ final $typed_data.Uint8List stockOrderInfoDescriptor = $convert.base64Decode(
 const GetStockOrdersResponse$json = {
   '1': 'GetStockOrdersResponse',
   '2': [
-    {'1': 'orders', '3': 1, '4': 3, '5': 11, '6': '.investments.StockOrderInfo', '10': 'orders'},
+    {
+      '1': 'orders',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.StockOrderInfo',
+      '10': 'orders'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetStockOrdersResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getStockOrdersResponseDescriptor = $convert.base64Decode(
-    'ChZHZXRTdG9ja09yZGVyc1Jlc3BvbnNlEjMKBm9yZGVycxgBIAMoCzIbLmludmVzdG1lbnRzLl'
-    'N0b2NrT3JkZXJJbmZvUgZvcmRlcnMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
+final $typed_data.Uint8List getStockOrdersResponseDescriptor =
+    $convert.base64Decode(
+        'ChZHZXRTdG9ja09yZGVyc1Jlc3BvbnNlEjMKBm9yZGVycxgBIAMoCzIbLmludmVzdG1lbnRzLl'
+        'N0b2NrT3JkZXJJbmZvUgZvcmRlcnMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
 
 @$core.Deprecated('Use cancelStockOrderRequestDescriptor instead')
 const CancelStockOrderRequest$json = {
@@ -1088,8 +1415,9 @@ const CancelStockOrderRequest$json = {
 };
 
 /// Descriptor for `CancelStockOrderRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cancelStockOrderRequestDescriptor = $convert.base64Decode(
-    'ChdDYW5jZWxTdG9ja09yZGVyUmVxdWVzdBIZCghvcmRlcl9pZBgBIAEoCVIHb3JkZXJJZA==');
+final $typed_data.Uint8List cancelStockOrderRequestDescriptor =
+    $convert.base64Decode(
+        'ChdDYW5jZWxTdG9ja09yZGVyUmVxdWVzdBIZCghvcmRlcl9pZBgBIAEoCVIHb3JkZXJJZA==');
 
 @$core.Deprecated('Use cancelStockOrderResponseDescriptor instead')
 const CancelStockOrderResponse$json = {
@@ -1101,9 +1429,10 @@ const CancelStockOrderResponse$json = {
 };
 
 /// Descriptor for `CancelStockOrderResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cancelStockOrderResponseDescriptor = $convert.base64Decode(
-    'ChhDYW5jZWxTdG9ja09yZGVyUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCg'
-    'dtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List cancelStockOrderResponseDescriptor =
+    $convert.base64Decode(
+        'ChhDYW5jZWxTdG9ja09yZGVyUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCg'
+        'dtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use getMarketStatusRequestDescriptor instead')
 const GetMarketStatusRequest$json = {
@@ -1111,8 +1440,8 @@ const GetMarketStatusRequest$json = {
 };
 
 /// Descriptor for `GetMarketStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMarketStatusRequestDescriptor = $convert.base64Decode(
-    'ChZHZXRNYXJrZXRTdGF0dXNSZXF1ZXN0');
+final $typed_data.Uint8List getMarketStatusRequestDescriptor =
+    $convert.base64Decode('ChZHZXRNYXJrZXRTdGF0dXNSZXF1ZXN0');
 
 @$core.Deprecated('Use getMarketStatusResponseDescriptor instead')
 const GetMarketStatusResponse$json = {
@@ -1179,7 +1508,14 @@ final $typed_data.Uint8List newsArticleDescriptor = $convert.base64Decode(
 const GetMarketNewsResponse$json = {
   '1': 'GetMarketNewsResponse',
   '2': [
-    {'1': 'articles', '3': 1, '4': 3, '5': 11, '6': '.investments.NewsArticle', '10': 'articles'},
+    {
+      '1': 'articles',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.NewsArticle',
+      '10': 'articles'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -1195,8 +1531,8 @@ const GetSectorPerformanceRequest$json = {
 };
 
 /// Descriptor for `GetSectorPerformanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSectorPerformanceRequestDescriptor = $convert.base64Decode(
-    'ChtHZXRTZWN0b3JQZXJmb3JtYW5jZVJlcXVlc3Q=');
+final $typed_data.Uint8List getSectorPerformanceRequestDescriptor =
+    $convert.base64Decode('ChtHZXRTZWN0b3JQZXJmb3JtYW5jZVJlcXVlc3Q=');
 
 @$core.Deprecated('Use sectorPerformanceInfoDescriptor instead')
 const SectorPerformanceInfo$json = {
@@ -1221,14 +1557,22 @@ final $typed_data.Uint8List sectorPerformanceInfoDescriptor = $convert.base64Dec
 const GetSectorPerformanceResponse$json = {
   '1': 'GetSectorPerformanceResponse',
   '2': [
-    {'1': 'sectors', '3': 1, '4': 3, '5': 11, '6': '.investments.SectorPerformanceInfo', '10': 'sectors'},
+    {
+      '1': 'sectors',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.SectorPerformanceInfo',
+      '10': 'sectors'
+    },
   ],
 };
 
 /// Descriptor for `GetSectorPerformanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSectorPerformanceResponseDescriptor = $convert.base64Decode(
-    'ChxHZXRTZWN0b3JQZXJmb3JtYW5jZVJlc3BvbnNlEjwKB3NlY3RvcnMYASADKAsyIi5pbnZlc3'
-    'RtZW50cy5TZWN0b3JQZXJmb3JtYW5jZUluZm9SB3NlY3RvcnM=');
+final $typed_data.Uint8List getSectorPerformanceResponseDescriptor =
+    $convert.base64Decode(
+        'ChxHZXRTZWN0b3JQZXJmb3JtYW5jZVJlc3BvbnNlEjwKB3NlY3RvcnMYASADKAsyIi5pbnZlc3'
+        'RtZW50cy5TZWN0b3JQZXJmb3JtYW5jZUluZm9SB3NlY3RvcnM=');
 
 @$core.Deprecated('Use getEarningsCalendarRequestDescriptor instead')
 const GetEarningsCalendarRequest$json = {
@@ -1241,9 +1585,10 @@ const GetEarningsCalendarRequest$json = {
 };
 
 /// Descriptor for `GetEarningsCalendarRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getEarningsCalendarRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRFYXJuaW5nc0NhbGVuZGFyUmVxdWVzdBIdCgpzdGFydF9kYXRlGAEgASgJUglzdGFydE'
-    'RhdGUSGQoIZW5kX2RhdGUYAiABKAlSB2VuZERhdGUSFAoFbGltaXQYAyABKAVSBWxpbWl0');
+final $typed_data.Uint8List getEarningsCalendarRequestDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRFYXJuaW5nc0NhbGVuZGFyUmVxdWVzdBIdCgpzdGFydF9kYXRlGAEgASgJUglzdGFydE'
+        'RhdGUSGQoIZW5kX2RhdGUYAiABKAlSB2VuZERhdGUSFAoFbGltaXQYAyABKAVSBWxpbWl0');
 
 @$core.Deprecated('Use earningsEventDescriptor instead')
 const EarningsEvent$json = {
@@ -1273,14 +1618,22 @@ final $typed_data.Uint8List earningsEventDescriptor = $convert.base64Decode(
 const GetEarningsCalendarResponse$json = {
   '1': 'GetEarningsCalendarResponse',
   '2': [
-    {'1': 'events', '3': 1, '4': 3, '5': 11, '6': '.investments.EarningsEvent', '10': 'events'},
+    {
+      '1': 'events',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.EarningsEvent',
+      '10': 'events'
+    },
   ],
 };
 
 /// Descriptor for `GetEarningsCalendarResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getEarningsCalendarResponseDescriptor = $convert.base64Decode(
-    'ChtHZXRFYXJuaW5nc0NhbGVuZGFyUmVzcG9uc2USMgoGZXZlbnRzGAEgAygLMhouaW52ZXN0bW'
-    'VudHMuRWFybmluZ3NFdmVudFIGZXZlbnRz');
+final $typed_data.Uint8List getEarningsCalendarResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRFYXJuaW5nc0NhbGVuZGFyUmVzcG9uc2USMgoGZXZlbnRzGAEgAygLMhouaW52ZXN0bW'
+        'VudHMuRWFybmluZ3NFdmVudFIGZXZlbnRz');
 
 @$core.Deprecated('Use getDividendCalendarRequestDescriptor instead')
 const GetDividendCalendarRequest$json = {
@@ -1293,9 +1646,10 @@ const GetDividendCalendarRequest$json = {
 };
 
 /// Descriptor for `GetDividendCalendarRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDividendCalendarRequestDescriptor = $convert.base64Decode(
-    'ChpHZXREaXZpZGVuZENhbGVuZGFyUmVxdWVzdBIdCgpzdGFydF9kYXRlGAEgASgJUglzdGFydE'
-    'RhdGUSGQoIZW5kX2RhdGUYAiABKAlSB2VuZERhdGUSFAoFbGltaXQYAyABKAVSBWxpbWl0');
+final $typed_data.Uint8List getDividendCalendarRequestDescriptor =
+    $convert.base64Decode(
+        'ChpHZXREaXZpZGVuZENhbGVuZGFyUmVxdWVzdBIdCgpzdGFydF9kYXRlGAEgASgJUglzdGFydE'
+        'RhdGUSGQoIZW5kX2RhdGUYAiABKAlSB2VuZERhdGUSFAoFbGltaXQYAyABKAVSBWxpbWl0');
 
 @$core.Deprecated('Use dividendEventDescriptor instead')
 const DividendEvent$json = {
@@ -1322,14 +1676,22 @@ final $typed_data.Uint8List dividendEventDescriptor = $convert.base64Decode(
 const GetDividendCalendarResponse$json = {
   '1': 'GetDividendCalendarResponse',
   '2': [
-    {'1': 'events', '3': 1, '4': 3, '5': 11, '6': '.investments.DividendEvent', '10': 'events'},
+    {
+      '1': 'events',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.DividendEvent',
+      '10': 'events'
+    },
   ],
 };
 
 /// Descriptor for `GetDividendCalendarResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDividendCalendarResponseDescriptor = $convert.base64Decode(
-    'ChtHZXREaXZpZGVuZENhbGVuZGFyUmVzcG9uc2USMgoGZXZlbnRzGAEgAygLMhouaW52ZXN0bW'
-    'VudHMuRGl2aWRlbmRFdmVudFIGZXZlbnRz');
+final $typed_data.Uint8List getDividendCalendarResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXREaXZpZGVuZENhbGVuZGFyUmVzcG9uc2USMgoGZXZlbnRzGAEgAygLMhouaW52ZXN0bW'
+        'VudHMuRGl2aWRlbmRFdmVudFIGZXZlbnRz');
 
 @$core.Deprecated('Use priceAlertInfoDescriptor instead')
 const PriceAlertInfo$json = {
@@ -1381,15 +1743,23 @@ final $typed_data.Uint8List createPriceAlertRequestDescriptor = $convert.base64D
 const CreatePriceAlertResponse$json = {
   '1': 'CreatePriceAlertResponse',
   '2': [
-    {'1': 'alert', '3': 1, '4': 1, '5': 11, '6': '.investments.PriceAlertInfo', '10': 'alert'},
+    {
+      '1': 'alert',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.PriceAlertInfo',
+      '10': 'alert'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `CreatePriceAlertResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createPriceAlertResponseDescriptor = $convert.base64Decode(
-    'ChhDcmVhdGVQcmljZUFsZXJ0UmVzcG9uc2USMQoFYWxlcnQYASABKAsyGy5pbnZlc3RtZW50cy'
-    '5QcmljZUFsZXJ0SW5mb1IFYWxlcnQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List createPriceAlertResponseDescriptor =
+    $convert.base64Decode(
+        'ChhDcmVhdGVQcmljZUFsZXJ0UmVzcG9uc2USMQoFYWxlcnQYASABKAsyGy5pbnZlc3RtZW50cy'
+        '5QcmljZUFsZXJ0SW5mb1IFYWxlcnQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getPriceAlertsRequestDescriptor instead')
 const GetPriceAlertsRequest$json = {
@@ -1400,22 +1770,31 @@ const GetPriceAlertsRequest$json = {
 };
 
 /// Descriptor for `GetPriceAlertsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPriceAlertsRequestDescriptor = $convert.base64Decode(
-    'ChVHZXRQcmljZUFsZXJ0c1JlcXVlc3QSFgoGc3ltYm9sGAEgASgJUgZzeW1ib2w=');
+final $typed_data.Uint8List getPriceAlertsRequestDescriptor =
+    $convert.base64Decode(
+        'ChVHZXRQcmljZUFsZXJ0c1JlcXVlc3QSFgoGc3ltYm9sGAEgASgJUgZzeW1ib2w=');
 
 @$core.Deprecated('Use getPriceAlertsResponseDescriptor instead')
 const GetPriceAlertsResponse$json = {
   '1': 'GetPriceAlertsResponse',
   '2': [
-    {'1': 'alerts', '3': 1, '4': 3, '5': 11, '6': '.investments.PriceAlertInfo', '10': 'alerts'},
+    {
+      '1': 'alerts',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.investments.PriceAlertInfo',
+      '10': 'alerts'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetPriceAlertsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPriceAlertsResponseDescriptor = $convert.base64Decode(
-    'ChZHZXRQcmljZUFsZXJ0c1Jlc3BvbnNlEjMKBmFsZXJ0cxgBIAMoCzIbLmludmVzdG1lbnRzLl'
-    'ByaWNlQWxlcnRJbmZvUgZhbGVydHMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
+final $typed_data.Uint8List getPriceAlertsResponseDescriptor =
+    $convert.base64Decode(
+        'ChZHZXRQcmljZUFsZXJ0c1Jlc3BvbnNlEjMKBmFsZXJ0cxgBIAMoCzIbLmludmVzdG1lbnRzLl'
+        'ByaWNlQWxlcnRJbmZvUgZhbGVydHMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
 
 @$core.Deprecated('Use updatePriceAlertRequestDescriptor instead')
 const UpdatePriceAlertRequest$json = {
@@ -1441,15 +1820,23 @@ final $typed_data.Uint8List updatePriceAlertRequestDescriptor = $convert.base64D
 const UpdatePriceAlertResponse$json = {
   '1': 'UpdatePriceAlertResponse',
   '2': [
-    {'1': 'alert', '3': 1, '4': 1, '5': 11, '6': '.investments.PriceAlertInfo', '10': 'alert'},
+    {
+      '1': 'alert',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.investments.PriceAlertInfo',
+      '10': 'alert'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UpdatePriceAlertResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updatePriceAlertResponseDescriptor = $convert.base64Decode(
-    'ChhVcGRhdGVQcmljZUFsZXJ0UmVzcG9uc2USMQoFYWxlcnQYASABKAsyGy5pbnZlc3RtZW50cy'
-    '5QcmljZUFsZXJ0SW5mb1IFYWxlcnQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List updatePriceAlertResponseDescriptor =
+    $convert.base64Decode(
+        'ChhVcGRhdGVQcmljZUFsZXJ0UmVzcG9uc2USMQoFYWxlcnQYASABKAsyGy5pbnZlc3RtZW50cy'
+        '5QcmljZUFsZXJ0SW5mb1IFYWxlcnQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use deletePriceAlertRequestDescriptor instead')
 const DeletePriceAlertRequest$json = {
@@ -1460,8 +1847,9 @@ const DeletePriceAlertRequest$json = {
 };
 
 /// Descriptor for `DeletePriceAlertRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deletePriceAlertRequestDescriptor = $convert.base64Decode(
-    'ChdEZWxldGVQcmljZUFsZXJ0UmVxdWVzdBIZCghhbGVydF9pZBgBIAEoCVIHYWxlcnRJZA==');
+final $typed_data.Uint8List deletePriceAlertRequestDescriptor =
+    $convert.base64Decode(
+        'ChdEZWxldGVQcmljZUFsZXJ0UmVxdWVzdBIZCghhbGVydF9pZBgBIAEoCVIHYWxlcnRJZA==');
 
 @$core.Deprecated('Use deletePriceAlertResponseDescriptor instead')
 const DeletePriceAlertResponse$json = {
@@ -1473,7 +1861,7 @@ const DeletePriceAlertResponse$json = {
 };
 
 /// Descriptor for `DeletePriceAlertResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deletePriceAlertResponseDescriptor = $convert.base64Decode(
-    'ChhEZWxldGVQcmljZUFsZXJ0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCg'
-    'dtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
-
+final $typed_data.Uint8List deletePriceAlertResponseDescriptor =
+    $convert.base64Decode(
+        'ChhEZWxldGVQcmljZUFsZXJ0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCg'
+        'dtZXNzYWdlGAIgASgJUgdtZXNzYWdl');

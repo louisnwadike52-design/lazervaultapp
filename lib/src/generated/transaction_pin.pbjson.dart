@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: transaction_pin.proto
-//
-// @dart = 2.12
+// Generated from transaction_pin.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -37,7 +38,14 @@ const CreateTransactionPinRequest$json = {
     {'1': 'confirm_pin', '3': 3, '4': 1, '5': 9, '10': 'confirmPin'},
     {'1': 'device_id', '3': 4, '4': 1, '5': 9, '10': 'deviceId'},
     {'1': 'device_name', '3': 5, '4': 1, '5': 9, '10': 'deviceName'},
-    {'1': 'channel_type', '3': 6, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'channel_type',
+      '3': 6,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
   ],
 };
 
@@ -55,15 +63,23 @@ const CreateTransactionPinResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'pin_details', '3': 3, '4': 1, '5': 11, '6': '.auth.TransactionPinDetails', '10': 'pinDetails'},
+    {
+      '1': 'pin_details',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.auth.TransactionPinDetails',
+      '10': 'pinDetails'
+    },
   ],
 };
 
 /// Descriptor for `CreateTransactionPinResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createTransactionPinResponseDescriptor = $convert.base64Decode(
-    'ChxDcmVhdGVUcmFuc2FjdGlvblBpblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
-    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRI8CgtwaW5fZGV0YWlscxgDIAEoCzIbLmF1dGgu'
-    'VHJhbnNhY3Rpb25QaW5EZXRhaWxzUgpwaW5EZXRhaWxz');
+final $typed_data.Uint8List createTransactionPinResponseDescriptor =
+    $convert.base64Decode(
+        'ChxDcmVhdGVUcmFuc2FjdGlvblBpblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+        'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRI8CgtwaW5fZGV0YWlscxgDIAEoCzIbLmF1dGgu'
+        'VHJhbnNhY3Rpb25QaW5EZXRhaWxzUgpwaW5EZXRhaWxz');
 
 @$core.Deprecated('Use verifyTransactionPinRequestDescriptor instead')
 const VerifyTransactionPinRequest$json = {
@@ -76,7 +92,14 @@ const VerifyTransactionPinRequest$json = {
     {'1': 'amount', '3': 5, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'device_id', '3': 7, '4': 1, '5': 9, '10': 'deviceId'},
-    {'1': 'channel_type', '3': 8, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'channel_type',
+      '3': 8,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
   ],
 };
 
@@ -95,9 +118,28 @@ const VerifyTransactionPinResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'verification_token', '3': 3, '4': 1, '5': 9, '10': 'verificationToken'},
-    {'1': 'expires_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
-    {'1': 'remaining_attempts', '3': 5, '4': 1, '5': 5, '10': 'remainingAttempts'},
+    {
+      '1': 'verification_token',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
+    {
+      '1': 'expires_at',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'expiresAt'
+    },
+    {
+      '1': 'remaining_attempts',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '10': 'remainingAttempts'
+    },
     {'1': 'is_locked', '3': 6, '4': 1, '5': 8, '10': 'isLocked'},
   ],
 };
@@ -118,7 +160,14 @@ const ChangeTransactionPinRequest$json = {
     {'1': 'current_pin', '3': 2, '4': 1, '5': 9, '10': 'currentPin'},
     {'1': 'new_pin', '3': 3, '4': 1, '5': 9, '10': 'newPin'},
     {'1': 'confirm_new_pin', '3': 4, '4': 1, '5': 9, '10': 'confirmNewPin'},
-    {'1': 'channel_type', '3': 5, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'channel_type',
+      '3': 5,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
   ],
 };
 
@@ -139,20 +188,40 @@ const ChangeTransactionPinResponse$json = {
 };
 
 /// Descriptor for `ChangeTransactionPinResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List changeTransactionPinResponseDescriptor = $convert.base64Decode(
-    'ChxDaGFuZ2VUcmFuc2FjdGlvblBpblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
-    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List changeTransactionPinResponseDescriptor =
+    $convert.base64Decode(
+        'ChxDaGFuZ2VUcmFuc2FjdGlvblBpblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+        'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use resetTransactionPinRequestDescriptor instead')
 const ResetTransactionPinRequest$json = {
   '1': 'ResetTransactionPinRequest',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {'1': 'verification_method', '3': 2, '4': 1, '5': 9, '10': 'verificationMethod'},
-    {'1': 'verification_code', '3': 3, '4': 1, '5': 9, '10': 'verificationCode'},
+    {
+      '1': 'verification_method',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationMethod'
+    },
+    {
+      '1': 'verification_code',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationCode'
+    },
     {'1': 'new_pin', '3': 4, '4': 1, '5': 9, '10': 'newPin'},
     {'1': 'confirm_new_pin', '3': 5, '4': 1, '5': 9, '10': 'confirmNewPin'},
-    {'1': 'channel_type', '3': 6, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'channel_type',
+      '3': 6,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
   ],
 };
 
@@ -174,16 +243,24 @@ const ResetTransactionPinResponse$json = {
 };
 
 /// Descriptor for `ResetTransactionPinResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List resetTransactionPinResponseDescriptor = $convert.base64Decode(
-    'ChtSZXNldFRyYW5zYWN0aW9uUGluUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List resetTransactionPinResponseDescriptor =
+    $convert.base64Decode(
+        'ChtSZXNldFRyYW5zYWN0aW9uUGluUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use checkUserHasPinRequestDescriptor instead')
 const CheckUserHasPinRequest$json = {
   '1': 'CheckUserHasPinRequest',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {'1': 'channel_type', '3': 2, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'channel_type',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
   ],
 };
 
@@ -198,8 +275,22 @@ const CheckUserHasPinResponse$json = {
   '2': [
     {'1': 'has_pin', '3': 1, '4': 1, '5': 8, '10': 'hasPin'},
     {'1': 'is_active', '3': 2, '4': 1, '5': 8, '10': 'isActive'},
-    {'1': 'created_at', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'last_changed_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastChangedAt'},
+    {
+      '1': 'created_at',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'last_changed_at',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastChangedAt'
+    },
   ],
 };
 
@@ -221,10 +312,11 @@ const ValidateTransactionPinTokenRequest$json = {
 };
 
 /// Descriptor for `ValidateTransactionPinTokenRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List validateTransactionPinTokenRequestDescriptor = $convert.base64Decode(
-    'CiJWYWxpZGF0ZVRyYW5zYWN0aW9uUGluVG9rZW5SZXF1ZXN0EhQKBXRva2VuGAEgASgJUgV0b2'
-    'tlbhIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSJQoOdHJhbnNhY3Rpb25faWQYAyABKAlSDXRy'
-    'YW5zYWN0aW9uSWQ=');
+final $typed_data.Uint8List validateTransactionPinTokenRequestDescriptor =
+    $convert.base64Decode(
+        'CiJWYWxpZGF0ZVRyYW5zYWN0aW9uUGluVG9rZW5SZXF1ZXN0EhQKBXRva2VuGAEgASgJUgV0b2'
+        'tlbhIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSJQoOdHJhbnNhY3Rpb25faWQYAyABKAlSDXRy'
+        'YW5zYWN0aW9uSWQ=');
 
 @$core.Deprecated('Use validateTransactionPinTokenResponseDescriptor instead')
 const ValidateTransactionPinTokenResponse$json = {
@@ -233,16 +325,24 @@ const ValidateTransactionPinTokenResponse$json = {
     {'1': 'valid', '3': 1, '4': 1, '5': 8, '10': 'valid'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'transaction_id', '3': 3, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'expires_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
+    {
+      '1': 'expires_at',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'expiresAt'
+    },
   ],
 };
 
 /// Descriptor for `ValidateTransactionPinTokenResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List validateTransactionPinTokenResponseDescriptor = $convert.base64Decode(
-    'CiNWYWxpZGF0ZVRyYW5zYWN0aW9uUGluVG9rZW5SZXNwb25zZRIUCgV2YWxpZBgBIAEoCFIFdm'
-    'FsaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEiUKDnRyYW5zYWN0aW9uX2lkGAMgASgJUg10'
-    'cmFuc2FjdGlvbklkEjkKCmV4cGlyZXNfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZX'
-    'N0YW1wUglleHBpcmVzQXQ=');
+final $typed_data.Uint8List validateTransactionPinTokenResponseDescriptor =
+    $convert.base64Decode(
+        'CiNWYWxpZGF0ZVRyYW5zYWN0aW9uUGluVG9rZW5SZXNwb25zZRIUCgV2YWxpZBgBIAEoCFIFdm'
+        'FsaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEiUKDnRyYW5zYWN0aW9uX2lkGAMgASgJUg10'
+        'cmFuc2FjdGlvbklkEjkKCmV4cGlyZXNfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZX'
+        'N0YW1wUglleHBpcmVzQXQ=');
 
 @$core.Deprecated('Use transactionPinDetailsDescriptor instead')
 const TransactionPinDetails$json = {
@@ -251,13 +351,48 @@ const TransactionPinDetails$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'is_active', '3': 3, '4': 1, '5': 8, '10': 'isActive'},
-    {'1': 'created_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
-    {'1': 'last_used_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastUsedAt'},
+    {
+      '1': 'created_at',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
+    {
+      '1': 'last_used_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastUsedAt'
+    },
     {'1': 'failed_attempts', '3': 7, '4': 1, '5': 5, '10': 'failedAttempts'},
     {'1': 'is_locked', '3': 8, '4': 1, '5': 8, '10': 'isLocked'},
-    {'1': 'locked_until', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lockedUntil'},
-    {'1': 'channel_type', '3': 10, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'locked_until',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lockedUntil'
+    },
+    {
+      '1': 'channel_type',
+      '3': 10,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
   ],
 };
 
@@ -297,8 +432,20 @@ const InitiatePinOTPResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'channel', '3': 3, '4': 1, '5': 9, '10': 'channel'},
-    {'1': 'masked_destination', '3': 4, '4': 1, '5': 9, '10': 'maskedDestination'},
-    {'1': 'expires_in_seconds', '3': 5, '4': 1, '5': 5, '10': 'expiresInSeconds'},
+    {
+      '1': 'masked_destination',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'maskedDestination'
+    },
+    {
+      '1': 'expires_in_seconds',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '10': 'expiresInSeconds'
+    },
     {'1': 'cooldown_seconds', '3': 6, '4': 1, '5': 5, '10': 'cooldownSeconds'},
   ],
 };
@@ -323,7 +470,14 @@ const VerifyPinOTPRequest$json = {
     {'1': 'confirm_new_pin', '3': 6, '4': 1, '5': 9, '10': 'confirmNewPin'},
     {'1': 'device_id', '3': 7, '4': 1, '5': 9, '10': 'deviceId'},
     {'1': 'device_name', '3': 8, '4': 1, '5': 9, '10': 'deviceName'},
-    {'1': 'channel_type', '3': 9, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'channel_type',
+      '3': 9,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
   ],
 };
 
@@ -342,7 +496,13 @@ const VerifyPinOTPResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'remaining_attempts', '3': 3, '4': 1, '5': 5, '10': 'remainingAttempts'},
+    {
+      '1': 'remaining_attempts',
+      '3': 3,
+      '4': 1,
+      '5': 5,
+      '10': 'remainingAttempts'
+    },
   ],
 };
 
@@ -361,15 +521,29 @@ const GetPinOTPChannelsRequest$json = {
 };
 
 /// Descriptor for `GetPinOTPChannelsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPinOTPChannelsRequestDescriptor = $convert.base64Decode(
-    'ChhHZXRQaW5PVFBDaGFubmVsc1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklk');
+final $typed_data.Uint8List getPinOTPChannelsRequestDescriptor =
+    $convert.base64Decode(
+        'ChhHZXRQaW5PVFBDaGFubmVsc1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklk');
 
 @$core.Deprecated('Use getPinOTPChannelsResponseDescriptor instead')
 const GetPinOTPChannelsResponse$json = {
   '1': 'GetPinOTPChannelsResponse',
   '2': [
-    {'1': 'channels', '3': 1, '4': 3, '5': 11, '6': '.auth.OTPChannel', '10': 'channels'},
-    {'1': 'recommended_channel', '3': 2, '4': 1, '5': 9, '10': 'recommendedChannel'},
+    {
+      '1': 'channels',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.auth.OTPChannel',
+      '10': 'channels'
+    },
+    {
+      '1': 'recommended_channel',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '10': 'recommendedChannel'
+    },
   ],
 };
 
@@ -384,7 +558,13 @@ const OTPChannel$json = {
   '1': 'OTPChannel',
   '2': [
     {'1': 'type', '3': 1, '4': 1, '5': 9, '10': 'type'},
-    {'1': 'masked_destination', '3': 2, '4': 1, '5': 9, '10': 'maskedDestination'},
+    {
+      '1': 'masked_destination',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '10': 'maskedDestination'
+    },
     {'1': 'is_verified', '3': 3, '4': 1, '5': 8, '10': 'isVerified'},
     {'1': 'is_available', '3': 4, '4': 1, '5': 8, '10': 'isAvailable'},
   ],
@@ -405,7 +585,14 @@ const CompleteForgotPinRequest$json = {
     {'1': 'new_pin', '3': 3, '4': 1, '5': 9, '10': 'newPin'},
     {'1': 'confirm_new_pin', '3': 4, '4': 1, '5': 9, '10': 'confirmNewPin'},
     {'1': 'device_id', '3': 5, '4': 1, '5': 9, '10': 'deviceId'},
-    {'1': 'channel_type', '3': 6, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'channel_type',
+      '3': 6,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
   ],
 };
 
@@ -423,7 +610,13 @@ const CompleteForgotPinResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'remaining_attempts', '3': 3, '4': 1, '5': 5, '10': 'remainingAttempts'},
+    {
+      '1': 'remaining_attempts',
+      '3': 3,
+      '4': 1,
+      '5': 5,
+      '10': 'remainingAttempts'
+    },
   ],
 };
 
@@ -440,8 +633,20 @@ const PinConfig$json = {
     {'1': 'min_length', '3': 1, '4': 1, '5': 5, '10': 'minLength'},
     {'1': 'max_length', '3': 2, '4': 1, '5': 5, '10': 'maxLength'},
     {'1': 'max_attempts', '3': 3, '4': 1, '5': 5, '10': 'maxAttempts'},
-    {'1': 'lockout_duration_minutes', '3': 4, '4': 1, '5': 5, '10': 'lockoutDurationMinutes'},
-    {'1': 'token_expiry_minutes', '3': 5, '4': 1, '5': 5, '10': 'tokenExpiryMinutes'},
+    {
+      '1': 'lockout_duration_minutes',
+      '3': 4,
+      '4': 1,
+      '5': 5,
+      '10': 'lockoutDurationMinutes'
+    },
+    {
+      '1': 'token_expiry_minutes',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '10': 'tokenExpiryMinutes'
+    },
   ],
 };
 
@@ -461,32 +666,62 @@ const GetUserChannelPinsRequest$json = {
 };
 
 /// Descriptor for `GetUserChannelPinsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserChannelPinsRequestDescriptor = $convert.base64Decode(
-    'ChlHZXRVc2VyQ2hhbm5lbFBpbnNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
+final $typed_data.Uint8List getUserChannelPinsRequestDescriptor =
+    $convert.base64Decode(
+        'ChlHZXRVc2VyQ2hhbm5lbFBpbnNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
 
 @$core.Deprecated('Use getUserChannelPinsResponseDescriptor instead')
 const GetUserChannelPinsResponse$json = {
   '1': 'GetUserChannelPinsResponse',
   '2': [
-    {'1': 'channel_pins', '3': 1, '4': 3, '5': 11, '6': '.auth.ChannelPinStatus', '10': 'channelPins'},
+    {
+      '1': 'channel_pins',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.auth.ChannelPinStatus',
+      '10': 'channelPins'
+    },
   ],
 };
 
 /// Descriptor for `GetUserChannelPinsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserChannelPinsResponseDescriptor = $convert.base64Decode(
-    'ChpHZXRVc2VyQ2hhbm5lbFBpbnNSZXNwb25zZRI5CgxjaGFubmVsX3BpbnMYASADKAsyFi5hdX'
-    'RoLkNoYW5uZWxQaW5TdGF0dXNSC2NoYW5uZWxQaW5z');
+final $typed_data.Uint8List getUserChannelPinsResponseDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRVc2VyQ2hhbm5lbFBpbnNSZXNwb25zZRI5CgxjaGFubmVsX3BpbnMYASADKAsyFi5hdX'
+        'RoLkNoYW5uZWxQaW5TdGF0dXNSC2NoYW5uZWxQaW5z');
 
 @$core.Deprecated('Use channelPinStatusDescriptor instead')
 const ChannelPinStatus$json = {
   '1': 'ChannelPinStatus',
   '2': [
-    {'1': 'channel_type', '3': 1, '4': 1, '5': 14, '6': '.auth.PinChannelType', '10': 'channelType'},
+    {
+      '1': 'channel_type',
+      '3': 1,
+      '4': 1,
+      '5': 14,
+      '6': '.auth.PinChannelType',
+      '10': 'channelType'
+    },
     {'1': 'has_pin', '3': 2, '4': 1, '5': 8, '10': 'hasPin'},
     {'1': 'is_active', '3': 3, '4': 1, '5': 8, '10': 'isActive'},
     {'1': 'is_locked', '3': 4, '4': 1, '5': 8, '10': 'isLocked'},
-    {'1': 'created_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'last_used_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastUsedAt'},
+    {
+      '1': 'created_at',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'last_used_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastUsedAt'
+    },
   ],
 };
 
@@ -510,10 +745,11 @@ const CreateChannelRegistrationRequest$json = {
 };
 
 /// Descriptor for `CreateChannelRegistrationRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createChannelRegistrationRequestDescriptor = $convert.base64Decode(
-    'CiBDcmVhdGVDaGFubmVsUmVnaXN0cmF0aW9uUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2'
-    'VySWQSIQoMY2hhbm5lbF90eXBlGAIgASgJUgtjaGFubmVsVHlwZRIhCgxwaG9uZV9udW1iZXIY'
-    'AyABKAlSC3Bob25lTnVtYmVy');
+final $typed_data.Uint8List createChannelRegistrationRequestDescriptor =
+    $convert.base64Decode(
+        'CiBDcmVhdGVDaGFubmVsUmVnaXN0cmF0aW9uUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2'
+        'VySWQSIQoMY2hhbm5lbF90eXBlGAIgASgJUgtjaGFubmVsVHlwZRIhCgxwaG9uZV9udW1iZXIY'
+        'AyABKAlSC3Bob25lTnVtYmVy');
 
 @$core.Deprecated('Use createChannelRegistrationResponseDescriptor instead')
 const CreateChannelRegistrationResponse$json = {
@@ -522,16 +758,23 @@ const CreateChannelRegistrationResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'masked_phone', '3': 3, '4': 1, '5': 9, '10': 'maskedPhone'},
-    {'1': 'otp_expires_in_seconds', '3': 4, '4': 1, '5': 5, '10': 'otpExpiresInSeconds'},
+    {
+      '1': 'otp_expires_in_seconds',
+      '3': 4,
+      '4': 1,
+      '5': 5,
+      '10': 'otpExpiresInSeconds'
+    },
   ],
 };
 
 /// Descriptor for `CreateChannelRegistrationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createChannelRegistrationResponseDescriptor = $convert.base64Decode(
-    'CiFDcmVhdGVDaGFubmVsUmVnaXN0cmF0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3'
-    'VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiEKDG1hc2tlZF9waG9uZRgDIAEoCVIL'
-    'bWFza2VkUGhvbmUSMwoWb3RwX2V4cGlyZXNfaW5fc2Vjb25kcxgEIAEoBVITb3RwRXhwaXJlc0'
-    'luU2Vjb25kcw==');
+final $typed_data.Uint8List createChannelRegistrationResponseDescriptor =
+    $convert.base64Decode(
+        'CiFDcmVhdGVDaGFubmVsUmVnaXN0cmF0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3'
+        'VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiEKDG1hc2tlZF9waG9uZRgDIAEoCVIL'
+        'bWFza2VkUGhvbmUSMwoWb3RwX2V4cGlyZXNfaW5fc2Vjb25kcxgEIAEoBVITb3RwRXhwaXJlc0'
+        'luU2Vjb25kcw==');
 
 @$core.Deprecated('Use verifyChannelOTPRequestDescriptor instead')
 const VerifyChannelOTPRequest$json = {
@@ -555,7 +798,14 @@ const VerifyChannelOTPResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'registration', '3': 3, '4': 1, '5': 11, '6': '.auth.ChannelRegistrationDetails', '10': 'registration'},
+    {
+      '1': 'registration',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.auth.ChannelRegistrationDetails',
+      '10': 'registration'
+    },
   ],
 };
 
@@ -574,22 +824,31 @@ const GetChannelRegistrationsRequest$json = {
 };
 
 /// Descriptor for `GetChannelRegistrationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getChannelRegistrationsRequestDescriptor = $convert.base64Decode(
-    'Ch5HZXRDaGFubmVsUmVnaXN0cmF0aW9uc1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlck'
-    'lk');
+final $typed_data.Uint8List getChannelRegistrationsRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRDaGFubmVsUmVnaXN0cmF0aW9uc1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlck'
+        'lk');
 
 @$core.Deprecated('Use getChannelRegistrationsResponseDescriptor instead')
 const GetChannelRegistrationsResponse$json = {
   '1': 'GetChannelRegistrationsResponse',
   '2': [
-    {'1': 'registrations', '3': 1, '4': 3, '5': 11, '6': '.auth.ChannelRegistrationDetails', '10': 'registrations'},
+    {
+      '1': 'registrations',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.auth.ChannelRegistrationDetails',
+      '10': 'registrations'
+    },
   ],
 };
 
 /// Descriptor for `GetChannelRegistrationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getChannelRegistrationsResponseDescriptor = $convert.base64Decode(
-    'Ch9HZXRDaGFubmVsUmVnaXN0cmF0aW9uc1Jlc3BvbnNlEkYKDXJlZ2lzdHJhdGlvbnMYASADKA'
-    'syIC5hdXRoLkNoYW5uZWxSZWdpc3RyYXRpb25EZXRhaWxzUg1yZWdpc3RyYXRpb25z');
+final $typed_data.Uint8List getChannelRegistrationsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9HZXRDaGFubmVsUmVnaXN0cmF0aW9uc1Jlc3BvbnNlEkYKDXJlZ2lzdHJhdGlvbnMYASADKA'
+        'syIC5hdXRoLkNoYW5uZWxSZWdpc3RyYXRpb25EZXRhaWxzUg1yZWdpc3RyYXRpb25z');
 
 @$core.Deprecated('Use channelRegistrationDetailsDescriptor instead')
 const ChannelRegistrationDetails$json = {
@@ -601,8 +860,22 @@ const ChannelRegistrationDetails$json = {
     {'1': 'phone_number', '3': 4, '4': 1, '5': 9, '10': 'phoneNumber'},
     {'1': 'status', '3': 5, '4': 1, '5': 9, '10': 'status'},
     {'1': 'has_pin', '3': 6, '4': 1, '5': 8, '10': 'hasPin'},
-    {'1': 'activated_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'activatedAt'},
-    {'1': 'created_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'activated_at',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'activatedAt'
+    },
+    {
+      '1': 'created_at',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
   ],
 };
 
@@ -625,9 +898,10 @@ const DeactivateChannelRequest$json = {
 };
 
 /// Descriptor for `DeactivateChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deactivateChannelRequestDescriptor = $convert.base64Decode(
-    'ChhEZWFjdGl2YXRlQ2hhbm5lbFJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEiEKDG'
-    'NoYW5uZWxfdHlwZRgCIAEoCVILY2hhbm5lbFR5cGU=');
+final $typed_data.Uint8List deactivateChannelRequestDescriptor =
+    $convert.base64Decode(
+        'ChhEZWFjdGl2YXRlQ2hhbm5lbFJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEiEKDG'
+        'NoYW5uZWxfdHlwZRgCIAEoCVILY2hhbm5lbFR5cGU=');
 
 @$core.Deprecated('Use deactivateChannelResponseDescriptor instead')
 const DeactivateChannelResponse$json = {
@@ -639,9 +913,10 @@ const DeactivateChannelResponse$json = {
 };
 
 /// Descriptor for `DeactivateChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deactivateChannelResponseDescriptor = $convert.base64Decode(
-    'ChlEZWFjdGl2YXRlQ2hhbm5lbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
-    'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List deactivateChannelResponseDescriptor =
+    $convert.base64Decode(
+        'ChlEZWFjdGl2YXRlQ2hhbm5lbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
+        'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use resolvePhoneToUserRequestDescriptor instead')
 const ResolvePhoneToUserRequest$json = {
@@ -653,9 +928,10 @@ const ResolvePhoneToUserRequest$json = {
 };
 
 /// Descriptor for `ResolvePhoneToUserRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List resolvePhoneToUserRequestDescriptor = $convert.base64Decode(
-    'ChlSZXNvbHZlUGhvbmVUb1VzZXJSZXF1ZXN0EiEKDHBob25lX251bWJlchgBIAEoCVILcGhvbm'
-    'VOdW1iZXISIQoMY2hhbm5lbF90eXBlGAIgASgJUgtjaGFubmVsVHlwZQ==');
+final $typed_data.Uint8List resolvePhoneToUserRequestDescriptor =
+    $convert.base64Decode(
+        'ChlSZXNvbHZlUGhvbmVUb1VzZXJSZXF1ZXN0EiEKDHBob25lX251bWJlchgBIAEoCVILcGhvbm'
+        'VOdW1iZXISIQoMY2hhbm5lbF90eXBlGAIgASgJUgtjaGFubmVsVHlwZQ==');
 
 @$core.Deprecated('Use resolvePhoneToUserResponseDescriptor instead')
 const ResolvePhoneToUserResponse$json = {
@@ -669,8 +945,8 @@ const ResolvePhoneToUserResponse$json = {
 };
 
 /// Descriptor for `ResolvePhoneToUserResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List resolvePhoneToUserResponseDescriptor = $convert.base64Decode(
-    'ChpSZXNvbHZlUGhvbmVUb1VzZXJSZXNwb25zZRIUCgVmb3VuZBgBIAEoCFIFZm91bmQSFwoHdX'
-    'Nlcl9pZBgCIAEoCVIGdXNlcklkEiUKDmNoYW5uZWxfc3RhdHVzGAMgASgJUg1jaGFubmVsU3Rh'
-    'dHVzEhcKB2hhc19waW4YBCABKAhSBmhhc1Bpbg==');
-
+final $typed_data.Uint8List resolvePhoneToUserResponseDescriptor =
+    $convert.base64Decode(
+        'ChpSZXNvbHZlUGhvbmVUb1VzZXJSZXNwb25zZRIUCgVmb3VuZBgBIAEoCFIFZm91bmQSFwoHdX'
+        'Nlcl9pZBgCIAEoCVIGdXNlcklkEiUKDmNoYW5uZWxfc3RhdHVzGAMgASgJUg1jaGFubmVsU3Rh'
+        'dHVzEhcKB2hhc19waW4YBCABKAhSBmhhc1Bpbg==');

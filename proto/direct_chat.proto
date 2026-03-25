@@ -45,6 +45,7 @@ message DirectChatHistoryMessage {
   string service = 3;
   string source_context = 4;
   string created_at = 5;
+  google.protobuf.Struct entities = 6;
 }
 
 message GetDirectChatHistoryResponse {

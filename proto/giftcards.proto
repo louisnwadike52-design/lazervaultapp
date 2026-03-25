@@ -1,0 +1,753 @@
+syntax = "proto3";
+
+package giftcards;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "giftcards-service/proto";
+
+// Gift Cards Service - Buy, redeem, and manage gift cards via Reloadly
+service GiftCardsService {
+  // === GIFT CARD OPERATIONS ===
+
+  // Buy a gift card (giftCards from AppServiceName)
+  rpc BuyGiftCard(BuyGiftCardRequest) returns (BuyGiftCardResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/buygiftcard"
+      body: "*"
+    };
+  }
+
+  // Get the merchant redeem code for a purchased gift card (fetches from Reloadly)
+  rpc GetRedeemCode(GetRedeemCodeRequest) returns (GetRedeemCodeResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/redeemcode"
+    };
+  }
+
+  // Get user's gift cards
+  rpc GetGiftCards(GetGiftCardsRequest) returns (GetGiftCardsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/giftcards"
+    };
+  }
+
+  // Get specific gift card details
+  rpc GetGiftCard(GetGiftCardRequest) returns (GetGiftCardResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/giftcard"
+    };
+  }
+
+  // Transfer gift card to another user
+  rpc TransferGiftCard(TransferGiftCardRequest) returns (TransferGiftCardResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/transfergiftcard"
+      body: "*"
+    };
+  }
+
+  // Removed: GetGiftCardBalance — gift card balance lives on the merchant's platform, not ours
+
+  // === MERCHANT & BRANDS ===
+
+  // Get available gift card brands/merchants
+  rpc GetGiftCardBrands(GetGiftCardBrandsRequest) returns (GetGiftCardBrandsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/giftcardbrands"
+    };
+  }
+
+  // Get gift card transaction history
+  rpc GetGiftCardHistory(GetGiftCardHistoryRequest) returns (GetGiftCardHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/giftcardhistory"
+    };
+  }
+
+  // === SELL GIFT CARD OPERATIONS ===
+
+  // Get card types available for selling
+  rpc GetSellableCards(GetSellableCardsRequest) returns (GetSellableCardsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/sellable"
+    };
+  }
+
+  // Get current sell rate for a card type + denomination
+  rpc GetSellRate(GetSellRateRequest) returns (GetSellRateResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/sellrate"
+    };
+  }
+
+  // Upload a gift card image for selling
+  rpc UploadSellImage(UploadSellImageRequest) returns (UploadSellImageResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/sell/upload-image"
+      body: "*"
+    };
+  }
+
+  // Extract gift card details from uploaded images using LLM OCR
+  rpc ExtractCardDetails(ExtractCardDetailsRequest) returns (ExtractCardDetailsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/sell/extract-card"
+      body: "*"
+    };
+  }
+
+  // Submit a gift card for sale (goes to pending_review for admin approval)
+  rpc SellGiftCard(SellGiftCardRequest) returns (SellGiftCardResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/sell"
+      body: "*"
+    };
+  }
+
+  // Get status of a sell transaction
+  rpc GetSellStatus(GetSellStatusRequest) returns (GetSellStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/sellstatus"
+    };
+  }
+
+  // Get user's sell transactions
+  rpc GetMySales(GetMySalesRequest) returns (GetMySalesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/mysales"
+    };
+  }
+
+  // === ADMIN OPERATIONS ===
+
+  // List sell requests pending admin review
+  rpc AdminListPendingSales(AdminListPendingSalesRequest) returns (AdminListPendingSalesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/pending-sales"
+    };
+  }
+
+  // Get full sell request details for admin review (includes images)
+  rpc AdminGetSaleDetail(AdminGetSaleDetailRequest) returns (AdminGetSaleDetailResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/sale"
+    };
+  }
+
+  // Approve a sell request (credits user account, optionally submits to provider)
+  rpc AdminApproveSale(AdminApproveSaleRequest) returns (AdminApproveSaleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/sale/approve"
+      body: "*"
+    };
+  }
+
+  // Reject a sell request with reason
+  rpc AdminRejectSale(AdminRejectSaleRequest) returns (AdminRejectSaleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/sale/reject"
+      body: "*"
+    };
+  }
+
+  // Admin Sell Rate Management
+
+  // List all sell rate configurations
+  rpc AdminListSellRates(AdminListSellRatesRequest) returns (AdminListSellRatesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/sell-rates"
+    };
+  }
+
+  // Create a new sell rate configuration
+  rpc AdminCreateSellRate(AdminCreateSellRateRequest) returns (AdminCreateSellRateResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/sell-rates"
+      body: "*"
+    };
+  }
+
+  // Update an existing sell rate configuration
+  rpc AdminUpdateSellRate(AdminUpdateSellRateRequest) returns (AdminUpdateSellRateResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/sell-rates/update"
+      body: "*"
+    };
+  }
+
+  // Toggle active/inactive status for a sell rate
+  rpc AdminToggleSellRate(AdminToggleSellRateRequest) returns (AdminToggleSellRateResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/sell-rates/toggle"
+      body: "*"
+    };
+  }
+
+  // Get supported countries for gift cards (from Reloadly)
+  rpc GetSupportedCountries(GetSupportedCountriesRequest) returns (GetSupportedCountriesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/countries"
+    };
+  }
+}
+
+// ===== MODELS =====
+
+message GiftCard {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;                // Account used to purchase
+  string brand_id = 4;
+  string brand_name = 5;
+  reserved 6;                            // Removed: was card_number (internal ID, not needed)
+  reserved 7;                            // Removed: was pin (internal PIN, not needed)
+  double original_amount = 8;           // Card face value in recipient currency
+  reserved 9;                            // Removed: was current_balance (balance is on merchant platform, not ours)
+  string currency = 10;                 // Recipient/card currency (e.g., "GBP")
+  string status = 11;                   // "available", "transferred", "expired"
+  string purchase_date = 12;
+  string expiry_date = 13;
+  string recipient_email = 14;          // If sent as gift
+  string recipient_name = 15;
+  string message = 16;                  // Gift message
+  reserved 17;                           // Removed: was qr_code
+  string metadata = 18;                 // JSON metadata
+  string created_at = 19;
+  string updated_at = 20;
+  // Reloadly provider fields — the actual gift card data from the provider
+  string provider_transaction_id = 21;  // Reloadly order transaction ID (used to fetch redeem code)
+  string redemption_code = 22;          // Merchant redeem code (e.g., Amazon code XXXX-YYYY-ZZZZ)
+  string redemption_pin = 23;           // Merchant PIN (if applicable for this brand)
+  string country_code = 24;             // ISO country code (e.g. "NG")
+  string logo_url = 25;                 // Brand logo URL from Reloadly
+  int64 provider_product_id = 26;       // Reloadly product ID
+  double discount_percentage = 27;      // Commission/discount percentage
+  // Payment (sender) currency fields — what was actually charged
+  double sender_amount = 28;            // Amount charged in sender currency
+  string sender_currency = 29;          // Sender currency code (e.g., "NGN")
+  // Platform transfer tracking
+  string transferred_from_id = 30;      // Original card ID if received via platform transfer
+  string sender_user_id = 31;           // User ID of the person who transferred this card
+  string transfer_type = 32;            // "platform" or "email"
+  // Redemption instructions from Reloadly (how to use the code on the merchant's website)
+  string redemption_instructions = 33;
+}
+
+message GiftCardBrand {
+  string id = 1;
+  string name = 2;
+  string logo_url = 3;
+  string category = 4;                  // "retail", "food", "entertainment", "travel"
+  string description = 5;
+  repeated double denominations = 6;    // Available recipient amounts: [10, 25, 50, 100]
+  double min_amount = 7;               // Min recipient denomination
+  double max_amount = 8;               // Max recipient denomination
+  bool is_active = 9;
+  string terms_and_conditions = 10;
+  // Provider consistency tracking
+  string provider_name = 17;            // Provider that supplied this brand (e.g., "reloadly")
+  // Reloadly fields
+  int64 product_id = 11;               // Reloadly product ID
+  string country_code = 12;            // ISO country code
+  repeated GiftCardDenomination fixed_denominations = 13;  // Fixed recipient price options from Reloadly
+  double discount_percentage = 14;      // Commission percentage
+  string currency_code = 15;           // Recipient currency: e.g. "GBP", "USD" (the gift card's face currency)
+  string redemption_instructions = 16;  // How to redeem
+  // Sender (payment) currency fields — what the user actually pays
+  string sender_currency_code = 18;    // Payment currency: e.g. "NGN" (what Reloadly charges)
+  repeated double sender_denominations = 19;  // Fixed sender amounts matching recipient denominations
+  double min_sender_amount = 20;       // Min sender denomination (for range-based products)
+  double max_sender_amount = 21;       // Max sender denomination (for range-based products)
+  double sender_fee = 22;             // Fee charged by Reloadly in sender currency
+  double sender_fee_percentage = 23;   // Fee percentage
+  // Fixed sender denomination objects (paired with recipient denominations)
+  repeated GiftCardDenomination fixed_sender_denominations = 24;
+}
+
+// Fixed denomination from Reloadly
+message GiftCardDenomination {
+  double price = 1;                    // Face value amount
+  string currency_code = 2;           // Currency of denomination
+}
+
+message GiftCardTransaction {
+  string id = 1;
+  string gift_card_id = 2;
+  string user_id = 3;
+  string transaction_type = 4;          // "purchase", "redeem", "transfer"
+  double amount = 5;
+  double balance_before = 6;
+  double balance_after = 7;
+  string description = 8;
+  string created_at = 9;
+  string provider_transaction_id = 10;  // Reloadly order ID if applicable
+  string reference = 11;               // Internal reference (GC-{uuid})
+}
+
+// ===== BUY GIFT CARD =====
+// NOTE: user_id extracted from JWT token, not from request
+message BuyGiftCardRequest {
+  string account_id = 1;
+  string brand_id = 2;
+  double amount = 3;                    // Recipient denomination (card face value)
+  string recipient_email = 4;           // Optional: send as gift
+  string recipient_name = 5;
+  string gift_message = 6;              // Optional gift message
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 7;           // Unique transaction identifier
+  string verification_token = 8;        // Token from TransactionPinService validation
+
+  // Provider consistency - MUST match the provider from GetGiftCardBrands response
+  string provider_name = 15;            // Provider name from listing (e.g., "reloadly")
+
+  // Reloadly fields
+  string idempotency_key = 9;          // Client-provided idempotency key
+  string sender_name = 10;             // Sender display name
+  string recipient_phone = 11;         // Optional: recipient phone
+  int64 product_id = 12;              // Reloadly product ID (preferred over brand_id)
+  string country_code = 13;           // ISO country code for the purchase
+  int32 quantity = 14;                 // Number of cards (default 1)
+
+  // Multi-currency payment fields
+  double sender_amount = 16;           // Amount in sender/payment currency (what user pays)
+  string sender_currency = 17;         // Sender currency code (e.g., "NGN") — from brand.sender_currency_code
+}
+
+message BuyGiftCardResponse {
+  GiftCard gift_card = 1;
+  double new_balance = 2;
+  string message = 3;
+  string provider_transaction_id = 4;   // Reloadly order transaction ID
+  // Multi-currency info
+  double sender_amount = 5;            // Amount charged in sender currency
+  string sender_currency = 6;          // Currency charged (e.g., "NGN")
+  double recipient_amount = 7;         // Card face value
+  string recipient_currency = 8;       // Card currency (e.g., "GBP")
+}
+
+// ===== GET REDEEM CODE =====
+// Fetches the merchant redeem code (e.g., Amazon code, Google Play code) for a gift card
+// purchased on this platform. Uses the stored provider transaction ID to call Reloadly.
+// NOTE: user_id extracted from JWT token, not from request
+message GetRedeemCodeRequest {
+  string transaction_id = 1;            // Reloadly provider transaction ID (from purchase receipt)
+  bool force_refresh = 2;               // If true, re-fetch from Reloadly even if cached
+}
+
+message GetRedeemCodeResponse {
+  string transaction_id = 1;            // The Reloadly transaction ID
+  string redemption_code = 2;           // The actual merchant redeem code (e.g., Amazon code)
+  string redemption_pin = 3;            // The PIN code (if applicable for this brand)
+  string brand_name = 4;
+  string redemption_instructions = 5;   // How to use this code on the merchant's website
+  string status = 6;                    // "available", "pending", "unavailable"
+  string message = 7;
+}
+
+// ===== GET GIFT CARDS =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetGiftCardsRequest {
+  string status = 1;                    // Optional filter
+  string brand_id = 2;                  // Optional filter
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message GetGiftCardsResponse {
+  repeated GiftCard gift_cards = 1;
+  int32 total = 2;
+  double total_value = 3;
+}
+
+// ===== GET GIFT CARD =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetGiftCardRequest {
+  string gift_card_id = 1;
+}
+
+message GetGiftCardResponse {
+  GiftCard gift_card = 1;
+}
+
+// ===== TRANSFER GIFT CARD =====
+// NOTE: user_id extracted from JWT token, not from request
+message TransferGiftCardRequest {
+  string gift_card_id = 1;
+  string recipient_email = 2;
+  string recipient_name = 3;
+  string message = 4;
+
+  // Transaction PIN verification (replaces direct PIN field)
+  string transaction_id = 5;           // Unique transaction identifier
+  string verification_token = 6;        // Token from TransactionPinService validation
+
+  // Platform transfer fields (when transferring to a LazerVault user)
+  string recipient_user_id = 7;        // LazerVault user ID (if platform transfer)
+  string transfer_type = 8;            // "platform" or "email" (default: "email")
+}
+
+message TransferGiftCardResponse {
+  GiftCard gift_card = 1;              // Sender's card (status: transferred)
+  string message = 2;
+  GiftCard recipient_gift_card = 3;    // Recipient's new card (only for platform transfers)
+}
+
+// ===== GET GIFT CARD BALANCE =====
+
+// Removed: GetGiftCardBalanceRequest/Response — balance is on the merchant platform
+
+// ===== GET GIFT CARD BRANDS =====
+
+message GetGiftCardBrandsRequest {
+  string category = 1;                  // Optional filter
+  bool active_only = 2;
+  string country_code = 3;             // ISO country code to filter brands by country (empty = all countries)
+  int32 page = 4;                      // Page number (0-based)
+  int32 page_size = 5;                 // Items per page (default 20)
+  string search_query = 6;             // Optional: search brands by name
+}
+
+message GetGiftCardBrandsResponse {
+  repeated GiftCardBrand brands = 1;
+  int32 total = 2;                     // Total number of brands
+  int32 total_pages = 3;              // Total number of pages
+  int32 current_page = 4;            // Current page number (0-based)
+  bool has_next = 5;                  // Whether there are more pages
+  int32 page_size = 6;               // Page size used
+}
+
+// ===== GET GIFT CARD HISTORY =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetGiftCardHistoryRequest {
+  string gift_card_id = 1;              // Optional: specific card
+  string transaction_type = 2;          // Optional filter
+  string start_date = 3;
+  string end_date = 4;
+  int32 limit = 5;
+  int32 offset = 6;
+}
+
+message GetGiftCardHistoryResponse {
+  repeated GiftCardTransaction transactions = 1;
+  int32 total = 2;
+}
+
+// ===== SELL GIFT CARD =====
+
+message SellableCard {
+  string card_type = 1;
+  string display_name = 2;
+  string logo_url = 3;
+  string category = 4;
+  repeated double denominations = 5;
+  repeated string currencies = 6;
+  double min_denomination = 7;
+  double max_denomination = 8;
+  string provider_name = 9;            // Provider that supplied this card (e.g., "reloadly", "prestmit")
+}
+
+message SellRate {
+  string card_type = 1;
+  double denomination = 2;
+  double rate_percentage = 3;           // e.g. 85.0 means 85% of face value
+  double payout_amount = 4;             // denomination * rate / 100 in payout currency
+  string currency = 5;                  // payout currency (e.g. "NGN")
+  string expires_at = 6;               // ISO 8601 timestamp
+}
+
+message GiftCardSale {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string card_type = 4;
+  string card_number = 5;
+  double denomination = 6;
+  string currency = 7;
+  double rate_percentage = 8;
+  double expected_payout = 9;
+  double actual_payout = 10;
+  string status = 11;                   // pending_review, reviewing, approved, rejected, paid, cancelled
+  string provider_sale_id = 12;
+  string provider_name = 13;
+  string reference = 14;
+  string submitted_at = 15;
+  string reviewed_at = 16;
+  string paid_at = 17;
+  string created_at = 18;
+  string updated_at = 19;
+  // Image and OCR fields
+  repeated string image_urls = 20;      // URLs of uploaded card images
+  string ocr_brand = 21;               // LLM-extracted brand
+  string ocr_card_number = 22;         // LLM-extracted card number
+  string ocr_pin = 23;                 // LLM-extracted PIN
+  double ocr_denomination = 24;        // LLM-extracted denomination
+  string ocr_currency = 25;            // LLM-extracted currency
+  // Admin review fields
+  string admin_reviewer_id = 26;
+  string rejection_reason = 27;
+  string admin_notes = 28;
+  string card_pin = 29;                // User-entered card PIN (for admin review)
+  // Dynamic pricing breakdown
+  double exit_rate_percent = 30;
+  double base_margin_percent = 31;
+  double risk_buffer_percent = 32;
+  double commission_amount = 33;
+  // Risk scoring
+  int32 risk_score = 34;
+  string risk_level = 35;
+  repeated string risk_flags = 36;
+  string risk_action = 37;
+  // Card details
+  string card_country = 38;
+  string card_format = 39;
+}
+
+message GetSellableCardsRequest {
+  string country_code = 1;            // Optional: filter by country (e.g., "US", "GB")
+}
+
+message GetSellableCardsResponse {
+  repeated SellableCard cards = 1;
+  int32 total = 2;
+}
+
+message GetSellRateRequest {
+  string card_type = 1;
+  double denomination = 2;
+}
+
+message GetSellRateResponse {
+  SellRate rate = 1;
+}
+
+// NOTE: user_id extracted from JWT token
+message SellGiftCardRequest {
+  string card_type = 1;
+  string card_number = 2;
+  string card_pin = 3;
+  double denomination = 4;
+  string currency = 5;
+  repeated string images = 6;           // Deprecated: use image_urls instead
+  string idempotency_key = 7;
+  string transaction_id = 8;            // Unique transaction identifier
+  string verification_token = 9;        // Token from TransactionPinService validation
+  string provider_name = 10;            // Provider name from GetSellableCards
+  // Image upload fields (from UploadSellImage)
+  repeated string image_urls = 11;      // URLs of uploaded card images
+  repeated string image_keys = 12;      // Storage keys of uploaded images
+  // OCR extraction results (from ExtractCardDetails)
+  string ocr_brand = 13;
+  string ocr_card_number = 14;
+  string ocr_pin = 15;
+  double ocr_denomination = 16;
+  string ocr_currency = 17;
+  // Card origin details
+  string card_country = 18;             // Country of origin (US, UK, CA, AU, etc.)
+  string card_format = 19;              // "ecode" or "physical"
+}
+
+message SellGiftCardResponse {
+  GiftCardSale sale = 1;
+  string message = 2;
+}
+
+message GetSellStatusRequest {
+  string sale_id = 1;
+}
+
+message GetSellStatusResponse {
+  GiftCardSale sale = 1;
+}
+
+// NOTE: user_id extracted from JWT token
+message GetMySalesRequest {
+  string status = 1;                    // Optional filter
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetMySalesResponse {
+  repeated GiftCardSale sales = 1;
+  int32 total = 2;
+}
+
+// ===== IMAGE UPLOAD & OCR =====
+
+message UploadSellImageRequest {
+  string image_data = 1;              // base64-encoded image data
+  string content_type = 2;            // "image/jpeg", "image/png"
+  string filename = 3;                // original filename
+}
+
+message UploadSellImageResponse {
+  string image_url = 1;               // Public URL to the stored image
+  string image_key = 2;               // Storage key (for OCR and sell request)
+}
+
+message ExtractCardDetailsRequest {
+  repeated string image_urls = 1;     // URLs of uploaded images to analyze
+}
+
+message ExtractCardDetailsResponse {
+  string brand = 1;                   // Extracted brand name
+  string card_number = 2;             // Extracted card code/number
+  string pin = 3;                     // Extracted PIN (if visible)
+  double denomination = 4;            // Extracted face value
+  string currency = 5;                // Extracted currency code
+  double confidence = 6;              // 0-1 confidence score
+  string raw_text = 7;                // All text visible on the card
+}
+
+// ===== ADMIN SELL REVIEW =====
+
+message AdminListPendingSalesRequest {
+  string status = 1;                  // Filter: "pending_review", "all" (default: pending_review)
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message AdminListPendingSalesResponse {
+  repeated GiftCardSale sales = 1;
+  int32 total = 2;
+}
+
+message AdminGetSaleDetailRequest {
+  string sale_id = 1;
+}
+
+message AdminGetSaleDetailResponse {
+  GiftCardSale sale = 1;
+  repeated string image_download_urls = 2;  // Signed/direct download URLs for card images
+  string user_email = 3;
+  string user_name = 4;
+}
+
+message AdminApproveSaleRequest {
+  string sale_id = 1;
+  string admin_notes = 2;             // Optional admin notes
+}
+
+message AdminApproveSaleResponse {
+  GiftCardSale sale = 1;
+  string message = 2;
+}
+
+message AdminRejectSaleRequest {
+  string sale_id = 1;
+  string reason = 2;                  // Required rejection reason
+  string admin_notes = 3;
+}
+
+message AdminRejectSaleResponse {
+  GiftCardSale sale = 1;
+  string message = 2;
+}
+
+// ===== ADMIN SELL RATE MANAGEMENT =====
+
+message SellRateConfig {
+  string id = 1;
+  string card_brand = 2;
+  string card_type_slug = 3;
+  string logo_url = 4;
+  string category = 5;
+  repeated double denominations = 6;
+  repeated string currencies = 7;
+  repeated string countries = 8;
+  double min_denomination = 9;
+  double max_denomination = 10;
+  double buy_rate_percentage = 11;
+  double commission_percentage = 12;
+  double payout_rate_percentage = 13;
+  string payout_currency = 14;
+  string card_type = 15;              // "ecode", "physical", "all"
+  bool is_active = 16;
+  string created_at = 17;
+  string updated_at = 18;
+}
+
+message AdminListSellRatesRequest {
+  string category = 1;
+  bool active_only = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message AdminListSellRatesResponse {
+  repeated SellRateConfig rates = 1;
+  int32 total = 2;
+}
+
+message AdminCreateSellRateRequest {
+  string card_brand = 1;
+  string card_type_slug = 2;
+  string logo_url = 3;
+  string category = 4;
+  repeated double denominations = 5;
+  repeated string currencies = 6;
+  repeated string countries = 7;
+  double min_denomination = 8;
+  double max_denomination = 9;
+  double buy_rate_percentage = 10;
+  double commission_percentage = 11;
+  double payout_rate_percentage = 12;
+  string payout_currency = 13;
+  string card_type = 14;
+}
+
+message AdminCreateSellRateResponse {
+  SellRateConfig rate = 1;
+  string message = 2;
+}
+
+message AdminUpdateSellRateRequest {
+  string id = 1;
+  string card_brand = 2;
+  string card_type_slug = 3;
+  string logo_url = 4;
+  string category = 5;
+  repeated double denominations = 6;
+  repeated string currencies = 7;
+  repeated string countries = 8;
+  double min_denomination = 9;
+  double max_denomination = 10;
+  double buy_rate_percentage = 11;
+  double commission_percentage = 12;
+  double payout_rate_percentage = 13;
+  string payout_currency = 14;
+  string card_type = 15;
+  bool is_active = 16;
+}
+
+message AdminUpdateSellRateResponse {
+  SellRateConfig rate = 1;
+  string message = 2;
+}
+
+message AdminToggleSellRateRequest {
+  string id = 1;
+  bool is_active = 2;
+}
+
+message AdminToggleSellRateResponse {
+  string message = 1;
+}
+
+// ===== SUPPORTED COUNTRIES =====
+
+message GiftCardCountry {
+  string iso_code = 1;                 // ISO 3166-1 alpha-2 (e.g. "US", "NG")
+  string name = 2;                     // Full country name
+  string flag_url = 3;                 // URL to country flag image
+  string currency_code = 4;           // Currency ISO code (e.g. "USD", "NGN")
+  string currency_name = 5;           // Currency name (e.g. "US Dollar")
+}
+
+message GetSupportedCountriesRequest {}
+
+message GetSupportedCountriesResponse {
+  repeated GiftCardCountry countries = 1;
+}

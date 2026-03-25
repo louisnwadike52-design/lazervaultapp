@@ -12,22 +12,56 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     required IGiftCardRemoteDataSource remoteDataSource,
   }) : _remoteDataSource = remoteDataSource;
 
+  /// Extract clean error message, stripping "Exception:" prefix
+  static String _extractErrorMessage(Object e) {
+    final msg = e.toString();
+    // Strip "Exception: " prefix if present
+    if (msg.startsWith('Exception: ')) {
+      return msg.substring(11);
+    }
+    return msg;
+  }
+
   @override
-  Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrands({
+  Future<Either<Failure, PaginatedBrands>> getGiftCardBrands({
     String? category,
     String? countryCode,
+    String? searchQuery,
+    int page = 0,
+    int pageSize = 20,
   }) async {
     try {
-      final brands = await RetryPolicy.standard.execute(
+      final result = await RetryPolicy.standard.execute(
         () => _remoteDataSource.getGiftCardBrands(
           category: category,
           countryCode: countryCode,
+          searchQuery: searchQuery,
+          page: page,
+          pageSize: pageSize,
         ),
       );
 
-      return Right(brands);
+      return Right(PaginatedBrands(
+        brands: result.brands,
+        total: result.total,
+        totalPages: result.totalPages,
+        currentPage: result.currentPage,
+        hasNext: result.hasNext,
+      ));
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<GiftCardCountry>>> getSupportedCountries() async {
+    try {
+      final countries = await RetryPolicy.standard.execute(
+        () => _remoteDataSource.getSupportedCountries(),
+      );
+      return Right(countries);
+    } catch (e) {
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -47,6 +81,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     String? idempotencyKey,
     int quantity = 1,
     String? providerName,
+    double? senderAmount,
+    String? senderCurrency,
   }) async {
     try {
       final giftCard = await RetryPolicy.critical.execute(
@@ -65,12 +101,14 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           idempotencyKey: idempotencyKey,
           quantity: quantity,
           providerName: providerName,
+          senderAmount: senderAmount,
+          senderCurrency: senderCurrency,
         ),
       );
 
       return Right(giftCard);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -93,7 +131,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
 
       return Right(giftCards);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -103,7 +141,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       final giftCard = await _remoteDataSource.getGiftCardById(giftCardId);
       return Right(giftCard);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -126,27 +164,23 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
 
       return Right(transactions);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
   @override
-  Future<Either<Failure, GiftCard>> redeemGiftCard({
-    required String accountId,
-    required String cardNumber,
-    required String cardPin,
+  Future<Either<Failure, Map<String, String>>> getRedeemCode({
+    required String transactionId,
+    bool forceRefresh = false,
   }) async {
     try {
-      final giftCard = await RetryPolicy.critical.execute(
-        () => _remoteDataSource.redeemGiftCard(
-          accountId: accountId,
-          cardNumber: cardNumber,
-          cardPin: cardPin,
-        ),
+      final result = await _remoteDataSource.getRedeemCode(
+        transactionId: transactionId,
+        forceRefresh: forceRefresh,
       );
-      return Right(giftCard);
+      return Right(result);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -158,6 +192,8 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     required String message,
     required String transactionId,
     required String verificationToken,
+    String? recipientUserId,
+    String transferType = 'email',
   }) async {
     try {
       final giftCard = await RetryPolicy.critical.execute(
@@ -168,41 +204,27 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           message: message,
           transactionId: transactionId,
           verificationToken: verificationToken,
+          recipientUserId: recipientUserId,
+          transferType: transferType,
         ),
       );
       return Right(giftCard);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
-    }
-  }
-
-  @override
-  Future<Either<Failure, GiftCardBalance>> getGiftCardBalance({
-    required String cardNumber,
-    required String cardPin,
-  }) async {
-    try {
-      final balance = await _remoteDataSource.getGiftCardBalance(
-        cardNumber: cardNumber,
-        cardPin: cardPin,
-      );
-      return Right(balance);
-    } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
   // Sell flow methods
 
   @override
-  Future<Either<Failure, List<SellableCard>>> getSellableCards() async {
+  Future<Either<Failure, List<SellableCard>>> getSellableCards({String? countryCode}) async {
     try {
       final cards = await RetryPolicy.standard.execute(
-        () => _remoteDataSource.getSellableCards(),
+        () => _remoteDataSource.getSellableCards(countryCode: countryCode),
       );
       return Right(cards);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -220,7 +242,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(rate);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -236,6 +258,15 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     List<String>? images,
     String? idempotencyKey,
     String? providerName,
+    String? cardCountry,
+    String? cardFormat,
+    List<String>? imageUrls,
+    List<String>? imageKeys,
+    String? ocrBrand,
+    String? ocrCardNumber,
+    String? ocrPin,
+    double? ocrDenomination,
+    String? ocrCurrency,
   }) async {
     try {
       final sale = await RetryPolicy.critical.execute(
@@ -250,11 +281,20 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           images: images,
           idempotencyKey: idempotencyKey,
           providerName: providerName,
+          cardCountry: cardCountry,
+          cardFormat: cardFormat,
+          imageUrls: imageUrls,
+          imageKeys: imageKeys,
+          ocrBrand: ocrBrand,
+          ocrCardNumber: ocrCardNumber,
+          ocrPin: ocrPin,
+          ocrDenomination: ocrDenomination,
+          ocrCurrency: ocrCurrency,
         ),
       );
       return Right(sale);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -264,7 +304,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       final sale = await _remoteDataSource.getSellStatus(saleId);
       return Right(sale);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 
@@ -284,7 +324,39 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       );
       return Right(sales);
     } catch (e) {
-      return Left(APIFailure(message: e.toString(), statusCode: 500));
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, String>>> uploadSellImage({
+    required String imageData,
+    required String contentType,
+    required String filename,
+  }) async {
+    try {
+      final result = await _remoteDataSource.uploadSellImage(
+        imageData: imageData,
+        contentType: contentType,
+        filename: filename,
+      );
+      return Right(result);
+    } catch (e) {
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> extractCardDetails({
+    required List<String> imageUrls,
+  }) async {
+    try {
+      final result = await _remoteDataSource.extractCardDetails(
+        imageUrls: imageUrls,
+      );
+      return Right(result);
+    } catch (e) {
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
 }

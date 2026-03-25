@@ -28,11 +28,13 @@ class EducationCubit extends Cubit<EducationState> {
 
   Future<void> purchasePin({
     required String serviceId,
+    required String variationCode,
     required int quantity,
     required String phone,
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String billersCode = '',
   }) async {
     try {
       if (isClosed) return;
@@ -57,11 +59,13 @@ class EducationCubit extends Cubit<EducationState> {
 
       final result = await repository.purchasePin(
         serviceId: serviceId,
+        variationCode: variationCode,
         quantity: quantity,
         phone: phone,
         transactionId: transactionId,
         verificationToken: verificationToken,
         idempotencyKey: idempotencyKey,
+        billersCode: billersCode,
       );
 
       if (isClosed) return;

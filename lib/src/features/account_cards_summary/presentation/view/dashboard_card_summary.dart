@@ -292,7 +292,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                                     'We\'ll notify you when virtual accounts become available in your region!',
                                   ),
                                   duration: Duration(seconds: 3),
-                                  backgroundColor: Color(0xFF6C5CE7),
+                                  backgroundColor: Color.fromARGB(255, 78, 3, 208),
                                 ),
                               );
                             },

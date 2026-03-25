@@ -205,313 +205,365 @@ class TransactionSearchBar extends StatelessWidget {
   }
 }
 
-/// Horizontal filter bar showing active filter chips + filter button
+/// Horizontal filter bar with individual per-category chips.
+/// Each chip (Date, Status, Category, Type) opens its own bottom sheet.
 class TransactionFilterBar extends StatelessWidget {
   final TransactionFilters? activeFilters;
-  final VoidCallback onOpenFilters;
   final VoidCallback onClearAll;
-  final Function(TransactionFilters) onRemoveFilter;
+  final ValueChanged<TransactionFilters> onFiltersChanged;
 
   const TransactionFilterBar({
     super.key,
     this.activeFilters,
-    required this.onOpenFilters,
     required this.onClearAll,
-    required this.onRemoveFilter,
+    required this.onFiltersChanged,
   });
 
-  List<_FilterChipData> _buildChips() {
-    final chips = <_FilterChipData>[];
-    final filters = activeFilters;
-    if (filters == null) return chips;
+  bool get _hasDateFilter =>
+      activeFilters?.startDate != null || activeFilters?.endDate != null;
 
-    // Date range chip
-    if (filters.startDate != null || filters.endDate != null) {
-      final start = filters.startDate;
-      final end = filters.endDate;
-      String label;
-      if (start != null && end != null) {
-        label = '${DateFormat('d MMM').format(start)} - ${DateFormat('d MMM').format(end)}';
-      } else if (start != null) {
-        label = 'From ${DateFormat('d MMM').format(start)}';
-      } else {
-        label = 'Until ${DateFormat('d MMM').format(end!)}';
-      }
-      chips.add(_FilterChipData(
-        label: label,
-        icon: Icons.calendar_today_rounded,
-        onRemove: () {
-          final updated = TransactionFilters(
-            serviceTypes: filters.serviceTypes,
-            statuses: filters.statuses,
-            flows: filters.flows,
-            searchQuery: filters.searchQuery,
-          );
-          onRemoveFilter(updated);
+  bool get _hasStatusFilter =>
+      activeFilters?.statuses != null && activeFilters!.statuses!.isNotEmpty;
+
+  bool get _hasCategoryFilter =>
+      activeFilters?.serviceTypes != null && activeFilters!.serviceTypes!.isNotEmpty;
+
+  bool get _hasTypeFilter =>
+      activeFilters?.flows != null && activeFilters!.flows!.isNotEmpty;
+
+  bool get _hasAnyFilter =>
+      _hasDateFilter || _hasStatusFilter || _hasCategoryFilter || _hasTypeFilter;
+
+  String _dateLabel() {
+    if (!_hasDateFilter) return 'Date';
+    final start = activeFilters!.startDate;
+    final end = activeFilters!.endDate;
+    if (start != null && end != null) {
+      return '${DateFormat('d MMM').format(start)} - ${DateFormat('d MMM').format(end)}';
+    } else if (start != null) {
+      return 'From ${DateFormat('d MMM').format(start)}';
+    } else {
+      return 'Until ${DateFormat('d MMM').format(end!)}';
+    }
+  }
+
+  String _statusLabel() {
+    if (!_hasStatusFilter) return 'Status';
+    final statuses = activeFilters!.statuses!;
+    if (statuses.length == 1) return statuses.first.displayName;
+    return '${statuses.length} statuses';
+  }
+
+  String _categoryLabel() {
+    if (!_hasCategoryFilter) return 'Category';
+    final types = activeFilters!.serviceTypes!;
+    if (types.length == 1) return types.first.displayName;
+    return '${types.length} categories';
+  }
+
+  String _typeLabel() {
+    if (!_hasTypeFilter) return 'Type';
+    final flows = activeFilters!.flows!;
+    if (flows.length == 1) {
+      return flows.first == TransactionFlow.incoming ? 'Incoming' : 'Outgoing';
+    }
+    return 'All types';
+  }
+
+  void _openDateSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _DateFilterSheet(
+        startDate: activeFilters?.startDate,
+        endDate: activeFilters?.endDate,
+        onApply: (start, end) {
+          final current = activeFilters ?? const TransactionFilters();
+          onFiltersChanged(TransactionFilters(
+            serviceTypes: current.serviceTypes,
+            statuses: current.statuses,
+            flows: current.flows,
+            startDate: start,
+            endDate: end != null
+                ? DateTime(end.year, end.month, end.day, 23, 59, 59)
+                : null,
+            searchQuery: current.searchQuery,
+          ));
         },
-      ));
-    }
+      ),
+    );
+  }
 
-    // Service type chips
-    if (filters.serviceTypes != null) {
-      for (final type in filters.serviceTypes!) {
-        chips.add(_FilterChipData(
-          label: type.displayName,
-          icon: type.icon,
-          onRemove: () {
-            final remaining = filters.serviceTypes!.where((t) => t != type).toList();
-            final updated = TransactionFilters(
-              serviceTypes: remaining.isNotEmpty ? remaining : null,
-              statuses: filters.statuses,
-              flows: filters.flows,
-              startDate: filters.startDate,
-              endDate: filters.endDate,
-              searchQuery: filters.searchQuery,
-            );
-            onRemoveFilter(updated);
-          },
-        ));
-      }
-    }
+  void _openStatusSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _StatusFilterSheet(
+        selected: activeFilters?.statuses?.toSet() ?? {},
+        onApply: (statuses) {
+          final current = activeFilters ?? const TransactionFilters();
+          onFiltersChanged(TransactionFilters(
+            serviceTypes: current.serviceTypes,
+            statuses: statuses.isNotEmpty ? statuses.toList() : null,
+            flows: current.flows,
+            startDate: current.startDate,
+            endDate: current.endDate,
+            searchQuery: current.searchQuery,
+          ));
+        },
+      ),
+    );
+  }
 
-    // Flow chips
-    if (filters.flows != null) {
-      for (final flow in filters.flows!) {
-        final label = flow == TransactionFlow.incoming ? 'Incoming' : 'Outgoing';
-        chips.add(_FilterChipData(
-          label: label,
-          icon: flow == TransactionFlow.incoming
-              ? Icons.arrow_downward_rounded
-              : Icons.arrow_upward_rounded,
-          onRemove: () {
-            final remaining = filters.flows!.where((f) => f != flow).toList();
-            final updated = TransactionFilters(
-              serviceTypes: filters.serviceTypes,
-              statuses: filters.statuses,
-              flows: remaining.isNotEmpty ? remaining : null,
-              startDate: filters.startDate,
-              endDate: filters.endDate,
-              searchQuery: filters.searchQuery,
-            );
-            onRemoveFilter(updated);
-          },
-        ));
-      }
-    }
+  void _openCategorySheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CategoryFilterSheet(
+        selected: activeFilters?.serviceTypes?.toSet() ?? {},
+        onApply: (types) {
+          final current = activeFilters ?? const TransactionFilters();
+          onFiltersChanged(TransactionFilters(
+            serviceTypes: types.isNotEmpty ? types.toList() : null,
+            statuses: current.statuses,
+            flows: current.flows,
+            startDate: current.startDate,
+            endDate: current.endDate,
+            searchQuery: current.searchQuery,
+          ));
+        },
+      ),
+    );
+  }
 
-    // Status chips
-    if (filters.statuses != null) {
-      for (final status in filters.statuses!) {
-        chips.add(_FilterChipData(
-          label: status.displayName,
-          icon: Icons.circle,
-          iconColor: status.color,
-          onRemove: () {
-            final remaining = filters.statuses!.where((s) => s != status).toList();
-            final updated = TransactionFilters(
-              serviceTypes: filters.serviceTypes,
-              statuses: remaining.isNotEmpty ? remaining : null,
-              flows: filters.flows,
-              startDate: filters.startDate,
-              endDate: filters.endDate,
-              searchQuery: filters.searchQuery,
-            );
-            onRemoveFilter(updated);
-          },
-        ));
-      }
-    }
-
-    return chips;
+  void _openTypeSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _TypeFilterSheet(
+        selectedFlow: activeFilters?.flows?.isNotEmpty == true
+            ? activeFilters!.flows!.first
+            : null,
+        onApply: (flow) {
+          final current = activeFilters ?? const TransactionFilters();
+          onFiltersChanged(TransactionFilters(
+            serviceTypes: current.serviceTypes,
+            statuses: current.statuses,
+            flows: flow != null ? [flow] : null,
+            startDate: current.startDate,
+            endDate: current.endDate,
+            searchQuery: current.searchQuery,
+          ));
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final chips = _buildChips();
-    final hasActiveFilters = chips.isNotEmpty;
-
     return SizedBox(
       height: 36.h,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         children: [
-          // Filter button
-          GestureDetector(
-            onTap: onOpenFilters,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: hasActiveFilters
-                    ? const Color(0xFF581CD9)
-                    : const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(18.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.tune_rounded,
-                    color: hasActiveFilters ? Colors.white : const Color(0xFF8E8E93),
-                    size: 16.sp,
-                  ),
-                  SizedBox(width: 6.w),
-                  Text(
-                    'Filter',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontWeight: hasActiveFilters ? FontWeight.w600 : FontWeight.w400,
-                      color: hasActiveFilters ? Colors.white : const Color(0xFF8E8E93),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          _buildFilterChip(
+            context,
+            label: _dateLabel(),
+            icon: Icons.calendar_today_rounded,
+            isActive: _hasDateFilter,
+            onTap: () => _openDateSheet(context),
           ),
-          // Active filter chips
-          ...chips.map((chip) => Padding(
-            padding: EdgeInsets.only(left: 8.w),
-            child: GestureDetector(
-              onTap: chip.onRemove,
+          SizedBox(width: 8.w),
+          _buildFilterChip(
+            context,
+            label: _statusLabel(),
+            icon: Icons.circle,
+            isActive: _hasStatusFilter,
+            onTap: () => _openStatusSheet(context),
+          ),
+          SizedBox(width: 8.w),
+          _buildFilterChip(
+            context,
+            label: _categoryLabel(),
+            icon: Icons.category_rounded,
+            isActive: _hasCategoryFilter,
+            onTap: () => _openCategorySheet(context),
+          ),
+          SizedBox(width: 8.w),
+          _buildFilterChip(
+            context,
+            label: _typeLabel(),
+            icon: Icons.swap_vert_rounded,
+            isActive: _hasTypeFilter,
+            onTap: () => _openTypeSheet(context),
+          ),
+          if (_hasAnyFilter) ...[
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: onClearAll,
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF581CD9).withValues(alpha: 0.15),
+                  color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(18.r),
-                  border: Border.all(
-                    color: const Color(0xFF581CD9).withValues(alpha: 0.3),
-                    width: 1,
-                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      chip.icon,
-                      color: chip.iconColor ?? const Color(0xFF581CD9),
-                      size: chip.icon == Icons.circle ? 8.sp : 14.sp,
-                    ),
-                    SizedBox(width: 5.w),
-                    Text(
-                      chip.label,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                        fontFamily: 'Inter',
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.close_rounded,
-                      color: const Color(0xFF8E8E93),
-                      size: 14.sp,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )),
-          // Clear all button (when filters active)
-          if (hasActiveFilters)
-            Padding(
-              padding: EdgeInsets.only(left: 8.w),
-              child: GestureDetector(
-                onTap: onClearAll,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1F1F1F),
-                    borderRadius: BorderRadius.circular(18.r),
-                  ),
-                  child: Text(
-                    'Clear all',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF8E8E93),
-                      fontFamily: 'Inter',
-                    ),
+                child: Text(
+                  'Clear all',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF8E8E93),
+                    fontFamily: 'Inter',
                   ),
                 ),
               ),
             ),
+          ],
         ],
       ),
     );
   }
-}
 
-class _FilterChipData {
-  final String label;
-  final IconData icon;
-  final Color? iconColor;
-  final VoidCallback onRemove;
-
-  const _FilterChipData({
-    required this.label,
-    required this.icon,
-    this.iconColor,
-    required this.onRemove,
-  });
-}
-
-/// Comprehensive filter bottom sheet
-class FilterBottomSheet extends StatefulWidget {
-  final TransactionFilters? initialFilters;
-  final Function(TransactionFilters) onApply;
-
-  const FilterBottomSheet({
-    super.key,
-    this.initialFilters,
-    required this.onApply,
-  });
-
-  static Future<void> show(
+  Widget _buildFilterChip(
     BuildContext context, {
-    TransactionFilters? initialFilters,
-    required Function(TransactionFilters) onApply,
+    required String label,
+    required IconData icon,
+    required bool isActive,
+    required VoidCallback onTap,
   }) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => FilterBottomSheet(
-        initialFilters: initialFilters,
-        onApply: onApply,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: isActive
+              ? const Color(0xFF581CD9).withValues(alpha: 0.15)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(
+            color: isActive
+                ? const Color(0xFF581CD9).withValues(alpha: 0.5)
+                : Colors.transparent,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isActive ? const Color(0xFF581CD9) : const Color(0xFF8E8E93),
+              size: icon == Icons.circle ? 8.sp : 14.sp,
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                color: isActive ? Colors.white : const Color(0xFF8E8E93),
+                fontFamily: 'Inter',
+              ),
+            ),
+            SizedBox(width: 4.w),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: isActive ? Colors.white70 : const Color(0xFF8E8E93),
+              size: 16.sp,
+            ),
+          ],
+        ),
       ),
     );
   }
-
-  @override
-  State<FilterBottomSheet> createState() => _FilterBottomSheetState();
 }
 
-class _FilterBottomSheetState extends State<FilterBottomSheet> {
+// ---------------------------------------------------------------------------
+// Per-category bottom sheets
+// ---------------------------------------------------------------------------
+
+Widget _buildSheetHeader(BuildContext context, String title) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Center(
+        child: Container(
+          width: 36.w,
+          height: 4.h,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(2.r),
+          ),
+        ),
+      ),
+      SizedBox(height: 16.h),
+      Text(
+        title,
+        style: TextStyle(
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+          fontFamily: 'Inter',
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildApplyButton(BuildContext context, VoidCallback onTap) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: double.infinity,
+      height: 50.h,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFF581CD9),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Text(
+        'Apply',
+        style: TextStyle(
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+          fontFamily: 'Inter',
+        ),
+      ),
+    ),
+  );
+}
+
+/// Date range filter sheet
+class _DateFilterSheet extends StatefulWidget {
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final void Function(DateTime? start, DateTime? end) onApply;
+
+  const _DateFilterSheet({
+    this.startDate,
+    this.endDate,
+    required this.onApply,
+  });
+
+  @override
+  State<_DateFilterSheet> createState() => _DateFilterSheetState();
+}
+
+class _DateFilterSheetState extends State<_DateFilterSheet> {
   DateTime? _startDate;
   DateTime? _endDate;
-  final Set<TransactionServiceType> _selectedServiceTypes = {};
-  final Set<UnifiedTransactionStatus> _selectedStatuses = {};
-  TransactionFlow? _selectedFlow;
 
   @override
   void initState() {
     super.initState();
-    final initial = widget.initialFilters;
-    if (initial != null) {
-      _startDate = initial.startDate;
-      _endDate = initial.endDate;
-      if (initial.serviceTypes != null) {
-        _selectedServiceTypes.addAll(initial.serviceTypes!);
-      }
-      if (initial.statuses != null) {
-        _selectedStatuses.addAll(initial.statuses!);
-      }
-      if (initial.flows?.isNotEmpty == true) {
-        _selectedFlow = initial.flows!.first;
-      }
-    }
+    _startDate = widget.startDate;
+    _endDate = widget.endDate;
   }
 
   Future<void> _pickDate({required bool isStart}) async {
@@ -564,39 +616,12 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     });
   }
 
-  void _clearAll() {
-    setState(() {
-      _startDate = null;
-      _endDate = null;
-      _selectedServiceTypes.clear();
-      _selectedStatuses.clear();
-      _selectedFlow = null;
-    });
-  }
-
-  void _apply() {
-    final filters = TransactionFilters(
-      startDate: _startDate,
-      endDate: _endDate != null
-          ? DateTime(_endDate!.year, _endDate!.month, _endDate!.day, 23, 59, 59)
-          : null,
-      serviceTypes: _selectedServiceTypes.isNotEmpty
-          ? _selectedServiceTypes.toList()
-          : null,
-      statuses: _selectedStatuses.isNotEmpty
-          ? _selectedStatuses.toList()
-          : null,
-      flows: _selectedFlow != null ? [_selectedFlow!] : null,
-    );
-    widget.onApply(filters);
-    Navigator.pop(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      padding: EdgeInsets.fromLTRB(
+        20.w, 12.h, 20.w,
+        MediaQuery.of(context).viewPadding.bottom + 16.h,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFF141414),
@@ -604,211 +629,76 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Drag handle + header
-          Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                Text(
-                  'Filter Transactions',
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Customize your view',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: const Color(0xFF8E8E93),
-                    fontFamily: 'Inter',
-                  ),
-                ),
-              ],
-            ),
+          _buildSheetHeader(context, 'Date Range'),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(child: _buildDateButton(
+                'From',
+                _startDate,
+                () => _pickDate(isStart: true),
+              )),
+              SizedBox(width: 12.w),
+              Expanded(child: _buildDateButton(
+                'To',
+                _endDate,
+                () => _pickDate(isStart: false),
+              )),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          // Quick range buttons
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _buildQuickRange('7 days', 7),
+              _buildQuickRange('30 days', 30),
+              _buildQuickRange('90 days', 90),
+              _buildQuickRange('This year', -1),
+            ],
           ),
           SizedBox(height: 20.h),
-          // Scrollable content
-          Flexible(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Date Range section
-                  _buildSectionTitle('Date Range'),
-                  SizedBox(height: 10.h),
-                  Row(
-                    children: [
-                      Expanded(child: _buildDateButton(
-                        'From',
-                        _startDate,
-                        () => _pickDate(isStart: true),
-                      )),
-                      SizedBox(width: 12.w),
-                      Expanded(child: _buildDateButton(
-                        'To',
-                        _endDate,
-                        () => _pickDate(isStart: false),
-                      )),
-                    ],
-                  ),
-                  SizedBox(height: 10.h),
-                  // Quick range buttons
-                  SizedBox(
-                    height: 34.h,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildQuickRange('7 days', 7),
-                        SizedBox(width: 8.w),
-                        _buildQuickRange('30 days', 30),
-                        SizedBox(width: 8.w),
-                        _buildQuickRange('90 days', 90),
-                        SizedBox(width: 8.w),
-                        _buildQuickRange('This year', -1),
-                      ],
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    widget.onApply(null, null);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: 50.h,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Text(
+                      'Clear',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontFamily: 'Inter',
+                      ),
                     ),
                   ),
-                  SizedBox(height: 24.h),
-
-                  // Category section
-                  _buildSectionTitle('Category'),
-                  SizedBox(height: 10.h),
-                  Wrap(
-                    spacing: 8.w,
-                    runSpacing: 8.h,
-                    children: TransactionServiceType.values
-                        .where((t) => t != TransactionServiceType.unknown)
-                        .map((type) => _buildCategoryChip(type))
-                        .toList(),
-                  ),
-                  SizedBox(height: 24.h),
-
-                  // Type section
-                  _buildSectionTitle('Type'),
-                  SizedBox(height: 10.h),
-                  Row(
-                    children: [
-                      _buildTypeChip('All', null),
-                      SizedBox(width: 8.w),
-                      _buildTypeChip('Incoming', TransactionFlow.incoming),
-                      SizedBox(width: 8.w),
-                      _buildTypeChip('Outgoing', TransactionFlow.outgoing),
-                    ],
-                  ),
-                  SizedBox(height: 24.h),
-
-                  // Status section
-                  _buildSectionTitle('Status'),
-                  SizedBox(height: 10.h),
-                  Wrap(
-                    spacing: 8.w,
-                    runSpacing: 8.h,
-                    children: UnifiedTransactionStatus.values
-                        .map((status) => _buildStatusChip(status))
-                        .toList(),
-                  ),
-                  SizedBox(height: 24.h),
-                ],
-              ),
-            ),
-          ),
-          // Bottom action bar
-          Container(
-            padding: EdgeInsets.fromLTRB(
-              20.w, 12.h, 20.w,
-              MediaQuery.of(context).viewPadding.bottom + 12.h,
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFF141414),
-              border: Border(
-                top: BorderSide(
-                  color: const Color(0xFF2D2D2D),
-                  width: 0.5,
                 ),
               ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _clearAll,
-                    child: Container(
-                      height: 50.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F1F1F),
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      child: Text(
-                        'Clear All',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          fontFamily: 'Inter',
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  flex: 2,
-                  child: GestureDetector(
-                    onTap: _apply,
-                    child: Container(
-                      height: 50.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF581CD9),
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      child: Text(
-                        'Apply Filters',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          fontFamily: 'Inter',
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              SizedBox(width: 12.w),
+              Expanded(
+                flex: 2,
+                child: _buildApplyButton(context, () {
+                  widget.onApply(_startDate, _endDate);
+                  Navigator.pop(context);
+                }),
+              ),
+            ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 14.sp,
-        fontWeight: FontWeight.w500,
-        color: const Color(0xFF8E8E93),
-        fontFamily: 'Inter',
       ),
     );
   }
@@ -872,16 +762,107 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       ),
     );
   }
+}
 
-  Widget _buildCategoryChip(TransactionServiceType type) {
-    final isSelected = _selectedServiceTypes.contains(type);
+/// Status filter sheet — multi-select
+class _StatusFilterSheet extends StatefulWidget {
+  final Set<UnifiedTransactionStatus> selected;
+  final void Function(Set<UnifiedTransactionStatus>) onApply;
+
+  const _StatusFilterSheet({
+    required this.selected,
+    required this.onApply,
+  });
+
+  @override
+  State<_StatusFilterSheet> createState() => _StatusFilterSheetState();
+}
+
+class _StatusFilterSheetState extends State<_StatusFilterSheet> {
+  late final Set<UnifiedTransactionStatus> _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = Set.from(widget.selected);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20.w, 12.h, 20.w,
+        MediaQuery.of(context).viewPadding.bottom + 16.h,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSheetHeader(context, 'Status'),
+          SizedBox(height: 16.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: UnifiedTransactionStatus.values
+                .map((status) => _buildChip(status))
+                .toList(),
+          ),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    widget.onApply({});
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: 50.h,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Text(
+                      'Clear',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                flex: 2,
+                child: _buildApplyButton(context, () {
+                  widget.onApply(_selected);
+                  Navigator.pop(context);
+                }),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip(UnifiedTransactionStatus status) {
+    final isSelected = _selected.contains(status);
     return GestureDetector(
       onTap: () {
         setState(() {
           if (isSelected) {
-            _selectedServiceTypes.remove(type);
+            _selected.remove(status);
           } else {
-            _selectedServiceTypes.add(type);
+            _selected.add(status);
           }
         });
       },
@@ -893,9 +874,157 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF581CD9)
-                : Colors.transparent,
+            color: isSelected ? const Color(0xFF581CD9) : Colors.transparent,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8.w,
+              height: 8.w,
+              decoration: BoxDecoration(
+                color: status.color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              status.displayName,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? Colors.white : const Color(0xFF8E8E93),
+                fontFamily: 'Inter',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Category filter sheet — multi-select service types
+class _CategoryFilterSheet extends StatefulWidget {
+  final Set<TransactionServiceType> selected;
+  final void Function(Set<TransactionServiceType>) onApply;
+
+  const _CategoryFilterSheet({
+    required this.selected,
+    required this.onApply,
+  });
+
+  @override
+  State<_CategoryFilterSheet> createState() => _CategoryFilterSheetState();
+}
+
+class _CategoryFilterSheetState extends State<_CategoryFilterSheet> {
+  late final Set<TransactionServiceType> _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = Set.from(widget.selected);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.6,
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20.w, 12.h, 20.w,
+        MediaQuery.of(context).viewPadding.bottom + 16.h,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSheetHeader(context, 'Category'),
+          SizedBox(height: 16.h),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: TransactionServiceType.values
+                    .where((t) => t != TransactionServiceType.unknown)
+                    .map((type) => _buildChip(type))
+                    .toList(),
+              ),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    widget.onApply({});
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: 50.h,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Text(
+                      'Clear',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                flex: 2,
+                child: _buildApplyButton(context, () {
+                  widget.onApply(_selected);
+                  Navigator.pop(context);
+                }),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip(TransactionServiceType type) {
+    final isSelected = _selected.contains(type);
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (isSelected) {
+            _selected.remove(type);
+          } else {
+            _selected.add(type);
+          }
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF581CD9).withValues(alpha: 0.15)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF581CD9) : Colors.transparent,
             width: 1,
           ),
         ),
@@ -922,6 +1051,66 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       ),
     );
   }
+}
+
+/// Type filter sheet — single-select (All / Incoming / Outgoing)
+class _TypeFilterSheet extends StatefulWidget {
+  final TransactionFlow? selectedFlow;
+  final void Function(TransactionFlow?) onApply;
+
+  const _TypeFilterSheet({
+    this.selectedFlow,
+    required this.onApply,
+  });
+
+  @override
+  State<_TypeFilterSheet> createState() => _TypeFilterSheetState();
+}
+
+class _TypeFilterSheetState extends State<_TypeFilterSheet> {
+  TransactionFlow? _selectedFlow;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFlow = widget.selectedFlow;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20.w, 12.h, 20.w,
+        MediaQuery.of(context).viewPadding.bottom + 16.h,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSheetHeader(context, 'Type'),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              _buildTypeChip('All', null),
+              SizedBox(width: 8.w),
+              _buildTypeChip('Incoming', TransactionFlow.incoming),
+              SizedBox(width: 8.w),
+              _buildTypeChip('Outgoing', TransactionFlow.outgoing),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          _buildApplyButton(context, () {
+            widget.onApply(_selectedFlow);
+            Navigator.pop(context);
+          }),
+        ],
+      ),
+    );
+  }
 
   Widget _buildTypeChip(String label, TransactionFlow? flow) {
     final isSelected = _selectedFlow == flow;
@@ -929,7 +1118,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       child: GestureDetector(
         onTap: () => setState(() => _selectedFlow = flow),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 10.h),
+          padding: EdgeInsets.symmetric(vertical: 12.h),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected
@@ -946,59 +1135,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               fontFamily: 'Inter',
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusChip(UnifiedTransactionStatus status) {
-    final isSelected = _selectedStatuses.contains(status);
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            _selectedStatuses.remove(status);
-          } else {
-            _selectedStatuses.add(status);
-          }
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF581CD9).withValues(alpha: 0.15)
-              : const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF581CD9)
-                : Colors.transparent,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8.w,
-              height: 8.w,
-              decoration: BoxDecoration(
-                color: status.color,
-                shape: BoxShape.circle,
-              ),
-            ),
-            SizedBox(width: 6.w),
-            Text(
-              status.displayName,
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? Colors.white : const Color(0xFF8E8E93),
-                fontFamily: 'Inter',
-              ),
-            ),
-          ],
         ),
       ),
     );

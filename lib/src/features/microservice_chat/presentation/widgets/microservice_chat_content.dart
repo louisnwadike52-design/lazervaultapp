@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/microservice_chat/cubit/microservice_cha
 import 'package:lazervault/src/features/microservice_chat/domain/entities/microservice_chat_message_entity.dart';
 import 'chat_media_bubble.dart';
 import 'chat_media_input_bar.dart';
+import 'chat_receipt_card.dart';
 
 class MicroserviceChatContent extends StatefulWidget {
   final String serviceName;
@@ -359,6 +360,47 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     );
   }
 
+  /// Safely parse receipt_data and build a ChatReceiptCard.
+  /// Returns SizedBox.shrink() if the data is malformed or not a valid map.
+  Widget _buildReceiptCard(dynamic receiptData) {
+    try {
+      Map<String, dynamic> data;
+      if (receiptData is Map<String, dynamic>) {
+        data = receiptData;
+      } else if (receiptData is Map) {
+        data = Map<String, dynamic>.from(receiptData);
+      } else {
+        return const SizedBox.shrink();
+      }
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: ChatReceiptCard(
+          receipt: TransferReceiptData.fromJson(data),
+        ),
+      );
+    } catch (_) {
+      // Receipt data malformed — show a minimal success indicator instead of nothing
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A2E1A),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
+              SizedBox(width: 8),
+              Text('Transfer completed', style: TextStyle(color: Color(0xFF10B981), fontSize: 13)),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
   Widget _buildMessageBubble(MicroserviceChatMessageEntity message) {
     final isUser = message.isUser;
     final maxBubbleWidth = MediaQuery.of(context).size.width * 0.72;
@@ -452,6 +494,9 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                             ),
                           ),
                   ],
+                  // Inline receipt card for successful transfers (lazy — PDF generated on tap)
+                  if (!isUser && message.metadata?['receipt_data'] != null)
+                    _buildReceiptCard(message.metadata!['receipt_data']),
                   if (message.serviceRoutedTo != null) ...[
                     const SizedBox(height: 4),
                     Text(

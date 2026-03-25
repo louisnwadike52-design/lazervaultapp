@@ -51,6 +51,8 @@ class AccountSummaryEntity extends Equatable {
   final String accountType;
   final String currency;
   final double balance;
+  final double availableBalance; // Available for spending (balance - reserved - clearing)
+  final double reservedBalance; // Funds in holds or clearing
   final String accountNumberLast4; // e.g., "7890"
   final String? accountNumber; // Full NUBAN account number for deposits
   final String? bankName; // Bank name (e.g., "Wema Bank", "VFD MFB")
@@ -71,11 +73,18 @@ class AccountSummaryEntity extends Equatable {
   final String? familyStatus; // Family account status (active, pending_setup, frozen, closed)
   final String? fundDistributionMode; // Fund distribution mode (shared_pool, equal_split, custom_allocation)
 
+  /// Estimated clearing time for pending deposits (e.g., "Available in 2h").
+  /// Null when no clearing estimate is available from the backend.
+  /// Will be populated when backend adds per-deposit clearing time fields.
+  final String? clearingEstimate;
+
   const AccountSummaryEntity({
     required this.id,
     required this.accountType,
     required this.currency,
     required this.balance,
+    this.availableBalance = 0,
+    this.reservedBalance = 0,
     required this.accountNumberLast4,
     this.accountNumber,
     this.bankName,
@@ -92,7 +101,14 @@ class AccountSummaryEntity extends Equatable {
     this.familyAccountId,
     this.familyStatus,
     this.fundDistributionMode,
+    this.clearingEstimate,
   }) : isUp = trendPercentage > 0; // Calculate isUp here
+
+  /// Pending balance (funds in clearing or holds, not yet available)
+  double get pendingBalance => (balance - availableBalance).clamp(0.0, double.infinity);
+
+  /// Whether there are pending funds
+  bool get hasPendingBalance => pendingBalance > 0.01;
 
   /// Get the display name for the account type
   String get displayName => accountLabel ?? accountType;
@@ -115,6 +131,8 @@ class AccountSummaryEntity extends Equatable {
         accountType,
         currency,
         balance,
+        availableBalance,
+        reservedBalance,
         accountNumberLast4,
         accountNumber,
         bankName,
@@ -132,6 +150,7 @@ class AccountSummaryEntity extends Equatable {
         familyAccountId,
         familyStatus,
         fundDistributionMode,
+        clearingEstimate,
       ];
 
   // Factory constructor for family accounts
@@ -157,6 +176,7 @@ class AccountSummaryEntity extends Equatable {
       accountType: 'Family & Friends',
       currency: currency,
       balance: memberAllocatedBalance, // Show member's allocation as main balance
+      availableBalance: memberAllocatedBalance, // Match balance to avoid false pending
       accountNumberLast4: accountNumberLast4 ?? '••••',
       trendPercentage: trendPercentage,
       isFamilyAccount: true,
@@ -176,6 +196,8 @@ class AccountSummaryEntity extends Equatable {
     String? accountType,
     String? currency,
     double? balance,
+    double? availableBalance,
+    double? reservedBalance,
     String? accountNumberLast4,
     String? accountNumber,
     String? bankName,
@@ -192,12 +214,15 @@ class AccountSummaryEntity extends Equatable {
     String? familyAccountId,
     String? familyStatus,
     String? fundDistributionMode,
+    String? clearingEstimate,
   }) {
     return AccountSummaryEntity(
       id: id ?? this.id,
       accountType: accountType ?? this.accountType,
       currency: currency ?? this.currency,
       balance: balance ?? this.balance,
+      availableBalance: availableBalance ?? this.availableBalance,
+      reservedBalance: reservedBalance ?? this.reservedBalance,
       accountNumberLast4: accountNumberLast4 ?? this.accountNumberLast4,
       accountNumber: accountNumber ?? this.accountNumber,
       bankName: bankName ?? this.bankName,
@@ -214,6 +239,7 @@ class AccountSummaryEntity extends Equatable {
       familyAccountId: familyAccountId ?? this.familyAccountId,
       familyStatus: familyStatus ?? this.familyStatus,
       fundDistributionMode: fundDistributionMode ?? this.fundDistributionMode,
+      clearingEstimate: clearingEstimate ?? this.clearingEstimate,
     );
   }
 
@@ -234,6 +260,7 @@ class AccountSummaryEntity extends Equatable {
       accountType: type.displayName,
       currency: currency,
       balance: balance,
+      availableBalance: balance, // Match balance to avoid false pending
       accountNumberLast4: accountNumberLast4,
       trendPercentage: trendPercentage,
       isPrimary: isPrimary,

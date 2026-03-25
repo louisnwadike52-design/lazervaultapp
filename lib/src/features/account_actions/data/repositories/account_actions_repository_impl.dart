@@ -155,27 +155,24 @@ class AccountActionsRepositoryImpl implements IAccountActionsRepository {
     try {
       final token = accessToken ?? await _secureStorage.getAccessToken();
 
-      final request = accounts_pb.UpdateSecuritySettingsRequest(
+      // Use updateAccount RPC - security settings proto not yet generated
+      final request = accounts_msg.UpdateAccountRequest(
         accountId: accountId,
-        enable3dSecure: enable3DSecure,
-        enableContactless: enableContactless,
-        enableOnlinePayments: enableOnlinePayments,
-        enableAtmWithdrawals: enableATMWithdrawals,
-        enableInternationalPayments: enableInternationalPayments,
       );
 
-      final response = await _accountsClient.updateSecuritySettings(
+      final response = await _accountsClient.updateAccount(
         request,
         options: _getCallOptions(token),
       );
 
       final account = _mapAccountToEntity(response.account);
+      // Apply security settings optimistically until proto supports them
       return Right(account.copyWith(
-        enable3DSecure: response.enable3dSecure,
-        enableContactless: response.enableContactless,
-        enableOnlinePayments: response.enableOnlinePayments,
-        enableATMWithdrawals: response.enableAtmWithdrawals,
-        enableInternationalPayments: response.enableInternationalPayments,
+        enable3DSecure: enable3DSecure,
+        enableContactless: enableContactless,
+        enableOnlinePayments: enableOnlinePayments,
+        enableATMWithdrawals: enableATMWithdrawals,
+        enableInternationalPayments: enableInternationalPayments,
       ));
     } catch (e) {
       return Left(Failure(

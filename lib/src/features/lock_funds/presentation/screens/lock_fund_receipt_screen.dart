@@ -111,6 +111,18 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.lockFunds),
+            icon: Icon(
+              Icons.close,
+              color: Colors.white,
+              size: 24.sp,
+            ),
+            tooltip: 'Close',
+          ),
+          SizedBox(width: 4.w),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -148,6 +160,10 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
                     if (interestCalculation != null) ...[
                       SizedBox(height: 24.h),
                       _buildExpectedReturns(),
+                      if (interestCalculation!.qualifiesForUpfrontInterest) ...[
+                        SizedBox(height: 24.h),
+                        _buildUpfrontInterestCard(),
+                      ],
                     ],
                   ],
                 ),
@@ -191,7 +207,7 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -431,6 +447,92 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     );
   }
 
+  Widget _buildUpfrontInterestCard() {
+    final currencySymbol = CurrencySymbols.getSymbol(lockFund.currency);
+    final calc = interestCalculation!;
+
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF6366F1).withValues(alpha: 0.15),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.bolt_rounded,
+                color: const Color(0xFF6366F1),
+                size: 20.sp,
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  'Upfront Interest Paid',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6366F1),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'Your interest of $currencySymbol${calc.estimatedInterest.toStringAsFixed(2)} has been credited to your savings account immediately.',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  color: const Color(0xFF10B981),
+                  size: 16.sp,
+                ),
+                SizedBox(width: 6.w),
+                Text(
+                  'Interest credited to savings account',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF10B981),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActions(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -539,7 +641,7 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                 ),

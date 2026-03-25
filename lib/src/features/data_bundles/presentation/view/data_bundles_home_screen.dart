@@ -105,7 +105,61 @@ class DataBundlesHomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 28.h),
+              SizedBox(height: 20.h),
+
+              // Non-Expiring Data quick action
+              GestureDetector(
+                onTap: () => Get.toNamed(AppRoutes.autoRenewManagement),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.autorenew,
+                        color: const Color(0xFF10B981),
+                        size: 22.sp,
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Non-Expiring Data',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF10B981),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Manage auto-renewal subscriptions',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        color: const Color(0xFF9CA3AF),
+                        size: 20.sp,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.h),
 
               // Network grid
               Expanded(
@@ -137,7 +191,7 @@ class DataBundlesHomeScreen extends StatelessWidget {
           arguments: {
             'network': network.code,
             'networkName': network.name,
-            'networkColor': network.color.value,
+            'networkColor': network.color.toARGB32(),
           },
         );
       },

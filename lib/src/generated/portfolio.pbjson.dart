@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: portfolio.proto
-//
-// @dart = 2.12
+// Generated from portfolio.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -26,9 +27,22 @@ const PortfolioAsset$json = {
     {'1': 'current_price', '3': 7, '4': 1, '5': 1, '10': 'currentPrice'},
     {'1': 'initial_value', '3': 8, '4': 1, '5': 1, '10': 'initialValue'},
     {'1': 'gain_loss', '3': 9, '4': 1, '5': 1, '10': 'gainLoss'},
-    {'1': 'gain_loss_percent', '3': 10, '4': 1, '5': 1, '10': 'gainLossPercent'},
+    {
+      '1': 'gain_loss_percent',
+      '3': 10,
+      '4': 1,
+      '5': 1,
+      '10': 'gainLossPercent'
+    },
     {'1': 'currency', '3': 11, '4': 1, '5': 9, '10': 'currency'},
-    {'1': 'last_updated', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastUpdated'},
+    {
+      '1': 'last_updated',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastUpdated'
+    },
     {'1': 'icon_url', '3': 13, '4': 1, '5': 9, '10': 'iconUrl'},
   ],
 };
@@ -50,12 +64,32 @@ const PortfolioSummary$json = {
   '2': [
     {'1': 'total_value', '3': 1, '4': 1, '5': 1, '10': 'totalValue'},
     {'1': 'total_gain_loss', '3': 2, '4': 1, '5': 1, '10': 'totalGainLoss'},
-    {'1': 'total_gain_loss_percent', '3': 3, '4': 1, '5': 1, '10': 'totalGainLossPercent'},
+    {
+      '1': 'total_gain_loss_percent',
+      '3': 3,
+      '4': 1,
+      '5': 1,
+      '10': 'totalGainLossPercent'
+    },
     {'1': 'total_invested', '3': 4, '4': 1, '5': 1, '10': 'totalInvested'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
-    {'1': 'assets_by_type', '3': 6, '4': 3, '5': 11, '6': '.pb.PortfolioSummary.AssetsByTypeEntry', '10': 'assetsByType'},
+    {
+      '1': 'assets_by_type',
+      '3': 6,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.PortfolioSummary.AssetsByTypeEntry',
+      '10': 'assetsByType'
+    },
     {'1': 'asset_count', '3': 7, '4': 1, '5': 5, '10': 'assetCount'},
-    {'1': 'last_updated', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastUpdated'},
+    {
+      '1': 'last_updated',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastUpdated'
+    },
   ],
   '3': [PortfolioSummary_AssetsByTypeEntry$json],
 };
@@ -88,8 +122,8 @@ const GetCompletePortfolioRequest$json = {
 };
 
 /// Descriptor for `GetCompletePortfolioRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCompletePortfolioRequestDescriptor = $convert.base64Decode(
-    'ChtHZXRDb21wbGV0ZVBvcnRmb2xpb1JlcXVlc3Q=');
+final $typed_data.Uint8List getCompletePortfolioRequestDescriptor =
+    $convert.base64Decode('ChtHZXRDb21wbGV0ZVBvcnRmb2xpb1JlcXVlc3Q=');
 
 @$core.Deprecated('Use getCompletePortfolioResponseDescriptor instead')
 const GetCompletePortfolioResponse$json = {
@@ -97,8 +131,22 @@ const GetCompletePortfolioResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'summary', '3': 3, '4': 1, '5': 11, '6': '.pb.PortfolioSummary', '10': 'summary'},
-    {'1': 'assets', '3': 4, '4': 3, '5': 11, '6': '.pb.PortfolioAsset', '10': 'assets'},
+    {
+      '1': 'summary',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.PortfolioSummary',
+      '10': 'summary'
+    },
+    {
+      '1': 'assets',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.PortfolioAsset',
+      '10': 'assets'
+    },
   ],
 };
 
@@ -118,9 +166,10 @@ const GetPortfolioByAssetTypeRequest$json = {
 };
 
 /// Descriptor for `GetPortfolioByAssetTypeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPortfolioByAssetTypeRequestDescriptor = $convert.base64Decode(
-    'Ch5HZXRQb3J0Zm9saW9CeUFzc2V0VHlwZVJlcXVlc3QSHQoKYXNzZXRfdHlwZRgBIAEoCVIJYX'
-    'NzZXRUeXBl');
+final $typed_data.Uint8List getPortfolioByAssetTypeRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRQb3J0Zm9saW9CeUFzc2V0VHlwZVJlcXVlc3QSHQoKYXNzZXRfdHlwZRgBIAEoCVIJYX'
+        'NzZXRUeXBl');
 
 @$core.Deprecated('Use getPortfolioByAssetTypeResponseDescriptor instead')
 const GetPortfolioByAssetTypeResponse$json = {
@@ -128,16 +177,24 @@ const GetPortfolioByAssetTypeResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'assets', '3': 3, '4': 3, '5': 11, '6': '.pb.PortfolioAsset', '10': 'assets'},
+    {
+      '1': 'assets',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.PortfolioAsset',
+      '10': 'assets'
+    },
     {'1': 'total_value', '3': 4, '4': 1, '5': 1, '10': 'totalValue'},
   ],
 };
 
 /// Descriptor for `GetPortfolioByAssetTypeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPortfolioByAssetTypeResponseDescriptor = $convert.base64Decode(
-    'Ch9HZXRQb3J0Zm9saW9CeUFzc2V0VHlwZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
-    'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIqCgZhc3NldHMYAyADKAsyEi5wYi5Qb3J0'
-    'Zm9saW9Bc3NldFIGYXNzZXRzEh8KC3RvdGFsX3ZhbHVlGAQgASgBUgp0b3RhbFZhbHVl');
+final $typed_data.Uint8List getPortfolioByAssetTypeResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9HZXRQb3J0Zm9saW9CeUFzc2V0VHlwZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
+        'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIqCgZhc3NldHMYAyADKAsyEi5wYi5Qb3J0'
+        'Zm9saW9Bc3NldFIGYXNzZXRzEh8KC3RvdGFsX3ZhbHVlGAQgASgBUgp0b3RhbFZhbHVl');
 
 @$core.Deprecated('Use getPortfolioHistoryRequestDescriptor instead')
 const GetPortfolioHistoryRequest$json = {
@@ -148,14 +205,22 @@ const GetPortfolioHistoryRequest$json = {
 };
 
 /// Descriptor for `GetPortfolioHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPortfolioHistoryRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRQb3J0Zm9saW9IaXN0b3J5UmVxdWVzdBIWCgZwZXJpb2QYASABKAlSBnBlcmlvZA==');
+final $typed_data.Uint8List getPortfolioHistoryRequestDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRQb3J0Zm9saW9IaXN0b3J5UmVxdWVzdBIWCgZwZXJpb2QYASABKAlSBnBlcmlvZA==');
 
 @$core.Deprecated('Use portfolioHistoryPointDescriptor instead')
 const PortfolioHistoryPoint$json = {
   '1': 'PortfolioHistoryPoint',
   '2': [
-    {'1': 'date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'date'},
+    {
+      '1': 'date',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'date'
+    },
     {'1': 'value', '3': 2, '4': 1, '5': 1, '10': 'value'},
   ],
 };
@@ -171,15 +236,23 @@ const GetPortfolioHistoryResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'history', '3': 3, '4': 3, '5': 11, '6': '.pb.PortfolioHistoryPoint', '10': 'history'},
+    {
+      '1': 'history',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.PortfolioHistoryPoint',
+      '10': 'history'
+    },
   ],
 };
 
 /// Descriptor for `GetPortfolioHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPortfolioHistoryResponseDescriptor = $convert.base64Decode(
-    'ChtHZXRQb3J0Zm9saW9IaXN0b3J5UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjMKB2hpc3RvcnkYAyADKAsyGS5wYi5Qb3J0Zm9s'
-    'aW9IaXN0b3J5UG9pbnRSB2hpc3Rvcnk=');
+final $typed_data.Uint8List getPortfolioHistoryResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRQb3J0Zm9saW9IaXN0b3J5UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjMKB2hpc3RvcnkYAyADKAsyGS5wYi5Qb3J0Zm9s'
+        'aW9IaXN0b3J5UG9pbnRSB2hpc3Rvcnk=');
 
 @$core.Deprecated('Use getPortfolioSummaryRequestDescriptor instead')
 const GetPortfolioSummaryRequest$json = {
@@ -187,8 +260,8 @@ const GetPortfolioSummaryRequest$json = {
 };
 
 /// Descriptor for `GetPortfolioSummaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPortfolioSummaryRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRQb3J0Zm9saW9TdW1tYXJ5UmVxdWVzdA==');
+final $typed_data.Uint8List getPortfolioSummaryRequestDescriptor =
+    $convert.base64Decode('ChpHZXRQb3J0Zm9saW9TdW1tYXJ5UmVxdWVzdA==');
 
 @$core.Deprecated('Use getPortfolioSummaryResponseDescriptor instead')
 const GetPortfolioSummaryResponse$json = {
@@ -196,13 +269,20 @@ const GetPortfolioSummaryResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'summary', '3': 3, '4': 1, '5': 11, '6': '.pb.PortfolioSummary', '10': 'summary'},
+    {
+      '1': 'summary',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.PortfolioSummary',
+      '10': 'summary'
+    },
   ],
 };
 
 /// Descriptor for `GetPortfolioSummaryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPortfolioSummaryResponseDescriptor = $convert.base64Decode(
-    'ChtHZXRQb3J0Zm9saW9TdW1tYXJ5UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEi4KB3N1bW1hcnkYAyABKAsyFC5wYi5Qb3J0Zm9s'
-    'aW9TdW1tYXJ5UgdzdW1tYXJ5');
-
+final $typed_data.Uint8List getPortfolioSummaryResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRQb3J0Zm9saW9TdW1tYXJ5UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEi4KB3N1bW1hcnkYAyABKAsyFC5wYi5Qb3J0Zm9s'
+        'aW9TdW1tYXJ5UgdzdW1tYXJ5');

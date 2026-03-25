@@ -430,7 +430,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _navigateToCreate() {
-    Get.toNamed(AppRoutes.invoicePayment, arguments: {'isPrePayment': true});
+    // Navigate to create invoice carousel first (payment happens after creation)
+    Get.toNamed(AppRoutes.createInvoice);
   }
 
   void _navigateToDetails(Invoice invoice) {

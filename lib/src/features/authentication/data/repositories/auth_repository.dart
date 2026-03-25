@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:grpc/grpc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/authentication/data/models/profile_model.dart';
@@ -92,7 +93,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during authentication: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Authentication failed due to server error.',
+        message: friendlyGrpcError(e, 'Authentication failed due to server error.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -157,7 +158,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       }
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'gRPC error during passcode registration',
+        message: friendlyGrpcError(e, 'Failed to register passcode'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -196,7 +197,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       }
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'gRPC error during passcode change',
+        message: friendlyGrpcError(e, 'Failed to change passcode'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -305,10 +306,10 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during signUp: ${e.codeName} - ${e.message}');
       if (e.code == StatusCode.alreadyExists) {
-        return Left(ServerFailure(message: e.message ?? 'Account already exists.', statusCode: e.code));
+        return Left(ServerFailure(message: friendlyGrpcError(e, 'Account already exists.'), statusCode: e.code));
       }
       return Left(ServerFailure(
-        message: e.message ?? 'Signup failed due to server error.',
+        message: friendlyGrpcError(e, 'Signup failed due to server error.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -389,7 +390,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during resetPassword: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to reset password. The reset token may be invalid or expired.',
+        message: friendlyGrpcError(e, 'Failed to reset password. The reset token may be invalid or expired.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -489,7 +490,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during verifyPasswordResetCode: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to verify code. Please try again.',
+        message: friendlyGrpcError(e, 'Failed to verify code. Please try again.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -527,7 +528,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during resetPasswordWithToken: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to reset password. The reset token may be invalid or expired.',
+        message: friendlyGrpcError(e, 'Failed to reset password. The reset token may be invalid or expired.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -620,7 +621,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during verifyEmail: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to verify email.',
+        message: friendlyGrpcError(e, 'Failed to verify email.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -661,7 +662,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during resendVerificationEmail: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to send verification email.',
+        message: friendlyGrpcError(e, 'Failed to send verification email.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -737,7 +738,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during token refresh: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Token refresh failed due to server error.',
+        message: friendlyGrpcError(e, 'Token refresh failed due to server error.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -798,7 +799,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during token validation: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Token validation failed.',
+        message: friendlyGrpcError(e, 'Token validation failed.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -857,7 +858,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during checkEmailAvailability: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to check email availability.',
+        message: friendlyGrpcError(e, 'Failed to check email availability.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -898,7 +899,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during requestPhoneVerification: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to send verification code.',
+        message: friendlyGrpcError(e, 'Failed to send verification code.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -943,7 +944,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during verifyPhoneNumber: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to verify phone number.',
+        message: friendlyGrpcError(e, 'Failed to verify phone number.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -1039,7 +1040,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during verifyIdentity: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to verify identity.',
+        message: friendlyGrpcError(e, 'Failed to verify identity.'),
         statusCode: e.code,
       ));
     } catch (e) {

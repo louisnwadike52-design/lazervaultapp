@@ -49,7 +49,7 @@ class _InternetBillHomeScreenState extends State<InternetBillHomeScreen> {
     if (lower.contains('spectranet')) return const Color(0xFF10B981);
     if (lower.contains('ipnx')) return const Color(0xFFFB923C);
     if (lower.contains('swift')) return const Color(0xFFEF4444);
-    if (lower.contains('ntel')) return const Color(0xFF8B5CF6);
+    if (lower.contains('ntel')) return const Color.fromARGB(255, 78, 3, 208);
     if (lower.contains('cobranet')) return const Color(0xFFF59E0B);
     return const Color(0xFF3B82F6);
   }

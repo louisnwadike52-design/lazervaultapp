@@ -30,21 +30,47 @@ class _QRPaymentConfirmationScreenState
   final _amountController = TextEditingController();
   Map<String, dynamic> _qrData = {};
   String? _selectedAccountId;
-  bool _isStaticQR = false;
+  bool _payerEntersAmount = false;
   bool _isProcessing = false;
   bool _isLoadingDetails = false;
+  bool _isExpiredOrUnavailable = false;
+  String? _unavailableReason;
 
   @override
   void initState() {
     super.initState();
     _qrData = Get.arguments as Map<String, dynamic>? ?? {};
-    _isStaticQR = (_qrData['qr_type'] ?? '') == 'static';
-    if (!_isStaticQR && _qrData['amount'] != null) {
+    _payerEntersAmount = (_qrData['qr_type'] ?? '') == 'dynamic';
+    if (!_payerEntersAmount && _qrData['amount'] != null) {
       _amountController.text = _qrData['amount'].toString();
     }
 
+    // Check self-payment from QR data embedded in scan
+    final currentUserId = context.read<AuthenticationCubit>().userId ?? '';
+    if (_qrData['recipient_id'] != null &&
+        _qrData['recipient_id'].toString() == currentUserId) {
+      _isExpiredOrUnavailable = true;
+      _unavailableReason = 'You cannot pay your own QR code';
+    }
+
+    // Check expiry from embedded data
+    if (_qrData['expires_at'] != null) {
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(
+        ((_qrData['expires_at'] is int)
+                ? _qrData['expires_at']
+                : int.tryParse(_qrData['expires_at'].toString()) ?? 0) *
+            1000,
+      );
+      if (DateTime.now().isAfter(expiresAt)) {
+        _isExpiredOrUnavailable = true;
+        _unavailableReason = 'This QR code has expired';
+      }
+    }
+
     // If QR data is incomplete (raw scan with only qr_code), fetch details
-    if (_qrData['recipient_name'] == null && _qrData['qr_code'] != null) {
+    if (!_isExpiredOrUnavailable &&
+        _qrData['recipient_name'] == null &&
+        _qrData['qr_code'] != null) {
       _isLoadingDetails = true;
       context
           .read<QRPaymentCubit>()
@@ -79,11 +105,11 @@ class _QRPaymentConfirmationScreenState
       return;
     }
 
-    final amount = _isStaticQR
+    final amount = _payerEntersAmount
         ? (double.tryParse(_amountController.text) ?? 0)
         : (double.tryParse(_qrData['amount'].toString()) ?? 0);
 
-    if (_isStaticQR && amount <= 0) {
+    if (_payerEntersAmount && amount <= 0) {
       Get.snackbar(
         'Invalid Amount',
         'Please enter a valid amount',
@@ -115,10 +141,10 @@ class _QRPaymentConfirmationScreenState
         return;
       }
 
-      if (selectedAccount.balance < amount) {
+      if (selectedAccount.availableBalance < amount) {
         Get.snackbar(
           'Insufficient Balance',
-          'Your account balance (${selectedAccount.currency} ${selectedAccount.balance.toStringAsFixed(2)}) is less than the payment amount ($currency ${amount.toStringAsFixed(2)})',
+          'Your account balance (${selectedAccount.currency} ${selectedAccount.availableBalance.toStringAsFixed(2)}) is less than the payment amount ($currency ${amount.toStringAsFixed(2)})',
           backgroundColor: const Color(0xFFEF4444),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
@@ -178,11 +204,51 @@ class _QRPaymentConfirmationScreenState
         listener: (context, state) {
           if (state is QRDetailsLoaded) {
             final qr = state.qrCode;
+
+            // Check if QR is expired, paid, or cancelled
+            if (qr.isExpired || qr.status == QRPaymentStatus.expired) {
+              setState(() {
+                _isLoadingDetails = false;
+                _isExpiredOrUnavailable = true;
+                _unavailableReason = 'This QR code has expired';
+              });
+              return;
+            }
+            if (qr.status == QRPaymentStatus.paid) {
+              setState(() {
+                _isLoadingDetails = false;
+                _isExpiredOrUnavailable = true;
+                _unavailableReason = 'This QR code has already been paid';
+              });
+              return;
+            }
+            if (qr.status == QRPaymentStatus.cancelled) {
+              setState(() {
+                _isLoadingDetails = false;
+                _isExpiredOrUnavailable = true;
+                _unavailableReason = 'This QR code has been cancelled';
+              });
+              return;
+            }
+
+            // Check self-payment
+            final currentUserId =
+                context.read<AuthenticationCubit>().userId ?? '';
+            if (qr.userId.isNotEmpty && qr.userId == currentUserId) {
+              setState(() {
+                _isLoadingDetails = false;
+                _isExpiredOrUnavailable = true;
+                _unavailableReason = 'You cannot pay your own QR code';
+              });
+              return;
+            }
+
             setState(() {
               _qrData = {
                 ..._qrData,
                 'recipient': qr.username,
                 'recipient_name': qr.fullName,
+                'recipient_id': qr.userId,
                 'amount': qr.amount,
                 'currency': qr.currency,
                 'qr_type': qr.qrType == QRPaymentType.static
@@ -190,8 +256,8 @@ class _QRPaymentConfirmationScreenState
                     : 'dynamic',
                 'description': qr.description,
               };
-              _isStaticQR = qr.qrType == QRPaymentType.static;
-              if (!_isStaticQR && qr.amount > 0) {
+              _payerEntersAmount = qr.qrType == QRPaymentType.dynamic;
+              if (!_payerEntersAmount && qr.amount > 0) {
                 _amountController.text = qr.amount.toString();
               }
               _isLoadingDetails = false;
@@ -238,14 +304,16 @@ class _QRPaymentConfirmationScreenState
                     ],
                   ),
                 )
-              : SingleChildScrollView(
+              : _isExpiredOrUnavailable
+                  ? _buildUnavailableState()
+                  : SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildRecipientCard(),
                       const SizedBox(height: 24),
-                      if (_isStaticQR) ...[
+                      if (_payerEntersAmount) ...[
                         _buildAmountInput(),
                         const SizedBox(height: 24),
                       ] else
@@ -256,6 +324,64 @@ class _QRPaymentConfirmationScreenState
                     ],
                   ),
                 ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnavailableState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 60),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline,
+                color: Color(0xFFEF4444),
+                size: 48,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              _unavailableReason ?? 'QR code is unavailable',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Please scan a different QR code or ask the recipient to generate a new one.',
+              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton(
+                onPressed: () => Get.back(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFF2D2D2D)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Go Back'),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -399,11 +525,11 @@ class _QRPaymentConfirmationScreenState
 
           // Auto-select first matching account with sufficient balance
           if (_selectedAccountId == null && matchingAccounts.isNotEmpty) {
-            final amount = _isStaticQR
+            final amount = _payerEntersAmount
                 ? (double.tryParse(_amountController.text) ?? 0)
                 : (double.tryParse(_qrData['amount'].toString()) ?? 0);
             final bestAccount = matchingAccounts.firstWhere(
-              (a) => a.balance >= amount,
+              (a) => a.availableBalance >= amount,
               orElse: () => matchingAccounts.first,
             );
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -464,10 +590,10 @@ class _QRPaymentConfirmationScreenState
               ...matchingAccounts.map((account) {
                 final isSelected =
                     _selectedAccountId == account.id.toString();
-                final amount = _isStaticQR
+                final amount = _payerEntersAmount
                     ? (double.tryParse(_amountController.text) ?? 0)
                     : (double.tryParse(_qrData['amount'].toString()) ?? 0);
-                final hasSufficientBalance = account.balance >= amount;
+                final hasSufficientBalance = account.availableBalance >= amount;
 
                 return GestureDetector(
                   onTap: hasSufficientBalance
@@ -570,7 +696,7 @@ class _QRPaymentConfirmationScreenState
                                 ],
                               ),
                               Text(
-                                '${account.currency} ${account.balance.toStringAsFixed(2)}',
+                                '${account.currency} ${account.availableBalance.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   color: !hasSufficientBalance
                                       ? const Color(0xFF9CA3AF)

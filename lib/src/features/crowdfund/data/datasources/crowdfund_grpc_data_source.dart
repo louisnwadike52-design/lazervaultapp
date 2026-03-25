@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart' as pb;
 import 'package:lazervault/src/generated/crowdfund.pb.dart' as pb_msg;
 import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as pb_timestamp;
@@ -99,8 +100,7 @@ class CrowdfundGrpcDataSource {
 
       return CrowdfundModel.fromProto(response.crowdfund);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to create crowdfund'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to create crowdfund'));
     }
   }
 
@@ -114,8 +114,7 @@ class CrowdfundGrpcDataSource {
 
       return CrowdfundModel.fromProto(response.crowdfund);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get crowdfund'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get crowdfund'));
     }
   }
 
@@ -158,8 +157,7 @@ class CrowdfundGrpcDataSource {
           .map((cf) => CrowdfundModel.fromProto(cf))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to list crowdfunds'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to list crowdfunds'));
     }
   }
 
@@ -180,8 +178,7 @@ class CrowdfundGrpcDataSource {
           .map((cf) => CrowdfundModel.fromProto(cf))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to search crowdfunds'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to search crowdfunds'));
     }
   }
 
@@ -212,8 +209,7 @@ class CrowdfundGrpcDataSource {
 
       return CrowdfundModel.fromProto(response.crowdfund);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update crowdfund'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to update crowdfund'));
     }
   }
 
@@ -224,8 +220,7 @@ class CrowdfundGrpcDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       await _client.deleteCrowdfund(request, options: callOptions);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to delete crowdfund'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to delete crowdfund'));
     }
   }
 
@@ -238,20 +233,19 @@ class CrowdfundGrpcDataSource {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    String? sourceAccountId,
+    required String sourceAccountId,
+    required String transactionPin,
   }) async {
     try {
       final request = pb.MakeDonationRequest()
         ..crowdfundId = crowdfundId
         ..amount = _amountToInt64(amount)
-        ..isAnonymous = isAnonymous;
+        ..isAnonymous = isAnonymous
+        ..sourceAccountId = sourceAccountId
+        ..transactionPin = transactionPin;
 
       if (message != null) {
         request.message = message;
-      }
-
-      if (sourceAccountId != null) {
-        request.sourceAccountId = sourceAccountId;
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
@@ -259,8 +253,7 @@ class CrowdfundGrpcDataSource {
 
       return CrowdfundDonationModel.fromProto(response.donation);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to make donation'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to make donation'));
     }
   }
 
@@ -283,8 +276,7 @@ class CrowdfundGrpcDataSource {
           .map((d) => CrowdfundDonationModel.fromProto(d))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get donations'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get donations'));
     }
   }
 
@@ -305,8 +297,7 @@ class CrowdfundGrpcDataSource {
           .map((d) => CrowdfundDonationModel.fromProto(d))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get user donations'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get user donations'));
     }
   }
 
@@ -326,8 +317,7 @@ class CrowdfundGrpcDataSource {
 
       return CrowdfundReceiptModel.fromProto(response.receipt);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to generate receipt'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to generate receipt'));
     }
   }
 
@@ -348,8 +338,7 @@ class CrowdfundGrpcDataSource {
           .map((r) => CrowdfundReceiptModel.fromProto(r))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get receipts'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get receipts'));
     }
   }
 
@@ -369,8 +358,7 @@ class CrowdfundGrpcDataSource {
 
       return CrowdfundStatisticsModel.fromProto(response);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get statistics'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get statistics'));
     }
   }
 
@@ -401,8 +389,7 @@ class CrowdfundGrpcDataSource {
           .map((cf) => CrowdfundModel.fromProto(cf))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get my crowdfunds'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get my crowdfunds'));
     }
   }
 
@@ -448,8 +435,7 @@ class CrowdfundGrpcDataSource {
         message: response.message,
       );
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to withdraw from crowdfund'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to withdraw from crowdfund'));
     }
   }
 
@@ -482,8 +468,7 @@ class CrowdfundGrpcDataSource {
           .map((e) => LeaderboardEntryModel.fromProto(e))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get leaderboard'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get leaderboard'));
     }
   }
 
@@ -506,8 +491,7 @@ class CrowdfundGrpcDataSource {
         currency: response.currency,
       );
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get campaign wallet balance'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get campaign wallet balance'));
     }
   }
 
@@ -526,6 +510,7 @@ class CrowdfundGrpcDataSource {
     String? slackWebhookUrl,
     String? slackWorkspaceName,
     String? slackChannelName,
+    String? whatsappRecipientId,
     List<NotificationEventType>? enabledEvents,
   }) async {
     try {
@@ -547,6 +532,10 @@ class CrowdfundGrpcDataSource {
           ..webhookUrl = slackWebhookUrl;
         if (slackWorkspaceName != null) request.slack.workspaceName = slackWorkspaceName;
         if (slackChannelName != null) request.slack.channelName = slackChannelName;
+      } else if (channelType == NotificationChannelType.whatsappBusiness && whatsappRecipientId != null) {
+        // Only send recipient phone number — server uses its own WhatsApp Business API credentials
+        request.whatsappBusiness = pb_msg.WhatsAppBusinessConnectionDataMessage()
+          ..recipientId = whatsappRecipientId;
       }
 
       if (enabledEvents != null) {
@@ -561,8 +550,7 @@ class CrowdfundGrpcDataSource {
 
       return NotificationChannelModel.fromProto(response.channel);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to connect notification channel'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to connect notification channel'));
     }
   }
 
@@ -574,8 +562,7 @@ class CrowdfundGrpcDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       await _client.disconnectNotificationChannel(request, options: callOptions);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to disconnect notification channel'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to disconnect notification channel'));
     }
   }
 
@@ -593,8 +580,7 @@ class CrowdfundGrpcDataSource {
           .map((ch) => NotificationChannelModel.fromProto(ch))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get notification channels'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get notification channels'));
     }
   }
 
@@ -622,8 +608,7 @@ class CrowdfundGrpcDataSource {
 
       return NotificationChannelModel.fromProto(response.channel);
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update notification channel'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to update notification channel'));
     }
   }
 
@@ -638,8 +623,7 @@ class CrowdfundGrpcDataSource {
 
       return response.success;
     } on GrpcError catch (e) {
-      throw Exception(
-          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to test notification channel'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to test notification channel'));
     }
   }
 

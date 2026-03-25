@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/channel_management/data/models/channel_registration_model.dart';
@@ -53,7 +54,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
       return Left(e);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to get channel registrations',
+          message: friendlyGrpcError(e, 'Failed to get channel registrations'),
           statusCode: e.code));
     } catch (e) {
       return Left(
@@ -88,7 +89,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
       return Left(e);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to register channel',
+          message: friendlyGrpcError(e, 'Failed to register channel'),
           statusCode: e.code));
     } catch (e) {
       return Left(
@@ -124,7 +125,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
       return Left(e);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to verify OTP', statusCode: e.code));
+          message: friendlyGrpcError(e, 'Failed to verify OTP'), statusCode: e.code));
     } catch (e) {
       return Left(
           ServerFailure(message: 'An unexpected error occurred', statusCode: 500));
@@ -156,7 +157,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
       return Left(e);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to deactivate channel',
+          message: friendlyGrpcError(e, 'Failed to deactivate channel'),
           statusCode: e.code));
     } catch (e) {
       return Left(
@@ -180,7 +181,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
       return Left(e);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to get channel PINs',
+          message: friendlyGrpcError(e, 'Failed to get channel PINs'),
           statusCode: e.code));
     } catch (e) {
       return Left(
@@ -234,7 +235,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
       return Left(e);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to create channel PIN',
+          message: friendlyGrpcError(e, 'Failed to create channel PIN'),
           statusCode: e.code));
     } catch (e) {
       return Left(
@@ -273,7 +274,7 @@ class ChannelRepositoryImpl implements IChannelRepository {
       return Left(e);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to change channel PIN',
+          message: friendlyGrpcError(e, 'Failed to change channel PIN'),
           statusCode: e.code));
     } catch (e) {
       return Left(

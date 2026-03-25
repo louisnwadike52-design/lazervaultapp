@@ -624,6 +624,8 @@ message AirtimeProvider {
 message SendFundsRequest {
   string from_account_id = 1;
   string to_account_number = 2;
+  string to_account_id = 9;           // Account UUID (for internal transfers)
+  string type = 10;                    // "internal" or "external"
   double amount = 3;
   string description = 4;
 
@@ -635,6 +637,8 @@ message SendFundsRequest {
   string destination_bank_code = 7;    // Bank code for external transfers (e.g., Flutterwave bank code)
   string beneficiary_name = 8;         // Recipient name for external transfers
 
+  // Budget tracking
+  int32 expense_category = 11;         // ExpenseCategory enum value selected by user (0 = unset)
 }
 
 message SendFundsResponse {
@@ -695,6 +699,7 @@ message BatchTransferResultItem {
   string destination_bank_name = 10;  // Bank name (populated for external)
   string transfer_type = 11;          // "internal" or "external"
   string beneficiary_name = 12;       // Verified beneficiary name
+  string recipient_user_id = 13;      // Resolved recipient user ID (for internal transfers)
 }
 
 // ===== WITHDRAW =====

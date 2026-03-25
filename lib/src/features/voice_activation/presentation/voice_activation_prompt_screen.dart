@@ -223,7 +223,7 @@ class _VoiceActivationPromptScreenState
       },
       {
         'icon': Icons.receipt_long_rounded,
-        'title': 'Pay Bills',
+        'title': 'Bills Hub',
         'description': 'Pay utility bills easily',
         'command': '"Pay my electricity bill"',
       },

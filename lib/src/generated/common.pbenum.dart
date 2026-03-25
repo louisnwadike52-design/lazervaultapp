@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: common.proto
-//
-// @dart = 2.12
+// Generated from common.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
 
 import 'dart:core' as $core;
 
@@ -15,17 +16,35 @@ import 'package:protobuf/protobuf.dart' as $pb;
 
 /// Invoice Payment Status Enum - comprehensive status for all invoice payment scenarios
 class InvoicePaymentStatus extends $pb.ProtobufEnum {
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_PENDING = InvoicePaymentStatus._(0, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_PENDING');
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_PROCESSING = InvoicePaymentStatus._(1, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_PROCESSING');
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_COMPLETED = InvoicePaymentStatus._(2, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_COMPLETED');
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_FAILED = InvoicePaymentStatus._(3, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_FAILED');
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_CANCELLED = InvoicePaymentStatus._(4, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_CANCELLED');
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_PARTIALLY_PAID = InvoicePaymentStatus._(5, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_PARTIALLY_PAID');
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_REFUNDED = InvoicePaymentStatus._(6, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_REFUNDED');
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_DISPUTED = InvoicePaymentStatus._(7, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_DISPUTED');
-  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_OVERDUE = InvoicePaymentStatus._(8, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_OVERDUE');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_PENDING =
+      InvoicePaymentStatus._(
+          0, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_PENDING');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_PROCESSING =
+      InvoicePaymentStatus._(
+          1, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_PROCESSING');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_COMPLETED =
+      InvoicePaymentStatus._(
+          2, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_COMPLETED');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_FAILED =
+      InvoicePaymentStatus._(
+          3, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_FAILED');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_CANCELLED =
+      InvoicePaymentStatus._(
+          4, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_CANCELLED');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_PARTIALLY_PAID =
+      InvoicePaymentStatus._(
+          5, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_PARTIALLY_PAID');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_REFUNDED =
+      InvoicePaymentStatus._(
+          6, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_REFUNDED');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_DISPUTED =
+      InvoicePaymentStatus._(
+          7, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_DISPUTED');
+  static const InvoicePaymentStatus INVOICE_PAYMENT_STATUS_OVERDUE =
+      InvoicePaymentStatus._(
+          8, _omitEnumNames ? '' : 'INVOICE_PAYMENT_STATUS_OVERDUE');
 
-  static const $core.List<InvoicePaymentStatus> values = <InvoicePaymentStatus> [
+  static const $core.List<InvoicePaymentStatus> values = <InvoicePaymentStatus>[
     INVOICE_PAYMENT_STATUS_PENDING,
     INVOICE_PAYMENT_STATUS_PROCESSING,
     INVOICE_PAYMENT_STATUS_COMPLETED,
@@ -37,26 +56,47 @@ class InvoicePaymentStatus extends $pb.ProtobufEnum {
     INVOICE_PAYMENT_STATUS_OVERDUE,
   ];
 
-  static final $core.Map<$core.int, InvoicePaymentStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static InvoicePaymentStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<InvoicePaymentStatus?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 8);
+  static InvoicePaymentStatus? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const InvoicePaymentStatus._($core.int v, $core.String n) : super(v, n);
+  const InvoicePaymentStatus._(super.value, super.name);
 }
 
 /// Payment Method Type Enum
 class PaymentMethodType extends $pb.ProtobufEnum {
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE = PaymentMethodType._(0, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_CREDIT_CARD = PaymentMethodType._(1, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_CREDIT_CARD');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_DEBIT_CARD = PaymentMethodType._(2, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_DEBIT_CARD');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_PAYPAL = PaymentMethodType._(3, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_PAYPAL');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_APPLE_PAY = PaymentMethodType._(4, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_APPLE_PAY');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_GOOGLE_PAY = PaymentMethodType._(5, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_GOOGLE_PAY');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_BITCOIN = PaymentMethodType._(6, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_BITCOIN');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_ETHEREUM = PaymentMethodType._(7, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_ETHEREUM');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_USDC = PaymentMethodType._(8, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_USDC');
-  static const PaymentMethodType PAYMENT_METHOD_TYPE_BANK_TRANSFER = PaymentMethodType._(9, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_BANK_TRANSFER');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE =
+      PaymentMethodType._(
+          0, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_CREDIT_CARD =
+      PaymentMethodType._(
+          1, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_CREDIT_CARD');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_DEBIT_CARD =
+      PaymentMethodType._(
+          2, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_DEBIT_CARD');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_PAYPAL =
+      PaymentMethodType._(
+          3, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_PAYPAL');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_APPLE_PAY =
+      PaymentMethodType._(
+          4, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_APPLE_PAY');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_GOOGLE_PAY =
+      PaymentMethodType._(
+          5, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_GOOGLE_PAY');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_BITCOIN =
+      PaymentMethodType._(
+          6, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_BITCOIN');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_ETHEREUM =
+      PaymentMethodType._(
+          7, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_ETHEREUM');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_USDC =
+      PaymentMethodType._(8, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_USDC');
+  static const PaymentMethodType PAYMENT_METHOD_TYPE_BANK_TRANSFER =
+      PaymentMethodType._(
+          9, _omitEnumNames ? '' : 'PAYMENT_METHOD_TYPE_BANK_TRANSFER');
 
-  static const $core.List<PaymentMethodType> values = <PaymentMethodType> [
+  static const $core.List<PaymentMethodType> values = <PaymentMethodType>[
     PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE,
     PAYMENT_METHOD_TYPE_CREDIT_CARD,
     PAYMENT_METHOD_TYPE_DEBIT_CARD,
@@ -69,21 +109,28 @@ class PaymentMethodType extends $pb.ProtobufEnum {
     PAYMENT_METHOD_TYPE_BANK_TRANSFER,
   ];
 
-  static final $core.Map<$core.int, PaymentMethodType> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static PaymentMethodType? valueOf($core.int value) => _byValue[value];
+  static final $core.List<PaymentMethodType?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 9);
+  static PaymentMethodType? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const PaymentMethodType._($core.int v, $core.String n) : super(v, n);
+  const PaymentMethodType._(super.value, super.name);
 }
 
 /// Dispute Status Enum
 class DisputeStatus extends $pb.ProtobufEnum {
-  static const DisputeStatus DISPUTE_STATUS_PENDING = DisputeStatus._(0, _omitEnumNames ? '' : 'DISPUTE_STATUS_PENDING');
-  static const DisputeStatus DISPUTE_STATUS_INVESTIGATING = DisputeStatus._(1, _omitEnumNames ? '' : 'DISPUTE_STATUS_INVESTIGATING');
-  static const DisputeStatus DISPUTE_STATUS_RESOLVED = DisputeStatus._(2, _omitEnumNames ? '' : 'DISPUTE_STATUS_RESOLVED');
-  static const DisputeStatus DISPUTE_STATUS_REJECTED = DisputeStatus._(3, _omitEnumNames ? '' : 'DISPUTE_STATUS_REJECTED');
-  static const DisputeStatus DISPUTE_STATUS_ESCALATED = DisputeStatus._(4, _omitEnumNames ? '' : 'DISPUTE_STATUS_ESCALATED');
+  static const DisputeStatus DISPUTE_STATUS_PENDING =
+      DisputeStatus._(0, _omitEnumNames ? '' : 'DISPUTE_STATUS_PENDING');
+  static const DisputeStatus DISPUTE_STATUS_INVESTIGATING =
+      DisputeStatus._(1, _omitEnumNames ? '' : 'DISPUTE_STATUS_INVESTIGATING');
+  static const DisputeStatus DISPUTE_STATUS_RESOLVED =
+      DisputeStatus._(2, _omitEnumNames ? '' : 'DISPUTE_STATUS_RESOLVED');
+  static const DisputeStatus DISPUTE_STATUS_REJECTED =
+      DisputeStatus._(3, _omitEnumNames ? '' : 'DISPUTE_STATUS_REJECTED');
+  static const DisputeStatus DISPUTE_STATUS_ESCALATED =
+      DisputeStatus._(4, _omitEnumNames ? '' : 'DISPUTE_STATUS_ESCALATED');
 
-  static const $core.List<DisputeStatus> values = <DisputeStatus> [
+  static const $core.List<DisputeStatus> values = <DisputeStatus>[
     DISPUTE_STATUS_PENDING,
     DISPUTE_STATUS_INVESTIGATING,
     DISPUTE_STATUS_RESOLVED,
@@ -91,31 +138,39 @@ class DisputeStatus extends $pb.ProtobufEnum {
     DISPUTE_STATUS_ESCALATED,
   ];
 
-  static final $core.Map<$core.int, DisputeStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static DisputeStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<DisputeStatus?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 4);
+  static DisputeStatus? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const DisputeStatus._($core.int v, $core.String n) : super(v, n);
+  const DisputeStatus._(super.value, super.name);
 }
 
 /// Invoice Priority Enum
 class InvoicePriority extends $pb.ProtobufEnum {
-  static const InvoicePriority INVOICE_PRIORITY_LOW = InvoicePriority._(0, _omitEnumNames ? '' : 'INVOICE_PRIORITY_LOW');
-  static const InvoicePriority INVOICE_PRIORITY_MEDIUM = InvoicePriority._(1, _omitEnumNames ? '' : 'INVOICE_PRIORITY_MEDIUM');
-  static const InvoicePriority INVOICE_PRIORITY_HIGH = InvoicePriority._(2, _omitEnumNames ? '' : 'INVOICE_PRIORITY_HIGH');
-  static const InvoicePriority INVOICE_PRIORITY_URGENT = InvoicePriority._(3, _omitEnumNames ? '' : 'INVOICE_PRIORITY_URGENT');
+  static const InvoicePriority INVOICE_PRIORITY_LOW =
+      InvoicePriority._(0, _omitEnumNames ? '' : 'INVOICE_PRIORITY_LOW');
+  static const InvoicePriority INVOICE_PRIORITY_MEDIUM =
+      InvoicePriority._(1, _omitEnumNames ? '' : 'INVOICE_PRIORITY_MEDIUM');
+  static const InvoicePriority INVOICE_PRIORITY_HIGH =
+      InvoicePriority._(2, _omitEnumNames ? '' : 'INVOICE_PRIORITY_HIGH');
+  static const InvoicePriority INVOICE_PRIORITY_URGENT =
+      InvoicePriority._(3, _omitEnumNames ? '' : 'INVOICE_PRIORITY_URGENT');
 
-  static const $core.List<InvoicePriority> values = <InvoicePriority> [
+  static const $core.List<InvoicePriority> values = <InvoicePriority>[
     INVOICE_PRIORITY_LOW,
     INVOICE_PRIORITY_MEDIUM,
     INVOICE_PRIORITY_HIGH,
     INVOICE_PRIORITY_URGENT,
   ];
 
-  static final $core.Map<$core.int, InvoicePriority> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static InvoicePriority? valueOf($core.int value) => _byValue[value];
+  static final $core.List<InvoicePriority?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 3);
+  static InvoicePriority? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const InvoicePriority._($core.int v, $core.String n) : super(v, n);
+  const InvoicePriority._(super.value, super.name);
 }
 
-
-const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');
+const $core.bool _omitEnumNames =
+    $core.bool.fromEnvironment('protobuf.omit_enum_names');

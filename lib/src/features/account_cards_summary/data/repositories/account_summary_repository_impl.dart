@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/account_cards_summary/data/models/account_summary_model.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
@@ -113,7 +114,7 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
     } on GrpcError catch (e) {
       print('gRPC Error during GetUserAccounts: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to fetch account summaries.',
+        message: friendlyGrpcError(e, 'Failed to fetch account summaries.'),
         statusCode: e.code,
       ));
     } catch (e) {

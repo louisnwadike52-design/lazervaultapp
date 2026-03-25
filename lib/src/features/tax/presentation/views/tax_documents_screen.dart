@@ -646,7 +646,7 @@ class _TaxDocumentsScreenState extends State<TaxDocumentsScreen> {
       case TaxDocumentType.vatRegistration:
         return const Color(0xFF10B981);
       case TaxDocumentType.taxClearance:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
       case TaxDocumentType.whtReceipt:
         return const Color(0xFFFB923C);
       case TaxDocumentType.filingReceipt:

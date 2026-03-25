@@ -2,6 +2,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 import '../../../../core/network/grpc_client.dart';
 import '../../../../generated/giftcards.pb.dart' as pb;
+import '../../domain/entities/gift_card_entity.dart';
 import '../models/gift_card_model.dart';
 import 'gift_card_remote_data_source.dart';
 
@@ -12,15 +13,21 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
   GiftCardRemoteDataSourceGrpc({required this.grpcClient});
 
   @override
-  Future<List<GiftCardBrandModel>> getGiftCardBrands({
+  Future<GiftCardBrandsResult> getGiftCardBrands({
     String? category,
     String? countryCode,
+    String? searchQuery,
+    int page = 0,
+    int pageSize = 20,
   }) async {
     try {
       final request = pb.GetGiftCardBrandsRequest(
         category: category ?? '',
         activeOnly: true,
         countryCode: countryCode ?? '',
+        searchQuery: searchQuery ?? '',
+        page: page,
+        pageSize: pageSize,
       );
       final options = await grpcClient.callOptions;
 
@@ -29,13 +36,42 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         options: options,
       );
 
-      return response.brands
+      final brands = response.brands
           .map((brand) => GiftCardBrandModel.fromProto(brand))
           .toList();
+
+      return GiftCardBrandsResult(
+        brands: brands,
+        total: response.total,
+        totalPages: response.totalPages,
+        currentPage: response.currentPage,
+        hasNext: response.hasNext,
+      );
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch gift card brands: ${e.message}');
     } catch (e) {
       throw Exception('Unexpected error fetching brands: $e');
+    }
+  }
+
+  @override
+  Future<List<GiftCardCountry>> getSupportedCountries() async {
+    try {
+      final request = pb.GetSupportedCountriesRequest();
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.giftCardClient.getSupportedCountries(
+        request,
+        options: options,
+      );
+      return response.countries.map((c) => GiftCardCountry(
+        isoCode: c.isoCode,
+        name: c.name,
+        flagUrl: c.flagUrl,
+        currencyCode: c.currencyCode,
+        currencyName: c.currencyName,
+      )).toList();
+    } on GrpcError catch (e) {
+      throw Exception('Failed to fetch supported countries: ${e.message}');
     }
   }
 
@@ -55,6 +91,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     String? idempotencyKey,
     int quantity = 1,
     String? providerName,
+    double? senderAmount,
+    String? senderCurrency,
   }) async {
     try {
       final request = pb.BuyGiftCardRequest(
@@ -73,6 +111,9 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         providerName: providerName ?? '',
       );
 
+      request.senderAmount = senderAmount ?? 0;
+      request.senderCurrency = senderCurrency ?? '';
+
       if (productId != null && productId > 0) {
         request.productId = Int64(productId);
       }
@@ -86,24 +127,34 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
 
       return GiftCardModel.fromProto(response.giftCard);
     } on GrpcError catch (e) {
-      if (e.code == StatusCode.failedPrecondition &&
-          e.message != null &&
-          e.message!.toLowerCase().contains('insufficient')) {
-        throw Exception('Insufficient funds for purchase');
+      final msg = (e.message ?? '').toLowerCase();
+      if (e.code == StatusCode.failedPrecondition) {
+        if (msg.contains('insufficient')) {
+          throw Exception('Insufficient funds for purchase');
+        } else if (msg.contains('sold out')) {
+          throw Exception('sold out');
+        } else if (msg.contains('unavailable')) {
+          throw Exception('temporarily unavailable');
+        } else if (msg.contains('provider mismatch')) {
+          throw Exception('Gift card catalog has been updated. Please browse brands again and try your purchase.');
+        } else if (msg.contains('invalid amount') || msg.contains('check the price')) {
+          throw Exception('Invalid amount for this gift card. Please check and try again.');
+        }
+        throw Exception(e.message ?? 'Purchase failed');
       } else if (e.code == StatusCode.notFound) {
         throw Exception('Gift card brand not found');
       } else if (e.code == StatusCode.unavailable) {
-        throw Exception('Gift card service temporarily unavailable');
+        throw Exception(e.message ?? 'Service temporarily busy. Please try again.');
+      } else if (e.code == StatusCode.resourceExhausted) {
+        throw Exception('Too many attempts. Please wait a moment.');
+      } else if (e.code == StatusCode.alreadyExists) {
+        throw Exception('This order is already being processed.');
+      } else if (e.code == StatusCode.invalidArgument) {
+        throw Exception(e.message ?? 'Invalid request. Please check your details.');
       }
-      // Provider mismatch error handling
-      if (e.code == StatusCode.failedPrecondition &&
-          e.message != null &&
-          e.message!.toLowerCase().contains('provider mismatch')) {
-        throw Exception('Provider mismatch: Gift card catalog has been updated. Please browse brands again and try your purchase.');
-      }
-      throw Exception('Purchase failed: ${e.message}');
+      throw Exception(e.message ?? 'Purchase failed. Please try again.');
     } catch (e) {
-      throw Exception('Unexpected error during purchase: $e');
+      throw Exception('Unexpected error during purchase. Please try again.');
     }
   }
 
@@ -192,34 +243,38 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
   }
 
   @override
-  Future<GiftCardModel> redeemGiftCard({
-    required String accountId,
-    required String cardNumber,
-    required String cardPin,
+  Future<Map<String, String>> getRedeemCode({
+    required String transactionId,
+    bool forceRefresh = false,
   }) async {
     try {
-      final request = pb.RedeemGiftCardRequest(
-        accountId: accountId,
-        cardNumber: cardNumber,
-        cardPin: cardPin,
+      final request = pb.GetRedeemCodeRequest(
+        transactionId: transactionId,
+        forceRefresh: forceRefresh,
       );
       final options = await grpcClient.callOptions;
 
-      final response = await grpcClient.giftCardClient.redeemGiftCard(
+      final response = await grpcClient.giftCardClient.getRedeemCode(
         request,
         options: options,
       );
 
-      return GiftCardModel.fromProto(response.giftCard);
+      return {
+        'redemptionCode': response.redemptionCode,
+        'redemptionPin': response.redemptionPin,
+        'transactionId': response.transactionId,
+        'status': response.status,
+        'message': response.message,
+      };
     } on GrpcError catch (e) {
       if (e.code == StatusCode.notFound) {
         throw Exception('Gift card not found');
-      } else if (e.code == StatusCode.failedPrecondition) {
-        throw Exception(e.message ?? 'Gift card cannot be redeemed');
+      } else if (e.code == StatusCode.permissionDenied) {
+        throw Exception('You can only view redeem codes for your own gift cards');
       }
-      throw Exception('Redemption failed: ${e.message}');
+      throw Exception('Failed to get redeem code: ${e.message}');
     } catch (e) {
-      throw Exception('Unexpected error during redemption: $e');
+      throw Exception('Unexpected error: $e');
     }
   }
 
@@ -231,6 +286,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     required String message,
     required String transactionId,
     required String verificationToken,
+    String? recipientUserId,
+    String transferType = 'email',
   }) async {
     try {
       final request = pb.TransferGiftCardRequest(
@@ -240,6 +297,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         message: message,
         transactionId: transactionId,
         verificationToken: verificationToken,
+        recipientUserId: recipientUserId ?? '',
+        transferType: transferType,
       );
       final options = await grpcClient.callOptions;
 
@@ -263,42 +322,13 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     }
   }
 
-  @override
-  Future<GiftCardBalanceModel> getGiftCardBalance({
-    required String cardNumber,
-    required String cardPin,
-  }) async {
-    try {
-      final request = pb.GetGiftCardBalanceRequest(
-        cardNumber: cardNumber,
-        cardPin: cardPin,
-      );
-      final options = await grpcClient.callOptions;
-
-      final response = await grpcClient.giftCardClient.getGiftCardBalance(
-        request,
-        options: options,
-      );
-
-      return GiftCardBalanceModel.fromProto(response);
-    } on GrpcError catch (e) {
-      if (e.code == StatusCode.notFound) {
-        throw Exception('Gift card not found');
-      } else if (e.code == StatusCode.invalidArgument) {
-        throw Exception('Invalid card number or PIN');
-      }
-      throw Exception('Failed to check balance: ${e.message}');
-    } catch (e) {
-      throw Exception('Unexpected error checking balance: $e');
-    }
-  }
-
   // Sell flow methods
 
   @override
-  Future<List<SellableCardModel>> getSellableCards() async {
+  Future<List<SellableCardModel>> getSellableCards({String? countryCode}) async {
     try {
       final request = pb.GetSellableCardsRequest();
+      request.countryCode = countryCode ?? '';
       final options = await grpcClient.callOptions;
 
       final response = await grpcClient.giftCardClient.getSellableCards(
@@ -354,6 +384,15 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     List<String>? images,
     String? idempotencyKey,
     String? providerName,
+    String? cardCountry,
+    String? cardFormat,
+    List<String>? imageUrls,
+    List<String>? imageKeys,
+    String? ocrBrand,
+    String? ocrCardNumber,
+    String? ocrPin,
+    double? ocrDenomination,
+    String? ocrCurrency,
   }) async {
     try {
       final request = pb.SellGiftCardRequest(
@@ -366,10 +405,23 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         currency: currency ?? 'USD',
         idempotencyKey: idempotencyKey ?? '',
         providerName: providerName ?? '',
+        cardCountry: cardCountry ?? '',
+        cardFormat: cardFormat ?? 'ecode',
+        ocrBrand: ocrBrand ?? '',
+        ocrCardNumber: ocrCardNumber ?? '',
+        ocrPin: ocrPin ?? '',
+        ocrDenomination: ocrDenomination ?? 0,
+        ocrCurrency: ocrCurrency ?? '',
       );
 
       if (images != null && images.isNotEmpty) {
         request.images.addAll(images);
+      }
+      if (imageUrls != null && imageUrls.isNotEmpty) {
+        request.imageUrls.addAll(imageUrls);
+      }
+      if (imageKeys != null && imageKeys.isNotEmpty) {
+        request.imageKeys.addAll(imageKeys);
       }
 
       final options = await grpcClient.callOptions;
@@ -446,6 +498,48 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
       throw Exception('Failed to fetch sales: ${e.message}');
     } catch (e) {
       throw Exception('Unexpected error: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, String>> uploadSellImage({
+    required String imageData,
+    required String contentType,
+    required String filename,
+  }) async {
+    try {
+      final request = pb.UploadSellImageRequest(
+        imageData: imageData,
+        contentType: contentType,
+        filename: filename,
+      );
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.giftCardClient.uploadSellImage(request, options: options);
+      return {'imageUrl': response.imageUrl, 'imageKey': response.imageKey};
+    } on GrpcError catch (e) {
+      throw Exception('Failed to upload image: ${e.message}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> extractCardDetails({
+    required List<String> imageUrls,
+  }) async {
+    try {
+      final request = pb.ExtractCardDetailsRequest(imageUrls: imageUrls);
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.giftCardClient.extractCardDetails(request, options: options);
+      return {
+        'brand': response.brand,
+        'cardNumber': response.cardNumber,
+        'pin': response.pin,
+        'denomination': response.denomination,
+        'currency': response.currency,
+        'confidence': response.confidence,
+        'rawText': response.rawText,
+      };
+    } on GrpcError catch (e) {
+      throw Exception('Failed to extract card details: ${e.message}');
     }
   }
 }

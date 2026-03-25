@@ -15,6 +15,26 @@ abstract class DataBundlesRemoteDataSource {
     required String idempotencyKey,
     String countryCode = 'NG',
   });
+
+  // Auto-renewal (non-expiring data)
+  Future<pb.EnableAutoRenewResponse> enableAutoRenew({
+    required String subscriptionId,
+    required String variationId,
+    required String network,
+    required double amount,
+  });
+  Future<pb.DisableAutoRenewResponse> disableAutoRenew({
+    required String subscriptionId,
+  });
+  Future<pb.GetAutoRenewSubscriptionsResponse> getAutoRenewSubscriptions({
+    int limit = 50,
+    int offset = 0,
+  });
+  Future<pb.UpdateAutoRenewPlanResponse> updateAutoRenewPlan({
+    required String subscriptionId,
+    required String newVariationId,
+    required double newAmount,
+  });
 }
 
 class DataBundlesRemoteDataSourceImpl implements DataBundlesRemoteDataSource {
@@ -63,5 +83,73 @@ class DataBundlesRemoteDataSourceImpl implements DataBundlesRemoteDataSource {
     );
 
     return DataPurchaseModel.fromResponse(response);
+  }
+
+  @override
+  Future<pb.EnableAutoRenewResponse> enableAutoRenew({
+    required String subscriptionId,
+    required String variationId,
+    required String network,
+    required double amount,
+  }) async {
+    final request = pb.EnableAutoRenewRequest()
+      ..subscriptionId = subscriptionId
+      ..variationId = variationId
+      ..network = network
+      ..amount = amount;
+
+    final options = await grpcClient.callOptions;
+    return grpcClient.utilityPaymentsClient.enableAutoRenew(
+      request,
+      options: options,
+    );
+  }
+
+  @override
+  Future<pb.DisableAutoRenewResponse> disableAutoRenew({
+    required String subscriptionId,
+  }) async {
+    final request = pb.DisableAutoRenewRequest()
+      ..subscriptionId = subscriptionId;
+
+    final options = await grpcClient.callOptions;
+    return grpcClient.utilityPaymentsClient.disableAutoRenew(
+      request,
+      options: options,
+    );
+  }
+
+  @override
+  Future<pb.GetAutoRenewSubscriptionsResponse> getAutoRenewSubscriptions({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final request = pb.GetAutoRenewSubscriptionsRequest()
+      ..limit = limit
+      ..offset = offset;
+
+    final options = await grpcClient.callOptions;
+    return grpcClient.utilityPaymentsClient.getAutoRenewSubscriptions(
+      request,
+      options: options,
+    );
+  }
+
+  @override
+  Future<pb.UpdateAutoRenewPlanResponse> updateAutoRenewPlan({
+    required String subscriptionId,
+    required String newVariationId,
+    required double newAmount,
+  }) async {
+    final request = pb.UpdateAutoRenewPlanRequest()
+      ..subscriptionId = subscriptionId
+      ..newVariationId = newVariationId
+      ..newAmount = newAmount;
+
+    final options = await grpcClient.callOptions;
+    return grpcClient.utilityPaymentsClient.updateAutoRenewPlan(
+      request,
+      options: options,
+    );
   }
 }

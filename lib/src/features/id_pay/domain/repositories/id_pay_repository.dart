@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../entities/id_pay_entity.dart';
 import '../entities/id_pay_organization_entity.dart';
 import '../entities/id_pay_transaction_entity.dart';

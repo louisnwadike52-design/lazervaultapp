@@ -757,6 +757,9 @@ message AccountSummary {
   string status = 6;                    // e.g., "active", "blocked_temporary"
   string uuid = 7;                      // Account UUID (use this for cross-service communication)
   string account_number = 8;            // Full account number (for deposits)
+  uint64 available_balance = 9;         // Available balance (balance - reserved - clearing holds) in minor units
+  uint64 reserved_balance = 10;         // Funds held (fund holds + clearing deposits) in minor units
+  string account_name = 11;             // Custom account name (e.g., "Kids Allowance", "Family Pool")
 }
 
 // ===== Get User Accounts Summary (for dashboard carousel) =====
@@ -1111,7 +1114,7 @@ message UpdateTransactionStatusResponse {
 }
 
 // GetTransactionHistory - Get transactions for an account
-// Locale is automatically derived from the account
+// Locale can be passed explicitly; falls back to account locale if empty
 message GetTransactionHistoryRequest {
   string account_id = 1;
   string type = 2;                      // Optional filter: "credit", "debit"
@@ -1124,6 +1127,7 @@ message GetTransactionHistoryRequest {
   int32 offset = 9;
   bool include_external_banks = 10;     // Include external bank transactions (default: true)
   string counterparty_account = 11;     // Optional filter: filter by counterparty account number
+  string locale = 12;                   // Optional: BCP 47 locale (e.g. "en-NG"); falls back to account locale
 }
 
 message GetTransactionHistoryResponse {
@@ -1134,11 +1138,12 @@ message GetTransactionHistoryResponse {
 }
 
 // GetTransactionStatistics - Get statistics grouped by service
-// Locale is automatically derived from the account
+// Locale can be passed explicitly; falls back to account locale if empty
 message GetTransactionStatisticsRequest {
   string account_id = 1;
   string start_date = 2;
   string end_date = 3;
+  string locale = 5;                   // Optional: BCP 47 locale (e.g. "en-NG"); falls back to account locale
 }
 
 message GetTransactionStatisticsResponse {
@@ -1511,6 +1516,7 @@ message GetFinancialAnalyticsRequest {
   string period = 2;                   // "week", "month", "quarter", "year"
   string start_date = 3;               // Optional: override period with custom dates
   string end_date = 4;                 // Optional: override period with custom dates
+  string locale = 6;                   // Optional: BCP 47 locale; falls back to account locale
 }
 
 message GetFinancialAnalyticsResponse {
@@ -1543,6 +1549,7 @@ message GetCategoryAnalyticsRequest {
   string account_id = 1;
   string start_date = 2;
   string end_date = 3;
+  string locale = 5;                   // Optional: BCP 47 locale; falls back to account locale
 }
 
 message GetCategoryAnalyticsResponse {
@@ -1564,6 +1571,7 @@ message MonthlyDataPoint {
 message GetMonthlyTrendsRequest {
   string account_id = 1;
   int32 months = 2;                    // Number of months to return (default: 6)
+  string locale = 3;                   // Optional: BCP 47 locale; falls back to account locale
 }
 
 message GetMonthlyTrendsResponse {
@@ -1581,6 +1589,7 @@ message GetExpenseTimeSeriesRequest {
   string account_id = 1;
   string start_date = 2;
   string end_date = 3;
+  string locale = 5;                   // Optional: BCP 47 locale; falls back to account locale
 }
 
 message GetExpenseTimeSeriesResponse {

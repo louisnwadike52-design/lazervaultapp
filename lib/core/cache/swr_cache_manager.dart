@@ -50,6 +50,25 @@ class CacheError implements Exception {
   bool get isRecoverable =>
       type == CacheErrorType.fetchError || type == CacheErrorType.storageFull;
 
+  /// User-friendly message suitable for display in the UI.
+  /// Use this (or getUserFriendlyErrorMessage) instead of toString().
+  String get userMessage {
+    switch (type) {
+      case CacheErrorType.fetchError:
+        return "Couldn't load the latest data. Pull down to refresh.";
+      case CacheErrorType.storageFull:
+        return 'Your device storage is full. Please free up some space.';
+      case CacheErrorType.corruption:
+      case CacheErrorType.serializationError:
+      case CacheErrorType.deserializationError:
+        return 'Something went wrong loading saved data. Please try refreshing.';
+      case CacheErrorType.storageError:
+        return "Couldn't save data to your device. Please try again.";
+      case CacheErrorType.unknown:
+        return 'Something went wrong. Please try again.';
+    }
+  }
+
   @override
   String toString() => 'CacheError($type): $message';
 }
@@ -104,7 +123,7 @@ class CacheStatistics {
 ///     if (result.hasData) {
 ///       emit(ItemsLoaded(items: result.data!, isStale: result.isStale));
 ///     } else if (result.hasError) {
-///       emit(ItemsError(result.error.toString()));
+///       emit(ItemsError(getUserFriendlyErrorMessage(result.error)));
 ///     }
 ///   }
 /// }

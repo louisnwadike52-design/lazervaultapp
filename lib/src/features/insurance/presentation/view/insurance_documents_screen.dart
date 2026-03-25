@@ -137,7 +137,7 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
                       SizedBox(height: 12.h),
                       _buildDocumentCard(
                         icon: Icons.description,
-                        iconColor: const Color(0xFF8B5CF6),
+                        iconColor: const Color.fromARGB(255, 78, 3, 208),
                         title: 'Terms & Conditions',
                         description:
                             'Full terms and conditions of your policy',
@@ -344,7 +344,7 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
           padding: EdgeInsets.symmetric(vertical: 16.h),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
             ),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [

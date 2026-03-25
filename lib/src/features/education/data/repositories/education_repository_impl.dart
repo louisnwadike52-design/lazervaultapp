@@ -26,20 +26,24 @@ class EducationRepositoryImpl implements EducationRepository {
   @override
   Future<Either<Failure, EducationPurchaseEntity>> purchasePin({
     required String serviceId,
+    required String variationCode,
     required int quantity,
     required String phone,
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String billersCode = '',
   }) async {
     try {
       final result = await remoteDataSource.purchasePin(
         serviceId: serviceId,
+        variationCode: variationCode,
         quantity: quantity,
         phone: phone,
         transactionId: transactionId,
         verificationToken: verificationToken,
         idempotencyKey: idempotencyKey,
+        billersCode: billersCode,
       );
       return Right(result);
     } on GrpcError catch (e) {

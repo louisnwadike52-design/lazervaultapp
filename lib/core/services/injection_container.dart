@@ -30,6 +30,7 @@ import 'package:lazervault/core/offline/mutation_executor.dart';
 import 'package:lazervault/core/offline/mutation.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/invoice_entity.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_proto;
+// KYC RPCs now on AuthServiceClient — kyc.pbgrpc.dart no longer needed
 import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
@@ -109,6 +110,7 @@ import 'package:lazervault/src/features/recipients/data/repositories/recipient_r
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:lazervault/src/features/voice/cubit/voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
@@ -346,6 +348,7 @@ import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard
 import 'package:lazervault/src/features/invoice/data/repositories/invoice_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/invoice_repository.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
+import 'package:lazervault/src/features/invoice/presentation/notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_carousel.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
@@ -443,6 +446,7 @@ import 'package:lazervault/src/features/internet_bill/presentation/cubit/interne
 import 'package:lazervault/src/features/data_bundles/data/datasources/data_bundles_remote_datasource.dart';
 import 'package:lazervault/src/features/data_bundles/data/repositories/data_bundles_repository_impl.dart';
 import 'package:lazervault/src/features/data_bundles/domain/repositories/data_bundles_repository.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/auto_renew_cubit.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_bundles_cubit.dart';
 // End Data Bundles Imports
 
@@ -462,6 +466,10 @@ import 'package:lazervault/src/features/airtime/data/datasources/airtime_remote_
 import 'package:lazervault/src/features/airtime/data/repositories/airtime_repository_impl.dart';
 import 'package:lazervault/src/features/airtime/domain/repositories/airtime_repository.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
+import 'package:lazervault/src/features/airtime_to_cash/data/datasources/airtime_to_cash_remote_datasource.dart';
+import 'package:lazervault/src/features/airtime_to_cash/data/repositories/airtime_to_cash_repository_impl.dart';
+import 'package:lazervault/src/features/airtime_to_cash/domain/repositories/airtime_to_cash_repository.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/cubit/airtime_to_cash_cubit.dart';
 // End Airtime Imports
 
 import 'package:lazervault/src/features/investments/presentation/view/investments_screen.dart';
@@ -504,6 +512,20 @@ import 'package:lazervault/src/features/lifestyle/data/datasources/lifestyle_rem
 import 'package:lazervault/src/features/lifestyle/data/repositories/lifestyle_repository_impl.dart';
 import 'package:lazervault/src/features/lifestyle/domain/repositories/i_lifestyle_repository.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
+
+// Plan My Day Imports
+import 'package:lazervault/src/features/plan_my_day/data/repositories/plan_my_day_repository_impl.dart';
+import 'package:lazervault/src/features/plan_my_day/domain/repositories/i_plan_my_day_repository.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/services/calendar_sync_service.dart';
+
+import 'package:lazervault/src/features/sprayme/data/datasources/sprayme_remote_datasource.dart';
+import 'package:lazervault/src/features/sprayme/data/repositories/sprayme_repository_impl.dart';
+import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
+import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
+import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_room_cubit.dart';
+import 'package:lazervault/src/features/sprayme/services/sprayme_websocket_service.dart';
+import 'package:lazervault/src/features/sprayme/services/sprayme_chat_service.dart';
 
 // Insurance Imports
 import 'package:lazervault/src/features/insurance/data/datasources/insurance_remote_datasource.dart';
@@ -645,8 +667,7 @@ Future<void> init() async {
   // Register Voice Biometrics Service
   serviceLocator.registerLazySingleton<VoiceBiometricsService>(
     () => VoiceBiometricsService(
-      baseUrl: 'http://10.0.2.2:3010', // Android emulator
-      // baseUrl: 'http://localhost:3010', // iOS simulator
+      baseUrl: dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? 'http://10.0.2.2:3010',
       client: serviceLocator<http.Client>(),
     ),
   );
@@ -1052,7 +1073,7 @@ Future<void> init() async {
 
   // ================== Feature: KYC ==================
 
-  // gRPC Data Source (Uses AuthServiceClient via gRPC - NO HTTP)
+  // gRPC Data Source (All KYC RPCs on AuthServiceClient)
   serviceLocator.registerLazySingleton<KYCGrpcDataSource>(
       () => KYCGrpcDataSource(
           authClient: serviceLocator<auth_proto.AuthServiceClient>(),
@@ -1366,7 +1387,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CreditScoreAIService>(
     () => CreditScoreAIService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1474,7 +1495,7 @@ Future<void> init() async {
       dio: Dio(BaseOptions(
         baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011', // Use 10.0.2.2 for Android emulator
         connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 75), // Agent may take 55s (tool calls + OpenAI retries)
         sendTimeout: const Duration(seconds: 30),
         headers: {'Content-Type': 'application/json'},
       )),
@@ -1653,7 +1674,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<CrowdfundReportService>(
     () => CrowdfundReportService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1666,7 +1687,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<GroupAccountReportService>(
     () => GroupAccountReportService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
       getAccessToken: () async {
         final token = await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
@@ -1767,6 +1788,9 @@ Future<void> init() async {
       currentUserId: '', // User ID is extracted from auth token in grpcClient.callOptions
     ),
   );
+
+  // Shared refresh notifier (singleton) — bridges cubit instances across routes
+  serviceLocator.registerLazySingleton(() => InvoiceRefreshNotifier());
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => InvoiceCubit(
@@ -1921,6 +1945,29 @@ Future<void> init() async {
     accountManager: serviceLocator<AccountManager>(),
   ));
 
+  // ================== Feature: Airtime to Cash ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<AirtimeToCashRemoteDataSource>(
+    () => AirtimeToCashRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<AirtimeToCashRepository>(
+    () => AirtimeToCashRepositoryImpl(
+      remoteDataSource: serviceLocator<AirtimeToCashRemoteDataSource>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => AirtimeToCashCubit(
+    repository: serviceLocator<AirtimeToCashRepository>(),
+    secureStorage: serviceLocator<SecureStorageService>(),
+    accountManager: serviceLocator<AccountManager>(),
+  ));
+
   // ================== Feature: Electricity Bill Payment ==================
 
   // Data Sources
@@ -2059,6 +2106,9 @@ Future<void> init() async {
   serviceLocator.registerFactory(() => DataBundlesCubit(
     repository: serviceLocator<DataBundlesRepository>(),
   ));
+  serviceLocator.registerFactory(() => AutoRenewCubit(
+    repository: serviceLocator<DataBundlesRepository>(),
+  ));
 
   // ================== Feature: Subscription Tracker ==================
 
@@ -2191,18 +2241,19 @@ Future<void> init() async {
     () => VoiceSessionCubit(),
   );
 
+  // Voice Chat History Cubit - tracks conversation messages during voice sessions
+  serviceLocator.registerLazySingleton<VoiceChatHistoryCubit>(
+    () => VoiceChatHistoryCubit(),
+  );
+
   // Voice Settings Service and Cubit
-//   serviceLocator.registerLazySingleton<VoiceSettingsService>(
-//     () => VoiceSettingsService()
-//       dotenv.env['VOICE_SETTINGS_URL'] ??
-//           dotenv.env['AUTH_GATEWAY_URL'] ??
-//           'http://localhost:7878', // Falls back to core gateway which proxies to auth-service
-//     ),
-//   );
-// 
-//   serviceLocator.registerFactory<VoiceSettingsCubit>(
-//     () => VoiceSettingsCubit(serviceLocator<VoiceSettingsService>()),
-//   );
+  serviceLocator.registerLazySingleton<VoiceSettingsService>(
+    () => VoiceSettingsService(),
+  );
+
+  serviceLocator.registerFactory<VoiceSettingsCubit>(
+    () => VoiceSettingsCubit(serviceLocator<VoiceSettingsService>()),
+  );
 
   // Voice Enrollment Repository - with real gRPC backend integration
   serviceLocator.registerLazySingleton<VoiceEnrollmentRepository>(
@@ -2249,7 +2300,7 @@ Future<void> init() async {
       grpcClient: serviceLocator<GrpcClient>(),
       httpClient: serviceLocator<http.Client>(),
       secureStorage: serviceLocator<SecureStorageService>(),
-      chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'http://localhost:3011',
+      chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'http://10.0.2.2:3011',
     ),
   );
 
@@ -2420,6 +2471,7 @@ Future<void> init() async {
       repository: serviceLocator<InsuranceRepository>(),
       cacheManager: serviceLocator<SWRCacheManager>(),
       mutationQueue: serviceLocator<MutationQueue>(),
+      localeManager: serviceLocator<LocaleManager>(),
     ),
   );
 
@@ -2504,6 +2556,7 @@ Future<void> init() async {
     () => FinancialAnalyticsRepository(
       grpcClient: serviceLocator<AccountsGrpcClient>(),
       accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
     ),
   );
 
@@ -2534,7 +2587,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<BudgetAIService>(
     () => BudgetAIService(
       dio: serviceLocator<Dio>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
       secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
@@ -2740,7 +2793,11 @@ Future<void> init() async {
   // Data Sources — Python Chat Agent Gateway (existing, for central chatbot)
   serviceLocator.registerLazySingleton<MicroserviceChatDataSource>(
     () => HttpMicroserviceChatDataSource(
-      dio: serviceLocator<Dio>(),
+      dio: Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 75), // Agent may take 55s (tool calls + OpenAI retries)
+        sendTimeout: const Duration(seconds: 30),
+      )),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
     ),
@@ -2833,6 +2890,7 @@ Future<void> init() async {
     () => TransactionHistoryRepositoryGrpc(
       grpcClient: serviceLocator<AccountsGrpcClient>(),
       accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
       storage: serviceLocator<FlutterSecureStorage>(),
     ),
   );
@@ -3132,6 +3190,90 @@ Future<void> init() async {
     () => LifestyleCubit(serviceLocator<ILifestyleRepository>()),
   );
 
+  // ================== Feature: Plan My Day ==================
+  // Day planning, task management, and productivity tracking
+
+  // Repository (lazy singleton — shared HTTP client)
+  serviceLocator.registerLazySingleton<IPlanMyDayRepository>(
+    () => PlanMyDayRepository(
+      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'http://10.0.2.2:8097',
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      accountManager: serviceLocator<AccountManager>(),
+    ),
+  );
+
+  // Calendar Sync Service (lazy singleton — shared calendar sync state)
+  serviceLocator.registerLazySingleton<CalendarSyncService>(
+    () => CalendarSyncService(
+      baseUrl: dotenv.env['PLANNING_GATEWAY_URL'] ?? 'http://10.0.2.2:8097',
+      accountManager: serviceLocator<AccountManager>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Cubit (factory — fresh instance per screen navigation)
+  serviceLocator.registerFactory<PlanMyDayCubit>(
+    () => PlanMyDayCubit(serviceLocator<IPlanMyDayRepository>()),
+  );
+
+  // ================== Feature: SprayMe ==================
+  // TikTok-style money spraying for celebrations
+
+  // WebSocket Service (singleton — shared connection)
+  serviceLocator.registerLazySingleton<SprayMeWebSocketService>(
+    () => SprayMeWebSocketService(),
+  );
+
+  // Data Source (HTTP via Dio to lifestyle-gateway, reuses lifestyle gateway URL)
+  serviceLocator.registerLazySingleton<SprayMeRemoteDataSource>(
+    () {
+      final dio = Dio(BaseOptions(
+        baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? 'http://10.0.2.2:8088',
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+      ));
+
+      final authInterceptor = DioAuthInterceptor(
+        storage: serviceLocator<FlutterSecureStorage>(),
+        dio: dio,
+        localeManager: serviceLocator<LocaleManager>(),
+        accountManager: serviceLocator<AccountManager>(),
+      );
+
+      final grpcHelper = serviceLocator<GrpcCallOptionsHelper>();
+      authInterceptor.onTokenRefreshNeeded = grpcHelper.onTokenRefreshNeeded;
+
+      dio.interceptors.add(authInterceptor);
+
+      return SprayMeRemoteDataSource(dio);
+    },
+  );
+
+  // Repository
+  serviceLocator.registerLazySingleton<ISprayMeRepository>(
+    () => SprayMeRepositoryImpl(serviceLocator<SprayMeRemoteDataSource>()),
+  );
+
+  // Cubit
+  serviceLocator.registerFactory<SprayMeCubit>(
+    () => SprayMeCubit(serviceLocator<ISprayMeRepository>()),
+  );
+
+  // Chat Service (singleton — connects to chat-agent-gateway for AI responses)
+  serviceLocator.registerLazySingleton<SprayMeChatService>(
+    () => SprayMeChatService(
+      storage: serviceLocator<SecureStorageService>(),
+    ),
+  );
+
+  // Room Cubit (factory — fresh per spray room)
+  serviceLocator.registerFactory<SprayRoomCubit>(
+    () => SprayRoomCubit(
+      repository: serviceLocator<ISprayMeRepository>(),
+      wsService: serviceLocator<SprayMeWebSocketService>(),
+    ),
+  );
+
   // ================== Feature: Move Money ==================
 
   // Data Source (gRPC, uses existing BankingServiceClient)
@@ -3180,6 +3322,7 @@ Future<void> init() async {
       secureStorage: serviceLocator<SecureStorageService>(),
       accountsClient: serviceLocator<AccountsGrpcClient>(),
       accountManager: serviceLocator<AccountManager>(),
+      localeManager: serviceLocator<LocaleManager>(),
       currentUserId: '',  // Set at runtime via cubit
     ),
   );

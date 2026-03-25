@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: crypto.proto
-//
-// @dart = 2.12
+// Generated from crypto.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
 
 import 'dart:core' as $core;
 
@@ -15,6 +16,8 @@ import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
+export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 export 'crypto.pbenum.dart';
 
@@ -48,447 +51,438 @@ class CryptoMessage extends $pb.GeneratedMessage {
     $core.Iterable<PricePoint>? priceHistory,
     $core.String? description,
     $core.Iterable<$core.String>? categories,
-    $core.Map<$core.String, $core.String>? links,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>? links,
     $core.double? fullyDilutedValuation,
     $core.double? marketCapChange24h,
     $core.double? marketCapChangePercentage24h,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (symbol != null) {
-      $result.symbol = symbol;
-    }
-    if (name != null) {
-      $result.name = name;
-    }
-    if (image != null) {
-      $result.image = image;
-    }
-    if (currentPrice != null) {
-      $result.currentPrice = currentPrice;
-    }
-    if (marketCap != null) {
-      $result.marketCap = marketCap;
-    }
-    if (marketCapRank != null) {
-      $result.marketCapRank = marketCapRank;
-    }
-    if (totalVolume != null) {
-      $result.totalVolume = totalVolume;
-    }
-    if (high24h != null) {
-      $result.high24h = high24h;
-    }
-    if (low24h != null) {
-      $result.low24h = low24h;
-    }
-    if (priceChange24h != null) {
-      $result.priceChange24h = priceChange24h;
-    }
-    if (priceChangePercentage24h != null) {
-      $result.priceChangePercentage24h = priceChangePercentage24h;
-    }
-    if (priceChangePercentage7d != null) {
-      $result.priceChangePercentage7d = priceChangePercentage7d;
-    }
-    if (priceChangePercentage30d != null) {
-      $result.priceChangePercentage30d = priceChangePercentage30d;
-    }
-    if (priceChangePercentage1y != null) {
-      $result.priceChangePercentage1y = priceChangePercentage1y;
-    }
-    if (circulatingSupply != null) {
-      $result.circulatingSupply = circulatingSupply;
-    }
-    if (totalSupply != null) {
-      $result.totalSupply = totalSupply;
-    }
-    if (maxSupply != null) {
-      $result.maxSupply = maxSupply;
-    }
-    if (ath != null) {
-      $result.ath = ath;
-    }
-    if (athChangePercentage != null) {
-      $result.athChangePercentage = athChangePercentage;
-    }
-    if (athDate != null) {
-      $result.athDate = athDate;
-    }
-    if (atl != null) {
-      $result.atl = atl;
-    }
-    if (atlChangePercentage != null) {
-      $result.atlChangePercentage = atlChangePercentage;
-    }
-    if (atlDate != null) {
-      $result.atlDate = atlDate;
-    }
-    if (lastUpdated != null) {
-      $result.lastUpdated = lastUpdated;
-    }
-    if (priceHistory != null) {
-      $result.priceHistory.addAll(priceHistory);
-    }
-    if (description != null) {
-      $result.description = description;
-    }
-    if (categories != null) {
-      $result.categories.addAll(categories);
-    }
-    if (links != null) {
-      $result.links.addAll(links);
-    }
-    if (fullyDilutedValuation != null) {
-      $result.fullyDilutedValuation = fullyDilutedValuation;
-    }
-    if (marketCapChange24h != null) {
-      $result.marketCapChange24h = marketCapChange24h;
-    }
-    if (marketCapChangePercentage24h != null) {
-      $result.marketCapChangePercentage24h = marketCapChangePercentage24h;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (symbol != null) result.symbol = symbol;
+    if (name != null) result.name = name;
+    if (image != null) result.image = image;
+    if (currentPrice != null) result.currentPrice = currentPrice;
+    if (marketCap != null) result.marketCap = marketCap;
+    if (marketCapRank != null) result.marketCapRank = marketCapRank;
+    if (totalVolume != null) result.totalVolume = totalVolume;
+    if (high24h != null) result.high24h = high24h;
+    if (low24h != null) result.low24h = low24h;
+    if (priceChange24h != null) result.priceChange24h = priceChange24h;
+    if (priceChangePercentage24h != null)
+      result.priceChangePercentage24h = priceChangePercentage24h;
+    if (priceChangePercentage7d != null)
+      result.priceChangePercentage7d = priceChangePercentage7d;
+    if (priceChangePercentage30d != null)
+      result.priceChangePercentage30d = priceChangePercentage30d;
+    if (priceChangePercentage1y != null)
+      result.priceChangePercentage1y = priceChangePercentage1y;
+    if (circulatingSupply != null) result.circulatingSupply = circulatingSupply;
+    if (totalSupply != null) result.totalSupply = totalSupply;
+    if (maxSupply != null) result.maxSupply = maxSupply;
+    if (ath != null) result.ath = ath;
+    if (athChangePercentage != null)
+      result.athChangePercentage = athChangePercentage;
+    if (athDate != null) result.athDate = athDate;
+    if (atl != null) result.atl = atl;
+    if (atlChangePercentage != null)
+      result.atlChangePercentage = atlChangePercentage;
+    if (atlDate != null) result.atlDate = atlDate;
+    if (lastUpdated != null) result.lastUpdated = lastUpdated;
+    if (priceHistory != null) result.priceHistory.addAll(priceHistory);
+    if (description != null) result.description = description;
+    if (categories != null) result.categories.addAll(categories);
+    if (links != null) result.links.addEntries(links);
+    if (fullyDilutedValuation != null)
+      result.fullyDilutedValuation = fullyDilutedValuation;
+    if (marketCapChange24h != null)
+      result.marketCapChange24h = marketCapChange24h;
+    if (marketCapChangePercentage24h != null)
+      result.marketCapChangePercentage24h = marketCapChangePercentage24h;
+    return result;
   }
-  CryptoMessage._() : super();
-  factory CryptoMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CryptoMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CryptoMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  CryptoMessage._();
+
+  factory CryptoMessage.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CryptoMessage.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CryptoMessage',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'symbol')
     ..aOS(3, _omitFieldNames ? '' : 'name')
     ..aOS(4, _omitFieldNames ? '' : 'image')
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'currentPrice', $pb.PbFieldType.OD)
-    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'marketCap', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'marketCapRank', $pb.PbFieldType.O3)
-    ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'totalVolume', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.double>(9, _omitFieldNames ? '' : 'high24h', $pb.PbFieldType.OD, protoName: 'high_24h')
-    ..a<$core.double>(10, _omitFieldNames ? '' : 'low24h', $pb.PbFieldType.OD, protoName: 'low_24h')
-    ..a<$core.double>(11, _omitFieldNames ? '' : 'priceChange24h', $pb.PbFieldType.OD, protoName: 'price_change_24h')
-    ..a<$core.double>(12, _omitFieldNames ? '' : 'priceChangePercentage24h', $pb.PbFieldType.OD, protoName: 'price_change_percentage_24h')
-    ..a<$core.double>(13, _omitFieldNames ? '' : 'priceChangePercentage7d', $pb.PbFieldType.OD, protoName: 'price_change_percentage_7d')
-    ..a<$core.double>(14, _omitFieldNames ? '' : 'priceChangePercentage30d', $pb.PbFieldType.OD, protoName: 'price_change_percentage_30d')
-    ..a<$core.double>(15, _omitFieldNames ? '' : 'priceChangePercentage1y', $pb.PbFieldType.OD, protoName: 'price_change_percentage_1y')
-    ..a<$core.double>(16, _omitFieldNames ? '' : 'circulatingSupply', $pb.PbFieldType.OD)
-    ..a<$core.double>(17, _omitFieldNames ? '' : 'totalSupply', $pb.PbFieldType.OD)
-    ..a<$core.double>(18, _omitFieldNames ? '' : 'maxSupply', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        5, _omitFieldNames ? '' : 'currentPrice', $pb.PbFieldType.OD)
+    ..a<$fixnum.Int64>(
+        6, _omitFieldNames ? '' : 'marketCap', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(
+        7, _omitFieldNames ? '' : 'marketCapRank', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(
+        8, _omitFieldNames ? '' : 'totalVolume', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'high24h', $pb.PbFieldType.OD,
+        protoName: 'high_24h')
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'low24h', $pb.PbFieldType.OD,
+        protoName: 'low_24h')
+    ..a<$core.double>(
+        11, _omitFieldNames ? '' : 'priceChange24h', $pb.PbFieldType.OD,
+        protoName: 'price_change_24h')
+    ..a<$core.double>(12, _omitFieldNames ? '' : 'priceChangePercentage24h',
+        $pb.PbFieldType.OD,
+        protoName: 'price_change_percentage_24h')
+    ..a<$core.double>(13, _omitFieldNames ? '' : 'priceChangePercentage7d',
+        $pb.PbFieldType.OD,
+        protoName: 'price_change_percentage_7d')
+    ..a<$core.double>(14, _omitFieldNames ? '' : 'priceChangePercentage30d',
+        $pb.PbFieldType.OD,
+        protoName: 'price_change_percentage_30d')
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'priceChangePercentage1y',
+        $pb.PbFieldType.OD,
+        protoName: 'price_change_percentage_1y')
+    ..a<$core.double>(
+        16, _omitFieldNames ? '' : 'circulatingSupply', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        17, _omitFieldNames ? '' : 'totalSupply', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        18, _omitFieldNames ? '' : 'maxSupply', $pb.PbFieldType.OD)
     ..a<$core.double>(19, _omitFieldNames ? '' : 'ath', $pb.PbFieldType.OD)
-    ..a<$core.double>(20, _omitFieldNames ? '' : 'athChangePercentage', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(21, _omitFieldNames ? '' : 'athDate', subBuilder: $1.Timestamp.create)
+    ..a<$core.double>(
+        20, _omitFieldNames ? '' : 'athChangePercentage', $pb.PbFieldType.OD)
+    ..aOM<$1.Timestamp>(21, _omitFieldNames ? '' : 'athDate',
+        subBuilder: $1.Timestamp.create)
     ..a<$core.double>(22, _omitFieldNames ? '' : 'atl', $pb.PbFieldType.OD)
-    ..a<$core.double>(23, _omitFieldNames ? '' : 'atlChangePercentage', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(24, _omitFieldNames ? '' : 'atlDate', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(25, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
-    ..pc<PricePoint>(26, _omitFieldNames ? '' : 'priceHistory', $pb.PbFieldType.PM, subBuilder: PricePoint.create)
+    ..a<$core.double>(
+        23, _omitFieldNames ? '' : 'atlChangePercentage', $pb.PbFieldType.OD)
+    ..aOM<$1.Timestamp>(24, _omitFieldNames ? '' : 'atlDate',
+        subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(25, _omitFieldNames ? '' : 'lastUpdated',
+        subBuilder: $1.Timestamp.create)
+    ..pc<PricePoint>(
+        26, _omitFieldNames ? '' : 'priceHistory', $pb.PbFieldType.PM,
+        subBuilder: PricePoint.create)
     ..aOS(27, _omitFieldNames ? '' : 'description')
     ..pPS(28, _omitFieldNames ? '' : 'categories')
-    ..m<$core.String, $core.String>(29, _omitFieldNames ? '' : 'links', entryClassName: 'CryptoMessage.LinksEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
-    ..a<$core.double>(30, _omitFieldNames ? '' : 'fullyDilutedValuation', $pb.PbFieldType.OD)
-    ..a<$core.double>(31, _omitFieldNames ? '' : 'marketCapChange24h', $pb.PbFieldType.OD, protoName: 'market_cap_change_24h')
-    ..a<$core.double>(32, _omitFieldNames ? '' : 'marketCapChangePercentage24h', $pb.PbFieldType.OD, protoName: 'market_cap_change_percentage_24h')
-    ..hasRequiredFields = false
-  ;
+    ..m<$core.String, $core.String>(29, _omitFieldNames ? '' : 'links',
+        entryClassName: 'CryptoMessage.LinksEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('pb'))
+    ..a<$core.double>(
+        30, _omitFieldNames ? '' : 'fullyDilutedValuation', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        31, _omitFieldNames ? '' : 'marketCapChange24h', $pb.PbFieldType.OD,
+        protoName: 'market_cap_change_24h')
+    ..a<$core.double>(32, _omitFieldNames ? '' : 'marketCapChangePercentage24h',
+        $pb.PbFieldType.OD,
+        protoName: 'market_cap_change_percentage_24h')
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   CryptoMessage clone() => CryptoMessage()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CryptoMessage copyWith(void Function(CryptoMessage) updates) => super.copyWith((message) => updates(message as CryptoMessage)) as CryptoMessage;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CryptoMessage copyWith(void Function(CryptoMessage) updates) =>
+      super.copyWith((message) => updates(message as CryptoMessage))
+          as CryptoMessage;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CryptoMessage create() => CryptoMessage._();
+  @$core.override
   CryptoMessage createEmptyInstance() => create();
-  static $pb.PbList<CryptoMessage> createRepeated() => $pb.PbList<CryptoMessage>();
+  static $pb.PbList<CryptoMessage> createRepeated() =>
+      $pb.PbList<CryptoMessage>();
   @$core.pragma('dart2js:noInline')
-  static CryptoMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CryptoMessage>(create);
+  static CryptoMessage getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CryptoMessage>(create);
   static CryptoMessage? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => clearField(1);
+  void clearId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get symbol => $_getSZ(1);
   @$pb.TagNumber(2)
-  set symbol($core.String v) { $_setString(1, v); }
+  set symbol($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasSymbol() => $_has(1);
   @$pb.TagNumber(2)
-  void clearSymbol() => clearField(2);
+  void clearSymbol() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get name => $_getSZ(2);
   @$pb.TagNumber(3)
-  set name($core.String v) { $_setString(2, v); }
+  set name($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasName() => $_has(2);
   @$pb.TagNumber(3)
-  void clearName() => clearField(3);
+  void clearName() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get image => $_getSZ(3);
   @$pb.TagNumber(4)
-  set image($core.String v) { $_setString(3, v); }
+  set image($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasImage() => $_has(3);
   @$pb.TagNumber(4)
-  void clearImage() => clearField(4);
+  void clearImage() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get currentPrice => $_getN(4);
   @$pb.TagNumber(5)
-  set currentPrice($core.double v) { $_setDouble(4, v); }
+  set currentPrice($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasCurrentPrice() => $_has(4);
   @$pb.TagNumber(5)
-  void clearCurrentPrice() => clearField(5);
+  void clearCurrentPrice() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $fixnum.Int64 get marketCap => $_getI64(5);
   @$pb.TagNumber(6)
-  set marketCap($fixnum.Int64 v) { $_setInt64(5, v); }
+  set marketCap($fixnum.Int64 value) => $_setInt64(5, value);
   @$pb.TagNumber(6)
   $core.bool hasMarketCap() => $_has(5);
   @$pb.TagNumber(6)
-  void clearMarketCap() => clearField(6);
+  void clearMarketCap() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.int get marketCapRank => $_getIZ(6);
   @$pb.TagNumber(7)
-  set marketCapRank($core.int v) { $_setSignedInt32(6, v); }
+  set marketCapRank($core.int value) => $_setSignedInt32(6, value);
   @$pb.TagNumber(7)
   $core.bool hasMarketCapRank() => $_has(6);
   @$pb.TagNumber(7)
-  void clearMarketCapRank() => clearField(7);
+  void clearMarketCapRank() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $fixnum.Int64 get totalVolume => $_getI64(7);
   @$pb.TagNumber(8)
-  set totalVolume($fixnum.Int64 v) { $_setInt64(7, v); }
+  set totalVolume($fixnum.Int64 value) => $_setInt64(7, value);
   @$pb.TagNumber(8)
   $core.bool hasTotalVolume() => $_has(7);
   @$pb.TagNumber(8)
-  void clearTotalVolume() => clearField(8);
+  void clearTotalVolume() => $_clearField(8);
 
   @$pb.TagNumber(9)
   $core.double get high24h => $_getN(8);
   @$pb.TagNumber(9)
-  set high24h($core.double v) { $_setDouble(8, v); }
+  set high24h($core.double value) => $_setDouble(8, value);
   @$pb.TagNumber(9)
   $core.bool hasHigh24h() => $_has(8);
   @$pb.TagNumber(9)
-  void clearHigh24h() => clearField(9);
+  void clearHigh24h() => $_clearField(9);
 
   @$pb.TagNumber(10)
   $core.double get low24h => $_getN(9);
   @$pb.TagNumber(10)
-  set low24h($core.double v) { $_setDouble(9, v); }
+  set low24h($core.double value) => $_setDouble(9, value);
   @$pb.TagNumber(10)
   $core.bool hasLow24h() => $_has(9);
   @$pb.TagNumber(10)
-  void clearLow24h() => clearField(10);
+  void clearLow24h() => $_clearField(10);
 
   @$pb.TagNumber(11)
   $core.double get priceChange24h => $_getN(10);
   @$pb.TagNumber(11)
-  set priceChange24h($core.double v) { $_setDouble(10, v); }
+  set priceChange24h($core.double value) => $_setDouble(10, value);
   @$pb.TagNumber(11)
   $core.bool hasPriceChange24h() => $_has(10);
   @$pb.TagNumber(11)
-  void clearPriceChange24h() => clearField(11);
+  void clearPriceChange24h() => $_clearField(11);
 
   @$pb.TagNumber(12)
   $core.double get priceChangePercentage24h => $_getN(11);
   @$pb.TagNumber(12)
-  set priceChangePercentage24h($core.double v) { $_setDouble(11, v); }
+  set priceChangePercentage24h($core.double value) => $_setDouble(11, value);
   @$pb.TagNumber(12)
   $core.bool hasPriceChangePercentage24h() => $_has(11);
   @$pb.TagNumber(12)
-  void clearPriceChangePercentage24h() => clearField(12);
+  void clearPriceChangePercentage24h() => $_clearField(12);
 
   @$pb.TagNumber(13)
   $core.double get priceChangePercentage7d => $_getN(12);
   @$pb.TagNumber(13)
-  set priceChangePercentage7d($core.double v) { $_setDouble(12, v); }
+  set priceChangePercentage7d($core.double value) => $_setDouble(12, value);
   @$pb.TagNumber(13)
   $core.bool hasPriceChangePercentage7d() => $_has(12);
   @$pb.TagNumber(13)
-  void clearPriceChangePercentage7d() => clearField(13);
+  void clearPriceChangePercentage7d() => $_clearField(13);
 
   @$pb.TagNumber(14)
   $core.double get priceChangePercentage30d => $_getN(13);
   @$pb.TagNumber(14)
-  set priceChangePercentage30d($core.double v) { $_setDouble(13, v); }
+  set priceChangePercentage30d($core.double value) => $_setDouble(13, value);
   @$pb.TagNumber(14)
   $core.bool hasPriceChangePercentage30d() => $_has(13);
   @$pb.TagNumber(14)
-  void clearPriceChangePercentage30d() => clearField(14);
+  void clearPriceChangePercentage30d() => $_clearField(14);
 
   @$pb.TagNumber(15)
   $core.double get priceChangePercentage1y => $_getN(14);
   @$pb.TagNumber(15)
-  set priceChangePercentage1y($core.double v) { $_setDouble(14, v); }
+  set priceChangePercentage1y($core.double value) => $_setDouble(14, value);
   @$pb.TagNumber(15)
   $core.bool hasPriceChangePercentage1y() => $_has(14);
   @$pb.TagNumber(15)
-  void clearPriceChangePercentage1y() => clearField(15);
+  void clearPriceChangePercentage1y() => $_clearField(15);
 
   @$pb.TagNumber(16)
   $core.double get circulatingSupply => $_getN(15);
   @$pb.TagNumber(16)
-  set circulatingSupply($core.double v) { $_setDouble(15, v); }
+  set circulatingSupply($core.double value) => $_setDouble(15, value);
   @$pb.TagNumber(16)
   $core.bool hasCirculatingSupply() => $_has(15);
   @$pb.TagNumber(16)
-  void clearCirculatingSupply() => clearField(16);
+  void clearCirculatingSupply() => $_clearField(16);
 
   @$pb.TagNumber(17)
   $core.double get totalSupply => $_getN(16);
   @$pb.TagNumber(17)
-  set totalSupply($core.double v) { $_setDouble(16, v); }
+  set totalSupply($core.double value) => $_setDouble(16, value);
   @$pb.TagNumber(17)
   $core.bool hasTotalSupply() => $_has(16);
   @$pb.TagNumber(17)
-  void clearTotalSupply() => clearField(17);
+  void clearTotalSupply() => $_clearField(17);
 
   @$pb.TagNumber(18)
   $core.double get maxSupply => $_getN(17);
   @$pb.TagNumber(18)
-  set maxSupply($core.double v) { $_setDouble(17, v); }
+  set maxSupply($core.double value) => $_setDouble(17, value);
   @$pb.TagNumber(18)
   $core.bool hasMaxSupply() => $_has(17);
   @$pb.TagNumber(18)
-  void clearMaxSupply() => clearField(18);
+  void clearMaxSupply() => $_clearField(18);
 
   @$pb.TagNumber(19)
   $core.double get ath => $_getN(18);
   @$pb.TagNumber(19)
-  set ath($core.double v) { $_setDouble(18, v); }
+  set ath($core.double value) => $_setDouble(18, value);
   @$pb.TagNumber(19)
   $core.bool hasAth() => $_has(18);
   @$pb.TagNumber(19)
-  void clearAth() => clearField(19);
+  void clearAth() => $_clearField(19);
 
   @$pb.TagNumber(20)
   $core.double get athChangePercentage => $_getN(19);
   @$pb.TagNumber(20)
-  set athChangePercentage($core.double v) { $_setDouble(19, v); }
+  set athChangePercentage($core.double value) => $_setDouble(19, value);
   @$pb.TagNumber(20)
   $core.bool hasAthChangePercentage() => $_has(19);
   @$pb.TagNumber(20)
-  void clearAthChangePercentage() => clearField(20);
+  void clearAthChangePercentage() => $_clearField(20);
 
   @$pb.TagNumber(21)
   $1.Timestamp get athDate => $_getN(20);
   @$pb.TagNumber(21)
-  set athDate($1.Timestamp v) { setField(21, v); }
+  set athDate($1.Timestamp value) => $_setField(21, value);
   @$pb.TagNumber(21)
   $core.bool hasAthDate() => $_has(20);
   @$pb.TagNumber(21)
-  void clearAthDate() => clearField(21);
+  void clearAthDate() => $_clearField(21);
   @$pb.TagNumber(21)
   $1.Timestamp ensureAthDate() => $_ensure(20);
 
   @$pb.TagNumber(22)
   $core.double get atl => $_getN(21);
   @$pb.TagNumber(22)
-  set atl($core.double v) { $_setDouble(21, v); }
+  set atl($core.double value) => $_setDouble(21, value);
   @$pb.TagNumber(22)
   $core.bool hasAtl() => $_has(21);
   @$pb.TagNumber(22)
-  void clearAtl() => clearField(22);
+  void clearAtl() => $_clearField(22);
 
   @$pb.TagNumber(23)
   $core.double get atlChangePercentage => $_getN(22);
   @$pb.TagNumber(23)
-  set atlChangePercentage($core.double v) { $_setDouble(22, v); }
+  set atlChangePercentage($core.double value) => $_setDouble(22, value);
   @$pb.TagNumber(23)
   $core.bool hasAtlChangePercentage() => $_has(22);
   @$pb.TagNumber(23)
-  void clearAtlChangePercentage() => clearField(23);
+  void clearAtlChangePercentage() => $_clearField(23);
 
   @$pb.TagNumber(24)
   $1.Timestamp get atlDate => $_getN(23);
   @$pb.TagNumber(24)
-  set atlDate($1.Timestamp v) { setField(24, v); }
+  set atlDate($1.Timestamp value) => $_setField(24, value);
   @$pb.TagNumber(24)
   $core.bool hasAtlDate() => $_has(23);
   @$pb.TagNumber(24)
-  void clearAtlDate() => clearField(24);
+  void clearAtlDate() => $_clearField(24);
   @$pb.TagNumber(24)
   $1.Timestamp ensureAtlDate() => $_ensure(23);
 
   @$pb.TagNumber(25)
   $1.Timestamp get lastUpdated => $_getN(24);
   @$pb.TagNumber(25)
-  set lastUpdated($1.Timestamp v) { setField(25, v); }
+  set lastUpdated($1.Timestamp value) => $_setField(25, value);
   @$pb.TagNumber(25)
   $core.bool hasLastUpdated() => $_has(24);
   @$pb.TagNumber(25)
-  void clearLastUpdated() => clearField(25);
+  void clearLastUpdated() => $_clearField(25);
   @$pb.TagNumber(25)
   $1.Timestamp ensureLastUpdated() => $_ensure(24);
 
   @$pb.TagNumber(26)
-  $core.List<PricePoint> get priceHistory => $_getList(25);
+  $pb.PbList<PricePoint> get priceHistory => $_getList(25);
 
   /// Additional fields for detailed view
   @$pb.TagNumber(27)
   $core.String get description => $_getSZ(26);
   @$pb.TagNumber(27)
-  set description($core.String v) { $_setString(26, v); }
+  set description($core.String value) => $_setString(26, value);
   @$pb.TagNumber(27)
   $core.bool hasDescription() => $_has(26);
   @$pb.TagNumber(27)
-  void clearDescription() => clearField(27);
+  void clearDescription() => $_clearField(27);
 
   @$pb.TagNumber(28)
-  $core.List<$core.String> get categories => $_getList(27);
+  $pb.PbList<$core.String> get categories => $_getList(27);
 
   @$pb.TagNumber(29)
-  $core.Map<$core.String, $core.String> get links => $_getMap(28);
+  $pb.PbMap<$core.String, $core.String> get links => $_getMap(28);
 
   @$pb.TagNumber(30)
   $core.double get fullyDilutedValuation => $_getN(29);
   @$pb.TagNumber(30)
-  set fullyDilutedValuation($core.double v) { $_setDouble(29, v); }
+  set fullyDilutedValuation($core.double value) => $_setDouble(29, value);
   @$pb.TagNumber(30)
   $core.bool hasFullyDilutedValuation() => $_has(29);
   @$pb.TagNumber(30)
-  void clearFullyDilutedValuation() => clearField(30);
+  void clearFullyDilutedValuation() => $_clearField(30);
 
   @$pb.TagNumber(31)
   $core.double get marketCapChange24h => $_getN(30);
   @$pb.TagNumber(31)
-  set marketCapChange24h($core.double v) { $_setDouble(30, v); }
+  set marketCapChange24h($core.double value) => $_setDouble(30, value);
   @$pb.TagNumber(31)
   $core.bool hasMarketCapChange24h() => $_has(30);
   @$pb.TagNumber(31)
-  void clearMarketCapChange24h() => clearField(31);
+  void clearMarketCapChange24h() => $_clearField(31);
 
   @$pb.TagNumber(32)
   $core.double get marketCapChangePercentage24h => $_getN(31);
   @$pb.TagNumber(32)
-  set marketCapChangePercentage24h($core.double v) { $_setDouble(31, v); }
+  set marketCapChangePercentage24h($core.double value) =>
+      $_setDouble(31, value);
   @$pb.TagNumber(32)
   $core.bool hasMarketCapChangePercentage24h() => $_has(31);
   @$pb.TagNumber(32)
-  void clearMarketCapChangePercentage24h() => clearField(32);
+  void clearMarketCapChangePercentage24h() => $_clearField(32);
 }
 
 class PricePoint extends $pb.GeneratedMessage {
@@ -502,39 +496,33 @@ class PricePoint extends $pb.GeneratedMessage {
     $core.double? low,
     $core.double? close,
   }) {
-    final $result = create();
-    if (timestamp != null) {
-      $result.timestamp = timestamp;
-    }
-    if (price != null) {
-      $result.price = price;
-    }
-    if (volume != null) {
-      $result.volume = volume;
-    }
-    if (marketCap != null) {
-      $result.marketCap = marketCap;
-    }
-    if (open != null) {
-      $result.open = open;
-    }
-    if (high != null) {
-      $result.high = high;
-    }
-    if (low != null) {
-      $result.low = low;
-    }
-    if (close != null) {
-      $result.close = close;
-    }
-    return $result;
+    final result = create();
+    if (timestamp != null) result.timestamp = timestamp;
+    if (price != null) result.price = price;
+    if (volume != null) result.volume = volume;
+    if (marketCap != null) result.marketCap = marketCap;
+    if (open != null) result.open = open;
+    if (high != null) result.high = high;
+    if (low != null) result.low = low;
+    if (close != null) result.close = close;
+    return result;
   }
-  PricePoint._() : super();
-  factory PricePoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PricePoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PricePoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
+  PricePoint._();
+
+  factory PricePoint.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PricePoint.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PricePoint',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOM<$1.Timestamp>(1, _omitFieldNames ? '' : 'timestamp',
+        subBuilder: $1.Timestamp.create)
     ..a<$core.double>(2, _omitFieldNames ? '' : 'price', $pb.PbFieldType.OD)
     ..a<$core.double>(3, _omitFieldNames ? '' : 'volume', $pb.PbFieldType.OD)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'marketCap', $pb.PbFieldType.OD)
@@ -542,103 +530,100 @@ class PricePoint extends $pb.GeneratedMessage {
     ..a<$core.double>(6, _omitFieldNames ? '' : 'high', $pb.PbFieldType.OD)
     ..a<$core.double>(7, _omitFieldNames ? '' : 'low', $pb.PbFieldType.OD)
     ..a<$core.double>(8, _omitFieldNames ? '' : 'close', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   PricePoint clone() => PricePoint()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  PricePoint copyWith(void Function(PricePoint) updates) => super.copyWith((message) => updates(message as PricePoint)) as PricePoint;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PricePoint copyWith(void Function(PricePoint) updates) =>
+      super.copyWith((message) => updates(message as PricePoint)) as PricePoint;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static PricePoint create() => PricePoint._();
+  @$core.override
   PricePoint createEmptyInstance() => create();
   static $pb.PbList<PricePoint> createRepeated() => $pb.PbList<PricePoint>();
   @$core.pragma('dart2js:noInline')
-  static PricePoint getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PricePoint>(create);
+  static PricePoint getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PricePoint>(create);
   static PricePoint? _defaultInstance;
 
   @$pb.TagNumber(1)
   $1.Timestamp get timestamp => $_getN(0);
   @$pb.TagNumber(1)
-  set timestamp($1.Timestamp v) { setField(1, v); }
+  set timestamp($1.Timestamp value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasTimestamp() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTimestamp() => clearField(1);
+  void clearTimestamp() => $_clearField(1);
   @$pb.TagNumber(1)
   $1.Timestamp ensureTimestamp() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get price => $_getN(1);
   @$pb.TagNumber(2)
-  set price($core.double v) { $_setDouble(1, v); }
+  set price($core.double value) => $_setDouble(1, value);
   @$pb.TagNumber(2)
   $core.bool hasPrice() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPrice() => clearField(2);
+  void clearPrice() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get volume => $_getN(2);
   @$pb.TagNumber(3)
-  set volume($core.double v) { $_setDouble(2, v); }
+  set volume($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasVolume() => $_has(2);
   @$pb.TagNumber(3)
-  void clearVolume() => clearField(3);
+  void clearVolume() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get marketCap => $_getN(3);
   @$pb.TagNumber(4)
-  set marketCap($core.double v) { $_setDouble(3, v); }
+  set marketCap($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasMarketCap() => $_has(3);
   @$pb.TagNumber(4)
-  void clearMarketCap() => clearField(4);
+  void clearMarketCap() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get open => $_getN(4);
   @$pb.TagNumber(5)
-  set open($core.double v) { $_setDouble(4, v); }
+  set open($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasOpen() => $_has(4);
   @$pb.TagNumber(5)
-  void clearOpen() => clearField(5);
+  void clearOpen() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.double get high => $_getN(5);
   @$pb.TagNumber(6)
-  set high($core.double v) { $_setDouble(5, v); }
+  set high($core.double value) => $_setDouble(5, value);
   @$pb.TagNumber(6)
   $core.bool hasHigh() => $_has(5);
   @$pb.TagNumber(6)
-  void clearHigh() => clearField(6);
+  void clearHigh() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.double get low => $_getN(6);
   @$pb.TagNumber(7)
-  set low($core.double v) { $_setDouble(6, v); }
+  set low($core.double value) => $_setDouble(6, value);
   @$pb.TagNumber(7)
   $core.bool hasLow() => $_has(6);
   @$pb.TagNumber(7)
-  void clearLow() => clearField(7);
+  void clearLow() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $core.double get close => $_getN(7);
   @$pb.TagNumber(8)
-  set close($core.double v) { $_setDouble(7, v); }
+  set close($core.double value) => $_setDouble(7, value);
   @$pb.TagNumber(8)
   $core.bool hasClose() => $_has(7);
   @$pb.TagNumber(8)
-  void clearClose() => clearField(8);
+  void clearClose() => $_clearField(8);
 }
 
 /// Get Cryptos
@@ -651,109 +636,105 @@ class GetCryptosRequest extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? ids,
     $core.String? category,
   }) {
-    final $result = create();
-    if (page != null) {
-      $result.page = page;
-    }
-    if (perPage != null) {
-      $result.perPage = perPage;
-    }
-    if (vsCurrency != null) {
-      $result.vsCurrency = vsCurrency;
-    }
-    if (order != null) {
-      $result.order = order;
-    }
-    if (ids != null) {
-      $result.ids.addAll(ids);
-    }
-    if (category != null) {
-      $result.category = category;
-    }
-    return $result;
+    final result = create();
+    if (page != null) result.page = page;
+    if (perPage != null) result.perPage = perPage;
+    if (vsCurrency != null) result.vsCurrency = vsCurrency;
+    if (order != null) result.order = order;
+    if (ids != null) result.ids.addAll(ids);
+    if (category != null) result.category = category;
+    return result;
   }
-  GetCryptosRequest._() : super();
-  factory GetCryptosRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptosRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptosRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetCryptosRequest._();
+
+  factory GetCryptosRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptosRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptosRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'vsCurrency')
     ..aOS(4, _omitFieldNames ? '' : 'order')
     ..pPS(5, _omitFieldNames ? '' : 'ids')
     ..aOS(6, _omitFieldNames ? '' : 'category')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   GetCryptosRequest clone() => GetCryptosRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptosRequest copyWith(void Function(GetCryptosRequest) updates) => super.copyWith((message) => updates(message as GetCryptosRequest)) as GetCryptosRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptosRequest copyWith(void Function(GetCryptosRequest) updates) =>
+      super.copyWith((message) => updates(message as GetCryptosRequest))
+          as GetCryptosRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetCryptosRequest create() => GetCryptosRequest._();
+  @$core.override
   GetCryptosRequest createEmptyInstance() => create();
-  static $pb.PbList<GetCryptosRequest> createRepeated() => $pb.PbList<GetCryptosRequest>();
+  static $pb.PbList<GetCryptosRequest> createRepeated() =>
+      $pb.PbList<GetCryptosRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptosRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptosRequest>(create);
+  static GetCryptosRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptosRequest>(create);
   static GetCryptosRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.int get page => $_getIZ(0);
   @$pb.TagNumber(1)
-  set page($core.int v) { $_setSignedInt32(0, v); }
+  set page($core.int value) => $_setSignedInt32(0, value);
   @$pb.TagNumber(1)
   $core.bool hasPage() => $_has(0);
   @$pb.TagNumber(1)
-  void clearPage() => clearField(1);
+  void clearPage() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.int get perPage => $_getIZ(1);
   @$pb.TagNumber(2)
-  set perPage($core.int v) { $_setSignedInt32(1, v); }
+  set perPage($core.int value) => $_setSignedInt32(1, value);
   @$pb.TagNumber(2)
   $core.bool hasPerPage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPerPage() => clearField(2);
+  void clearPerPage() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get vsCurrency => $_getSZ(2);
   @$pb.TagNumber(3)
-  set vsCurrency($core.String v) { $_setString(2, v); }
+  set vsCurrency($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasVsCurrency() => $_has(2);
   @$pb.TagNumber(3)
-  void clearVsCurrency() => clearField(3);
+  void clearVsCurrency() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get order => $_getSZ(3);
   @$pb.TagNumber(4)
-  set order($core.String v) { $_setString(3, v); }
+  set order($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasOrder() => $_has(3);
   @$pb.TagNumber(4)
-  void clearOrder() => clearField(4);
+  void clearOrder() => $_clearField(4);
 
   @$pb.TagNumber(5)
-  $core.List<$core.String> get ids => $_getList(4);
+  $pb.PbList<$core.String> get ids => $_getList(4);
 
   @$pb.TagNumber(6)
   $core.String get category => $_getSZ(5);
   @$pb.TagNumber(6)
-  set category($core.String v) { $_setString(5, v); }
+  set category($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasCategory() => $_has(5);
   @$pb.TagNumber(6)
-  void clearCategory() => clearField(6);
+  void clearCategory() => $_clearField(6);
 }
 
 class GetCryptosResponse extends $pb.GeneratedMessage {
@@ -761,57 +742,63 @@ class GetCryptosResponse extends $pb.GeneratedMessage {
     $core.Iterable<CryptoMessage>? cryptos,
     CryptoPaginationInfo? pagination,
   }) {
-    final $result = create();
-    if (cryptos != null) {
-      $result.cryptos.addAll(cryptos);
-    }
-    if (pagination != null) {
-      $result.pagination = pagination;
-    }
-    return $result;
+    final result = create();
+    if (cryptos != null) result.cryptos.addAll(cryptos);
+    if (pagination != null) result.pagination = pagination;
+    return result;
   }
-  GetCryptosResponse._() : super();
-  factory GetCryptosResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptosResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptosResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CryptoMessage>(1, _omitFieldNames ? '' : 'cryptos', $pb.PbFieldType.PM, subBuilder: CryptoMessage.create)
-    ..aOM<CryptoPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: CryptoPaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
+  GetCryptosResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  factory GetCryptosResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptosResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptosResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CryptoMessage>(1, _omitFieldNames ? '' : 'cryptos', $pb.PbFieldType.PM,
+        subBuilder: CryptoMessage.create)
+    ..aOM<CryptoPaginationInfo>(2, _omitFieldNames ? '' : 'pagination',
+        subBuilder: CryptoPaginationInfo.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   GetCryptosResponse clone() => GetCryptosResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptosResponse copyWith(void Function(GetCryptosResponse) updates) => super.copyWith((message) => updates(message as GetCryptosResponse)) as GetCryptosResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptosResponse copyWith(void Function(GetCryptosResponse) updates) =>
+      super.copyWith((message) => updates(message as GetCryptosResponse))
+          as GetCryptosResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetCryptosResponse create() => GetCryptosResponse._();
+  @$core.override
   GetCryptosResponse createEmptyInstance() => create();
-  static $pb.PbList<GetCryptosResponse> createRepeated() => $pb.PbList<GetCryptosResponse>();
+  static $pb.PbList<GetCryptosResponse> createRepeated() =>
+      $pb.PbList<GetCryptosResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptosResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptosResponse>(create);
+  static GetCryptosResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptosResponse>(create);
   static GetCryptosResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<CryptoMessage> get cryptos => $_getList(0);
+  $pb.PbList<CryptoMessage> get cryptos => $_getList(0);
 
   @$pb.TagNumber(2)
   CryptoPaginationInfo get pagination => $_getN(1);
   @$pb.TagNumber(2)
-  set pagination(CryptoPaginationInfo v) { setField(2, v); }
+  set pagination(CryptoPaginationInfo value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasPagination() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPagination() => clearField(2);
+  void clearPagination() => $_clearField(2);
   @$pb.TagNumber(2)
   CryptoPaginationInfo ensurePagination() => $_ensure(1);
 }
@@ -825,152 +812,162 @@ class GetCryptoByIdRequest extends $pb.GeneratedMessage {
     $core.bool? includeDeveloperData,
     $core.String? vsCurrency,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (includeMarketData != null) {
-      $result.includeMarketData = includeMarketData;
-    }
-    if (includeCommunityData != null) {
-      $result.includeCommunityData = includeCommunityData;
-    }
-    if (includeDeveloperData != null) {
-      $result.includeDeveloperData = includeDeveloperData;
-    }
-    if (vsCurrency != null) {
-      $result.vsCurrency = vsCurrency;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (includeMarketData != null) result.includeMarketData = includeMarketData;
+    if (includeCommunityData != null)
+      result.includeCommunityData = includeCommunityData;
+    if (includeDeveloperData != null)
+      result.includeDeveloperData = includeDeveloperData;
+    if (vsCurrency != null) result.vsCurrency = vsCurrency;
+    return result;
   }
-  GetCryptoByIdRequest._() : super();
-  factory GetCryptoByIdRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoByIdRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoByIdRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetCryptoByIdRequest._();
+
+  factory GetCryptoByIdRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoByIdRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoByIdRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOB(2, _omitFieldNames ? '' : 'includeMarketData')
     ..aOB(3, _omitFieldNames ? '' : 'includeCommunityData')
     ..aOB(4, _omitFieldNames ? '' : 'includeDeveloperData')
     ..aOS(5, _omitFieldNames ? '' : 'vsCurrency')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCryptoByIdRequest clone() => GetCryptoByIdRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoByIdRequest copyWith(void Function(GetCryptoByIdRequest) updates) => super.copyWith((message) => updates(message as GetCryptoByIdRequest)) as GetCryptoByIdRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoByIdRequest clone() =>
+      GetCryptoByIdRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoByIdRequest copyWith(void Function(GetCryptoByIdRequest) updates) =>
+      super.copyWith((message) => updates(message as GetCryptoByIdRequest))
+          as GetCryptoByIdRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetCryptoByIdRequest create() => GetCryptoByIdRequest._();
+  @$core.override
   GetCryptoByIdRequest createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoByIdRequest> createRepeated() => $pb.PbList<GetCryptoByIdRequest>();
+  static $pb.PbList<GetCryptoByIdRequest> createRepeated() =>
+      $pb.PbList<GetCryptoByIdRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoByIdRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoByIdRequest>(create);
+  static GetCryptoByIdRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoByIdRequest>(create);
   static GetCryptoByIdRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => clearField(1);
+  void clearId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.bool get includeMarketData => $_getBF(1);
   @$pb.TagNumber(2)
-  set includeMarketData($core.bool v) { $_setBool(1, v); }
+  set includeMarketData($core.bool value) => $_setBool(1, value);
   @$pb.TagNumber(2)
   $core.bool hasIncludeMarketData() => $_has(1);
   @$pb.TagNumber(2)
-  void clearIncludeMarketData() => clearField(2);
+  void clearIncludeMarketData() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.bool get includeCommunityData => $_getBF(2);
   @$pb.TagNumber(3)
-  set includeCommunityData($core.bool v) { $_setBool(2, v); }
+  set includeCommunityData($core.bool value) => $_setBool(2, value);
   @$pb.TagNumber(3)
   $core.bool hasIncludeCommunityData() => $_has(2);
   @$pb.TagNumber(3)
-  void clearIncludeCommunityData() => clearField(3);
+  void clearIncludeCommunityData() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.bool get includeDeveloperData => $_getBF(3);
   @$pb.TagNumber(4)
-  set includeDeveloperData($core.bool v) { $_setBool(3, v); }
+  set includeDeveloperData($core.bool value) => $_setBool(3, value);
   @$pb.TagNumber(4)
   $core.bool hasIncludeDeveloperData() => $_has(3);
   @$pb.TagNumber(4)
-  void clearIncludeDeveloperData() => clearField(4);
+  void clearIncludeDeveloperData() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get vsCurrency => $_getSZ(4);
   @$pb.TagNumber(5)
-  set vsCurrency($core.String v) { $_setString(4, v); }
+  set vsCurrency($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasVsCurrency() => $_has(4);
   @$pb.TagNumber(5)
-  void clearVsCurrency() => clearField(5);
+  void clearVsCurrency() => $_clearField(5);
 }
 
 class GetCryptoByIdResponse extends $pb.GeneratedMessage {
   factory GetCryptoByIdResponse({
     CryptoMessage? crypto,
   }) {
-    final $result = create();
-    if (crypto != null) {
-      $result.crypto = crypto;
-    }
-    return $result;
+    final result = create();
+    if (crypto != null) result.crypto = crypto;
+    return result;
   }
-  GetCryptoByIdResponse._() : super();
-  factory GetCryptoByIdResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoByIdResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoByIdResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CryptoMessage>(1, _omitFieldNames ? '' : 'crypto', subBuilder: CryptoMessage.create)
-    ..hasRequiredFields = false
-  ;
+  GetCryptoByIdResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCryptoByIdResponse clone() => GetCryptoByIdResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoByIdResponse copyWith(void Function(GetCryptoByIdResponse) updates) => super.copyWith((message) => updates(message as GetCryptoByIdResponse)) as GetCryptoByIdResponse;
+  factory GetCryptoByIdResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoByIdResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoByIdResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOM<CryptoMessage>(1, _omitFieldNames ? '' : 'crypto',
+        subBuilder: CryptoMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoByIdResponse clone() =>
+      GetCryptoByIdResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoByIdResponse copyWith(
+          void Function(GetCryptoByIdResponse) updates) =>
+      super.copyWith((message) => updates(message as GetCryptoByIdResponse))
+          as GetCryptoByIdResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetCryptoByIdResponse create() => GetCryptoByIdResponse._();
+  @$core.override
   GetCryptoByIdResponse createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoByIdResponse> createRepeated() => $pb.PbList<GetCryptoByIdResponse>();
+  static $pb.PbList<GetCryptoByIdResponse> createRepeated() =>
+      $pb.PbList<GetCryptoByIdResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoByIdResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoByIdResponse>(create);
+  static GetCryptoByIdResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoByIdResponse>(create);
   static GetCryptoByIdResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   CryptoMessage get crypto => $_getN(0);
   @$pb.TagNumber(1)
-  set crypto(CryptoMessage v) { setField(1, v); }
+  set crypto(CryptoMessage value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasCrypto() => $_has(0);
   @$pb.TagNumber(1)
-  void clearCrypto() => clearField(1);
+  void clearCrypto() => $_clearField(1);
   @$pb.TagNumber(1)
   CryptoMessage ensureCrypto() => $_ensure(0);
 }
@@ -980,94 +977,110 @@ class SearchCryptosRequest extends $pb.GeneratedMessage {
   factory SearchCryptosRequest({
     $core.String? query,
   }) {
-    final $result = create();
-    if (query != null) {
-      $result.query = query;
-    }
-    return $result;
+    final result = create();
+    if (query != null) result.query = query;
+    return result;
   }
-  SearchCryptosRequest._() : super();
-  factory SearchCryptosRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SearchCryptosRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchCryptosRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  SearchCryptosRequest._();
+
+  factory SearchCryptosRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SearchCryptosRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SearchCryptosRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'query')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SearchCryptosRequest clone() => SearchCryptosRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SearchCryptosRequest copyWith(void Function(SearchCryptosRequest) updates) => super.copyWith((message) => updates(message as SearchCryptosRequest)) as SearchCryptosRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SearchCryptosRequest clone() =>
+      SearchCryptosRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SearchCryptosRequest copyWith(void Function(SearchCryptosRequest) updates) =>
+      super.copyWith((message) => updates(message as SearchCryptosRequest))
+          as SearchCryptosRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static SearchCryptosRequest create() => SearchCryptosRequest._();
+  @$core.override
   SearchCryptosRequest createEmptyInstance() => create();
-  static $pb.PbList<SearchCryptosRequest> createRepeated() => $pb.PbList<SearchCryptosRequest>();
+  static $pb.PbList<SearchCryptosRequest> createRepeated() =>
+      $pb.PbList<SearchCryptosRequest>();
   @$core.pragma('dart2js:noInline')
-  static SearchCryptosRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchCryptosRequest>(create);
+  static SearchCryptosRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SearchCryptosRequest>(create);
   static SearchCryptosRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get query => $_getSZ(0);
   @$pb.TagNumber(1)
-  set query($core.String v) { $_setString(0, v); }
+  set query($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasQuery() => $_has(0);
   @$pb.TagNumber(1)
-  void clearQuery() => clearField(1);
+  void clearQuery() => $_clearField(1);
 }
 
 class SearchCryptosResponse extends $pb.GeneratedMessage {
   factory SearchCryptosResponse({
     $core.Iterable<CryptoMessage>? cryptos,
   }) {
-    final $result = create();
-    if (cryptos != null) {
-      $result.cryptos.addAll(cryptos);
-    }
-    return $result;
+    final result = create();
+    if (cryptos != null) result.cryptos.addAll(cryptos);
+    return result;
   }
-  SearchCryptosResponse._() : super();
-  factory SearchCryptosResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SearchCryptosResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchCryptosResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CryptoMessage>(1, _omitFieldNames ? '' : 'cryptos', $pb.PbFieldType.PM, subBuilder: CryptoMessage.create)
-    ..hasRequiredFields = false
-  ;
+  SearchCryptosResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SearchCryptosResponse clone() => SearchCryptosResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SearchCryptosResponse copyWith(void Function(SearchCryptosResponse) updates) => super.copyWith((message) => updates(message as SearchCryptosResponse)) as SearchCryptosResponse;
+  factory SearchCryptosResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SearchCryptosResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SearchCryptosResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CryptoMessage>(1, _omitFieldNames ? '' : 'cryptos', $pb.PbFieldType.PM,
+        subBuilder: CryptoMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SearchCryptosResponse clone() =>
+      SearchCryptosResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SearchCryptosResponse copyWith(
+          void Function(SearchCryptosResponse) updates) =>
+      super.copyWith((message) => updates(message as SearchCryptosResponse))
+          as SearchCryptosResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static SearchCryptosResponse create() => SearchCryptosResponse._();
+  @$core.override
   SearchCryptosResponse createEmptyInstance() => create();
-  static $pb.PbList<SearchCryptosResponse> createRepeated() => $pb.PbList<SearchCryptosResponse>();
+  static $pb.PbList<SearchCryptosResponse> createRepeated() =>
+      $pb.PbList<SearchCryptosResponse>();
   @$core.pragma('dart2js:noInline')
-  static SearchCryptosResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchCryptosResponse>(create);
+  static SearchCryptosResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SearchCryptosResponse>(create);
   static SearchCryptosResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<CryptoMessage> get cryptos => $_getList(0);
+  $pb.PbList<CryptoMessage> get cryptos => $_getList(0);
 }
 
 /// Get Crypto Price History
@@ -1078,89 +1091,93 @@ class GetCryptoPriceHistoryRequest extends $pb.GeneratedMessage {
     $core.String? vsCurrency,
     $core.int? interval,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (range != null) {
-      $result.range = range;
-    }
-    if (vsCurrency != null) {
-      $result.vsCurrency = vsCurrency;
-    }
-    if (interval != null) {
-      $result.interval = interval;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (range != null) result.range = range;
+    if (vsCurrency != null) result.vsCurrency = vsCurrency;
+    if (interval != null) result.interval = interval;
+    return result;
   }
-  GetCryptoPriceHistoryRequest._() : super();
-  factory GetCryptoPriceHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoPriceHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoPriceHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetCryptoPriceHistoryRequest._();
+
+  factory GetCryptoPriceHistoryRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoPriceHistoryRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoPriceHistoryRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'range')
     ..aOS(3, _omitFieldNames ? '' : 'vsCurrency')
     ..a<$core.int>(4, _omitFieldNames ? '' : 'interval', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCryptoPriceHistoryRequest clone() => GetCryptoPriceHistoryRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoPriceHistoryRequest copyWith(void Function(GetCryptoPriceHistoryRequest) updates) => super.copyWith((message) => updates(message as GetCryptoPriceHistoryRequest)) as GetCryptoPriceHistoryRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoPriceHistoryRequest clone() =>
+      GetCryptoPriceHistoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoPriceHistoryRequest copyWith(
+          void Function(GetCryptoPriceHistoryRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetCryptoPriceHistoryRequest))
+          as GetCryptoPriceHistoryRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GetCryptoPriceHistoryRequest create() => GetCryptoPriceHistoryRequest._();
+  static GetCryptoPriceHistoryRequest create() =>
+      GetCryptoPriceHistoryRequest._();
+  @$core.override
   GetCryptoPriceHistoryRequest createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoPriceHistoryRequest> createRepeated() => $pb.PbList<GetCryptoPriceHistoryRequest>();
+  static $pb.PbList<GetCryptoPriceHistoryRequest> createRepeated() =>
+      $pb.PbList<GetCryptoPriceHistoryRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoPriceHistoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoPriceHistoryRequest>(create);
+  static GetCryptoPriceHistoryRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoPriceHistoryRequest>(create);
   static GetCryptoPriceHistoryRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => clearField(1);
+  void clearId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get range => $_getSZ(1);
   @$pb.TagNumber(2)
-  set range($core.String v) { $_setString(1, v); }
+  set range($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasRange() => $_has(1);
   @$pb.TagNumber(2)
-  void clearRange() => clearField(2);
+  void clearRange() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get vsCurrency => $_getSZ(2);
   @$pb.TagNumber(3)
-  set vsCurrency($core.String v) { $_setString(2, v); }
+  set vsCurrency($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasVsCurrency() => $_has(2);
   @$pb.TagNumber(3)
-  void clearVsCurrency() => clearField(3);
+  void clearVsCurrency() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.int get interval => $_getIZ(3);
   @$pb.TagNumber(4)
-  set interval($core.int v) { $_setSignedInt32(3, v); }
+  set interval($core.int value) => $_setSignedInt32(3, value);
   @$pb.TagNumber(4)
   $core.bool hasInterval() => $_has(3);
   @$pb.TagNumber(4)
-  void clearInterval() => clearField(4);
+  void clearInterval() => $_clearField(4);
 }
 
 class GetCryptoPriceHistoryResponse extends $pb.GeneratedMessage {
@@ -1169,70 +1186,78 @@ class GetCryptoPriceHistoryResponse extends $pb.GeneratedMessage {
     $core.String? cryptoId,
     $core.String? range,
   }) {
-    final $result = create();
-    if (priceHistory != null) {
-      $result.priceHistory.addAll(priceHistory);
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (range != null) {
-      $result.range = range;
-    }
-    return $result;
+    final result = create();
+    if (priceHistory != null) result.priceHistory.addAll(priceHistory);
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (range != null) result.range = range;
+    return result;
   }
-  GetCryptoPriceHistoryResponse._() : super();
-  factory GetCryptoPriceHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoPriceHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoPriceHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<PricePoint>(1, _omitFieldNames ? '' : 'priceHistory', $pb.PbFieldType.PM, subBuilder: PricePoint.create)
+  GetCryptoPriceHistoryResponse._();
+
+  factory GetCryptoPriceHistoryResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoPriceHistoryResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoPriceHistoryResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<PricePoint>(
+        1, _omitFieldNames ? '' : 'priceHistory', $pb.PbFieldType.PM,
+        subBuilder: PricePoint.create)
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(3, _omitFieldNames ? '' : 'range')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCryptoPriceHistoryResponse clone() => GetCryptoPriceHistoryResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoPriceHistoryResponse copyWith(void Function(GetCryptoPriceHistoryResponse) updates) => super.copyWith((message) => updates(message as GetCryptoPriceHistoryResponse)) as GetCryptoPriceHistoryResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoPriceHistoryResponse clone() =>
+      GetCryptoPriceHistoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoPriceHistoryResponse copyWith(
+          void Function(GetCryptoPriceHistoryResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetCryptoPriceHistoryResponse))
+          as GetCryptoPriceHistoryResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GetCryptoPriceHistoryResponse create() => GetCryptoPriceHistoryResponse._();
+  static GetCryptoPriceHistoryResponse create() =>
+      GetCryptoPriceHistoryResponse._();
+  @$core.override
   GetCryptoPriceHistoryResponse createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoPriceHistoryResponse> createRepeated() => $pb.PbList<GetCryptoPriceHistoryResponse>();
+  static $pb.PbList<GetCryptoPriceHistoryResponse> createRepeated() =>
+      $pb.PbList<GetCryptoPriceHistoryResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoPriceHistoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoPriceHistoryResponse>(create);
+  static GetCryptoPriceHistoryResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoPriceHistoryResponse>(create);
   static GetCryptoPriceHistoryResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<PricePoint> get priceHistory => $_getList(0);
+  $pb.PbList<PricePoint> get priceHistory => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get range => $_getSZ(2);
   @$pb.TagNumber(3)
-  set range($core.String v) { $_setString(2, v); }
+  set range($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasRange() => $_has(2);
   @$pb.TagNumber(3)
-  void clearRange() => clearField(3);
+  void clearRange() => $_clearField(3);
 }
 
 /// Get Trending Cryptos
@@ -1240,94 +1265,112 @@ class GetTrendingCryptosRequest extends $pb.GeneratedMessage {
   factory GetTrendingCryptosRequest({
     $core.int? limit,
   }) {
-    final $result = create();
-    if (limit != null) {
-      $result.limit = limit;
-    }
-    return $result;
+    final result = create();
+    if (limit != null) result.limit = limit;
+    return result;
   }
-  GetTrendingCryptosRequest._() : super();
-  factory GetTrendingCryptosRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTrendingCryptosRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrendingCryptosRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetTrendingCryptosRequest._();
+
+  factory GetTrendingCryptosRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetTrendingCryptosRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetTrendingCryptosRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetTrendingCryptosRequest clone() => GetTrendingCryptosRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetTrendingCryptosRequest copyWith(void Function(GetTrendingCryptosRequest) updates) => super.copyWith((message) => updates(message as GetTrendingCryptosRequest)) as GetTrendingCryptosRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetTrendingCryptosRequest clone() =>
+      GetTrendingCryptosRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetTrendingCryptosRequest copyWith(
+          void Function(GetTrendingCryptosRequest) updates) =>
+      super.copyWith((message) => updates(message as GetTrendingCryptosRequest))
+          as GetTrendingCryptosRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetTrendingCryptosRequest create() => GetTrendingCryptosRequest._();
+  @$core.override
   GetTrendingCryptosRequest createEmptyInstance() => create();
-  static $pb.PbList<GetTrendingCryptosRequest> createRepeated() => $pb.PbList<GetTrendingCryptosRequest>();
+  static $pb.PbList<GetTrendingCryptosRequest> createRepeated() =>
+      $pb.PbList<GetTrendingCryptosRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetTrendingCryptosRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTrendingCryptosRequest>(create);
+  static GetTrendingCryptosRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetTrendingCryptosRequest>(create);
   static GetTrendingCryptosRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.int get limit => $_getIZ(0);
   @$pb.TagNumber(1)
-  set limit($core.int v) { $_setSignedInt32(0, v); }
+  set limit($core.int value) => $_setSignedInt32(0, value);
   @$pb.TagNumber(1)
   $core.bool hasLimit() => $_has(0);
   @$pb.TagNumber(1)
-  void clearLimit() => clearField(1);
+  void clearLimit() => $_clearField(1);
 }
 
 class GetTrendingCryptosResponse extends $pb.GeneratedMessage {
   factory GetTrendingCryptosResponse({
     $core.Iterable<CryptoMessage>? cryptos,
   }) {
-    final $result = create();
-    if (cryptos != null) {
-      $result.cryptos.addAll(cryptos);
-    }
-    return $result;
+    final result = create();
+    if (cryptos != null) result.cryptos.addAll(cryptos);
+    return result;
   }
-  GetTrendingCryptosResponse._() : super();
-  factory GetTrendingCryptosResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTrendingCryptosResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrendingCryptosResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CryptoMessage>(1, _omitFieldNames ? '' : 'cryptos', $pb.PbFieldType.PM, subBuilder: CryptoMessage.create)
-    ..hasRequiredFields = false
-  ;
+  GetTrendingCryptosResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetTrendingCryptosResponse clone() => GetTrendingCryptosResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetTrendingCryptosResponse copyWith(void Function(GetTrendingCryptosResponse) updates) => super.copyWith((message) => updates(message as GetTrendingCryptosResponse)) as GetTrendingCryptosResponse;
+  factory GetTrendingCryptosResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetTrendingCryptosResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetTrendingCryptosResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CryptoMessage>(1, _omitFieldNames ? '' : 'cryptos', $pb.PbFieldType.PM,
+        subBuilder: CryptoMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetTrendingCryptosResponse clone() =>
+      GetTrendingCryptosResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetTrendingCryptosResponse copyWith(
+          void Function(GetTrendingCryptosResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetTrendingCryptosResponse))
+          as GetTrendingCryptosResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetTrendingCryptosResponse create() => GetTrendingCryptosResponse._();
+  @$core.override
   GetTrendingCryptosResponse createEmptyInstance() => create();
-  static $pb.PbList<GetTrendingCryptosResponse> createRepeated() => $pb.PbList<GetTrendingCryptosResponse>();
+  static $pb.PbList<GetTrendingCryptosResponse> createRepeated() =>
+      $pb.PbList<GetTrendingCryptosResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetTrendingCryptosResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTrendingCryptosResponse>(create);
+  static GetTrendingCryptosResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetTrendingCryptosResponse>(create);
   static GetTrendingCryptosResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<CryptoMessage> get cryptos => $_getList(0);
+  $pb.PbList<CryptoMessage> get cryptos => $_getList(0);
 }
 
 /// Get Top Cryptos
@@ -1336,107 +1379,121 @@ class GetTopCryptosRequest extends $pb.GeneratedMessage {
     $core.int? limit,
     $core.String? vsCurrency,
   }) {
-    final $result = create();
-    if (limit != null) {
-      $result.limit = limit;
-    }
-    if (vsCurrency != null) {
-      $result.vsCurrency = vsCurrency;
-    }
-    return $result;
+    final result = create();
+    if (limit != null) result.limit = limit;
+    if (vsCurrency != null) result.vsCurrency = vsCurrency;
+    return result;
   }
-  GetTopCryptosRequest._() : super();
-  factory GetTopCryptosRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTopCryptosRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTopCryptosRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetTopCryptosRequest._();
+
+  factory GetTopCryptosRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetTopCryptosRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetTopCryptosRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..aOS(2, _omitFieldNames ? '' : 'vsCurrency')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetTopCryptosRequest clone() => GetTopCryptosRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetTopCryptosRequest copyWith(void Function(GetTopCryptosRequest) updates) => super.copyWith((message) => updates(message as GetTopCryptosRequest)) as GetTopCryptosRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetTopCryptosRequest clone() =>
+      GetTopCryptosRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetTopCryptosRequest copyWith(void Function(GetTopCryptosRequest) updates) =>
+      super.copyWith((message) => updates(message as GetTopCryptosRequest))
+          as GetTopCryptosRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetTopCryptosRequest create() => GetTopCryptosRequest._();
+  @$core.override
   GetTopCryptosRequest createEmptyInstance() => create();
-  static $pb.PbList<GetTopCryptosRequest> createRepeated() => $pb.PbList<GetTopCryptosRequest>();
+  static $pb.PbList<GetTopCryptosRequest> createRepeated() =>
+      $pb.PbList<GetTopCryptosRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetTopCryptosRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTopCryptosRequest>(create);
+  static GetTopCryptosRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetTopCryptosRequest>(create);
   static GetTopCryptosRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.int get limit => $_getIZ(0);
   @$pb.TagNumber(1)
-  set limit($core.int v) { $_setSignedInt32(0, v); }
+  set limit($core.int value) => $_setSignedInt32(0, value);
   @$pb.TagNumber(1)
   $core.bool hasLimit() => $_has(0);
   @$pb.TagNumber(1)
-  void clearLimit() => clearField(1);
+  void clearLimit() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get vsCurrency => $_getSZ(1);
   @$pb.TagNumber(2)
-  set vsCurrency($core.String v) { $_setString(1, v); }
+  set vsCurrency($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasVsCurrency() => $_has(1);
   @$pb.TagNumber(2)
-  void clearVsCurrency() => clearField(2);
+  void clearVsCurrency() => $_clearField(2);
 }
 
 class GetTopCryptosResponse extends $pb.GeneratedMessage {
   factory GetTopCryptosResponse({
     $core.Iterable<CryptoMessage>? cryptos,
   }) {
-    final $result = create();
-    if (cryptos != null) {
-      $result.cryptos.addAll(cryptos);
-    }
-    return $result;
+    final result = create();
+    if (cryptos != null) result.cryptos.addAll(cryptos);
+    return result;
   }
-  GetTopCryptosResponse._() : super();
-  factory GetTopCryptosResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTopCryptosResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTopCryptosResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CryptoMessage>(1, _omitFieldNames ? '' : 'cryptos', $pb.PbFieldType.PM, subBuilder: CryptoMessage.create)
-    ..hasRequiredFields = false
-  ;
+  GetTopCryptosResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetTopCryptosResponse clone() => GetTopCryptosResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetTopCryptosResponse copyWith(void Function(GetTopCryptosResponse) updates) => super.copyWith((message) => updates(message as GetTopCryptosResponse)) as GetTopCryptosResponse;
+  factory GetTopCryptosResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetTopCryptosResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetTopCryptosResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CryptoMessage>(1, _omitFieldNames ? '' : 'cryptos', $pb.PbFieldType.PM,
+        subBuilder: CryptoMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetTopCryptosResponse clone() =>
+      GetTopCryptosResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetTopCryptosResponse copyWith(
+          void Function(GetTopCryptosResponse) updates) =>
+      super.copyWith((message) => updates(message as GetTopCryptosResponse))
+          as GetTopCryptosResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetTopCryptosResponse create() => GetTopCryptosResponse._();
+  @$core.override
   GetTopCryptosResponse createEmptyInstance() => create();
-  static $pb.PbList<GetTopCryptosResponse> createRepeated() => $pb.PbList<GetTopCryptosResponse>();
+  static $pb.PbList<GetTopCryptosResponse> createRepeated() =>
+      $pb.PbList<GetTopCryptosResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetTopCryptosResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTopCryptosResponse>(create);
+  static GetTopCryptosResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetTopCryptosResponse>(create);
   static GetTopCryptosResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<CryptoMessage> get cryptos => $_getList(0);
+  $pb.PbList<CryptoMessage> get cryptos => $_getList(0);
 }
 
 /// Get Market Chart
@@ -1447,89 +1504,91 @@ class GetMarketChartRequest extends $pb.GeneratedMessage {
     $core.int? days,
     $core.String? interval,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (vsCurrency != null) {
-      $result.vsCurrency = vsCurrency;
-    }
-    if (days != null) {
-      $result.days = days;
-    }
-    if (interval != null) {
-      $result.interval = interval;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (vsCurrency != null) result.vsCurrency = vsCurrency;
+    if (days != null) result.days = days;
+    if (interval != null) result.interval = interval;
+    return result;
   }
-  GetMarketChartRequest._() : super();
-  factory GetMarketChartRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetMarketChartRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMarketChartRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetMarketChartRequest._();
+
+  factory GetMarketChartRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetMarketChartRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetMarketChartRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'vsCurrency')
     ..a<$core.int>(3, _omitFieldNames ? '' : 'days', $pb.PbFieldType.O3)
     ..aOS(4, _omitFieldNames ? '' : 'interval')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetMarketChartRequest clone() => GetMarketChartRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetMarketChartRequest copyWith(void Function(GetMarketChartRequest) updates) => super.copyWith((message) => updates(message as GetMarketChartRequest)) as GetMarketChartRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetMarketChartRequest clone() =>
+      GetMarketChartRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetMarketChartRequest copyWith(
+          void Function(GetMarketChartRequest) updates) =>
+      super.copyWith((message) => updates(message as GetMarketChartRequest))
+          as GetMarketChartRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetMarketChartRequest create() => GetMarketChartRequest._();
+  @$core.override
   GetMarketChartRequest createEmptyInstance() => create();
-  static $pb.PbList<GetMarketChartRequest> createRepeated() => $pb.PbList<GetMarketChartRequest>();
+  static $pb.PbList<GetMarketChartRequest> createRepeated() =>
+      $pb.PbList<GetMarketChartRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetMarketChartRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMarketChartRequest>(create);
+  static GetMarketChartRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetMarketChartRequest>(create);
   static GetMarketChartRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => clearField(1);
+  void clearId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get vsCurrency => $_getSZ(1);
   @$pb.TagNumber(2)
-  set vsCurrency($core.String v) { $_setString(1, v); }
+  set vsCurrency($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasVsCurrency() => $_has(1);
   @$pb.TagNumber(2)
-  void clearVsCurrency() => clearField(2);
+  void clearVsCurrency() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.int get days => $_getIZ(2);
   @$pb.TagNumber(3)
-  set days($core.int v) { $_setSignedInt32(2, v); }
+  set days($core.int value) => $_setSignedInt32(2, value);
   @$pb.TagNumber(3)
   $core.bool hasDays() => $_has(2);
   @$pb.TagNumber(3)
-  void clearDays() => clearField(3);
+  void clearDays() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get interval => $_getSZ(3);
   @$pb.TagNumber(4)
-  set interval($core.String v) { $_setString(3, v); }
+  set interval($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasInterval() => $_has(3);
   @$pb.TagNumber(4)
-  void clearInterval() => clearField(4);
+  void clearInterval() => $_clearField(4);
 }
 
 class GetMarketChartResponse extends $pb.GeneratedMessage {
@@ -1538,90 +1597,109 @@ class GetMarketChartResponse extends $pb.GeneratedMessage {
     $core.Iterable<PricePoint>? marketCaps,
     $core.Iterable<PricePoint>? totalVolumes,
   }) {
-    final $result = create();
-    if (prices != null) {
-      $result.prices.addAll(prices);
-    }
-    if (marketCaps != null) {
-      $result.marketCaps.addAll(marketCaps);
-    }
-    if (totalVolumes != null) {
-      $result.totalVolumes.addAll(totalVolumes);
-    }
-    return $result;
+    final result = create();
+    if (prices != null) result.prices.addAll(prices);
+    if (marketCaps != null) result.marketCaps.addAll(marketCaps);
+    if (totalVolumes != null) result.totalVolumes.addAll(totalVolumes);
+    return result;
   }
-  GetMarketChartResponse._() : super();
-  factory GetMarketChartResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetMarketChartResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMarketChartResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<PricePoint>(1, _omitFieldNames ? '' : 'prices', $pb.PbFieldType.PM, subBuilder: PricePoint.create)
-    ..pc<PricePoint>(2, _omitFieldNames ? '' : 'marketCaps', $pb.PbFieldType.PM, subBuilder: PricePoint.create)
-    ..pc<PricePoint>(3, _omitFieldNames ? '' : 'totalVolumes', $pb.PbFieldType.PM, subBuilder: PricePoint.create)
-    ..hasRequiredFields = false
-  ;
+  GetMarketChartResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetMarketChartResponse clone() => GetMarketChartResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetMarketChartResponse copyWith(void Function(GetMarketChartResponse) updates) => super.copyWith((message) => updates(message as GetMarketChartResponse)) as GetMarketChartResponse;
+  factory GetMarketChartResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetMarketChartResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetMarketChartResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<PricePoint>(1, _omitFieldNames ? '' : 'prices', $pb.PbFieldType.PM,
+        subBuilder: PricePoint.create)
+    ..pc<PricePoint>(2, _omitFieldNames ? '' : 'marketCaps', $pb.PbFieldType.PM,
+        subBuilder: PricePoint.create)
+    ..pc<PricePoint>(
+        3, _omitFieldNames ? '' : 'totalVolumes', $pb.PbFieldType.PM,
+        subBuilder: PricePoint.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetMarketChartResponse clone() =>
+      GetMarketChartResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetMarketChartResponse copyWith(
+          void Function(GetMarketChartResponse) updates) =>
+      super.copyWith((message) => updates(message as GetMarketChartResponse))
+          as GetMarketChartResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetMarketChartResponse create() => GetMarketChartResponse._();
+  @$core.override
   GetMarketChartResponse createEmptyInstance() => create();
-  static $pb.PbList<GetMarketChartResponse> createRepeated() => $pb.PbList<GetMarketChartResponse>();
+  static $pb.PbList<GetMarketChartResponse> createRepeated() =>
+      $pb.PbList<GetMarketChartResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetMarketChartResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMarketChartResponse>(create);
+  static GetMarketChartResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetMarketChartResponse>(create);
   static GetMarketChartResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<PricePoint> get prices => $_getList(0);
+  $pb.PbList<PricePoint> get prices => $_getList(0);
 
   @$pb.TagNumber(2)
-  $core.List<PricePoint> get marketCaps => $_getList(1);
+  $pb.PbList<PricePoint> get marketCaps => $_getList(1);
 
   @$pb.TagNumber(3)
-  $core.List<PricePoint> get totalVolumes => $_getList(2);
+  $pb.PbList<PricePoint> get totalVolumes => $_getList(2);
 }
 
 /// Get Global Market Data
 class GetGlobalMarketDataRequest extends $pb.GeneratedMessage {
   factory GetGlobalMarketDataRequest() => create();
-  GetGlobalMarketDataRequest._() : super();
-  factory GetGlobalMarketDataRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetGlobalMarketDataRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetGlobalMarketDataRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..hasRequiredFields = false
-  ;
+  GetGlobalMarketDataRequest._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetGlobalMarketDataRequest clone() => GetGlobalMarketDataRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetGlobalMarketDataRequest copyWith(void Function(GetGlobalMarketDataRequest) updates) => super.copyWith((message) => updates(message as GetGlobalMarketDataRequest)) as GetGlobalMarketDataRequest;
+  factory GetGlobalMarketDataRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetGlobalMarketDataRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetGlobalMarketDataRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGlobalMarketDataRequest clone() =>
+      GetGlobalMarketDataRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGlobalMarketDataRequest copyWith(
+          void Function(GetGlobalMarketDataRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetGlobalMarketDataRequest))
+          as GetGlobalMarketDataRequest;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetGlobalMarketDataRequest create() => GetGlobalMarketDataRequest._();
+  @$core.override
   GetGlobalMarketDataRequest createEmptyInstance() => create();
-  static $pb.PbList<GetGlobalMarketDataRequest> createRepeated() => $pb.PbList<GetGlobalMarketDataRequest>();
+  static $pb.PbList<GetGlobalMarketDataRequest> createRepeated() =>
+      $pb.PbList<GetGlobalMarketDataRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetGlobalMarketDataRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetGlobalMarketDataRequest>(create);
+  static GetGlobalMarketDataRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetGlobalMarketDataRequest>(create);
   static GetGlobalMarketDataRequest? _defaultInstance;
 }
 
@@ -1635,128 +1713,136 @@ class GetGlobalMarketDataResponse extends $pb.GeneratedMessage {
     $core.int? markets,
     $1.Timestamp? updatedAt,
   }) {
-    final $result = create();
-    if (totalMarketCap != null) {
-      $result.totalMarketCap = totalMarketCap;
-    }
-    if (totalVolume24h != null) {
-      $result.totalVolume24h = totalVolume24h;
-    }
-    if (marketCapPercentageBtc != null) {
-      $result.marketCapPercentageBtc = marketCapPercentageBtc;
-    }
-    if (marketCapPercentageEth != null) {
-      $result.marketCapPercentageEth = marketCapPercentageEth;
-    }
-    if (activeCryptocurrencies != null) {
-      $result.activeCryptocurrencies = activeCryptocurrencies;
-    }
-    if (markets != null) {
-      $result.markets = markets;
-    }
-    if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
-    }
-    return $result;
+    final result = create();
+    if (totalMarketCap != null) result.totalMarketCap = totalMarketCap;
+    if (totalVolume24h != null) result.totalVolume24h = totalVolume24h;
+    if (marketCapPercentageBtc != null)
+      result.marketCapPercentageBtc = marketCapPercentageBtc;
+    if (marketCapPercentageEth != null)
+      result.marketCapPercentageEth = marketCapPercentageEth;
+    if (activeCryptocurrencies != null)
+      result.activeCryptocurrencies = activeCryptocurrencies;
+    if (markets != null) result.markets = markets;
+    if (updatedAt != null) result.updatedAt = updatedAt;
+    return result;
   }
-  GetGlobalMarketDataResponse._() : super();
-  factory GetGlobalMarketDataResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetGlobalMarketDataResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetGlobalMarketDataResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, _omitFieldNames ? '' : 'totalMarketCap', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalVolume24h', $pb.PbFieldType.OD, protoName: 'total_volume_24h')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'marketCapPercentageBtc', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'marketCapPercentageEth', $pb.PbFieldType.OD)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'activeCryptocurrencies', $pb.PbFieldType.O3)
+  GetGlobalMarketDataResponse._();
+
+  factory GetGlobalMarketDataResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetGlobalMarketDataResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetGlobalMarketDataResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..a<$core.double>(
+        1, _omitFieldNames ? '' : 'totalMarketCap', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        2, _omitFieldNames ? '' : 'totalVolume24h', $pb.PbFieldType.OD,
+        protoName: 'total_volume_24h')
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'marketCapPercentageBtc', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'marketCapPercentageEth', $pb.PbFieldType.OD)
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'activeCryptocurrencies', $pb.PbFieldType.O3)
     ..a<$core.int>(6, _omitFieldNames ? '' : 'markets', $pb.PbFieldType.O3)
-    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'updatedAt',
+        subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetGlobalMarketDataResponse clone() => GetGlobalMarketDataResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetGlobalMarketDataResponse copyWith(void Function(GetGlobalMarketDataResponse) updates) => super.copyWith((message) => updates(message as GetGlobalMarketDataResponse)) as GetGlobalMarketDataResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGlobalMarketDataResponse clone() =>
+      GetGlobalMarketDataResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGlobalMarketDataResponse copyWith(
+          void Function(GetGlobalMarketDataResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetGlobalMarketDataResponse))
+          as GetGlobalMarketDataResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GetGlobalMarketDataResponse create() => GetGlobalMarketDataResponse._();
+  static GetGlobalMarketDataResponse create() =>
+      GetGlobalMarketDataResponse._();
+  @$core.override
   GetGlobalMarketDataResponse createEmptyInstance() => create();
-  static $pb.PbList<GetGlobalMarketDataResponse> createRepeated() => $pb.PbList<GetGlobalMarketDataResponse>();
+  static $pb.PbList<GetGlobalMarketDataResponse> createRepeated() =>
+      $pb.PbList<GetGlobalMarketDataResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetGlobalMarketDataResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetGlobalMarketDataResponse>(create);
+  static GetGlobalMarketDataResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetGlobalMarketDataResponse>(create);
   static GetGlobalMarketDataResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.double get totalMarketCap => $_getN(0);
   @$pb.TagNumber(1)
-  set totalMarketCap($core.double v) { $_setDouble(0, v); }
+  set totalMarketCap($core.double value) => $_setDouble(0, value);
   @$pb.TagNumber(1)
   $core.bool hasTotalMarketCap() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTotalMarketCap() => clearField(1);
+  void clearTotalMarketCap() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.double get totalVolume24h => $_getN(1);
   @$pb.TagNumber(2)
-  set totalVolume24h($core.double v) { $_setDouble(1, v); }
+  set totalVolume24h($core.double value) => $_setDouble(1, value);
   @$pb.TagNumber(2)
   $core.bool hasTotalVolume24h() => $_has(1);
   @$pb.TagNumber(2)
-  void clearTotalVolume24h() => clearField(2);
+  void clearTotalVolume24h() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get marketCapPercentageBtc => $_getN(2);
   @$pb.TagNumber(3)
-  set marketCapPercentageBtc($core.double v) { $_setDouble(2, v); }
+  set marketCapPercentageBtc($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasMarketCapPercentageBtc() => $_has(2);
   @$pb.TagNumber(3)
-  void clearMarketCapPercentageBtc() => clearField(3);
+  void clearMarketCapPercentageBtc() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get marketCapPercentageEth => $_getN(3);
   @$pb.TagNumber(4)
-  set marketCapPercentageEth($core.double v) { $_setDouble(3, v); }
+  set marketCapPercentageEth($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasMarketCapPercentageEth() => $_has(3);
   @$pb.TagNumber(4)
-  void clearMarketCapPercentageEth() => clearField(4);
+  void clearMarketCapPercentageEth() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.int get activeCryptocurrencies => $_getIZ(4);
   @$pb.TagNumber(5)
-  set activeCryptocurrencies($core.int v) { $_setSignedInt32(4, v); }
+  set activeCryptocurrencies($core.int value) => $_setSignedInt32(4, value);
   @$pb.TagNumber(5)
   $core.bool hasActiveCryptocurrencies() => $_has(4);
   @$pb.TagNumber(5)
-  void clearActiveCryptocurrencies() => clearField(5);
+  void clearActiveCryptocurrencies() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.int get markets => $_getIZ(5);
   @$pb.TagNumber(6)
-  set markets($core.int v) { $_setSignedInt32(5, v); }
+  set markets($core.int value) => $_setSignedInt32(5, value);
   @$pb.TagNumber(6)
   $core.bool hasMarkets() => $_has(5);
   @$pb.TagNumber(6)
-  void clearMarkets() => clearField(6);
+  void clearMarkets() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $1.Timestamp get updatedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set updatedAt($1.Timestamp v) { setField(7, v); }
+  set updatedAt($1.Timestamp value) => $_setField(7, value);
   @$pb.TagNumber(7)
   $core.bool hasUpdatedAt() => $_has(6);
   @$pb.TagNumber(7)
-  void clearUpdatedAt() => clearField(7);
+  void clearUpdatedAt() => $_clearField(7);
   @$pb.TagNumber(7)
   $1.Timestamp ensureUpdatedAt() => $_ensure(6);
 }
@@ -1766,63 +1852,69 @@ class GetExchangeRateRequest extends $pb.GeneratedMessage {
     $core.String? cryptoId,
     $core.String? fiatCurrency,
   }) {
-    final $result = create();
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (fiatCurrency != null) {
-      $result.fiatCurrency = fiatCurrency;
-    }
-    return $result;
+    final result = create();
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (fiatCurrency != null) result.fiatCurrency = fiatCurrency;
+    return result;
   }
-  GetExchangeRateRequest._() : super();
-  factory GetExchangeRateRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetExchangeRateRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExchangeRateRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetExchangeRateRequest._();
+
+  factory GetExchangeRateRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetExchangeRateRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetExchangeRateRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(2, _omitFieldNames ? '' : 'fiatCurrency')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetExchangeRateRequest clone() => GetExchangeRateRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetExchangeRateRequest copyWith(void Function(GetExchangeRateRequest) updates) => super.copyWith((message) => updates(message as GetExchangeRateRequest)) as GetExchangeRateRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetExchangeRateRequest clone() =>
+      GetExchangeRateRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetExchangeRateRequest copyWith(
+          void Function(GetExchangeRateRequest) updates) =>
+      super.copyWith((message) => updates(message as GetExchangeRateRequest))
+          as GetExchangeRateRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetExchangeRateRequest create() => GetExchangeRateRequest._();
+  @$core.override
   GetExchangeRateRequest createEmptyInstance() => create();
-  static $pb.PbList<GetExchangeRateRequest> createRepeated() => $pb.PbList<GetExchangeRateRequest>();
+  static $pb.PbList<GetExchangeRateRequest> createRepeated() =>
+      $pb.PbList<GetExchangeRateRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetExchangeRateRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetExchangeRateRequest>(create);
+  static GetExchangeRateRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetExchangeRateRequest>(create);
   static GetExchangeRateRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get cryptoId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set cryptoId($core.String v) { $_setString(0, v); }
+  set cryptoId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasCryptoId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearCryptoId() => clearField(1);
+  void clearCryptoId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get fiatCurrency => $_getSZ(1);
   @$pb.TagNumber(2)
-  set fiatCurrency($core.String v) { $_setString(1, v); }
+  set fiatCurrency($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasFiatCurrency() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFiatCurrency() => clearField(2);
+  void clearFiatCurrency() => $_clearField(2);
 }
 
 class GetExchangeRateResponse extends $pb.GeneratedMessage {
@@ -1834,115 +1926,115 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     $core.double? spread,
     $1.Timestamp? validUntil,
   }) {
-    final $result = create();
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (fiatCurrency != null) {
-      $result.fiatCurrency = fiatCurrency;
-    }
-    if (rate != null) {
-      $result.rate = rate;
-    }
-    if (feePercentage != null) {
-      $result.feePercentage = feePercentage;
-    }
-    if (spread != null) {
-      $result.spread = spread;
-    }
-    if (validUntil != null) {
-      $result.validUntil = validUntil;
-    }
-    return $result;
+    final result = create();
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (fiatCurrency != null) result.fiatCurrency = fiatCurrency;
+    if (rate != null) result.rate = rate;
+    if (feePercentage != null) result.feePercentage = feePercentage;
+    if (spread != null) result.spread = spread;
+    if (validUntil != null) result.validUntil = validUntil;
+    return result;
   }
-  GetExchangeRateResponse._() : super();
-  factory GetExchangeRateResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetExchangeRateResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExchangeRateResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetExchangeRateResponse._();
+
+  factory GetExchangeRateResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetExchangeRateResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetExchangeRateResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(2, _omitFieldNames ? '' : 'fiatCurrency')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'rate', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'feePercentage', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'feePercentage', $pb.PbFieldType.OD)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'spread', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'validUntil', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'validUntil',
+        subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetExchangeRateResponse clone() => GetExchangeRateResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetExchangeRateResponse copyWith(void Function(GetExchangeRateResponse) updates) => super.copyWith((message) => updates(message as GetExchangeRateResponse)) as GetExchangeRateResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetExchangeRateResponse clone() =>
+      GetExchangeRateResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetExchangeRateResponse copyWith(
+          void Function(GetExchangeRateResponse) updates) =>
+      super.copyWith((message) => updates(message as GetExchangeRateResponse))
+          as GetExchangeRateResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetExchangeRateResponse create() => GetExchangeRateResponse._();
+  @$core.override
   GetExchangeRateResponse createEmptyInstance() => create();
-  static $pb.PbList<GetExchangeRateResponse> createRepeated() => $pb.PbList<GetExchangeRateResponse>();
+  static $pb.PbList<GetExchangeRateResponse> createRepeated() =>
+      $pb.PbList<GetExchangeRateResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetExchangeRateResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetExchangeRateResponse>(create);
+  static GetExchangeRateResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetExchangeRateResponse>(create);
   static GetExchangeRateResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get cryptoId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set cryptoId($core.String v) { $_setString(0, v); }
+  set cryptoId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasCryptoId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearCryptoId() => clearField(1);
+  void clearCryptoId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get fiatCurrency => $_getSZ(1);
   @$pb.TagNumber(2)
-  set fiatCurrency($core.String v) { $_setString(1, v); }
+  set fiatCurrency($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasFiatCurrency() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFiatCurrency() => clearField(2);
+  void clearFiatCurrency() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get rate => $_getN(2);
   @$pb.TagNumber(3)
-  set rate($core.double v) { $_setDouble(2, v); }
+  set rate($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasRate() => $_has(2);
   @$pb.TagNumber(3)
-  void clearRate() => clearField(3);
+  void clearRate() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get feePercentage => $_getN(3);
   @$pb.TagNumber(4)
-  set feePercentage($core.double v) { $_setDouble(3, v); }
+  set feePercentage($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasFeePercentage() => $_has(3);
   @$pb.TagNumber(4)
-  void clearFeePercentage() => clearField(4);
+  void clearFeePercentage() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get spread => $_getN(4);
   @$pb.TagNumber(5)
-  set spread($core.double v) { $_setDouble(4, v); }
+  set spread($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasSpread() => $_has(4);
   @$pb.TagNumber(5)
-  void clearSpread() => clearField(5);
+  void clearSpread() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $1.Timestamp get validUntil => $_getN(5);
   @$pb.TagNumber(6)
-  set validUntil($1.Timestamp v) { setField(6, v); }
+  set validUntil($1.Timestamp value) => $_setField(6, value);
   @$pb.TagNumber(6)
   $core.bool hasValidUntil() => $_has(5);
   @$pb.TagNumber(6)
-  void clearValidUntil() => clearField(6);
+  void clearValidUntil() => $_clearField(6);
   @$pb.TagNumber(6)
   $1.Timestamp ensureValidUntil() => $_ensure(5);
 }
@@ -1952,50 +2044,58 @@ class GetCryptoHoldingsRequest extends $pb.GeneratedMessage {
   factory GetCryptoHoldingsRequest({
     $core.String? userId,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    return result;
   }
-  GetCryptoHoldingsRequest._() : super();
-  factory GetCryptoHoldingsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoHoldingsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoHoldingsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetCryptoHoldingsRequest._();
+
+  factory GetCryptoHoldingsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoHoldingsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoHoldingsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCryptoHoldingsRequest clone() => GetCryptoHoldingsRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoHoldingsRequest copyWith(void Function(GetCryptoHoldingsRequest) updates) => super.copyWith((message) => updates(message as GetCryptoHoldingsRequest)) as GetCryptoHoldingsRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoHoldingsRequest clone() =>
+      GetCryptoHoldingsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoHoldingsRequest copyWith(
+          void Function(GetCryptoHoldingsRequest) updates) =>
+      super.copyWith((message) => updates(message as GetCryptoHoldingsRequest))
+          as GetCryptoHoldingsRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetCryptoHoldingsRequest create() => GetCryptoHoldingsRequest._();
+  @$core.override
   GetCryptoHoldingsRequest createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoHoldingsRequest> createRepeated() => $pb.PbList<GetCryptoHoldingsRequest>();
+  static $pb.PbList<GetCryptoHoldingsRequest> createRepeated() =>
+      $pb.PbList<GetCryptoHoldingsRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoHoldingsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoHoldingsRequest>(create);
+  static GetCryptoHoldingsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoHoldingsRequest>(create);
   static GetCryptoHoldingsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 }
 
 class GetCryptoHolding extends $pb.GeneratedMessage {
@@ -2008,128 +2108,123 @@ class GetCryptoHolding extends $pb.GeneratedMessage {
     $core.String? fiatCurrency,
     $1.Timestamp? acquiredAt,
   }) {
-    final $result = create();
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (symbol != null) {
-      $result.symbol = symbol;
-    }
-    if (name != null) {
-      $result.name = name;
-    }
-    if (balance != null) {
-      $result.balance = balance;
-    }
-    if (fiatValue != null) {
-      $result.fiatValue = fiatValue;
-    }
-    if (fiatCurrency != null) {
-      $result.fiatCurrency = fiatCurrency;
-    }
-    if (acquiredAt != null) {
-      $result.acquiredAt = acquiredAt;
-    }
-    return $result;
+    final result = create();
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (symbol != null) result.symbol = symbol;
+    if (name != null) result.name = name;
+    if (balance != null) result.balance = balance;
+    if (fiatValue != null) result.fiatValue = fiatValue;
+    if (fiatCurrency != null) result.fiatCurrency = fiatCurrency;
+    if (acquiredAt != null) result.acquiredAt = acquiredAt;
+    return result;
   }
-  GetCryptoHolding._() : super();
-  factory GetCryptoHolding.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoHolding.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoHolding', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetCryptoHolding._();
+
+  factory GetCryptoHolding.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoHolding.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoHolding',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(2, _omitFieldNames ? '' : 'symbol')
     ..aOS(3, _omitFieldNames ? '' : 'name')
     ..a<$core.double>(4, _omitFieldNames ? '' : 'balance', $pb.PbFieldType.OD)
     ..a<$core.double>(5, _omitFieldNames ? '' : 'fiatValue', $pb.PbFieldType.OD)
     ..aOS(6, _omitFieldNames ? '' : 'fiatCurrency')
-    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'acquiredAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'acquiredAt',
+        subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   GetCryptoHolding clone() => GetCryptoHolding()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoHolding copyWith(void Function(GetCryptoHolding) updates) => super.copyWith((message) => updates(message as GetCryptoHolding)) as GetCryptoHolding;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoHolding copyWith(void Function(GetCryptoHolding) updates) =>
+      super.copyWith((message) => updates(message as GetCryptoHolding))
+          as GetCryptoHolding;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetCryptoHolding create() => GetCryptoHolding._();
+  @$core.override
   GetCryptoHolding createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoHolding> createRepeated() => $pb.PbList<GetCryptoHolding>();
+  static $pb.PbList<GetCryptoHolding> createRepeated() =>
+      $pb.PbList<GetCryptoHolding>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoHolding getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoHolding>(create);
+  static GetCryptoHolding getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoHolding>(create);
   static GetCryptoHolding? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get cryptoId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set cryptoId($core.String v) { $_setString(0, v); }
+  set cryptoId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasCryptoId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearCryptoId() => clearField(1);
+  void clearCryptoId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get symbol => $_getSZ(1);
   @$pb.TagNumber(2)
-  set symbol($core.String v) { $_setString(1, v); }
+  set symbol($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasSymbol() => $_has(1);
   @$pb.TagNumber(2)
-  void clearSymbol() => clearField(2);
+  void clearSymbol() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get name => $_getSZ(2);
   @$pb.TagNumber(3)
-  set name($core.String v) { $_setString(2, v); }
+  set name($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasName() => $_has(2);
   @$pb.TagNumber(3)
-  void clearName() => clearField(3);
+  void clearName() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get balance => $_getN(3);
   @$pb.TagNumber(4)
-  set balance($core.double v) { $_setDouble(3, v); }
+  set balance($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasBalance() => $_has(3);
   @$pb.TagNumber(4)
-  void clearBalance() => clearField(4);
+  void clearBalance() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get fiatValue => $_getN(4);
   @$pb.TagNumber(5)
-  set fiatValue($core.double v) { $_setDouble(4, v); }
+  set fiatValue($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasFiatValue() => $_has(4);
   @$pb.TagNumber(5)
-  void clearFiatValue() => clearField(5);
+  void clearFiatValue() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get fiatCurrency => $_getSZ(5);
   @$pb.TagNumber(6)
-  set fiatCurrency($core.String v) { $_setString(5, v); }
+  set fiatCurrency($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasFiatCurrency() => $_has(5);
   @$pb.TagNumber(6)
-  void clearFiatCurrency() => clearField(6);
+  void clearFiatCurrency() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $1.Timestamp get acquiredAt => $_getN(6);
   @$pb.TagNumber(7)
-  set acquiredAt($1.Timestamp v) { setField(7, v); }
+  set acquiredAt($1.Timestamp value) => $_setField(7, value);
   @$pb.TagNumber(7)
   $core.bool hasAcquiredAt() => $_has(6);
   @$pb.TagNumber(7)
-  void clearAcquiredAt() => clearField(7);
+  void clearAcquiredAt() => $_clearField(7);
   @$pb.TagNumber(7)
   $1.Timestamp ensureAcquiredAt() => $_ensure(6);
 }
@@ -2140,70 +2235,77 @@ class GetCryptoHoldingsResponse extends $pb.GeneratedMessage {
     $core.double? totalFiatValue,
     $core.String? fiatCurrency,
   }) {
-    final $result = create();
-    if (holdings != null) {
-      $result.holdings.addAll(holdings);
-    }
-    if (totalFiatValue != null) {
-      $result.totalFiatValue = totalFiatValue;
-    }
-    if (fiatCurrency != null) {
-      $result.fiatCurrency = fiatCurrency;
-    }
-    return $result;
+    final result = create();
+    if (holdings != null) result.holdings.addAll(holdings);
+    if (totalFiatValue != null) result.totalFiatValue = totalFiatValue;
+    if (fiatCurrency != null) result.fiatCurrency = fiatCurrency;
+    return result;
   }
-  GetCryptoHoldingsResponse._() : super();
-  factory GetCryptoHoldingsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoHoldingsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoHoldingsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<GetCryptoHolding>(1, _omitFieldNames ? '' : 'holdings', $pb.PbFieldType.PM, subBuilder: GetCryptoHolding.create)
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalFiatValue', $pb.PbFieldType.OD)
+  GetCryptoHoldingsResponse._();
+
+  factory GetCryptoHoldingsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoHoldingsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoHoldingsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<GetCryptoHolding>(
+        1, _omitFieldNames ? '' : 'holdings', $pb.PbFieldType.PM,
+        subBuilder: GetCryptoHolding.create)
+    ..a<$core.double>(
+        2, _omitFieldNames ? '' : 'totalFiatValue', $pb.PbFieldType.OD)
     ..aOS(3, _omitFieldNames ? '' : 'fiatCurrency')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCryptoHoldingsResponse clone() => GetCryptoHoldingsResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoHoldingsResponse copyWith(void Function(GetCryptoHoldingsResponse) updates) => super.copyWith((message) => updates(message as GetCryptoHoldingsResponse)) as GetCryptoHoldingsResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoHoldingsResponse clone() =>
+      GetCryptoHoldingsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoHoldingsResponse copyWith(
+          void Function(GetCryptoHoldingsResponse) updates) =>
+      super.copyWith((message) => updates(message as GetCryptoHoldingsResponse))
+          as GetCryptoHoldingsResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetCryptoHoldingsResponse create() => GetCryptoHoldingsResponse._();
+  @$core.override
   GetCryptoHoldingsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoHoldingsResponse> createRepeated() => $pb.PbList<GetCryptoHoldingsResponse>();
+  static $pb.PbList<GetCryptoHoldingsResponse> createRepeated() =>
+      $pb.PbList<GetCryptoHoldingsResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoHoldingsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoHoldingsResponse>(create);
+  static GetCryptoHoldingsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoHoldingsResponse>(create);
   static GetCryptoHoldingsResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<GetCryptoHolding> get holdings => $_getList(0);
+  $pb.PbList<GetCryptoHolding> get holdings => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.double get totalFiatValue => $_getN(1);
   @$pb.TagNumber(2)
-  set totalFiatValue($core.double v) { $_setDouble(1, v); }
+  set totalFiatValue($core.double value) => $_setDouble(1, value);
   @$pb.TagNumber(2)
   $core.bool hasTotalFiatValue() => $_has(1);
   @$pb.TagNumber(2)
-  void clearTotalFiatValue() => clearField(2);
+  void clearTotalFiatValue() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get fiatCurrency => $_getSZ(2);
   @$pb.TagNumber(3)
-  set fiatCurrency($core.String v) { $_setString(2, v); }
+  set fiatCurrency($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasFiatCurrency() => $_has(2);
   @$pb.TagNumber(3)
-  void clearFiatCurrency() => clearField(3);
+  void clearFiatCurrency() => $_clearField(3);
 }
 
 /// Get Crypto Transactions
@@ -2213,76 +2315,82 @@ class GetCryptoTransactionsRequest extends $pb.GeneratedMessage {
     $core.int? limit,
     $core.int? offset,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (limit != null) {
-      $result.limit = limit;
-    }
-    if (offset != null) {
-      $result.offset = offset;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (limit != null) result.limit = limit;
+    if (offset != null) result.offset = offset;
+    return result;
   }
-  GetCryptoTransactionsRequest._() : super();
-  factory GetCryptoTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetCryptoTransactionsRequest._();
+
+  factory GetCryptoTransactionsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoTransactionsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoTransactionsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCryptoTransactionsRequest clone() => GetCryptoTransactionsRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoTransactionsRequest copyWith(void Function(GetCryptoTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetCryptoTransactionsRequest)) as GetCryptoTransactionsRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoTransactionsRequest clone() =>
+      GetCryptoTransactionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoTransactionsRequest copyWith(
+          void Function(GetCryptoTransactionsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetCryptoTransactionsRequest))
+          as GetCryptoTransactionsRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GetCryptoTransactionsRequest create() => GetCryptoTransactionsRequest._();
+  static GetCryptoTransactionsRequest create() =>
+      GetCryptoTransactionsRequest._();
+  @$core.override
   GetCryptoTransactionsRequest createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoTransactionsRequest> createRepeated() => $pb.PbList<GetCryptoTransactionsRequest>();
+  static $pb.PbList<GetCryptoTransactionsRequest> createRepeated() =>
+      $pb.PbList<GetCryptoTransactionsRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoTransactionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoTransactionsRequest>(create);
+  static GetCryptoTransactionsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoTransactionsRequest>(create);
   static GetCryptoTransactionsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.int get limit => $_getIZ(1);
   @$pb.TagNumber(2)
-  set limit($core.int v) { $_setSignedInt32(1, v); }
+  set limit($core.int value) => $_setSignedInt32(1, value);
   @$pb.TagNumber(2)
   $core.bool hasLimit() => $_has(1);
   @$pb.TagNumber(2)
-  void clearLimit() => clearField(2);
+  void clearLimit() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.int get offset => $_getIZ(2);
   @$pb.TagNumber(3)
-  set offset($core.int v) { $_setSignedInt32(2, v); }
+  set offset($core.int value) => $_setSignedInt32(2, value);
   @$pb.TagNumber(3)
   $core.bool hasOffset() => $_has(2);
   @$pb.TagNumber(3)
-  void clearOffset() => clearField(3);
+  void clearOffset() => $_clearField(3);
 }
 
 class CryptoTransaction extends $pb.GeneratedMessage {
@@ -2299,47 +2407,34 @@ class CryptoTransaction extends $pb.GeneratedMessage {
     $core.double? fee,
     $core.double? exchangeRate,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (type != null) {
-      $result.type = type;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (cryptoSymbol != null) {
-      $result.cryptoSymbol = cryptoSymbol;
-    }
-    if (amount != null) {
-      $result.amount = amount;
-    }
-    if (fiatValue != null) {
-      $result.fiatValue = fiatValue;
-    }
-    if (fiatCurrency != null) {
-      $result.fiatCurrency = fiatCurrency;
-    }
-    if (timestamp != null) {
-      $result.timestamp = timestamp;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (fee != null) {
-      $result.fee = fee;
-    }
-    if (exchangeRate != null) {
-      $result.exchangeRate = exchangeRate;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (type != null) result.type = type;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (cryptoSymbol != null) result.cryptoSymbol = cryptoSymbol;
+    if (amount != null) result.amount = amount;
+    if (fiatValue != null) result.fiatValue = fiatValue;
+    if (fiatCurrency != null) result.fiatCurrency = fiatCurrency;
+    if (timestamp != null) result.timestamp = timestamp;
+    if (status != null) result.status = status;
+    if (fee != null) result.fee = fee;
+    if (exchangeRate != null) result.exchangeRate = exchangeRate;
+    return result;
   }
-  CryptoTransaction._() : super();
-  factory CryptoTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CryptoTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CryptoTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  CryptoTransaction._();
+
+  factory CryptoTransaction.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CryptoTransaction.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CryptoTransaction',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'type')
     ..aOS(3, _omitFieldNames ? '' : 'cryptoId')
@@ -2347,134 +2442,135 @@ class CryptoTransaction extends $pb.GeneratedMessage {
     ..a<$core.double>(5, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..a<$core.double>(6, _omitFieldNames ? '' : 'fiatValue', $pb.PbFieldType.OD)
     ..aOS(7, _omitFieldNames ? '' : 'fiatCurrency')
-    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'timestamp',
+        subBuilder: $1.Timestamp.create)
     ..aOS(9, _omitFieldNames ? '' : 'status')
     ..a<$core.double>(10, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OD)
-    ..a<$core.double>(11, _omitFieldNames ? '' : 'exchangeRate', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
+    ..a<$core.double>(
+        11, _omitFieldNames ? '' : 'exchangeRate', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   CryptoTransaction clone() => CryptoTransaction()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CryptoTransaction copyWith(void Function(CryptoTransaction) updates) => super.copyWith((message) => updates(message as CryptoTransaction)) as CryptoTransaction;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CryptoTransaction copyWith(void Function(CryptoTransaction) updates) =>
+      super.copyWith((message) => updates(message as CryptoTransaction))
+          as CryptoTransaction;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CryptoTransaction create() => CryptoTransaction._();
+  @$core.override
   CryptoTransaction createEmptyInstance() => create();
-  static $pb.PbList<CryptoTransaction> createRepeated() => $pb.PbList<CryptoTransaction>();
+  static $pb.PbList<CryptoTransaction> createRepeated() =>
+      $pb.PbList<CryptoTransaction>();
   @$core.pragma('dart2js:noInline')
-  static CryptoTransaction getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CryptoTransaction>(create);
+  static CryptoTransaction getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CryptoTransaction>(create);
   static CryptoTransaction? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => clearField(1);
+  void clearId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get type => $_getSZ(1);
   @$pb.TagNumber(2)
-  set type($core.String v) { $_setString(1, v); }
+  set type($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasType() => $_has(1);
   @$pb.TagNumber(2)
-  void clearType() => clearField(2);
+  void clearType() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get cryptoId => $_getSZ(2);
   @$pb.TagNumber(3)
-  set cryptoId($core.String v) { $_setString(2, v); }
+  set cryptoId($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasCryptoId() => $_has(2);
   @$pb.TagNumber(3)
-  void clearCryptoId() => clearField(3);
+  void clearCryptoId() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get cryptoSymbol => $_getSZ(3);
   @$pb.TagNumber(4)
-  set cryptoSymbol($core.String v) { $_setString(3, v); }
+  set cryptoSymbol($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasCryptoSymbol() => $_has(3);
   @$pb.TagNumber(4)
-  void clearCryptoSymbol() => clearField(4);
+  void clearCryptoSymbol() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get amount => $_getN(4);
   @$pb.TagNumber(5)
-  set amount($core.double v) { $_setDouble(4, v); }
+  set amount($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasAmount() => $_has(4);
   @$pb.TagNumber(5)
-  void clearAmount() => clearField(5);
+  void clearAmount() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.double get fiatValue => $_getN(5);
   @$pb.TagNumber(6)
-  set fiatValue($core.double v) { $_setDouble(5, v); }
+  set fiatValue($core.double value) => $_setDouble(5, value);
   @$pb.TagNumber(6)
   $core.bool hasFiatValue() => $_has(5);
   @$pb.TagNumber(6)
-  void clearFiatValue() => clearField(6);
+  void clearFiatValue() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.String get fiatCurrency => $_getSZ(6);
   @$pb.TagNumber(7)
-  set fiatCurrency($core.String v) { $_setString(6, v); }
+  set fiatCurrency($core.String value) => $_setString(6, value);
   @$pb.TagNumber(7)
   $core.bool hasFiatCurrency() => $_has(6);
   @$pb.TagNumber(7)
-  void clearFiatCurrency() => clearField(7);
+  void clearFiatCurrency() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $1.Timestamp get timestamp => $_getN(7);
   @$pb.TagNumber(8)
-  set timestamp($1.Timestamp v) { setField(8, v); }
+  set timestamp($1.Timestamp value) => $_setField(8, value);
   @$pb.TagNumber(8)
   $core.bool hasTimestamp() => $_has(7);
   @$pb.TagNumber(8)
-  void clearTimestamp() => clearField(8);
+  void clearTimestamp() => $_clearField(8);
   @$pb.TagNumber(8)
   $1.Timestamp ensureTimestamp() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get status => $_getSZ(8);
   @$pb.TagNumber(9)
-  set status($core.String v) { $_setString(8, v); }
+  set status($core.String value) => $_setString(8, value);
   @$pb.TagNumber(9)
   $core.bool hasStatus() => $_has(8);
   @$pb.TagNumber(9)
-  void clearStatus() => clearField(9);
+  void clearStatus() => $_clearField(9);
 
   @$pb.TagNumber(10)
   $core.double get fee => $_getN(9);
   @$pb.TagNumber(10)
-  set fee($core.double v) { $_setDouble(9, v); }
+  set fee($core.double value) => $_setDouble(9, value);
   @$pb.TagNumber(10)
   $core.bool hasFee() => $_has(9);
   @$pb.TagNumber(10)
-  void clearFee() => clearField(10);
+  void clearFee() => $_clearField(10);
 
   @$pb.TagNumber(11)
   $core.double get exchangeRate => $_getN(10);
   @$pb.TagNumber(11)
-  set exchangeRate($core.double v) { $_setDouble(10, v); }
+  set exchangeRate($core.double value) => $_setDouble(10, value);
   @$pb.TagNumber(11)
   $core.bool hasExchangeRate() => $_has(10);
   @$pb.TagNumber(11)
-  void clearExchangeRate() => clearField(11);
+  void clearExchangeRate() => $_clearField(11);
 }
 
 class GetCryptoTransactionsResponse extends $pb.GeneratedMessage {
@@ -2482,57 +2578,67 @@ class GetCryptoTransactionsResponse extends $pb.GeneratedMessage {
     $core.Iterable<CryptoTransaction>? transactions,
     $core.int? totalCount,
   }) {
-    final $result = create();
-    if (transactions != null) {
-      $result.transactions.addAll(transactions);
-    }
-    if (totalCount != null) {
-      $result.totalCount = totalCount;
-    }
-    return $result;
+    final result = create();
+    if (transactions != null) result.transactions.addAll(transactions);
+    if (totalCount != null) result.totalCount = totalCount;
+    return result;
   }
-  GetCryptoTransactionsResponse._() : super();
-  factory GetCryptoTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCryptoTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCryptoTransactionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CryptoTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: CryptoTransaction.create)
+  GetCryptoTransactionsResponse._();
+
+  factory GetCryptoTransactionsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCryptoTransactionsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCryptoTransactionsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CryptoTransaction>(
+        1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM,
+        subBuilder: CryptoTransaction.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetCryptoTransactionsResponse clone() => GetCryptoTransactionsResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetCryptoTransactionsResponse copyWith(void Function(GetCryptoTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetCryptoTransactionsResponse)) as GetCryptoTransactionsResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoTransactionsResponse clone() =>
+      GetCryptoTransactionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCryptoTransactionsResponse copyWith(
+          void Function(GetCryptoTransactionsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetCryptoTransactionsResponse))
+          as GetCryptoTransactionsResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GetCryptoTransactionsResponse create() => GetCryptoTransactionsResponse._();
+  static GetCryptoTransactionsResponse create() =>
+      GetCryptoTransactionsResponse._();
+  @$core.override
   GetCryptoTransactionsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetCryptoTransactionsResponse> createRepeated() => $pb.PbList<GetCryptoTransactionsResponse>();
+  static $pb.PbList<GetCryptoTransactionsResponse> createRepeated() =>
+      $pb.PbList<GetCryptoTransactionsResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetCryptoTransactionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCryptoTransactionsResponse>(create);
+  static GetCryptoTransactionsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCryptoTransactionsResponse>(create);
   static GetCryptoTransactionsResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<CryptoTransaction> get transactions => $_getList(0);
+  $pb.PbList<CryptoTransaction> get transactions => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.int get totalCount => $_getIZ(1);
   @$pb.TagNumber(2)
-  set totalCount($core.int v) { $_setSignedInt32(1, v); }
+  set totalCount($core.int value) => $_setSignedInt32(1, value);
   @$pb.TagNumber(2)
   $core.bool hasTotalCount() => $_has(1);
   @$pb.TagNumber(2)
-  void clearTotalCount() => clearField(2);
+  void clearTotalCount() => $_clearField(2);
 }
 
 /// Buy Crypto
@@ -2545,115 +2651,112 @@ class BuyCryptoRequest extends $pb.GeneratedMessage {
     $core.String? transactionPin,
     $core.String? idempotencyKey,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (fiatAmount != null) {
-      $result.fiatAmount = fiatAmount;
-    }
-    if (fiatCurrency != null) {
-      $result.fiatCurrency = fiatCurrency;
-    }
-    if (transactionPin != null) {
-      $result.transactionPin = transactionPin;
-    }
-    if (idempotencyKey != null) {
-      $result.idempotencyKey = idempotencyKey;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (fiatAmount != null) result.fiatAmount = fiatAmount;
+    if (fiatCurrency != null) result.fiatCurrency = fiatCurrency;
+    if (transactionPin != null) result.transactionPin = transactionPin;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    return result;
   }
-  BuyCryptoRequest._() : super();
-  factory BuyCryptoRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory BuyCryptoRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BuyCryptoRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  BuyCryptoRequest._();
+
+  factory BuyCryptoRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory BuyCryptoRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'BuyCryptoRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'fiatAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'fiatAmount', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'fiatCurrency')
     ..aOS(5, _omitFieldNames ? '' : 'transactionPin')
     ..aOS(6, _omitFieldNames ? '' : 'idempotencyKey')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   BuyCryptoRequest clone() => BuyCryptoRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  BuyCryptoRequest copyWith(void Function(BuyCryptoRequest) updates) => super.copyWith((message) => updates(message as BuyCryptoRequest)) as BuyCryptoRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BuyCryptoRequest copyWith(void Function(BuyCryptoRequest) updates) =>
+      super.copyWith((message) => updates(message as BuyCryptoRequest))
+          as BuyCryptoRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static BuyCryptoRequest create() => BuyCryptoRequest._();
+  @$core.override
   BuyCryptoRequest createEmptyInstance() => create();
-  static $pb.PbList<BuyCryptoRequest> createRepeated() => $pb.PbList<BuyCryptoRequest>();
+  static $pb.PbList<BuyCryptoRequest> createRepeated() =>
+      $pb.PbList<BuyCryptoRequest>();
   @$core.pragma('dart2js:noInline')
-  static BuyCryptoRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BuyCryptoRequest>(create);
+  static BuyCryptoRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<BuyCryptoRequest>(create);
   static BuyCryptoRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get fiatAmount => $_getN(2);
   @$pb.TagNumber(3)
-  set fiatAmount($core.double v) { $_setDouble(2, v); }
+  set fiatAmount($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasFiatAmount() => $_has(2);
   @$pb.TagNumber(3)
-  void clearFiatAmount() => clearField(3);
+  void clearFiatAmount() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get fiatCurrency => $_getSZ(3);
   @$pb.TagNumber(4)
-  set fiatCurrency($core.String v) { $_setString(3, v); }
+  set fiatCurrency($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasFiatCurrency() => $_has(3);
   @$pb.TagNumber(4)
-  void clearFiatCurrency() => clearField(4);
+  void clearFiatCurrency() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get transactionPin => $_getSZ(4);
   @$pb.TagNumber(5)
-  set transactionPin($core.String v) { $_setString(4, v); }
+  set transactionPin($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasTransactionPin() => $_has(4);
   @$pb.TagNumber(5)
-  void clearTransactionPin() => clearField(5);
+  void clearTransactionPin() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get idempotencyKey => $_getSZ(5);
   @$pb.TagNumber(6)
-  set idempotencyKey($core.String v) { $_setString(5, v); }
+  set idempotencyKey($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasIdempotencyKey() => $_has(5);
   @$pb.TagNumber(6)
-  void clearIdempotencyKey() => clearField(6);
+  void clearIdempotencyKey() => $_clearField(6);
 }
 
 class BuyCryptoResponse extends $pb.GeneratedMessage {
@@ -2667,141 +2770,136 @@ class BuyCryptoResponse extends $pb.GeneratedMessage {
     $core.double? exchangeRate,
     $core.double? netAmount,
   }) {
-    final $result = create();
-    if (transactionId != null) {
-      $result.transactionId = transactionId;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (cryptoAmount != null) {
-      $result.cryptoAmount = cryptoAmount;
-    }
-    if (fiatAmount != null) {
-      $result.fiatAmount = fiatAmount;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (fee != null) {
-      $result.fee = fee;
-    }
-    if (exchangeRate != null) {
-      $result.exchangeRate = exchangeRate;
-    }
-    if (netAmount != null) {
-      $result.netAmount = netAmount;
-    }
-    return $result;
+    final result = create();
+    if (transactionId != null) result.transactionId = transactionId;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (cryptoAmount != null) result.cryptoAmount = cryptoAmount;
+    if (fiatAmount != null) result.fiatAmount = fiatAmount;
+    if (status != null) result.status = status;
+    if (fee != null) result.fee = fee;
+    if (exchangeRate != null) result.exchangeRate = exchangeRate;
+    if (netAmount != null) result.netAmount = netAmount;
+    return result;
   }
-  BuyCryptoResponse._() : super();
-  factory BuyCryptoResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory BuyCryptoResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BuyCryptoResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  BuyCryptoResponse._();
+
+  factory BuyCryptoResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory BuyCryptoResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'BuyCryptoResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'transactionId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'cryptoAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'fiatAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'cryptoAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'fiatAmount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'status')
     ..a<$core.double>(6, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, _omitFieldNames ? '' : 'exchangeRate', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        7, _omitFieldNames ? '' : 'exchangeRate', $pb.PbFieldType.OD)
     ..a<$core.double>(8, _omitFieldNames ? '' : 'netAmount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   BuyCryptoResponse clone() => BuyCryptoResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  BuyCryptoResponse copyWith(void Function(BuyCryptoResponse) updates) => super.copyWith((message) => updates(message as BuyCryptoResponse)) as BuyCryptoResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BuyCryptoResponse copyWith(void Function(BuyCryptoResponse) updates) =>
+      super.copyWith((message) => updates(message as BuyCryptoResponse))
+          as BuyCryptoResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static BuyCryptoResponse create() => BuyCryptoResponse._();
+  @$core.override
   BuyCryptoResponse createEmptyInstance() => create();
-  static $pb.PbList<BuyCryptoResponse> createRepeated() => $pb.PbList<BuyCryptoResponse>();
+  static $pb.PbList<BuyCryptoResponse> createRepeated() =>
+      $pb.PbList<BuyCryptoResponse>();
   @$core.pragma('dart2js:noInline')
-  static BuyCryptoResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BuyCryptoResponse>(create);
+  static BuyCryptoResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<BuyCryptoResponse>(create);
   static BuyCryptoResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get transactionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set transactionId($core.String v) { $_setString(0, v); }
+  set transactionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasTransactionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTransactionId() => clearField(1);
+  void clearTransactionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get cryptoAmount => $_getN(2);
   @$pb.TagNumber(3)
-  set cryptoAmount($core.double v) { $_setDouble(2, v); }
+  set cryptoAmount($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasCryptoAmount() => $_has(2);
   @$pb.TagNumber(3)
-  void clearCryptoAmount() => clearField(3);
+  void clearCryptoAmount() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get fiatAmount => $_getN(3);
   @$pb.TagNumber(4)
-  set fiatAmount($core.double v) { $_setDouble(3, v); }
+  set fiatAmount($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasFiatAmount() => $_has(3);
   @$pb.TagNumber(4)
-  void clearFiatAmount() => clearField(4);
+  void clearFiatAmount() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get status => $_getSZ(4);
   @$pb.TagNumber(5)
-  set status($core.String v) { $_setString(4, v); }
+  set status($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasStatus() => $_has(4);
   @$pb.TagNumber(5)
-  void clearStatus() => clearField(5);
+  void clearStatus() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.double get fee => $_getN(5);
   @$pb.TagNumber(6)
-  set fee($core.double v) { $_setDouble(5, v); }
+  set fee($core.double value) => $_setDouble(5, value);
   @$pb.TagNumber(6)
   $core.bool hasFee() => $_has(5);
   @$pb.TagNumber(6)
-  void clearFee() => clearField(6);
+  void clearFee() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.double get exchangeRate => $_getN(6);
   @$pb.TagNumber(7)
-  set exchangeRate($core.double v) { $_setDouble(6, v); }
+  set exchangeRate($core.double value) => $_setDouble(6, value);
   @$pb.TagNumber(7)
   $core.bool hasExchangeRate() => $_has(6);
   @$pb.TagNumber(7)
-  void clearExchangeRate() => clearField(7);
+  void clearExchangeRate() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $core.double get netAmount => $_getN(7);
   @$pb.TagNumber(8)
-  set netAmount($core.double v) { $_setDouble(7, v); }
+  set netAmount($core.double value) => $_setDouble(7, value);
   @$pb.TagNumber(8)
   $core.bool hasNetAmount() => $_has(7);
   @$pb.TagNumber(8)
-  void clearNetAmount() => clearField(8);
+  void clearNetAmount() => $_clearField(8);
 }
 
 /// Sell Crypto
@@ -2814,115 +2912,112 @@ class SellCryptoRequest extends $pb.GeneratedMessage {
     $core.String? transactionPin,
     $core.String? idempotencyKey,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (cryptoAmount != null) {
-      $result.cryptoAmount = cryptoAmount;
-    }
-    if (fiatCurrency != null) {
-      $result.fiatCurrency = fiatCurrency;
-    }
-    if (transactionPin != null) {
-      $result.transactionPin = transactionPin;
-    }
-    if (idempotencyKey != null) {
-      $result.idempotencyKey = idempotencyKey;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (cryptoAmount != null) result.cryptoAmount = cryptoAmount;
+    if (fiatCurrency != null) result.fiatCurrency = fiatCurrency;
+    if (transactionPin != null) result.transactionPin = transactionPin;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    return result;
   }
-  SellCryptoRequest._() : super();
-  factory SellCryptoRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SellCryptoRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SellCryptoRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  SellCryptoRequest._();
+
+  factory SellCryptoRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SellCryptoRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SellCryptoRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'cryptoAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'cryptoAmount', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'fiatCurrency')
     ..aOS(5, _omitFieldNames ? '' : 'transactionPin')
     ..aOS(6, _omitFieldNames ? '' : 'idempotencyKey')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   SellCryptoRequest clone() => SellCryptoRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SellCryptoRequest copyWith(void Function(SellCryptoRequest) updates) => super.copyWith((message) => updates(message as SellCryptoRequest)) as SellCryptoRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SellCryptoRequest copyWith(void Function(SellCryptoRequest) updates) =>
+      super.copyWith((message) => updates(message as SellCryptoRequest))
+          as SellCryptoRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static SellCryptoRequest create() => SellCryptoRequest._();
+  @$core.override
   SellCryptoRequest createEmptyInstance() => create();
-  static $pb.PbList<SellCryptoRequest> createRepeated() => $pb.PbList<SellCryptoRequest>();
+  static $pb.PbList<SellCryptoRequest> createRepeated() =>
+      $pb.PbList<SellCryptoRequest>();
   @$core.pragma('dart2js:noInline')
-  static SellCryptoRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SellCryptoRequest>(create);
+  static SellCryptoRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SellCryptoRequest>(create);
   static SellCryptoRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get cryptoAmount => $_getN(2);
   @$pb.TagNumber(3)
-  set cryptoAmount($core.double v) { $_setDouble(2, v); }
+  set cryptoAmount($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasCryptoAmount() => $_has(2);
   @$pb.TagNumber(3)
-  void clearCryptoAmount() => clearField(3);
+  void clearCryptoAmount() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get fiatCurrency => $_getSZ(3);
   @$pb.TagNumber(4)
-  set fiatCurrency($core.String v) { $_setString(3, v); }
+  set fiatCurrency($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasFiatCurrency() => $_has(3);
   @$pb.TagNumber(4)
-  void clearFiatCurrency() => clearField(4);
+  void clearFiatCurrency() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get transactionPin => $_getSZ(4);
   @$pb.TagNumber(5)
-  set transactionPin($core.String v) { $_setString(4, v); }
+  set transactionPin($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasTransactionPin() => $_has(4);
   @$pb.TagNumber(5)
-  void clearTransactionPin() => clearField(5);
+  void clearTransactionPin() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get idempotencyKey => $_getSZ(5);
   @$pb.TagNumber(6)
-  set idempotencyKey($core.String v) { $_setString(5, v); }
+  set idempotencyKey($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasIdempotencyKey() => $_has(5);
   @$pb.TagNumber(6)
-  void clearIdempotencyKey() => clearField(6);
+  void clearIdempotencyKey() => $_clearField(6);
 }
 
 class SellCryptoResponse extends $pb.GeneratedMessage {
@@ -2936,141 +3031,136 @@ class SellCryptoResponse extends $pb.GeneratedMessage {
     $core.double? exchangeRate,
     $core.double? netAmount,
   }) {
-    final $result = create();
-    if (transactionId != null) {
-      $result.transactionId = transactionId;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (fiatAmount != null) {
-      $result.fiatAmount = fiatAmount;
-    }
-    if (cryptoAmount != null) {
-      $result.cryptoAmount = cryptoAmount;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (fee != null) {
-      $result.fee = fee;
-    }
-    if (exchangeRate != null) {
-      $result.exchangeRate = exchangeRate;
-    }
-    if (netAmount != null) {
-      $result.netAmount = netAmount;
-    }
-    return $result;
+    final result = create();
+    if (transactionId != null) result.transactionId = transactionId;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (fiatAmount != null) result.fiatAmount = fiatAmount;
+    if (cryptoAmount != null) result.cryptoAmount = cryptoAmount;
+    if (status != null) result.status = status;
+    if (fee != null) result.fee = fee;
+    if (exchangeRate != null) result.exchangeRate = exchangeRate;
+    if (netAmount != null) result.netAmount = netAmount;
+    return result;
   }
-  SellCryptoResponse._() : super();
-  factory SellCryptoResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SellCryptoResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SellCryptoResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  SellCryptoResponse._();
+
+  factory SellCryptoResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SellCryptoResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SellCryptoResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'transactionId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'fiatAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'cryptoAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'fiatAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'cryptoAmount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'status')
     ..a<$core.double>(6, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, _omitFieldNames ? '' : 'exchangeRate', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        7, _omitFieldNames ? '' : 'exchangeRate', $pb.PbFieldType.OD)
     ..a<$core.double>(8, _omitFieldNames ? '' : 'netAmount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   SellCryptoResponse clone() => SellCryptoResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SellCryptoResponse copyWith(void Function(SellCryptoResponse) updates) => super.copyWith((message) => updates(message as SellCryptoResponse)) as SellCryptoResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SellCryptoResponse copyWith(void Function(SellCryptoResponse) updates) =>
+      super.copyWith((message) => updates(message as SellCryptoResponse))
+          as SellCryptoResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static SellCryptoResponse create() => SellCryptoResponse._();
+  @$core.override
   SellCryptoResponse createEmptyInstance() => create();
-  static $pb.PbList<SellCryptoResponse> createRepeated() => $pb.PbList<SellCryptoResponse>();
+  static $pb.PbList<SellCryptoResponse> createRepeated() =>
+      $pb.PbList<SellCryptoResponse>();
   @$core.pragma('dart2js:noInline')
-  static SellCryptoResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SellCryptoResponse>(create);
+  static SellCryptoResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SellCryptoResponse>(create);
   static SellCryptoResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get transactionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set transactionId($core.String v) { $_setString(0, v); }
+  set transactionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasTransactionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTransactionId() => clearField(1);
+  void clearTransactionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get fiatAmount => $_getN(2);
   @$pb.TagNumber(3)
-  set fiatAmount($core.double v) { $_setDouble(2, v); }
+  set fiatAmount($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasFiatAmount() => $_has(2);
   @$pb.TagNumber(3)
-  void clearFiatAmount() => clearField(3);
+  void clearFiatAmount() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get cryptoAmount => $_getN(3);
   @$pb.TagNumber(4)
-  set cryptoAmount($core.double v) { $_setDouble(3, v); }
+  set cryptoAmount($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasCryptoAmount() => $_has(3);
   @$pb.TagNumber(4)
-  void clearCryptoAmount() => clearField(4);
+  void clearCryptoAmount() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get status => $_getSZ(4);
   @$pb.TagNumber(5)
-  set status($core.String v) { $_setString(4, v); }
+  set status($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasStatus() => $_has(4);
   @$pb.TagNumber(5)
-  void clearStatus() => clearField(5);
+  void clearStatus() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.double get fee => $_getN(5);
   @$pb.TagNumber(6)
-  set fee($core.double v) { $_setDouble(5, v); }
+  set fee($core.double value) => $_setDouble(5, value);
   @$pb.TagNumber(6)
   $core.bool hasFee() => $_has(5);
   @$pb.TagNumber(6)
-  void clearFee() => clearField(6);
+  void clearFee() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.double get exchangeRate => $_getN(6);
   @$pb.TagNumber(7)
-  set exchangeRate($core.double v) { $_setDouble(6, v); }
+  set exchangeRate($core.double value) => $_setDouble(6, value);
   @$pb.TagNumber(7)
   $core.bool hasExchangeRate() => $_has(6);
   @$pb.TagNumber(7)
-  void clearExchangeRate() => clearField(7);
+  void clearExchangeRate() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $core.double get netAmount => $_getN(7);
   @$pb.TagNumber(8)
-  set netAmount($core.double v) { $_setDouble(7, v); }
+  set netAmount($core.double value) => $_setDouble(7, value);
   @$pb.TagNumber(8)
   $core.bool hasNetAmount() => $_has(7);
   @$pb.TagNumber(8)
-  void clearNetAmount() => clearField(8);
+  void clearNetAmount() => $_clearField(8);
 }
 
 /// Convert Crypto
@@ -3083,115 +3173,113 @@ class ConvertCryptoRequest extends $pb.GeneratedMessage {
     $core.String? transactionPin,
     $core.String? idempotencyKey,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (fromCryptoId != null) {
-      $result.fromCryptoId = fromCryptoId;
-    }
-    if (toCryptoId != null) {
-      $result.toCryptoId = toCryptoId;
-    }
-    if (fromAmount != null) {
-      $result.fromAmount = fromAmount;
-    }
-    if (transactionPin != null) {
-      $result.transactionPin = transactionPin;
-    }
-    if (idempotencyKey != null) {
-      $result.idempotencyKey = idempotencyKey;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (fromCryptoId != null) result.fromCryptoId = fromCryptoId;
+    if (toCryptoId != null) result.toCryptoId = toCryptoId;
+    if (fromAmount != null) result.fromAmount = fromAmount;
+    if (transactionPin != null) result.transactionPin = transactionPin;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    return result;
   }
-  ConvertCryptoRequest._() : super();
-  factory ConvertCryptoRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ConvertCryptoRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConvertCryptoRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  ConvertCryptoRequest._();
+
+  factory ConvertCryptoRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ConvertCryptoRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ConvertCryptoRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'fromCryptoId')
     ..aOS(3, _omitFieldNames ? '' : 'toCryptoId')
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'fromAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'fromAmount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'transactionPin')
     ..aOS(6, _omitFieldNames ? '' : 'idempotencyKey')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  ConvertCryptoRequest clone() => ConvertCryptoRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ConvertCryptoRequest copyWith(void Function(ConvertCryptoRequest) updates) => super.copyWith((message) => updates(message as ConvertCryptoRequest)) as ConvertCryptoRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ConvertCryptoRequest clone() =>
+      ConvertCryptoRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ConvertCryptoRequest copyWith(void Function(ConvertCryptoRequest) updates) =>
+      super.copyWith((message) => updates(message as ConvertCryptoRequest))
+          as ConvertCryptoRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ConvertCryptoRequest create() => ConvertCryptoRequest._();
+  @$core.override
   ConvertCryptoRequest createEmptyInstance() => create();
-  static $pb.PbList<ConvertCryptoRequest> createRepeated() => $pb.PbList<ConvertCryptoRequest>();
+  static $pb.PbList<ConvertCryptoRequest> createRepeated() =>
+      $pb.PbList<ConvertCryptoRequest>();
   @$core.pragma('dart2js:noInline')
-  static ConvertCryptoRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ConvertCryptoRequest>(create);
+  static ConvertCryptoRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ConvertCryptoRequest>(create);
   static ConvertCryptoRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get fromCryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set fromCryptoId($core.String v) { $_setString(1, v); }
+  set fromCryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasFromCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFromCryptoId() => clearField(2);
+  void clearFromCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get toCryptoId => $_getSZ(2);
   @$pb.TagNumber(3)
-  set toCryptoId($core.String v) { $_setString(2, v); }
+  set toCryptoId($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasToCryptoId() => $_has(2);
   @$pb.TagNumber(3)
-  void clearToCryptoId() => clearField(3);
+  void clearToCryptoId() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get fromAmount => $_getN(3);
   @$pb.TagNumber(4)
-  set fromAmount($core.double v) { $_setDouble(3, v); }
+  set fromAmount($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasFromAmount() => $_has(3);
   @$pb.TagNumber(4)
-  void clearFromAmount() => clearField(4);
+  void clearFromAmount() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get transactionPin => $_getSZ(4);
   @$pb.TagNumber(5)
-  set transactionPin($core.String v) { $_setString(4, v); }
+  set transactionPin($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasTransactionPin() => $_has(4);
   @$pb.TagNumber(5)
-  void clearTransactionPin() => clearField(5);
+  void clearTransactionPin() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get idempotencyKey => $_getSZ(5);
   @$pb.TagNumber(6)
-  set idempotencyKey($core.String v) { $_setString(5, v); }
+  set idempotencyKey($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasIdempotencyKey() => $_has(5);
   @$pb.TagNumber(6)
-  void clearIdempotencyKey() => clearField(6);
+  void clearIdempotencyKey() => $_clearField(6);
 }
 
 class ConvertCryptoResponse extends $pb.GeneratedMessage {
@@ -3203,115 +3291,114 @@ class ConvertCryptoResponse extends $pb.GeneratedMessage {
     $core.double? fee,
     $core.double? fromAmount,
   }) {
-    final $result = create();
-    if (transactionId != null) {
-      $result.transactionId = transactionId;
-    }
-    if (toAmount != null) {
-      $result.toAmount = toAmount;
-    }
-    if (rate != null) {
-      $result.rate = rate;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (fee != null) {
-      $result.fee = fee;
-    }
-    if (fromAmount != null) {
-      $result.fromAmount = fromAmount;
-    }
-    return $result;
+    final result = create();
+    if (transactionId != null) result.transactionId = transactionId;
+    if (toAmount != null) result.toAmount = toAmount;
+    if (rate != null) result.rate = rate;
+    if (status != null) result.status = status;
+    if (fee != null) result.fee = fee;
+    if (fromAmount != null) result.fromAmount = fromAmount;
+    return result;
   }
-  ConvertCryptoResponse._() : super();
-  factory ConvertCryptoResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ConvertCryptoResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConvertCryptoResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  ConvertCryptoResponse._();
+
+  factory ConvertCryptoResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ConvertCryptoResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ConvertCryptoResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'transactionId')
     ..a<$core.double>(2, _omitFieldNames ? '' : 'toAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(3, _omitFieldNames ? '' : 'rate', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'status')
     ..a<$core.double>(5, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'fromAmount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
+    ..a<$core.double>(
+        6, _omitFieldNames ? '' : 'fromAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  ConvertCryptoResponse clone() => ConvertCryptoResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ConvertCryptoResponse copyWith(void Function(ConvertCryptoResponse) updates) => super.copyWith((message) => updates(message as ConvertCryptoResponse)) as ConvertCryptoResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ConvertCryptoResponse clone() =>
+      ConvertCryptoResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ConvertCryptoResponse copyWith(
+          void Function(ConvertCryptoResponse) updates) =>
+      super.copyWith((message) => updates(message as ConvertCryptoResponse))
+          as ConvertCryptoResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ConvertCryptoResponse create() => ConvertCryptoResponse._();
+  @$core.override
   ConvertCryptoResponse createEmptyInstance() => create();
-  static $pb.PbList<ConvertCryptoResponse> createRepeated() => $pb.PbList<ConvertCryptoResponse>();
+  static $pb.PbList<ConvertCryptoResponse> createRepeated() =>
+      $pb.PbList<ConvertCryptoResponse>();
   @$core.pragma('dart2js:noInline')
-  static ConvertCryptoResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ConvertCryptoResponse>(create);
+  static ConvertCryptoResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ConvertCryptoResponse>(create);
   static ConvertCryptoResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get transactionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set transactionId($core.String v) { $_setString(0, v); }
+  set transactionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasTransactionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTransactionId() => clearField(1);
+  void clearTransactionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.double get toAmount => $_getN(1);
   @$pb.TagNumber(2)
-  set toAmount($core.double v) { $_setDouble(1, v); }
+  set toAmount($core.double value) => $_setDouble(1, value);
   @$pb.TagNumber(2)
   $core.bool hasToAmount() => $_has(1);
   @$pb.TagNumber(2)
-  void clearToAmount() => clearField(2);
+  void clearToAmount() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get rate => $_getN(2);
   @$pb.TagNumber(3)
-  set rate($core.double v) { $_setDouble(2, v); }
+  set rate($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasRate() => $_has(2);
   @$pb.TagNumber(3)
-  void clearRate() => clearField(3);
+  void clearRate() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get status => $_getSZ(3);
   @$pb.TagNumber(4)
-  set status($core.String v) { $_setString(3, v); }
+  set status($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasStatus() => $_has(3);
   @$pb.TagNumber(4)
-  void clearStatus() => clearField(4);
+  void clearStatus() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get fee => $_getN(4);
   @$pb.TagNumber(5)
-  set fee($core.double v) { $_setDouble(4, v); }
+  set fee($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasFee() => $_has(4);
   @$pb.TagNumber(5)
-  void clearFee() => clearField(5);
+  void clearFee() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.double get fromAmount => $_getN(5);
   @$pb.TagNumber(6)
-  set fromAmount($core.double v) { $_setDouble(5, v); }
+  set fromAmount($core.double value) => $_setDouble(5, value);
   @$pb.TagNumber(6)
   $core.bool hasFromAmount() => $_has(5);
   @$pb.TagNumber(6)
-  void clearFromAmount() => clearField(6);
+  void clearFromAmount() => $_clearField(6);
 }
 
 /// Get Wallets
@@ -3319,50 +3406,56 @@ class GetWalletsRequest extends $pb.GeneratedMessage {
   factory GetWalletsRequest({
     $core.String? userId,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    return result;
   }
-  GetWalletsRequest._() : super();
-  factory GetWalletsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetWalletsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetWalletsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetWalletsRequest._();
+
+  factory GetWalletsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetWalletsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetWalletsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   GetWalletsRequest clone() => GetWalletsRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetWalletsRequest copyWith(void Function(GetWalletsRequest) updates) => super.copyWith((message) => updates(message as GetWalletsRequest)) as GetWalletsRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWalletsRequest copyWith(void Function(GetWalletsRequest) updates) =>
+      super.copyWith((message) => updates(message as GetWalletsRequest))
+          as GetWalletsRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetWalletsRequest create() => GetWalletsRequest._();
+  @$core.override
   GetWalletsRequest createEmptyInstance() => create();
-  static $pb.PbList<GetWalletsRequest> createRepeated() => $pb.PbList<GetWalletsRequest>();
+  static $pb.PbList<GetWalletsRequest> createRepeated() =>
+      $pb.PbList<GetWalletsRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetWalletsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetWalletsRequest>(create);
+  static GetWalletsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetWalletsRequest>(create);
   static GetWalletsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 }
 
 class CryptoWallet extends $pb.GeneratedMessage {
@@ -3376,38 +3469,31 @@ class CryptoWallet extends $pb.GeneratedMessage {
     $core.String? chain,
     $core.String? cryptoName,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (cryptoSymbol != null) {
-      $result.cryptoSymbol = cryptoSymbol;
-    }
-    if (address != null) {
-      $result.address = address;
-    }
-    if (balance != null) {
-      $result.balance = balance;
-    }
-    if (walletType != null) {
-      $result.walletType = walletType;
-    }
-    if (chain != null) {
-      $result.chain = chain;
-    }
-    if (cryptoName != null) {
-      $result.cryptoName = cryptoName;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (cryptoSymbol != null) result.cryptoSymbol = cryptoSymbol;
+    if (address != null) result.address = address;
+    if (balance != null) result.balance = balance;
+    if (walletType != null) result.walletType = walletType;
+    if (chain != null) result.chain = chain;
+    if (cryptoName != null) result.cryptoName = cryptoName;
+    return result;
   }
-  CryptoWallet._() : super();
-  factory CryptoWallet.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CryptoWallet.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CryptoWallet', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  CryptoWallet._();
+
+  factory CryptoWallet.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CryptoWallet.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CryptoWallet',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(3, _omitFieldNames ? '' : 'cryptoSymbol')
@@ -3416,145 +3502,151 @@ class CryptoWallet extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'walletType')
     ..aOS(7, _omitFieldNames ? '' : 'chain')
     ..aOS(8, _omitFieldNames ? '' : 'cryptoName')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   CryptoWallet clone() => CryptoWallet()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CryptoWallet copyWith(void Function(CryptoWallet) updates) => super.copyWith((message) => updates(message as CryptoWallet)) as CryptoWallet;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CryptoWallet copyWith(void Function(CryptoWallet) updates) =>
+      super.copyWith((message) => updates(message as CryptoWallet))
+          as CryptoWallet;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CryptoWallet create() => CryptoWallet._();
+  @$core.override
   CryptoWallet createEmptyInstance() => create();
-  static $pb.PbList<CryptoWallet> createRepeated() => $pb.PbList<CryptoWallet>();
+  static $pb.PbList<CryptoWallet> createRepeated() =>
+      $pb.PbList<CryptoWallet>();
   @$core.pragma('dart2js:noInline')
-  static CryptoWallet getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CryptoWallet>(create);
+  static CryptoWallet getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CryptoWallet>(create);
   static CryptoWallet? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => clearField(1);
+  void clearId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get cryptoSymbol => $_getSZ(2);
   @$pb.TagNumber(3)
-  set cryptoSymbol($core.String v) { $_setString(2, v); }
+  set cryptoSymbol($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasCryptoSymbol() => $_has(2);
   @$pb.TagNumber(3)
-  void clearCryptoSymbol() => clearField(3);
+  void clearCryptoSymbol() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get address => $_getSZ(3);
   @$pb.TagNumber(4)
-  set address($core.String v) { $_setString(3, v); }
+  set address($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasAddress() => $_has(3);
   @$pb.TagNumber(4)
-  void clearAddress() => clearField(4);
+  void clearAddress() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get balance => $_getN(4);
   @$pb.TagNumber(5)
-  set balance($core.double v) { $_setDouble(4, v); }
+  set balance($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasBalance() => $_has(4);
   @$pb.TagNumber(5)
-  void clearBalance() => clearField(5);
+  void clearBalance() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get walletType => $_getSZ(5);
   @$pb.TagNumber(6)
-  set walletType($core.String v) { $_setString(5, v); }
+  set walletType($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasWalletType() => $_has(5);
   @$pb.TagNumber(6)
-  void clearWalletType() => clearField(6);
+  void clearWalletType() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.String get chain => $_getSZ(6);
   @$pb.TagNumber(7)
-  set chain($core.String v) { $_setString(6, v); }
+  set chain($core.String value) => $_setString(6, value);
   @$pb.TagNumber(7)
   $core.bool hasChain() => $_has(6);
   @$pb.TagNumber(7)
-  void clearChain() => clearField(7);
+  void clearChain() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $core.String get cryptoName => $_getSZ(7);
   @$pb.TagNumber(8)
-  set cryptoName($core.String v) { $_setString(7, v); }
+  set cryptoName($core.String value) => $_setString(7, value);
   @$pb.TagNumber(8)
   $core.bool hasCryptoName() => $_has(7);
   @$pb.TagNumber(8)
-  void clearCryptoName() => clearField(8);
+  void clearCryptoName() => $_clearField(8);
 }
 
 class GetWalletsResponse extends $pb.GeneratedMessage {
   factory GetWalletsResponse({
     $core.Iterable<CryptoWallet>? wallets,
   }) {
-    final $result = create();
-    if (wallets != null) {
-      $result.wallets.addAll(wallets);
-    }
-    return $result;
+    final result = create();
+    if (wallets != null) result.wallets.addAll(wallets);
+    return result;
   }
-  GetWalletsResponse._() : super();
-  factory GetWalletsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetWalletsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetWalletsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CryptoWallet>(1, _omitFieldNames ? '' : 'wallets', $pb.PbFieldType.PM, subBuilder: CryptoWallet.create)
-    ..hasRequiredFields = false
-  ;
+  GetWalletsResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  factory GetWalletsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetWalletsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetWalletsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CryptoWallet>(1, _omitFieldNames ? '' : 'wallets', $pb.PbFieldType.PM,
+        subBuilder: CryptoWallet.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   GetWalletsResponse clone() => GetWalletsResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetWalletsResponse copyWith(void Function(GetWalletsResponse) updates) => super.copyWith((message) => updates(message as GetWalletsResponse)) as GetWalletsResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWalletsResponse copyWith(void Function(GetWalletsResponse) updates) =>
+      super.copyWith((message) => updates(message as GetWalletsResponse))
+          as GetWalletsResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetWalletsResponse create() => GetWalletsResponse._();
+  @$core.override
   GetWalletsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetWalletsResponse> createRepeated() => $pb.PbList<GetWalletsResponse>();
+  static $pb.PbList<GetWalletsResponse> createRepeated() =>
+      $pb.PbList<GetWalletsResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetWalletsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetWalletsResponse>(create);
+  static GetWalletsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetWalletsResponse>(create);
   static GetWalletsResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<CryptoWallet> get wallets => $_getList(0);
+  $pb.PbList<CryptoWallet> get wallets => $_getList(0);
 }
 
 /// Create Wallet
@@ -3565,89 +3657,89 @@ class CreateWalletRequest extends $pb.GeneratedMessage {
     $core.String? walletType,
     $core.String? chain,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (walletType != null) {
-      $result.walletType = walletType;
-    }
-    if (chain != null) {
-      $result.chain = chain;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (walletType != null) result.walletType = walletType;
+    if (chain != null) result.chain = chain;
+    return result;
   }
-  CreateWalletRequest._() : super();
-  factory CreateWalletRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CreateWalletRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateWalletRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  CreateWalletRequest._();
+
+  factory CreateWalletRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CreateWalletRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CreateWalletRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(3, _omitFieldNames ? '' : 'walletType')
     ..aOS(4, _omitFieldNames ? '' : 'chain')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   CreateWalletRequest clone() => CreateWalletRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CreateWalletRequest copyWith(void Function(CreateWalletRequest) updates) => super.copyWith((message) => updates(message as CreateWalletRequest)) as CreateWalletRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateWalletRequest copyWith(void Function(CreateWalletRequest) updates) =>
+      super.copyWith((message) => updates(message as CreateWalletRequest))
+          as CreateWalletRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CreateWalletRequest create() => CreateWalletRequest._();
+  @$core.override
   CreateWalletRequest createEmptyInstance() => create();
-  static $pb.PbList<CreateWalletRequest> createRepeated() => $pb.PbList<CreateWalletRequest>();
+  static $pb.PbList<CreateWalletRequest> createRepeated() =>
+      $pb.PbList<CreateWalletRequest>();
   @$core.pragma('dart2js:noInline')
-  static CreateWalletRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateWalletRequest>(create);
+  static CreateWalletRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CreateWalletRequest>(create);
   static CreateWalletRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get walletType => $_getSZ(2);
   @$pb.TagNumber(3)
-  set walletType($core.String v) { $_setString(2, v); }
+  set walletType($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasWalletType() => $_has(2);
   @$pb.TagNumber(3)
-  void clearWalletType() => clearField(3);
+  void clearWalletType() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get chain => $_getSZ(3);
   @$pb.TagNumber(4)
-  set chain($core.String v) { $_setString(3, v); }
+  set chain($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasChain() => $_has(3);
   @$pb.TagNumber(4)
-  void clearChain() => clearField(4);
+  void clearChain() => $_clearField(4);
 }
 
 class CreateWalletResponse extends $pb.GeneratedMessage {
@@ -3659,115 +3751,112 @@ class CreateWalletResponse extends $pb.GeneratedMessage {
     $core.String? chain,
     $core.String? cryptoName,
   }) {
-    final $result = create();
-    if (walletId != null) {
-      $result.walletId = walletId;
-    }
-    if (address != null) {
-      $result.address = address;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (chain != null) {
-      $result.chain = chain;
-    }
-    if (cryptoName != null) {
-      $result.cryptoName = cryptoName;
-    }
-    return $result;
+    final result = create();
+    if (walletId != null) result.walletId = walletId;
+    if (address != null) result.address = address;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (status != null) result.status = status;
+    if (chain != null) result.chain = chain;
+    if (cryptoName != null) result.cryptoName = cryptoName;
+    return result;
   }
-  CreateWalletResponse._() : super();
-  factory CreateWalletResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CreateWalletResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateWalletResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  CreateWalletResponse._();
+
+  factory CreateWalletResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CreateWalletResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CreateWalletResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'walletId')
     ..aOS(2, _omitFieldNames ? '' : 'address')
     ..aOS(3, _omitFieldNames ? '' : 'cryptoId')
     ..aOS(4, _omitFieldNames ? '' : 'status')
     ..aOS(5, _omitFieldNames ? '' : 'chain')
     ..aOS(6, _omitFieldNames ? '' : 'cryptoName')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  CreateWalletResponse clone() => CreateWalletResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CreateWalletResponse copyWith(void Function(CreateWalletResponse) updates) => super.copyWith((message) => updates(message as CreateWalletResponse)) as CreateWalletResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateWalletResponse clone() =>
+      CreateWalletResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateWalletResponse copyWith(void Function(CreateWalletResponse) updates) =>
+      super.copyWith((message) => updates(message as CreateWalletResponse))
+          as CreateWalletResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CreateWalletResponse create() => CreateWalletResponse._();
+  @$core.override
   CreateWalletResponse createEmptyInstance() => create();
-  static $pb.PbList<CreateWalletResponse> createRepeated() => $pb.PbList<CreateWalletResponse>();
+  static $pb.PbList<CreateWalletResponse> createRepeated() =>
+      $pb.PbList<CreateWalletResponse>();
   @$core.pragma('dart2js:noInline')
-  static CreateWalletResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateWalletResponse>(create);
+  static CreateWalletResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CreateWalletResponse>(create);
   static CreateWalletResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get walletId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set walletId($core.String v) { $_setString(0, v); }
+  set walletId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasWalletId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWalletId() => clearField(1);
+  void clearWalletId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get address => $_getSZ(1);
   @$pb.TagNumber(2)
-  set address($core.String v) { $_setString(1, v); }
+  set address($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasAddress() => $_has(1);
   @$pb.TagNumber(2)
-  void clearAddress() => clearField(2);
+  void clearAddress() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get cryptoId => $_getSZ(2);
   @$pb.TagNumber(3)
-  set cryptoId($core.String v) { $_setString(2, v); }
+  set cryptoId($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasCryptoId() => $_has(2);
   @$pb.TagNumber(3)
-  void clearCryptoId() => clearField(3);
+  void clearCryptoId() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get status => $_getSZ(3);
   @$pb.TagNumber(4)
-  set status($core.String v) { $_setString(3, v); }
+  set status($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasStatus() => $_has(3);
   @$pb.TagNumber(4)
-  void clearStatus() => clearField(4);
+  void clearStatus() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get chain => $_getSZ(4);
   @$pb.TagNumber(5)
-  set chain($core.String v) { $_setString(4, v); }
+  set chain($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasChain() => $_has(4);
   @$pb.TagNumber(5)
-  void clearChain() => clearField(5);
+  void clearChain() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get cryptoName => $_getSZ(5);
   @$pb.TagNumber(6)
-  set cryptoName($core.String v) { $_setString(5, v); }
+  set cryptoName($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasCryptoName() => $_has(5);
   @$pb.TagNumber(6)
-  void clearCryptoName() => clearField(6);
+  void clearCryptoName() => $_clearField(6);
 }
 
 /// Batch Create Wallets (stablecoin auto-creation)
@@ -3775,50 +3864,58 @@ class BatchCreateWalletsRequest extends $pb.GeneratedMessage {
   factory BatchCreateWalletsRequest({
     $core.String? userId,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    return result;
   }
-  BatchCreateWalletsRequest._() : super();
-  factory BatchCreateWalletsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory BatchCreateWalletsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchCreateWalletsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  BatchCreateWalletsRequest._();
+
+  factory BatchCreateWalletsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory BatchCreateWalletsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'BatchCreateWalletsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  BatchCreateWalletsRequest clone() => BatchCreateWalletsRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  BatchCreateWalletsRequest copyWith(void Function(BatchCreateWalletsRequest) updates) => super.copyWith((message) => updates(message as BatchCreateWalletsRequest)) as BatchCreateWalletsRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BatchCreateWalletsRequest clone() =>
+      BatchCreateWalletsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BatchCreateWalletsRequest copyWith(
+          void Function(BatchCreateWalletsRequest) updates) =>
+      super.copyWith((message) => updates(message as BatchCreateWalletsRequest))
+          as BatchCreateWalletsRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static BatchCreateWalletsRequest create() => BatchCreateWalletsRequest._();
+  @$core.override
   BatchCreateWalletsRequest createEmptyInstance() => create();
-  static $pb.PbList<BatchCreateWalletsRequest> createRepeated() => $pb.PbList<BatchCreateWalletsRequest>();
+  static $pb.PbList<BatchCreateWalletsRequest> createRepeated() =>
+      $pb.PbList<BatchCreateWalletsRequest>();
   @$core.pragma('dart2js:noInline')
-  static BatchCreateWalletsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchCreateWalletsRequest>(create);
+  static BatchCreateWalletsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<BatchCreateWalletsRequest>(create);
   static BatchCreateWalletsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 }
 
 class BatchCreateWalletsResponse extends $pb.GeneratedMessage {
@@ -3827,70 +3924,76 @@ class BatchCreateWalletsResponse extends $pb.GeneratedMessage {
     $core.int? createdCount,
     $core.int? failedCount,
   }) {
-    final $result = create();
-    if (wallets != null) {
-      $result.wallets.addAll(wallets);
-    }
-    if (createdCount != null) {
-      $result.createdCount = createdCount;
-    }
-    if (failedCount != null) {
-      $result.failedCount = failedCount;
-    }
-    return $result;
+    final result = create();
+    if (wallets != null) result.wallets.addAll(wallets);
+    if (createdCount != null) result.createdCount = createdCount;
+    if (failedCount != null) result.failedCount = failedCount;
+    return result;
   }
-  BatchCreateWalletsResponse._() : super();
-  factory BatchCreateWalletsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory BatchCreateWalletsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchCreateWalletsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CryptoWallet>(1, _omitFieldNames ? '' : 'wallets', $pb.PbFieldType.PM, subBuilder: CryptoWallet.create)
+  BatchCreateWalletsResponse._();
+
+  factory BatchCreateWalletsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory BatchCreateWalletsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'BatchCreateWalletsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CryptoWallet>(1, _omitFieldNames ? '' : 'wallets', $pb.PbFieldType.PM,
+        subBuilder: CryptoWallet.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'createdCount', $pb.PbFieldType.O3)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'failedCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  BatchCreateWalletsResponse clone() => BatchCreateWalletsResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  BatchCreateWalletsResponse copyWith(void Function(BatchCreateWalletsResponse) updates) => super.copyWith((message) => updates(message as BatchCreateWalletsResponse)) as BatchCreateWalletsResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BatchCreateWalletsResponse clone() =>
+      BatchCreateWalletsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BatchCreateWalletsResponse copyWith(
+          void Function(BatchCreateWalletsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as BatchCreateWalletsResponse))
+          as BatchCreateWalletsResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static BatchCreateWalletsResponse create() => BatchCreateWalletsResponse._();
+  @$core.override
   BatchCreateWalletsResponse createEmptyInstance() => create();
-  static $pb.PbList<BatchCreateWalletsResponse> createRepeated() => $pb.PbList<BatchCreateWalletsResponse>();
+  static $pb.PbList<BatchCreateWalletsResponse> createRepeated() =>
+      $pb.PbList<BatchCreateWalletsResponse>();
   @$core.pragma('dart2js:noInline')
-  static BatchCreateWalletsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchCreateWalletsResponse>(create);
+  static BatchCreateWalletsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<BatchCreateWalletsResponse>(create);
   static BatchCreateWalletsResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<CryptoWallet> get wallets => $_getList(0);
+  $pb.PbList<CryptoWallet> get wallets => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.int get createdCount => $_getIZ(1);
   @$pb.TagNumber(2)
-  set createdCount($core.int v) { $_setSignedInt32(1, v); }
+  set createdCount($core.int value) => $_setSignedInt32(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCreatedCount() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCreatedCount() => clearField(2);
+  void clearCreatedCount() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.int get failedCount => $_getIZ(2);
   @$pb.TagNumber(3)
-  set failedCount($core.int v) { $_setSignedInt32(2, v); }
+  set failedCount($core.int value) => $_setSignedInt32(2, value);
   @$pb.TagNumber(3)
   $core.bool hasFailedCount() => $_has(2);
   @$pb.TagNumber(3)
-  void clearFailedCount() => clearField(3);
+  void clearFailedCount() => $_clearField(3);
 }
 
 /// Get Wallet Balance
@@ -3898,50 +4001,58 @@ class GetWalletBalanceRequest extends $pb.GeneratedMessage {
   factory GetWalletBalanceRequest({
     $core.String? walletId,
   }) {
-    final $result = create();
-    if (walletId != null) {
-      $result.walletId = walletId;
-    }
-    return $result;
+    final result = create();
+    if (walletId != null) result.walletId = walletId;
+    return result;
   }
-  GetWalletBalanceRequest._() : super();
-  factory GetWalletBalanceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetWalletBalanceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetWalletBalanceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetWalletBalanceRequest._();
+
+  factory GetWalletBalanceRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetWalletBalanceRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetWalletBalanceRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'walletId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetWalletBalanceRequest clone() => GetWalletBalanceRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetWalletBalanceRequest copyWith(void Function(GetWalletBalanceRequest) updates) => super.copyWith((message) => updates(message as GetWalletBalanceRequest)) as GetWalletBalanceRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWalletBalanceRequest clone() =>
+      GetWalletBalanceRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWalletBalanceRequest copyWith(
+          void Function(GetWalletBalanceRequest) updates) =>
+      super.copyWith((message) => updates(message as GetWalletBalanceRequest))
+          as GetWalletBalanceRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetWalletBalanceRequest create() => GetWalletBalanceRequest._();
+  @$core.override
   GetWalletBalanceRequest createEmptyInstance() => create();
-  static $pb.PbList<GetWalletBalanceRequest> createRepeated() => $pb.PbList<GetWalletBalanceRequest>();
+  static $pb.PbList<GetWalletBalanceRequest> createRepeated() =>
+      $pb.PbList<GetWalletBalanceRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetWalletBalanceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetWalletBalanceRequest>(create);
+  static GetWalletBalanceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetWalletBalanceRequest>(create);
   static GetWalletBalanceRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get walletId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set walletId($core.String v) { $_setString(0, v); }
+  set walletId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasWalletId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWalletId() => clearField(1);
+  void clearWalletId() => $_clearField(1);
 }
 
 class GetWalletBalanceResponse extends $pb.GeneratedMessage {
@@ -3951,89 +4062,91 @@ class GetWalletBalanceResponse extends $pb.GeneratedMessage {
     $core.double? balance,
     $core.double? fiatValue,
   }) {
-    final $result = create();
-    if (walletId != null) {
-      $result.walletId = walletId;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    if (balance != null) {
-      $result.balance = balance;
-    }
-    if (fiatValue != null) {
-      $result.fiatValue = fiatValue;
-    }
-    return $result;
+    final result = create();
+    if (walletId != null) result.walletId = walletId;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    if (balance != null) result.balance = balance;
+    if (fiatValue != null) result.fiatValue = fiatValue;
+    return result;
   }
-  GetWalletBalanceResponse._() : super();
-  factory GetWalletBalanceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetWalletBalanceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetWalletBalanceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  GetWalletBalanceResponse._();
+
+  factory GetWalletBalanceResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetWalletBalanceResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetWalletBalanceResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'walletId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'balance', $pb.PbFieldType.OD)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'fiatValue', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetWalletBalanceResponse clone() => GetWalletBalanceResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetWalletBalanceResponse copyWith(void Function(GetWalletBalanceResponse) updates) => super.copyWith((message) => updates(message as GetWalletBalanceResponse)) as GetWalletBalanceResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWalletBalanceResponse clone() =>
+      GetWalletBalanceResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWalletBalanceResponse copyWith(
+          void Function(GetWalletBalanceResponse) updates) =>
+      super.copyWith((message) => updates(message as GetWalletBalanceResponse))
+          as GetWalletBalanceResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetWalletBalanceResponse create() => GetWalletBalanceResponse._();
+  @$core.override
   GetWalletBalanceResponse createEmptyInstance() => create();
-  static $pb.PbList<GetWalletBalanceResponse> createRepeated() => $pb.PbList<GetWalletBalanceResponse>();
+  static $pb.PbList<GetWalletBalanceResponse> createRepeated() =>
+      $pb.PbList<GetWalletBalanceResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetWalletBalanceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetWalletBalanceResponse>(create);
+  static GetWalletBalanceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetWalletBalanceResponse>(create);
   static GetWalletBalanceResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get walletId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set walletId($core.String v) { $_setString(0, v); }
+  set walletId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasWalletId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWalletId() => clearField(1);
+  void clearWalletId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get balance => $_getN(2);
   @$pb.TagNumber(3)
-  set balance($core.double v) { $_setDouble(2, v); }
+  set balance($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasBalance() => $_has(2);
   @$pb.TagNumber(3)
-  void clearBalance() => clearField(3);
+  void clearBalance() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get fiatValue => $_getN(3);
   @$pb.TagNumber(4)
-  set fiatValue($core.double v) { $_setDouble(3, v); }
+  set fiatValue($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasFiatValue() => $_has(3);
   @$pb.TagNumber(4)
-  void clearFiatValue() => clearField(4);
+  void clearFiatValue() => $_clearField(4);
 }
 
 class CryptoWatchlistProto extends $pb.GeneratedMessage {
@@ -4045,111 +4158,110 @@ class CryptoWatchlistProto extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $1.Timestamp? updatedAt,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (name != null) {
-      $result.name = name;
-    }
-    if (description != null) {
-      $result.description = description;
-    }
-    if (cryptoIds != null) {
-      $result.cryptoIds.addAll(cryptoIds);
-    }
-    if (createdAt != null) {
-      $result.createdAt = createdAt;
-    }
-    if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (name != null) result.name = name;
+    if (description != null) result.description = description;
+    if (cryptoIds != null) result.cryptoIds.addAll(cryptoIds);
+    if (createdAt != null) result.createdAt = createdAt;
+    if (updatedAt != null) result.updatedAt = updatedAt;
+    return result;
   }
-  CryptoWatchlistProto._() : super();
-  factory CryptoWatchlistProto.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CryptoWatchlistProto.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CryptoWatchlistProto', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  CryptoWatchlistProto._();
+
+  factory CryptoWatchlistProto.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CryptoWatchlistProto.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CryptoWatchlistProto',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..aOS(3, _omitFieldNames ? '' : 'description')
     ..pPS(4, _omitFieldNames ? '' : 'cryptoIds')
-    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'createdAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'updatedAt',
+        subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  CryptoWatchlistProto clone() => CryptoWatchlistProto()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CryptoWatchlistProto copyWith(void Function(CryptoWatchlistProto) updates) => super.copyWith((message) => updates(message as CryptoWatchlistProto)) as CryptoWatchlistProto;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CryptoWatchlistProto clone() =>
+      CryptoWatchlistProto()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CryptoWatchlistProto copyWith(void Function(CryptoWatchlistProto) updates) =>
+      super.copyWith((message) => updates(message as CryptoWatchlistProto))
+          as CryptoWatchlistProto;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CryptoWatchlistProto create() => CryptoWatchlistProto._();
+  @$core.override
   CryptoWatchlistProto createEmptyInstance() => create();
-  static $pb.PbList<CryptoWatchlistProto> createRepeated() => $pb.PbList<CryptoWatchlistProto>();
+  static $pb.PbList<CryptoWatchlistProto> createRepeated() =>
+      $pb.PbList<CryptoWatchlistProto>();
   @$core.pragma('dart2js:noInline')
-  static CryptoWatchlistProto getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CryptoWatchlistProto>(create);
+  static CryptoWatchlistProto getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CryptoWatchlistProto>(create);
   static CryptoWatchlistProto? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set id($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => clearField(1);
+  void clearId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get name => $_getSZ(1);
   @$pb.TagNumber(2)
-  set name($core.String v) { $_setString(1, v); }
+  set name($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
-  void clearName() => clearField(2);
+  void clearName() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get description => $_getSZ(2);
   @$pb.TagNumber(3)
-  set description($core.String v) { $_setString(2, v); }
+  set description($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasDescription() => $_has(2);
   @$pb.TagNumber(3)
-  void clearDescription() => clearField(3);
+  void clearDescription() => $_clearField(3);
 
   @$pb.TagNumber(4)
-  $core.List<$core.String> get cryptoIds => $_getList(3);
+  $pb.PbList<$core.String> get cryptoIds => $_getList(3);
 
   @$pb.TagNumber(5)
   $1.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($1.Timestamp v) { setField(5, v); }
+  set createdAt($1.Timestamp value) => $_setField(5, value);
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
-  void clearCreatedAt() => clearField(5);
+  void clearCreatedAt() => $_clearField(5);
   @$pb.TagNumber(5)
   $1.Timestamp ensureCreatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $1.Timestamp get updatedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set updatedAt($1.Timestamp v) { setField(6, v); }
+  set updatedAt($1.Timestamp value) => $_setField(6, value);
   @$pb.TagNumber(6)
   $core.bool hasUpdatedAt() => $_has(5);
   @$pb.TagNumber(6)
-  void clearUpdatedAt() => clearField(6);
+  void clearUpdatedAt() => $_clearField(6);
   @$pb.TagNumber(6)
   $1.Timestamp ensureUpdatedAt() => $_ensure(5);
 }
@@ -4159,146 +4271,170 @@ class CreateWatchlistRequest extends $pb.GeneratedMessage {
     $core.String? name,
     $core.String? description,
   }) {
-    final $result = create();
-    if (name != null) {
-      $result.name = name;
-    }
-    if (description != null) {
-      $result.description = description;
-    }
-    return $result;
+    final result = create();
+    if (name != null) result.name = name;
+    if (description != null) result.description = description;
+    return result;
   }
-  CreateWatchlistRequest._() : super();
-  factory CreateWatchlistRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CreateWatchlistRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateWatchlistRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  CreateWatchlistRequest._();
+
+  factory CreateWatchlistRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CreateWatchlistRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CreateWatchlistRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'name')
     ..aOS(2, _omitFieldNames ? '' : 'description')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  CreateWatchlistRequest clone() => CreateWatchlistRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CreateWatchlistRequest copyWith(void Function(CreateWatchlistRequest) updates) => super.copyWith((message) => updates(message as CreateWatchlistRequest)) as CreateWatchlistRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateWatchlistRequest clone() =>
+      CreateWatchlistRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateWatchlistRequest copyWith(
+          void Function(CreateWatchlistRequest) updates) =>
+      super.copyWith((message) => updates(message as CreateWatchlistRequest))
+          as CreateWatchlistRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CreateWatchlistRequest create() => CreateWatchlistRequest._();
+  @$core.override
   CreateWatchlistRequest createEmptyInstance() => create();
-  static $pb.PbList<CreateWatchlistRequest> createRepeated() => $pb.PbList<CreateWatchlistRequest>();
+  static $pb.PbList<CreateWatchlistRequest> createRepeated() =>
+      $pb.PbList<CreateWatchlistRequest>();
   @$core.pragma('dart2js:noInline')
-  static CreateWatchlistRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateWatchlistRequest>(create);
+  static CreateWatchlistRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CreateWatchlistRequest>(create);
   static CreateWatchlistRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get name => $_getSZ(0);
   @$pb.TagNumber(1)
-  set name($core.String v) { $_setString(0, v); }
+  set name($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasName() => $_has(0);
   @$pb.TagNumber(1)
-  void clearName() => clearField(1);
+  void clearName() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get description => $_getSZ(1);
   @$pb.TagNumber(2)
-  set description($core.String v) { $_setString(1, v); }
+  set description($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasDescription() => $_has(1);
   @$pb.TagNumber(2)
-  void clearDescription() => clearField(2);
+  void clearDescription() => $_clearField(2);
 }
 
 class CreateWatchlistResponse extends $pb.GeneratedMessage {
   factory CreateWatchlistResponse({
     CryptoWatchlistProto? watchlist,
   }) {
-    final $result = create();
-    if (watchlist != null) {
-      $result.watchlist = watchlist;
-    }
-    return $result;
+    final result = create();
+    if (watchlist != null) result.watchlist = watchlist;
+    return result;
   }
-  CreateWatchlistResponse._() : super();
-  factory CreateWatchlistResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CreateWatchlistResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateWatchlistResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CryptoWatchlistProto>(1, _omitFieldNames ? '' : 'watchlist', subBuilder: CryptoWatchlistProto.create)
-    ..hasRequiredFields = false
-  ;
+  CreateWatchlistResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  CreateWatchlistResponse clone() => CreateWatchlistResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CreateWatchlistResponse copyWith(void Function(CreateWatchlistResponse) updates) => super.copyWith((message) => updates(message as CreateWatchlistResponse)) as CreateWatchlistResponse;
+  factory CreateWatchlistResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CreateWatchlistResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CreateWatchlistResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOM<CryptoWatchlistProto>(1, _omitFieldNames ? '' : 'watchlist',
+        subBuilder: CryptoWatchlistProto.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateWatchlistResponse clone() =>
+      CreateWatchlistResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateWatchlistResponse copyWith(
+          void Function(CreateWatchlistResponse) updates) =>
+      super.copyWith((message) => updates(message as CreateWatchlistResponse))
+          as CreateWatchlistResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CreateWatchlistResponse create() => CreateWatchlistResponse._();
+  @$core.override
   CreateWatchlistResponse createEmptyInstance() => create();
-  static $pb.PbList<CreateWatchlistResponse> createRepeated() => $pb.PbList<CreateWatchlistResponse>();
+  static $pb.PbList<CreateWatchlistResponse> createRepeated() =>
+      $pb.PbList<CreateWatchlistResponse>();
   @$core.pragma('dart2js:noInline')
-  static CreateWatchlistResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateWatchlistResponse>(create);
+  static CreateWatchlistResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CreateWatchlistResponse>(create);
   static CreateWatchlistResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   CryptoWatchlistProto get watchlist => $_getN(0);
   @$pb.TagNumber(1)
-  set watchlist(CryptoWatchlistProto v) { setField(1, v); }
+  set watchlist(CryptoWatchlistProto value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasWatchlist() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWatchlist() => clearField(1);
+  void clearWatchlist() => $_clearField(1);
   @$pb.TagNumber(1)
   CryptoWatchlistProto ensureWatchlist() => $_ensure(0);
 }
 
 class GetWatchlistsRequest extends $pb.GeneratedMessage {
   factory GetWatchlistsRequest() => create();
-  GetWatchlistsRequest._() : super();
-  factory GetWatchlistsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetWatchlistsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetWatchlistsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..hasRequiredFields = false
-  ;
+  GetWatchlistsRequest._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetWatchlistsRequest clone() => GetWatchlistsRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetWatchlistsRequest copyWith(void Function(GetWatchlistsRequest) updates) => super.copyWith((message) => updates(message as GetWatchlistsRequest)) as GetWatchlistsRequest;
+  factory GetWatchlistsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetWatchlistsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetWatchlistsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWatchlistsRequest clone() =>
+      GetWatchlistsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWatchlistsRequest copyWith(void Function(GetWatchlistsRequest) updates) =>
+      super.copyWith((message) => updates(message as GetWatchlistsRequest))
+          as GetWatchlistsRequest;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetWatchlistsRequest create() => GetWatchlistsRequest._();
+  @$core.override
   GetWatchlistsRequest createEmptyInstance() => create();
-  static $pb.PbList<GetWatchlistsRequest> createRepeated() => $pb.PbList<GetWatchlistsRequest>();
+  static $pb.PbList<GetWatchlistsRequest> createRepeated() =>
+      $pb.PbList<GetWatchlistsRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetWatchlistsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetWatchlistsRequest>(create);
+  static GetWatchlistsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetWatchlistsRequest>(create);
   static GetWatchlistsRequest? _defaultInstance;
 }
 
@@ -4306,44 +4442,54 @@ class GetWatchlistsResponse extends $pb.GeneratedMessage {
   factory GetWatchlistsResponse({
     $core.Iterable<CryptoWatchlistProto>? watchlists,
   }) {
-    final $result = create();
-    if (watchlists != null) {
-      $result.watchlists.addAll(watchlists);
-    }
-    return $result;
+    final result = create();
+    if (watchlists != null) result.watchlists.addAll(watchlists);
+    return result;
   }
-  GetWatchlistsResponse._() : super();
-  factory GetWatchlistsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetWatchlistsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetWatchlistsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CryptoWatchlistProto>(1, _omitFieldNames ? '' : 'watchlists', $pb.PbFieldType.PM, subBuilder: CryptoWatchlistProto.create)
-    ..hasRequiredFields = false
-  ;
+  GetWatchlistsResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetWatchlistsResponse clone() => GetWatchlistsResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetWatchlistsResponse copyWith(void Function(GetWatchlistsResponse) updates) => super.copyWith((message) => updates(message as GetWatchlistsResponse)) as GetWatchlistsResponse;
+  factory GetWatchlistsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetWatchlistsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetWatchlistsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<CryptoWatchlistProto>(
+        1, _omitFieldNames ? '' : 'watchlists', $pb.PbFieldType.PM,
+        subBuilder: CryptoWatchlistProto.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWatchlistsResponse clone() =>
+      GetWatchlistsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetWatchlistsResponse copyWith(
+          void Function(GetWatchlistsResponse) updates) =>
+      super.copyWith((message) => updates(message as GetWatchlistsResponse))
+          as GetWatchlistsResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetWatchlistsResponse create() => GetWatchlistsResponse._();
+  @$core.override
   GetWatchlistsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetWatchlistsResponse> createRepeated() => $pb.PbList<GetWatchlistsResponse>();
+  static $pb.PbList<GetWatchlistsResponse> createRepeated() =>
+      $pb.PbList<GetWatchlistsResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetWatchlistsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetWatchlistsResponse>(create);
+  static GetWatchlistsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetWatchlistsResponse>(create);
   static GetWatchlistsResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<CryptoWatchlistProto> get watchlists => $_getList(0);
+  $pb.PbList<CryptoWatchlistProto> get watchlists => $_getList(0);
 }
 
 class AddToWatchlistRequest extends $pb.GeneratedMessage {
@@ -4351,113 +4497,128 @@ class AddToWatchlistRequest extends $pb.GeneratedMessage {
     $core.String? watchlistId,
     $core.String? cryptoId,
   }) {
-    final $result = create();
-    if (watchlistId != null) {
-      $result.watchlistId = watchlistId;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    return $result;
+    final result = create();
+    if (watchlistId != null) result.watchlistId = watchlistId;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    return result;
   }
-  AddToWatchlistRequest._() : super();
-  factory AddToWatchlistRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AddToWatchlistRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddToWatchlistRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  AddToWatchlistRequest._();
+
+  factory AddToWatchlistRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AddToWatchlistRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AddToWatchlistRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'watchlistId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  AddToWatchlistRequest clone() => AddToWatchlistRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  AddToWatchlistRequest copyWith(void Function(AddToWatchlistRequest) updates) => super.copyWith((message) => updates(message as AddToWatchlistRequest)) as AddToWatchlistRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AddToWatchlistRequest clone() =>
+      AddToWatchlistRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AddToWatchlistRequest copyWith(
+          void Function(AddToWatchlistRequest) updates) =>
+      super.copyWith((message) => updates(message as AddToWatchlistRequest))
+          as AddToWatchlistRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static AddToWatchlistRequest create() => AddToWatchlistRequest._();
+  @$core.override
   AddToWatchlistRequest createEmptyInstance() => create();
-  static $pb.PbList<AddToWatchlistRequest> createRepeated() => $pb.PbList<AddToWatchlistRequest>();
+  static $pb.PbList<AddToWatchlistRequest> createRepeated() =>
+      $pb.PbList<AddToWatchlistRequest>();
   @$core.pragma('dart2js:noInline')
-  static AddToWatchlistRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AddToWatchlistRequest>(create);
+  static AddToWatchlistRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AddToWatchlistRequest>(create);
   static AddToWatchlistRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get watchlistId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set watchlistId($core.String v) { $_setString(0, v); }
+  set watchlistId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasWatchlistId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWatchlistId() => clearField(1);
+  void clearWatchlistId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 }
 
 class AddToWatchlistResponse extends $pb.GeneratedMessage {
   factory AddToWatchlistResponse({
     CryptoWatchlistProto? watchlist,
   }) {
-    final $result = create();
-    if (watchlist != null) {
-      $result.watchlist = watchlist;
-    }
-    return $result;
+    final result = create();
+    if (watchlist != null) result.watchlist = watchlist;
+    return result;
   }
-  AddToWatchlistResponse._() : super();
-  factory AddToWatchlistResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AddToWatchlistResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddToWatchlistResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CryptoWatchlistProto>(1, _omitFieldNames ? '' : 'watchlist', subBuilder: CryptoWatchlistProto.create)
-    ..hasRequiredFields = false
-  ;
+  AddToWatchlistResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  AddToWatchlistResponse clone() => AddToWatchlistResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  AddToWatchlistResponse copyWith(void Function(AddToWatchlistResponse) updates) => super.copyWith((message) => updates(message as AddToWatchlistResponse)) as AddToWatchlistResponse;
+  factory AddToWatchlistResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AddToWatchlistResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AddToWatchlistResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOM<CryptoWatchlistProto>(1, _omitFieldNames ? '' : 'watchlist',
+        subBuilder: CryptoWatchlistProto.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AddToWatchlistResponse clone() =>
+      AddToWatchlistResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AddToWatchlistResponse copyWith(
+          void Function(AddToWatchlistResponse) updates) =>
+      super.copyWith((message) => updates(message as AddToWatchlistResponse))
+          as AddToWatchlistResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static AddToWatchlistResponse create() => AddToWatchlistResponse._();
+  @$core.override
   AddToWatchlistResponse createEmptyInstance() => create();
-  static $pb.PbList<AddToWatchlistResponse> createRepeated() => $pb.PbList<AddToWatchlistResponse>();
+  static $pb.PbList<AddToWatchlistResponse> createRepeated() =>
+      $pb.PbList<AddToWatchlistResponse>();
   @$core.pragma('dart2js:noInline')
-  static AddToWatchlistResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AddToWatchlistResponse>(create);
+  static AddToWatchlistResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AddToWatchlistResponse>(create);
   static AddToWatchlistResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   CryptoWatchlistProto get watchlist => $_getN(0);
   @$pb.TagNumber(1)
-  set watchlist(CryptoWatchlistProto v) { setField(1, v); }
+  set watchlist(CryptoWatchlistProto value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasWatchlist() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWatchlist() => clearField(1);
+  void clearWatchlist() => $_clearField(1);
   @$pb.TagNumber(1)
   CryptoWatchlistProto ensureWatchlist() => $_ensure(0);
 }
@@ -4467,113 +4628,131 @@ class RemoveFromWatchlistRequest extends $pb.GeneratedMessage {
     $core.String? watchlistId,
     $core.String? cryptoId,
   }) {
-    final $result = create();
-    if (watchlistId != null) {
-      $result.watchlistId = watchlistId;
-    }
-    if (cryptoId != null) {
-      $result.cryptoId = cryptoId;
-    }
-    return $result;
+    final result = create();
+    if (watchlistId != null) result.watchlistId = watchlistId;
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    return result;
   }
-  RemoveFromWatchlistRequest._() : super();
-  factory RemoveFromWatchlistRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RemoveFromWatchlistRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RemoveFromWatchlistRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  RemoveFromWatchlistRequest._();
+
+  factory RemoveFromWatchlistRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RemoveFromWatchlistRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RemoveFromWatchlistRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'watchlistId')
     ..aOS(2, _omitFieldNames ? '' : 'cryptoId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  RemoveFromWatchlistRequest clone() => RemoveFromWatchlistRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RemoveFromWatchlistRequest copyWith(void Function(RemoveFromWatchlistRequest) updates) => super.copyWith((message) => updates(message as RemoveFromWatchlistRequest)) as RemoveFromWatchlistRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RemoveFromWatchlistRequest clone() =>
+      RemoveFromWatchlistRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RemoveFromWatchlistRequest copyWith(
+          void Function(RemoveFromWatchlistRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as RemoveFromWatchlistRequest))
+          as RemoveFromWatchlistRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static RemoveFromWatchlistRequest create() => RemoveFromWatchlistRequest._();
+  @$core.override
   RemoveFromWatchlistRequest createEmptyInstance() => create();
-  static $pb.PbList<RemoveFromWatchlistRequest> createRepeated() => $pb.PbList<RemoveFromWatchlistRequest>();
+  static $pb.PbList<RemoveFromWatchlistRequest> createRepeated() =>
+      $pb.PbList<RemoveFromWatchlistRequest>();
   @$core.pragma('dart2js:noInline')
-  static RemoveFromWatchlistRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveFromWatchlistRequest>(create);
+  static RemoveFromWatchlistRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RemoveFromWatchlistRequest>(create);
   static RemoveFromWatchlistRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get watchlistId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set watchlistId($core.String v) { $_setString(0, v); }
+  set watchlistId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasWatchlistId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWatchlistId() => clearField(1);
+  void clearWatchlistId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get cryptoId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set cryptoId($core.String v) { $_setString(1, v); }
+  set cryptoId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasCryptoId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCryptoId() => clearField(2);
+  void clearCryptoId() => $_clearField(2);
 }
 
 class RemoveFromWatchlistResponse extends $pb.GeneratedMessage {
   factory RemoveFromWatchlistResponse({
     CryptoWatchlistProto? watchlist,
   }) {
-    final $result = create();
-    if (watchlist != null) {
-      $result.watchlist = watchlist;
-    }
-    return $result;
+    final result = create();
+    if (watchlist != null) result.watchlist = watchlist;
+    return result;
   }
-  RemoveFromWatchlistResponse._() : super();
-  factory RemoveFromWatchlistResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RemoveFromWatchlistResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RemoveFromWatchlistResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CryptoWatchlistProto>(1, _omitFieldNames ? '' : 'watchlist', subBuilder: CryptoWatchlistProto.create)
-    ..hasRequiredFields = false
-  ;
+  RemoveFromWatchlistResponse._();
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  RemoveFromWatchlistResponse clone() => RemoveFromWatchlistResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RemoveFromWatchlistResponse copyWith(void Function(RemoveFromWatchlistResponse) updates) => super.copyWith((message) => updates(message as RemoveFromWatchlistResponse)) as RemoveFromWatchlistResponse;
+  factory RemoveFromWatchlistResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RemoveFromWatchlistResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RemoveFromWatchlistResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOM<CryptoWatchlistProto>(1, _omitFieldNames ? '' : 'watchlist',
+        subBuilder: CryptoWatchlistProto.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RemoveFromWatchlistResponse clone() =>
+      RemoveFromWatchlistResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RemoveFromWatchlistResponse copyWith(
+          void Function(RemoveFromWatchlistResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as RemoveFromWatchlistResponse))
+          as RemoveFromWatchlistResponse;
+
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static RemoveFromWatchlistResponse create() => RemoveFromWatchlistResponse._();
+  static RemoveFromWatchlistResponse create() =>
+      RemoveFromWatchlistResponse._();
+  @$core.override
   RemoveFromWatchlistResponse createEmptyInstance() => create();
-  static $pb.PbList<RemoveFromWatchlistResponse> createRepeated() => $pb.PbList<RemoveFromWatchlistResponse>();
+  static $pb.PbList<RemoveFromWatchlistResponse> createRepeated() =>
+      $pb.PbList<RemoveFromWatchlistResponse>();
   @$core.pragma('dart2js:noInline')
-  static RemoveFromWatchlistResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveFromWatchlistResponse>(create);
+  static RemoveFromWatchlistResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RemoveFromWatchlistResponse>(create);
   static RemoveFromWatchlistResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   CryptoWatchlistProto get watchlist => $_getN(0);
   @$pb.TagNumber(1)
-  set watchlist(CryptoWatchlistProto v) { setField(1, v); }
+  set watchlist(CryptoWatchlistProto value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasWatchlist() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWatchlist() => clearField(1);
+  void clearWatchlist() => $_clearField(1);
   @$pb.TagNumber(1)
   CryptoWatchlistProto ensureWatchlist() => $_ensure(0);
 }
@@ -4582,100 +4761,244 @@ class DeleteWatchlistRequest extends $pb.GeneratedMessage {
   factory DeleteWatchlistRequest({
     $core.String? watchlistId,
   }) {
-    final $result = create();
-    if (watchlistId != null) {
-      $result.watchlistId = watchlistId;
-    }
-    return $result;
+    final result = create();
+    if (watchlistId != null) result.watchlistId = watchlistId;
+    return result;
   }
-  DeleteWatchlistRequest._() : super();
-  factory DeleteWatchlistRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DeleteWatchlistRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteWatchlistRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  DeleteWatchlistRequest._();
+
+  factory DeleteWatchlistRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DeleteWatchlistRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeleteWatchlistRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'watchlistId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  DeleteWatchlistRequest clone() => DeleteWatchlistRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  DeleteWatchlistRequest copyWith(void Function(DeleteWatchlistRequest) updates) => super.copyWith((message) => updates(message as DeleteWatchlistRequest)) as DeleteWatchlistRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteWatchlistRequest clone() =>
+      DeleteWatchlistRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteWatchlistRequest copyWith(
+          void Function(DeleteWatchlistRequest) updates) =>
+      super.copyWith((message) => updates(message as DeleteWatchlistRequest))
+          as DeleteWatchlistRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static DeleteWatchlistRequest create() => DeleteWatchlistRequest._();
+  @$core.override
   DeleteWatchlistRequest createEmptyInstance() => create();
-  static $pb.PbList<DeleteWatchlistRequest> createRepeated() => $pb.PbList<DeleteWatchlistRequest>();
+  static $pb.PbList<DeleteWatchlistRequest> createRepeated() =>
+      $pb.PbList<DeleteWatchlistRequest>();
   @$core.pragma('dart2js:noInline')
-  static DeleteWatchlistRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteWatchlistRequest>(create);
+  static DeleteWatchlistRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DeleteWatchlistRequest>(create);
   static DeleteWatchlistRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get watchlistId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set watchlistId($core.String v) { $_setString(0, v); }
+  set watchlistId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasWatchlistId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWatchlistId() => clearField(1);
+  void clearWatchlistId() => $_clearField(1);
 }
 
 class DeleteWatchlistResponse extends $pb.GeneratedMessage {
   factory DeleteWatchlistResponse({
     $core.bool? success,
   }) {
-    final $result = create();
-    if (success != null) {
-      $result.success = success;
-    }
-    return $result;
+    final result = create();
+    if (success != null) result.success = success;
+    return result;
   }
-  DeleteWatchlistResponse._() : super();
-  factory DeleteWatchlistResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DeleteWatchlistResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteWatchlistResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  DeleteWatchlistResponse._();
+
+  factory DeleteWatchlistResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DeleteWatchlistResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeleteWatchlistResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  DeleteWatchlistResponse clone() => DeleteWatchlistResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  DeleteWatchlistResponse copyWith(void Function(DeleteWatchlistResponse) updates) => super.copyWith((message) => updates(message as DeleteWatchlistResponse)) as DeleteWatchlistResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteWatchlistResponse clone() =>
+      DeleteWatchlistResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteWatchlistResponse copyWith(
+          void Function(DeleteWatchlistResponse) updates) =>
+      super.copyWith((message) => updates(message as DeleteWatchlistResponse))
+          as DeleteWatchlistResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static DeleteWatchlistResponse create() => DeleteWatchlistResponse._();
+  @$core.override
   DeleteWatchlistResponse createEmptyInstance() => create();
-  static $pb.PbList<DeleteWatchlistResponse> createRepeated() => $pb.PbList<DeleteWatchlistResponse>();
+  static $pb.PbList<DeleteWatchlistResponse> createRepeated() =>
+      $pb.PbList<DeleteWatchlistResponse>();
   @$core.pragma('dart2js:noInline')
-  static DeleteWatchlistResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteWatchlistResponse>(create);
+  static DeleteWatchlistResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DeleteWatchlistResponse>(create);
   static DeleteWatchlistResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool v) { $_setBool(0, v); }
+  set success($core.bool value) => $_setBool(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => clearField(1);
+  void clearSuccess() => $_clearField(1);
+}
+
+class ToggleFavoriteRequest extends $pb.GeneratedMessage {
+  factory ToggleFavoriteRequest({
+    $core.String? cryptoId,
+  }) {
+    final result = create();
+    if (cryptoId != null) result.cryptoId = cryptoId;
+    return result;
+  }
+
+  ToggleFavoriteRequest._();
+
+  factory ToggleFavoriteRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ToggleFavoriteRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ToggleFavoriteRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cryptoId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ToggleFavoriteRequest clone() =>
+      ToggleFavoriteRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ToggleFavoriteRequest copyWith(
+          void Function(ToggleFavoriteRequest) updates) =>
+      super.copyWith((message) => updates(message as ToggleFavoriteRequest))
+          as ToggleFavoriteRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ToggleFavoriteRequest create() => ToggleFavoriteRequest._();
+  @$core.override
+  ToggleFavoriteRequest createEmptyInstance() => create();
+  static $pb.PbList<ToggleFavoriteRequest> createRepeated() =>
+      $pb.PbList<ToggleFavoriteRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ToggleFavoriteRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ToggleFavoriteRequest>(create);
+  static ToggleFavoriteRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get cryptoId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set cryptoId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCryptoId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCryptoId() => $_clearField(1);
+}
+
+class ToggleFavoriteResponse extends $pb.GeneratedMessage {
+  factory ToggleFavoriteResponse({
+    $core.bool? isFavorite,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (isFavorite != null) result.isFavorite = isFavorite;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  ToggleFavoriteResponse._();
+
+  factory ToggleFavoriteResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ToggleFavoriteResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ToggleFavoriteResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'isFavorite')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ToggleFavoriteResponse clone() =>
+      ToggleFavoriteResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ToggleFavoriteResponse copyWith(
+          void Function(ToggleFavoriteResponse) updates) =>
+      super.copyWith((message) => updates(message as ToggleFavoriteResponse))
+          as ToggleFavoriteResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ToggleFavoriteResponse create() => ToggleFavoriteResponse._();
+  @$core.override
+  ToggleFavoriteResponse createEmptyInstance() => create();
+  static $pb.PbList<ToggleFavoriteResponse> createRepeated() =>
+      $pb.PbList<ToggleFavoriteResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ToggleFavoriteResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ToggleFavoriteResponse>(create);
+  static ToggleFavoriteResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get isFavorite => $_getBF(0);
+  @$pb.TagNumber(1)
+  set isFavorite($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasIsFavorite() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIsFavorite() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
 }
 
 class CryptoPaginationInfo extends $pb.GeneratedMessage {
@@ -4687,117 +5010,115 @@ class CryptoPaginationInfo extends $pb.GeneratedMessage {
     $core.bool? hasNext,
     $core.bool? hasPrev,
   }) {
-    final $result = create();
-    if (currentPage != null) {
-      $result.currentPage = currentPage;
-    }
-    if (totalPages != null) {
-      $result.totalPages = totalPages;
-    }
-    if (totalItems != null) {
-      $result.totalItems = totalItems;
-    }
-    if (itemsPerPage != null) {
-      $result.itemsPerPage = itemsPerPage;
-    }
-    if (hasNext != null) {
-      $result.hasNext = hasNext;
-    }
-    if (hasPrev != null) {
-      $result.hasPrev = hasPrev;
-    }
-    return $result;
+    final result = create();
+    if (currentPage != null) result.currentPage = currentPage;
+    if (totalPages != null) result.totalPages = totalPages;
+    if (totalItems != null) result.totalItems = totalItems;
+    if (itemsPerPage != null) result.itemsPerPage = itemsPerPage;
+    if (hasNext != null) result.hasNext = hasNext;
+    if (hasPrev != null) result.hasPrev = hasPrev;
+    return result;
   }
-  CryptoPaginationInfo._() : super();
-  factory CryptoPaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CryptoPaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CryptoPaginationInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  CryptoPaginationInfo._();
+
+  factory CryptoPaginationInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CryptoPaginationInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CryptoPaginationInfo',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'totalItems', $pb.PbFieldType.O3)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
     ..aOB(5, _omitFieldNames ? '' : 'hasNext')
     ..aOB(6, _omitFieldNames ? '' : 'hasPrev')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  CryptoPaginationInfo clone() => CryptoPaginationInfo()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  CryptoPaginationInfo copyWith(void Function(CryptoPaginationInfo) updates) => super.copyWith((message) => updates(message as CryptoPaginationInfo)) as CryptoPaginationInfo;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CryptoPaginationInfo clone() =>
+      CryptoPaginationInfo()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CryptoPaginationInfo copyWith(void Function(CryptoPaginationInfo) updates) =>
+      super.copyWith((message) => updates(message as CryptoPaginationInfo))
+          as CryptoPaginationInfo;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static CryptoPaginationInfo create() => CryptoPaginationInfo._();
+  @$core.override
   CryptoPaginationInfo createEmptyInstance() => create();
-  static $pb.PbList<CryptoPaginationInfo> createRepeated() => $pb.PbList<CryptoPaginationInfo>();
+  static $pb.PbList<CryptoPaginationInfo> createRepeated() =>
+      $pb.PbList<CryptoPaginationInfo>();
   @$core.pragma('dart2js:noInline')
-  static CryptoPaginationInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CryptoPaginationInfo>(create);
+  static CryptoPaginationInfo getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CryptoPaginationInfo>(create);
   static CryptoPaginationInfo? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.int get currentPage => $_getIZ(0);
   @$pb.TagNumber(1)
-  set currentPage($core.int v) { $_setSignedInt32(0, v); }
+  set currentPage($core.int value) => $_setSignedInt32(0, value);
   @$pb.TagNumber(1)
   $core.bool hasCurrentPage() => $_has(0);
   @$pb.TagNumber(1)
-  void clearCurrentPage() => clearField(1);
+  void clearCurrentPage() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.int get totalPages => $_getIZ(1);
   @$pb.TagNumber(2)
-  set totalPages($core.int v) { $_setSignedInt32(1, v); }
+  set totalPages($core.int value) => $_setSignedInt32(1, value);
   @$pb.TagNumber(2)
   $core.bool hasTotalPages() => $_has(1);
   @$pb.TagNumber(2)
-  void clearTotalPages() => clearField(2);
+  void clearTotalPages() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.int get totalItems => $_getIZ(2);
   @$pb.TagNumber(3)
-  set totalItems($core.int v) { $_setSignedInt32(2, v); }
+  set totalItems($core.int value) => $_setSignedInt32(2, value);
   @$pb.TagNumber(3)
   $core.bool hasTotalItems() => $_has(2);
   @$pb.TagNumber(3)
-  void clearTotalItems() => clearField(3);
+  void clearTotalItems() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.int get itemsPerPage => $_getIZ(3);
   @$pb.TagNumber(4)
-  set itemsPerPage($core.int v) { $_setSignedInt32(3, v); }
+  set itemsPerPage($core.int value) => $_setSignedInt32(3, value);
   @$pb.TagNumber(4)
   $core.bool hasItemsPerPage() => $_has(3);
   @$pb.TagNumber(4)
-  void clearItemsPerPage() => clearField(4);
+  void clearItemsPerPage() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.bool get hasNext => $_getBF(4);
   @$pb.TagNumber(5)
-  set hasNext($core.bool v) { $_setBool(4, v); }
+  set hasNext($core.bool value) => $_setBool(4, value);
   @$pb.TagNumber(5)
   $core.bool hasHasNext() => $_has(4);
   @$pb.TagNumber(5)
-  void clearHasNext() => clearField(5);
+  void clearHasNext() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.bool get hasPrev => $_getBF(5);
   @$pb.TagNumber(6)
-  set hasPrev($core.bool v) { $_setBool(5, v); }
+  set hasPrev($core.bool value) => $_setBool(5, value);
   @$pb.TagNumber(6)
   $core.bool hasHasPrev() => $_has(5);
   @$pb.TagNumber(6)
-  void clearHasPrev() => clearField(6);
+  void clearHasPrev() => $_clearField(6);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const $core.bool _omitFieldNames =
+    $core.bool.fromEnvironment('protobuf.omit_field_names');
+const $core.bool _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');

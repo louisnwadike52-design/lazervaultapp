@@ -1,8 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:lazervault/core/utils/grpc_error_handler.dart';
 import '../../domain/entities/tag_pay_entity.dart';
 import '../../domain/entities/user_tag_entity.dart';
 
-abstract class TagPayState extends Equatable {
+sealed class TagPayState extends Equatable {
   const TagPayState();
 
   @override
@@ -24,11 +25,22 @@ class TagPayLoaded extends TagPayState {
 
 class TagPayError extends TagPayState {
   final String message;
+  final bool isRetryable;
 
-  const TagPayError(this.message);
+  const TagPayError(this.message, {this.isRetryable = false});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isRetryable];
+}
+
+/// Emitted when a TagPay operation fails specifically due to an incorrect PIN.
+class TagPayPinFailure extends TagPayState {
+  final PinFailureInfo pinInfo;
+
+  const TagPayPinFailure({required this.pinInfo});
+
+  @override
+  List<Object?> get props => [pinInfo.isLocked, pinInfo.attemptsRemaining, pinInfo.message];
 }
 
 class TagPayAvailabilityChecked extends TagPayState {

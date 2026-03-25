@@ -60,6 +60,8 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   bool _isCompleted = false;
   bool _isExpired = false;
   bool _isCancelling = false;
+  bool _fetchingTransactionDetails = false;
+  int _transactionFetchRetries = 0;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -285,9 +287,31 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 );
               });
             } else if (state is SessionStatusChecked) {
-              if (state.status == 'completed') {
-                // Try to get the full transaction details
-                context.read<ContactlessPaymentCubit>().getTransactionForSession(widget.session.id);
+              if (state.status == 'completed' && !_fetchingTransactionDetails) {
+                _fetchingTransactionDetails = true;
+                _transactionFetchRetries++;
+                if (_transactionFetchRetries <= 3) {
+                  context.read<ContactlessPaymentCubit>().getTransactionForSession(widget.session.id);
+                } else {
+                  // Can't fetch details — navigate to success with minimal info
+                  _isCompleted = true;
+                  _stopNfcBroadcast();
+                  _expiryTimer?.cancel();
+                  _pollTimer?.cancel();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PaymentSuccessScreen(
+                        amount: widget.session.amount,
+                        currency: widget.session.currency,
+                        payerName: _payerName ?? 'Unknown',
+                        isReceiver: true,
+                        category: widget.session.category,
+                        description: widget.session.description,
+                      ),
+                    ),
+                  );
+                }
               } else if (state.status == 'read') {
                 setState(() {
                   _statusText = 'Payer is reviewing the payment...';
@@ -312,16 +336,19 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
               _expiryTimer?.cancel();
               _pollTimer?.cancel();
               Navigator.of(context).pop();
-            } else if (state is ContactlessPaymentError &&
-                _isCancelling) {
-              setState(() => _isCancelling = false);
-              Get.snackbar(
-                'Cancel Failed',
-                state.message,
-                backgroundColor: const Color(0xFFEF4444),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.TOP,
-              );
+            } else if (state is ContactlessPaymentError) {
+              if (_isCancelling) {
+                setState(() => _isCancelling = false);
+                Get.snackbar(
+                  'Cancel Failed',
+                  state.message,
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                );
+              }
+              // Reset fetch flag so next poll can retry
+              _fetchingTransactionDetails = false;
             }
           },
           child: SafeArea(
@@ -429,7 +456,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                     ? [const Color(0xFF10B981), const Color(0xFF059669)]
                     : _isExpired
                         ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
-                        : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
               ),
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
@@ -627,12 +654,62 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     );
   }
 
+  void _copySessionId() {
+    Clipboard.setData(ClipboardData(text: widget.session.id));
+    HapticFeedback.lightImpact();
+    Get.snackbar(
+      'Session ID Copied',
+      'Share this with the payer to complete payment',
+      backgroundColor: const Color(0xFF10B981),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 3),
+    );
+  }
+
   Widget _buildBottomActions() {
     return Container(
       padding: EdgeInsets.all(20.w),
       child: Column(
         children: [
-          if (!_isCompleted && !_isExpired)
+          if (!_isCompleted && !_isExpired) ...[
+            // Share Session ID button
+            GestureDetector(
+              onTap: _copySessionId,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF6366F1).withValues(alpha: 0.2),
+                      const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.copy_rounded, color: const Color(0xFF6366F1), size: 18.sp),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Copy Session ID',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF6366F1),
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            // Cancel button
             GestureDetector(
               onTap: _isCancelling ? null : _cancelSession,
               child: Container(
@@ -667,6 +744,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 ),
               ),
             ),
+          ],
           if (_isExpired) ...[
             GestureDetector(
               onTap: () => Navigator.of(context).pop(),
@@ -675,7 +753,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(14.r),
                 ),

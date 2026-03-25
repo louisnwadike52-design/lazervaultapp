@@ -662,7 +662,7 @@ class _StatisticsState extends State<Statistics> {
                 ),
               ),
             ),
-            Icon(Icons.auto_awesome, color: const Color(0xFF8B5CF6), size: 18.sp),
+            Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 18.sp),
             SizedBox(width: 4.w),
             Icon(Icons.chevron_right, color: const Color(0xFF9CA3AF), size: 18.sp),
           ],
@@ -708,7 +708,10 @@ class _StatisticsState extends State<Statistics> {
             ),
             onTap: () => Get.toNamed(
               AppRoutes.creditScore,
-              arguments: {'userId': _userId},
+              arguments: {
+                'userId': _userId,
+                'showAllSources': _includeExternalBanks,
+              },
             ),
           ),
         );
@@ -783,7 +786,7 @@ class _StatisticsState extends State<Statistics> {
         title: 'AI Insights',
         description: 'Smart recommendations',
         icon: Icons.auto_awesome,
-        color: const Color(0xFF8B5CF6),
+        color: const Color.fromARGB(255, 78, 3, 208),
         route: AppRoutes.budgetAIInsights,
       ),
       _FeatureItem(

@@ -95,12 +95,12 @@ class ExchangeTransactionTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: isConversion
             ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
-            : const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+            : const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(
         isConversion ? Icons.swap_horiz : Icons.send,
-        color: isConversion ? const Color(0xFF3B82F6) : const Color(0xFF8B5CF6),
+        color: isConversion ? const Color(0xFF3B82F6) : const Color.fromARGB(255, 78, 3, 208),
         size: 20,
       ),
     );

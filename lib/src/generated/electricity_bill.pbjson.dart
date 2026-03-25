@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: electricity_bill.proto
-//
-// @dart = 2.12
+// Generated from electricity_bill.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -28,7 +29,14 @@ const ElectricityProvider$json = {
     {'1': 'max_amount', '3': 9, '4': 1, '5': 1, '10': 'maxAmount'},
     {'1': 'service_fee', '3': 10, '4': 1, '5': 1, '10': 'serviceFee'},
     {'1': 'fee_type', '3': 11, '4': 1, '5': 9, '10': 'feeType'},
-    {'1': 'created_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'created_at',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
   ],
 };
 
@@ -60,18 +68,52 @@ const BillPayment$json = {
     {'1': 'currency', '3': 11, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'status', '3': 12, '4': 1, '5': 9, '10': 'status'},
     {'1': 'payment_gateway', '3': 13, '4': 1, '5': 9, '10': 'paymentGateway'},
-    {'1': 'gateway_reference', '3': 14, '4': 1, '5': 9, '10': 'gatewayReference'},
+    {
+      '1': 'gateway_reference',
+      '3': 14,
+      '4': 1,
+      '5': 9,
+      '10': 'gatewayReference'
+    },
     {'1': 'reference_number', '3': 15, '4': 1, '5': 9, '10': 'referenceNumber'},
     {'1': 'token', '3': 16, '4': 1, '5': 9, '10': 'token'},
     {'1': 'units', '3': 17, '4': 1, '5': 1, '10': 'units'},
     {'1': 'meter_type', '3': 18, '4': 1, '5': 9, '10': 'meterType'},
     {'1': 'failure_reason', '3': 19, '4': 1, '5': 9, '10': 'failureReason'},
-    {'1': 'created_at', '3': 20, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'completed_at', '3': 21, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completedAt'},
+    {
+      '1': 'created_at',
+      '3': 20,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'completed_at',
+      '3': 21,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'completedAt'
+    },
     {'1': 'provider_id', '3': 22, '4': 1, '5': 9, '10': 'providerId'},
-    {'1': 'updated_at', '3': 23, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'updated_at',
+      '3': 23,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
     {'1': 'error_message', '3': 24, '4': 1, '5': 9, '10': 'errorMessage'},
-    {'1': 'failed_at', '3': 25, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'failedAt'},
+    {
+      '1': 'failed_at',
+      '3': 25,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'failedAt'
+    },
   ],
 };
 
@@ -108,11 +150,32 @@ const BillBeneficiary$json = {
     {'1': 'nickname', '3': 7, '4': 1, '5': 9, '10': 'nickname'},
     {'1': 'meter_type', '3': 8, '4': 1, '5': 9, '10': 'meterType'},
     {'1': 'is_default', '3': 9, '4': 1, '5': 8, '10': 'isDefault'},
-    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'last_used_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastUsedAt'},
+    {
+      '1': 'created_at',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'last_used_at',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastUsedAt'
+    },
     {'1': 'provider_id', '3': 12, '4': 1, '5': 9, '10': 'providerId'},
     {'1': 'customer_address', '3': 13, '4': 1, '5': 9, '10': 'customerAddress'},
-    {'1': 'updated_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'updated_at',
+      '3': 14,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
     {'1': 'phone_number', '3': 15, '4': 1, '5': 9, '10': 'phoneNumber'},
   ],
 };
@@ -144,19 +207,54 @@ const AutoRecharge$json = {
     {'1': 'frequency', '3': 7, '4': 1, '5': 9, '10': 'frequency'},
     {'1': 'day_of_week', '3': 8, '4': 1, '5': 5, '10': 'dayOfWeek'},
     {'1': 'day_of_month', '3': 9, '4': 1, '5': 5, '10': 'dayOfMonth'},
-    {'1': 'next_run_date', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'nextRunDate'},
-    {'1': 'last_run_date', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastRunDate'},
+    {
+      '1': 'next_run_date',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'nextRunDate'
+    },
+    {
+      '1': 'last_run_date',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastRunDate'
+    },
     {'1': 'status', '3': 12, '4': 1, '5': 9, '10': 'status'},
     {'1': 'failure_count', '3': 13, '4': 1, '5': 5, '10': 'failureCount'},
-    {'1': 'created_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'beneficiary', '3': 15, '4': 1, '5': 11, '6': '.pb.BillBeneficiary', '10': 'beneficiary'},
+    {
+      '1': 'created_at',
+      '3': 14,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'beneficiary',
+      '3': 15,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.BillBeneficiary',
+      '10': 'beneficiary'
+    },
     {'1': 'provider_id', '3': 16, '4': 1, '5': 9, '10': 'providerId'},
     {'1': 'provider_code', '3': 17, '4': 1, '5': 9, '10': 'providerCode'},
     {'1': 'provider_name', '3': 18, '4': 1, '5': 9, '10': 'providerName'},
     {'1': 'customer_name', '3': 19, '4': 1, '5': 9, '10': 'customerName'},
     {'1': 'meter_type', '3': 20, '4': 1, '5': 9, '10': 'meterType'},
     {'1': 'max_retries', '3': 21, '4': 1, '5': 5, '10': 'maxRetries'},
-    {'1': 'updated_at', '3': 22, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'updated_at',
+      '3': 22,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
   ],
 };
 
@@ -188,15 +286,43 @@ const BillPaymentReminder$json = {
     {'1': 'beneficiary_id', '3': 3, '4': 1, '5': 9, '10': 'beneficiaryId'},
     {'1': 'title', '3': 4, '4': 1, '5': 9, '10': 'title'},
     {'1': 'description', '3': 5, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'reminder_date', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'reminderDate'},
+    {
+      '1': 'reminder_date',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'reminderDate'
+    },
     {'1': 'amount', '3': 7, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'is_recurring', '3': 8, '4': 1, '5': 8, '10': 'isRecurring'},
     {'1': 'recurrence_type', '3': 9, '4': 1, '5': 9, '10': 'recurrenceType'},
     {'1': 'status', '3': 10, '4': 1, '5': 9, '10': 'status'},
-    {'1': 'notified_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'notifiedAt'},
-    {'1': 'created_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'notified_at',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'notifiedAt'
+    },
+    {
+      '1': 'created_at',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
     {'1': 'currency', '3': 13, '4': 1, '5': 9, '10': 'currency'},
-    {'1': 'updated_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'updated_at',
+      '3': 14,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
   ],
 };
 
@@ -259,7 +385,14 @@ final $typed_data.Uint8List getProvidersRequestDescriptor = $convert.base64Decod
 const GetProvidersResponse$json = {
   '1': 'GetProvidersResponse',
   '2': [
-    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.pb.ElectricityProvider', '10': 'providers'},
+    {
+      '1': 'providers',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.ElectricityProvider',
+      '10': 'providers'
+    },
   ],
 };
 
@@ -319,7 +452,13 @@ const ValidateMeterResponse$json = {
     {'1': 'customer_name', '3': 2, '4': 1, '5': 9, '10': 'customerName'},
     {'1': 'customer_address', '3': 3, '4': 1, '5': 9, '10': 'customerAddress'},
     {'1': 'meter_type', '3': 4, '4': 1, '5': 9, '10': 'meterType'},
-    {'1': 'outstanding_balance', '3': 5, '4': 1, '5': 1, '10': 'outstandingBalance'},
+    {
+      '1': 'outstanding_balance',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '10': 'outstandingBalance'
+    },
     {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
     {'1': 'meter_number', '3': 7, '4': 1, '5': 9, '10': 'meterNumber'},
   ],
@@ -342,9 +481,10 @@ const SmartValidateMeterRequest$json = {
 };
 
 /// Descriptor for `SmartValidateMeterRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List smartValidateMeterRequestDescriptor = $convert.base64Decode(
-    'ChlTbWFydFZhbGlkYXRlTWV0ZXJSZXF1ZXN0EiEKDG1ldGVyX251bWJlchgBIAEoCVILbWV0ZX'
-    'JOdW1iZXI=');
+final $typed_data.Uint8List smartValidateMeterRequestDescriptor =
+    $convert.base64Decode(
+        'ChlTbWFydFZhbGlkYXRlTWV0ZXJSZXF1ZXN0EiEKDG1ldGVyX251bWJlchgBIAEoCVILbWV0ZX'
+        'JOdW1iZXI=');
 
 @$core.Deprecated('Use smartValidateMeterResponseDescriptor instead')
 const SmartValidateMeterResponse$json = {
@@ -396,7 +536,13 @@ const GetBillDetailsResponse$json = {
   '2': [
     {'1': 'customer_name', '3': 1, '4': 1, '5': 9, '10': 'customerName'},
     {'1': 'customer_address', '3': 2, '4': 1, '5': 9, '10': 'customerAddress'},
-    {'1': 'outstanding_amount', '3': 3, '4': 1, '5': 1, '10': 'outstandingAmount'},
+    {
+      '1': 'outstanding_amount',
+      '3': 3,
+      '4': 1,
+      '5': 1,
+      '10': 'outstandingAmount'
+    },
     {'1': 'due_date', '3': 4, '4': 1, '5': 9, '10': 'dueDate'},
     {'1': 'meter_type', '3': 5, '4': 1, '5': 9, '10': 'meterType'},
   ],
@@ -422,7 +568,13 @@ const InitiatePaymentRequest$json = {
     {'1': 'source_account_id', '3': 7, '4': 1, '5': 9, '10': 'sourceAccountId'},
     {'1': 'beneficiary_id', '3': 8, '4': 1, '5': 9, '10': 'beneficiaryId'},
     {'1': 'transaction_id', '3': 9, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 10, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 10,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'phone_number', '3': 11, '4': 1, '5': 9, '10': 'phoneNumber'},
   ],
 };
@@ -476,7 +628,14 @@ final $typed_data.Uint8List verifyPaymentRequestDescriptor = $convert.base64Deco
 const VerifyPaymentResponse$json = {
   '1': 'VerifyPaymentResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.pb.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -507,15 +666,23 @@ final $typed_data.Uint8List getPaymentHistoryRequestDescriptor = $convert.base64
 const GetPaymentHistoryResponse$json = {
   '1': 'GetPaymentHistoryResponse',
   '2': [
-    {'1': 'payments', '3': 1, '4': 3, '5': 11, '6': '.pb.BillPayment', '10': 'payments'},
+    {
+      '1': 'payments',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.BillPayment',
+      '10': 'payments'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetPaymentHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPaymentHistoryResponseDescriptor = $convert.base64Decode(
-    'ChlHZXRQYXltZW50SGlzdG9yeVJlc3BvbnNlEisKCHBheW1lbnRzGAEgAygLMg8ucGIuQmlsbF'
-    'BheW1lbnRSCHBheW1lbnRzEhQKBXRvdGFsGAIgASgFUgV0b3RhbA==');
+final $typed_data.Uint8List getPaymentHistoryResponseDescriptor =
+    $convert.base64Decode(
+        'ChlHZXRQYXltZW50SGlzdG9yeVJlc3BvbnNlEisKCHBheW1lbnRzGAEgAygLMg8ucGIuQmlsbF'
+        'BheW1lbnRSCHBheW1lbnRzEhQKBXRvdGFsGAIgASgFUgV0b3RhbA==');
 
 @$core.Deprecated('Use getPaymentReceiptRequestDescriptor instead')
 const GetPaymentReceiptRequest$json = {
@@ -526,16 +693,31 @@ const GetPaymentReceiptRequest$json = {
 };
 
 /// Descriptor for `GetPaymentReceiptRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPaymentReceiptRequestDescriptor = $convert.base64Decode(
-    'ChhHZXRQYXltZW50UmVjZWlwdFJlcXVlc3QSHQoKcGF5bWVudF9pZBgBIAEoCVIJcGF5bWVudE'
-    'lk');
+final $typed_data.Uint8List getPaymentReceiptRequestDescriptor =
+    $convert.base64Decode(
+        'ChhHZXRQYXltZW50UmVjZWlwdFJlcXVlc3QSHQoKcGF5bWVudF9pZBgBIAEoCVIJcGF5bWVudE'
+        'lk');
 
 @$core.Deprecated('Use getPaymentReceiptResponseDescriptor instead')
 const GetPaymentReceiptResponse$json = {
   '1': 'GetPaymentReceiptResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.pb.BillPayment', '10': 'payment'},
-    {'1': 'receipt_data', '3': 2, '4': 1, '5': 11, '6': '.pb.ReceiptData', '10': 'receiptData'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.BillPayment',
+      '10': 'payment'
+    },
+    {
+      '1': 'receipt_data',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ReceiptData',
+      '10': 'receiptData'
+    },
   ],
 };
 
@@ -576,7 +758,14 @@ final $typed_data.Uint8List saveBeneficiaryRequestDescriptor = $convert.base64De
 const SaveBeneficiaryResponse$json = {
   '1': 'SaveBeneficiaryResponse',
   '2': [
-    {'1': 'beneficiary', '3': 1, '4': 1, '5': 11, '6': '.pb.BillBeneficiary', '10': 'beneficiary'},
+    {
+      '1': 'beneficiary',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.BillBeneficiary',
+      '10': 'beneficiary'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -595,22 +784,31 @@ const GetBeneficiariesRequest$json = {
 };
 
 /// Descriptor for `GetBeneficiariesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getBeneficiariesRequestDescriptor = $convert.base64Decode(
-    'ChdHZXRCZW5lZmljaWFyaWVzUmVxdWVzdBIjCg1wcm92aWRlcl9jb2RlGAEgASgJUgxwcm92aW'
-    'RlckNvZGU=');
+final $typed_data.Uint8List getBeneficiariesRequestDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRCZW5lZmljaWFyaWVzUmVxdWVzdBIjCg1wcm92aWRlcl9jb2RlGAEgASgJUgxwcm92aW'
+        'RlckNvZGU=');
 
 @$core.Deprecated('Use getBeneficiariesResponseDescriptor instead')
 const GetBeneficiariesResponse$json = {
   '1': 'GetBeneficiariesResponse',
   '2': [
-    {'1': 'beneficiaries', '3': 1, '4': 3, '5': 11, '6': '.pb.BillBeneficiary', '10': 'beneficiaries'},
+    {
+      '1': 'beneficiaries',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.BillBeneficiary',
+      '10': 'beneficiaries'
+    },
   ],
 };
 
 /// Descriptor for `GetBeneficiariesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getBeneficiariesResponseDescriptor = $convert.base64Decode(
-    'ChhHZXRCZW5lZmljaWFyaWVzUmVzcG9uc2USOQoNYmVuZWZpY2lhcmllcxgBIAMoCzITLnBiLk'
-    'JpbGxCZW5lZmljaWFyeVINYmVuZWZpY2lhcmllcw==');
+final $typed_data.Uint8List getBeneficiariesResponseDescriptor =
+    $convert.base64Decode(
+        'ChhHZXRCZW5lZmljaWFyaWVzUmVzcG9uc2USOQoNYmVuZWZpY2lhcmllcxgBIAMoCzITLnBiLk'
+        'JpbGxCZW5lZmljaWFyeVINYmVuZWZpY2lhcmllcw==');
 
 @$core.Deprecated('Use updateBeneficiaryRequestDescriptor instead')
 const UpdateBeneficiaryRequest$json = {
@@ -632,15 +830,23 @@ final $typed_data.Uint8List updateBeneficiaryRequestDescriptor = $convert.base64
 const UpdateBeneficiaryResponse$json = {
   '1': 'UpdateBeneficiaryResponse',
   '2': [
-    {'1': 'beneficiary', '3': 1, '4': 1, '5': 11, '6': '.pb.BillBeneficiary', '10': 'beneficiary'},
+    {
+      '1': 'beneficiary',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.BillBeneficiary',
+      '10': 'beneficiary'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UpdateBeneficiaryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateBeneficiaryResponseDescriptor = $convert.base64Decode(
-    'ChlVcGRhdGVCZW5lZmljaWFyeVJlc3BvbnNlEjUKC2JlbmVmaWNpYXJ5GAEgASgLMhMucGIuQm'
-    'lsbEJlbmVmaWNpYXJ5UgtiZW5lZmljaWFyeRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List updateBeneficiaryResponseDescriptor =
+    $convert.base64Decode(
+        'ChlVcGRhdGVCZW5lZmljaWFyeVJlc3BvbnNlEjUKC2JlbmVmaWNpYXJ5GAEgASgLMhMucGIuQm'
+        'lsbEJlbmVmaWNpYXJ5UgtiZW5lZmljaWFyeRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use deleteBeneficiaryRequestDescriptor instead')
 const DeleteBeneficiaryRequest$json = {
@@ -651,9 +857,10 @@ const DeleteBeneficiaryRequest$json = {
 };
 
 /// Descriptor for `DeleteBeneficiaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteBeneficiaryRequestDescriptor = $convert.base64Decode(
-    'ChhEZWxldGVCZW5lZmljaWFyeVJlcXVlc3QSJQoOYmVuZWZpY2lhcnlfaWQYASABKAlSDWJlbm'
-    'VmaWNpYXJ5SWQ=');
+final $typed_data.Uint8List deleteBeneficiaryRequestDescriptor =
+    $convert.base64Decode(
+        'ChhEZWxldGVCZW5lZmljaWFyeVJlcXVlc3QSJQoOYmVuZWZpY2lhcnlfaWQYASABKAlSDWJlbm'
+        'VmaWNpYXJ5SWQ=');
 
 @$core.Deprecated('Use deleteBeneficiaryResponseDescriptor instead')
 const DeleteBeneficiaryResponse$json = {
@@ -664,8 +871,9 @@ const DeleteBeneficiaryResponse$json = {
 };
 
 /// Descriptor for `DeleteBeneficiaryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteBeneficiaryResponseDescriptor = $convert.base64Decode(
-    'ChlEZWxldGVCZW5lZmljaWFyeVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List deleteBeneficiaryResponseDescriptor =
+    $convert.base64Decode(
+        'ChlEZWxldGVCZW5lZmljaWFyeVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use createAutoRechargeRequestDescriptor instead')
 const CreateAutoRechargeRequest$json = {
@@ -693,15 +901,23 @@ final $typed_data.Uint8List createAutoRechargeRequestDescriptor = $convert.base6
 const CreateAutoRechargeResponse$json = {
   '1': 'CreateAutoRechargeResponse',
   '2': [
-    {'1': 'auto_recharge', '3': 1, '4': 1, '5': 11, '6': '.pb.AutoRecharge', '10': 'autoRecharge'},
+    {
+      '1': 'auto_recharge',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AutoRecharge',
+      '10': 'autoRecharge'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `CreateAutoRechargeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createAutoRechargeResponseDescriptor = $convert.base64Decode(
-    'ChpDcmVhdGVBdXRvUmVjaGFyZ2VSZXNwb25zZRI1Cg1hdXRvX3JlY2hhcmdlGAEgASgLMhAucG'
-    'IuQXV0b1JlY2hhcmdlUgxhdXRvUmVjaGFyZ2USGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List createAutoRechargeResponseDescriptor =
+    $convert.base64Decode(
+        'ChpDcmVhdGVBdXRvUmVjaGFyZ2VSZXNwb25zZRI1Cg1hdXRvX3JlY2hhcmdlGAEgASgLMhAucG'
+        'IuQXV0b1JlY2hhcmdlUgxhdXRvUmVjaGFyZ2USGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getAutoRechargesRequestDescriptor instead')
 const GetAutoRechargesRequest$json = {
@@ -712,21 +928,30 @@ const GetAutoRechargesRequest$json = {
 };
 
 /// Descriptor for `GetAutoRechargesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAutoRechargesRequestDescriptor = $convert.base64Decode(
-    'ChdHZXRBdXRvUmVjaGFyZ2VzUmVxdWVzdBIWCgZzdGF0dXMYASABKAlSBnN0YXR1cw==');
+final $typed_data.Uint8List getAutoRechargesRequestDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRBdXRvUmVjaGFyZ2VzUmVxdWVzdBIWCgZzdGF0dXMYASABKAlSBnN0YXR1cw==');
 
 @$core.Deprecated('Use getAutoRechargesResponseDescriptor instead')
 const GetAutoRechargesResponse$json = {
   '1': 'GetAutoRechargesResponse',
   '2': [
-    {'1': 'auto_recharges', '3': 1, '4': 3, '5': 11, '6': '.pb.AutoRecharge', '10': 'autoRecharges'},
+    {
+      '1': 'auto_recharges',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.AutoRecharge',
+      '10': 'autoRecharges'
+    },
   ],
 };
 
 /// Descriptor for `GetAutoRechargesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAutoRechargesResponseDescriptor = $convert.base64Decode(
-    'ChhHZXRBdXRvUmVjaGFyZ2VzUmVzcG9uc2USNwoOYXV0b19yZWNoYXJnZXMYASADKAsyEC5wYi'
-    '5BdXRvUmVjaGFyZ2VSDWF1dG9SZWNoYXJnZXM=');
+final $typed_data.Uint8List getAutoRechargesResponseDescriptor =
+    $convert.base64Decode(
+        'ChhHZXRBdXRvUmVjaGFyZ2VzUmVzcG9uc2USNwoOYXV0b19yZWNoYXJnZXMYASADKAsyEC5wYi'
+        '5BdXRvUmVjaGFyZ2VSDWF1dG9SZWNoYXJnZXM=');
 
 @$core.Deprecated('Use updateAutoRechargeRequestDescriptor instead')
 const UpdateAutoRechargeRequest$json = {
@@ -752,15 +977,23 @@ final $typed_data.Uint8List updateAutoRechargeRequestDescriptor = $convert.base6
 const UpdateAutoRechargeResponse$json = {
   '1': 'UpdateAutoRechargeResponse',
   '2': [
-    {'1': 'auto_recharge', '3': 1, '4': 1, '5': 11, '6': '.pb.AutoRecharge', '10': 'autoRecharge'},
+    {
+      '1': 'auto_recharge',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AutoRecharge',
+      '10': 'autoRecharge'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UpdateAutoRechargeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateAutoRechargeResponseDescriptor = $convert.base64Decode(
-    'ChpVcGRhdGVBdXRvUmVjaGFyZ2VSZXNwb25zZRI1Cg1hdXRvX3JlY2hhcmdlGAEgASgLMhAucG'
-    'IuQXV0b1JlY2hhcmdlUgxhdXRvUmVjaGFyZ2USGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List updateAutoRechargeResponseDescriptor =
+    $convert.base64Decode(
+        'ChpVcGRhdGVBdXRvUmVjaGFyZ2VSZXNwb25zZRI1Cg1hdXRvX3JlY2hhcmdlGAEgASgLMhAucG'
+        'IuQXV0b1JlY2hhcmdlUgxhdXRvUmVjaGFyZ2USGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use deleteAutoRechargeRequestDescriptor instead')
 const DeleteAutoRechargeRequest$json = {
@@ -771,9 +1004,10 @@ const DeleteAutoRechargeRequest$json = {
 };
 
 /// Descriptor for `DeleteAutoRechargeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteAutoRechargeRequestDescriptor = $convert.base64Decode(
-    'ChlEZWxldGVBdXRvUmVjaGFyZ2VSZXF1ZXN0EigKEGF1dG9fcmVjaGFyZ2VfaWQYASABKAlSDm'
-    'F1dG9SZWNoYXJnZUlk');
+final $typed_data.Uint8List deleteAutoRechargeRequestDescriptor =
+    $convert.base64Decode(
+        'ChlEZWxldGVBdXRvUmVjaGFyZ2VSZXF1ZXN0EigKEGF1dG9fcmVjaGFyZ2VfaWQYASABKAlSDm'
+        'F1dG9SZWNoYXJnZUlk');
 
 @$core.Deprecated('Use deleteAutoRechargeResponseDescriptor instead')
 const DeleteAutoRechargeResponse$json = {
@@ -784,8 +1018,9 @@ const DeleteAutoRechargeResponse$json = {
 };
 
 /// Descriptor for `DeleteAutoRechargeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteAutoRechargeResponseDescriptor = $convert.base64Decode(
-    'ChpEZWxldGVBdXRvUmVjaGFyZ2VSZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List deleteAutoRechargeResponseDescriptor =
+    $convert.base64Decode(
+        'ChpEZWxldGVBdXRvUmVjaGFyZ2VSZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use pauseAutoRechargeRequestDescriptor instead')
 const PauseAutoRechargeRequest$json = {
@@ -796,9 +1031,10 @@ const PauseAutoRechargeRequest$json = {
 };
 
 /// Descriptor for `PauseAutoRechargeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List pauseAutoRechargeRequestDescriptor = $convert.base64Decode(
-    'ChhQYXVzZUF1dG9SZWNoYXJnZVJlcXVlc3QSKAoQYXV0b19yZWNoYXJnZV9pZBgBIAEoCVIOYX'
-    'V0b1JlY2hhcmdlSWQ=');
+final $typed_data.Uint8List pauseAutoRechargeRequestDescriptor =
+    $convert.base64Decode(
+        'ChhQYXVzZUF1dG9SZWNoYXJnZVJlcXVlc3QSKAoQYXV0b19yZWNoYXJnZV9pZBgBIAEoCVIOYX'
+        'V0b1JlY2hhcmdlSWQ=');
 
 @$core.Deprecated('Use pauseAutoRechargeResponseDescriptor instead')
 const PauseAutoRechargeResponse$json = {
@@ -809,8 +1045,9 @@ const PauseAutoRechargeResponse$json = {
 };
 
 /// Descriptor for `PauseAutoRechargeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List pauseAutoRechargeResponseDescriptor = $convert.base64Decode(
-    'ChlQYXVzZUF1dG9SZWNoYXJnZVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List pauseAutoRechargeResponseDescriptor =
+    $convert.base64Decode(
+        'ChlQYXVzZUF1dG9SZWNoYXJnZVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use resumeAutoRechargeRequestDescriptor instead')
 const ResumeAutoRechargeRequest$json = {
@@ -821,9 +1058,10 @@ const ResumeAutoRechargeRequest$json = {
 };
 
 /// Descriptor for `ResumeAutoRechargeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List resumeAutoRechargeRequestDescriptor = $convert.base64Decode(
-    'ChlSZXN1bWVBdXRvUmVjaGFyZ2VSZXF1ZXN0EigKEGF1dG9fcmVjaGFyZ2VfaWQYASABKAlSDm'
-    'F1dG9SZWNoYXJnZUlk');
+final $typed_data.Uint8List resumeAutoRechargeRequestDescriptor =
+    $convert.base64Decode(
+        'ChlSZXN1bWVBdXRvUmVjaGFyZ2VSZXF1ZXN0EigKEGF1dG9fcmVjaGFyZ2VfaWQYASABKAlSDm'
+        'F1dG9SZWNoYXJnZUlk');
 
 @$core.Deprecated('Use resumeAutoRechargeResponseDescriptor instead')
 const ResumeAutoRechargeResponse$json = {
@@ -834,8 +1072,9 @@ const ResumeAutoRechargeResponse$json = {
 };
 
 /// Descriptor for `ResumeAutoRechargeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List resumeAutoRechargeResponseDescriptor = $convert.base64Decode(
-    'ChpSZXN1bWVBdXRvUmVjaGFyZ2VSZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List resumeAutoRechargeResponseDescriptor =
+    $convert.base64Decode(
+        'ChpSZXN1bWVBdXRvUmVjaGFyZ2VSZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use createReminderRequestDescriptor instead')
 const CreateReminderRequest$json = {
@@ -844,7 +1083,14 @@ const CreateReminderRequest$json = {
     {'1': 'beneficiary_id', '3': 1, '4': 1, '5': 9, '10': 'beneficiaryId'},
     {'1': 'title', '3': 2, '4': 1, '5': 9, '10': 'title'},
     {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'reminder_date', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'reminderDate'},
+    {
+      '1': 'reminder_date',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'reminderDate'
+    },
     {'1': 'amount', '3': 5, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'is_recurring', '3': 6, '4': 1, '5': 8, '10': 'isRecurring'},
     {'1': 'recurrence_type', '3': 7, '4': 1, '5': 9, '10': 'recurrenceType'},
@@ -865,15 +1111,23 @@ final $typed_data.Uint8List createReminderRequestDescriptor = $convert.base64Dec
 const CreateReminderResponse$json = {
   '1': 'CreateReminderResponse',
   '2': [
-    {'1': 'reminder', '3': 1, '4': 1, '5': 11, '6': '.pb.BillPaymentReminder', '10': 'reminder'},
+    {
+      '1': 'reminder',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.BillPaymentReminder',
+      '10': 'reminder'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `CreateReminderResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createReminderResponseDescriptor = $convert.base64Decode(
-    'ChZDcmVhdGVSZW1pbmRlclJlc3BvbnNlEjMKCHJlbWluZGVyGAEgASgLMhcucGIuQmlsbFBheW'
-    '1lbnRSZW1pbmRlclIIcmVtaW5kZXISGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List createReminderResponseDescriptor =
+    $convert.base64Decode(
+        'ChZDcmVhdGVSZW1pbmRlclJlc3BvbnNlEjMKCHJlbWluZGVyGAEgASgLMhcucGIuQmlsbFBheW'
+        '1lbnRSZW1pbmRlclIIcmVtaW5kZXISGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getRemindersRequestDescriptor instead')
 const GetRemindersRequest$json = {
@@ -893,7 +1147,14 @@ final $typed_data.Uint8List getRemindersRequestDescriptor = $convert.base64Decod
 const GetRemindersResponse$json = {
   '1': 'GetRemindersResponse',
   '2': [
-    {'1': 'reminders', '3': 1, '4': 3, '5': 11, '6': '.pb.BillPaymentReminder', '10': 'reminders'},
+    {
+      '1': 'reminders',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.BillPaymentReminder',
+      '10': 'reminders'
+    },
   ],
 };
 
@@ -909,7 +1170,14 @@ const UpdateReminderRequest$json = {
     {'1': 'reminder_id', '3': 1, '4': 1, '5': 9, '10': 'reminderId'},
     {'1': 'title', '3': 2, '4': 1, '5': 9, '10': 'title'},
     {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'reminder_date', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'reminderDate'},
+    {
+      '1': 'reminder_date',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'reminderDate'
+    },
     {'1': 'amount', '3': 5, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'is_recurring', '3': 7, '4': 1, '5': 8, '10': 'isRecurring'},
@@ -930,15 +1198,23 @@ final $typed_data.Uint8List updateReminderRequestDescriptor = $convert.base64Dec
 const UpdateReminderResponse$json = {
   '1': 'UpdateReminderResponse',
   '2': [
-    {'1': 'reminder', '3': 1, '4': 1, '5': 11, '6': '.pb.BillPaymentReminder', '10': 'reminder'},
+    {
+      '1': 'reminder',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.BillPaymentReminder',
+      '10': 'reminder'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UpdateReminderResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateReminderResponseDescriptor = $convert.base64Decode(
-    'ChZVcGRhdGVSZW1pbmRlclJlc3BvbnNlEjMKCHJlbWluZGVyGAEgASgLMhcucGIuQmlsbFBheW'
-    '1lbnRSZW1pbmRlclIIcmVtaW5kZXISGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List updateReminderResponseDescriptor =
+    $convert.base64Decode(
+        'ChZVcGRhdGVSZW1pbmRlclJlc3BvbnNlEjMKCHJlbWluZGVyGAEgASgLMhcucGIuQmlsbFBheW'
+        '1lbnRSZW1pbmRlclIIcmVtaW5kZXISGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use deleteReminderRequestDescriptor instead')
 const DeleteReminderRequest$json = {
@@ -962,8 +1238,9 @@ const DeleteReminderResponse$json = {
 };
 
 /// Descriptor for `DeleteReminderResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteReminderResponseDescriptor = $convert.base64Decode(
-    'ChZEZWxldGVSZW1pbmRlclJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List deleteReminderResponseDescriptor =
+    $convert.base64Decode(
+        'ChZEZWxldGVSZW1pbmRlclJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use markReminderCompleteRequestDescriptor instead')
 const MarkReminderCompleteRequest$json = {
@@ -974,9 +1251,10 @@ const MarkReminderCompleteRequest$json = {
 };
 
 /// Descriptor for `MarkReminderCompleteRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List markReminderCompleteRequestDescriptor = $convert.base64Decode(
-    'ChtNYXJrUmVtaW5kZXJDb21wbGV0ZVJlcXVlc3QSHwoLcmVtaW5kZXJfaWQYASABKAlSCnJlbW'
-    'luZGVySWQ=');
+final $typed_data.Uint8List markReminderCompleteRequestDescriptor =
+    $convert.base64Decode(
+        'ChtNYXJrUmVtaW5kZXJDb21wbGV0ZVJlcXVlc3QSHwoLcmVtaW5kZXJfaWQYASABKAlSCnJlbW'
+        'luZGVySWQ=');
 
 @$core.Deprecated('Use markReminderCompleteResponseDescriptor instead')
 const MarkReminderCompleteResponse$json = {
@@ -987,7 +1265,7 @@ const MarkReminderCompleteResponse$json = {
 };
 
 /// Descriptor for `MarkReminderCompleteResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List markReminderCompleteResponseDescriptor = $convert.base64Decode(
-    'ChxNYXJrUmVtaW5kZXJDb21wbGV0ZVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2'
-    'U=');
-
+final $typed_data.Uint8List markReminderCompleteResponseDescriptor =
+    $convert.base64Decode(
+        'ChxNYXJrUmVtaW5kZXJDb21wbGV0ZVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2'
+        'U=');

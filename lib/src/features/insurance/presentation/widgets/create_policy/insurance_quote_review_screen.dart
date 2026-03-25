@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../../domain/entities/insurance_product_entity.dart';
 import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
 
@@ -76,11 +78,14 @@ class _InsuranceQuoteReviewScreenState
         }
 
         if (state is InsuranceQuoteLoaded) {
-          // Start countdown when quote has validUntil
-          if (state.quote.validUntil != null && _countdownTimer == null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _startCountdown(state.quote.validUntil!);
-            });
+          // Start or restart countdown when quote has validUntil
+          if (state.quote.validUntil != null) {
+            // Only start if not already counting down for this quote
+            if (_countdownTimer == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) _startCountdown(state.quote.validUntil!);
+              });
+            }
           }
           return _buildQuoteDetails(context, state);
         }
@@ -145,7 +150,7 @@ class _InsuranceQuoteReviewScreenState
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                   begin: Alignment.topLeft, end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(16.r),
               ),
@@ -187,12 +192,12 @@ class _InsuranceQuoteReviewScreenState
             ),
             SizedBox(height: 20.h),
 
-            // Provider info
-            _buildInfoCard('Provider', [
+            // Provider info with info button
+            _buildInfoCardWithAction('Provider', [
               _buildInfoRow('Name', product.providerName),
               _buildInfoRow('Product', product.name),
               _buildInfoRow('Category', product.category.displayName),
-            ]),
+            ], onInfo: () => _showProductInfoSheet(context, product)),
             SizedBox(height: 12.h),
 
             // Coverage summary
@@ -200,14 +205,13 @@ class _InsuranceQuoteReviewScreenState
               _buildInfoCard('Coverage', [
                 if (quote.coverageSummary.isNotEmpty)
                   Padding(padding: EdgeInsets.only(bottom: 8.h),
-                    child: Text(quote.coverageSummary,
-                      style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF)))),
+                    child: _buildRichContent(quote.coverageSummary, const Color(0xFF9CA3AF))),
                 ...quote.coverageItems.map((item) => Padding(
                   padding: EdgeInsets.only(bottom: 6.h),
                   child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 16.sp),
                     SizedBox(width: 8.w),
-                    Expanded(child: Text(item, style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white))),
+                    Expanded(child: _buildRichContent(item, Colors.white)),
                   ]),
                 )),
               ]),
@@ -354,14 +358,169 @@ class _InsuranceQuoteReviewScreenState
     );
   }
 
+  Widget _buildInfoCardWithAction(String title, List<Widget> children, {VoidCallback? onInfo}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Text(title, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w700, color: Colors.white))),
+          if (onInfo != null)
+            GestureDetector(
+              onTap: onInfo,
+              child: Container(
+                width: 28.w, height: 28.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+                ),
+                child: Icon(Icons.info_outline, color: const Color(0xFF6366F1), size: 16.sp),
+              ),
+            ),
+        ]),
+        SizedBox(height: 12.h),
+        ...children,
+      ]),
+    );
+  }
+
+  void _showProductInfoSheet(BuildContext context, InsuranceProduct product) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.85,
+        minChildSize: 0.35,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 12.h),
+                width: 40.w, height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2.r)),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: EdgeInsets.all(20.w),
+                  children: [
+                    Row(children: [
+                      Container(
+                        width: 48.w, height: 48.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12.r)),
+                        child: Icon(product.category.icon, size: 26.sp, color: const Color(0xFF6366F1)),
+                      ),
+                      SizedBox(width: 14.w),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(product.name, style: GoogleFonts.inter(
+                          fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                        SizedBox(height: 2.h),
+                        Text(product.providerName, style: GoogleFonts.inter(
+                          fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+                      ])),
+                    ]),
+                    SizedBox(height: 16.h),
+                    Row(children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.premiumRange, style: GoogleFonts.inter(
+                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF10B981))),
+                      ),
+                      SizedBox(width: 8.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.category.displayName, style: GoogleFonts.inter(
+                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+                      ),
+                    ]),
+                    SizedBox(height: 20.h),
+                    Text('About', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                    SizedBox(height: 8.h),
+                    _buildRichContent(product.description, const Color(0xFF9CA3AF)),
+                    if (product.howItWorks.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      Text('How It Works', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                      SizedBox(height: 8.h),
+                      _buildRichContent(product.howItWorks, const Color(0xFF9CA3AF)),
+                    ],
+                    if (product.benefits.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      Text('Benefits', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                      SizedBox(height: 8.h),
+                      ...product.benefits.map((b) => Padding(
+                        padding: EdgeInsets.only(bottom: 8.h),
+                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Icon(Icons.check_circle, size: 16.sp, color: const Color(0xFF10B981)),
+                          SizedBox(width: 8.w),
+                          Expanded(child: Text(b, style: GoogleFonts.inter(
+                            fontSize: 13.sp, color: Colors.white, height: 1.4))),
+                        ]),
+                      )),
+                    ],
+                    if (product.fullBenefits.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      Text('Full Coverage Details', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                      SizedBox(height: 8.h),
+                      _buildRichContent(product.fullBenefits, const Color(0xFF9CA3AF)),
+                    ],
+                    SizedBox(height: 20.h),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Text(label, style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-        Flexible(child: Text(value, textAlign: TextAlign.end,
-          style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500, color: Colors.white))),
+        Flexible(child: _buildRichContent(value, Colors.white, fontWeight: FontWeight.w500, textAlign: TextAlign.end)),
       ]),
     );
   }
+
+  /// Renders HTML content if it contains tags, otherwise renders plain text
+  Widget _buildRichContent(String content, Color color, {FontWeight? fontWeight, TextAlign? textAlign}) {
+    if (content.contains('<') && content.contains('>')) {
+      return HtmlWidget(
+        content,
+        textStyle: GoogleFonts.inter(fontSize: 13.sp, color: color, fontWeight: fontWeight),
+        customStylesBuilder: (element) {
+          // Override all inline colors to match dark theme
+          return {'color': _colorToCss(color), 'background-color': 'transparent'};
+        },
+      );
+    }
+    return Text(content, textAlign: textAlign,
+      style: GoogleFonts.inter(fontSize: 13.sp, color: color, fontWeight: fontWeight));
+  }
+
+  String _colorToCss(Color c) =>
+      'rgba(${c.red}, ${c.green}, ${c.blue}, ${c.opacity.toStringAsFixed(2)})';
 }

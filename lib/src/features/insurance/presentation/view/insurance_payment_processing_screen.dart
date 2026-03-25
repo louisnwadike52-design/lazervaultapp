@@ -146,7 +146,7 @@ class _InsurancePaymentProcessingScreenState
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: _processingPurchase
                       ? [const Color(0xFF4B4B4B), const Color(0xFF4B4B4B)]
-                      : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)]),
+                      : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)]),
                   borderRadius: BorderRadius.circular(8.r)),
                 child: Text(_processingPurchase ? 'Processing...' : 'Confirm',
                   style: GoogleFonts.inter(
@@ -212,9 +212,13 @@ class _InsurancePaymentProcessingScreenState
               );
             } else if (state is CreatePolicyError) {
               _processingPurchase = false;
+              // Stop animations and reset state for retry
+              _pulseController.stop();
+              _rotationController.stop();
+              setState(() => _pinEntered = false);
+
               final msg = state.message.toLowerCase();
               if (msg.contains('pin') || msg.contains('verification token')) {
-                // PIN-related error: re-show PIN dialog with inline error
                 _pinErrorMessage = state.message;
                 _showPinDialog();
               } else {
@@ -359,7 +363,7 @@ class _InsurancePaymentProcessingScreenState
                   widthFactor: progress.clamp(0.0, 1.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                      gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)]),
                       borderRadius: BorderRadius.circular(3.r)),
                   ),
                 ),
@@ -508,7 +512,7 @@ class _InsurancePaymentProcessingScreenState
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)]),
                 borderRadius: BorderRadius.circular(8.r)),
               child: Text('Retry', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
             ),

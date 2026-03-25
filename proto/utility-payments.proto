@@ -204,6 +204,74 @@ service UtilityPaymentsService {
       get: "/api/v1/bills/subscriptions/spending"
     };
   }
+
+  // === AUTO-RENEWAL (Non-Expiring Data) ===
+
+  // Enable auto-renewal for a data subscription
+  rpc EnableAutoRenew(EnableAutoRenewRequest) returns (EnableAutoRenewResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/subscriptions/auto-renew/enable"
+      body: "*"
+    };
+  }
+
+  // Disable auto-renewal for a subscription
+  rpc DisableAutoRenew(DisableAutoRenewRequest) returns (DisableAutoRenewResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/subscriptions/auto-renew/disable"
+      body: "*"
+    };
+  }
+
+  // Get all auto-renew enabled subscriptions for a user
+  rpc GetAutoRenewSubscriptions(GetAutoRenewSubscriptionsRequest) returns (GetAutoRenewSubscriptionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/subscriptions/auto-renew"
+    };
+  }
+
+  // Update the plan used for auto-renewal
+  rpc UpdateAutoRenewPlan(UpdateAutoRenewPlanRequest) returns (UpdateAutoRenewPlanResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/subscriptions/auto-renew/plan"
+      body: "*"
+    };
+  }
+
+  // === AIRTIME-TO-CASH ===
+
+  rpc GetAirtimeToCashRates(GetAirtimeToCashRatesRequest) returns (GetAirtimeToCashRatesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtime-to-cash/rates"
+    };
+  }
+
+  rpc RequestAirtimeToCashOTP(RequestAirtimeToCashOTPRequest) returns (RequestAirtimeToCashOTPResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime-to-cash/request-otp"
+      body: "*"
+    };
+  }
+
+  rpc VerifyAirtimeToCashOTP(VerifyAirtimeToCashOTPRequest) returns (VerifyAirtimeToCashOTPResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime-to-cash/verify-otp"
+      body: "*"
+    };
+  }
+
+  rpc ConvertAirtimeToCash(ConvertAirtimeToCashRequest) returns (ConvertAirtimeToCashResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime-to-cash/convert"
+      body: "*"
+    };
+  }
+
+  rpc GetAirtimeToCashHistory(GetAirtimeToCashHistoryRequest) returns (GetAirtimeToCashHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtime-to-cash/history"
+    };
+  }
 }
 
 // ===== MODELS =====
@@ -545,8 +613,9 @@ message EducationProvider {
   string service_id = 3;               // VTpass serviceID (e.g., "waec", "jamb")
   string logo_url = 4;
   bool is_active = 5;
-  double amount = 6;                    // Fixed price per PIN
+  double amount = 6;                    // Fixed price per PIN for this variation
   string description = 7;
+  string variation_code = 8;            // VTPass variation_code (e.g., "waecdirect", "utme-mock")
 }
 
 message EducationPinResult {
@@ -567,6 +636,9 @@ message PurchaseEducationPinRequest {
 
   // Idempotency
   string idempotency_key = 6;
+
+  string variation_code = 7;            // VTPass variation_code (e.g., "waecdirect", "utme-mock")
+  string billers_code = 8;              // Required for JAMB: student's profile code
 }
 
 message PurchaseEducationPinResponse {
@@ -707,6 +779,15 @@ message ActiveSubscription {
   double progress_percentage = 16;     // 0-100 (time elapsed %)
   int32 days_remaining = 17;           // -1 for non-expiring
   string payment_reference = 18;
+
+  // Auto-renewal fields (non-expiring data)
+  bool auto_renew_enabled = 19;
+  string auto_renew_variation_id = 20;
+  string auto_renew_network = 21;
+  double auto_renew_amount = 22;
+  int32 renewal_attempts = 23;
+  string next_renewal_at = 24;          // ISO timestamp
+  string auto_renew_disabled_reason = 25;
 }
 
 message GetActiveSubscriptionsRequest {
@@ -749,4 +830,141 @@ message GetSubscriptionSpendingResponse {
   double total_this_month = 2;
   map<string, double> by_type = 3;
   repeated MonthlySubscriptionSpending monthly_trend = 4;
+}
+
+// ===== AUTO-RENEWAL (Non-Expiring Data) =====
+
+message EnableAutoRenewRequest {
+  string subscription_id = 1;          // UUID of the active data subscription
+  string variation_id = 2;             // Data plan variation to auto-renew with
+  string network = 3;                  // Network: mtn, airtel, glo, 9mobile
+  double amount = 4;                   // Plan price
+}
+
+message EnableAutoRenewResponse {
+  bool success = 1;
+  string message = 2;
+  ActiveSubscription subscription = 3;
+}
+
+message DisableAutoRenewRequest {
+  string subscription_id = 1;
+}
+
+message DisableAutoRenewResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetAutoRenewSubscriptionsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetAutoRenewSubscriptionsResponse {
+  repeated ActiveSubscription subscriptions = 1;
+  int32 total = 2;
+}
+
+message UpdateAutoRenewPlanRequest {
+  string subscription_id = 1;
+  string new_variation_id = 2;         // New plan variation
+  double new_amount = 3;               // New plan price
+}
+
+message UpdateAutoRenewPlanResponse {
+  bool success = 1;
+  string message = 2;
+  ActiveSubscription subscription = 3;
+}
+
+// ===== AIRTIME-TO-CASH =====
+
+message AirtimeToCashNetworkRate {
+  string network = 1;
+  double conversion_rate = 2;
+  double min_amount = 3;
+  double max_amount = 4;
+  double automation_fee = 5;
+  bool is_available = 6;
+}
+
+message GetAirtimeToCashRatesRequest {}
+
+message GetAirtimeToCashRatesResponse {
+  repeated AirtimeToCashNetworkRate rates = 1;
+}
+
+message RequestAirtimeToCashOTPRequest {
+  string phone_number = 1;
+  string network = 2;
+}
+
+message RequestAirtimeToCashOTPResponse {
+  bool success = 1;
+  string message = 2;
+  string session_id = 3;
+  bool otp_required = 4;
+}
+
+message VerifyAirtimeToCashOTPRequest {
+  string phone_number = 1;
+  string network = 2;
+  string otp = 3;
+  string session_id = 4;
+}
+
+message VerifyAirtimeToCashOTPResponse {
+  bool verified = 1;
+  string message = 2;
+  string session_token = 3;
+}
+
+message ConvertAirtimeToCashRequest {
+  string phone_number = 1;
+  string network = 2;
+  double amount = 3;
+  string session_token = 4;
+  string transaction_id = 5;
+  string verification_token = 6;
+  string idempotency_key = 7;
+}
+
+message ConvertAirtimeToCashResponse {
+  BillPayment payment = 1;
+  double cash_amount = 2;
+  double conversion_rate = 3;
+  double fee = 4;
+  double new_balance = 5;
+  string message = 6;
+}
+
+message AirtimeToCashConversion {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string phone_number = 4;
+  string network = 5;
+  double airtime_amount = 6;
+  double cash_amount = 7;
+  double conversion_rate = 8;
+  double fee = 9;
+  string status = 10;
+  string provider_name = 11;
+  string provider_reference = 12;
+  string reference = 13;
+  string created_at = 14;
+  string provider_tx_id = 15;
+  string failure_reason = 16;
+  string completed_at = 17;
+}
+
+message GetAirtimeToCashHistoryRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetAirtimeToCashHistoryResponse {
+  repeated AirtimeToCashConversion conversions = 1;
+  int64 total_count = 2;
 }

@@ -23,7 +23,7 @@ class RecurringAccessToggle extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: isRecurringEnabled
-              ? const Color(0xFF6C5CE7).withValues(alpha: 0.5)
+              ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.5)
               : Colors.white.withValues(alpha: 0.1),
         ),
       ),
@@ -40,12 +40,12 @@ class RecurringAccessToggle extends StatelessWidget {
                       width: 36.w,
                       height: 36.w,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
                         isRecurringEnabled ? Icons.repeat : Icons.looks_one,
-                        color: const Color(0xFF6C5CE7),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                         size: 18.sp,
                       ),
                     ),
@@ -82,8 +82,8 @@ class RecurringAccessToggle extends StatelessWidget {
               Switch(
                 value: isRecurringEnabled,
                 onChanged: onToggle,
-                activeThumbColor: const Color(0xFF6C5CE7),
-                activeTrackColor: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                activeThumbColor: const Color.fromARGB(255, 78, 3, 208),
+                activeTrackColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                 inactiveThumbColor: Colors.white.withValues(alpha: 0.6),
                 inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
               ),

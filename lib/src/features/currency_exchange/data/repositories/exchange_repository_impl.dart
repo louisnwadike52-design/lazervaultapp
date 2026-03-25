@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import '../../../../generated/exchange.pbgrpc.dart';
 import '../../domain/entities/transaction_entity.dart';
@@ -10,6 +10,14 @@ import '../../domain/repositories/i_exchange_repository.dart';
 class ExchangeRepositoryImpl implements IExchangeRepository {
   final ExchangeServiceClient _exchangeClient;
   final GrpcCallOptionsHelper _callOptionsHelper;
+
+  // In-memory caches to reduce redundant gRPC calls
+  List<SupportedCurrencyInfo>? _currencyCache;
+  DateTime? _currencyCacheTime;
+  static const _currencyCacheTTL = Duration(minutes: 10);
+
+  final Map<String, _CachedRate> _rateCache = {};
+  static const _rateCacheTTL = Duration(seconds: 30);
 
   ExchangeRepositoryImpl({
     required ExchangeServiceClient exchangeClient,
@@ -22,7 +30,17 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     required String fromCurrency,
     required String toCurrency,
     double? amount,
+    bool forceRefresh = false,
   }) async {
+    // Check cache first (only for no-amount or same-amount requests)
+    if (!forceRefresh) {
+      final cacheKey = '${fromCurrency}_${toCurrency}_${amount ?? 0}';
+      final cached = _rateCache[cacheKey];
+      if (cached != null && DateTime.now().difference(cached.fetchedAt) < _rateCacheTTL) {
+        return Right(cached.rate);
+      }
+    }
+
     try {
       final request = GetExchangeRateRequest()
         ..fromCurrency = fromCurrency
@@ -51,10 +69,14 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
         rateId: response.rateId,
       );
 
+      // Cache the result
+      final cacheKey = '${fromCurrency}_${toCurrency}_${amount ?? 0}';
+      _rateCache[cacheKey] = _CachedRate(rate: exchangeRate, fetchedAt: DateTime.now());
+
       return Right(exchangeRate);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get exchange rate',
+        message: friendlyGrpcError(e, 'Failed to get exchange rate'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -82,6 +104,8 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     String? recipientSwiftCode,
     String? recipientCountry,
     String? recipientEmail,
+    String? recipientRoutingNumber,
+    String? recipientAddress,
     String? notes,
   }) async {
     try {
@@ -92,7 +116,9 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
         ..swiftBicCode = recipientSwiftCode ?? ''
         ..country = recipientCountry ?? ''
         ..bankCode = recipientBankCode ?? ''
-        ..email = recipientEmail ?? '';
+        ..email = recipientEmail ?? ''
+        ..routingNumber = recipientRoutingNumber ?? ''
+        ..address = recipientAddress ?? '';
 
       final request = InitiateInternationalTransferRequest()
         ..fromCurrency = fromCurrency
@@ -119,7 +145,7 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       return Right(transaction);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to initiate transfer',
+        message: friendlyGrpcError(e, 'Failed to initiate transfer'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -161,7 +187,7 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       return Right(transaction);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to convert currency',
+        message: friendlyGrpcError(e, 'Failed to convert currency'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -190,7 +216,7 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       return Right(transaction);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get transaction status',
+        message: friendlyGrpcError(e, 'Failed to get transaction status'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -223,7 +249,7 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       return Right(transactions);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get recent exchanges',
+        message: friendlyGrpcError(e, 'Failed to get recent exchanges'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -236,6 +262,13 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
 
   @override
   Future<Either<Failure, List<SupportedCurrencyInfo>>> getSupportedCurrencies() async {
+    // Return cached currencies if fresh
+    if (_currencyCache != null &&
+        _currencyCacheTime != null &&
+        DateTime.now().difference(_currencyCacheTime!) < _currencyCacheTTL) {
+      return Right(_currencyCache!);
+    }
+
     try {
       final request = GetSupportedCurrenciesRequest();
 
@@ -256,13 +289,23 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
         maxAmount: c.maxAmount,
       )).toList();
 
+      _currencyCache = currencies;
+      _currencyCacheTime = DateTime.now();
+
       return Right(currencies);
     } on GrpcError catch (e) {
+      // On error, return stale cache if available
+      if (_currencyCache != null) {
+        return Right(_currencyCache!);
+      }
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get supported currencies',
+        message: friendlyGrpcError(e, 'Failed to get supported currencies'),
         statusCode: e.code,
       ));
     } catch (e) {
+      if (_currencyCache != null) {
+        return Right(_currencyCache!);
+      }
       return Left(ServerFailure(
         message: e.toString(),
         statusCode: 500,
@@ -299,7 +342,7 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
           : protoTransaction.transactionId,
       type: protoTransaction.exchangeType == ExchangeType.CONVERSION
           ? TransactionType.exchange
-          : TransactionType.exchange,
+          : TransactionType.send,
       failureReason: protoTransaction.failureReason,
     );
   }
@@ -332,4 +375,11 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
         return TransactionStatus.pending;
     }
   }
+}
+
+class _CachedRate {
+  final ExchangeRate rate;
+  final DateTime fetchedAt;
+
+  _CachedRate({required this.rate, required this.fetchedAt});
 }

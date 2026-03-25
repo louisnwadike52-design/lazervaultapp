@@ -177,6 +177,12 @@ class InsuranceProduct extends Equatable {
   });
 
   String get premiumRange {
+    if (minPremium <= 0 && maxPremium <= 0) {
+      return 'Get Quote';
+    }
+    if (minPremium <= 0 && maxPremium > 0) {
+      return 'From $currency ${_formatAmount(maxPremium)}';
+    }
     if (minPremium == maxPremium) {
       return '$currency ${_formatAmount(minPremium)}';
     }

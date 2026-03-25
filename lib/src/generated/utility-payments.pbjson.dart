@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: utility-payments.proto
-//
-// @dart = 2.12
+// Generated from utility-payments.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -83,7 +84,13 @@ const AirtimeProvider$json = {
     {'1': 'max_amount', '3': 10, '4': 1, '5': 1, '10': 'maxAmount'},
     {'1': 'commission_rate', '3': 11, '4': 1, '5': 1, '10': 'commissionRate'},
     {'1': 'operator_id', '3': 12, '4': 1, '5': 9, '10': 'operatorId'},
-    {'1': 'reloadly_operator_id', '3': 13, '4': 1, '5': 9, '10': 'reloadlyOperatorId'},
+    {
+      '1': 'reloadly_operator_id',
+      '3': 13,
+      '4': 1,
+      '5': 9,
+      '10': 'reloadlyOperatorId'
+    },
   ],
 };
 
@@ -107,7 +114,13 @@ const PayElectricityBillRequest$json = {
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'meter_type', '3': 4, '4': 1, '5': 9, '10': 'meterType'},
     {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
@@ -125,7 +138,14 @@ final $typed_data.Uint8List payElectricityBillRequestDescriptor = $convert.base6
 const PayElectricityBillResponse$json = {
   '1': 'PayElectricityBillResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'token', '3': 3, '4': 1, '5': 9, '10': 'token'},
     {'1': 'units', '3': 4, '4': 1, '5': 9, '10': 'units'},
@@ -148,7 +168,13 @@ const PayWaterBillRequest$json = {
     {'1': 'customer_number', '3': 2, '4': 1, '5': 9, '10': 'customerNumber'},
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 5, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
@@ -165,7 +191,14 @@ final $typed_data.Uint8List payWaterBillRequestDescriptor = $convert.base64Decod
 const PayWaterBillResponse$json = {
   '1': 'PayWaterBillResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'receipt_number', '3': 3, '4': 1, '5': 9, '10': 'receiptNumber'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
@@ -189,7 +222,13 @@ const PayInternetBillRequest$json = {
     {'1': 'service_type', '3': 4, '4': 1, '5': 9, '10': 'serviceType'},
     {'1': 'package_id', '3': 5, '4': 1, '5': 9, '10': 'packageId'},
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
@@ -207,7 +246,14 @@ final $typed_data.Uint8List payInternetBillRequestDescriptor = $convert.base64De
 const PayInternetBillResponse$json = {
   '1': 'PayInternetBillResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'renewal_date', '3': 3, '4': 1, '5': 9, '10': 'renewalDate'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
@@ -231,7 +277,13 @@ const BuyAirtimeRequest$json = {
     {'1': 'airtime_type', '3': 4, '4': 1, '5': 9, '10': 'airtimeType'},
     {'1': 'data_plan_id', '3': 5, '4': 1, '5': 9, '10': 'dataPlanId'},
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'country_code', '3': 9, '4': 1, '5': 9, '10': 'countryCode'},
     {'1': 'operator_id', '3': 10, '4': 1, '5': 9, '10': 'operatorId'},
@@ -252,13 +304,32 @@ final $typed_data.Uint8List buyAirtimeRequestDescriptor = $convert.base64Decode(
 const BuyAirtimeResponse$json = {
   '1': 'BuyAirtimeResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'phone_number', '3': 3, '4': 1, '5': 9, '10': 'phoneNumber'},
     {'1': 'data_info', '3': 4, '4': 1, '5': 9, '10': 'dataInfo'},
     {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'commission_earned', '3': 6, '4': 1, '5': 1, '10': 'commissionEarned'},
-    {'1': 'provider_reference', '3': 7, '4': 1, '5': 9, '10': 'providerReference'},
+    {
+      '1': 'commission_earned',
+      '3': 6,
+      '4': 1,
+      '5': 1,
+      '10': 'commissionEarned'
+    },
+    {
+      '1': 'provider_reference',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'providerReference'
+    },
   ],
 };
 
@@ -278,7 +349,13 @@ const BarcodePayRequest$json = {
     {'1': 'barcode_data', '3': 1, '4': 1, '5': 9, '10': 'barcodeData'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'transaction_id', '3': 3, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 4, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
@@ -294,7 +371,14 @@ final $typed_data.Uint8List barcodePayRequestDescriptor = $convert.base64Decode(
 const BarcodePayResponse$json = {
   '1': 'BarcodePayResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'merchant_name', '3': 3, '4': 1, '5': 9, '10': 'merchantName'},
     {'1': 'bill_type', '3': 4, '4': 1, '5': 9, '10': 'billType'},
@@ -316,7 +400,13 @@ const ScanToPayRequest$json = {
     {'1': 'image_data', '3': 1, '4': 1, '5': 12, '10': 'imageData'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'transaction_id', '3': 3, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 4, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
@@ -332,7 +422,14 @@ final $typed_data.Uint8List scanToPayRequestDescriptor = $convert.base64Decode(
 const ScanToPayResponse$json = {
   '1': 'ScanToPayResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'merchant_name', '3': 3, '4': 1, '5': 9, '10': 'merchantName'},
     {'1': 'bill_type', '3': 4, '4': 1, '5': 9, '10': 'billType'},
@@ -377,17 +474,25 @@ final $typed_data.Uint8List getBillPaymentHistoryRequestDescriptor = $convert.ba
 const GetBillPaymentHistoryResponse$json = {
   '1': 'GetBillPaymentHistoryResponse',
   '2': [
-    {'1': 'payments', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payments'},
+    {
+      '1': 'payments',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payments'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_amount', '3': 3, '4': 1, '5': 1, '10': 'totalAmount'},
   ],
 };
 
 /// Descriptor for `GetBillPaymentHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getBillPaymentHistoryResponseDescriptor = $convert.base64Decode(
-    'Ch1HZXRCaWxsUGF5bWVudEhpc3RvcnlSZXNwb25zZRI4CghwYXltZW50cxgBIAMoCzIcLnV0aW'
-    'xpdHlwYXltZW50cy5CaWxsUGF5bWVudFIIcGF5bWVudHMSFAoFdG90YWwYAiABKAVSBXRvdGFs'
-    'EiEKDHRvdGFsX2Ftb3VudBgDIAEoAVILdG90YWxBbW91bnQ=');
+final $typed_data.Uint8List getBillPaymentHistoryResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1HZXRCaWxsUGF5bWVudEhpc3RvcnlSZXNwb25zZRI4CghwYXltZW50cxgBIAMoCzIcLnV0aW'
+        'xpdHlwYXltZW50cy5CaWxsUGF5bWVudFIIcGF5bWVudHMSFAoFdG90YWwYAiABKAVSBXRvdGFs'
+        'EiEKDHRvdGFsX2Ftb3VudBgDIAEoAVILdG90YWxBbW91bnQ=');
 
 @$core.Deprecated('Use getBillProvidersRequestDescriptor instead')
 const GetBillProvidersRequest$json = {
@@ -399,15 +504,23 @@ const GetBillProvidersRequest$json = {
 };
 
 /// Descriptor for `GetBillProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getBillProvidersRequestDescriptor = $convert.base64Decode(
-    'ChdHZXRCaWxsUHJvdmlkZXJzUmVxdWVzdBISCgR0eXBlGAEgASgJUgR0eXBlEh8KC2FjdGl2ZV'
-    '9vbmx5GAIgASgIUgphY3RpdmVPbmx5');
+final $typed_data.Uint8List getBillProvidersRequestDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRCaWxsUHJvdmlkZXJzUmVxdWVzdBISCgR0eXBlGAEgASgJUgR0eXBlEh8KC2FjdGl2ZV'
+        '9vbmx5GAIgASgIUgphY3RpdmVPbmx5');
 
 @$core.Deprecated('Use getBillProvidersResponseDescriptor instead')
 const GetBillProvidersResponse$json = {
   '1': 'GetBillProvidersResponse',
   '2': [
-    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.BillProvider', '10': 'providers'},
+    {
+      '1': 'providers',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.BillProvider',
+      '10': 'providers'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -427,24 +540,33 @@ const GetAirtimeProvidersRequest$json = {
 };
 
 /// Descriptor for `GetAirtimeProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAirtimeProvidersRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRBaXJ0aW1lUHJvdmlkZXJzUmVxdWVzdBIfCgthY3RpdmVfb25seRgBIAEoCFIKYWN0aX'
-    'ZlT25seRIhCgxjb3VudHJ5X2NvZGUYAiABKAlSC2NvdW50cnlDb2Rl');
+final $typed_data.Uint8List getAirtimeProvidersRequestDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRBaXJ0aW1lUHJvdmlkZXJzUmVxdWVzdBIfCgthY3RpdmVfb25seRgBIAEoCFIKYWN0aX'
+        'ZlT25seRIhCgxjb3VudHJ5X2NvZGUYAiABKAlSC2NvdW50cnlDb2Rl');
 
 @$core.Deprecated('Use getAirtimeProvidersResponseDescriptor instead')
 const GetAirtimeProvidersResponse$json = {
   '1': 'GetAirtimeProvidersResponse',
   '2': [
-    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.AirtimeProvider', '10': 'providers'},
+    {
+      '1': 'providers',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.AirtimeProvider',
+      '10': 'providers'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetAirtimeProvidersResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAirtimeProvidersResponseDescriptor = $convert.base64Decode(
-    'ChtHZXRBaXJ0aW1lUHJvdmlkZXJzUmVzcG9uc2USPgoJcHJvdmlkZXJzGAEgAygLMiAudXRpbG'
-    'l0eXBheW1lbnRzLkFpcnRpbWVQcm92aWRlclIJcHJvdmlkZXJzEhQKBXRvdGFsGAIgASgFUgV0'
-    'b3RhbA==');
+final $typed_data.Uint8List getAirtimeProvidersResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRBaXJ0aW1lUHJvdmlkZXJzUmVzcG9uc2USPgoJcHJvdmlkZXJzGAEgAygLMiAudXRpbG'
+        'l0eXBheW1lbnRzLkFpcnRpbWVQcm92aWRlclIJcHJvdmlkZXJzEhQKBXRvdGFsGAIgASgFUgV0'
+        'b3RhbA==');
 
 @$core.Deprecated('Use verifyBillRequestDescriptor instead')
 const VerifyBillRequest$json = {
@@ -468,7 +590,13 @@ const VerifyBillResponse$json = {
   '2': [
     {'1': 'is_valid', '3': 1, '4': 1, '5': 8, '10': 'isValid'},
     {'1': 'customer_name', '3': 2, '4': 1, '5': 9, '10': 'customerName'},
-    {'1': 'outstanding_amount', '3': 3, '4': 1, '5': 1, '10': 'outstandingAmount'},
+    {
+      '1': 'outstanding_amount',
+      '3': 3,
+      '4': 1,
+      '5': 1,
+      '10': 'outstandingAmount'
+    },
     {'1': 'account_status', '3': 4, '4': 1, '5': 9, '10': 'accountStatus'},
     {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -552,15 +680,23 @@ const ValidateSmartCardRequest$json = {
 };
 
 /// Descriptor for `ValidateSmartCardRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List validateSmartCardRequestDescriptor = $convert.base64Decode(
-    'ChhWYWxpZGF0ZVNtYXJ0Q2FyZFJlcXVlc3QSHwoLcHJvdmlkZXJfaWQYASABKAlSCnByb3ZpZG'
-    'VySWQSKgoRc21hcnRfY2FyZF9udW1iZXIYAiABKAlSD3NtYXJ0Q2FyZE51bWJlcg==');
+final $typed_data.Uint8List validateSmartCardRequestDescriptor =
+    $convert.base64Decode(
+        'ChhWYWxpZGF0ZVNtYXJ0Q2FyZFJlcXVlc3QSHwoLcHJvdmlkZXJfaWQYASABKAlSCnByb3ZpZG'
+        'VySWQSKgoRc21hcnRfY2FyZF9udW1iZXIYAiABKAlSD3NtYXJ0Q2FyZE51bWJlcg==');
 
 @$core.Deprecated('Use validateSmartCardResponseDescriptor instead')
 const ValidateSmartCardResponse$json = {
   '1': 'ValidateSmartCardResponse',
   '2': [
-    {'1': 'validation', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.SmartCardValidation', '10': 'validation'},
+    {
+      '1': 'validation',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.SmartCardValidation',
+      '10': 'validation'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -588,7 +724,14 @@ final $typed_data.Uint8List getTVPackagesRequestDescriptor = $convert.base64Deco
 const GetTVPackagesResponse$json = {
   '1': 'GetTVPackagesResponse',
   '2': [
-    {'1': 'packages', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.TVPackage', '10': 'packages'},
+    {
+      '1': 'packages',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.TVPackage',
+      '10': 'packages'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -608,7 +751,13 @@ const PayCableTVBillRequest$json = {
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'phone', '3': 5, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
@@ -626,7 +775,14 @@ final $typed_data.Uint8List payCableTVBillRequestDescriptor = $convert.base64Dec
 const PayCableTVBillResponse$json = {
   '1': 'PayCableTVBillResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'renewal_date', '3': 3, '4': 1, '5': 9, '10': 'renewalDate'},
     {'1': 'customer_name', '3': 4, '4': 1, '5': 9, '10': 'customerName'},
@@ -650,24 +806,33 @@ const GetCableTVProvidersRequest$json = {
 };
 
 /// Descriptor for `GetCableTVProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCableTVProvidersRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRDYWJsZVRWUHJvdmlkZXJzUmVxdWVzdBIfCgthY3RpdmVfb25seRgBIAEoCFIKYWN0aX'
-    'ZlT25seQ==');
+final $typed_data.Uint8List getCableTVProvidersRequestDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRDYWJsZVRWUHJvdmlkZXJzUmVxdWVzdBIfCgthY3RpdmVfb25seRgBIAEoCFIKYWN0aX'
+        'ZlT25seQ==');
 
 @$core.Deprecated('Use getCableTVProvidersResponseDescriptor instead')
 const GetCableTVProvidersResponse$json = {
   '1': 'GetCableTVProvidersResponse',
   '2': [
-    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.CableTVProvider', '10': 'providers'},
+    {
+      '1': 'providers',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.CableTVProvider',
+      '10': 'providers'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetCableTVProvidersResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCableTVProvidersResponseDescriptor = $convert.base64Decode(
-    'ChtHZXRDYWJsZVRWUHJvdmlkZXJzUmVzcG9uc2USPgoJcHJvdmlkZXJzGAEgAygLMiAudXRpbG'
-    'l0eXBheW1lbnRzLkNhYmxlVFZQcm92aWRlclIJcHJvdmlkZXJzEhQKBXRvdGFsGAIgASgFUgV0'
-    'b3RhbA==');
+final $typed_data.Uint8List getCableTVProvidersResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRDYWJsZVRWUHJvdmlkZXJzUmVzcG9uc2USPgoJcHJvdmlkZXJzGAEgAygLMiAudXRpbG'
+        'l0eXBheW1lbnRzLkNhYmxlVFZQcm92aWRlclIJcHJvdmlkZXJzEhQKBXRvdGFsGAIgASgFUgV0'
+        'b3RhbA==');
 
 @$core.Deprecated('Use educationProviderDescriptor instead')
 const EducationProvider$json = {
@@ -680,6 +845,7 @@ const EducationProvider$json = {
     {'1': 'is_active', '3': 5, '4': 1, '5': 8, '10': 'isActive'},
     {'1': 'amount', '3': 6, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'description', '3': 7, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'variation_code', '3': 8, '4': 1, '5': 9, '10': 'variationCode'},
   ],
 };
 
@@ -688,7 +854,8 @@ final $typed_data.Uint8List educationProviderDescriptor = $convert.base64Decode(
     'ChFFZHVjYXRpb25Qcm92aWRlchIOCgJpZBgBIAEoCVICaWQSEgoEbmFtZRgCIAEoCVIEbmFtZR'
     'IdCgpzZXJ2aWNlX2lkGAMgASgJUglzZXJ2aWNlSWQSGQoIbG9nb191cmwYBCABKAlSB2xvZ29V'
     'cmwSGwoJaXNfYWN0aXZlGAUgASgIUghpc0FjdGl2ZRIWCgZhbW91bnQYBiABKAFSBmFtb3VudB'
-    'IgCgtkZXNjcmlwdGlvbhgHIAEoCVILZGVzY3JpcHRpb24=');
+    'IgCgtkZXNjcmlwdGlvbhgHIAEoCVILZGVzY3JpcHRpb24SJQoOdmFyaWF0aW9uX2NvZGUYCCAB'
+    'KAlSDXZhcmlhdGlvbkNvZGU=');
 
 @$core.Deprecated('Use educationPinResultDescriptor instead')
 const EducationPinResult$json = {
@@ -713,8 +880,16 @@ const PurchaseEducationPinRequest$json = {
     {'1': 'quantity', '3': 2, '4': 1, '5': 5, '10': 'quantity'},
     {'1': 'phone', '3': 3, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 5, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'variation_code', '3': 7, '4': 1, '5': 9, '10': 'variationCode'},
+    {'1': 'billers_code', '3': 8, '4': 1, '5': 9, '10': 'billersCode'},
   ],
 };
 
@@ -724,15 +899,30 @@ final $typed_data.Uint8List purchaseEducationPinRequestDescriptor = $convert.bas
     'ljZUlkEhoKCHF1YW50aXR5GAIgASgFUghxdWFudGl0eRIUCgVwaG9uZRgDIAEoCVIFcGhvbmUS'
     'JQoOdHJhbnNhY3Rpb25faWQYBCABKAlSDXRyYW5zYWN0aW9uSWQSLQoSdmVyaWZpY2F0aW9uX3'
     'Rva2VuGAUgASgJUhF2ZXJpZmljYXRpb25Ub2tlbhInCg9pZGVtcG90ZW5jeV9rZXkYBiABKAlS'
-    'DmlkZW1wb3RlbmN5S2V5');
+    'DmlkZW1wb3RlbmN5S2V5EiUKDnZhcmlhdGlvbl9jb2RlGAcgASgJUg12YXJpYXRpb25Db2RlEi'
+    'EKDGJpbGxlcnNfY29kZRgIIAEoCVILYmlsbGVyc0NvZGU=');
 
 @$core.Deprecated('Use purchaseEducationPinResponseDescriptor instead')
 const PurchaseEducationPinResponse$json = {
   '1': 'PurchaseEducationPinResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
-    {'1': 'pins', '3': 3, '4': 3, '5': 11, '6': '.utilitypayments.EducationPinResult', '10': 'pins'},
+    {
+      '1': 'pins',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.EducationPinResult',
+      '10': 'pins'
+    },
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -753,24 +943,33 @@ const GetEducationProvidersRequest$json = {
 };
 
 /// Descriptor for `GetEducationProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getEducationProvidersRequestDescriptor = $convert.base64Decode(
-    'ChxHZXRFZHVjYXRpb25Qcm92aWRlcnNSZXF1ZXN0Eh8KC2FjdGl2ZV9vbmx5GAEgASgIUgphY3'
-    'RpdmVPbmx5');
+final $typed_data.Uint8List getEducationProvidersRequestDescriptor =
+    $convert.base64Decode(
+        'ChxHZXRFZHVjYXRpb25Qcm92aWRlcnNSZXF1ZXN0Eh8KC2FjdGl2ZV9vbmx5GAEgASgIUgphY3'
+        'RpdmVPbmx5');
 
 @$core.Deprecated('Use getEducationProvidersResponseDescriptor instead')
 const GetEducationProvidersResponse$json = {
   '1': 'GetEducationProvidersResponse',
   '2': [
-    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.EducationProvider', '10': 'providers'},
+    {
+      '1': 'providers',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.EducationProvider',
+      '10': 'providers'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetEducationProvidersResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getEducationProvidersResponseDescriptor = $convert.base64Decode(
-    'Ch1HZXRFZHVjYXRpb25Qcm92aWRlcnNSZXNwb25zZRJACglwcm92aWRlcnMYASADKAsyIi51dG'
-    'lsaXR5cGF5bWVudHMuRWR1Y2F0aW9uUHJvdmlkZXJSCXByb3ZpZGVycxIUCgV0b3RhbBgCIAEo'
-    'BVIFdG90YWw=');
+final $typed_data.Uint8List getEducationProvidersResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1HZXRFZHVjYXRpb25Qcm92aWRlcnNSZXNwb25zZRJACglwcm92aWRlcnMYASADKAsyIi51dG'
+        'lsaXR5cGF5bWVudHMuRWR1Y2F0aW9uUHJvdmlkZXJSCXByb3ZpZGVycxIUCgV0b3RhbBgCIAEo'
+        'BVIFdG90YWw=');
 
 @$core.Deprecated('Use dataPlanDescriptor instead')
 const DataPlan$json = {
@@ -799,14 +998,22 @@ const GetDataPlansRequest$json = {
 };
 
 /// Descriptor for `GetDataPlansRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDataPlansRequestDescriptor = $convert.base64Decode(
-    'ChNHZXREYXRhUGxhbnNSZXF1ZXN0EhgKB25ldHdvcmsYASABKAlSB25ldHdvcms=');
+final $typed_data.Uint8List getDataPlansRequestDescriptor =
+    $convert.base64Decode(
+        'ChNHZXREYXRhUGxhbnNSZXF1ZXN0EhgKB25ldHdvcmsYASABKAlSB25ldHdvcms=');
 
 @$core.Deprecated('Use getDataPlansResponseDescriptor instead')
 const GetDataPlansResponse$json = {
   '1': 'GetDataPlansResponse',
   '2': [
-    {'1': 'plans', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.DataPlan', '10': 'plans'},
+    {
+      '1': 'plans',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.DataPlan',
+      '10': 'plans'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -825,7 +1032,13 @@ const BuyDataRequest$json = {
     {'1': 'variation_id', '3': 3, '4': 1, '5': 9, '10': 'variationId'},
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
+    {
+      '1': 'verification_token',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
     {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'country_code', '3': 8, '4': 1, '5': 9, '10': 'countryCode'},
   ],
@@ -844,13 +1057,32 @@ final $typed_data.Uint8List buyDataRequestDescriptor = $convert.base64Decode(
 const BuyDataResponse$json = {
   '1': 'BuyDataResponse',
   '2': [
-    {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.BillPayment', '10': 'payment'},
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'phone_number', '3': 3, '4': 1, '5': 9, '10': 'phoneNumber'},
     {'1': 'data_plan', '3': 4, '4': 1, '5': 9, '10': 'dataPlan'},
     {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'commission_earned', '3': 6, '4': 1, '5': 1, '10': 'commissionEarned'},
-    {'1': 'provider_reference', '3': 7, '4': 1, '5': 9, '10': 'providerReference'},
+    {
+      '1': 'commission_earned',
+      '3': 6,
+      '4': 1,
+      '5': 1,
+      '10': 'commissionEarned'
+    },
+    {
+      '1': 'provider_reference',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'providerReference'
+    },
   ],
 };
 
@@ -931,24 +1163,33 @@ const GetInternetProvidersRequest$json = {
 };
 
 /// Descriptor for `GetInternetProvidersRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInternetProvidersRequestDescriptor = $convert.base64Decode(
-    'ChtHZXRJbnRlcm5ldFByb3ZpZGVyc1JlcXVlc3QSHwoLYWN0aXZlX29ubHkYASABKAhSCmFjdG'
-    'l2ZU9ubHk=');
+final $typed_data.Uint8List getInternetProvidersRequestDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRJbnRlcm5ldFByb3ZpZGVyc1JlcXVlc3QSHwoLYWN0aXZlX29ubHkYASABKAhSCmFjdG'
+        'l2ZU9ubHk=');
 
 @$core.Deprecated('Use getInternetProvidersResponseDescriptor instead')
 const GetInternetProvidersResponse$json = {
   '1': 'GetInternetProvidersResponse',
   '2': [
-    {'1': 'providers', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.InternetProvider', '10': 'providers'},
+    {
+      '1': 'providers',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.InternetProvider',
+      '10': 'providers'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetInternetProvidersResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInternetProvidersResponseDescriptor = $convert.base64Decode(
-    'ChxHZXRJbnRlcm5ldFByb3ZpZGVyc1Jlc3BvbnNlEj8KCXByb3ZpZGVycxgBIAMoCzIhLnV0aW'
-    'xpdHlwYXltZW50cy5JbnRlcm5ldFByb3ZpZGVyUglwcm92aWRlcnMSFAoFdG90YWwYAiABKAVS'
-    'BXRvdGFs');
+final $typed_data.Uint8List getInternetProvidersResponseDescriptor =
+    $convert.base64Decode(
+        'ChxHZXRJbnRlcm5ldFByb3ZpZGVyc1Jlc3BvbnNlEj8KCXByb3ZpZGVycxgBIAMoCzIhLnV0aW'
+        'xpdHlwYXltZW50cy5JbnRlcm5ldFByb3ZpZGVyUglwcm92aWRlcnMSFAoFdG90YWwYAiABKAVS'
+        'BXRvdGFs');
 
 @$core.Deprecated('Use validateInternetAccountRequestDescriptor instead')
 const ValidateInternetAccountRequest$json = {
@@ -960,24 +1201,33 @@ const ValidateInternetAccountRequest$json = {
 };
 
 /// Descriptor for `ValidateInternetAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List validateInternetAccountRequestDescriptor = $convert.base64Decode(
-    'Ch5WYWxpZGF0ZUludGVybmV0QWNjb3VudFJlcXVlc3QSHwoLcHJvdmlkZXJfaWQYASABKAlSCn'
-    'Byb3ZpZGVySWQSJQoOYWNjb3VudF9udW1iZXIYAiABKAlSDWFjY291bnROdW1iZXI=');
+final $typed_data.Uint8List validateInternetAccountRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5WYWxpZGF0ZUludGVybmV0QWNjb3VudFJlcXVlc3QSHwoLcHJvdmlkZXJfaWQYASABKAlSCn'
+        'Byb3ZpZGVySWQSJQoOYWNjb3VudF9udW1iZXIYAiABKAlSDWFjY291bnROdW1iZXI=');
 
 @$core.Deprecated('Use validateInternetAccountResponseDescriptor instead')
 const ValidateInternetAccountResponse$json = {
   '1': 'ValidateInternetAccountResponse',
   '2': [
-    {'1': 'validation', '3': 1, '4': 1, '5': 11, '6': '.utilitypayments.InternetAccountValidation', '10': 'validation'},
+    {
+      '1': 'validation',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.InternetAccountValidation',
+      '10': 'validation'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `ValidateInternetAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List validateInternetAccountResponseDescriptor = $convert.base64Decode(
-    'Ch9WYWxpZGF0ZUludGVybmV0QWNjb3VudFJlc3BvbnNlEkoKCnZhbGlkYXRpb24YASABKAsyKi'
-    '51dGlsaXR5cGF5bWVudHMuSW50ZXJuZXRBY2NvdW50VmFsaWRhdGlvblIKdmFsaWRhdGlvbhIY'
-    'CgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List validateInternetAccountResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9WYWxpZGF0ZUludGVybmV0QWNjb3VudFJlc3BvbnNlEkoKCnZhbGlkYXRpb24YASABKAsyKi'
+        '51dGlsaXR5cGF5bWVudHMuSW50ZXJuZXRBY2NvdW50VmFsaWRhdGlvblIKdmFsaWRhdGlvbhIY'
+        'CgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use getInternetPackagesRequestDescriptor instead')
 const GetInternetPackagesRequest$json = {
@@ -988,31 +1238,46 @@ const GetInternetPackagesRequest$json = {
 };
 
 /// Descriptor for `GetInternetPackagesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInternetPackagesRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRJbnRlcm5ldFBhY2thZ2VzUmVxdWVzdBIfCgtwcm92aWRlcl9pZBgBIAEoCVIKcHJvdm'
-    'lkZXJJZA==');
+final $typed_data.Uint8List getInternetPackagesRequestDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRJbnRlcm5ldFBhY2thZ2VzUmVxdWVzdBIfCgtwcm92aWRlcl9pZBgBIAEoCVIKcHJvdm'
+        'lkZXJJZA==');
 
 @$core.Deprecated('Use getInternetPackagesResponseDescriptor instead')
 const GetInternetPackagesResponse$json = {
   '1': 'GetInternetPackagesResponse',
   '2': [
-    {'1': 'packages', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.InternetPackage', '10': 'packages'},
+    {
+      '1': 'packages',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.InternetPackage',
+      '10': 'packages'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetInternetPackagesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInternetPackagesResponseDescriptor = $convert.base64Decode(
-    'ChtHZXRJbnRlcm5ldFBhY2thZ2VzUmVzcG9uc2USPAoIcGFja2FnZXMYASADKAsyIC51dGlsaX'
-    'R5cGF5bWVudHMuSW50ZXJuZXRQYWNrYWdlUghwYWNrYWdlcxIUCgV0b3RhbBgCIAEoBVIFdG90'
-    'YWw=');
+final $typed_data.Uint8List getInternetPackagesResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRJbnRlcm5ldFBhY2thZ2VzUmVzcG9uc2USPAoIcGFja2FnZXMYASADKAsyIC51dGlsaX'
+        'R5cGF5bWVudHMuSW50ZXJuZXRQYWNrYWdlUghwYWNrYWdlcxIUCgV0b3RhbBgCIAEoBVIFdG90'
+        'YWw=');
 
 @$core.Deprecated('Use activeSubscriptionDescriptor instead')
 const ActiveSubscription$json = {
   '1': 'ActiveSubscription',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'subscription_type', '3': 2, '4': 1, '5': 9, '10': 'subscriptionType'},
+    {
+      '1': 'subscription_type',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '10': 'subscriptionType'
+    },
     {'1': 'provider_id', '3': 3, '4': 1, '5': 9, '10': 'providerId'},
     {'1': 'provider_name', '3': 4, '4': 1, '5': 9, '10': 'providerName'},
     {'1': 'plan_name', '3': 5, '4': 1, '5': 9, '10': 'planName'},
@@ -1026,9 +1291,58 @@ const ActiveSubscription$json = {
     {'1': 'renewal_date', '3': 13, '4': 1, '5': 9, '10': 'renewalDate'},
     {'1': 'token', '3': 14, '4': 1, '5': 9, '10': 'token'},
     {'1': 'units', '3': 15, '4': 1, '5': 1, '10': 'units'},
-    {'1': 'progress_percentage', '3': 16, '4': 1, '5': 1, '10': 'progressPercentage'},
+    {
+      '1': 'progress_percentage',
+      '3': 16,
+      '4': 1,
+      '5': 1,
+      '10': 'progressPercentage'
+    },
     {'1': 'days_remaining', '3': 17, '4': 1, '5': 5, '10': 'daysRemaining'},
-    {'1': 'payment_reference', '3': 18, '4': 1, '5': 9, '10': 'paymentReference'},
+    {
+      '1': 'payment_reference',
+      '3': 18,
+      '4': 1,
+      '5': 9,
+      '10': 'paymentReference'
+    },
+    {
+      '1': 'auto_renew_enabled',
+      '3': 19,
+      '4': 1,
+      '5': 8,
+      '10': 'autoRenewEnabled'
+    },
+    {
+      '1': 'auto_renew_variation_id',
+      '3': 20,
+      '4': 1,
+      '5': 9,
+      '10': 'autoRenewVariationId'
+    },
+    {
+      '1': 'auto_renew_network',
+      '3': 21,
+      '4': 1,
+      '5': 9,
+      '10': 'autoRenewNetwork'
+    },
+    {
+      '1': 'auto_renew_amount',
+      '3': 22,
+      '4': 1,
+      '5': 1,
+      '10': 'autoRenewAmount'
+    },
+    {'1': 'renewal_attempts', '3': 23, '4': 1, '5': 5, '10': 'renewalAttempts'},
+    {'1': 'next_renewal_at', '3': 24, '4': 1, '5': 9, '10': 'nextRenewalAt'},
+    {
+      '1': 'auto_renew_disabled_reason',
+      '3': 25,
+      '4': 1,
+      '5': 9,
+      '10': 'autoRenewDisabledReason'
+    },
   ],
 };
 
@@ -1045,38 +1359,59 @@ final $typed_data.Uint8List activeSubscriptionDescriptor = $convert.base64Decode
     'GA4gASgJUgV0b2tlbhIUCgV1bml0cxgPIAEoAVIFdW5pdHMSLwoTcHJvZ3Jlc3NfcGVyY2VudG'
     'FnZRgQIAEoAVIScHJvZ3Jlc3NQZXJjZW50YWdlEiUKDmRheXNfcmVtYWluaW5nGBEgASgFUg1k'
     'YXlzUmVtYWluaW5nEisKEXBheW1lbnRfcmVmZXJlbmNlGBIgASgJUhBwYXltZW50UmVmZXJlbm'
-    'Nl');
+    'NlEiwKEmF1dG9fcmVuZXdfZW5hYmxlZBgTIAEoCFIQYXV0b1JlbmV3RW5hYmxlZBI1ChdhdXRv'
+    'X3JlbmV3X3ZhcmlhdGlvbl9pZBgUIAEoCVIUYXV0b1JlbmV3VmFyaWF0aW9uSWQSLAoSYXV0b1'
+    '9yZW5ld19uZXR3b3JrGBUgASgJUhBhdXRvUmVuZXdOZXR3b3JrEioKEWF1dG9fcmVuZXdfYW1v'
+    'dW50GBYgASgBUg9hdXRvUmVuZXdBbW91bnQSKQoQcmVuZXdhbF9hdHRlbXB0cxgXIAEoBVIPcm'
+    'VuZXdhbEF0dGVtcHRzEiYKD25leHRfcmVuZXdhbF9hdBgYIAEoCVINbmV4dFJlbmV3YWxBdBI7'
+    'ChphdXRvX3JlbmV3X2Rpc2FibGVkX3JlYXNvbhgZIAEoCVIXYXV0b1JlbmV3RGlzYWJsZWRSZW'
+    'Fzb24=');
 
 @$core.Deprecated('Use getActiveSubscriptionsRequestDescriptor instead')
 const GetActiveSubscriptionsRequest$json = {
   '1': 'GetActiveSubscriptionsRequest',
   '2': [
-    {'1': 'subscription_type', '3': 1, '4': 1, '5': 9, '10': 'subscriptionType'},
+    {
+      '1': 'subscription_type',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '10': 'subscriptionType'
+    },
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
     {'1': 'offset', '3': 3, '4': 1, '5': 5, '10': 'offset'},
   ],
 };
 
 /// Descriptor for `GetActiveSubscriptionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getActiveSubscriptionsRequestDescriptor = $convert.base64Decode(
-    'Ch1HZXRBY3RpdmVTdWJzY3JpcHRpb25zUmVxdWVzdBIrChFzdWJzY3JpcHRpb25fdHlwZRgBIA'
-    'EoCVIQc3Vic2NyaXB0aW9uVHlwZRIUCgVsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMg'
-    'ASgFUgZvZmZzZXQ=');
+final $typed_data.Uint8List getActiveSubscriptionsRequestDescriptor =
+    $convert.base64Decode(
+        'Ch1HZXRBY3RpdmVTdWJzY3JpcHRpb25zUmVxdWVzdBIrChFzdWJzY3JpcHRpb25fdHlwZRgBIA'
+        'EoCVIQc3Vic2NyaXB0aW9uVHlwZRIUCgVsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMg'
+        'ASgFUgZvZmZzZXQ=');
 
 @$core.Deprecated('Use getActiveSubscriptionsResponseDescriptor instead')
 const GetActiveSubscriptionsResponse$json = {
   '1': 'GetActiveSubscriptionsResponse',
   '2': [
-    {'1': 'subscriptions', '3': 1, '4': 3, '5': 11, '6': '.utilitypayments.ActiveSubscription', '10': 'subscriptions'},
+    {
+      '1': 'subscriptions',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.ActiveSubscription',
+      '10': 'subscriptions'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetActiveSubscriptionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getActiveSubscriptionsResponseDescriptor = $convert.base64Decode(
-    'Ch5HZXRBY3RpdmVTdWJzY3JpcHRpb25zUmVzcG9uc2USSQoNc3Vic2NyaXB0aW9ucxgBIAMoCz'
-    'IjLnV0aWxpdHlwYXltZW50cy5BY3RpdmVTdWJzY3JpcHRpb25SDXN1YnNjcmlwdGlvbnMSFAoF'
-    'dG90YWwYAiABKAVSBXRvdGFs');
+final $typed_data.Uint8List getActiveSubscriptionsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRBY3RpdmVTdWJzY3JpcHRpb25zUmVzcG9uc2USSQoNc3Vic2NyaXB0aW9ucxgBIAMoCz'
+        'IjLnV0aWxpdHlwYXltZW50cy5BY3RpdmVTdWJzY3JpcHRpb25SDXN1YnNjcmlwdGlvbnMSFAoF'
+        'dG90YWwYAiABKAVSBXRvdGFs');
 
 @$core.Deprecated('Use subscriptionTypeSummaryDescriptor instead')
 const SubscriptionTypeSummary$json = {
@@ -1089,9 +1424,10 @@ const SubscriptionTypeSummary$json = {
 };
 
 /// Descriptor for `SubscriptionTypeSummary`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List subscriptionTypeSummaryDescriptor = $convert.base64Decode(
-    'ChdTdWJzY3JpcHRpb25UeXBlU3VtbWFyeRISCgR0eXBlGAEgASgJUgR0eXBlEhQKBWNvdW50GA'
-    'IgASgFUgVjb3VudBIfCgt0b3RhbF9zcGVuZBgDIAEoAVIKdG90YWxTcGVuZA==');
+final $typed_data.Uint8List subscriptionTypeSummaryDescriptor =
+    $convert.base64Decode(
+        'ChdTdWJzY3JpcHRpb25UeXBlU3VtbWFyeRISCgR0eXBlGAEgASgJUgR0eXBlEhQKBWNvdW50GA'
+        'IgASgFUgVjb3VudBIfCgt0b3RhbF9zcGVuZBgDIAEoAVIKdG90YWxTcGVuZA==');
 
 @$core.Deprecated('Use getSubscriptionSummaryRequestDescriptor instead')
 const GetSubscriptionSummaryRequest$json = {
@@ -1099,8 +1435,8 @@ const GetSubscriptionSummaryRequest$json = {
 };
 
 /// Descriptor for `GetSubscriptionSummaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSubscriptionSummaryRequestDescriptor = $convert.base64Decode(
-    'Ch1HZXRTdWJzY3JpcHRpb25TdW1tYXJ5UmVxdWVzdA==');
+final $typed_data.Uint8List getSubscriptionSummaryRequestDescriptor =
+    $convert.base64Decode('Ch1HZXRTdWJzY3JpcHRpb25TdW1tYXJ5UmVxdWVzdA==');
 
 @$core.Deprecated('Use getSubscriptionSummaryResponseDescriptor instead')
 const GetSubscriptionSummaryResponse$json = {
@@ -1108,8 +1444,21 @@ const GetSubscriptionSummaryResponse$json = {
   '2': [
     {'1': 'active_count', '3': 1, '4': 1, '5': 5, '10': 'activeCount'},
     {'1': 'expiring_count', '3': 2, '4': 1, '5': 5, '10': 'expiringCount'},
-    {'1': 'total_monthly_spend', '3': 3, '4': 1, '5': 1, '10': 'totalMonthlySpend'},
-    {'1': 'by_type', '3': 4, '4': 3, '5': 11, '6': '.utilitypayments.SubscriptionTypeSummary', '10': 'byType'},
+    {
+      '1': 'total_monthly_spend',
+      '3': 3,
+      '4': 1,
+      '5': 1,
+      '10': 'totalMonthlySpend'
+    },
+    {
+      '1': 'by_type',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.SubscriptionTypeSummary',
+      '10': 'byType'
+    },
   ],
 };
 
@@ -1130,9 +1479,10 @@ const MonthlySubscriptionSpending$json = {
 };
 
 /// Descriptor for `MonthlySubscriptionSpending`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List monthlySubscriptionSpendingDescriptor = $convert.base64Decode(
-    'ChtNb250aGx5U3Vic2NyaXB0aW9uU3BlbmRpbmcSFAoFbW9udGgYASABKAlSBW1vbnRoEhQKBX'
-    'RvdGFsGAIgASgBUgV0b3RhbA==');
+final $typed_data.Uint8List monthlySubscriptionSpendingDescriptor =
+    $convert.base64Decode(
+        'ChtNb250aGx5U3Vic2NyaXB0aW9uU3BlbmRpbmcSFAoFbW9udGgYASABKAlSBW1vbnRoEhQKBX'
+        'RvdGFsGAIgASgBUgV0b3RhbA==');
 
 @$core.Deprecated('Use getSubscriptionSpendingRequestDescriptor instead')
 const GetSubscriptionSpendingRequest$json = {
@@ -1143,9 +1493,10 @@ const GetSubscriptionSpendingRequest$json = {
 };
 
 /// Descriptor for `GetSubscriptionSpendingRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSubscriptionSpendingRequestDescriptor = $convert.base64Decode(
-    'Ch5HZXRTdWJzY3JpcHRpb25TcGVuZGluZ1JlcXVlc3QSFgoGbW9udGhzGAEgASgFUgZtb250aH'
-    'M=');
+final $typed_data.Uint8List getSubscriptionSpendingRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRTdWJzY3JpcHRpb25TcGVuZGluZ1JlcXVlc3QSFgoGbW9udGhzGAEgASgFUgZtb250aH'
+        'M=');
 
 @$core.Deprecated('Use getSubscriptionSpendingResponseDescriptor instead')
 const GetSubscriptionSpendingResponse$json = {
@@ -1153,8 +1504,22 @@ const GetSubscriptionSpendingResponse$json = {
   '2': [
     {'1': 'total_all_time', '3': 1, '4': 1, '5': 1, '10': 'totalAllTime'},
     {'1': 'total_this_month', '3': 2, '4': 1, '5': 1, '10': 'totalThisMonth'},
-    {'1': 'by_type', '3': 3, '4': 3, '5': 11, '6': '.utilitypayments.GetSubscriptionSpendingResponse.ByTypeEntry', '10': 'byType'},
-    {'1': 'monthly_trend', '3': 4, '4': 3, '5': 11, '6': '.utilitypayments.MonthlySubscriptionSpending', '10': 'monthlyTrend'},
+    {
+      '1': 'by_type',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.GetSubscriptionSpendingResponse.ByTypeEntry',
+      '10': 'byType'
+    },
+    {
+      '1': 'monthly_trend',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.MonthlySubscriptionSpending',
+      '10': 'monthlyTrend'
+    },
   ],
   '3': [GetSubscriptionSpendingResponse_ByTypeEntry$json],
 };
@@ -1179,3 +1544,408 @@ final $typed_data.Uint8List getSubscriptionSpendingResponseDescriptor = $convert
     'lUcmVuZBo5CgtCeVR5cGVFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoAVIF'
     'dmFsdWU6AjgB');
 
+@$core.Deprecated('Use enableAutoRenewRequestDescriptor instead')
+const EnableAutoRenewRequest$json = {
+  '1': 'EnableAutoRenewRequest',
+  '2': [
+    {'1': 'subscription_id', '3': 1, '4': 1, '5': 9, '10': 'subscriptionId'},
+    {'1': 'variation_id', '3': 2, '4': 1, '5': 9, '10': 'variationId'},
+    {'1': 'network', '3': 3, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `EnableAutoRenewRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List enableAutoRenewRequestDescriptor = $convert.base64Decode(
+    'ChZFbmFibGVBdXRvUmVuZXdSZXF1ZXN0EicKD3N1YnNjcmlwdGlvbl9pZBgBIAEoCVIOc3Vic2'
+    'NyaXB0aW9uSWQSIQoMdmFyaWF0aW9uX2lkGAIgASgJUgt2YXJpYXRpb25JZBIYCgduZXR3b3Jr'
+    'GAMgASgJUgduZXR3b3JrEhYKBmFtb3VudBgEIAEoAVIGYW1vdW50');
+
+@$core.Deprecated('Use enableAutoRenewResponseDescriptor instead')
+const EnableAutoRenewResponse$json = {
+  '1': 'EnableAutoRenewResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'subscription',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.ActiveSubscription',
+      '10': 'subscription'
+    },
+  ],
+};
+
+/// Descriptor for `EnableAutoRenewResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List enableAutoRenewResponseDescriptor = $convert.base64Decode(
+    'ChdFbmFibGVBdXRvUmVuZXdSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB2'
+    '1lc3NhZ2UYAiABKAlSB21lc3NhZ2USRwoMc3Vic2NyaXB0aW9uGAMgASgLMiMudXRpbGl0eXBh'
+    'eW1lbnRzLkFjdGl2ZVN1YnNjcmlwdGlvblIMc3Vic2NyaXB0aW9u');
+
+@$core.Deprecated('Use disableAutoRenewRequestDescriptor instead')
+const DisableAutoRenewRequest$json = {
+  '1': 'DisableAutoRenewRequest',
+  '2': [
+    {'1': 'subscription_id', '3': 1, '4': 1, '5': 9, '10': 'subscriptionId'},
+  ],
+};
+
+/// Descriptor for `DisableAutoRenewRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List disableAutoRenewRequestDescriptor =
+    $convert.base64Decode(
+        'ChdEaXNhYmxlQXV0b1JlbmV3UmVxdWVzdBInCg9zdWJzY3JpcHRpb25faWQYASABKAlSDnN1Yn'
+        'NjcmlwdGlvbklk');
+
+@$core.Deprecated('Use disableAutoRenewResponseDescriptor instead')
+const DisableAutoRenewResponse$json = {
+  '1': 'DisableAutoRenewResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DisableAutoRenewResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List disableAutoRenewResponseDescriptor =
+    $convert.base64Decode(
+        'ChhEaXNhYmxlQXV0b1JlbmV3UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCg'
+        'dtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use getAutoRenewSubscriptionsRequestDescriptor instead')
+const GetAutoRenewSubscriptionsRequest$json = {
+  '1': 'GetAutoRenewSubscriptionsRequest',
+  '2': [
+    {'1': 'limit', '3': 1, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 2, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetAutoRenewSubscriptionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoRenewSubscriptionsRequestDescriptor =
+    $convert.base64Decode(
+        'CiBHZXRBdXRvUmVuZXdTdWJzY3JpcHRpb25zUmVxdWVzdBIUCgVsaW1pdBgBIAEoBVIFbGltaX'
+        'QSFgoGb2Zmc2V0GAIgASgFUgZvZmZzZXQ=');
+
+@$core.Deprecated('Use getAutoRenewSubscriptionsResponseDescriptor instead')
+const GetAutoRenewSubscriptionsResponse$json = {
+  '1': 'GetAutoRenewSubscriptionsResponse',
+  '2': [
+    {
+      '1': 'subscriptions',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.ActiveSubscription',
+      '10': 'subscriptions'
+    },
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetAutoRenewSubscriptionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoRenewSubscriptionsResponseDescriptor =
+    $convert.base64Decode(
+        'CiFHZXRBdXRvUmVuZXdTdWJzY3JpcHRpb25zUmVzcG9uc2USSQoNc3Vic2NyaXB0aW9ucxgBIA'
+        'MoCzIjLnV0aWxpdHlwYXltZW50cy5BY3RpdmVTdWJzY3JpcHRpb25SDXN1YnNjcmlwdGlvbnMS'
+        'FAoFdG90YWwYAiABKAVSBXRvdGFs');
+
+@$core.Deprecated('Use updateAutoRenewPlanRequestDescriptor instead')
+const UpdateAutoRenewPlanRequest$json = {
+  '1': 'UpdateAutoRenewPlanRequest',
+  '2': [
+    {'1': 'subscription_id', '3': 1, '4': 1, '5': 9, '10': 'subscriptionId'},
+    {'1': 'new_variation_id', '3': 2, '4': 1, '5': 9, '10': 'newVariationId'},
+    {'1': 'new_amount', '3': 3, '4': 1, '5': 1, '10': 'newAmount'},
+  ],
+};
+
+/// Descriptor for `UpdateAutoRenewPlanRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateAutoRenewPlanRequestDescriptor =
+    $convert.base64Decode(
+        'ChpVcGRhdGVBdXRvUmVuZXdQbGFuUmVxdWVzdBInCg9zdWJzY3JpcHRpb25faWQYASABKAlSDn'
+        'N1YnNjcmlwdGlvbklkEigKEG5ld192YXJpYXRpb25faWQYAiABKAlSDm5ld1ZhcmlhdGlvbklk'
+        'Eh0KCm5ld19hbW91bnQYAyABKAFSCW5ld0Ftb3VudA==');
+
+@$core.Deprecated('Use updateAutoRenewPlanResponseDescriptor instead')
+const UpdateAutoRenewPlanResponse$json = {
+  '1': 'UpdateAutoRenewPlanResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'subscription',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.ActiveSubscription',
+      '10': 'subscription'
+    },
+  ],
+};
+
+/// Descriptor for `UpdateAutoRenewPlanResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateAutoRenewPlanResponseDescriptor =
+    $convert.base64Decode(
+        'ChtVcGRhdGVBdXRvUmVuZXdQbGFuUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEkcKDHN1YnNjcmlwdGlvbhgDIAEoCzIjLnV0aWxp'
+        'dHlwYXltZW50cy5BY3RpdmVTdWJzY3JpcHRpb25SDHN1YnNjcmlwdGlvbg==');
+
+@$core.Deprecated('Use airtimeToCashNetworkRateDescriptor instead')
+const AirtimeToCashNetworkRate$json = {
+  '1': 'AirtimeToCashNetworkRate',
+  '2': [
+    {'1': 'network', '3': 1, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'conversion_rate', '3': 2, '4': 1, '5': 1, '10': 'conversionRate'},
+    {'1': 'min_amount', '3': 3, '4': 1, '5': 1, '10': 'minAmount'},
+    {'1': 'max_amount', '3': 4, '4': 1, '5': 1, '10': 'maxAmount'},
+    {'1': 'automation_fee', '3': 5, '4': 1, '5': 1, '10': 'automationFee'},
+    {'1': 'is_available', '3': 6, '4': 1, '5': 8, '10': 'isAvailable'},
+  ],
+};
+
+/// Descriptor for `AirtimeToCashNetworkRate`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List airtimeToCashNetworkRateDescriptor = $convert.base64Decode(
+    'ChhBaXJ0aW1lVG9DYXNoTmV0d29ya1JhdGUSGAoHbmV0d29yaxgBIAEoCVIHbmV0d29yaxInCg'
+    '9jb252ZXJzaW9uX3JhdGUYAiABKAFSDmNvbnZlcnNpb25SYXRlEh0KCm1pbl9hbW91bnQYAyAB'
+    'KAFSCW1pbkFtb3VudBIdCgptYXhfYW1vdW50GAQgASgBUgltYXhBbW91bnQSJQoOYXV0b21hdG'
+    'lvbl9mZWUYBSABKAFSDWF1dG9tYXRpb25GZWUSIQoMaXNfYXZhaWxhYmxlGAYgASgIUgtpc0F2'
+    'YWlsYWJsZQ==');
+
+@$core.Deprecated('Use getAirtimeToCashRatesRequestDescriptor instead')
+const GetAirtimeToCashRatesRequest$json = {
+  '1': 'GetAirtimeToCashRatesRequest',
+};
+
+/// Descriptor for `GetAirtimeToCashRatesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAirtimeToCashRatesRequestDescriptor =
+    $convert.base64Decode('ChxHZXRBaXJ0aW1lVG9DYXNoUmF0ZXNSZXF1ZXN0');
+
+@$core.Deprecated('Use getAirtimeToCashRatesResponseDescriptor instead')
+const GetAirtimeToCashRatesResponse$json = {
+  '1': 'GetAirtimeToCashRatesResponse',
+  '2': [
+    {
+      '1': 'rates',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.AirtimeToCashNetworkRate',
+      '10': 'rates'
+    },
+  ],
+};
+
+/// Descriptor for `GetAirtimeToCashRatesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAirtimeToCashRatesResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1HZXRBaXJ0aW1lVG9DYXNoUmF0ZXNSZXNwb25zZRI/CgVyYXRlcxgBIAMoCzIpLnV0aWxpdH'
+        'lwYXltZW50cy5BaXJ0aW1lVG9DYXNoTmV0d29ya1JhdGVSBXJhdGVz');
+
+@$core.Deprecated('Use requestAirtimeToCashOTPRequestDescriptor instead')
+const RequestAirtimeToCashOTPRequest$json = {
+  '1': 'RequestAirtimeToCashOTPRequest',
+  '2': [
+    {'1': 'phone_number', '3': 1, '4': 1, '5': 9, '10': 'phoneNumber'},
+    {'1': 'network', '3': 2, '4': 1, '5': 9, '10': 'network'},
+  ],
+};
+
+/// Descriptor for `RequestAirtimeToCashOTPRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List requestAirtimeToCashOTPRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5SZXF1ZXN0QWlydGltZVRvQ2FzaE9UUFJlcXVlc3QSIQoMcGhvbmVfbnVtYmVyGAEgASgJUg'
+        'twaG9uZU51bWJlchIYCgduZXR3b3JrGAIgASgJUgduZXR3b3Jr');
+
+@$core.Deprecated('Use requestAirtimeToCashOTPResponseDescriptor instead')
+const RequestAirtimeToCashOTPResponse$json = {
+  '1': 'RequestAirtimeToCashOTPResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'session_id', '3': 3, '4': 1, '5': 9, '10': 'sessionId'},
+    {'1': 'otp_required', '3': 4, '4': 1, '5': 8, '10': 'otpRequired'},
+  ],
+};
+
+/// Descriptor for `RequestAirtimeToCashOTPResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List requestAirtimeToCashOTPResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9SZXF1ZXN0QWlydGltZVRvQ2FzaE9UUFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
+        'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIdCgpzZXNzaW9uX2lkGAMgASgJUglzZXNz'
+        'aW9uSWQSIQoMb3RwX3JlcXVpcmVkGAQgASgIUgtvdHBSZXF1aXJlZA==');
+
+@$core.Deprecated('Use verifyAirtimeToCashOTPRequestDescriptor instead')
+const VerifyAirtimeToCashOTPRequest$json = {
+  '1': 'VerifyAirtimeToCashOTPRequest',
+  '2': [
+    {'1': 'phone_number', '3': 1, '4': 1, '5': 9, '10': 'phoneNumber'},
+    {'1': 'network', '3': 2, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'otp', '3': 3, '4': 1, '5': 9, '10': 'otp'},
+    {'1': 'session_id', '3': 4, '4': 1, '5': 9, '10': 'sessionId'},
+  ],
+};
+
+/// Descriptor for `VerifyAirtimeToCashOTPRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyAirtimeToCashOTPRequestDescriptor =
+    $convert.base64Decode(
+        'Ch1WZXJpZnlBaXJ0aW1lVG9DYXNoT1RQUmVxdWVzdBIhCgxwaG9uZV9udW1iZXIYASABKAlSC3'
+        'Bob25lTnVtYmVyEhgKB25ldHdvcmsYAiABKAlSB25ldHdvcmsSEAoDb3RwGAMgASgJUgNvdHAS'
+        'HQoKc2Vzc2lvbl9pZBgEIAEoCVIJc2Vzc2lvbklk');
+
+@$core.Deprecated('Use verifyAirtimeToCashOTPResponseDescriptor instead')
+const VerifyAirtimeToCashOTPResponse$json = {
+  '1': 'VerifyAirtimeToCashOTPResponse',
+  '2': [
+    {'1': 'verified', '3': 1, '4': 1, '5': 8, '10': 'verified'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'session_token', '3': 3, '4': 1, '5': 9, '10': 'sessionToken'},
+  ],
+};
+
+/// Descriptor for `VerifyAirtimeToCashOTPResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyAirtimeToCashOTPResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5WZXJpZnlBaXJ0aW1lVG9DYXNoT1RQUmVzcG9uc2USGgoIdmVyaWZpZWQYASABKAhSCHZlcm'
+        'lmaWVkEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USIwoNc2Vzc2lvbl90b2tlbhgDIAEoCVIM'
+        'c2Vzc2lvblRva2Vu');
+
+@$core.Deprecated('Use convertAirtimeToCashRequestDescriptor instead')
+const ConvertAirtimeToCashRequest$json = {
+  '1': 'ConvertAirtimeToCashRequest',
+  '2': [
+    {'1': 'phone_number', '3': 1, '4': 1, '5': 9, '10': 'phoneNumber'},
+    {'1': 'network', '3': 2, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'session_token', '3': 4, '4': 1, '5': 9, '10': 'sessionToken'},
+    {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
+    {
+      '1': 'verification_token',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'verificationToken'
+    },
+    {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `ConvertAirtimeToCashRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List convertAirtimeToCashRequestDescriptor = $convert.base64Decode(
+    'ChtDb252ZXJ0QWlydGltZVRvQ2FzaFJlcXVlc3QSIQoMcGhvbmVfbnVtYmVyGAEgASgJUgtwaG'
+    '9uZU51bWJlchIYCgduZXR3b3JrGAIgASgJUgduZXR3b3JrEhYKBmFtb3VudBgDIAEoAVIGYW1v'
+    'dW50EiMKDXNlc3Npb25fdG9rZW4YBCABKAlSDHNlc3Npb25Ub2tlbhIlCg50cmFuc2FjdGlvbl'
+    '9pZBgFIAEoCVINdHJhbnNhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YBiABKAlSEXZl'
+    'cmlmaWNhdGlvblRva2VuEicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZX'
+    'k=');
+
+@$core.Deprecated('Use convertAirtimeToCashResponseDescriptor instead')
+const ConvertAirtimeToCashResponse$json = {
+  '1': 'ConvertAirtimeToCashResponse',
+  '2': [
+    {
+      '1': 'payment',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.utilitypayments.BillPayment',
+      '10': 'payment'
+    },
+    {'1': 'cash_amount', '3': 2, '4': 1, '5': 1, '10': 'cashAmount'},
+    {'1': 'conversion_rate', '3': 3, '4': 1, '5': 1, '10': 'conversionRate'},
+    {'1': 'fee', '3': 4, '4': 1, '5': 1, '10': 'fee'},
+    {'1': 'new_balance', '3': 5, '4': 1, '5': 1, '10': 'newBalance'},
+    {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ConvertAirtimeToCashResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List convertAirtimeToCashResponseDescriptor = $convert.base64Decode(
+    'ChxDb252ZXJ0QWlydGltZVRvQ2FzaFJlc3BvbnNlEjYKB3BheW1lbnQYASABKAsyHC51dGlsaX'
+    'R5cGF5bWVudHMuQmlsbFBheW1lbnRSB3BheW1lbnQSHwoLY2FzaF9hbW91bnQYAiABKAFSCmNh'
+    'c2hBbW91bnQSJwoPY29udmVyc2lvbl9yYXRlGAMgASgBUg5jb252ZXJzaW9uUmF0ZRIQCgNmZW'
+    'UYBCABKAFSA2ZlZRIfCgtuZXdfYmFsYW5jZRgFIAEoAVIKbmV3QmFsYW5jZRIYCgdtZXNzYWdl'
+    'GAYgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use airtimeToCashConversionDescriptor instead')
+const AirtimeToCashConversion$json = {
+  '1': 'AirtimeToCashConversion',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'account_id', '3': 3, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'phone_number', '3': 4, '4': 1, '5': 9, '10': 'phoneNumber'},
+    {'1': 'network', '3': 5, '4': 1, '5': 9, '10': 'network'},
+    {'1': 'airtime_amount', '3': 6, '4': 1, '5': 1, '10': 'airtimeAmount'},
+    {'1': 'cash_amount', '3': 7, '4': 1, '5': 1, '10': 'cashAmount'},
+    {'1': 'conversion_rate', '3': 8, '4': 1, '5': 1, '10': 'conversionRate'},
+    {'1': 'fee', '3': 9, '4': 1, '5': 1, '10': 'fee'},
+    {'1': 'status', '3': 10, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'provider_name', '3': 11, '4': 1, '5': 9, '10': 'providerName'},
+    {
+      '1': 'provider_reference',
+      '3': 12,
+      '4': 1,
+      '5': 9,
+      '10': 'providerReference'
+    },
+    {'1': 'reference', '3': 13, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'created_at', '3': 14, '4': 1, '5': 9, '10': 'createdAt'},
+    {'1': 'provider_tx_id', '3': 15, '4': 1, '5': 9, '10': 'providerTxId'},
+    {'1': 'failure_reason', '3': 16, '4': 1, '5': 9, '10': 'failureReason'},
+    {'1': 'completed_at', '3': 17, '4': 1, '5': 9, '10': 'completedAt'},
+  ],
+};
+
+/// Descriptor for `AirtimeToCashConversion`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List airtimeToCashConversionDescriptor = $convert.base64Decode(
+    'ChdBaXJ0aW1lVG9DYXNoQ29udmVyc2lvbhIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIA'
+    'EoCVIGdXNlcklkEh0KCmFjY291bnRfaWQYAyABKAlSCWFjY291bnRJZBIhCgxwaG9uZV9udW1i'
+    'ZXIYBCABKAlSC3Bob25lTnVtYmVyEhgKB25ldHdvcmsYBSABKAlSB25ldHdvcmsSJQoOYWlydG'
+    'ltZV9hbW91bnQYBiABKAFSDWFpcnRpbWVBbW91bnQSHwoLY2FzaF9hbW91bnQYByABKAFSCmNh'
+    'c2hBbW91bnQSJwoPY29udmVyc2lvbl9yYXRlGAggASgBUg5jb252ZXJzaW9uUmF0ZRIQCgNmZW'
+    'UYCSABKAFSA2ZlZRIWCgZzdGF0dXMYCiABKAlSBnN0YXR1cxIjCg1wcm92aWRlcl9uYW1lGAsg'
+    'ASgJUgxwcm92aWRlck5hbWUSLQoScHJvdmlkZXJfcmVmZXJlbmNlGAwgASgJUhFwcm92aWRlcl'
+    'JlZmVyZW5jZRIcCglyZWZlcmVuY2UYDSABKAlSCXJlZmVyZW5jZRIdCgpjcmVhdGVkX2F0GA4g'
+    'ASgJUgljcmVhdGVkQXQSJAoOcHJvdmlkZXJfdHhfaWQYDyABKAlSDHByb3ZpZGVyVHhJZBIlCg'
+    '5mYWlsdXJlX3JlYXNvbhgQIAEoCVINZmFpbHVyZVJlYXNvbhIhCgxjb21wbGV0ZWRfYXQYESAB'
+    'KAlSC2NvbXBsZXRlZEF0');
+
+@$core.Deprecated('Use getAirtimeToCashHistoryRequestDescriptor instead')
+const GetAirtimeToCashHistoryRequest$json = {
+  '1': 'GetAirtimeToCashHistoryRequest',
+  '2': [
+    {'1': 'limit', '3': 1, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 2, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetAirtimeToCashHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAirtimeToCashHistoryRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRBaXJ0aW1lVG9DYXNoSGlzdG9yeVJlcXVlc3QSFAoFbGltaXQYASABKAVSBWxpbWl0Eh'
+        'YKBm9mZnNldBgCIAEoBVIGb2Zmc2V0');
+
+@$core.Deprecated('Use getAirtimeToCashHistoryResponseDescriptor instead')
+const GetAirtimeToCashHistoryResponse$json = {
+  '1': 'GetAirtimeToCashHistoryResponse',
+  '2': [
+    {
+      '1': 'conversions',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.utilitypayments.AirtimeToCashConversion',
+      '10': 'conversions'
+    },
+    {'1': 'total_count', '3': 2, '4': 1, '5': 3, '10': 'totalCount'},
+  ],
+};
+
+/// Descriptor for `GetAirtimeToCashHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAirtimeToCashHistoryResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9HZXRBaXJ0aW1lVG9DYXNoSGlzdG9yeVJlc3BvbnNlEkoKC2NvbnZlcnNpb25zGAEgAygLMi'
+        'gudXRpbGl0eXBheW1lbnRzLkFpcnRpbWVUb0Nhc2hDb252ZXJzaW9uUgtjb252ZXJzaW9ucxIf'
+        'Cgt0b3RhbF9jb3VudBgCIAEoA1IKdG90YWxDb3VudA==');

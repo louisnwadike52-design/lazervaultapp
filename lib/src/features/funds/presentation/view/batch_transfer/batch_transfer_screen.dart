@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
@@ -276,7 +277,12 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
     return BlocBuilder<BatchTransferCubit, BatchTransferState>(
       builder: (context, state) {
         if (state is BatchTransferHistoryLoaded && state.batches.isNotEmpty) {
-          final recentBatches = state.batches.take(3).toList();
+          final activeCurrency = GetIt.I<LocaleManager>().currentCurrency;
+          final filtered = state.batches
+              .where((b) => b.currency.toUpperCase() == activeCurrency.toUpperCase())
+              .toList();
+          if (filtered.isEmpty) return const SizedBox.shrink();
+          final recentBatches = filtered.take(3).toList();
           return Padding(
             padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 0),
             child: Column(

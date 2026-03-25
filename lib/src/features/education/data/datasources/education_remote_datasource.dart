@@ -7,11 +7,13 @@ abstract class EducationRemoteDataSource {
   Future<List<EducationProviderModel>> getProviders({bool activeOnly = true});
   Future<EducationPurchaseModel> purchasePin({
     required String serviceId,
+    required String variationCode,
     required int quantity,
     required String phone,
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String billersCode = '',
   });
 }
 
@@ -37,19 +39,23 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   @override
   Future<EducationPurchaseModel> purchasePin({
     required String serviceId,
+    required String variationCode,
     required int quantity,
     required String phone,
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
+    String billersCode = '',
   }) async {
     final request = pb.PurchaseEducationPinRequest()
       ..serviceId = serviceId
+      ..variationCode = variationCode
       ..quantity = quantity
       ..phone = phone
       ..transactionId = transactionId
       ..verificationToken = verificationToken
-      ..idempotencyKey = idempotencyKey;
+      ..idempotencyKey = idempotencyKey
+      ..billersCode = billersCode;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.utilityPaymentsClient

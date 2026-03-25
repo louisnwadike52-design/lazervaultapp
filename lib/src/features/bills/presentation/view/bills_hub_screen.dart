@@ -18,7 +18,7 @@ class BillsHubScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'Pay Bills',
+          'Bills Hub',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18.sp,

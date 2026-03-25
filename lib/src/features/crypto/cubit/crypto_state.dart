@@ -54,6 +54,8 @@ class CryptosLoaded extends CryptoState {
         isSearching,
       ];
 
+  /// [clearSearchQuery] - set to true to explicitly clear the search query to null.
+  /// Without this, passing searchQuery: null preserves the existing value.
   CryptosLoaded copyWith({
     List<Crypto>? cryptos,
     List<Crypto>? trendingCryptos,
@@ -64,6 +66,7 @@ class CryptosLoaded extends CryptoState {
     List<CryptoWalletEntity>? wallets,
     GlobalMarketData? globalMarketData,
     String? searchQuery,
+    bool clearSearchQuery = false,
     bool? isSearching,
   }) {
     return CryptosLoaded(
@@ -75,7 +78,7 @@ class CryptosLoaded extends CryptoState {
       transactions: transactions ?? this.transactions,
       wallets: wallets ?? this.wallets,
       globalMarketData: globalMarketData ?? this.globalMarketData,
-      searchQuery: searchQuery ?? this.searchQuery,
+      searchQuery: clearSearchQuery ? null : (searchQuery ?? this.searchQuery),
       isSearching: isSearching ?? this.isSearching,
     );
   }

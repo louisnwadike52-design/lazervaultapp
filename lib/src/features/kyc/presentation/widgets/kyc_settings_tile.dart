@@ -34,7 +34,7 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
   Widget build(BuildContext context) {
     return BlocBuilder<KYCCubit, KYCState>(
       builder: (context, state) {
-        KYCTier tier = KYCTier.unknown;
+        KYCTier tier = KYCTier.tier1;
         KYCStatus status = KYCStatus.notStarted;
 
         if (state is KYCStatusLoaded) {
@@ -43,12 +43,16 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
         } else if (state is IDVerificationSuccess) {
           tier = state.response.currentTier;
           status = state.response.status;
+        } else if (state is KYCError) {
+          // Show default tier 1 on error — user can tap to retry
+          tier = KYCTier.tier1;
+          status = KYCStatus.notStarted;
         }
 
         return _buildListTile(
           context,
           title: 'Identity Verification',
-          imagePath: 'assets/images/profile/verification.png',
+          imagePath: 'assets/images/profile/shield-tick.png',
           color: status == KYCStatus.approved
               ? '#4CAF50'
               : '#FF9800',

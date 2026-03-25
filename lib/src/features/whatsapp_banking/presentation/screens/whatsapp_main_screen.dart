@@ -273,7 +273,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
 
           _buildFeatureCard(
             icon: Icons.receipt_long,
-            title: 'Pay Bills',
+            title: 'Bills Hub',
             description: 'Settle electricity bills, buy airtime, and more in seconds',
           ),
           SizedBox(height: 12.h),

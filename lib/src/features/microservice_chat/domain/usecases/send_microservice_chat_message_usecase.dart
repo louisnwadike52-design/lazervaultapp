@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
+import '../entities/chat_response_entity.dart';
 import '../repositories/microservice_chat_repository.dart';
 
 class SendMicroserviceChatMessageUseCase {
@@ -7,7 +8,7 @@ class SendMicroserviceChatMessageUseCase {
 
   SendMicroserviceChatMessageUseCase({required this.repository});
 
-  Future<Either<Failure, String>> call({
+  Future<Either<Failure, ChatResponseEntity>> call({
     required String message,
     required String sessionId,
     required String userId,

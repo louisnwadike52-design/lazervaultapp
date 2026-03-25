@@ -59,28 +59,13 @@ class _DashboardTransactionHistoryScreenState
     }
   }
 
-  void _showFilterSheet() {
-    FilterBottomSheet.show(
-      context,
-      initialFilters: _activeFilters,
-      onApply: (filters) {
-        setState(() => _activeFilters = filters.hasFilters ? filters : null);
-        // Merge with current search query
-        final merged = _searchController.text.isNotEmpty
-            ? filters.copyWith(searchQuery: _searchController.text)
-            : filters;
-        context.read<TransactionHistoryCubit>().applyFilters(merged);
-      },
-    );
-  }
-
   void _clearAllFilters() {
     setState(() => _activeFilters = null);
     _searchController.clear();
     context.read<TransactionHistoryCubit>().clearFilters();
   }
 
-  void _removeFilter(TransactionFilters updatedFilters) {
+  void _onFiltersChanged(TransactionFilters updatedFilters) {
     setState(() => _activeFilters = updatedFilters.hasFilters ? updatedFilters : null);
     // Merge with current search query
     final merged = _searchController.text.isNotEmpty
@@ -411,9 +396,8 @@ class _DashboardTransactionHistoryScreenState
             SizedBox(height: 4.h),
             TransactionFilterBar(
               activeFilters: _activeFilters,
-              onOpenFilters: _showFilterSheet,
               onClearAll: _clearAllFilters,
-              onRemoveFilter: _removeFilter,
+              onFiltersChanged: _onFiltersChanged,
             ),
             SizedBox(height: 8.h),
             Expanded(

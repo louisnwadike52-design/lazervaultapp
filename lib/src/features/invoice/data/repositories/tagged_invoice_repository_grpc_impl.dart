@@ -447,6 +447,18 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
         paymentStatus = InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING;
     }
 
+    // Build creator display name from proto fields
+    String? creatorName;
+    String? creatorUsername;
+    if (proto.hasCreatorFirstName() || proto.hasCreatorLastName()) {
+      final firstName = proto.hasCreatorFirstName() ? proto.creatorFirstName : '';
+      final lastName = proto.hasCreatorLastName() ? proto.creatorLastName : '';
+      creatorName = firstName.isNotEmpty || lastName.isNotEmpty
+          ? '$firstName $lastName'.trim()
+          : null;
+      creatorUsername = proto.hasCreatorUsername() ? proto.creatorUsername : null;
+    }
+
     return TaggedInvoice(
       id: proto.id,
       invoiceId: proto.id,
@@ -456,8 +468,8 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
       isViewed: true,
       taggedAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
       invoice: invoice,
-      taggerName: isIncoming ? null : null,
-      taggerUsername: null,
+      taggerName: isIncoming ? creatorName : null,
+      taggerUsername: isIncoming ? creatorUsername : null,
       taggedUserName: !isIncoming ? proto.recipientName : proto.recipientName,
       taggedUserUsername: null,
     );

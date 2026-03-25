@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/generated/ai_chat.pb.dart';
@@ -42,13 +44,28 @@ class AiChatRepositoryImpl implements IAiChatRepository {
           ..sessionId = response['session_id'] ?? sessionId ?? ''
           ..success = !(response['error'] != null);
 
-        // Include metadata if available
-        if (response['metadata'] != null) {
-          // Store metadata for potential use
-          final metadata = response['metadata'] as Map<String, dynamic>?;
-          if (metadata != null) {
-            // Could be stored separately if needed
+        // Pass receipt_data through proto entities map as JSON-encoded string
+        final receiptData = response['receipt_data'];
+        if (receiptData != null && receiptData is Map) {
+          protoResponse.entities['_receipt_data'] = jsonEncode(receiptData);
+        }
+
+        // Pass through other entities if present
+        final entities = response['entities'];
+        if (entities != null && entities is Map) {
+          for (final entry in entities.entries) {
+            if (entry.key != '_receipt_data') {
+              protoResponse.entities[entry.key.toString()] = entry.value?.toString() ?? '';
+            }
           }
+        }
+
+        // Pass intent and conversation state
+        if (response['intent'] != null) {
+          protoResponse.intent = response['intent'].toString();
+        }
+        if (response['conversation_state'] != null) {
+          protoResponse.conversationState = response['conversation_state'].toString();
         }
 
         return Right(protoResponse);
@@ -118,10 +135,28 @@ class AiChatRepositoryImpl implements IAiChatRepository {
             if (entry['query'] != null || entry['content'] != null) {
               final content = entry['content'] ?? entry['query'] ?? '';
               final role = entry['role'] ?? 'user';
+
+              // Extract receipt_data from metadata for assistant messages
+              Map<String, dynamic>? receiptData;
+              if (role == 'assistant') {
+                final metadata = entry['metadata'];
+                if (metadata is Map && metadata.containsKey('receipt_data')) {
+                  final rd = metadata['receipt_data'];
+                  if (rd is Map) {
+                    receiptData = Map<String, dynamic>.from(rd);
+                  } else if (rd is String) {
+                    try {
+                      receiptData = jsonDecode(rd) as Map<String, dynamic>;
+                    } catch (_) {}
+                  }
+                }
+              }
+
               chatEntities.add(ChatMessageEntity(
                 text: content.toString(),
                 isUser: role == 'user',
                 timestamp: timestamp,
+                receiptData: receiptData,
               ));
             }
           }

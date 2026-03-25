@@ -70,7 +70,7 @@ extension DirectPayStageExtension on DirectPayStage {
       case DirectPayStage.initiating:
       case DirectPayStage.authorizing:
       case DirectPayStage.processing:
-        return const Color(0xFF6C5CE7);
+        return const Color.fromARGB(255, 78, 3, 208);
       case DirectPayStage.success:
         return const Color(0xFF10B981);
       case DirectPayStage.failed:
@@ -516,8 +516,8 @@ class _DirectPayProgressBottomsheetState
       borderColor = Colors.red;
       child = Icon(Icons.close, color: Colors.white, size: 14.sp);
     } else if (isActive) {
-      bgColor = const Color(0xFF6C5CE7).withValues(alpha: 0.2);
-      borderColor = const Color(0xFF6C5CE7);
+      bgColor = const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2);
+      borderColor = const Color.fromARGB(255, 78, 3, 208);
       child = AnimatedBuilder(
         animation: _pulseAnimation,
         builder: (context, child) {
@@ -525,7 +525,7 @@ class _DirectPayProgressBottomsheetState
             width: 8.w * _pulseAnimation.value,
             height: 8.w * _pulseAnimation.value,
             decoration: const BoxDecoration(
-              color: Color(0xFF6C5CE7),
+              color: Color.fromARGB(255, 78, 3, 208),
               shape: BoxShape.circle,
             ),
           );

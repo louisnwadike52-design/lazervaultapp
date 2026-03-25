@@ -123,7 +123,7 @@ class DonorStarRating extends StatelessWidget {
           SizedBox(height: 8.h),
           _buildFactorBar('Engagement', rating.engagementScore, const Color(0xFFF59E0B)),
           SizedBox(height: 8.h),
-          _buildFactorBar('Early Support', rating.earlySupportScore, const Color(0xFF8B5CF6)),
+          _buildFactorBar('Early Support', rating.earlySupportScore, const Color.fromARGB(255, 78, 3, 208)),
         ],
       ),
     );

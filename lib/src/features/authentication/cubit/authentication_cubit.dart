@@ -2122,6 +2122,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         // Mark signup as complete (passcode is the final step)
         await _signupStateService?.markSignupComplete();
 
+        // Flag KYC onboarding as pending for new signups
+        await _storage.write(key: 'kyc_onboarding_pending', value: 'true');
+
         // Create default stablecoin wallets in background
         _triggerBackgroundWalletCreation();
 

@@ -1,6 +1,7 @@
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart';
 
 /// Repository for financial analytics data from accounts-service.
@@ -11,13 +12,16 @@ import 'package:lazervault/src/generated/accounts.pb.dart';
 class FinancialAnalyticsRepository {
   final AccountsGrpcClient grpcClient;
   final AccountManager accountManager;
+  final LocaleManager localeManager;
 
   FinancialAnalyticsRepository({
     required this.grpcClient,
     required this.accountManager,
+    required this.localeManager,
   });
 
   String? get _accountId => accountManager.activeAccountId;
+  String get _locale => localeManager.currentLocale;
 
   /// Get financial analytics with period comparison (current vs previous)
   Future<GetFinancialAnalyticsResponse> getFinancialAnalytics({
@@ -34,6 +38,7 @@ class FinancialAnalyticsRepository {
     return retryWithBackoff(
       operation: () => grpcClient.getFinancialAnalytics(
         accountId: accountId,
+        locale: _locale,
         period: period,
         startDate: startDate,
         endDate: endDate,
@@ -56,6 +61,7 @@ class FinancialAnalyticsRepository {
     return retryWithBackoff(
       operation: () => grpcClient.getCategoryAnalytics(
         accountId: accountId,
+        locale: _locale,
         startDate: startDate,
         endDate: endDate,
         includeExternalBanks: includeExternalBanks,
@@ -75,6 +81,7 @@ class FinancialAnalyticsRepository {
     return retryWithBackoff(
       operation: () => grpcClient.getMonthlyTrends(
         accountId: accountId,
+        locale: _locale,
         months: months,
       ),
     );
@@ -94,6 +101,7 @@ class FinancialAnalyticsRepository {
     return retryWithBackoff(
       operation: () => grpcClient.getExpenseTimeSeries(
         accountId: accountId,
+        locale: _locale,
         startDate: startDate,
         endDate: endDate,
         includeExternalBanks: includeExternalBanks,
@@ -120,6 +128,7 @@ class FinancialAnalyticsRepository {
         return await retryWithBackoff(
           operation: () => grpcClient.getTransactionHistory(
             accountId: accountId,
+            locale: _locale,
             status: status,
             startDate: startDate,
             endDate: endDate,

@@ -17,6 +17,8 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
   int _quantity = 1;
   final _phoneController = TextEditingController();
   final _phoneFocusNode = FocusNode();
+  final _billersCodeController = TextEditingController();
+  final _billersCodeFocusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
 
   static const int _minQuantity = 1;
@@ -30,15 +32,21 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
 
   void _loadArguments() {
     final args = Get.arguments as Map<String, dynamic>?;
-    if (args != null) {
+    if (args != null && args['provider'] != null) {
       _provider = args['provider'] as EducationProviderEntity;
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => Get.back());
     }
   }
+
+  bool get _isJamb => _provider.serviceId == 'jamb';
 
   @override
   void dispose() {
     _phoneController.dispose();
     _phoneFocusNode.dispose();
+    _billersCodeController.dispose();
+    _billersCodeFocusNode.dispose();
     super.dispose();
   }
 
@@ -90,6 +98,12 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
                       _buildPhoneInput(),
 
                       SizedBox(height: 24.h),
+
+                      // JAMB profile code (only for JAMB)
+                      if (_isJamb) ...[
+                        _buildBillersCodeInput(),
+                        SizedBox(height: 24.h),
+                      ],
 
                       // Price breakdown
                       _buildPriceBreakdown(),
@@ -353,6 +367,80 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
     );
   }
 
+  Widget _buildBillersCodeInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'JAMB Profile Code',
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF9CA3AF),
+          ),
+        ),
+        SizedBox(height: 8.h),
+        TextFormField(
+          controller: _billersCodeController,
+          focusNode: _billersCodeFocusNode,
+          keyboardType: TextInputType.text,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(20),
+          ],
+          style: TextStyle(
+            fontSize: 16.sp,
+            color: Colors.white,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Enter JAMB profile code',
+            hintStyle: TextStyle(
+              fontSize: 14.sp,
+              color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+            ),
+            prefixIcon: Icon(
+              Icons.badge_outlined,
+              color: const Color(0xFF9CA3AF),
+              size: 20.sp,
+            ),
+            filled: true,
+            fillColor: const Color(0xFF1F1F1F),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          ),
+          validator: (value) {
+            if (_isJamb && (value == null || value.isEmpty)) {
+              return 'JAMB profile code is required';
+            }
+            return null;
+          },
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'Your JAMB profile code from your registration slip',
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: const Color(0xFF9CA3AF),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPriceBreakdown() {
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -431,6 +519,7 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
                 'quantity': _quantity,
                 'phone': _phoneController.text.trim(),
                 'totalAmount': _totalAmount,
+                if (_isJamb) 'billersCode': _billersCodeController.text.trim(),
               });
             }
           },

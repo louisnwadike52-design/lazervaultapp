@@ -133,8 +133,15 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
         statusCode: failure.statusCode,
       )),
       (summaries) {
-        _currentSummaries = summaries;
-        emit(AccountCardsSummaryLoaded(summaries));
+        // Sort: family accounts go last in the carousel
+        final sorted = List<AccountSummaryEntity>.from(summaries)
+          ..sort((a, b) {
+            final aIsFamily = a.accountTypeEnum == VirtualAccountType.family ? 1 : 0;
+            final bIsFamily = b.accountTypeEnum == VirtualAccountType.family ? 1 : 0;
+            return aIsFamily.compareTo(bIsFamily);
+          });
+        _currentSummaries = sorted;
+        emit(AccountCardsSummaryLoaded(sorted));
 
         // Auto-select personal account matching current locale's currency
         _autoSelectPersonalAccount(summaries);

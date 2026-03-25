@@ -40,6 +40,10 @@ class _NfcReaderViewState extends State<_NfcReaderView>
   bool _nfcAvailable = true;
   String _statusMessage = 'Ready to scan';
   bool _hasError = false;
+  bool _showManualEntry = false;
+  bool _isLoadingManual = false;
+  String? _manualEntryError;
+  final _sessionIdController = TextEditingController();
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -84,6 +88,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     _pulseController.dispose();
     _rippleController.dispose();
     _fadeController.dispose();
+    _sessionIdController.dispose();
     _stopNfcScan();
     super.dispose();
   }
@@ -96,6 +101,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
       if (availability != NfcAvailability.enabled) {
         setState(() {
           _nfcAvailable = false;
+          _showManualEntry = true;
           _statusMessage = Platform.isIOS
               ? 'NFC is not available on this device'
               : 'Please enable NFC in your device settings';
@@ -109,6 +115,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
       if (!mounted) return;
       setState(() {
         _nfcAvailable = false;
+        _showManualEntry = true;
         _statusMessage = 'Could not access NFC hardware';
         _hasError = true;
       });
@@ -149,7 +156,15 @@ class _NfcReaderViewState extends State<_NfcReaderView>
 
           Map<String, dynamic> payloadData;
           try {
-            payloadData = jsonDecode(payloadString) as Map<String, dynamic>;
+            // Payload may be base64-encoded JSON or raw JSON
+            String jsonString;
+            try {
+              jsonString = utf8.decode(base64Decode(payloadString));
+            } catch (_) {
+              // If base64 decode fails, try raw JSON
+              jsonString = payloadString;
+            }
+            payloadData = jsonDecode(jsonString) as Map<String, dynamic>;
           } catch (_) {
             _handleScanError('Invalid payment data format');
             return;
@@ -218,6 +233,20 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     _checkNfcAndStartScan();
   }
 
+  void _submitManualSessionId() {
+    final sessionId = _sessionIdController.text.trim();
+    if (sessionId.isEmpty) {
+      setState(() => _manualEntryError = 'Please enter a session ID');
+      return;
+    }
+
+    setState(() {
+      _isLoadingManual = true;
+      _manualEntryError = null;
+    });
+    context.read<ContactlessPaymentCubit>().getPaymentSession(sessionId);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -247,9 +276,23 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                 ),
               );
             } else if (state is SessionExpired) {
-              _handleScanError(state.message);
+              if (_showManualEntry) {
+                setState(() {
+                  _isLoadingManual = false;
+                  _manualEntryError = state.message;
+                });
+              } else {
+                _handleScanError(state.message);
+              }
             } else if (state is ContactlessPaymentError) {
-              _handleScanError(state.message);
+              if (_showManualEntry) {
+                setState(() {
+                  _isLoadingManual = false;
+                  _manualEntryError = state.message;
+                });
+              } else {
+                _handleScanError(state.message);
+              }
             }
           },
           child: SafeArea(
@@ -263,13 +306,19 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _buildNfcIndicator(),
-                          SizedBox(height: 40.h),
-                          _buildStatusText(),
-                          SizedBox(height: 32.h),
-                          if (_hasError) _buildRetryButton(),
-                          if (!_nfcAvailable && Platform.isAndroid)
-                            _buildOpenSettingsButton(),
+                          if (!_showManualEntry) ...[
+                            _buildNfcIndicator(),
+                            SizedBox(height: 40.h),
+                            _buildStatusText(),
+                            SizedBox(height: 32.h),
+                            if (_hasError && _nfcAvailable) _buildRetryButton(),
+                            if (!_nfcAvailable && Platform.isAndroid)
+                              _buildOpenSettingsButton(),
+                            SizedBox(height: 16.h),
+                            _buildManualEntryToggle(),
+                          ] else ...[
+                            _buildManualEntryForm(),
+                          ],
                         ],
                       ),
                     ),
@@ -416,7 +465,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                             ]
                           : [
                               const Color(0xFF6366F1).withValues(alpha: 0.2),
-                              const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                              const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                             ],
                     ),
                     boxShadow: [
@@ -479,7 +528,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
         padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
           ),
           borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
@@ -531,6 +580,197 @@ class _NfcReaderViewState extends State<_NfcReaderView>
             fontWeight: FontWeight.w500,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildManualEntryToggle() {
+    return GestureDetector(
+      onTap: () {
+        _stopNfcScan();
+        setState(() {
+          _showManualEntry = true;
+          _isScanning = false;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.keyboard_rounded, color: const Color(0xFF9CA3AF), size: 18.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'Enter Session ID Manually',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManualEntryForm() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
+      child: Column(
+        children: [
+          Icon(
+            Icons.vpn_key_rounded,
+            size: 48.sp,
+            color: const Color(0xFF6366F1),
+          ),
+          SizedBox(height: 20.h),
+          Text(
+            'Enter Session ID',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Ask the receiver for their payment session ID',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 14.sp,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 28.h),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(
+                color: _manualEntryError != null
+                    ? const Color(0xFFEF4444).withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.15),
+              ),
+            ),
+            child: TextField(
+              controller: _sessionIdController,
+              enabled: !_isLoadingManual,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Paste session ID here',
+                hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
+                  fontSize: 15.sp,
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                border: InputBorder.none,
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.content_paste_rounded, color: const Color(0xFF9CA3AF), size: 20.sp),
+                  onPressed: _isLoadingManual
+                      ? null
+                      : () async {
+                          final data = await Clipboard.getData(Clipboard.kTextPlain);
+                          if (data?.text != null) {
+                            _sessionIdController.text = data!.text!;
+                            setState(() => _manualEntryError = null);
+                          }
+                        },
+                ),
+              ),
+              onChanged: (_) {
+                if (_manualEntryError != null) {
+                  setState(() => _manualEntryError = null);
+                }
+              },
+              onSubmitted: (_) => _submitManualSessionId(),
+            ),
+          ),
+          if (_manualEntryError != null) ...[
+            SizedBox(height: 8.h),
+            Text(
+              _manualEntryError!,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFEF4444),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          SizedBox(height: 20.h),
+          GestureDetector(
+            onTap: _isLoadingManual ? null : _submitManualSessionId,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              decoration: BoxDecoration(
+                gradient: _isLoadingManual
+                    ? null
+                    : const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                      ),
+                color: _isLoadingManual ? Colors.white.withValues(alpha: 0.1) : null,
+                borderRadius: BorderRadius.circular(14.r),
+                boxShadow: _isLoadingManual
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+              ),
+              child: Center(
+                child: _isLoadingManual
+                    ? SizedBox(
+                        height: 22.h,
+                        width: 22.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        'Look Up Payment',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _showManualEntry = false;
+                _manualEntryError = null;
+                _isLoadingManual = false;
+              });
+              _checkNfcAndStartScan();
+            },
+            child: Text(
+              'Back to NFC Scan',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF6366F1),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

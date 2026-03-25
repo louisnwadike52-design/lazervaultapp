@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../entities/chat_response_entity.dart';
 import '../entities/microservice_chat_message_entity.dart';
 
 abstract class MicroserviceChatRepository {
-  Future<Either<Failure, String>> processMessage({
+  Future<Either<Failure, ChatResponseEntity>> processMessage({
     required String message,
     required String sessionId,
     required String userId,

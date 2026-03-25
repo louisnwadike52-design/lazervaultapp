@@ -350,7 +350,7 @@ class _FinancialHealthScoreCardState extends State<FinancialHealthScoreCard>
                         label: 'Income Trend',
                         score: breakdown.incomeTrendScore,
                         maxScore: 20,
-                        color: const Color(0xFF8B5CF6),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                       ),
                     ],
                   ),

@@ -363,9 +363,56 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     );
   }
 
+  /// Safely parse receipt_data and build a ChatReceiptCard.
+  Widget _buildReceiptCard(dynamic receiptData) {
+    print('🧾 [UI] _buildReceiptCard called with receiptData type: ${receiptData.runtimeType}');
+    try {
+      Map<String, dynamic> data;
+      if (receiptData is Map<String, dynamic>) {
+        data = receiptData;
+      } else if (receiptData is Map) {
+        data = Map<String, dynamic>.from(receiptData);
+      } else {
+        return const SizedBox.shrink();
+      }
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: ChatReceiptCard(
+          receipt: TransferReceiptData.fromJson(data),
+        ),
+      );
+    } catch (_) {
+      // Receipt data malformed — show a minimal success indicator instead of nothing
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A2E1A),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
+              SizedBox(width: 8),
+              Text('Transfer completed', style: TextStyle(color: Color(0xFF10B981), fontSize: 13)),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
   Widget _buildMessageBubble(GeneralChatMessageEntity message) {
     final isUser = message.isUser;
     final isSystemMessage = message.metadata?['isSystemMessage'] == true;
+
+    // Debug log for non-user messages
+    if (!isUser) {
+      print('🧾 [UI] Bot message metadata keys: ${message.metadata?.keys.toList()}');
+      print('🧾 [UI] Has receipt_data: ${message.metadata?['receipt_data'] != null}');
+    }
 
     if (isSystemMessage) {
       return Padding(
@@ -478,11 +525,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                           ),
                   // Receipt card for successful transfers
                   if (!isUser && message.metadata?['receipt_data'] != null)
-                    ChatReceiptCard(
-                      receipt: TransferReceiptData.fromJson(
-                        message.metadata!['receipt_data'] as Map<String, dynamic>,
-                      ),
-                    ),
+                    _buildReceiptCard(message.metadata!['receipt_data']),
                   if (message.serviceRoutedTo != null && message.serviceRoutedTo != 'gateway') ...[
                     const SizedBox(height: 4),
                     Text(

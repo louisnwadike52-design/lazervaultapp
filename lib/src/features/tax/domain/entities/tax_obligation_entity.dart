@@ -68,7 +68,7 @@ class TaxObligationEntity extends Equatable {
       case TaxType.vat: return const Color(0xFF3B82F6);
       case TaxType.paye: return const Color(0xFF10B981);
       case TaxType.wht: return const Color(0xFFFB923C);
-      case TaxType.cit: return const Color(0xFF8B5CF6);
+      case TaxType.cit: return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 

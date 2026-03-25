@@ -298,6 +298,15 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
                 height: 100.h,
                 width: 100.w,
                 fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 100.h,
+                  width: 100.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(Icons.broken_image, color: Colors.grey[600], size: 32.sp),
+                ),
               ),
             ),
             SizedBox(height: 12.h),
@@ -372,6 +381,15 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
                 height: 100.h,
                 width: 100.w,
                 fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 100.h,
+                  width: 100.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(Icons.broken_image, color: Colors.grey[600], size: 32.sp),
+                ),
               ),
             ),
             SizedBox(height: 12.h),
@@ -509,7 +527,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

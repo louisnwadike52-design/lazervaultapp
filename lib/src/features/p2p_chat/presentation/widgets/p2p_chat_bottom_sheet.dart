@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -48,6 +49,7 @@ void showP2PChatBottomSheet(
         secureStorage: serviceLocator<SecureStorageService>(),
         accountsClient: serviceLocator<AccountsGrpcClient>(),
         accountManager: serviceLocator<AccountManager>(),
+        localeManager: serviceLocator<LocaleManager>(),
         currentUserId: currentUserId,
       )..initializeChat(otherUserId),
       child: P2PChatBottomSheet(

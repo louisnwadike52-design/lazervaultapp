@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Voice agent button for invoice management conversations
 /// Connects to the invoice-voice-agent microservice via LiveKit
@@ -49,11 +50,9 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
     setState(() => _isConnecting = true);
 
     try {
-      // Get LiveKit URL from environment
-      const livekitUrl = String.fromEnvironment(
-        'LIVEKIT_URL',
-        defaultValue: 'wss://lazervault-sgb9bwog.livekit.cloud',
-      );
+      // Get LiveKit URL from environment (required - will throw if not set)
+      final livekitUrl = dotenv.env['LIVEKIT_URL'] ??
+          (throw Exception('LIVEKIT_URL environment variable is not set'));
 
       // Create room metadata with access token for authentication
       // Connect to LiveKit room
@@ -148,7 +147,7 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
           ? Colors.red.shade600
           : (_isConnecting
               ? Colors.orange.shade600
-              : const Color(0xFF8B5CF6)), // Purple color for invoices
+              : const Color.fromARGB(255, 78, 3, 208)), // Purple color for invoices
       elevation: 6,
       child: _isConnecting
           ? RotationTransition(
@@ -194,11 +193,9 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
   }
 
   Future<void> _connect() async {
-    // Similar connection logic as button
-    const livekitUrl = String.fromEnvironment(
-      'LIVEKIT_URL',
-      defaultValue: 'wss://lazervault-sgb9bwog.livekit.cloud',
-    );
+    // Get LiveKit URL from environment (required - will throw if not set)
+    final livekitUrl = dotenv.env['LIVEKIT_URL'] ??
+        (throw Exception('LIVEKIT_URL environment variable is not set'));
 
     try {
       _room = lk.Room(
@@ -277,7 +274,7 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
                 IconButton(
                   onPressed: _isConnected ? _toggleMute : null,
                   icon: Icon(_isMuted ? Icons.mic_off : Icons.mic),
-                  color: _isMuted ? Colors.red : const Color(0xFF8B5CF6),
+                  color: _isMuted ? Colors.red : const Color.fromARGB(255, 78, 3, 208),
                 ),
                 // Connect/Disconnect button
                 ElevatedButton.icon(
@@ -286,7 +283,7 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
                   label: Text(_isConnected ? 'Disconnect' : 'Connect'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        _isConnected ? Colors.red : const Color(0xFF8B5CF6),
+                        _isConnected ? Colors.red : const Color.fromARGB(255, 78, 3, 208),
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -295,7 +292,7 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
                   onPressed: _isConnected ? _toggleSpeaker : null,
                   icon: Icon(
                       _isSpeakerOn ? Icons.volume_up : Icons.volume_off),
-                  color: const Color(0xFF8B5CF6),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ],
             ),

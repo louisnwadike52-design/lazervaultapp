@@ -136,7 +136,11 @@ class LockFundModel {
   }
 
   /// Convert protobuf InterestCalculation to domain entity
-  static InterestCalculation interestFromProto(pb.CalculateInterestResponse proto, {double principalAmount = 0.0}) {
+  static InterestCalculation interestFromProto(
+    pb.CalculateInterestResponse proto, {
+    double principalAmount = 0.0,
+    int lockDurationDays = 0,
+  }) {
     return InterestCalculation(
       interestRate: proto.interestRate,
       estimatedInterest: proto.estimatedInterest,
@@ -145,6 +149,8 @@ class LockFundModel {
       principalAmount: principalAmount,
       interestAmount: proto.estimatedInterest,
       totalAmount: proto.totalReturn,
+      isUpfrontInterest: lockDurationDays >= 180,
+      lockDurationDays: lockDurationDays,
     );
   }
 }

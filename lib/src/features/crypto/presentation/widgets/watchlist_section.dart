@@ -69,12 +69,12 @@ class WatchlistSection extends StatelessWidget {
             width: 32.w,
             height: 32.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
               Icons.bookmark,
-              color: const Color(0xFF6C5CE7),
+              color: const Color.fromARGB(255, 78, 3, 208),
               size: 18.sp,
             ),
           ),

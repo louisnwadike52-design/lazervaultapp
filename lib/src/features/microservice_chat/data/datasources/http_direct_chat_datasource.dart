@@ -89,7 +89,7 @@ class HttpDirectChatDataSource implements MicroserviceChatDataSource {
   HttpDirectChatDataSource({
     required this.dio,
     required this.callOptionsHelper,
-    this.baseUrl = 'http://localhost:8092', // Go Chat Proxy Gateway
+    this.baseUrl = 'http://10.0.2.2:8092', // Go Chat Proxy Gateway (10.0.2.2 for Android emulator)
   });
 
   /// Send a direct chat message with entity round-tripping.

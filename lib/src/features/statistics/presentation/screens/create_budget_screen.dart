@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/expense_category_helpers.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 
 /// Create/Edit Budget Screen
@@ -71,7 +72,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
 
   Future<void> _loadCategories() async {
     final budgetCubit = context.read<BudgetCubit>();
-    final categories = await budgetCubit.loadServiceCategories('budget');
+    final categories = await budgetCubit.loadAllServiceCategories();
     if (!mounted) return;
     setState(() {
       _availableCategories = categories;
@@ -125,12 +126,15 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
     super.dispose();
   }
 
+  bool _isSaving = false;
+
   void _saveBudget() {
+    if (_isSaving) return;
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final amount = double.tryParse(_amountController.text);
+    final amount = double.tryParse(_amountController.text.replaceAll(',', ''));
     if (amount == null || amount <= 0) {
       Get.snackbar(
         'Error',
@@ -155,6 +159,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
     final protoCategory = pb.ExpenseCategory.valueOf(_selectedServiceCategory!.budgetCategory)
         ?? pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER;
 
+    _isSaving = true;
     if (_isEditMode && _editingBudget != null) {
       context.read<BudgetCubit>().updateBudget(
         budgetId: _editingBudget!.id,
@@ -169,9 +174,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       );
     } else {
       context.read<BudgetCubit>().createBudget(
-        name: _nameController.text,
+        name: _nameController.text.trim(),
         amount: amount,
-        currency: 'NGN',
+        currency: CurrencySymbols.currentCurrency,
         category: protoCategory,
         period: _selectedPeriod,
         startDate: _startDate,
@@ -188,19 +193,23 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
     return BlocListener<BudgetCubit, BudgetState>(
       listener: (context, state) {
         if (state is BudgetCreated || state is BudgetUpdated) {
+          _isSaving = false;
           Get.snackbar(
             'Success',
             state is BudgetCreated ? state.message : (state as BudgetUpdated).message,
             backgroundColor: const Color(0xFF10B981),
             colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
           );
           Get.back();
         } else if (state is BudgetError) {
+          _isSaving = false;
           Get.snackbar(
             'Error',
             state.message,
             backgroundColor: const Color(0xFFEF4444),
             colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
           );
         }
       },
@@ -385,7 +394,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       onTap: () async {
         final selected = await CategorySelectionBottomSheet.show(
           context,
-          serviceName: 'budget',
+          serviceName: 'transfer',
           categories: _availableCategories,
           selectedCategory: _selectedServiceCategory,
         );
@@ -703,8 +712,8 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   }
 
   Widget _buildSaveButton(BuildContext context) {
-    final state = context.watch<BudgetCubit>();
-    final isLoading = state is BudgetLoading;
+    final cubitState = context.watch<BudgetCubit>().state;
+    final isLoading = cubitState is BudgetLoading;
 
     return SizedBox(
       width: double.infinity,

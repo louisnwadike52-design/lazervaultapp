@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
+import 'widgets/gift_card_error_widget.dart';
 
 class GiftCardTransactionsScreen extends StatefulWidget {
   const GiftCardTransactionsScreen({super.key});
@@ -163,7 +164,7 @@ class _GiftCardTransactionsScreenState
   }
 
   Widget _buildFilterChips() {
-    final filters = ['All', 'Purchase', 'Redeem', 'Transfer', 'Sell'];
+    final filters = ['All', 'Purchase', 'Transfer', 'Sell'];
 
     return Container(
       height: 48.h,
@@ -324,17 +325,18 @@ class _GiftCardTransactionsScreenState
         icon = Icons.shopping_cart_rounded;
         color = const Color(0xFF3B82F6);
         break;
-      case 'redeem':
-        icon = Icons.redeem_rounded;
-        color = const Color(0xFF10B981);
-        break;
       case 'transfer':
+      case 'transfer_out':
         icon = Icons.send_rounded;
         color = const Color(0xFFFB923C);
         break;
+      case 'transfer_in':
+        icon = Icons.call_received_rounded;
+        color = const Color(0xFF10B981);
+        break;
       case 'sell':
         icon = Icons.sell_rounded;
-        color = const Color(0xFF8B5CF6);
+        color = const Color.fromARGB(255, 78, 3, 208);
         break;
       default:
         icon = Icons.receipt_long_rounded;
@@ -353,68 +355,9 @@ class _GiftCardTransactionsScreenState
   }
 
   Widget _buildErrorView(String message) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: [
-        SizedBox(height: 120.h),
-        Center(
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Icon(
-                  Icons.error_outline_rounded,
-                  size: 40.sp,
-                  color: const Color(0xFFEF4444),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Failed to load transactions',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                message,
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  color: const Color(0xFF9CA3AF),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 20.h),
-              ElevatedButton(
-                onPressed: _onRefresh,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Try Again',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return GiftCardErrorList.fromRaw(
+      rawMessage: message,
+      onRetry: _onRefresh,
     );
   }
 
@@ -509,7 +452,17 @@ class _GiftCardTransactionsScreenState
 
   String _formatTransactionAmount(GiftCardTransaction transaction) {
     final prefix = _isCredit(transaction.transactionType) ? '+' : '-';
-    return '$prefix\$${transaction.amount.toStringAsFixed(2)}';
+    return '$prefix${_formatAmount(transaction.amount)}';
+  }
+
+  String _formatAmount(double amount) {
+    if (amount >= 1000) {
+      return amount.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        (match) => '${match[1]},',
+      );
+    }
+    return amount.toStringAsFixed(2);
   }
 
   void _showTransactionDetails(GiftCardTransaction transaction) {
@@ -556,7 +509,7 @@ class _GiftCardTransactionsScreenState
                 'Type', _getTransactionTypeLabel(transaction.transactionType)),
             SizedBox(height: 10.h),
             _buildDetailRow(
-                'Amount', '\$${transaction.amount.toStringAsFixed(2)}'),
+                'Amount', _formatAmount(transaction.amount)),
             SizedBox(height: 10.h),
             _buildDetailRow('Date', _formatCreatedAt(transaction.createdAt)),
             if (transaction.description.isNotEmpty) ...[

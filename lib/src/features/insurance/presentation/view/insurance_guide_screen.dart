@@ -174,7 +174,7 @@ class _InsuranceGuideScreenState extends State<InsuranceGuideScreen> {
             end: Alignment.bottomRight,
             colors: [
               Color(0xFF6366F1),
-              Color(0xFF8B5CF6),
+              Color.fromARGB(255, 78, 3, 208),
             ],
           ),
           borderRadius: BorderRadius.circular(20.r),
@@ -475,7 +475,7 @@ class _InsuranceGuideScreenState extends State<InsuranceGuideScreen> {
                     borderRadius: BorderRadius.circular(14.r),
                     border: Border.all(
                       color: isExpanded
-                          ? const Color(0xFF8B5CF6).withValues(alpha: 0.5)
+                          ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.5)
                           : const Color(0xFF2D2D2D),
                     ),
                   ),
@@ -552,7 +552,7 @@ class _InsuranceGuideScreenState extends State<InsuranceGuideScreen> {
               end: Alignment.centerRight,
               colors: [
                 Color(0xFF6366F1),
-                Color(0xFF8B5CF6),
+                Color.fromARGB(255, 78, 3, 208),
               ],
             ),
             borderRadius: BorderRadius.circular(14.r),

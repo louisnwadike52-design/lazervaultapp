@@ -70,7 +70,7 @@ class EmptyAccountState extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF6C5CE7).withValues(alpha: 0.8),
+              const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
               const Color(0xFF4834D4).withValues(alpha: 0.8),
             ],
           ),
@@ -212,20 +212,20 @@ class EmptyAccountState extends StatelessWidget {
                     height: 16.sp,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: const Color(0xFF6C5CE7),
+                      color: const Color.fromARGB(255, 78, 3, 208),
                     ),
                   )
                 else
                   Icon(
                     Icons.add_circle_outline_rounded,
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     size: 16.sp,
                   ),
                 SizedBox(width: 6.w),
                 Text(
                   isCreating ? 'Creating...' : 'Create Account',
                   style: TextStyle(
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -248,7 +248,7 @@ class EmptyAccountState extends StatelessWidget {
                   'We\'ll notify you when virtual accounts become available in your region!',
                 ),
                 duration: const Duration(seconds: 3),
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               ),
             );
           },
@@ -263,14 +263,14 @@ class EmptyAccountState extends StatelessWidget {
           children: [
             Icon(
               Icons.notifications_active_outlined,
-              color: const Color(0xFF6C5CE7),
+              color: const Color.fromARGB(255, 78, 3, 208),
               size: 16.sp,
             ),
             SizedBox(width: 6.w),
             Text(
               'Notify Me',
               style: TextStyle(
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -296,7 +296,7 @@ class AccountLoadingState extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF6C5CE7),
+            Color.fromARGB(255, 78, 3, 208),
             Color(0xFF4834D4),
           ],
         ),

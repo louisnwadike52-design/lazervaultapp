@@ -817,7 +817,7 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
           'name': 'Debit/Credit Card',
           'description': 'Visa, Mastercard, etc.',
           'icon': Icons.credit_card,
-          'color': const Color(0xFF8B5CF6),
+          'color': const Color.fromARGB(255, 78, 3, 208),
         };
       case 'mobile_money':
         return {
