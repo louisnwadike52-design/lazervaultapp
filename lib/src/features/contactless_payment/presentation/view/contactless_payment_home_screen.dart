@@ -251,7 +251,7 @@ class _ContactlessPaymentHomeViewState
                   end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF6366F1),
-                    Color(0xFF8B5CF6),
+                    Color.fromARGB(255, 78, 3, 208),
                     Color(0xFFA78BFA),
                   ],
                 ),
@@ -329,7 +329,7 @@ class _ContactlessPaymentHomeViewState
         SizedBox(height: 16.h),
         _ActionCard(
           icon: Icons.nfc_rounded,
-          iconGradient: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          iconGradient: const [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
           title: 'Pay with NFC',
           subtitle: 'Tap another device to read their payment request',
           onTap: () {
@@ -601,7 +601,7 @@ class _ContactlessPaymentHomeViewState
           end: Alignment.bottomRight,
           colors: [
             const Color(0xFF6366F1).withValues(alpha: 0.1),
-            const Color(0xFF8B5CF6).withValues(alpha: 0.05),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),

@@ -29,6 +29,8 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
   }
 
   void _loadInsights() async {
+    if (!mounted) return;
+
     // Pull real data from StatisticsCubit for income/spending analysis
     double monthlyIncome = 0;
     List<Map<String, dynamic>> spendingData = [];
@@ -95,6 +97,7 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
         budgetRepo.getUpcomingBills(daysAhead: 30),
         budgetRepo.getBudgetAlerts(unreadOnly: false, limit: 20),
       ]);
+      if (!mounted) return;
 
       // Financial goals
       final goalsResponse = results[0] as stats_pb.GetFinancialGoalsResponse;
@@ -397,7 +400,7 @@ class _InsightsView extends StatelessWidget {
         if (insights.categoryInsights.isNotEmpty) ...[
           Row(
             children: [
-              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color(0xFF8B5CF6), borderRadius: BorderRadius.circular(2))),
+              Container(width: 3, height: 20, decoration: BoxDecoration(color: const Color.fromARGB(255, 78, 3, 208), borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 8),
               const Text(
                 'Category Deep Dive',
@@ -506,7 +509,7 @@ class _CategoryInsightCardState extends State<_CategoryInsightCard> {
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -524,10 +527,10 @@ class _CategoryInsightCardState extends State<_CategoryInsightCard> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                      color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(Icons.category, color: const Color(0xFF8B5CF6), size: 20.sp),
+                    child: Icon(Icons.category, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
@@ -579,7 +582,7 @@ class _CategoryInsightCardState extends State<_CategoryInsightCard> {
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Text(
                   'Sub-Category Breakdown',
-                  style: TextStyle(color: const Color(0xFF8B5CF6), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: const Color.fromARGB(255, 78, 3, 208), fontSize: 13.sp, fontWeight: FontWeight.w600),
                 ),
               ),
               SizedBox(height: 8.h),
@@ -649,7 +652,7 @@ class _SubCategoryRow extends StatelessWidget {
                       width: 8.w,
                       height: 8.w,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                     ),
@@ -844,7 +847,7 @@ class _LoadingViewState extends State<_LoadingView> with TickerProviderStateMixi
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF8B5CF6).withValues(alpha: 0.3 + _pulseController.value * 0.2),
+                      const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3 + _pulseController.value * 0.2),
                       const Color(0xFF10B981).withValues(alpha: 0.1 + _pulseController.value * 0.1),
                       Colors.transparent,
                     ],
@@ -853,7 +856,7 @@ class _LoadingViewState extends State<_LoadingView> with TickerProviderStateMixi
                 child: Icon(
                   Icons.auto_awesome,
                   color: Color.lerp(
-                    const Color(0xFF8B5CF6),
+                    const Color.fromARGB(255, 78, 3, 208),
                     const Color(0xFF10B981),
                     _pulseController.value,
                   ),
@@ -898,7 +901,7 @@ class _LoadingViewState extends State<_LoadingView> with TickerProviderStateMixi
                     child: LinearProgressIndicator(
                       value: _progressController.value * 0.9,
                       backgroundColor: const Color(0xFF2D2D2D),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
                       minHeight: 6.h,
                     ),
                   ),

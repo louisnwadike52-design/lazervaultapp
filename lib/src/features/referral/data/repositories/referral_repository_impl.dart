@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/referral/domain/entities/referral_code_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/referral_transaction_entity.dart';
@@ -53,7 +54,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       print('gRPC Error validating referral code: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to validate referral code',
+        message: friendlyGrpcError(e, 'Failed to validate referral code'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -87,7 +88,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       print('gRPC Error getting referral code: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get referral code',
+        message: friendlyGrpcError(e, 'Failed to get referral code'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -121,7 +122,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       print('gRPC Error getting referral stats: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get referral statistics',
+        message: friendlyGrpcError(e, 'Failed to get referral statistics'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -158,7 +159,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       print('gRPC Error getting referrals: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get referrals',
+        message: friendlyGrpcError(e, 'Failed to get referrals'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -192,7 +193,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       print('gRPC Error getting leaderboard: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get leaderboard',
+        message: friendlyGrpcError(e, 'Failed to get leaderboard'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -230,7 +231,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       print('gRPC Error getting country config: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get country reward configuration',
+        message: friendlyGrpcError(e, 'Failed to get country reward configuration'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -264,7 +265,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
       }
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get points balance',
+        message: friendlyGrpcError(e, 'Failed to get points balance'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -297,7 +298,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
       return Right(transactions);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get points history',
+        message: friendlyGrpcError(e, 'Failed to get points history'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -320,7 +321,7 @@ class ReferralRepositoryImpl implements IReferralRepository {
       return Right(configs);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get points config',
+        message: friendlyGrpcError(e, 'Failed to get points config'),
         statusCode: e.code,
       ));
     } catch (e) {

@@ -75,7 +75,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
                   children: [
                     _buildTypeSelector(),
                     const SizedBox(height: 24),
-                    if (_selectedType == QRPaymentType.dynamic) ...[
+                    if (_selectedType == QRPaymentType.static) ...[
                       _buildAmountInput(),
                       const SizedBox(height: 16),
                       _buildQuickAmounts(),
@@ -83,7 +83,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
                     ],
                     _buildDescriptionInput(),
                     const SizedBox(height: 24),
-                    if (_selectedType == QRPaymentType.dynamic)
+                    if (_selectedType == QRPaymentType.static)
                       _buildValiditySelector(),
                     const SizedBox(height: 32),
                     _buildGenerateButton(context, state),
@@ -111,7 +111,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
             Expanded(
               child: _buildTypeOption(
                 'Dynamic',
-                'One-time use with fixed amount',
+                'Reusable, payer enters amount',
                 QRPaymentType.dynamic,
               ),
             ),
@@ -119,7 +119,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
             Expanded(
               child: _buildTypeOption(
                 'Static',
-                'Reusable, payer enters amount',
+                'One-time use with fixed amount',
                 QRPaymentType.static,
               ),
             ),
@@ -363,7 +363,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
 
   void _generate(BuildContext context) {
     double amount = 0;
-    if (_selectedType == QRPaymentType.dynamic) {
+    if (_selectedType == QRPaymentType.static) {
       final parsed = double.tryParse(_amountController.text);
       if (parsed == null || parsed <= 0) {
         Get.snackbar(

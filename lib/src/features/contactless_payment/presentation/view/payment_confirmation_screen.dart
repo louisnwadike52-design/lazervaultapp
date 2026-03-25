@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -8,6 +10,8 @@ import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../domain/entities/contactless_payment_entity.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
@@ -44,12 +48,17 @@ class _PaymentConfirmationView extends StatefulWidget {
 }
 
 class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
-    with SingleTickerProviderStateMixin {
-  final _pinController = TextEditingController();
+    with SingleTickerProviderStateMixin, TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   String? _selectedAccountId;
   bool _isProcessing = false;
   bool _hasPreSelectedAccount = false;
+  bool _isSessionExpired = false;
   final _uuid = const Uuid();
+  Timer? _expiryCheckTimer;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
@@ -65,11 +74,33 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
       CurvedAnimation(parent: _animController, curve: Curves.easeOut),
     );
     _animController.forward();
+    _startExpiryCheck();
+  }
+
+  void _startExpiryCheck() {
+    _expiryCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (widget.session.expiresAt.isBefore(DateTime.now()) && !_isSessionExpired) {
+        timer.cancel();
+        setState(() => _isSessionExpired = true);
+        Get.snackbar(
+          'Session Expired',
+          'This payment request has expired. Please scan again.',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 4),
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
-    _pinController.dispose();
+    _expiryCheckTimer?.cancel();
     _animController.dispose();
     super.dispose();
   }
@@ -110,22 +141,11 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
     }
   }
 
-  void _processPayment() {
+  void _processPayment() async {
     if (_selectedAccountId == null) {
       Get.snackbar(
         'No Account Selected',
         'Please select an account to pay from',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
-
-    if (_pinController.text.length != 4) {
-      Get.snackbar(
-        'Invalid PIN',
-        'Please enter your 4-digit transaction PIN',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -145,38 +165,29 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
       return;
     }
 
+    HapticFeedback.mediumImpact();
+
+    final transactionId = 'NFC-${_uuid.v4().substring(0, 8)}';
+
+    final pinResult = await validatePinOnly(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'contactless_payment',
+      amount: widget.session.amount,
+      currency: widget.session.currency,
+    );
+
+    if (pinResult == null || !pinResult.success) return;
+
+    if (!mounted) return;
     setState(() => _isProcessing = true);
 
     context.read<ContactlessPaymentCubit>().processPayment(
           sessionId: widget.session.id,
           sourceAccountId: _selectedAccountId!,
-          transactionId: _uuid.v4(),
-          verificationToken: _pinController.text,
+          transactionId: transactionId,
+          verificationToken: pinResult.verificationToken ?? '',
         );
-  }
-
-  void _handlePinError(
-      String message, int attemptsRemaining, bool accountLocked) {
-    _pinController.clear();
-
-    if (accountLocked) {
-      Get.snackbar(
-        'Account Locked',
-        'Too many failed PIN attempts. Please contact support.',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 5),
-      );
-    } else {
-      Get.snackbar(
-        'Invalid PIN',
-        '$message ($attemptsRemaining attempts remaining)',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-    }
   }
 
   @override
@@ -219,13 +230,6 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                   ),
                 ),
               );
-            } else if (state is PinValidationFailed) {
-              setState(() => _isProcessing = false);
-              _handlePinError(
-                state.message,
-                state.attemptsRemaining,
-                state.accountLocked,
-              );
             } else if (state is SessionExpired) {
               setState(() => _isProcessing = false);
               Get.snackbar(
@@ -247,8 +251,52 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                 snackPosition: SnackPosition.TOP,
                 duration: const Duration(seconds: 4),
               );
+            } else if (state is PinValidationFailed) {
+              setState(() => _isProcessing = false);
+              if (state.accountLocked) {
+                Get.snackbar(
+                  'Account Locked',
+                  state.message,
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                  duration: const Duration(seconds: 5),
+                );
+              } else {
+                Get.snackbar(
+                  'Invalid PIN',
+                  '${state.message} (${state.attemptsRemaining} attempts remaining)',
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                  duration: const Duration(seconds: 4),
+                );
+              }
             } else if (state is ContactlessPaymentError) {
               setState(() => _isProcessing = false);
+
+              // Session is no longer payable — show message and go back
+              if (state.errorType == ContactlessErrorType.sessionAlreadyPaid ||
+                  state.errorType == ContactlessErrorType.sessionCancelled ||
+                  state.errorType == ContactlessErrorType.sessionAlreadyProcessing) {
+                final title = switch (state.errorType) {
+                  ContactlessErrorType.sessionAlreadyPaid => 'Already Paid',
+                  ContactlessErrorType.sessionCancelled => 'Cancelled',
+                  ContactlessErrorType.sessionAlreadyProcessing => 'In Progress',
+                  _ => 'Unavailable',
+                };
+                Get.snackbar(
+                  title,
+                  state.message,
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                  duration: const Duration(seconds: 4),
+                );
+                Navigator.of(context).pop();
+                return;
+              }
+
               Get.snackbar(
                 'Payment Failed',
                 state.message,
@@ -275,8 +323,6 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                           _buildPaymentDetails(),
                           SizedBox(height: 24.h),
                           _buildAccountSelector(),
-                          SizedBox(height: 24.h),
-                          _buildPinInput(),
                           SizedBox(height: 32.h),
                           _buildPayButton(),
                           SizedBox(height: 100.h),
@@ -593,7 +639,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                               colors: [
                                 const Color(0xFF6366F1)
                                     .withValues(alpha: 0.15),
-                                const Color(0xFF8B5CF6)
+                                const Color.fromARGB(255, 78, 3, 208)
                                     .withValues(alpha: 0.1),
                               ],
                             )
@@ -689,7 +735,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                               gradient: const LinearGradient(
                                 colors: [
                                   Color(0xFF6366F1),
-                                  Color(0xFF8B5CF6)
+                                  Color.fromARGB(255, 78, 3, 208)
                                 ],
                               ),
                               shape: BoxShape.circle,
@@ -714,74 +760,30 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
     );
   }
 
-  Widget _buildPinInput() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Transaction PIN',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: TextField(
-            controller: _pinController,
-            keyboardType: TextInputType.number,
-            obscureText: true,
-            maxLength: 4,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 24.sp,
-              letterSpacing: 16,
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              hintText: '    ',
-              hintStyle: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF).withValues(alpha: 0.3),
-                fontSize: 24.sp,
-                letterSpacing: 16,
-              ),
-              border: InputBorder.none,
-              counterText: '',
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildPayButton() {
+    final isDisabled = _isProcessing || _isSessionExpired;
     return GestureDetector(
-      onTap: _isProcessing ? null : _processPayment,
+      onTap: isDisabled ? null : _processPayment,
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 18.h),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF10B981), Color(0xFF059669)],
-          ),
+          gradient: isDisabled
+              ? null
+              : const LinearGradient(
+                  colors: [Color(0xFF10B981), Color(0xFF059669)],
+                ),
+          color: isDisabled ? Colors.white.withValues(alpha: 0.1) : null,
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF10B981).withValues(alpha: 0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: isDisabled
+              ? null
+              : [
+                  BoxShadow(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
         ),
         child: Center(
           child: _isProcessing
@@ -795,9 +797,13 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                   ),
                 )
               : Text(
-                  'Pay ${widget.session.formattedAmount}',
+                  _isSessionExpired
+                      ? 'Session Expired'
+                      : 'Pay ${widget.session.formattedAmount}',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: _isSessionExpired
+                        ? const Color(0xFF9CA3AF)
+                        : Colors.white,
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
                   ),

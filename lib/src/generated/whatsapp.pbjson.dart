@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: whatsapp.proto
-//
-// @dart = 2.12
+// Generated from whatsapp.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -22,9 +23,10 @@ const InitiateLinkingRequest$json = {
 };
 
 /// Descriptor for `InitiateLinkingRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List initiateLinkingRequestDescriptor = $convert.base64Decode(
-    'ChZJbml0aWF0ZUxpbmtpbmdSZXF1ZXN0EiEKDHBob25lX251bWJlchgBIAEoCVILcGhvbmVOdW'
-    '1iZXI=');
+final $typed_data.Uint8List initiateLinkingRequestDescriptor =
+    $convert.base64Decode(
+        'ChZJbml0aWF0ZUxpbmtpbmdSZXF1ZXN0EiEKDHBob25lX251bWJlchgBIAEoCVILcGhvbmVOdW'
+        '1iZXI=');
 
 @$core.Deprecated('Use initiateLinkingResponseDescriptor instead')
 const InitiateLinkingResponse$json = {
@@ -32,7 +34,14 @@ const InitiateLinkingResponse$json = {
   '2': [
     {'1': 'otp_reference', '3': 1, '4': 1, '5': 9, '10': 'otpReference'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'expires_at', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
+    {
+      '1': 'expires_at',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'expiresAt'
+    },
   ],
 };
 
@@ -62,7 +71,14 @@ const VerifyLinkingResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'whatsapp_user', '3': 3, '4': 1, '5': 11, '6': '.whatsapp.WhatsAppUser', '10': 'whatsappUser'},
+    {
+      '1': 'whatsapp_user',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WhatsAppUser',
+      '10': 'whatsappUser'
+    },
   ],
 };
 
@@ -81,8 +97,9 @@ const UnlinkAccountRequest$json = {
 };
 
 /// Descriptor for `UnlinkAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List unlinkAccountRequestDescriptor = $convert.base64Decode(
-    'ChRVbmxpbmtBY2NvdW50UmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQ=');
+final $typed_data.Uint8List unlinkAccountRequestDescriptor =
+    $convert.base64Decode(
+        'ChRVbmxpbmtBY2NvdW50UmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQ=');
 
 @$core.Deprecated('Use unlinkAccountResponseDescriptor instead')
 const UnlinkAccountResponse$json = {
@@ -104,14 +121,21 @@ const GetLinkStatusRequest$json = {
 };
 
 /// Descriptor for `GetLinkStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getLinkStatusRequestDescriptor = $convert.base64Decode(
-    'ChRHZXRMaW5rU3RhdHVzUmVxdWVzdA==');
+final $typed_data.Uint8List getLinkStatusRequestDescriptor =
+    $convert.base64Decode('ChRHZXRMaW5rU3RhdHVzUmVxdWVzdA==');
 
 @$core.Deprecated('Use getLinkStatusResponseDescriptor instead')
 const GetLinkStatusResponse$json = {
   '1': 'GetLinkStatusResponse',
   '2': [
-    {'1': 'whatsapp_user', '3': 1, '4': 1, '5': 11, '6': '.whatsapp.WhatsAppUser', '10': 'whatsappUser'},
+    {
+      '1': 'whatsapp_user',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WhatsAppUser',
+      '10': 'whatsappUser'
+    },
   ],
 };
 
@@ -125,7 +149,14 @@ const WebhookRequest$json = {
   '1': 'WebhookRequest',
   '2': [
     {'1': 'object', '3': 1, '4': 1, '5': 9, '10': 'object'},
-    {'1': 'entry', '3': 2, '4': 3, '5': 11, '6': '.whatsapp.WebhookEntry', '10': 'entry'},
+    {
+      '1': 'entry',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.whatsapp.WebhookEntry',
+      '10': 'entry'
+    },
   ],
 };
 
@@ -139,7 +170,14 @@ const WebhookEntry$json = {
   '1': 'WebhookEntry',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {'1': 'changes', '3': 2, '4': 3, '5': 11, '6': '.whatsapp.WebhookChange', '10': 'changes'},
+    {
+      '1': 'changes',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.whatsapp.WebhookChange',
+      '10': 'changes'
+    },
   ],
 };
 
@@ -153,7 +191,14 @@ const WebhookChange$json = {
   '1': 'WebhookChange',
   '2': [
     {'1': 'field', '3': 1, '4': 1, '5': 9, '10': 'field'},
-    {'1': 'value', '3': 2, '4': 1, '5': 11, '6': '.whatsapp.WebhookValue', '10': 'value'},
+    {
+      '1': 'value',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WebhookValue',
+      '10': 'value'
+    },
   ],
 };
 
@@ -166,11 +211,45 @@ final $typed_data.Uint8List webhookChangeDescriptor = $convert.base64Decode(
 const WebhookValue$json = {
   '1': 'WebhookValue',
   '2': [
-    {'1': 'messaging_product', '3': 1, '4': 1, '5': 9, '10': 'messagingProduct'},
-    {'1': 'metadata', '3': 2, '4': 1, '5': 11, '6': '.whatsapp.WebhookMetadata', '10': 'metadata'},
-    {'1': 'contacts', '3': 3, '4': 3, '5': 11, '6': '.whatsapp.WebhookContact', '10': 'contacts'},
-    {'1': 'messages', '3': 4, '4': 3, '5': 11, '6': '.whatsapp.WebhookMessage', '10': 'messages'},
-    {'1': 'statuses', '3': 5, '4': 3, '5': 11, '6': '.whatsapp.WebhookStatus', '10': 'statuses'},
+    {
+      '1': 'messaging_product',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '10': 'messagingProduct'
+    },
+    {
+      '1': 'metadata',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WebhookMetadata',
+      '10': 'metadata'
+    },
+    {
+      '1': 'contacts',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.whatsapp.WebhookContact',
+      '10': 'contacts'
+    },
+    {
+      '1': 'messages',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.whatsapp.WebhookMessage',
+      '10': 'messages'
+    },
+    {
+      '1': 'statuses',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.whatsapp.WebhookStatus',
+      '10': 'statuses'
+    },
   ],
 };
 
@@ -186,7 +265,13 @@ final $typed_data.Uint8List webhookValueDescriptor = $convert.base64Decode(
 const WebhookMetadata$json = {
   '1': 'WebhookMetadata',
   '2': [
-    {'1': 'display_phone_number', '3': 1, '4': 1, '5': 9, '10': 'displayPhoneNumber'},
+    {
+      '1': 'display_phone_number',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '10': 'displayPhoneNumber'
+    },
     {'1': 'phone_number_id', '3': 2, '4': 1, '5': 9, '10': 'phoneNumberId'},
   ],
 };
@@ -218,8 +303,22 @@ const WebhookMessage$json = {
     {'1': 'id', '3': 2, '4': 1, '5': 9, '10': 'id'},
     {'1': 'timestamp', '3': 3, '4': 1, '5': 9, '10': 'timestamp'},
     {'1': 'type', '3': 4, '4': 1, '5': 9, '10': 'type'},
-    {'1': 'text', '3': 5, '4': 1, '5': 11, '6': '.whatsapp.WebhookTextMessage', '10': 'text'},
-    {'1': 'interactive', '3': 6, '4': 1, '5': 11, '6': '.whatsapp.WebhookInteractiveMessage', '10': 'interactive'},
+    {
+      '1': 'text',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WebhookTextMessage',
+      '10': 'text'
+    },
+    {
+      '1': 'interactive',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WebhookInteractiveMessage',
+      '10': 'interactive'
+    },
   ],
 };
 
@@ -240,16 +339,30 @@ const WebhookTextMessage$json = {
 };
 
 /// Descriptor for `WebhookTextMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List webhookTextMessageDescriptor = $convert.base64Decode(
-    'ChJXZWJob29rVGV4dE1lc3NhZ2USEgoEYm9keRgBIAEoCVIEYm9keQ==');
+final $typed_data.Uint8List webhookTextMessageDescriptor = $convert
+    .base64Decode('ChJXZWJob29rVGV4dE1lc3NhZ2USEgoEYm9keRgBIAEoCVIEYm9keQ==');
 
 @$core.Deprecated('Use webhookInteractiveMessageDescriptor instead')
 const WebhookInteractiveMessage$json = {
   '1': 'WebhookInteractiveMessage',
   '2': [
     {'1': 'type', '3': 1, '4': 1, '5': 9, '10': 'type'},
-    {'1': 'button_reply', '3': 2, '4': 1, '5': 11, '6': '.whatsapp.WebhookButtonReply', '10': 'buttonReply'},
-    {'1': 'list_reply', '3': 3, '4': 1, '5': 11, '6': '.whatsapp.WebhookListReply', '10': 'listReply'},
+    {
+      '1': 'button_reply',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WebhookButtonReply',
+      '10': 'buttonReply'
+    },
+    {
+      '1': 'list_reply',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WebhookListReply',
+      '10': 'listReply'
+    },
   ],
 };
 
@@ -315,8 +428,8 @@ const WebhookResponse$json = {
 };
 
 /// Descriptor for `WebhookResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List webhookResponseDescriptor = $convert.base64Decode(
-    'Cg9XZWJob29rUmVzcG9uc2USFgoGc3RhdHVzGAEgASgJUgZzdGF0dXM=');
+final $typed_data.Uint8List webhookResponseDescriptor = $convert
+    .base64Decode('Cg9XZWJob29rUmVzcG9uc2USFgoGc3RhdHVzGAEgASgJUgZzdGF0dXM=');
 
 @$core.Deprecated('Use verifyWebhookRequestDescriptor instead')
 const VerifyWebhookRequest$json = {
@@ -362,7 +475,14 @@ final $typed_data.Uint8List getSessionRequestDescriptor = $convert.base64Decode(
 const GetSessionResponse$json = {
   '1': 'GetSessionResponse',
   '2': [
-    {'1': 'session', '3': 1, '4': 1, '5': 11, '6': '.whatsapp.WhatsAppSession', '10': 'session'},
+    {
+      '1': 'session',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.WhatsAppSession',
+      '10': 'session'
+    },
   ],
 };
 
@@ -378,8 +498,22 @@ const WhatsAppSession$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'whatsapp_user_id', '3': 2, '4': 1, '5': 9, '10': 'whatsappUserId'},
     {'1': 'is_authenticated', '3': 3, '4': 1, '5': 8, '10': 'isAuthenticated'},
-    {'1': 'expires_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
-    {'1': 'last_activity_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastActivityAt'},
+    {
+      '1': 'expires_at',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'expiresAt'
+    },
+    {
+      '1': 'last_activity_at',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastActivityAt'
+    },
   ],
 };
 
@@ -400,9 +534,10 @@ const InvalidateSessionRequest$json = {
 };
 
 /// Descriptor for `InvalidateSessionRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List invalidateSessionRequestDescriptor = $convert.base64Decode(
-    'ChhJbnZhbGlkYXRlU2Vzc2lvblJlcXVlc3QSHQoKc2Vzc2lvbl9pZBgBIAEoCVIJc2Vzc2lvbk'
-    'lk');
+final $typed_data.Uint8List invalidateSessionRequestDescriptor =
+    $convert.base64Decode(
+        'ChhJbnZhbGlkYXRlU2Vzc2lvblJlcXVlc3QSHQoKc2Vzc2lvbl9pZBgBIAEoCVIJc2Vzc2lvbk'
+        'lk');
 
 @$core.Deprecated('Use invalidateSessionResponseDescriptor instead')
 const InvalidateSessionResponse$json = {
@@ -414,18 +549,43 @@ const InvalidateSessionResponse$json = {
 };
 
 /// Descriptor for `InvalidateSessionResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List invalidateSessionResponseDescriptor = $convert.base64Decode(
-    'ChlJbnZhbGlkYXRlU2Vzc2lvblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
-    'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List invalidateSessionResponseDescriptor =
+    $convert.base64Decode(
+        'ChlJbnZhbGlkYXRlU2Vzc2lvblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
+        'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use updateSecuritySettingsRequestDescriptor instead')
 const UpdateSecuritySettingsRequest$json = {
   '1': 'UpdateSecuritySettingsRequest',
   '2': [
-    {'1': 'daily_transaction_limit', '3': 1, '4': 1, '5': 1, '10': 'dailyTransactionLimit'},
-    {'1': 'per_transaction_limit', '3': 2, '4': 1, '5': 1, '10': 'perTransactionLimit'},
-    {'1': 'require_pin_for_all', '3': 3, '4': 1, '5': 8, '10': 'requirePinForAll'},
-    {'1': 'biometric_threshold', '3': 4, '4': 1, '5': 1, '10': 'biometricThreshold'},
+    {
+      '1': 'daily_transaction_limit',
+      '3': 1,
+      '4': 1,
+      '5': 1,
+      '10': 'dailyTransactionLimit'
+    },
+    {
+      '1': 'per_transaction_limit',
+      '3': 2,
+      '4': 1,
+      '5': 1,
+      '10': 'perTransactionLimit'
+    },
+    {
+      '1': 'require_pin_for_all',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '10': 'requirePinForAll'
+    },
+    {
+      '1': 'biometric_threshold',
+      '3': 4,
+      '4': 1,
+      '5': 1,
+      '10': 'biometricThreshold'
+    },
   ],
 };
 
@@ -441,14 +601,22 @@ final $typed_data.Uint8List updateSecuritySettingsRequestDescriptor = $convert.b
 const UpdateSecuritySettingsResponse$json = {
   '1': 'UpdateSecuritySettingsResponse',
   '2': [
-    {'1': 'settings', '3': 1, '4': 1, '5': 11, '6': '.whatsapp.SecuritySettings', '10': 'settings'},
+    {
+      '1': 'settings',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.SecuritySettings',
+      '10': 'settings'
+    },
   ],
 };
 
 /// Descriptor for `UpdateSecuritySettingsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateSecuritySettingsResponseDescriptor = $convert.base64Decode(
-    'Ch5VcGRhdGVTZWN1cml0eVNldHRpbmdzUmVzcG9uc2USNgoIc2V0dGluZ3MYASABKAsyGi53aG'
-    'F0c2FwcC5TZWN1cml0eVNldHRpbmdzUghzZXR0aW5ncw==');
+final $typed_data.Uint8List updateSecuritySettingsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5VcGRhdGVTZWN1cml0eVNldHRpbmdzUmVzcG9uc2USNgoIc2V0dGluZ3MYASABKAsyGi53aG'
+        'F0c2FwcC5TZWN1cml0eVNldHRpbmdzUghzZXR0aW5ncw==');
 
 @$core.Deprecated('Use getSecuritySettingsRequestDescriptor instead')
 const GetSecuritySettingsRequest$json = {
@@ -456,30 +624,62 @@ const GetSecuritySettingsRequest$json = {
 };
 
 /// Descriptor for `GetSecuritySettingsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSecuritySettingsRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRTZWN1cml0eVNldHRpbmdzUmVxdWVzdA==');
+final $typed_data.Uint8List getSecuritySettingsRequestDescriptor =
+    $convert.base64Decode('ChpHZXRTZWN1cml0eVNldHRpbmdzUmVxdWVzdA==');
 
 @$core.Deprecated('Use getSecuritySettingsResponseDescriptor instead')
 const GetSecuritySettingsResponse$json = {
   '1': 'GetSecuritySettingsResponse',
   '2': [
-    {'1': 'settings', '3': 1, '4': 1, '5': 11, '6': '.whatsapp.SecuritySettings', '10': 'settings'},
+    {
+      '1': 'settings',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.whatsapp.SecuritySettings',
+      '10': 'settings'
+    },
   ],
 };
 
 /// Descriptor for `GetSecuritySettingsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSecuritySettingsResponseDescriptor = $convert.base64Decode(
-    'ChtHZXRTZWN1cml0eVNldHRpbmdzUmVzcG9uc2USNgoIc2V0dGluZ3MYASABKAsyGi53aGF0c2'
-    'FwcC5TZWN1cml0eVNldHRpbmdzUghzZXR0aW5ncw==');
+final $typed_data.Uint8List getSecuritySettingsResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRTZWN1cml0eVNldHRpbmdzUmVzcG9uc2USNgoIc2V0dGluZ3MYASABKAsyGi53aGF0c2'
+        'FwcC5TZWN1cml0eVNldHRpbmdzUghzZXR0aW5ncw==');
 
 @$core.Deprecated('Use securitySettingsDescriptor instead')
 const SecuritySettings$json = {
   '1': 'SecuritySettings',
   '2': [
-    {'1': 'daily_transaction_limit', '3': 1, '4': 1, '5': 1, '10': 'dailyTransactionLimit'},
-    {'1': 'per_transaction_limit', '3': 2, '4': 1, '5': 1, '10': 'perTransactionLimit'},
-    {'1': 'require_pin_for_all', '3': 3, '4': 1, '5': 8, '10': 'requirePinForAll'},
-    {'1': 'biometric_threshold', '3': 4, '4': 1, '5': 1, '10': 'biometricThreshold'},
+    {
+      '1': 'daily_transaction_limit',
+      '3': 1,
+      '4': 1,
+      '5': 1,
+      '10': 'dailyTransactionLimit'
+    },
+    {
+      '1': 'per_transaction_limit',
+      '3': 2,
+      '4': 1,
+      '5': 1,
+      '10': 'perTransactionLimit'
+    },
+    {
+      '1': 'require_pin_for_all',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '10': 'requirePinForAll'
+    },
+    {
+      '1': 'biometric_threshold',
+      '3': 4,
+      '4': 1,
+      '5': 1,
+      '10': 'biometricThreshold'
+    },
   ],
 };
 
@@ -511,7 +711,14 @@ final $typed_data.Uint8List getAuditLogsRequestDescriptor = $convert.base64Decod
 const GetAuditLogsResponse$json = {
   '1': 'GetAuditLogsResponse',
   '2': [
-    {'1': 'logs', '3': 1, '4': 3, '5': 11, '6': '.whatsapp.AuditLog', '10': 'logs'},
+    {
+      '1': 'logs',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.whatsapp.AuditLog',
+      '10': 'logs'
+    },
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -529,7 +736,14 @@ const AuditLog$json = {
     {'1': 'action', '3': 2, '4': 1, '5': 9, '10': 'action'},
     {'1': 'service_type', '3': 3, '4': 1, '5': 9, '10': 'serviceType'},
     {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
-    {'1': 'created_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'created_at',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
   ],
 };
 
@@ -549,8 +763,22 @@ const WhatsAppUser$json = {
     {'1': 'phone_number', '3': 3, '4': 1, '5': 9, '10': 'phoneNumber'},
     {'1': 'whatsapp_id', '3': 4, '4': 1, '5': 9, '10': 'whatsappId'},
     {'1': 'link_status', '3': 5, '4': 1, '5': 9, '10': 'linkStatus'},
-    {'1': 'linked_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'linkedAt'},
-    {'1': 'last_active_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastActiveAt'},
+    {
+      '1': 'linked_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'linkedAt'
+    },
+    {
+      '1': 'last_active_at',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastActiveAt'
+    },
   ],
 };
 
@@ -562,4 +790,3 @@ final $typed_data.Uint8List whatsAppUserDescriptor = $convert.base64Decode(
     '9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCGxpbmtlZEF0EkAKDmxhc3Rf'
     'YWN0aXZlX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIMbGFzdEFjdGl2ZU'
     'F0');
-

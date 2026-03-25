@@ -91,6 +91,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String dataBundlesPaymentConfirmation = '/data-bundles/payment-confirmation';
   static const String dataBundlesPaymentProcessing = '/data-bundles/payment-processing';
   static const String dataBundlesPaymentReceipt = '/data-bundles/payment-receipt';
+  static const String autoRenewManagement = '/data-bundles/auto-renew';
 
   // Subscription Tracker Routes
   static const String subscriptionDashboard = '/subscriptions/dashboard';
@@ -242,6 +243,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String insuranceDocuments = '/insurance/documents';
   static const String insuranceClaimTracking = '/insurance/claim-tracking';
   static const String insuranceHowItWorks = '/insurance/how-it-works';
+  static const String insuranceManagement = '/insurance/management';
+  static const String insuranceCreditLifeClaim = '/insurance/credit-life-claim';
+  static const String insuranceNotificationPrefs = '/insurance/notification-preferences';
+  static const String insuranceAllPolicies = '/insurance/all-policies';
 
   // Airtime Routes
   static const String airtime = '/airtime';
@@ -277,6 +282,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String donationProcessing = '/crowdfund/donation-processing';
   static const String donationReceipt = '/crowdfund/donation-receipt';
   static const String crowdfundLeaderboard = '/crowdfund/leaderboard';
+  static const String crowdfundMyCampaigns = '/crowdfund/my-campaigns';
+  static const String crowdfundMyDonations = '/crowdfund/my-donations';
 
   // Public Group Discovery Routes
   static const String publicGroups = '/groups/public';
@@ -393,6 +400,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String voiceActivationPrompt = '/voice/activation-prompt';
   static const String voiceVerification = '/voice/verification';
   static const String voiceSettings = '/voice/settings';
+  static const String voiceCloning = '/voice/cloning';
 
   // Family Account Routes
   static const String familyAccounts = '/family/accounts';
@@ -480,6 +488,17 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String channelManagement = '/settings/channels';
   static const String channelActivation = '/settings/channels/activate';
   static const String channelPinSetup = '/settings/channels/pin-setup';
+
+  // Airtime-to-Cash Routes
+  static const String airtimeToCash = '/airtime-to-cash';
+  static const String airtimeToCashNetworkSelection = '/airtime-to-cash/network-selection';
+  static const String airtimeToCashPhoneInput = '/airtime-to-cash/phone-input';
+  static const String airtimeToCashAmountInput = '/airtime-to-cash/amount-input';
+  static const String airtimeToCashReview = '/airtime-to-cash/review';
+  static const String airtimeToCashOTP = '/airtime-to-cash/otp';
+  static const String airtimeToCashProcessing = '/airtime-to-cash/processing';
+  static const String airtimeToCashResult = '/airtime-to-cash/result';
+  static const String airtimeToCashHistory = '/airtime-to-cash/history';
 
   // Debug Routes (Remove before production)
   static const String debugSettings = '/debug/settings';

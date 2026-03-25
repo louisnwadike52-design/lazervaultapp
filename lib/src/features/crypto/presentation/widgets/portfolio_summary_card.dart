@@ -80,14 +80,14 @@ class PortfolioSummaryCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6C5CE7),
+            const Color.fromARGB(255, 78, 3, 208),
             const Color(0xFF74B9FF),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),

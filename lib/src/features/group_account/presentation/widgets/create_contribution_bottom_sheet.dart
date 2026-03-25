@@ -532,7 +532,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                        : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
@@ -719,7 +719,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       case ContributionType.oneTime:
         return const Color(0xFF3B82F6);
       case ContributionType.rotatingSavings:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
       case ContributionType.investmentPool:
         return const Color(0xFF10B981);
       case ContributionType.recurringGoal:
@@ -1808,7 +1808,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                               gradient: LinearGradient(
                                 colors: [
                                   const Color(0xFF6366F1),
-                                  const Color(0xFF8B5CF6),
+                                  const Color.fromARGB(255, 78, 3, 208),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(8.r),
@@ -2008,7 +2008,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     gradient: isLoading
                         ? null
                         : const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                           ),
                     color: isLoading ? Colors.grey : null,
                     borderRadius: BorderRadius.circular(12.r),
@@ -2341,7 +2341,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20.r),
@@ -2646,7 +2646,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
               height: 44.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                 ),
                 borderRadius: BorderRadius.circular(22.r),
               ),

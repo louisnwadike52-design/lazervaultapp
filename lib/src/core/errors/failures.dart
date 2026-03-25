@@ -1,3 +1,25 @@
+import 'package:grpc/grpc.dart';
+
+/// Maps raw gRPC errors to user-friendly messages.
+/// Use this in all repository catch blocks instead of exposing [GrpcError.message].
+String friendlyGrpcError(GrpcError e, String fallback) {
+  if (e.code == StatusCode.unavailable ||
+      e.code == StatusCode.unimplemented ||
+      (e.message != null && e.message!.contains('unknown service'))) {
+    return 'Service temporarily unavailable. Please try again later.';
+  }
+  if (e.code == StatusCode.deadlineExceeded) {
+    return 'Request timed out. Please try again.';
+  }
+  if (e.code == StatusCode.unauthenticated) {
+    return 'Session expired. Please log in again.';
+  }
+  if (e.code == StatusCode.permissionDenied) {
+    return e.message ?? 'Permission denied.';
+  }
+  return e.message ?? fallback;
+}
+
 abstract class Failure {
   const Failure({required this.message, required this.statusCode});
 

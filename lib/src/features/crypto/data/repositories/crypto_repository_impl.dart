@@ -1,4 +1,5 @@
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/crypto_entity.dart';
 import '../../domain/entities/crypto_wallet_entity.dart';
@@ -6,7 +7,11 @@ import '../../domain/entities/global_market_data.dart';
 import '../../domain/entities/price_point.dart';
 import '../../domain/repositories/crypto_repository.dart';
 import '../datasources/crypto_remote_data_source.dart';
+import '../utils/grpc_retry_executor.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
+import 'dart:developer' as developer;
+
+const _uuid = Uuid();
 
 class CryptoRepositoryImpl implements CryptoRepository {
   final CryptoRemoteDataSource remoteDataSource;
@@ -144,6 +149,7 @@ class CryptoRepositoryImpl implements CryptoRepository {
       fiatAmount: quantity * price,
       fiatCurrency: currency,
       transactionPin: transactionPin,
+      idempotencyKey: 'BUY-${_uuid.v4()}',
     );
 
     final crypto = await getCryptoById(cryptoId);
@@ -178,6 +184,7 @@ class CryptoRepositoryImpl implements CryptoRepository {
       quantity: quantity,
       fiatCurrency: currency,
       transactionPin: transactionPin,
+      idempotencyKey: 'SELL-${_uuid.v4()}',
     );
 
     final crypto = await getCryptoById(cryptoId);
@@ -210,6 +217,7 @@ class CryptoRepositoryImpl implements CryptoRepository {
       toCryptoId: toCryptoId,
       amount: amount,
       transactionPin: transactionPin,
+      idempotencyKey: 'SWAP-${_uuid.v4()}',
     );
 
     final fromCrypto = await getCryptoById(fromCryptoId);
@@ -255,9 +263,22 @@ class CryptoRepositoryImpl implements CryptoRepository {
 
   @override
   Future<void> toggleFavorite(String cryptoId) async {
-    // TODO: Implement toggleFavorite when backend gRPC method is available
-    // For now, this is a no-op to prevent compilation errors
-    throw UnimplementedError('Toggle favorite feature not yet implemented');
+    try {
+      final response = await grpcClient.toggleFavorite(cryptoId: cryptoId);
+      // Log the result for debugging
+      developer.log(
+        'toggleFavorite completed: cryptoId=$cryptoId, isFavorite=${response.isFavorite}, message=${response.message}',
+        name: 'toggleFavorite',
+      );
+    } catch (e) {
+      final exception = e is Exception ? e : Exception(e.toString());
+      developer.log(
+        'toggleFavorite failed: cryptoId=$cryptoId, error=$exception',
+        name: 'toggleFavorite',
+        error: exception,
+      );
+      throw Exception(CryptoErrorMessages.translate(exception, operation: 'toggle favorite'));
+    }
   }
 
   @override

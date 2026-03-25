@@ -185,7 +185,7 @@ class _WithdrawFundsCarouselState extends State<WithdrawFundsCarousel> {
                           colors: [Color(0xFFE53E3E), Color(0xFFD53F3F)],
                         )
                       : const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                         ),
                   borderRadius: BorderRadius.circular(2.r),
                 ),

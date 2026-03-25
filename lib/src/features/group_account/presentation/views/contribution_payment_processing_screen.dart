@@ -325,7 +325,7 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6C5CE7), Color(0xFF8B5CF6)],
+                  colors: [Color.fromARGB(255, 78, 3, 208), Color.fromARGB(255, 78, 3, 208)],
                 ),
               ),
               child: Icon(
@@ -428,7 +428,7 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
                   color: isCompleted 
                       ? const Color(0xFF10B981)
                       : isCurrent
-                          ? const Color(0xFF6C5CE7)
+                          ? const Color.fromARGB(255, 78, 3, 208)
                           : Colors.grey[600],
                 ),
                 child: Icon(
@@ -495,7 +495,7 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6C5CE7), Color(0xFF8B5CF6)],
+                    colors: [Color.fromARGB(255, 78, 3, 208), Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(16.r),
                 ),

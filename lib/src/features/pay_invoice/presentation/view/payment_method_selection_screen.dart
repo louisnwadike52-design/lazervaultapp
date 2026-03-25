@@ -56,7 +56,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
       'balance': 2280.25,
       'currency': 'GBP',
       'icon': Icons.business,
-      'color': const Color(0xFF8B5CF6),
+      'color': const Color.fromARGB(255, 78, 3, 208),
     },
   ];
 
@@ -692,7 +692,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
           decoration: BoxDecoration(
             gradient: canPay
                 ? const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                   )
                 : LinearGradient(
                     colors: [

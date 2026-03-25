@@ -49,6 +49,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           child: Column(
             children: [
               _buildHeader(),
+              _buildComingSoonBanner(),
               _buildSecurityStatus(),
               _buildTabBar(),
               Expanded(
@@ -64,6 +65,55 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildComingSoonBanner() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.blue.withValues(alpha: 0.2),
+            const Color(0xFF1F1F1F),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.rocket_launch, color: Colors.blue, size: 28.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Coming Soon',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Self-custody wallet with advanced security features. Feature in development.',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -110,10 +160,10 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(Icons.security, color: const Color(0xFF6C5CE7), size: 20.sp),
+            child: Icon(Icons.security, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
           ),
         ],
       ),
@@ -190,7 +240,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF6C5CE7),
+          color: const Color.fromARGB(255, 78, 3, 208),
           borderRadius: BorderRadius.circular(12.r),
         ),
         labelColor: Colors.white,
@@ -291,7 +341,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                 ),
                 IconButton(
                   onPressed: _copyAddress,
-                  icon: Icon(Icons.copy, color: const Color(0xFF6C5CE7), size: 20.sp),
+                  icon: Icon(Icons.copy, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
                 ),
               ],
             ),
@@ -305,7 +355,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                   icon: Icon(Icons.qr_code, size: 16.sp),
                   label: Text('Show QR', style: GoogleFonts.inter(fontSize: 14.sp)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C5CE7),
+                    backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                 ),
@@ -355,7 +405,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                 onPressed: _editLimits,
                 child: Text(
                   'Edit',
-                  style: GoogleFonts.inter(color: const Color(0xFF6C5CE7)),
+                  style: GoogleFonts.inter(color: const Color.fromARGB(255, 78, 3, 208)),
                 ),
               ),
             ],
@@ -642,7 +692,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           ElevatedButton(
             onPressed: _runSecurityScan,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               minimumSize: Size(double.infinity, 40.h),
             ),
             child: Text(
@@ -821,7 +871,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
             style: GoogleFonts.inter(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF6C5CE7),
+              color: const Color.fromARGB(255, 78, 3, 208),
             ),
           ),
         ],
@@ -909,7 +959,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
         ),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFF6C5CE7), size: 24.sp),
+            Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp),
             SizedBox(width: 16.w),
             Expanded(
               child: Column(
@@ -980,7 +1030,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
               SizedBox(height: 20.h),
               ElevatedButton(
                 onPressed: () => Get.back(),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6C5CE7)),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 78, 3, 208)),
                 child: Text('Close', style: GoogleFonts.inter()),
               ),
             ],
@@ -994,7 +1044,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Sharing...',
       'Opening share options',
-      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+      backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1003,7 +1053,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Edit Limits',
       'Transaction limits configuration',
-      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+      backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1021,7 +1071,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Security Scan',
       'Running comprehensive security check...',
-      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+      backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1069,7 +1119,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       option,
       'Setting up $option...',
-      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+      backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }

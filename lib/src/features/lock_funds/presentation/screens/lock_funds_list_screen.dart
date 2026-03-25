@@ -8,6 +8,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
@@ -59,21 +60,24 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Load data when screen is first displayed or when navigating back
+    // Load data when screen is first displayed
     if (!_hasLoadedData) {
       _hasLoadedData = true;
-      // Use WidgetsBinding to ensure this runs after the first frame
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          final cubit = context.read<LockFundsCubit>();
-          final authState = context.read<AuthenticationCubit>().state;
-          if (authState is AuthenticationSuccess) {
-            cubit.setUserId(authState.profile.user.id);
-          } else if (cubit.currentUserId != null) {
-            cubit.loadLockFunds();
-          }
+          _loadData();
         }
       });
+    }
+  }
+
+  void _loadData() {
+    final cubit = context.read<LockFundsCubit>();
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      cubit.setUserId(authState.profile.user.id);
+    } else if (cubit.currentUserId != null) {
+      cubit.loadLockFunds();
     }
   }
 
@@ -232,7 +236,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Lock Funds',
+                  'PiggyVault',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -257,7 +261,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           ),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
-            serviceName: 'Lock Funds',
+            serviceName: 'PiggyVault',
             sourceContext: 'financial_products',
           ),
         ],
@@ -338,7 +342,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     'Total Value',
                     '$currencySymbol${(totalLocked + totalInterest).toStringAsFixed(2)}',
                     Icons.savings_outlined,
-                    const Color(0xFF8B5CF6),
+                    const Color.fromARGB(255, 78, 3, 208),
                   ),
                 ),
               ],
@@ -761,7 +765,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               gradient: LinearGradient(
                 colors: [
                   const Color(0xFF6366F1).withValues(alpha: 0.3),
-                  const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                 ],
               ),
               borderRadius: BorderRadius.circular(40.r),
@@ -774,7 +778,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           ),
           SizedBox(height: 24.h),
           Text(
-            'No Lock Funds Yet',
+            'No PiggyVault Locks Yet',
             style: GoogleFonts.inter(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
@@ -823,7 +827,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     gradient: LinearGradient(
                       colors: [
                         const Color(0xFF6366F1).withValues(alpha: 0.3),
-                        const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(40.r),
@@ -836,7 +840,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 ),
                 SizedBox(height: 24.h),
                 Text(
-                  'Welcome to Lock Funds',
+                  'Welcome to PiggyVault',
                   style: GoogleFonts.inter(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w600,
@@ -896,7 +900,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  'Loading lock funds...',
+                  'Loading your vaults...',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 16.sp,
@@ -971,7 +975,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(30.r),
         boxShadow: [
@@ -1009,6 +1013,15 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
     final authCubit = context.read<AuthenticationCubit>();
     final accountCardsCubit = context.read<AccountCardsSummaryCubit>();
 
+    // Ensure accounts are loaded for the payment method screen
+    final userId = authCubit.userId ?? '';
+    if (userId.isNotEmpty) {
+      final accountState = accountCardsCubit.state;
+      if (accountState is! AccountCardsSummaryLoaded) {
+        accountCardsCubit.fetchAccountSummaries(userId: userId);
+      }
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -1024,7 +1037,9 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       ),
     ).then((_) {
       // Refresh lock funds list after carousel closes
-      lockFundsCubit.loadLockFunds();
+      if (mounted) {
+        lockFundsCubit.loadLockFunds();
+      }
     });
   }
 }

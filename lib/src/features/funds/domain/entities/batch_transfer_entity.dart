@@ -51,6 +51,7 @@ class BatchTransferResult extends Equatable {
   final String? destinationBankName;
   final String? transferType;
   final String? beneficiaryName;
+  final String? recipientUserId;
 
   const BatchTransferResult({
     required this.transferId,
@@ -65,6 +66,7 @@ class BatchTransferResult extends Equatable {
     this.destinationBankName,
     this.transferType,
     this.beneficiaryName,
+    this.recipientUserId,
   });
 
   bool get isExternal => transferType == 'external';
@@ -83,6 +85,7 @@ class BatchTransferResult extends Equatable {
         destinationBankName,
         transferType,
         beneficiaryName,
+        recipientUserId,
       ];
 }
 

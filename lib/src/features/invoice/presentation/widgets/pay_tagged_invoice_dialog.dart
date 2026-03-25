@@ -250,7 +250,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
                 return Column(
                   children: state.accountSummaries.map((account) {
                     final hasSufficientBalance =
-                        account.balance >= _totalAmount;
+                        account.availableBalance >= _totalAmount;
                     final isSelected = _selectedAccountId == account.id;
 
                     return GestureDetector(
@@ -306,7 +306,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
                                   ),
                                   SizedBox(height: 4.h),
                                   Text(
-                                    'Balance: ${account.currency} ${account.balance.toStringAsFixed(2)}',
+                                    'Balance: ${account.currency} ${account.availableBalance.toStringAsFixed(2)}',
                                     style: GoogleFonts.inter(
                                       color: hasSufficientBalance
                                           ? const Color(0xFF10B981)

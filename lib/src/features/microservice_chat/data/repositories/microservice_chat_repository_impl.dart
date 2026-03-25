@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/core/utils/pin_mask_utils.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../datasources/http_microservice_chat_datasource.dart';
 import '../datasources/http_direct_chat_datasource.dart';
 import '../datasources/grpc_direct_chat_datasource.dart';
@@ -17,7 +18,7 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
   });
 
   @override
-  Future<Either<Failure, String>> processMessage({
+  Future<Either<Failure, ChatResponseEntity>> processMessage({
     required String message,
     required String sessionId,
     required String userId,
@@ -45,7 +46,16 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
 
       final response = await dataSource.processChat(request);
 
-      return Right(response.response);
+      // Build entities map with receipt_data if present (transient, not round-tripped)
+      final entities = <String, dynamic>{};
+      if (response.receiptData != null) {
+        entities['_receipt_data'] = response.receiptData;
+      }
+
+      return Right(ChatResponseEntity(
+        response: response.response,
+        entities: entities,
+      ));
     } catch (e) {
       return Left(ServerFailure(
         message: e.toString(),
@@ -124,13 +134,32 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
       );
 
       final messages = response.history.map((msg) {
+        // Extract receipt_data from metadata (new location) or entities (legacy)
+        // Scrub sensitive keys as defense-in-depth (should already be removed server-side)
+        Map<String, dynamic>? metadata;
+        final entities = msg.entities;
+        entities?.remove('transaction_pin');
+
+        // New: receipt_data is stored in metadata field
+        final receiptDataFromMetadata = msg.metadata?['receipt_data'];
+        // Legacy: also check entities._receipt_data for backward compatibility
+        final receiptDataFromEntities = entities?['_receipt_data'];
+
+        if (receiptDataFromMetadata is Map<String, dynamic>) {
+          metadata = {'receipt_data': receiptDataFromMetadata};
+        } else if (receiptDataFromEntities is Map<String, dynamic>) {
+          metadata = {'receipt_data': receiptDataFromEntities};
+        }
+
+        final isUser = msg.role == 'user';
         return MicroserviceChatMessageEntity(
-          text: msg.content,
-          isUser: msg.role == 'user',
+          text: isUser ? maskIfPin(msg.content) : msg.content,
+          isUser: isUser,
           timestamp: DateTime.tryParse(msg.timestamp) ?? DateTime.now(),
           serviceRoutedTo: msg.service.isNotEmpty ? msg.service : null,
           mediaType: msg.mediaMetadata?['type'] as String?,
           mediaUrl: msg.mediaMetadata?['url'] as String?,
+          metadata: metadata,
         );
       }).toList();
 
@@ -166,11 +195,30 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
       );
 
       final messages = response.history.map((msg) {
+        // Extract receipt_data from metadata (new location) or entities (legacy)
+        // Scrub sensitive keys as defense-in-depth
+        Map<String, dynamic>? metadata;
+        final entities = msg.entities;
+        entities?.remove('transaction_pin');
+
+        // New: receipt_data is stored in metadata field
+        final receiptDataFromMetadata = msg.metadata?['receipt_data'];
+        // Legacy: also check entities._receipt_data for backward compatibility
+        final receiptDataFromEntities = entities?['_receipt_data'];
+
+        if (receiptDataFromMetadata is Map<String, dynamic>) {
+          metadata = {'receipt_data': receiptDataFromMetadata};
+        } else if (receiptDataFromEntities is Map<String, dynamic>) {
+          metadata = {'receipt_data': receiptDataFromEntities};
+        }
+
+        final isUser = msg.role == 'user';
         return MicroserviceChatMessageEntity(
-          text: msg.content,
-          isUser: msg.role == 'user',
+          text: isUser ? maskIfPin(msg.content) : msg.content,
+          isUser: isUser,
           timestamp: DateTime.tryParse(msg.timestamp) ?? DateTime.now(),
           serviceRoutedTo: msg.service.isNotEmpty ? msg.service : null,
+          metadata: metadata,
         );
       }).toList();
 

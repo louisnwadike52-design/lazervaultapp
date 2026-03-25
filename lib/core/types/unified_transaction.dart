@@ -8,7 +8,7 @@ enum TransactionServiceType {
   electricity('Electricity', Icons.bolt, Color(0xFF00B04F)),
   water('Water Bill', Icons.water_drop, Color(0xFF3B82F6)),
   tvSubscription('TV Subscription', Icons.tv, Color(0xFFEF4444)),
-  transfer('Transfer', Icons.swap_horiz, Color(0xFF8B5CF6)),
+  transfer('Transfer', Icons.swap_horiz, Color.fromARGB(255, 78, 3, 208)),
   crypto('Crypto', Icons.currency_bitcoin, Color(0xFFF59E0B)),
   stocks('Stocks', Icons.trending_up, Color(0xFF10B981)),
   insurance('Insurance', Icons.security, Color(0xFF3B82F6)),
@@ -46,7 +46,7 @@ enum UnifiedTransactionStatus {
   completed('Completed', Color(0xFF10B981)),
   failed('Failed', Color(0xFFEF4444)),
   cancelled('Cancelled', Color(0xFF6B7280)),
-  refunded('Refunded', Color(0xFF8B5CF6)),
+  refunded('Refunded', Color.fromARGB(255, 78, 3, 208)),
   expired('Expired', Color(0xFF9CA3AF));
 
   final String displayName;

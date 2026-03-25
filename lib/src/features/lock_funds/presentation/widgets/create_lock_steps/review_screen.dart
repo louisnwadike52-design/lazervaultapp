@@ -80,7 +80,7 @@ class ReviewScreen extends StatelessWidget {
                           padding: EdgeInsets.all(12.w),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                              colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -205,7 +205,7 @@ class ReviewScreen extends StatelessWidget {
                           SizedBox(height: 12.h),
                           _buildCalculationRow(
                             'Interest Rate',
-                            '${calc.interestRate.toStringAsFixed(2)}% APY',
+                            '${(calc.interestRate * 100).toStringAsFixed(1)}% p.a.',
                           ),
                           SizedBox(height: 12.h),
                           _buildCalculationRow(
@@ -309,6 +309,63 @@ class ReviewScreen extends StatelessWidget {
               ),
               SizedBox(height: 20.h),
 
+              // Upfront Interest Notice (for 180+ day locks)
+              if (cubit.qualifiesForUpfrontInterest)
+                Container(
+                  margin: EdgeInsets.only(bottom: 20.h),
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF6366F1).withValues(alpha: 0.15),
+                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.bolt_rounded,
+                            color: const Color(0xFF6366F1),
+                            size: 20.sp,
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              'Upfront Interest',
+                              style: GoogleFonts.inter(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF6366F1),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Your interest will be calculated and credited to your savings account immediately when you lock your funds.',
+                        style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF9CA3AF),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Important Notes
               Container(
                 padding: EdgeInsets.all(16.w),
@@ -340,7 +397,11 @@ class ReviewScreen extends StatelessWidget {
                     SizedBox(height: 12.h),
                     _buildNoteItem('Funds will be locked until the maturity date'),
                     _buildNoteItem('Early withdrawal may incur penalties'),
-                    _buildNoteItem('Interest is calculated daily and compounded'),
+                    _buildNoteItem('Interest rates are set by the platform and may vary by duration'),
+                    if (cubit.qualifiesForUpfrontInterest)
+                      _buildNoteItem('Interest is paid upfront to your account'),
+                    if ((durationDays ?? 0) < 180)
+                      _buildNoteItem('Lock for 6+ months to receive interest upfront'),
                     if (autoRenew)
                       _buildNoteItem('Lock will automatically renew at maturity'),
                   ],

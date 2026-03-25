@@ -6,6 +6,7 @@ import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/entities/provider_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
+import '../../../../../core/utils/user_friendly_error.dart';
 import 'electricity_bill_state.dart';
 
 class ElectricityBillCubit extends Cubit<ElectricityBillState> {
@@ -54,7 +55,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
           isStale: result.isStale,
         ));
       } else if (result.hasError) {
-        emit(ElectricityBillError(message: result.error.toString()));
+        emit(ElectricityBillError(message: getUserFriendlyErrorMessage(result.error)));
       }
     }
   }

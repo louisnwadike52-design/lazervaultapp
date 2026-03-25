@@ -45,7 +45,7 @@ extension AppServiceNameExtension on AppServiceName {
       case AppServiceName.payInvoice:
         return 'Invoices';
       case AppServiceName.payBills:
-        return 'Pay Bills';
+        return 'Bills Hub';
       case AppServiceName.invest:
         return 'Invest';
       case AppServiceName.stocks:

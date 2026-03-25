@@ -1,6 +1,23 @@
 import '../../domain/entities/gift_card_entity.dart';
 import '../../../../generated/giftcards.pb.dart' as pb;
 
+/// Result wrapper for paginated gift card brands from the data source
+class GiftCardBrandsResult {
+  final List<GiftCardBrandModel> brands;
+  final int total;
+  final int totalPages;
+  final int currentPage;
+  final bool hasNext;
+
+  const GiftCardBrandsResult({
+    required this.brands,
+    required this.total,
+    required this.totalPages,
+    required this.currentPage,
+    required this.hasNext,
+  });
+}
+
 class GiftCardModel extends GiftCard {
   const GiftCardModel({
     required super.id,
@@ -9,10 +26,7 @@ class GiftCardModel extends GiftCard {
     required super.brandId,
     required super.brandName,
     super.logoUrl,
-    super.cardNumber,
-    super.pin,
     required super.originalAmount,
-    required super.currentBalance,
     required super.currency,
     required super.status,
     required super.purchaseDate,
@@ -20,13 +34,15 @@ class GiftCardModel extends GiftCard {
     super.recipientEmail,
     super.recipientName,
     super.message,
-    super.qrCode,
     super.providerTransactionId,
     super.redemptionCode,
     super.redemptionPin,
+    super.redemptionInstructions,
     super.countryCode,
     super.providerProductId,
     super.discountPercentage,
+    super.senderAmount,
+    super.senderCurrency,
     super.createdAt,
     super.updatedAt,
   });
@@ -39,10 +55,7 @@ class GiftCardModel extends GiftCard {
       brandId: proto.brandId,
       brandName: proto.brandName,
       logoUrl: proto.logoUrl,
-      cardNumber: proto.cardNumber,
-      pin: proto.pin.isEmpty ? null : proto.pin,
       originalAmount: proto.originalAmount,
-      currentBalance: proto.currentBalance,
       currency: proto.currency,
       status: proto.status,
       purchaseDate: proto.purchaseDate,
@@ -50,13 +63,15 @@ class GiftCardModel extends GiftCard {
       recipientEmail: proto.recipientEmail.isEmpty ? null : proto.recipientEmail,
       recipientName: proto.recipientName.isEmpty ? null : proto.recipientName,
       message: proto.message.isEmpty ? null : proto.message,
-      qrCode: proto.qrCode.isEmpty ? null : proto.qrCode,
       providerTransactionId: proto.providerTransactionId.isEmpty ? null : proto.providerTransactionId,
       redemptionCode: proto.redemptionCode.isEmpty ? null : proto.redemptionCode,
       redemptionPin: proto.redemptionPin.isEmpty ? null : proto.redemptionPin,
+      redemptionInstructions: proto.redemptionInstructions.isEmpty ? null : proto.redemptionInstructions,
       countryCode: proto.countryCode.isEmpty ? null : proto.countryCode,
       providerProductId: proto.providerProductId.toInt(),
       discountPercentage: proto.discountPercentage,
+      senderAmount: proto.senderAmount,
+      senderCurrency: proto.senderCurrency,
       createdAt: proto.createdAt,
       updatedAt: proto.updatedAt,
     );
@@ -70,24 +85,23 @@ class GiftCardModel extends GiftCard {
       brandId: json['brandId'] as String? ?? '',
       brandName: json['brandName'] as String? ?? '',
       logoUrl: json['logoUrl'] as String? ?? '',
-      cardNumber: json['cardNumber'] as String? ?? '',
-      pin: json['pin'] as String?,
       originalAmount: (json['originalAmount'] as num?)?.toDouble() ?? 0.0,
-      currentBalance: (json['currentBalance'] as num?)?.toDouble() ?? 0.0,
       currency: json['currency'] as String? ?? '',
-      status: json['status'] as String? ?? 'active',
+      status: json['status'] as String? ?? 'available',
       purchaseDate: json['purchaseDate'] as String? ?? '',
       expiryDate: json['expiryDate'] as String? ?? '',
       recipientEmail: json['recipientEmail'] as String?,
       recipientName: json['recipientName'] as String?,
       message: json['message'] as String?,
-      qrCode: json['qrCode'] as String?,
       providerTransactionId: json['providerTransactionId'] as String?,
       redemptionCode: json['redemptionCode'] as String?,
       redemptionPin: json['redemptionPin'] as String?,
+      redemptionInstructions: json['redemptionInstructions'] as String?,
       countryCode: json['countryCode'] as String?,
       providerProductId: json['providerProductId'] as int? ?? 0,
       discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
+      senderAmount: (json['senderAmount'] as num?)?.toDouble() ?? 0.0,
+      senderCurrency: json['senderCurrency'] as String? ?? '',
       createdAt: json['createdAt'] as String? ?? '',
       updatedAt: json['updatedAt'] as String? ?? '',
     );
@@ -113,6 +127,13 @@ class GiftCardBrandModel extends GiftCardBrand {
     super.currencyCode,
     super.redemptionInstructions,
     super.providerName,
+    super.senderCurrencyCode,
+    super.senderDenominations,
+    super.fixedSenderDenominations,
+    super.minSenderAmount,
+    super.maxSenderAmount,
+    super.senderFee,
+    super.senderFeePercentage,
   });
 
   factory GiftCardBrandModel.fromProto(pb.GiftCardBrand proto) {
@@ -139,6 +160,19 @@ class GiftCardBrandModel extends GiftCardBrand {
       currencyCode: proto.currencyCode,
       redemptionInstructions: proto.redemptionInstructions,
       providerName: proto.providerName,
+      // Sender (payment) currency fields
+      senderCurrencyCode: proto.senderCurrencyCode,
+      senderDenominations: proto.senderDenominations.toList(),
+      fixedSenderDenominations: proto.fixedSenderDenominations
+          .map((d) => GiftCardDenomination(
+                price: d.price,
+                currencyCode: d.currencyCode,
+              ))
+          .toList(),
+      minSenderAmount: proto.minSenderAmount,
+      maxSenderAmount: proto.maxSenderAmount,
+      senderFee: proto.senderFee,
+      senderFeePercentage: proto.senderFeePercentage,
     );
   }
 
@@ -165,24 +199,17 @@ class GiftCardBrandModel extends GiftCardBrand {
       currencyCode: json['currencyCode'] as String? ?? '',
       redemptionInstructions: json['redemptionInstructions'] as String? ?? '',
       providerName: json['providerName'] as String? ?? '',
-    );
-  }
-}
-
-class GiftCardBalanceModel extends GiftCardBalance {
-  const GiftCardBalanceModel({
-    required super.balance,
-    required super.brandName,
-    required super.expiryDate,
-    required super.status,
-  });
-
-  factory GiftCardBalanceModel.fromProto(pb.GetGiftCardBalanceResponse response) {
-    return GiftCardBalanceModel(
-      balance: response.balance,
-      brandName: response.brandName,
-      expiryDate: response.expiryDate,
-      status: response.status,
+      senderCurrencyCode: json['senderCurrencyCode'] as String? ?? '',
+      senderDenominations: (json['senderDenominations'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList() ?? [],
+      fixedSenderDenominations: (json['fixedSenderDenominations'] as List<dynamic>?)
+          ?.map((e) => GiftCardDenomination.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      minSenderAmount: (json['minSenderAmount'] as num?)?.toDouble() ?? 0.0,
+      maxSenderAmount: (json['maxSenderAmount'] as num?)?.toDouble() ?? 0.0,
+      senderFee: (json['senderFee'] as num?)?.toDouble() ?? 0.0,
+      senderFeePercentage: (json['senderFeePercentage'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }

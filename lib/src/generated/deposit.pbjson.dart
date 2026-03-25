@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: deposit.proto
-//
-// @dart = 2.12
+// Generated from deposit.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -35,7 +36,13 @@ final $typed_data.Uint8List depositStatusDescriptor = $convert.base64Decode(
 const InitiateDepositRequest$json = {
   '1': 'InitiateDepositRequest',
   '2': [
-    {'1': 'target_account_id', '3': 1, '4': 1, '5': 9, '10': 'target_account_id'},
+    {
+      '1': 'target_account_id',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '10': 'target_account_id'
+    },
     {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'source_bank_name', '3': 4, '4': 1, '5': 9, '10': 'source_bank_name'},
@@ -59,9 +66,22 @@ const InitiateDepositResponse$json = {
   '1': 'InitiateDepositResponse',
   '2': [
     {'1': 'deposit_id', '3': 1, '4': 1, '5': 9, '10': 'deposit_id'},
-    {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.pb.DepositStatus', '10': 'status'},
+    {
+      '1': 'status',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.DepositStatus',
+      '10': 'status'
+    },
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'requires_authorization', '3': 4, '4': 1, '5': 8, '10': 'requires_authorization'},
+    {
+      '1': 'requires_authorization',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '10': 'requires_authorization'
+    },
     {'1': 'payment_url', '3': 5, '4': 1, '5': 9, '10': 'payment_url'},
     {'1': 'provider', '3': 6, '4': 1, '5': 9, '10': 'provider'},
     {'1': 'country_code', '3': 7, '4': 1, '5': 9, '10': 'country_code'},
@@ -86,27 +106,82 @@ const GetDepositDetailsRequest$json = {
 };
 
 /// Descriptor for `GetDepositDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDepositDetailsRequestDescriptor = $convert.base64Decode(
-    'ChhHZXREZXBvc2l0RGV0YWlsc1JlcXVlc3QSHgoKZGVwb3NpdF9pZBgBIAEoCVIKZGVwb3NpdF'
-    '9pZA==');
+final $typed_data.Uint8List getDepositDetailsRequestDescriptor =
+    $convert.base64Decode(
+        'ChhHZXREZXBvc2l0RGV0YWlsc1JlcXVlc3QSHgoKZGVwb3NpdF9pZBgBIAEoCVIKZGVwb3NpdF'
+        '9pZA==');
 
 @$core.Deprecated('Use getDepositDetailsResponseDescriptor instead')
 const GetDepositDetailsResponse$json = {
   '1': 'GetDepositDetailsResponse',
   '2': [
     {'1': 'deposit_id', '3': 1, '4': 1, '5': 9, '10': 'deposit_id'},
-    {'1': 'target_account_id', '3': 2, '4': 1, '5': 9, '10': 'target_account_id'},
+    {
+      '1': 'target_account_id',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '10': 'target_account_id'
+    },
     {'1': 'amount', '3': 3, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'source_bank_name', '3': 5, '4': 1, '5': 9, '10': 'source_bank_name'},
-    {'1': 'status', '3': 6, '4': 1, '5': 14, '6': '.pb.DepositStatus', '10': 'status'},
-    {'1': 'created_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'created_at'},
-    {'1': 'processing_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'processing_at'},
-    {'1': 'completed_at', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completed_at'},
-    {'1': 'failed_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'failed_at'},
+    {
+      '1': 'status',
+      '3': 6,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.DepositStatus',
+      '10': 'status'
+    },
+    {
+      '1': 'created_at',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'created_at'
+    },
+    {
+      '1': 'processing_at',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'processing_at'
+    },
+    {
+      '1': 'completed_at',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'completed_at'
+    },
+    {
+      '1': 'failed_at',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'failed_at'
+    },
     {'1': 'failure_reason', '3': 11, '4': 1, '5': 9, '10': 'failure_reason'},
-    {'1': 'external_transaction_id', '3': 12, '4': 1, '5': 9, '10': 'external_transaction_id'},
-    {'1': 'updated_account', '3': 13, '4': 1, '5': 11, '6': '.pb.AccountDetails', '10': 'updated_account'},
+    {
+      '1': 'external_transaction_id',
+      '3': 12,
+      '4': 1,
+      '5': 9,
+      '10': 'external_transaction_id'
+    },
+    {
+      '1': 'updated_account',
+      '3': 13,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AccountDetails',
+      '10': 'updated_account'
+    },
   ],
 };
 
@@ -129,7 +204,13 @@ final $typed_data.Uint8List getDepositDetailsResponseDescriptor = $convert.base6
 const SimulateTestDepositRequest$json = {
   '1': 'SimulateTestDepositRequest',
   '2': [
-    {'1': 'destination_account_id', '3': 1, '4': 1, '5': 9, '10': 'destination_account_id'},
+    {
+      '1': 'destination_account_id',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '10': 'destination_account_id'
+    },
     {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'country_code', '3': 4, '4': 1, '5': 9, '10': 'country_code'},
@@ -153,15 +234,23 @@ const GetDepositMethodsRequest$json = {
 };
 
 /// Descriptor for `GetDepositMethodsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDepositMethodsRequestDescriptor = $convert.base64Decode(
-    'ChhHZXREZXBvc2l0TWV0aG9kc1JlcXVlc3QSIgoMY291bnRyeV9jb2RlGAEgASgJUgxjb3VudH'
-    'J5X2NvZGUSGgoIY3VycmVuY3kYAiABKAlSCGN1cnJlbmN5');
+final $typed_data.Uint8List getDepositMethodsRequestDescriptor =
+    $convert.base64Decode(
+        'ChhHZXREZXBvc2l0TWV0aG9kc1JlcXVlc3QSIgoMY291bnRyeV9jb2RlGAEgASgJUgxjb3VudH'
+        'J5X2NvZGUSGgoIY3VycmVuY3kYAiABKAlSCGN1cnJlbmN5');
 
 @$core.Deprecated('Use getDepositMethodsResponseDescriptor instead')
 const GetDepositMethodsResponse$json = {
   '1': 'GetDepositMethodsResponse',
   '2': [
-    {'1': 'methods', '3': 1, '4': 3, '5': 11, '6': '.pb.DepositMethod', '10': 'methods'},
+    {
+      '1': 'methods',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.DepositMethod',
+      '10': 'methods'
+    },
     {'1': 'country_code', '3': 2, '4': 1, '5': 9, '10': 'country_code'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'provider', '3': 4, '4': 1, '5': 9, '10': 'provider'},
@@ -194,4 +283,3 @@ final $typed_data.Uint8List depositMethodDescriptor = $convert.base64Decode(
     'Rlc2NyaXB0aW9uGAMgASgJUgtkZXNjcmlwdGlvbhISCgRpY29uGAQgASgJUgRpY29uEigKD2Zl'
     'ZV9kZXNjcmlwdGlvbhgFIAEoCVIPZmVlX2Rlc2NyaXB0aW9uEigKD3Byb2Nlc3NpbmdfdGltZR'
     'gGIAEoCVIPcHJvY2Vzc2luZ190aW1lEhwKCWF2YWlsYWJsZRgHIAEoCFIJYXZhaWxhYmxl');
-

@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../domain/entities/data_plan_entity.dart';
 import '../../domain/entities/data_purchase_entity.dart';
+import '../cubit/auto_renew_cubit.dart';
+import '../cubit/auto_renew_state.dart';
 import '../../services/data_bundles_pdf_service.dart';
 
 class DataPaymentReceiptScreen extends StatefulWidget {
@@ -20,6 +25,48 @@ class DataPaymentReceiptScreen extends StatefulWidget {
 class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
   bool _isDownloading = false;
   bool _isSharing = false;
+  late final AutoRenewCubit _autoRenewCubit;
+  bool _autoRenewTriggered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoRenewCubit = GetIt.I<AutoRenewCubit>();
+
+    // If auto-renew was enabled at purchase time, trigger it after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final args = Get.arguments as Map<String, dynamic>?;
+      if (args == null) return;
+
+      final autoRenewEnabled = args['autoRenewEnabled'] as bool? ?? false;
+      final purchase = args['purchase'] as DataPurchaseEntity?;
+      if (purchase == null) return;
+
+      if (autoRenewEnabled && purchase.isCompleted && !_autoRenewTriggered) {
+        _autoRenewTriggered = true;
+        final plan = args['plan'] as DataPlanEntity?;
+        final network = args['network'] as String? ?? '';
+
+        if (plan != null && purchase.id.isNotEmpty) {
+          _autoRenewCubit.enableAutoRenew(
+            subscriptionId: purchase.id,
+            variationId: plan.variationId,
+            network: network,
+            amount: plan.price,
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    if (!_autoRenewCubit.isClosed) {
+      _autoRenewCubit.close();
+    }
+    super.dispose();
+  }
 
   String _formatAmount(double amount) {
     final format = NumberFormat('#,##0.00', 'en_NG');
@@ -149,6 +196,45 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+                    // Non-Expiring Data badge
+                    if ((args['autoRenewEnabled'] as bool? ?? false) &&
+                        purchase.isCompleted) ...[
+                      SizedBox(height: 12.h),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 10.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981)
+                              .withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
+                            color: const Color(0xFF10B981)
+                                .withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.autorenew,
+                              color: const Color(0xFF10B981),
+                              size: 18.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Non-Expiring Data Enabled',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF10B981),
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     SizedBox(height: 20.h),
 
                     // Pending banner

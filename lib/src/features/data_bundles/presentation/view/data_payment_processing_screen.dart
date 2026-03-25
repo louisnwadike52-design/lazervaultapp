@@ -82,12 +82,16 @@ class _DataPaymentProcessingScreenState
           child: BlocListener<DataBundlesCubit, DataBundlesState>(
             listener: (context, state) {
               if (state is DataBundlesPaymentSuccess) {
+                final autoRenew = args?['autoRenewEnabled'] as bool? ?? false;
                 Get.offNamed(
                   AppRoutes.dataBundlesPaymentReceipt,
                   arguments: {
                     'purchase': state.purchase,
                     'networkName': networkName,
                     'planName': planName,
+                    'autoRenewEnabled': autoRenew,
+                    'network': args?['network'] ?? '',
+                    'plan': args?['plan'],
                   },
                 );
               } else if (state is DataBundlesPaymentFailed) {

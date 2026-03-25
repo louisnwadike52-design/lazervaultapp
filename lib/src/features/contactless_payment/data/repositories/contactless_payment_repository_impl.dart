@@ -78,27 +78,24 @@ class ContactlessPaymentRepositoryImpl implements ContactlessPaymentRepository {
     required String transactionId,
     required String verificationToken,
   }) async {
-    return retryWithBackoff(
-      operation: () async {
-        final request = pb.ProcessContactlessPaymentRequest()
-          ..sessionId = sessionId
-          ..sourceAccountId = sourceAccountId
-          ..transactionId = transactionId
-          ..verificationToken = verificationToken;
+    // No retry for financial operations — must be atomic
+    final request = pb.ProcessContactlessPaymentRequest()
+      ..sessionId = sessionId
+      ..sourceAccountId = sourceAccountId
+      ..transactionId = transactionId
+      ..verificationToken = verificationToken;
 
-        final options = await grpcClient.callOptions;
-        final response =
-            await grpcClient.contactlessPaymentClient.processContactlessPayment(
-          request,
-          options: options,
-        );
+    final options = await grpcClient.callOptions;
+    final response =
+        await grpcClient.contactlessPaymentClient.processContactlessPayment(
+      request,
+      options: options,
+    );
 
-        return (
-          transaction: _contactlessTransactionFromProto(response.transaction),
-          newBalance: response.newBalance,
-          message: response.message,
-        );
-      },
+    return (
+      transaction: _contactlessTransactionFromProto(response.transaction),
+      newBalance: response.newBalance,
+      message: response.message,
     );
   }
 

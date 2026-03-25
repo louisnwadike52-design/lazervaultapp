@@ -47,28 +47,34 @@ class QuickActionsService {
 
     // Register dynamic shortcuts (supplements native static shortcuts).
     // These appear even if the user hasn't configured static shortcuts correctly.
-    _quickActions.setShortcutItems([
-      const ShortcutItem(
-        type: QuickActionTypes.sendMoney,
-        localizedTitle: 'Send Money',
-        icon: 'ic_send_money',
-      ),
-      const ShortcutItem(
-        type: QuickActionTypes.scanToPay,
-        localizedTitle: 'Scan to Pay',
-        icon: 'ic_scan_pay',
-      ),
-      const ShortcutItem(
-        type: QuickActionTypes.checkBalance,
-        localizedTitle: 'Check Balance',
-        icon: 'ic_check_balance',
-      ),
-      const ShortcutItem(
-        type: QuickActionTypes.payBills,
-        localizedTitle: 'Pay Bills',
-        icon: 'ic_pay_bills',
-      ),
-    ]);
+    try {
+      _quickActions.setShortcutItems([
+        const ShortcutItem(
+          type: QuickActionTypes.sendMoney,
+          localizedTitle: 'Send Money',
+          icon: 'ic_send_money',
+        ),
+        const ShortcutItem(
+          type: QuickActionTypes.scanToPay,
+          localizedTitle: 'Scan to Pay',
+          icon: 'ic_scan_pay',
+        ),
+        const ShortcutItem(
+          type: QuickActionTypes.checkBalance,
+          localizedTitle: 'Check Balance',
+          icon: 'ic_check_balance',
+        ),
+        const ShortcutItem(
+          type: QuickActionTypes.payBills,
+          localizedTitle: 'Bills Hub',
+          icon: 'ic_pay_bills',
+        ),
+      ]);
+    } catch (e) {
+      // Dynamic shortcuts may fail on some Android versions/emulators.
+      // Log but don't fail initialization - shortcuts are optional feature.
+      debugPrint('[QuickActions] Failed to set dynamic shortcuts: $e');
+    }
   }
 
   /// If a shortcut was tapped while the app was cold-starting, process it now.

@@ -431,6 +431,15 @@ message DeleteWatchlistResponse {
   bool success = 1;
 }
 
+message ToggleFavoriteRequest {
+  string crypto_id = 1;  // e.g., "bitcoin", "ethereum"
+}
+
+message ToggleFavoriteResponse {
+  bool is_favorite = 1;  // true if added to favorites, false if removed
+  string message = 2;     // Optional message
+}
+
 // ============================================================================
 // PAGINATION INFO
 // ============================================================================
@@ -615,6 +624,14 @@ service CryptoService {
   rpc DeleteWatchlist(DeleteWatchlistRequest) returns (DeleteWatchlistResponse) {
     option (google.api.http) = {
       delete: "/v1/crypto/watchlists/{watchlist_id}"
+    };
+  }
+
+  // Toggle favorite - adds or removes a crypto from user's default favorites watchlist
+  rpc ToggleFavorite(ToggleFavoriteRequest) returns (ToggleFavoriteResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/favorites/toggle"
+      body: "*"
     };
   }
 }

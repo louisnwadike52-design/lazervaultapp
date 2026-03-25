@@ -503,7 +503,7 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
               Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -762,7 +762,7 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
@@ -902,63 +902,69 @@ class _CreateClaimScreenState extends State<CreateClaimScreen> with TickerProvid
   }
 
   Future<void> _submitClaim() async {
-    if (_formKey.currentState!.validate()) {
-      final claim = InsuranceClaim(
-        id: '',
-        claimNumber: '',
-        insuranceId: widget.insuranceId,
-        policyNumber: '',
-        type: _selectedType,
-        status: ClaimStatus.submitted,
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim(),
-        claimAmount: double.parse(_claimAmountController.text),
-        currency: 'USD',
-        incidentDate: _incidentDate,
-        incidentLocation: _incidentLocationController.text.trim(),
-        attachments: List.from(_attachments),
-        documents: List.from(_documents),
-        additionalInfo: {},
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        userId: context.read<InsuranceCubit>().currentUserId,
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final claimAmount = double.tryParse(_claimAmountController.text.trim());
+    if (claimAmount == null || claimAmount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter a valid claim amount',
+            style: GoogleFonts.inter(color: Colors.white)),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        ),
+      );
+      return;
+    }
+
+    final claim = InsuranceClaim(
+      id: '',
+      claimNumber: '',
+      insuranceId: widget.insuranceId,
+      policyNumber: '',
+      type: _selectedType,
+      status: ClaimStatus.submitted,
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      claimAmount: claimAmount,
+      currency: 'NGN',
+      incidentDate: _incidentDate,
+      incidentLocation: _incidentLocationController.text.trim(),
+      attachments: List.from(_attachments),
+      documents: List.from(_documents),
+      additionalInfo: {},
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      userId: context.read<InsuranceCubit>().currentUserId,
+    );
+
+    try {
+      await context.read<InsuranceCubit>().submitClaim(claim);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Claim submitted successfully!',
+            style: GoogleFonts.inter(color: Colors.white)),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        ),
       );
 
-      try {
-        await context.read<InsuranceCubit>().submitClaim(claim);
-
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Claim submitted successfully!',
-              style: GoogleFonts.inter(color: Colors.white),
-            ),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-          ),
-        );
-
-        Get.back();
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to submit claim: $e',
-              style: GoogleFonts.inter(color: Colors.white),
-            ),
-            backgroundColor: const Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-          ),
-        );
-      }
+      Get.back();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit claim. Please try again.',
+            style: GoogleFonts.inter(color: Colors.white)),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        ),
+      );
     }
   }
 } 

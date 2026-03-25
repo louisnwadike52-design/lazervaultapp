@@ -46,6 +46,46 @@ class VoiceTransferSummaryCard extends StatelessWidget {
     final fee = (transferDetails['fee'] as num?) ?? 0;
     final total = (transferDetails['total'] as num?) ?? amount;
 
+    // Guard against invalid amount — show error state instead of NGN 0.00
+    if (amount <= 0) {
+      return Dialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 48.sp),
+              SizedBox(height: 16.h),
+              Text(
+                'Invalid transfer amount',
+                style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
+              SizedBox(height: 16.h),
+              SizedBox(
+                width: double.infinity,
+                height: 48.h,
+                child: ElevatedButton(
+                  onPressed: onCancel,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2D2D2D),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  child: Text('Cancel', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    final username = transferDetails['username'] as String?;
+    final bankName = (transferDetails['beneficiary_bank'] ?? transferDetails['bank_name']) as String?;
+    final exchangeRate = transferDetails['exchange_rate'] as String?;
+    final narration = transferDetails['narration'] as String?;
+
     return Dialog(
       backgroundColor: const Color(0xFF1F1F1F),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
@@ -84,13 +124,28 @@ class VoiceTransferSummaryCard extends StatelessWidget {
 
             // Details
             _buildDetailRow('To', recipient),
+            if (username != null && username.isNotEmpty) ...[
+              _buildDetailRow('', '@$username', isSubtle: true),
+            ],
             _buildDivider(),
             _buildDetailRow('Type', _typeLabel(transferType)),
+            if (bankName != null && bankName.isNotEmpty) ...[
+              _buildDivider(),
+              _buildDetailRow('Bank', bankName),
+            ],
             _buildDivider(),
             _buildDetailRow('Amount', _formatAmount(amount, currency)),
+            if (exchangeRate != null && exchangeRate.isNotEmpty) ...[
+              _buildDivider(),
+              _buildDetailRow('Rate', exchangeRate),
+            ],
             if (fee > 0) ...[
               _buildDivider(),
               _buildDetailRow('Fee', _formatAmount(fee, currency)),
+            ],
+            if (narration != null && narration.isNotEmpty) ...[
+              _buildDivider(),
+              _buildDetailRow('Note', narration),
             ],
             _buildDivider(),
             _buildDetailRow(
@@ -151,16 +206,16 @@ class VoiceTransferSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+  Widget _buildDetailRow(String label, String value, {bool isBold = false, bool isSubtle = false}) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10.h),
+      padding: EdgeInsets.symmetric(vertical: isSubtle ? 2.h : 10.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
             style: GoogleFonts.inter(
-              fontSize: 14.sp,
+              fontSize: isSubtle ? 12.sp : 14.sp,
               color: const Color(0xFF9CA3AF),
             ),
           ),
@@ -168,9 +223,9 @@ class VoiceTransferSummaryCard extends StatelessWidget {
             child: Text(
               value,
               style: GoogleFonts.inter(
-                fontSize: 14.sp,
+                fontSize: isSubtle ? 12.sp : 14.sp,
                 fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
-                color: Colors.white,
+                color: isSubtle ? const Color(0xFF9CA3AF) : Colors.white,
               ),
               textAlign: TextAlign.right,
             ),

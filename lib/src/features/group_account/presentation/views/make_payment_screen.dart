@@ -251,14 +251,14 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6C5CE7),
-            const Color(0xFF6C5CE7).withValues(alpha: 0.8),
+            const Color.fromARGB(255, 78, 3, 208),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -421,7 +421,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 style: GoogleFonts.inter(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF6C5CE7),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ),
             ),
@@ -448,7 +448,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
               borderSide: BorderSide(
                 color: _hasInsufficientBalance
                     ? const Color(0xFFEF4444)
-                    : const Color(0xFF6C5CE7),
+                    : const Color.fromARGB(255, 78, 3, 208),
               ),
             ),
             errorBorder: OutlineInputBorder(
@@ -625,11 +625,11 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF6C5CE7).withValues(alpha: 0.1)
+                          ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
                           : const Color(0xFF1F1F1F),
                       border: Border.all(
                         color: isSelected
-                            ? const Color(0xFF6C5CE7)
+                            ? const Color.fromARGB(255, 78, 3, 208)
                             : Colors.transparent,
                         width: 2,
                       ),
@@ -641,12 +641,12 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                           width: 40.w,
                           height: 40.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Icon(
                             Icons.account_balance_wallet,
-                            color: const Color(0xFF6C5CE7),
+                            color: const Color.fromARGB(255, 78, 3, 208),
                             size: 20.sp,
                           ),
                         ),
@@ -708,7 +708,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                         if (isSelected)
                           Icon(
                             Icons.check_circle,
-                            color: const Color(0xFF6C5CE7),
+                            color: const Color.fromARGB(255, 78, 3, 208),
                             size: 24.sp,
                           ),
                       ],
@@ -753,7 +753,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                   child: Text(
                     'Retry',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF6C5CE7),
+                      color: const Color.fromARGB(255, 78, 3, 208),
                     ),
                   ),
                 ),
@@ -805,7 +805,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF6C5CE7)),
+              borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
             ),
             contentPadding: EdgeInsets.all(16.w),
           ),
@@ -821,7 +821,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         onPressed: _isProcessing ? null : _validateAndProcessPayment,
         style: ElevatedButton.styleFrom(
           backgroundColor:
-              _isProcessing ? const Color(0xFF3D3D3D) : const Color(0xFF6C5CE7),
+              _isProcessing ? const Color(0xFF3D3D3D) : const Color.fromARGB(255, 78, 3, 208),
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(

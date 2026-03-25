@@ -12,10 +12,12 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
@@ -78,6 +80,7 @@ class ChatMessage {
   final String? localMediaPath;
   final int? audioDurationMs;
   final String? transcript;
+  final Map<String, dynamic>? receiptData;
 
   ChatMessage({
     required this.text,
@@ -91,6 +94,7 @@ class ChatMessage {
     this.localMediaPath,
     this.audioDurationMs,
     this.transcript,
+    this.receiptData,
   });
 
   factory ChatMessage.fromEntity(ChatMessageEntity entity) {
@@ -106,6 +110,7 @@ class ChatMessage {
       localMediaPath: entity.localMediaPath,
       audioDurationMs: entity.audioDurationMs,
       transcript: entity.transcript,
+      receiptData: entity.receiptData,
     );
   }
 }
@@ -429,7 +434,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
         child: Column(
@@ -447,7 +452,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             _buildOptionTile(
               'Clear Chat',
               Icons.delete_outline_rounded,
-              Colors.red,
+              InvoiceThemeColors.errorRed,
               () {
                 Get.back();
                 _showClearChatConfirmation();
@@ -456,7 +461,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             _buildOptionTile(
               'Export Chat',
               Icons.download_rounded,
-              Colors.blue,
+              InvoiceThemeColors.primaryPurple,
               () {
                 Get.back();
                 _exportChat();
@@ -465,7 +470,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             _buildOptionTile(
               'AI Settings',
               Icons.tune_rounded,
-              const Color(0xFF3B82F6),
+              InvoiceThemeColors.primaryPurple,
               () {
                 Get.back();
                 _showAiSettingsModal();
@@ -482,7 +487,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   void _showClearChatConfirmation() {
     Get.dialog(
       AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: InvoiceThemeColors.secondaryBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Clear Chat', style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
         content: Text(
@@ -554,7 +559,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             return Container(
               height: 0.72.sh,
               decoration: BoxDecoration(
-                color: const Color(0xFF1A1A2E),
+                color: InvoiceThemeColors.primaryBackground,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
               ),
               child: Column(
@@ -573,7 +578,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
                     child: Row(
                       children: [
-                        Icon(Icons.tune_rounded, color: const Color(0xFF3B82F6), size: 22.sp),
+                        Icon(Icons.tune_rounded, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
                         SizedBox(width: 10.w),
                         Text('AI Settings', style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600)),
                         const Spacer(),
@@ -696,7 +701,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
+                          backgroundColor: InvoiceThemeColors.primaryPurple,
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -739,22 +744,22 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             duration: const Duration(milliseconds: 200),
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
             decoration: BoxDecoration(
-              color: isActive ? const Color(0xFF3B82F6).withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
+              color: isActive ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(10.r),
               border: Border.all(
-                color: isActive ? const Color(0xFF3B82F6) : Colors.white.withValues(alpha: 0.1),
+                color: isActive ? InvoiceThemeColors.primaryPurple : Colors.white.withValues(alpha: 0.1),
                 width: isActive ? 1.5 : 1,
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icons[i], size: 16.sp, color: isActive ? const Color(0xFF3B82F6) : Colors.white54),
+                Icon(icons[i], size: 16.sp, color: isActive ? InvoiceThemeColors.primaryPurple : Colors.white54),
                 SizedBox(width: 6.w),
                 Text(
                   labels[i],
                   style: TextStyle(
-                    color: isActive ? const Color(0xFF3B82F6) : Colors.white70,
+                    color: isActive ? InvoiceThemeColors.primaryPurple : Colors.white70,
                     fontSize: 13.sp,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -785,7 +790,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         trailing: Switch.adaptive(
           value: value,
           onChanged: onChanged,
-          activeTrackColor: const Color(0xFF3B82F6),
+          activeTrackColor: InvoiceThemeColors.primaryPurple,
           activeThumbColor: Colors.white,
           inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
         ),
@@ -812,40 +817,60 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   // Updated to accept isTyping status
   PreferredSizeWidget _buildAppBar(bool isTyping) {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      backgroundColor: const Color(0xFF1A1A2E),
-      elevation: 0,
-      title: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    return PreferredSize(
+      preferredSize: Size.fromHeight(60.0),
+      child: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
+                InvoiceThemeColors.gradientPurple.withValues(alpha: 0.08),
+                InvoiceThemeColors.primaryBackground,
+              ],
             ),
-            child: Icon(Icons.smart_toy_rounded, color: Colors.blue, size: 24.sp),
           ),
-          SizedBox(width: 12.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'NOVA',
-                style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: InvoiceThemeColors.primaryPurple,
+                  width: 1.5,
+                ),
               ),
-              // Pass isTyping down
-              _buildStatusIndicator(isTyping),
-            ],
+              child: Icon(Icons.smart_toy_rounded, color: InvoiceThemeColors.gradientPurple, size: 24.sp),
+            ),
+            SizedBox(width: 12.w),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'NOVA',
+                  style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                ),
+                // Pass isTyping down
+                _buildStatusIndicator(isTyping),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+            onPressed: _showOptionsSheet,
           ),
         ],
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
-          onPressed: _showOptionsSheet,
-        ),
-      ],
     );
   }
 
@@ -859,13 +884,13 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           height: 8.w,
           margin: EdgeInsets.only(right: 4.w),
           decoration: BoxDecoration(
-            color: isTyping ? Colors.blue : Colors.green, // Use parameter
+            color: isTyping ? InvoiceThemeColors.primaryPurple : InvoiceThemeColors.successGreen,
             shape: BoxShape.circle,
           ),
         ),
         Text(
-          isTyping ? 'Typing...' : 'Online', // Use parameter
-          style: TextStyle(color: isTyping ? Colors.blue : Colors.green, fontSize: 12.sp),
+          isTyping ? 'Typing...' : 'Online',
+          style: TextStyle(color: isTyping ? InvoiceThemeColors.primaryPurple : InvoiceThemeColors.successGreen, fontSize: 12.sp),
         ),
       ],
     );
@@ -873,19 +898,26 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   Widget _buildChatHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.05),
-        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
+            Colors.transparent,
+          ],
+        ),
+        border: Border(bottom: BorderSide(color: InvoiceThemeColors.borderColor)),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline_rounded, color: Colors.blue, size: 20.sp),
+          Icon(Icons.info_outline_rounded, color: InvoiceThemeColors.gradientPurple, size: 18.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
-              'I can help you with various tasks. Feel free to ask anything!',
-              style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+              'Ask me anything — transfers, bills, investments & more',
+              style: TextStyle(color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
             ),
           ),
         ],
@@ -901,10 +933,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.lock_rounded, color: const Color(0xFF3B82F6), size: 48.sp),
+            child: Icon(Icons.lock_rounded, color: InvoiceThemeColors.primaryPurple, size: 48.sp),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -956,9 +988,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     );
   }
 
-  // iMessage-style bubble colors
-  static const _userBubbleColor = Color(0xFF0A84FF);
-  static const _aiBubbleColor = Color(0xFF166534);
+  // Bubble colors — matching sendfunds chatbot theme
+  static final _userBubbleColor = InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2);
+  static const _aiBubbleColor = InvoiceThemeColors.secondaryBackground;
 
   Widget _buildMessageBubble(ChatMessage message) {
     final bool isUser = message.isUser;
@@ -1009,6 +1041,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         bottomLeft: Radius.circular(isUser ? 18.r : 4.r),
                         bottomRight: Radius.circular(isUser ? 4.r : 18.r),
                       ),
+                      border: isUser
+                          ? null
+                          : Border.all(color: InvoiceThemeColors.borderColor, width: 0.5),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1035,11 +1070,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                             code: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontFamily: 'monospace',
                               backgroundColor: Colors.black.withValues(alpha: 0.2),
-                              color: isUser ? const Color(0xFFBFDBFE) : const Color(0xFF86EFAC),
+                              color: isUser ? const Color(0xFFD8B4FE) : const Color(0xFFD8B4FE),
                               fontSize: 13.sp * _settings.fontSizeMultiplier,
                             ),
                             listBullet: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: isUser ? const Color(0xFF93C5FD) : const Color(0xFF6EE7B7),
+                              color: isUser ? const Color(0xFFD8B4FE) : const Color(0xFFD8B4FE),
                               fontSize: 14.sp * _settings.fontSizeMultiplier,
                               height: 1.45,
                             ),
@@ -1076,6 +1111,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                   ),
                 ],
               ),
+            // Receipt card — displayed immediately after the message bubble
+            if (!isUser && message.receiptData != null)
+              ChatReceiptCard(
+                receipt: TransferReceiptData.fromJson(message.receiptData!),
+              ),
           ],
         ),
       ),
@@ -1097,7 +1137,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             bottomLeft: Radius.circular(4.r),
             bottomRight: Radius.circular(18.r),
           ),
-          border: Border.all(color: const Color(0xFF22C55E).withValues(alpha: 0.25)),
+          border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.25)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1154,7 +1194,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 10.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
+                        color: InvoiceThemeColors.primaryPurple,
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Center(
@@ -1242,18 +1282,18 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                       margin: EdgeInsets.only(right: 8.w),
                       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF22C55E).withValues(alpha: 0.12),
+                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: const Color(0xFF22C55E).withValues(alpha: 0.35)),
+                        border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.35)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (btn.icon != null && btn.icon!.isNotEmpty) ...[
-                            Icon(Icons.arrow_forward_rounded, color: const Color(0xFF4ADE80), size: 14.sp),
+                            Icon(Icons.arrow_forward_rounded, color: InvoiceThemeColors.primaryPurple, size: 14.sp),
                             SizedBox(width: 4.w),
                           ],
-                          Text(btn.label, style: TextStyle(color: const Color(0xFF4ADE80), fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                          Text(btn.label, style: TextStyle(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -1296,7 +1336,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                       margin: EdgeInsets.symmetric(horizontal: 2.w),
                       height: 8.h,
                       width: 8.w,
-                      decoration: BoxDecoration(color: const Color(0xFF4ADE80).withValues(alpha: opacity), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: InvoiceThemeColors.primaryPurple.withValues(alpha: opacity), shape: BoxShape.circle),
                     );
                   },
                 );
@@ -1313,8 +1353,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+        color: InvoiceThemeColors.primaryBackground,
+        border: Border(top: BorderSide(color: InvoiceThemeColors.borderColor)),
       ),
       child: Column(
         children: [
@@ -1334,11 +1374,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                       margin: EdgeInsets.only(right: 8.w),
                       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.1),
+                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                        border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3)),
                       ),
-                      child: Text(suggestionText, style: TextStyle(color: Colors.blue[300], fontSize: 12.sp)),
+                      child: Text(suggestionText, style: TextStyle(color: Colors.white, fontSize: 12.sp)),
                     ),
                   );
                 },
@@ -1372,14 +1412,14 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           _handleCameraCapture();
         }
       },
-      color: const Color(0xFF2D2D2D),
+      color: InvoiceThemeColors.secondaryBackground,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       itemBuilder: (_) => [
         PopupMenuItem(
           value: 'gallery',
           child: Row(
             children: [
-              Icon(Icons.photo_library, color: Colors.blue[300], size: 20.sp),
+              Icon(Icons.photo_library, color: InvoiceThemeColors.primaryPurple, size: 20.sp),
               SizedBox(width: 8.w),
               Text('Gallery', style: TextStyle(color: Colors.white, fontSize: 14.sp)),
             ],
@@ -1469,8 +1509,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           onTap: _stopRecording,
           child: Container(
             padding: EdgeInsets.all(10.w),
-            decoration: const BoxDecoration(
-              color: Colors.blue,
+            decoration: BoxDecoration(
+              color: InvoiceThemeColors.primaryPurple,
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.send_rounded, color: Colors.white, size: 20.sp),
@@ -1484,9 +1524,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: InvoiceThemeColors.borderColor),
       ),
       child: TextField(
         controller: _messageController,
@@ -1525,7 +1565,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: isEnabled ? Colors.blue : Colors.grey,
+          gradient: isEnabled
+              ? LinearGradient(colors: [InvoiceThemeColors.primaryPurple, InvoiceThemeColors.gradientPurple])
+              : null,
+          color: isEnabled ? null : Colors.grey,
           shape: BoxShape.circle,
         ),
         child: Icon(Icons.send_rounded, color: Colors.white, size: 20.sp),
@@ -1579,7 +1622,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           },
           child: Container(
             margin: EdgeInsets.only(bottom: 60.h),
-            decoration: const BoxDecoration(color: Color(0xFF1E1E1E)),
+            decoration: const BoxDecoration(color: InvoiceThemeColors.primaryBackground),
             child: Scaffold(
               backgroundColor: Colors.transparent,
               // Pass isTyping status to AppBar

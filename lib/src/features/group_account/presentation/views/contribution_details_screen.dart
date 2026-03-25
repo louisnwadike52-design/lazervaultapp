@@ -145,7 +145,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       floatingActionButton: _currentContribution != null && !_currentContribution!.isCompleted
           ? FloatingActionButton.extended(
               onPressed: () => _navigateToMakePayment(_currentContribution!),
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               foregroundColor: Colors.white,
               icon: Icon(Icons.payment, size: 20.sp),
               label: Text(
@@ -167,7 +167,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         children: [
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(
-              const Color(0xFF6C5CE7),
+              const Color.fromARGB(255, 78, 3, 208),
             ),
           ),
           SizedBox(height: 16.h),
@@ -217,7 +217,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             ElevatedButton(
               onPressed: () => Get.back(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 shape: RoundedRectangleBorder(
@@ -433,7 +433,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
             ),
             child: Text(
               'Join',
@@ -564,14 +564,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6C5CE7),
-            const Color(0xFF6C5CE7).withValues(alpha: 0.8),
+            const Color.fromARGB(255, 78, 3, 208),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -874,7 +874,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF6C5CE7),
+          color: const Color.fromARGB(255, 78, 3, 208),
           borderRadius: BorderRadius.circular(12.r),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -987,7 +987,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     return RefreshIndicator(
       onRefresh: _refreshPayments,
       backgroundColor: const Color(0xFF1F1F1F),
-      color: const Color(0xFF6C5CE7),
+      color: const Color.fromARGB(255, 78, 3, 208),
       child: ListView.builder(
         padding: EdgeInsets.all(20.w),
         itemCount: allPayments.length,
@@ -1080,7 +1080,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                 shape: RoundedRectangleBorder(
@@ -1233,7 +1233,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           children: [
             CircleAvatar(
               radius: 20.r,
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               backgroundImage: profileImage != null ? NetworkImage(profileImage) : null,
               child: profileImage == null
                   ? Text(
@@ -1331,7 +1331,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     fontSize: 12.sp,
                     color: isPaid
                         ? const Color(0xFF10B981)
-                        : const Color(0xFF6C5CE7),
+                        : const Color.fromARGB(255, 78, 3, 208),
                   ),
                 ),
               ],
@@ -1629,14 +1629,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF6C5CE7),
-                const Color(0xFF8B5CF6),
+                const Color.fromARGB(255, 78, 3, 208),
+                const Color.fromARGB(255, 78, 3, 208),
               ],
             ),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -1908,7 +1908,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
@@ -1964,7 +1964,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircularProgressIndicator(
-                  color: const Color(0xFF6C5CE7),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                 ),
                 SizedBox(height: 16.h),
                 Text(
@@ -2192,7 +2192,7 @@ Powered by LazerVault 🚀
                 child: Icon(
                   Icons.copy,
                   size: 16.sp,
-                  color: const Color(0xFF6C5CE7),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ),
             ),
@@ -2239,7 +2239,7 @@ Powered by LazerVault 🚀
       case PaymentStatus.cancelled:
         return const Color(0xFF6B7280);
       case PaymentStatus.refunded:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 
@@ -2428,7 +2428,7 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
           // Avatar
           CircleAvatar(
             radius: 40.r,
-            backgroundColor: const Color(0xFF6C5CE7),
+            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
             backgroundImage: profileImage != null
                 ? NetworkImage(profileImage!)
                 : null,
@@ -2531,7 +2531,7 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                         color: isPaid
                             ? const Color(0xFF10B981)
-                            : const Color(0xFF6C5CE7),
+                            : const Color.fromARGB(255, 78, 3, 208),
                       ),
                     ),
                   ],
@@ -2552,7 +2552,7 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
                             gradient: LinearGradient(
                               colors: isPaid
                                   ? [const Color(0xFF10B981), const Color(0xFF34D399)]
-                                  : [const Color(0xFF6C5CE7), const Color(0xFF8B5CF6)],
+                                  : [const Color.fromARGB(255, 78, 3, 208), const Color.fromARGB(255, 78, 3, 208)],
                             ),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
@@ -2604,7 +2604,7 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(

@@ -3,10 +3,15 @@ import 'package:lazervault/core/errors/failure.dart';
 import '../entities/gift_card_entity.dart';
 
 abstract class IGiftCardRepository {
-  Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrands({
+  Future<Either<Failure, PaginatedBrands>> getGiftCardBrands({
     String? category,
     String? countryCode,
+    String? searchQuery,
+    int page = 0,
+    int pageSize = 20,
   });
+
+  Future<Either<Failure, List<GiftCardCountry>>> getSupportedCountries();
 
   Future<Either<Failure, GiftCard>> buyGiftCard({
     required String brandId,
@@ -23,6 +28,8 @@ abstract class IGiftCardRepository {
     String? idempotencyKey,
     int quantity,
     String? providerName,
+    double? senderAmount,
+    String? senderCurrency,
   });
 
   Future<Either<Failure, List<GiftCard>>> getUserGiftCards({
@@ -41,10 +48,9 @@ abstract class IGiftCardRepository {
     int offset,
   });
 
-  Future<Either<Failure, GiftCard>> redeemGiftCard({
-    required String accountId,
-    required String cardNumber,
-    required String cardPin,
+  Future<Either<Failure, Map<String, String>>> getRedeemCode({
+    required String transactionId,
+    bool forceRefresh = false,
   });
 
   Future<Either<Failure, GiftCard>> transferGiftCard({
@@ -54,16 +60,13 @@ abstract class IGiftCardRepository {
     required String message,
     required String transactionId,
     required String verificationToken,
-  });
-
-  Future<Either<Failure, GiftCardBalance>> getGiftCardBalance({
-    required String cardNumber,
-    required String cardPin,
+    String? recipientUserId,
+    String transferType = 'email',
   });
 
   // Sell flow methods
 
-  Future<Either<Failure, List<SellableCard>>> getSellableCards();
+  Future<Either<Failure, List<SellableCard>>> getSellableCards({String? countryCode});
 
   Future<Either<Failure, SellRate>> getSellRate({
     required String cardType,
@@ -82,6 +85,15 @@ abstract class IGiftCardRepository {
     List<String>? images,
     String? idempotencyKey,
     String? providerName,
+    String? cardCountry,
+    String? cardFormat,
+    List<String>? imageUrls,
+    List<String>? imageKeys,
+    String? ocrBrand,
+    String? ocrCardNumber,
+    String? ocrPin,
+    double? ocrDenomination,
+    String? ocrCurrency,
   });
 
   Future<Either<Failure, GiftCardSale>> getSellStatus(String saleId);
@@ -90,5 +102,15 @@ abstract class IGiftCardRepository {
     String? status,
     int limit,
     int offset,
+  });
+
+  Future<Either<Failure, Map<String, String>>> uploadSellImage({
+    required String imageData,
+    required String contentType,
+    required String filename,
+  });
+
+  Future<Either<Failure, Map<String, dynamic>>> extractCardDetails({
+    required List<String> imageUrls,
   });
 }

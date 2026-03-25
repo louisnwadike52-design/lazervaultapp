@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: account.proto
-//
-// @dart = 2.12
+// Generated from account.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -48,8 +49,22 @@ const Account$json = {
     {'1': 'balance', '3': 4, '4': 1, '5': 1, '10': 'balance'},
     {'1': 'account_number', '3': 5, '4': 1, '5': 9, '10': 'accountNumber'},
     {'1': 'is_active', '3': 6, '4': 1, '5': 8, '10': 'isActive'},
-    {'1': 'created_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'created_at',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
     {'1': 'is_primary', '3': 9, '4': 1, '5': 8, '10': 'isPrimary'},
     {'1': 'account_label', '3': 10, '4': 1, '5': 9, '10': 'accountLabel'},
     {'1': 'bank_name', '3': 11, '4': 1, '5': 9, '10': 'bankName'},
@@ -92,7 +107,14 @@ final $typed_data.Uint8List createAccountRequestDescriptor = $convert.base64Deco
 const CreateAccountResponse$json = {
   '1': 'CreateAccountResponse',
   '2': [
-    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.pb.AccountDetails', '10': 'account'},
+    {
+      '1': 'account',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AccountDetails',
+      '10': 'account'
+    },
   ],
 };
 
@@ -107,14 +129,21 @@ const GetAccountsRequest$json = {
 };
 
 /// Descriptor for `GetAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAccountsRequestDescriptor = $convert.base64Decode(
-    'ChJHZXRBY2NvdW50c1JlcXVlc3Q=');
+final $typed_data.Uint8List getAccountsRequestDescriptor =
+    $convert.base64Decode('ChJHZXRBY2NvdW50c1JlcXVlc3Q=');
 
 @$core.Deprecated('Use getAccountsResponseDescriptor instead')
 const GetAccountsResponse$json = {
   '1': 'GetAccountsResponse',
   '2': [
-    {'1': 'accounts', '3': 1, '4': 3, '5': 11, '6': '.pb.Account', '10': 'accounts'},
+    {
+      '1': 'accounts',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.Account',
+      '10': 'accounts'
+    },
   ],
 };
 
@@ -131,15 +160,39 @@ const AccountSummary$json = {
     {'1': 'account_type', '3': 2, '4': 1, '5': 9, '10': 'accountType'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'balance', '3': 4, '4': 1, '5': 4, '10': 'balance'},
-    {'1': 'masked_account_number', '3': 5, '4': 1, '5': 9, '10': 'maskedAccountNumber'},
+    {
+      '1': 'masked_account_number',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '10': 'maskedAccountNumber'
+    },
     {'1': 'status', '3': 6, '4': 1, '5': 9, '10': 'status'},
     {'1': 'is_primary', '3': 7, '4': 1, '5': 8, '10': 'isPrimary'},
     {'1': 'account_label', '3': 8, '4': 1, '5': 9, '10': 'accountLabel'},
     {'1': 'bank_name', '3': 9, '4': 1, '5': 9, '10': 'bankName'},
     {'1': 'trend_percentage', '3': 10, '4': 1, '5': 1, '10': 'trendPercentage'},
-    {'1': 'is_family_account', '3': 11, '4': 1, '5': 8, '10': 'isFamilyAccount'},
-    {'1': 'family_total_balance', '3': 12, '4': 1, '5': 4, '10': 'familyTotalBalance'},
-    {'1': 'member_allocated_balance', '3': 13, '4': 1, '5': 4, '10': 'memberAllocatedBalance'},
+    {
+      '1': 'is_family_account',
+      '3': 11,
+      '4': 1,
+      '5': 8,
+      '10': 'isFamilyAccount'
+    },
+    {
+      '1': 'family_total_balance',
+      '3': 12,
+      '4': 1,
+      '5': 4,
+      '10': 'familyTotalBalance'
+    },
+    {
+      '1': 'member_allocated_balance',
+      '3': 13,
+      '4': 1,
+      '5': 4,
+      '10': 'memberAllocatedBalance'
+    },
     {'1': 'member_count', '3': 14, '4': 1, '5': 5, '10': 'memberCount'},
   ],
 };
@@ -172,13 +225,39 @@ const AccountDetails$json = {
     {'1': 'daily_limit', '3': 10, '4': 1, '5': 4, '10': 'dailyLimit'},
     {'1': 'monthly_limit', '3': 11, '4': 1, '5': 4, '10': 'monthlyLimit'},
     {'1': 'enable_3d_secure', '3': 12, '4': 1, '5': 8, '10': 'enable3dSecure'},
-    {'1': 'enable_contactless', '3': 13, '4': 1, '5': 8, '10': 'enableContactless'},
-    {'1': 'enable_online_payments', '3': 14, '4': 1, '5': 8, '10': 'enableOnlinePayments'},
+    {
+      '1': 'enable_contactless',
+      '3': 13,
+      '4': 1,
+      '5': 8,
+      '10': 'enableContactless'
+    },
+    {
+      '1': 'enable_online_payments',
+      '3': 14,
+      '4': 1,
+      '5': 8,
+      '10': 'enableOnlinePayments'
+    },
     {'1': 'account_number', '3': 15, '4': 1, '5': 9, '10': 'accountNumber'},
     {'1': 'iban', '3': 16, '4': 1, '5': 9, '10': 'iban'},
     {'1': 'bic_swift', '3': 17, '4': 1, '5': 9, '10': 'bicSwift'},
-    {'1': 'created_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'created_at',
+      '3': 18,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 19,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
   ],
 };
 
@@ -203,8 +282,20 @@ const SecuritySettings$json = {
   '1': 'SecuritySettings',
   '2': [
     {'1': 'enable_3d_secure', '3': 1, '4': 1, '5': 8, '10': 'enable3dSecure'},
-    {'1': 'enable_contactless', '3': 2, '4': 1, '5': 8, '10': 'enableContactless'},
-    {'1': 'enable_online_payments', '3': 3, '4': 1, '5': 8, '10': 'enableOnlinePayments'},
+    {
+      '1': 'enable_contactless',
+      '3': 2,
+      '4': 1,
+      '5': 8,
+      '10': 'enableContactless'
+    },
+    {
+      '1': 'enable_online_payments',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '10': 'enableOnlinePayments'
+    },
   ],
 };
 
@@ -220,21 +311,29 @@ const GetUserAccountsRequest$json = {
 };
 
 /// Descriptor for `GetUserAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserAccountsRequestDescriptor = $convert.base64Decode(
-    'ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0');
+final $typed_data.Uint8List getUserAccountsRequestDescriptor =
+    $convert.base64Decode('ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0');
 
 @$core.Deprecated('Use getUserAccountsResponseDescriptor instead')
 const GetUserAccountsResponse$json = {
   '1': 'GetUserAccountsResponse',
   '2': [
-    {'1': 'accounts', '3': 1, '4': 3, '5': 11, '6': '.pb.AccountSummary', '10': 'accounts'},
+    {
+      '1': 'accounts',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.AccountSummary',
+      '10': 'accounts'
+    },
   ],
 };
 
 /// Descriptor for `GetUserAccountsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserAccountsResponseDescriptor = $convert.base64Decode(
-    'ChdHZXRVc2VyQWNjb3VudHNSZXNwb25zZRIuCghhY2NvdW50cxgBIAMoCzISLnBiLkFjY291bn'
-    'RTdW1tYXJ5UghhY2NvdW50cw==');
+final $typed_data.Uint8List getUserAccountsResponseDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRVc2VyQWNjb3VudHNSZXNwb25zZRIuCghhY2NvdW50cxgBIAMoCzISLnBiLkFjY291bn'
+        'RTdW1tYXJ5UghhY2NvdW50cw==');
 
 @$core.Deprecated('Use getAccountDetailsRequestDescriptor instead')
 const GetAccountDetailsRequest$json = {
@@ -245,22 +344,31 @@ const GetAccountDetailsRequest$json = {
 };
 
 /// Descriptor for `GetAccountDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAccountDetailsRequestDescriptor = $convert.base64Decode(
-    'ChhHZXRBY2NvdW50RGV0YWlsc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoBFIJYWNjb3VudE'
-    'lk');
+final $typed_data.Uint8List getAccountDetailsRequestDescriptor =
+    $convert.base64Decode(
+        'ChhHZXRBY2NvdW50RGV0YWlsc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoBFIJYWNjb3VudE'
+        'lk');
 
 @$core.Deprecated('Use getAccountDetailsResponseDescriptor instead')
 const GetAccountDetailsResponse$json = {
   '1': 'GetAccountDetailsResponse',
   '2': [
-    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.pb.AccountDetails', '10': 'account'},
+    {
+      '1': 'account',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AccountDetails',
+      '10': 'account'
+    },
   ],
 };
 
 /// Descriptor for `GetAccountDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAccountDetailsResponseDescriptor = $convert.base64Decode(
-    'ChlHZXRBY2NvdW50RGV0YWlsc1Jlc3BvbnNlEiwKB2FjY291bnQYASABKAsyEi5wYi5BY2NvdW'
-    '50RGV0YWlsc1IHYWNjb3VudA==');
+final $typed_data.Uint8List getAccountDetailsResponseDescriptor =
+    $convert.base64Decode(
+        'ChlHZXRBY2NvdW50RGV0YWlsc1Jlc3BvbnNlEiwKB2FjY291bnQYASABKAsyEi5wYi5BY2NvdW'
+        '50RGV0YWlsc1IHYWNjb3VudA==');
 
 @$core.Deprecated('Use updateAccountStatusRequestDescriptor instead')
 const UpdateAccountStatusRequest$json = {
@@ -273,50 +381,75 @@ const UpdateAccountStatusRequest$json = {
 };
 
 /// Descriptor for `UpdateAccountStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateAccountStatusRequestDescriptor = $convert.base64Decode(
-    'ChpVcGRhdGVBY2NvdW50U3RhdHVzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgEUglhY2NvdW'
-    '50SWQSFgoGc3RhdHVzGAIgASgJUgZzdGF0dXMSFgoGcmVhc29uGAMgASgJUgZyZWFzb24=');
+final $typed_data.Uint8List updateAccountStatusRequestDescriptor =
+    $convert.base64Decode(
+        'ChpVcGRhdGVBY2NvdW50U3RhdHVzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgEUglhY2NvdW'
+        '50SWQSFgoGc3RhdHVzGAIgASgJUgZzdGF0dXMSFgoGcmVhc29uGAMgASgJUgZyZWFzb24=');
 
 @$core.Deprecated('Use updateAccountStatusResponseDescriptor instead')
 const UpdateAccountStatusResponse$json = {
   '1': 'UpdateAccountStatusResponse',
   '2': [
-    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.pb.AccountDetails', '10': 'account'},
+    {
+      '1': 'account',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AccountDetails',
+      '10': 'account'
+    },
   ],
 };
 
 /// Descriptor for `UpdateAccountStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateAccountStatusResponseDescriptor = $convert.base64Decode(
-    'ChtVcGRhdGVBY2NvdW50U3RhdHVzUmVzcG9uc2USLAoHYWNjb3VudBgBIAEoCzISLnBiLkFjY2'
-    '91bnREZXRhaWxzUgdhY2NvdW50');
+final $typed_data.Uint8List updateAccountStatusResponseDescriptor =
+    $convert.base64Decode(
+        'ChtVcGRhdGVBY2NvdW50U3RhdHVzUmVzcG9uc2USLAoHYWNjb3VudBgBIAEoCzISLnBiLkFjY2'
+        '91bnREZXRhaWxzUgdhY2NvdW50');
 
 @$core.Deprecated('Use updateSecuritySettingsRequestDescriptor instead')
 const UpdateSecuritySettingsRequest$json = {
   '1': 'UpdateSecuritySettingsRequest',
   '2': [
     {'1': 'account_id', '3': 1, '4': 1, '5': 4, '10': 'accountId'},
-    {'1': 'settings', '3': 2, '4': 1, '5': 11, '6': '.pb.SecuritySettings', '10': 'settings'},
+    {
+      '1': 'settings',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.SecuritySettings',
+      '10': 'settings'
+    },
   ],
 };
 
 /// Descriptor for `UpdateSecuritySettingsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateSecuritySettingsRequestDescriptor = $convert.base64Decode(
-    'Ch1VcGRhdGVTZWN1cml0eVNldHRpbmdzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgEUglhY2'
-    'NvdW50SWQSMAoIc2V0dGluZ3MYAiABKAsyFC5wYi5TZWN1cml0eVNldHRpbmdzUghzZXR0aW5n'
-    'cw==');
+final $typed_data.Uint8List updateSecuritySettingsRequestDescriptor =
+    $convert.base64Decode(
+        'Ch1VcGRhdGVTZWN1cml0eVNldHRpbmdzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgEUglhY2'
+        'NvdW50SWQSMAoIc2V0dGluZ3MYAiABKAsyFC5wYi5TZWN1cml0eVNldHRpbmdzUghzZXR0aW5n'
+        'cw==');
 
 @$core.Deprecated('Use updateSecuritySettingsResponseDescriptor instead')
 const UpdateSecuritySettingsResponse$json = {
   '1': 'UpdateSecuritySettingsResponse',
   '2': [
-    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.pb.AccountDetails', '10': 'account'},
+    {
+      '1': 'account',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.AccountDetails',
+      '10': 'account'
+    },
   ],
 };
 
 /// Descriptor for `UpdateSecuritySettingsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateSecuritySettingsResponseDescriptor = $convert.base64Decode(
-    'Ch5VcGRhdGVTZWN1cml0eVNldHRpbmdzUmVzcG9uc2USLAoHYWNjb3VudBgBIAEoCzISLnBiLk'
-    'FjY291bnREZXRhaWxzUgdhY2NvdW50');
+final $typed_data.Uint8List updateSecuritySettingsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5VcGRhdGVTZWN1cml0eVNldHRpbmdzUmVzcG9uc2USLAoHYWNjb3VudBgBIAEoCzISLnBiLk'
+        'FjY291bnREZXRhaWxzUgdhY2NvdW50');
 
 @$core.Deprecated('Use revealPINRequestDescriptor instead')
 const RevealPINRequest$json = {
@@ -339,8 +472,8 @@ const RevealPINResponse$json = {
 };
 
 /// Descriptor for `RevealPINResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List revealPINResponseDescriptor = $convert.base64Decode(
-    'ChFSZXZlYWxQSU5SZXNwb25zZRIQCgNwaW4YASABKAlSA3Bpbg==');
+final $typed_data.Uint8List revealPINResponseDescriptor = $convert
+    .base64Decode('ChFSZXZlYWxQSU5SZXNwb25zZRIQCgNwaW4YASABKAlSA3Bpbg==');
 
 @$core.Deprecated('Use createSignupAccountsRequestDescriptor instead')
 const CreateSignupAccountsRequest$json = {
@@ -396,7 +529,14 @@ const CreateSignupAccountsResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {'1': 'accounts', '3': 4, '4': 3, '5': 11, '6': '.pb.SignupAccountInfo', '10': 'accounts'},
+    {
+      '1': 'accounts',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.SignupAccountInfo',
+      '10': 'accounts'
+    },
   ],
 };
 
@@ -406,4 +546,3 @@ final $typed_data.Uint8List createSignupAccountsResponseDescriptor = $convert.ba
     'MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlS'
     'DGVycm9yTWVzc2FnZRIxCghhY2NvdW50cxgEIAMoCzIVLnBiLlNpZ251cEFjY291bnRJbmZvUg'
     'hhY2NvdW50cw==');
-

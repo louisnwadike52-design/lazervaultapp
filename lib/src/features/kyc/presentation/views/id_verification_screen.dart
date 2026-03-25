@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/kyc_provider_webview_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/mono_identity_screen.dart';
 import 'package:lazervault/core/shared_widgets/app_loading_button.dart';
 import 'package:lazervault/core/config/country_config.dart';
 
@@ -38,6 +40,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
 
   IDType _selectedIdType = IDType.bvn;
   bool _acceptTerms = false;
+  bool _isSubmitting = false;
   late final CountryConfig? _countryConfig;
 
   @override
@@ -121,16 +124,28 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     }
   }
 
-  /// Get available ID types based on country
+  /// Get available ID types based on country AND target tier (CBN compliance)
   List<IDType> _getAvailableIdTypes() {
     if (_countryConfig != null) {
+      // Check tier-specific mandatory types first
+      final kycLevel = widget.targetTier == KYCTier.tier3
+          ? KycLevel.advanced
+          : KycLevel.standard;
+      final tierTypes = _countryConfig!.tierIdTypes[kycLevel];
+      if (tierTypes != null && tierTypes.isNotEmpty) {
+        return tierTypes
+            .map((docType) => _mapDocTypeToIDType(docType))
+            .toSet()
+            .toList();
+      }
+      // Fallback to all supported types if no tier-specific config
       return _countryConfig!.supportedIdTypes
           .map((docType) => _mapDocTypeToIDType(docType))
           .toSet()
           .toList();
     }
-    // Default to Nigeria options if no country specified
-    return [IDType.bvn, IDType.nin];
+    // Default to BVN only for Nigeria Tier 2
+    return [IDType.bvn];
   }
 
   @override
@@ -144,16 +159,25 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTier2 = widget.targetTier == KYCTier.tier2;
+    final appBarTitle = isTier2 ? 'Verify Your BVN' : 'Verify Your NIN';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Identity Verification'),
+        title: Text(appBarTitle),
         elevation: 0,
       ),
       body: BlocListener<KYCCubit, KYCState>(
         listener: (context, state) {
-          if (state is IDVerificationSuccess) {
+          if (!mounted) return;
+          if (state is VerificationSessionCreated) {
+            _isSubmitting = false;
+            _handleSessionCreated(context, state.session);
+          } else if (state is IDVerificationSuccess) {
+            _isSubmitting = false;
             _handleVerificationSuccess(context, state.response);
           } else if (state is KYCError) {
+            _isSubmitting = false;
             _showError(context, state);
           }
         },
@@ -702,6 +726,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   }
 
   void _submitVerification() {
+    if (_isSubmitting || !mounted) return;
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -734,8 +760,15 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       idNumber = idNumber.replaceAll('-', '');
     }
 
-    final request = IDVerificationRequest(
+    // Resolve country code from widget or ID type
+    final countryCode = _resolveCountryCode(widget.preferredIdType ?? _selectedIdType);
+
+    _isSubmitting = true;
+
+    cubit.createVerificationSession(
       userId: userId,
+      targetTier: widget.targetTier,
+      countryCode: countryCode,
       idType: _selectedIdType,
       idNumber: idNumber,
       firstName: _firstNameController.text.trim(),
@@ -743,8 +776,120 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       dateOfBirth: formattedDob,
       phoneNumber: authCubit.currentProfile?.user.phoneNumber ?? '',
     );
+  }
 
-    cubit.verifyID(request);
+  /// Resolve country code from ID type for provider routing
+  String _resolveCountryCode(IDType idType) {
+    // Use explicit country code from widget if available
+    if (widget.countryCode != null && widget.countryCode!.isNotEmpty) {
+      return widget.countryCode!;
+    }
+    // Fallback: infer from ID type
+    switch (idType) {
+      case IDType.bvn:
+      case IDType.nin:
+        return 'NG';
+      case IDType.ghanaCard:
+      case IDType.votersCard:
+        return 'GH';
+      case IDType.kenyaNationalId:
+      case IDType.kraPin:
+        return 'KE';
+      case IDType.saIdCard:
+      case IDType.saPassport:
+        return 'ZA';
+      case IDType.ukPassport:
+      case IDType.ukDrivingLicense:
+        return 'GB';
+      case IDType.usSsn:
+      case IDType.usStateId:
+      case IDType.usPassport:
+        return 'US';
+      default:
+        return 'NG';
+    }
+  }
+
+  void _handleSessionCreated(BuildContext context, VerificationSession session) {
+    if (!mounted) return;
+    final authCubit = context.read<AuthenticationCubit>();
+    final cubit = context.read<KYCCubit>();
+
+    switch (session.provider) {
+      case 'mono':
+        if (session.sessionToken == null || session.sessionToken!.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session not available. Please try again.')),
+          );
+          return;
+        }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => MonoIdentityScreen(
+              sessionToken: session.sessionToken!,
+              verificationId: session.verificationId,
+              userName: '${authCubit.currentProfile?.user.firstName ?? ''} ${authCubit.currentProfile?.user.lastName ?? ''}'.trim(),
+              userEmail: authCubit.currentProfile?.user.email ?? '',
+              onSuccess: (authCode) {
+                cubit.confirmVerification(
+                  verificationId: session.verificationId,
+                  provider: session.provider,
+                  providerAuthCode: authCode,
+                );
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              onClose: () => Navigator.of(context).pop(),
+            ),
+          ),
+        );
+        break;
+      case 'smile_id':
+      case 'persona':
+      case 'onfido':
+        if (session.sessionUrl == null || session.sessionUrl!.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Verification URL not available.')),
+          );
+          return;
+        }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => KYCProviderWebViewScreen(
+              sessionUrl: session.sessionUrl!,
+              provider: session.provider,
+              verificationId: session.verificationId,
+              onComplete: (success) {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                if (success) {
+                  cubit.confirmVerification(
+                    verificationId: session.verificationId,
+                    provider: session.provider,
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Verification was not completed. Please try again.'),
+                      backgroundColor: Colors.orange,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+        );
+        break;
+      default:
+        // Unknown provider or inline verification — show in-progress
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Verification in progress. We\'ll notify you when it\'s complete.'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
   }
 
   void _handleVerificationSuccess(

@@ -466,7 +466,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
         return const Color(0xFFFB923C); // Orange
       case ActivityActionType.paymentRefunded:
       case ActivityActionType.payoutRotationAdvanced:
-        return const Color(0xFF8B5CF6); // Purple
+        return const Color.fromARGB(255, 78, 3, 208); // Purple
       case ActivityActionType.contributionPaused:
         return const Color(0xFFF59E0B); // Amber
       default:

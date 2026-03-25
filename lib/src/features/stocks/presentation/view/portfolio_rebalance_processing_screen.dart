@@ -192,7 +192,7 @@ class _PortfolioRebalanceProcessingScreenState
                               gradient: LinearGradient(
                                 colors: [
                                   const Color(0xFF6366F1).withValues(alpha: 0.3),
-                                  const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                                 ],
                               ),
                             ),
@@ -249,7 +249,7 @@ class _PortfolioRebalanceProcessingScreenState
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                       ),
                       borderRadius: BorderRadius.circular(4.r),
                     ),

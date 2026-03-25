@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
+import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_setup_screen.dart';
@@ -91,6 +92,7 @@ import 'package:lazervault/src/features/presentation/views/upload_image_scren.da
 import 'package:lazervault/src/features/portfolio/presentation/view/portfolio_details_screen.dart';
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import '../../../core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/modern_onboarding_screen.dart';
 import '../../../main.dart' show AuthCheckScreen;
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
@@ -111,6 +113,7 @@ import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_screen.dart';
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
 import 'package:lazervault/src/features/voice/screens/voice_settings_screen.dart';
+import 'package:lazervault/src/features/voice/screens/voice_cloning_screen.dart';
 import 'package:lazervault/src/features/voice/cubit/voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice_activation/presentation/voice_activation_prompt_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
@@ -179,6 +182,10 @@ import 'package:lazervault/src/features/insurance/presentation/view/insurance_co
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_documents_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_claim_tracking_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_how_it_works_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/mycover_management_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/file_credit_life_claim_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/mycover_notification_prefs_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_all_policies_screen.dart';
 
 // Airtime imports
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
@@ -191,6 +198,15 @@ import 'package:lazervault/src/features/airtime/presentation/view/airtime_review
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_history_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/cubit/airtime_to_cash_cubit.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_home_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_network_selection_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_phone_input_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_amount_input_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_review_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_otp_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_processing_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_result_screen.dart';
 
 // AutoSave imports
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
@@ -294,6 +310,8 @@ import 'package:lazervault/src/features/crowdfund/presentation/views/donation_pr
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_receipt_screen.dart';
 import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_entities.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_leaderboard_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/my_campaigns_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/my_donations_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/leaderboard_cubit.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/notification_channels_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_report_screen.dart';
@@ -363,6 +381,7 @@ import 'package:lazervault/src/features/data_bundles/presentation/view/data_reci
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_payment_processing_screen.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_payment_receipt_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/auto_renew_management_screen.dart';
 
 // Subscription Tracker imports
 import 'package:lazervault/src/features/subscriptions/presentation/screens/subscription_dashboard_screen.dart';
@@ -710,13 +729,56 @@ class AppRouter {
       name: AppRoutes.invoicePreview,
       page: () {
         final args = Get.arguments;
-        if (args is Map<String, dynamic>) {
-          return InvoicePreviewScreen(
-            invoice: args['invoice'] as Invoice,
-            showTaggedUsers: args['showTaggedUsers'] as bool? ?? true,
-          );
+        Invoice? invoiceArg;
+        bool showTaggedUsers = true;
+        bool isNewlyCreated = false;
+
+        if (args is Invoice) {
+          invoiceArg = args;
+        } else if (args is Map<String, dynamic>) {
+          invoiceArg = args['invoice'] as Invoice?;
+          showTaggedUsers = args['showTaggedUsers'] as bool? ?? true;
+          isNewlyCreated = args['isNewlyCreated'] as bool? ?? false;
         }
-        return InvoicePreviewScreen(invoice: args as Invoice);
+
+        if (invoiceArg == null) {
+          // Fallback to empty invoice if null
+          return const SizedBox.shrink();
+        }
+
+        // Try to reuse existing cubits from navigation stack, fall back to service locator
+        InvoiceCubit? invoiceCubit;
+        AccountCardsSummaryCubit? accountCubit;
+
+        try {
+          invoiceCubit = Get.find<InvoiceCubit>();
+        } catch (_) {
+          invoiceCubit = null;
+        }
+
+        try {
+          accountCubit = Get.find<AccountCardsSummaryCubit>();
+        } catch (_) {
+          accountCubit = null;
+        }
+
+        return MultiBlocProvider(
+          providers: [
+            if (invoiceCubit != null)
+              BlocProvider.value(value: invoiceCubit)
+            else
+              BlocProvider(create: (_) => serviceLocator<InvoiceCubit>()),
+            if (accountCubit != null)
+              BlocProvider.value(value: accountCubit)
+            else
+              BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          ],
+          child: InvoicePreviewScreen(
+            invoice: invoiceArg,
+            showTaggedUsers: showTaggedUsers,
+            isNewlyCreated: isNewlyCreated,
+          ),
+        );
       },
       transition: Transition.rightToLeft,
     ),
@@ -748,15 +810,30 @@ class AppRouter {
     GetPage(
       name: AppRoutes.invoiceProcessing,
       page: () {
-        final invoice = Get.arguments as Invoice;
-        return InvoiceProcessingScreen(invoice: invoice);
+        // Handle both direct Invoice and Map<String, dynamic> arguments
+        final args = Get.arguments;
+        Invoice? invoiceArg;
+
+        if (args is Invoice) {
+          invoiceArg = args;
+        } else if (args is Map<String, dynamic>) {
+          invoiceArg = args['invoice'] as Invoice?;
+        }
+
+        if (invoiceArg == null) {
+          return const SizedBox.shrink();
+        }
+
+        return InvoiceProcessingScreen(invoice: invoiceArg);
       },
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.invoiceItemPayment,
       page: () {
-        final invoice = Get.arguments as Invoice;
+        final args = Get.arguments;
+        final invoice = args is Invoice ? args : (args is Map<String, dynamic> ? args['invoice'] as Invoice? : null);
+        if (invoice == null) return const SizedBox.shrink();
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<TaggedInvoiceCubit>()),
@@ -841,7 +918,10 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.passcodeSetup,
-      page: () => const PasscodeSetupScreen(),
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IdentityCubit>(),
+        child: const PasscodeSetupScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -914,7 +994,7 @@ class AppRouter {
         return BlocProvider(
           create: (context) => serviceLocator<PhoneVerificationCubit>(),
           child: PhoneVerificationScreen(
-            phoneNumber: phoneNumber,
+            phoneNumber: phoneNumber ?? '',
           ),
         );
       },
@@ -962,7 +1042,10 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.faceScan,
-      page: () => serviceLocator<FaceScanScreen>(),
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IdentityCubit>(),
+        child: serviceLocator<FaceScanScreen>(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1219,10 +1302,7 @@ class AppRouter {
       name: AppRoutes.purchaseGiftCard,
       page: () {
         final brand = Get.arguments as GiftCardBrand;
-        return BlocProvider(
-          create: (_) => serviceLocator<GiftCardCubit>(),
-          child: PurchaseGiftCardScreen(brand: brand),
-        );
+        return PurchaseGiftCardScreen(brand: brand);
       },
       transition: Transition.rightToLeft,
     ),
@@ -1239,10 +1319,13 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.giftCardPurchaseProcessing,
-      page: () => BlocProvider.value(
-        value: serviceLocator<GiftCardCubit>(),
-        child: const GiftCardPurchaseProcessingScreen(),
-      ),
+      page: () {
+        final args = Get.arguments as GiftCardPurchaseArgs;
+        return BlocProvider(
+          create: (_) => serviceLocator<GiftCardCubit>(),
+          child: GiftCardPurchaseProcessingScreen(purchaseArgs: args),
+        );
+      },
       transition: Transition.fade,
     ),
     GetPage(
@@ -1263,10 +1346,13 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.sellGiftCard,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<GiftCardCubit>(),
-        child: const SellGiftCardScreen(),
-      ),
+      page: () {
+        final card = Get.arguments as SellableCard?;
+        return BlocProvider(
+          create: (_) => serviceLocator<GiftCardCubit>(),
+          child: SellGiftCardScreen(preselectedCard: card),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1678,6 +1764,45 @@ class AppRouter {
       page: () => const InsuranceHowItWorksScreen(),
       transition: Transition.rightToLeft,
     ),
+    GetPage(
+      name: AppRoutes.insuranceManagement,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InsuranceCubit>(),
+        child: const MyCoverManagementScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceCreditLifeClaim,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        return BlocProvider(
+          create: (_) => serviceLocator<InsuranceCubit>(),
+          child: FileCreditLifeClaimScreen(
+            policyId: args['policyId'] as String,
+            policyNumber: args['policyNumber'] as String? ?? '',
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceNotificationPrefs,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InsuranceCubit>(),
+        child: const MyCoverNotificationPrefsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    GetPage(
+      name: AppRoutes.insuranceAllPolicies,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InsuranceCubit>(),
+        child: const InsuranceAllPoliciesScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
 
     // Airtime routes
     GetPage(
@@ -1745,6 +1870,75 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeCubit>(),
         child: const AirtimeDetailsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Airtime-to-Cash routes
+    GetPage(
+      name: AppRoutes.airtimeToCash,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const AirtimeToCashHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashNetworkSelection,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2CNetworkSelectionScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashPhoneInput,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2CPhoneInputScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashAmountInput,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2CAmountInputScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashReview,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<AirtimeToCashCubit>()),
+          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+        ],
+        child: const A2CReviewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashOTP,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2COTPScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2CProcessingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashResult,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2CResultScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2572,6 +2766,22 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.crowdfundMyCampaigns,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CrowdfundCubit>(),
+        child: const MyCampaignsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.crowdfundMyDonations,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CrowdfundCubit>(),
+        child: const MyDonationsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.crowdfundNotificationChannels,
       page: () {
         final args = Get.arguments as Map<String, dynamic>;
@@ -2696,6 +2906,11 @@ GetPage(
         create: (_) => serviceLocator<VoiceSettingsCubit>(),
         child: const VoiceSettingsScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.voiceCloning,
+      page: () => const VoiceCloningScreen(),
       transition: Transition.rightToLeft,
     ),
 
@@ -3075,6 +3290,11 @@ GetPage(
       name: AppRoutes.dataBundlesPaymentReceipt,
       page: () => const DataPaymentReceiptScreen(),
       transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.autoRenewManagement,
+      page: () => const AutoRenewManagementScreen(),
+      transition: Transition.rightToLeft,
     ),
 
     // Subscription Tracker routes
@@ -3459,6 +3679,7 @@ GetPage(
             secureStorage: serviceLocator<SecureStorageService>(),
             accountsClient: serviceLocator<AccountsGrpcClient>(),
             accountManager: serviceLocator<AccountManager>(),
+            localeManager: serviceLocator<LocaleManager>(),
             currentUserId: currentUserId,
           )..initializeChat(
               (Get.arguments as Map<String, dynamic>?)?['otherUserId'] ?? '',

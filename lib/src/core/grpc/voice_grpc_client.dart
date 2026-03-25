@@ -16,9 +16,17 @@ class VoiceGrpcClient {
 
   /// Start a new voice session
   /// Returns room name and LiveKit token for connecting to the voice session
-  Future<StartVoiceSessionResponse> startVoiceSession() async {
+  ///
+  /// [serviceName] - Service name for routing (e.g., "crypto", "stocks", "transfers")
+  /// [preferredAgentLanguage] - Preferred language for the voice agent (default: "en")
+  Future<StartVoiceSessionResponse> startVoiceSession({
+    String? serviceName,
+    String? preferredAgentLanguage,
+  }) async {
     try {
-      final request = StartVoiceSessionRequest();
+      final request = StartVoiceSessionRequest()
+        ..serviceName = serviceName ?? ''
+        ..language = preferredAgentLanguage ?? 'en';
       final response = await _client.startVoiceSession(request);
       return response;
     } catch (e) {

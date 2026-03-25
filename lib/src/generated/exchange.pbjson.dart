@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: exchange.proto
-//
-// @dart = 2.12
+// Generated from exchange.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -49,7 +50,14 @@ final $typed_data.Uint8List exchangeTypeDescriptor = $convert.base64Decode(
 const GetExchangeRateRequest$json = {
   '1': 'GetExchangeRateRequest',
   '2': [
-    {'1': 'from_currency', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'fromCurrency'},
+    {
+      '1': 'from_currency',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'fromCurrency'
+    },
     {'1': 'to_currency', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'toCurrency'},
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '8': {}, '10': 'amount'},
   ],
@@ -74,10 +82,23 @@ const GetExchangeRateResponse$json = {
     {'1': 'from_currency', '3': 1, '4': 1, '5': 9, '10': 'fromCurrency'},
     {'1': 'to_currency', '3': 2, '4': 1, '5': 9, '10': 'toCurrency'},
     {'1': 'rate', '3': 3, '4': 1, '5': 1, '10': 'rate'},
-    {'1': 'timestamp', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
+    {
+      '1': 'timestamp',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'timestamp'
+    },
     {'1': 'fee', '3': 5, '4': 1, '5': 1, '10': 'fee'},
     {'1': 'fee_percentage', '3': 6, '4': 1, '5': 1, '10': 'feePercentage'},
-    {'1': 'rate_valid_seconds', '3': 7, '4': 1, '5': 5, '10': 'rateValidSeconds'},
+    {
+      '1': 'rate_valid_seconds',
+      '3': 7,
+      '4': 1,
+      '5': 5,
+      '10': 'rateValidSeconds'
+    },
     {'1': 'rate_id', '3': 8, '4': 1, '5': 9, '10': 'rateId'},
   ],
   '7': {},
@@ -105,6 +126,10 @@ const ReceiverDetails$json = {
     {'1': 'country', '3': 5, '4': 1, '5': 9, '10': 'country'},
     {'1': 'bank_code', '3': 6, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'email', '3': 7, '4': 1, '5': 9, '10': 'email'},
+    {'1': 'routing_number', '3': 8, '4': 1, '5': 9, '10': 'routingNumber'},
+    {'1': 'branch_code', '3': 9, '4': 1, '5': 9, '10': 'branchCode'},
+    {'1': 'phone', '3': 10, '4': 1, '5': 9, '10': 'phone'},
+    {'1': 'address', '3': 11, '4': 1, '5': 9, '10': 'address'},
   ],
 };
 
@@ -114,20 +139,58 @@ final $typed_data.Uint8List receiverDetailsDescriptor = $convert.base64Decode(
     '50X251bWJlchgCIAEoCVINYWNjb3VudE51bWJlchIbCgliYW5rX25hbWUYAyABKAlSCGJhbmtO'
     'YW1lEiQKDnN3aWZ0X2JpY19jb2RlGAQgASgJUgxzd2lmdEJpY0NvZGUSGAoHY291bnRyeRgFIA'
     'EoCVIHY291bnRyeRIbCgliYW5rX2NvZGUYBiABKAlSCGJhbmtDb2RlEhQKBWVtYWlsGAcgASgJ'
-    'UgVlbWFpbA==');
+    'UgVlbWFpbBIlCg5yb3V0aW5nX251bWJlchgIIAEoCVINcm91dGluZ051bWJlchIfCgticmFuY2'
+    'hfY29kZRgJIAEoCVIKYnJhbmNoQ29kZRIUCgVwaG9uZRgKIAEoCVIFcGhvbmUSGAoHYWRkcmVz'
+    'cxgLIAEoCVIHYWRkcmVzcw==');
 
 @$core.Deprecated('Use initiateInternationalTransferRequestDescriptor instead')
 const InitiateInternationalTransferRequest$json = {
   '1': 'InitiateInternationalTransferRequest',
   '2': [
-    {'1': 'from_currency', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'fromCurrency'},
+    {
+      '1': 'from_currency',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'fromCurrency'
+    },
     {'1': 'to_currency', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'toCurrency'},
     {'1': 'amount_from', '3': 3, '4': 1, '5': 1, '8': {}, '10': 'amountFrom'},
-    {'1': 'receiver_details', '3': 4, '4': 1, '5': 11, '6': '.pb.ReceiverDetails', '8': {}, '10': 'receiverDetails'},
-    {'1': 'verification_token', '3': 5, '4': 1, '5': 9, '8': {}, '10': 'verificationToken'},
-    {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '8': {}, '10': 'idempotencyKey'},
+    {
+      '1': 'receiver_details',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ReceiverDetails',
+      '8': {},
+      '10': 'receiverDetails'
+    },
+    {
+      '1': 'verification_token',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'verificationToken'
+    },
+    {
+      '1': 'idempotency_key',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'idempotencyKey'
+    },
     {'1': 'rate_id', '3': 7, '4': 1, '5': 9, '8': {}, '10': 'rateId'},
-    {'1': 'purpose_of_payment', '3': 8, '4': 1, '5': 9, '8': {}, '10': 'purposeOfPayment'},
+    {
+      '1': 'purpose_of_payment',
+      '3': 8,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'purposeOfPayment'
+    },
   ],
   '7': {},
 };
@@ -165,13 +228,54 @@ const ExchangeTransaction$json = {
     {'1': 'amount_to', '3': 6, '4': 1, '5': 1, '10': 'amountTo'},
     {'1': 'exchange_rate', '3': 7, '4': 1, '5': 1, '10': 'exchangeRate'},
     {'1': 'fees', '3': 8, '4': 1, '5': 1, '10': 'fees'},
-    {'1': 'receiver_details', '3': 9, '4': 1, '5': 11, '6': '.pb.ReceiverDetails', '10': 'receiverDetails'},
-    {'1': 'status', '3': 10, '4': 1, '5': 14, '6': '.pb.ExchangeStatus', '10': 'status'},
-    {'1': 'created_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'receiver_details',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ReceiverDetails',
+      '10': 'receiverDetails'
+    },
+    {
+      '1': 'status',
+      '3': 10,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.ExchangeStatus',
+      '10': 'status'
+    },
+    {
+      '1': 'created_at',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
     {'1': 'reference', '3': 13, '4': 1, '5': 9, '10': 'reference'},
-    {'1': 'provider_reference', '3': 14, '4': 1, '5': 9, '10': 'providerReference'},
-    {'1': 'exchange_type', '3': 15, '4': 1, '5': 14, '6': '.pb.ExchangeType', '10': 'exchangeType'},
+    {
+      '1': 'provider_reference',
+      '3': 14,
+      '4': 1,
+      '5': 9,
+      '10': 'providerReference'
+    },
+    {
+      '1': 'exchange_type',
+      '3': 15,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.ExchangeType',
+      '10': 'exchangeType'
+    },
     {'1': 'failure_reason', '3': 16, '4': 1, '5': 9, '10': 'failureReason'},
   ],
 };
@@ -196,17 +300,25 @@ final $typed_data.Uint8List exchangeTransactionDescriptor = $convert.base64Decod
 const InitiateInternationalTransferResponse$json = {
   '1': 'InitiateInternationalTransferResponse',
   '2': [
-    {'1': 'transaction', '3': 1, '4': 1, '5': 11, '6': '.pb.ExchangeTransaction', '10': 'transaction'},
+    {
+      '1': 'transaction',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ExchangeTransaction',
+      '10': 'transaction'
+    },
   ],
   '7': {},
 };
 
 /// Descriptor for `InitiateInternationalTransferResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List initiateInternationalTransferResponseDescriptor = $convert.base64Decode(
-    'CiVJbml0aWF0ZUludGVybmF0aW9uYWxUcmFuc2ZlclJlc3BvbnNlEjkKC3RyYW5zYWN0aW9uGA'
-    'EgASgLMhcucGIuRXhjaGFuZ2VUcmFuc2FjdGlvblILdHJhbnNhY3Rpb246XJJBWQpXKihJbml0'
-    'aWF0ZSBJbnRlcm5hdGlvbmFsIFRyYW5zZmVyIFJlc3BvbnNlMitDb250YWlucyBkZXRhaWxzIG'
-    '9mIHRoZSBpbml0aWF0ZWQgdHJhbnNmZXIu');
+final $typed_data.Uint8List initiateInternationalTransferResponseDescriptor =
+    $convert.base64Decode(
+        'CiVJbml0aWF0ZUludGVybmF0aW9uYWxUcmFuc2ZlclJlc3BvbnNlEjkKC3RyYW5zYWN0aW9uGA'
+        'EgASgLMhcucGIuRXhjaGFuZ2VUcmFuc2FjdGlvblILdHJhbnNhY3Rpb246XJJBWQpXKihJbml0'
+        'aWF0ZSBJbnRlcm5hdGlvbmFsIFRyYW5zZmVyIFJlc3BvbnNlMitDb250YWlucyBkZXRhaWxzIG'
+        '9mIHRoZSBpbml0aWF0ZWQgdHJhbnNmZXIu');
 
 @$core.Deprecated('Use getRecentExchangesRequestDescriptor instead')
 const GetRecentExchangesRequest$json = {
@@ -230,7 +342,14 @@ final $typed_data.Uint8List getRecentExchangesRequestDescriptor = $convert.base6
 const GetRecentExchangesResponse$json = {
   '1': 'GetRecentExchangesResponse',
   '2': [
-    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.pb.ExchangeTransaction', '10': 'transactions'},
+    {
+      '1': 'transactions',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.ExchangeTransaction',
+      '10': 'transactions'
+    },
     {'1': 'next_page_token', '3': 2, '4': 1, '5': 9, '10': 'nextPageToken'},
   ],
   '7': {},
@@ -247,11 +366,32 @@ final $typed_data.Uint8List getRecentExchangesResponseDescriptor = $convert.base
 const ConvertCurrencyRequest$json = {
   '1': 'ConvertCurrencyRequest',
   '2': [
-    {'1': 'from_currency', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'fromCurrency'},
+    {
+      '1': 'from_currency',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'fromCurrency'
+    },
     {'1': 'to_currency', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'toCurrency'},
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '8': {}, '10': 'amount'},
-    {'1': 'verification_token', '3': 4, '4': 1, '5': 9, '8': {}, '10': 'verificationToken'},
-    {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '8': {}, '10': 'idempotencyKey'},
+    {
+      '1': 'verification_token',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'verificationToken'
+    },
+    {
+      '1': 'idempotency_key',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'idempotencyKey'
+    },
     {'1': 'rate_id', '3': 6, '4': 1, '5': 9, '8': {}, '10': 'rateId'},
   ],
   '7': {},
@@ -276,7 +416,14 @@ final $typed_data.Uint8List convertCurrencyRequestDescriptor = $convert.base64De
 const ConvertCurrencyResponse$json = {
   '1': 'ConvertCurrencyResponse',
   '2': [
-    {'1': 'transaction', '3': 1, '4': 1, '5': 11, '6': '.pb.ExchangeTransaction', '10': 'transaction'},
+    {
+      '1': 'transaction',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ExchangeTransaction',
+      '10': 'transaction'
+    },
   ],
   '7': {},
 };
@@ -291,7 +438,14 @@ final $typed_data.Uint8List convertCurrencyResponseDescriptor = $convert.base64D
 const GetTransactionStatusRequest$json = {
   '1': 'GetTransactionStatusRequest',
   '2': [
-    {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'transactionId'},
+    {
+      '1': 'transaction_id',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'transactionId'
+    },
   ],
   '7': {},
 };
@@ -307,7 +461,14 @@ final $typed_data.Uint8List getTransactionStatusRequestDescriptor = $convert.bas
 const GetTransactionStatusResponse$json = {
   '1': 'GetTransactionStatusResponse',
   '2': [
-    {'1': 'transaction', '3': 1, '4': 1, '5': 11, '6': '.pb.ExchangeTransaction', '10': 'transaction'},
+    {
+      '1': 'transaction',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ExchangeTransaction',
+      '10': 'transaction'
+    },
   ],
   '7': {},
 };
@@ -326,10 +487,11 @@ const GetSupportedCurrenciesRequest$json = {
 };
 
 /// Descriptor for `GetSupportedCurrenciesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSupportedCurrenciesRequestDescriptor = $convert.base64Decode(
-    'Ch1HZXRTdXBwb3J0ZWRDdXJyZW5jaWVzUmVxdWVzdDpPkkFMCkoqIEdldCBTdXBwb3J0ZWQgQ3'
-    'VycmVuY2llcyBSZXF1ZXN0MiZSZXF1ZXN0IHN1cHBvcnRlZCBleGNoYW5nZSBjdXJyZW5jaWVz'
-    'Lg==');
+final $typed_data.Uint8List getSupportedCurrenciesRequestDescriptor =
+    $convert.base64Decode(
+        'Ch1HZXRTdXBwb3J0ZWRDdXJyZW5jaWVzUmVxdWVzdDpPkkFMCkoqIEdldCBTdXBwb3J0ZWQgQ3'
+        'VycmVuY2llcyBSZXF1ZXN0MiZSZXF1ZXN0IHN1cHBvcnRlZCBleGNoYW5nZSBjdXJyZW5jaWVz'
+        'Lg==');
 
 @$core.Deprecated('Use supportedCurrencyDescriptor instead')
 const SupportedCurrency$json = {
@@ -339,8 +501,20 @@ const SupportedCurrency$json = {
     {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
     {'1': 'symbol', '3': 3, '4': 1, '5': 9, '10': 'symbol'},
     {'1': 'country', '3': 4, '4': 1, '5': 9, '10': 'country'},
-    {'1': 'supports_conversion', '3': 5, '4': 1, '5': 8, '10': 'supportsConversion'},
-    {'1': 'supports_international', '3': 6, '4': 1, '5': 8, '10': 'supportsInternational'},
+    {
+      '1': 'supports_conversion',
+      '3': 5,
+      '4': 1,
+      '5': 8,
+      '10': 'supportsConversion'
+    },
+    {
+      '1': 'supports_international',
+      '3': 6,
+      '4': 1,
+      '5': 8,
+      '10': 'supportsInternational'
+    },
     {'1': 'min_amount', '3': 7, '4': 1, '5': 1, '10': 'minAmount'},
     {'1': 'max_amount', '3': 8, '4': 1, '5': 1, '10': 'maxAmount'},
   ],
@@ -358,15 +532,75 @@ final $typed_data.Uint8List supportedCurrencyDescriptor = $convert.base64Decode(
 const GetSupportedCurrenciesResponse$json = {
   '1': 'GetSupportedCurrenciesResponse',
   '2': [
-    {'1': 'currencies', '3': 1, '4': 3, '5': 11, '6': '.pb.SupportedCurrency', '10': 'currencies'},
+    {
+      '1': 'currencies',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.SupportedCurrency',
+      '10': 'currencies'
+    },
   ],
   '7': {},
 };
 
 /// Descriptor for `GetSupportedCurrenciesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSupportedCurrenciesResponseDescriptor = $convert.base64Decode(
-    'Ch5HZXRTdXBwb3J0ZWRDdXJyZW5jaWVzUmVzcG9uc2USNQoKY3VycmVuY2llcxgBIAMoCzIVLn'
-    'BiLlN1cHBvcnRlZEN1cnJlbmN5UgpjdXJyZW5jaWVzOlCSQU0KSyohR2V0IFN1cHBvcnRlZCBD'
-    'dXJyZW5jaWVzIFJlc3BvbnNlMiZMaXN0IG9mIHN1cHBvcnRlZCBleGNoYW5nZSBjdXJyZW5jaW'
-    'VzLg==');
+final $typed_data.Uint8List getSupportedCurrenciesResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRTdXBwb3J0ZWRDdXJyZW5jaWVzUmVzcG9uc2USNQoKY3VycmVuY2llcxgBIAMoCzIVLn'
+        'BiLlN1cHBvcnRlZEN1cnJlbmN5UgpjdXJyZW5jaWVzOlCSQU0KSyohR2V0IFN1cHBvcnRlZCBD'
+        'dXJyZW5jaWVzIFJlc3BvbnNlMiZMaXN0IG9mIHN1cHBvcnRlZCBleGNoYW5nZSBjdXJyZW5jaW'
+        'VzLg==');
 
+@$core.Deprecated('Use getExchangeLimitsRequestDescriptor instead')
+const GetExchangeLimitsRequest$json = {
+  '1': 'GetExchangeLimitsRequest',
+  '2': [
+    {'1': 'currency', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'currency'},
+  ],
+  '7': {},
+};
+
+/// Descriptor for `GetExchangeLimitsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExchangeLimitsRequestDescriptor = $convert.base64Decode(
+    'ChhHZXRFeGNoYW5nZUxpbWl0c1JlcXVlc3QSTQoIY3VycmVuY3kYASABKAlCMZJBLjIsU291cm'
+    'NlIGN1cnJlbmN5IGZvciBsaW1pdCBjaGVjayAoZS5nLiwgTkdOKS5SCGN1cnJlbmN5OlCSQU0K'
+    'SyobR2V0IEV4Y2hhbmdlIExpbWl0cyBSZXF1ZXN0MixSZXF1ZXN0IGN1cnJlbnQgdXNlcidzIE'
+    'ZYIGNvbnZlcnNpb24gbGltaXRzLg==');
+
+@$core.Deprecated('Use getExchangeLimitsResponseDescriptor instead')
+const GetExchangeLimitsResponse$json = {
+  '1': 'GetExchangeLimitsResponse',
+  '2': [
+    {'1': 'kyc_tier', '3': 1, '4': 1, '5': 5, '10': 'kycTier'},
+    {'1': 'daily_limit', '3': 2, '4': 1, '5': 1, '10': 'dailyLimit'},
+    {'1': 'daily_used', '3': 3, '4': 1, '5': 1, '10': 'dailyUsed'},
+    {'1': 'daily_remaining', '3': 4, '4': 1, '5': 1, '10': 'dailyRemaining'},
+    {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    {
+      '1': 'min_per_transaction',
+      '3': 6,
+      '4': 1,
+      '5': 1,
+      '10': 'minPerTransaction'
+    },
+    {
+      '1': 'max_per_transaction',
+      '3': 7,
+      '4': 1,
+      '5': 1,
+      '10': 'maxPerTransaction'
+    },
+  ],
+  '7': {},
+};
+
+/// Descriptor for `GetExchangeLimitsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExchangeLimitsResponseDescriptor = $convert.base64Decode(
+    'ChlHZXRFeGNoYW5nZUxpbWl0c1Jlc3BvbnNlEhkKCGt5Y190aWVyGAEgASgFUgdreWNUaWVyEh'
+    '8KC2RhaWx5X2xpbWl0GAIgASgBUgpkYWlseUxpbWl0Eh0KCmRhaWx5X3VzZWQYAyABKAFSCWRh'
+    'aWx5VXNlZBInCg9kYWlseV9yZW1haW5pbmcYBCABKAFSDmRhaWx5UmVtYWluaW5nEhoKCGN1cn'
+    'JlbmN5GAUgASgJUghjdXJyZW5jeRIuChNtaW5fcGVyX3RyYW5zYWN0aW9uGAYgASgBUhFtaW5Q'
+    'ZXJUcmFuc2FjdGlvbhIuChNtYXhfcGVyX3RyYW5zYWN0aW9uGAcgASgBUhFtYXhQZXJUcmFuc2'
+    'FjdGlvbjpbkkFYClYqHEdldCBFeGNoYW5nZSBMaW1pdHMgUmVzcG9uc2UyNkN1cnJlbnQgdXNl'
+    'cidzIEZYIGNvbnZlcnNpb24gbGltaXRzIGJhc2VkIG9uIEtZQyB0aWVyLg==');

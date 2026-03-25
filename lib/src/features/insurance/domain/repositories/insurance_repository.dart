@@ -2,6 +2,7 @@ import '../entities/insurance_entity.dart';
 import '../entities/insurance_payment_entity.dart';
 import '../entities/insurance_claim_entity.dart';
 import '../entities/insurance_product_entity.dart';
+import '../entities/mycover_management_entities.dart';
 
 abstract class InsuranceRepository {
   // Insurance Policy Operations
@@ -61,4 +62,33 @@ abstract class InsuranceRepository {
     required String utilityId,
     String? query,
   });
+
+  // MyCover Management APIs
+  Future<({List<MyCoverCustomer> customers, int total})> getMyCoverCustomers({int page = 1, int limit = 20});
+  Future<MyCoverCustomer> getMyCoverCustomerById(String customerId);
+  Future<({List<MyCoverPolicyDetail> policies, int total})> getMyCoverCustomerPolicies(String customerId, {int page = 1, int limit = 20});
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverCustomerPurchases(String customerId, {int page = 1, int limit = 20});
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverPurchases({int page = 1, int limit = 20});
+  Future<MyCoverPurchase> getMyCoverPurchaseById(String purchaseId);
+  Future<({List<MyCoverProviderClaim> claims, int total})> getMyCoverClaims({String? status, int page = 1, int limit = 20});
+  Future<MyCoverProviderClaim> getMyCoverClaimById(String claimId);
+  Future<({String claimId, String claimNumber, String status})> fileCreditLifeClaim({
+    required String policyId,
+    required String claimType,
+    required String description,
+    required double amount,
+    List<String>? documents,
+    Map<String, String>? additionalInfo,
+  });
+  Future<List<AuxiliaryItem>> getInsuranceStates();
+  Future<List<AuxiliaryItem>> getInsuranceVehicleMakes();
+
+  // Notification Preferences
+  Future<List<MyCoverNotificationPref>> getMyCoverNotificationPreferences();
+  Future<void> updateMyCoverNotificationPreferences(List<MyCoverNotificationPref> preferences);
+
+  // Wallet & Refund
+  Future<MyCoverWalletBalance> getMyCoverWalletBalance();
+  Future<InsuranceRefund> requestInsuranceRefund({required String policyReference, required String reason});
+  Future<InsuranceRefund> getInsuranceRefundStatus(String policyReference);
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
@@ -63,7 +64,9 @@ class _FamilyPendingInvitationsScreenState
                 snackPosition: SnackPosition.BOTTOM,
                 margin: EdgeInsets.all(16.w),
               );
-              _cubit.loadPendingInvitations();
+              // Navigate to family details and force dashboard refresh on return
+              Get.offNamed(AppRoutes.familyDetails,
+                  arguments: {'familyId': state.familyAccount.id});
             } else if (state is InvitationDeclined) {
               Get.snackbar(
                 'Declined',

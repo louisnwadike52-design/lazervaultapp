@@ -49,13 +49,15 @@ class ChatRequest {
 class ChatResponse {
   final String response;
   final Map<String, dynamic> metadata;
+  final Map<String, dynamic>? receiptData;
 
-  ChatResponse({required this.response, required this.metadata});
+  ChatResponse({required this.response, required this.metadata, this.receiptData});
 
   factory ChatResponse.fromJson(Map<String, dynamic> json) {
     return ChatResponse(
       response: json['response'] as String? ?? '',
       metadata: json['metadata'] as Map<String, dynamic>? ?? {},
+      receiptData: json['receipt_data'] as Map<String, dynamic>?,
     );
   }
 }
@@ -90,6 +92,8 @@ class ChatHistoryMessage {
   final String sourceContext;
   final String timestamp;
   final Map<String, dynamic>? mediaMetadata;
+  final Map<String, dynamic>? entities;
+  final Map<String, dynamic>? metadata;
 
   ChatHistoryMessage({
     required this.role,
@@ -98,6 +102,8 @@ class ChatHistoryMessage {
     required this.sourceContext,
     required this.timestamp,
     this.mediaMetadata,
+    this.entities,
+    this.metadata,
   });
 
   factory ChatHistoryMessage.fromJson(Map<String, dynamic> json) {
@@ -109,6 +115,8 @@ class ChatHistoryMessage {
       sourceContext: json['source_context'] as String? ?? '',
       timestamp: json['timestamp'] as String? ?? '',
       mediaMetadata: metadata != null ? metadata['media'] as Map<String, dynamic>? : null,
+      entities: json['entities'] as Map<String, dynamic>?,
+      metadata: metadata,
     );
   }
 }
@@ -132,7 +140,7 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
   HttpMicroserviceChatDataSource({
     required this.dio,
     required this.callOptionsHelper,
-    this.baseUrl = 'http://localhost:3011', // Chat Agent Gateway
+    this.baseUrl = 'http://10.0.2.2:3011', // Chat Agent Gateway (10.0.2.2 for Android emulator)
   });
 
   @override

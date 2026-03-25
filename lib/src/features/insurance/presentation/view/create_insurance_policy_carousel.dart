@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import '../cubit/create_policy_cubit.dart';
 import '../cubit/insurance_cubit.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
@@ -76,6 +80,7 @@ class _CreateInsurancePolicyCarouselState
           return;
         }
         // Show loading while fetching quote with timeout
+        if (!mounted) return;
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -83,14 +88,20 @@ class _CreateInsurancePolicyCarouselState
             child: CircularProgressIndicator(color: Color(0xFF6366F1)),
           ),
         );
-        bool timedOut = false;
-        final timeout = Future.delayed(const Duration(seconds: 30), () {
-          timedOut = true;
-        });
-        await Future.any([cubit.getQuote(), timeout]);
+        // Use a simple timeout approach — getQuote completes or 30s elapses
+        bool quoteTimedOut = false;
+        try {
+          await cubit.getQuote().timeout(const Duration(seconds: 30));
+        } on TimeoutException {
+          quoteTimedOut = true;
+        }
         if (mounted) Navigator.of(context, rootNavigator: true).pop();
-        if (timedOut && mounted) {
+        if (quoteTimedOut && mounted) {
           _showErrorSnackBar('Quote request timed out. Please try again.');
+          return;
+        }
+        // If quote wasn't obtained (error already emitted by cubit), stay on form
+        if (cubit.quote == null && mounted) {
           return;
         }
         break;
@@ -138,9 +149,13 @@ class _CreateInsurancePolicyCarouselState
         }
         break;
       case 3:
-        // Confirm & Pay -> validate account selection then trigger PIN entry
+        // Confirm & Pay -> validate account selection and terms then trigger PIN entry
         if (cubit.selectedAccountId == null) {
           _showErrorSnackBar('Please select an account to pay from');
+          return;
+        }
+        if (!cubit.agreedToTerms) {
+          _showErrorSnackBar('Please accept the terms and conditions');
           return;
         }
         _proceedToPurchase();
@@ -250,27 +265,45 @@ class _CreateInsurancePolicyCarouselState
         icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
         onPressed: _goToPreviousPage,
       ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'New Insurance Policy',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          Text(
-            'Step ${_currentPage + 1} of $_totalPages - ${_pageNames[_currentPage]}',
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[400],
-            ),
-          ),
-        ],
+      title: Builder(
+        builder: (context) {
+          final cubit = context.read<CreatePolicyCubit>();
+          final selectedProduct = cubit.selectedProduct;
+          final subtitle = _currentPage > 0 && selectedProduct != null
+              ? '${_pageNames[_currentPage]} · ${selectedProduct.name}'
+              : 'Step ${_currentPage + 1} of $_totalPages - ${_pageNames[_currentPage]}';
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'New Insurance Policy',
+                style: GoogleFonts.inter(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[400],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          );
+        },
       ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.close, color: Colors.white, size: 24.sp),
+          onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+          tooltip: 'Close',
+        ),
+      ],
     );
   }
 
@@ -297,7 +330,7 @@ class _CreateInsurancePolicyCarouselState
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -384,7 +417,7 @@ class _CreateInsurancePolicyCarouselState
                     gradient: LinearGradient(
                       colors: isLastPage
                           ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                          : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                          : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

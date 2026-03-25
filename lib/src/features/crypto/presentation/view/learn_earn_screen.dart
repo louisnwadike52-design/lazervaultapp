@@ -57,6 +57,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           child: Column(
             children: [
               _buildHeader(),
+              _buildComingSoonBanner(),
               _buildProgressOverview(),
               _buildTabBar(),
               Expanded(
@@ -73,6 +74,55 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildComingSoonBanner() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.green.withValues(alpha: 0.2),
+            const Color(0xFF1F1F1F),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.rocket_launch, color: Colors.green, size: 28.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Coming Soon',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Learn about crypto and earn rewards. Feature in development.',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

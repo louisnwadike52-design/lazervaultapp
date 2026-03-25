@@ -256,7 +256,7 @@ class _CardsListScreenState extends State<CardsListScreen> {
           const SizedBox(width: 10),
           _buildStatBadge('Virtual', virtual, const Color(0xFFFB923C)),
           const SizedBox(width: 10),
-          _buildStatBadge('Disposable', disposable, const Color(0xFF8B5CF6)),
+          _buildStatBadge('Disposable', disposable, const Color.fromARGB(255, 78, 3, 208)),
         ],
       ),
     );
@@ -411,7 +411,7 @@ class _CardsListScreenState extends State<CardsListScreen> {
 
   Widget _buildCardTypeChip(card_entities.CardType cardType) {
     final color = cardType == card_entities.CardType.disposable
-        ? const Color(0xFF8B5CF6)
+        ? const Color.fromARGB(255, 78, 3, 208)
         : const Color(0xFFFB923C);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

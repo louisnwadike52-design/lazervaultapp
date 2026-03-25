@@ -131,7 +131,8 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    String? sourceAccountId,
+    required String sourceAccountId,
+    required String transactionPin,
   }) async {
     try {
       return await remoteDataSource.makeDonation(
@@ -140,6 +141,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         message: message,
         isAnonymous: isAnonymous,
         sourceAccountId: sourceAccountId,
+        transactionPin: transactionPin,
       );
     } catch (e) {
       throw Exception('Failed to make donation: $e');
@@ -310,6 +312,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     String? slackWebhookUrl,
     String? slackWorkspaceName,
     String? slackChannelName,
+    String? whatsappRecipientId,
     List<NotificationEventType>? enabledEvents,
   }) async {
     try {
@@ -324,6 +327,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         slackWebhookUrl: slackWebhookUrl,
         slackWorkspaceName: slackWorkspaceName,
         slackChannelName: slackChannelName,
+        whatsappRecipientId: whatsappRecipientId,
         enabledEvents: enabledEvents,
       );
     } catch (e) {

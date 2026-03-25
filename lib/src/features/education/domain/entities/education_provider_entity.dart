@@ -4,6 +4,7 @@ class EducationProviderEntity extends Equatable {
   final String id;
   final String name;
   final String serviceId;
+  final String variationCode;
   final String logoUrl;
   final bool isActive;
   final double amount;
@@ -13,6 +14,7 @@ class EducationProviderEntity extends Equatable {
     required this.id,
     required this.name,
     required this.serviceId,
+    required this.variationCode,
     required this.logoUrl,
     required this.isActive,
     required this.amount,
@@ -20,5 +22,5 @@ class EducationProviderEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, name, serviceId, logoUrl, isActive, amount, description];
+  List<Object?> get props => [id, name, serviceId, variationCode, logoUrl, isActive, amount, description];
 }

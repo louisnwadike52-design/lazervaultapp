@@ -44,14 +44,14 @@ class StockEmptyStates {
   static Widget emptyOrders({VoidCallback? onTrade}) {
     return _EmptyStateTemplate(
       icon: Icons.receipt_long_outlined,
-      iconColor: const Color(0xFF8B5CF6),
+      iconColor: const Color.fromARGB(255, 78, 3, 208),
       title: 'No Orders Yet',
       subtitle: 'Your trade orders will appear here',
       actionText: 'Start Trading',
       onAction: onTrade,
       gradient: LinearGradient(
         colors: [
-          const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.15),
           const Color(0xFF7C3AED).withValues(alpha: 0.05),
         ],
       ),

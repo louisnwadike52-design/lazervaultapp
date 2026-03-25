@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import 'package:lazervault/src/generated/group_account.pbgrpc.dart' as pb;
 import 'package:lazervault/src/generated/group_account.pbenum.dart' as pb_enum;
 import '../models/group_account_models.dart';
@@ -59,7 +60,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return response.groups.map((group) => _mapGroupFromProto(group)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get user groups'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get user groups'));
     } catch (e) {
       rethrow;
     }
@@ -75,7 +76,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapGroupFromProto(response.group);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get group'));
     } catch (e) {
       rethrow;
     }
@@ -113,7 +114,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapGroupFromProto(response.group);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to create group'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to create group'));
     }
   }
 
@@ -136,7 +137,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapGroupFromProto(response.group);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update group'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to update group'));
     }
   }
 
@@ -148,7 +149,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       await _client.deleteGroup(request, options: callOptions);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to delete group'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to delete group'));
     }
   }
 
@@ -166,7 +167,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return response.members.map((member) => _mapMemberFromProto(member)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group members'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get group members'));
     } catch (e) {
       rethrow;
     }
@@ -207,7 +208,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapMemberFromProto(response.member);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to add member'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to add member'));
     }
   }
 
@@ -228,7 +229,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapMemberFromProto(response.member);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update member role'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to update member role'));
     }
   }
 
@@ -245,7 +246,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       await _client.removeMember(request, options: callOptions);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to remove member'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to remove member'));
     }
   }
 
@@ -271,7 +272,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         userUsername: user.userUsername.isNotEmpty ? user.userUsername : null,
       )).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to search users'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to search users'));
     }
   }
 
@@ -292,7 +293,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return response.contributions.map((contribution) => _mapContributionFromProto(contribution)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contributions'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get contributions'));
     } catch (e) {
       rethrow;
     }
@@ -308,7 +309,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contribution'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get contribution'));
     }
   }
 
@@ -382,7 +383,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to create contribution'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to create contribution'));
     }
   }
 
@@ -406,7 +407,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update contribution'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to update contribution'));
     }
   }
 
@@ -418,7 +419,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       await _client.deleteContribution(request, options: callOptions);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to delete contribution'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to delete contribution'));
     }
   }
 
@@ -447,7 +448,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // Extract members from the updated contribution
       return response.contribution.members.map((m) => _mapContributionMemberFromProto(m)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to add members to contribution'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to add members to contribution'));
     }
   }
 
@@ -461,7 +462,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return response.members.map((m) => _mapContributionMemberFromProto(m)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contribution members'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get contribution members'));
     }
   }
 
@@ -478,7 +479,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       await _client.removeMemberFromContribution(request, options: callOptions);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to remove member from contribution'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to remove member from contribution'));
     }
   }
 
@@ -499,7 +500,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return response.payments.map((payment) => _mapPaymentFromProto(payment)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get payments'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get payments'));
     }
   }
 
@@ -545,7 +546,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapPaymentFromProto(response.payment);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to make payment'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to make payment'));
     }
   }
 
@@ -569,7 +570,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapPaymentFromProto(response.payment);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update payment status'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to update payment status'));
     }
   }
 
@@ -583,7 +584,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to process scheduled payments'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to process scheduled payments'));
     }
   }
 
@@ -597,7 +598,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return response.contributions.map((contribution) => _mapContributionFromProto(contribution)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get overdue contributions'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get overdue contributions'));
     }
   }
 
@@ -616,7 +617,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update payment schedule'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to update payment schedule'));
     }
   }
 
@@ -634,7 +635,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return response.schedule.map((schedule) => _mapPayoutScheduleFromProto(schedule)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get payout schedule'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get payout schedule'));
     }
   }
 
@@ -653,7 +654,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapPayoutTransactionFromProto(response.transaction);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to process payout'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to process payout'));
     }
   }
 
@@ -681,7 +682,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapPayoutTransactionFromProto(response.payout);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to update payout status'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to update payout status'));
     }
   }
 
@@ -699,7 +700,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapContributionFromProto(getResponse.contribution);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to calculate and process payout'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to calculate and process payout'));
     }
   }
 
@@ -713,7 +714,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to advance payout rotation'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to advance payout rotation'));
     }
   }
 
@@ -731,7 +732,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return _mapReceiptFromProto(response.receipt);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to generate receipt'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to generate receipt'));
     }
   }
 
@@ -747,7 +748,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
 
       return response.receipts.map((receipt) => _mapReceiptFromProto(receipt)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get user receipts'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get user receipts'));
     }
   }
 

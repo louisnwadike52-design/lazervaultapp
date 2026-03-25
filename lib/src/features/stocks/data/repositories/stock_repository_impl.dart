@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../domain/repositories/i_stock_repository.dart';
 import '../datasources/stock_remote_data_source.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 
 class StockRepositoryImpl implements IStockRepository {
   final IStockRemoteDataSource remoteDataSource;
@@ -99,6 +99,9 @@ class StockRepositoryImpl implements IStockRepository {
     required OrderSide side,
     required int quantity,
     double? price,
+    double? quantityExact,
+    String? transactionId,
+    String? verificationToken,
   }) async {
     try {
       final order = await remoteDataSource.placeOrder(
@@ -107,6 +110,9 @@ class StockRepositoryImpl implements IStockRepository {
         side: side,
         quantity: quantity,
         price: price,
+        quantityExact: quantityExact,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
       );
       return Right(order);
     } catch (e) {

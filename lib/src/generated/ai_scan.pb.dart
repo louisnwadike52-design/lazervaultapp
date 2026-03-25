@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: ai_scan.proto
-//
-// @dart = 2.12
+// Generated from ai_scan.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
 
 import 'dart:core' as $core;
 
@@ -15,6 +16,8 @@ import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'ai_scan.pbenum.dart';
+
+export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 export 'ai_scan.pbenum.dart';
 
@@ -24,63 +27,72 @@ class StartScanSessionRequest extends $pb.GeneratedMessage {
     $core.String? userId,
     ScanType? scanType,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (scanType != null) {
-      $result.scanType = scanType;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (scanType != null) result.scanType = scanType;
+    return result;
   }
-  StartScanSessionRequest._() : super();
-  factory StartScanSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory StartScanSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'StartScanSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  StartScanSessionRequest._();
+
+  factory StartScanSessionRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory StartScanSessionRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'StartScanSessionRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..e<ScanType>(2, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE, defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED, valueOf: ScanType.valueOf, enumValues: ScanType.values)
-    ..hasRequiredFields = false
-  ;
+    ..e<ScanType>(2, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE,
+        defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED,
+        valueOf: ScanType.valueOf,
+        enumValues: ScanType.values)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  StartScanSessionRequest clone() => StartScanSessionRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  StartScanSessionRequest copyWith(void Function(StartScanSessionRequest) updates) => super.copyWith((message) => updates(message as StartScanSessionRequest)) as StartScanSessionRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StartScanSessionRequest clone() =>
+      StartScanSessionRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StartScanSessionRequest copyWith(
+          void Function(StartScanSessionRequest) updates) =>
+      super.copyWith((message) => updates(message as StartScanSessionRequest))
+          as StartScanSessionRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static StartScanSessionRequest create() => StartScanSessionRequest._();
+  @$core.override
   StartScanSessionRequest createEmptyInstance() => create();
-  static $pb.PbList<StartScanSessionRequest> createRepeated() => $pb.PbList<StartScanSessionRequest>();
+  static $pb.PbList<StartScanSessionRequest> createRepeated() =>
+      $pb.PbList<StartScanSessionRequest>();
   @$core.pragma('dart2js:noInline')
-  static StartScanSessionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<StartScanSessionRequest>(create);
+  static StartScanSessionRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<StartScanSessionRequest>(create);
   static StartScanSessionRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   ScanType get scanType => $_getN(1);
   @$pb.TagNumber(2)
-  set scanType(ScanType v) { setField(2, v); }
+  set scanType(ScanType value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasScanType() => $_has(1);
   @$pb.TagNumber(2)
-  void clearScanType() => clearField(2);
+  void clearScanType() => $_clearField(2);
 }
 
 class StartScanSessionResponse extends $pb.GeneratedMessage {
@@ -90,89 +102,97 @@ class StartScanSessionResponse extends $pb.GeneratedMessage {
     ScanStatus? status,
     $fixnum.Int64? createdAt,
   }) {
-    final $result = create();
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    if (scanType != null) {
-      $result.scanType = scanType;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (createdAt != null) {
-      $result.createdAt = createdAt;
-    }
-    return $result;
+    final result = create();
+    if (sessionId != null) result.sessionId = sessionId;
+    if (scanType != null) result.scanType = scanType;
+    if (status != null) result.status = status;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
   }
-  StartScanSessionResponse._() : super();
-  factory StartScanSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory StartScanSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'StartScanSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  StartScanSessionResponse._();
+
+  factory StartScanSessionResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory StartScanSessionResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'StartScanSessionResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
-    ..e<ScanType>(2, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE, defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED, valueOf: ScanType.valueOf, enumValues: ScanType.values)
-    ..e<ScanStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ScanStatus.SCAN_STATUS_UNSPECIFIED, valueOf: ScanStatus.valueOf, enumValues: ScanStatus.values)
+    ..e<ScanType>(2, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE,
+        defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED,
+        valueOf: ScanType.valueOf,
+        enumValues: ScanType.values)
+    ..e<ScanStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE,
+        defaultOrMaker: ScanStatus.SCAN_STATUS_UNSPECIFIED,
+        valueOf: ScanStatus.valueOf,
+        enumValues: ScanStatus.values)
     ..aInt64(4, _omitFieldNames ? '' : 'createdAt')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  StartScanSessionResponse clone() => StartScanSessionResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  StartScanSessionResponse copyWith(void Function(StartScanSessionResponse) updates) => super.copyWith((message) => updates(message as StartScanSessionResponse)) as StartScanSessionResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StartScanSessionResponse clone() =>
+      StartScanSessionResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StartScanSessionResponse copyWith(
+          void Function(StartScanSessionResponse) updates) =>
+      super.copyWith((message) => updates(message as StartScanSessionResponse))
+          as StartScanSessionResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static StartScanSessionResponse create() => StartScanSessionResponse._();
+  @$core.override
   StartScanSessionResponse createEmptyInstance() => create();
-  static $pb.PbList<StartScanSessionResponse> createRepeated() => $pb.PbList<StartScanSessionResponse>();
+  static $pb.PbList<StartScanSessionResponse> createRepeated() =>
+      $pb.PbList<StartScanSessionResponse>();
   @$core.pragma('dart2js:noInline')
-  static StartScanSessionResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<StartScanSessionResponse>(create);
+  static StartScanSessionResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<StartScanSessionResponse>(create);
   static StartScanSessionResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get sessionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sessionId($core.String v) { $_setString(0, v); }
+  set sessionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSessionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSessionId() => clearField(1);
+  void clearSessionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   ScanType get scanType => $_getN(1);
   @$pb.TagNumber(2)
-  set scanType(ScanType v) { setField(2, v); }
+  set scanType(ScanType value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasScanType() => $_has(1);
   @$pb.TagNumber(2)
-  void clearScanType() => clearField(2);
+  void clearScanType() => $_clearField(2);
 
   @$pb.TagNumber(3)
   ScanStatus get status => $_getN(2);
   @$pb.TagNumber(3)
-  set status(ScanStatus v) { setField(3, v); }
+  set status(ScanStatus value) => $_setField(3, value);
   @$pb.TagNumber(3)
   $core.bool hasStatus() => $_has(2);
   @$pb.TagNumber(3)
-  void clearStatus() => clearField(3);
+  void clearStatus() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $fixnum.Int64 get createdAt => $_getI64(3);
   @$pb.TagNumber(4)
-  set createdAt($fixnum.Int64 v) { $_setInt64(3, v); }
+  set createdAt($fixnum.Int64 value) => $_setInt64(3, value);
   @$pb.TagNumber(4)
   $core.bool hasCreatedAt() => $_has(3);
   @$pb.TagNumber(4)
-  void clearCreatedAt() => clearField(4);
+  void clearCreatedAt() => $_clearField(4);
 }
 
 /// Process Image
@@ -182,76 +202,82 @@ class ProcessImageRequest extends $pb.GeneratedMessage {
     $core.List<$core.int>? imageData,
     ScanType? scanType,
   }) {
-    final $result = create();
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    if (imageData != null) {
-      $result.imageData = imageData;
-    }
-    if (scanType != null) {
-      $result.scanType = scanType;
-    }
-    return $result;
+    final result = create();
+    if (sessionId != null) result.sessionId = sessionId;
+    if (imageData != null) result.imageData = imageData;
+    if (scanType != null) result.scanType = scanType;
+    return result;
   }
-  ProcessImageRequest._() : super();
-  factory ProcessImageRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ProcessImageRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessImageRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  ProcessImageRequest._();
+
+  factory ProcessImageRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ProcessImageRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ProcessImageRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
-    ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'imageData', $pb.PbFieldType.OY)
-    ..e<ScanType>(3, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE, defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED, valueOf: ScanType.valueOf, enumValues: ScanType.values)
-    ..hasRequiredFields = false
-  ;
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'imageData', $pb.PbFieldType.OY)
+    ..e<ScanType>(3, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE,
+        defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED,
+        valueOf: ScanType.valueOf,
+        enumValues: ScanType.values)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   ProcessImageRequest clone() => ProcessImageRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ProcessImageRequest copyWith(void Function(ProcessImageRequest) updates) => super.copyWith((message) => updates(message as ProcessImageRequest)) as ProcessImageRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ProcessImageRequest copyWith(void Function(ProcessImageRequest) updates) =>
+      super.copyWith((message) => updates(message as ProcessImageRequest))
+          as ProcessImageRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ProcessImageRequest create() => ProcessImageRequest._();
+  @$core.override
   ProcessImageRequest createEmptyInstance() => create();
-  static $pb.PbList<ProcessImageRequest> createRepeated() => $pb.PbList<ProcessImageRequest>();
+  static $pb.PbList<ProcessImageRequest> createRepeated() =>
+      $pb.PbList<ProcessImageRequest>();
   @$core.pragma('dart2js:noInline')
-  static ProcessImageRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessImageRequest>(create);
+  static ProcessImageRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ProcessImageRequest>(create);
   static ProcessImageRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get sessionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sessionId($core.String v) { $_setString(0, v); }
+  set sessionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSessionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSessionId() => clearField(1);
+  void clearSessionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.List<$core.int> get imageData => $_getN(1);
   @$pb.TagNumber(2)
-  set imageData($core.List<$core.int> v) { $_setBytes(1, v); }
+  set imageData($core.List<$core.int> value) => $_setBytes(1, value);
   @$pb.TagNumber(2)
   $core.bool hasImageData() => $_has(1);
   @$pb.TagNumber(2)
-  void clearImageData() => clearField(2);
+  void clearImageData() => $_clearField(2);
 
   @$pb.TagNumber(3)
   ScanType get scanType => $_getN(2);
   @$pb.TagNumber(3)
-  set scanType(ScanType v) { setField(3, v); }
+  set scanType(ScanType value) => $_setField(3, value);
   @$pb.TagNumber(3)
   $core.bool hasScanType() => $_has(2);
   @$pb.TagNumber(3)
-  void clearScanType() => clearField(3);
+  void clearScanType() => $_clearField(3);
 }
 
 class ExtractedData extends $pb.GeneratedMessage {
@@ -265,50 +291,39 @@ class ExtractedData extends $pb.GeneratedMessage {
     $core.String? accountNumber,
     $core.String? routingNumber,
     $core.String? bankName,
-    $core.Map<$core.String, $core.String>? additionalFields,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>?
+        additionalFields,
     $core.double? confidenceScore,
   }) {
-    final $result = create();
-    if (recipient != null) {
-      $result.recipient = recipient;
-    }
-    if (amount != null) {
-      $result.amount = amount;
-    }
-    if (currency != null) {
-      $result.currency = currency;
-    }
-    if (reference != null) {
-      $result.reference = reference;
-    }
-    if (dueDate != null) {
-      $result.dueDate = dueDate;
-    }
-    if (description != null) {
-      $result.description = description;
-    }
-    if (accountNumber != null) {
-      $result.accountNumber = accountNumber;
-    }
-    if (routingNumber != null) {
-      $result.routingNumber = routingNumber;
-    }
-    if (bankName != null) {
-      $result.bankName = bankName;
-    }
-    if (additionalFields != null) {
-      $result.additionalFields.addAll(additionalFields);
-    }
-    if (confidenceScore != null) {
-      $result.confidenceScore = confidenceScore;
-    }
-    return $result;
+    final result = create();
+    if (recipient != null) result.recipient = recipient;
+    if (amount != null) result.amount = amount;
+    if (currency != null) result.currency = currency;
+    if (reference != null) result.reference = reference;
+    if (dueDate != null) result.dueDate = dueDate;
+    if (description != null) result.description = description;
+    if (accountNumber != null) result.accountNumber = accountNumber;
+    if (routingNumber != null) result.routingNumber = routingNumber;
+    if (bankName != null) result.bankName = bankName;
+    if (additionalFields != null)
+      result.additionalFields.addEntries(additionalFields);
+    if (confidenceScore != null) result.confidenceScore = confidenceScore;
+    return result;
   }
-  ExtractedData._() : super();
-  factory ExtractedData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ExtractedData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExtractedData', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  ExtractedData._();
+
+  factory ExtractedData.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ExtractedData.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ExtractedData',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'recipient')
     ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(3, _omitFieldNames ? '' : 'currency')
@@ -318,124 +333,129 @@ class ExtractedData extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'accountNumber')
     ..aOS(8, _omitFieldNames ? '' : 'routingNumber')
     ..aOS(9, _omitFieldNames ? '' : 'bankName')
-    ..m<$core.String, $core.String>(10, _omitFieldNames ? '' : 'additionalFields', entryClassName: 'ExtractedData.AdditionalFieldsEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('ai_scan'))
-    ..a<$core.double>(11, _omitFieldNames ? '' : 'confidenceScore', $pb.PbFieldType.OF)
-    ..hasRequiredFields = false
-  ;
+    ..m<$core.String, $core.String>(
+        10, _omitFieldNames ? '' : 'additionalFields',
+        entryClassName: 'ExtractedData.AdditionalFieldsEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('ai_scan'))
+    ..a<$core.double>(
+        11, _omitFieldNames ? '' : 'confidenceScore', $pb.PbFieldType.OF)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   ExtractedData clone() => ExtractedData()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ExtractedData copyWith(void Function(ExtractedData) updates) => super.copyWith((message) => updates(message as ExtractedData)) as ExtractedData;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ExtractedData copyWith(void Function(ExtractedData) updates) =>
+      super.copyWith((message) => updates(message as ExtractedData))
+          as ExtractedData;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ExtractedData create() => ExtractedData._();
+  @$core.override
   ExtractedData createEmptyInstance() => create();
-  static $pb.PbList<ExtractedData> createRepeated() => $pb.PbList<ExtractedData>();
+  static $pb.PbList<ExtractedData> createRepeated() =>
+      $pb.PbList<ExtractedData>();
   @$core.pragma('dart2js:noInline')
-  static ExtractedData getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExtractedData>(create);
+  static ExtractedData getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ExtractedData>(create);
   static ExtractedData? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get recipient => $_getSZ(0);
   @$pb.TagNumber(1)
-  set recipient($core.String v) { $_setString(0, v); }
+  set recipient($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasRecipient() => $_has(0);
   @$pb.TagNumber(1)
-  void clearRecipient() => clearField(1);
+  void clearRecipient() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.double get amount => $_getN(1);
   @$pb.TagNumber(2)
-  set amount($core.double v) { $_setDouble(1, v); }
+  set amount($core.double value) => $_setDouble(1, value);
   @$pb.TagNumber(2)
   $core.bool hasAmount() => $_has(1);
   @$pb.TagNumber(2)
-  void clearAmount() => clearField(2);
+  void clearAmount() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get currency => $_getSZ(2);
   @$pb.TagNumber(3)
-  set currency($core.String v) { $_setString(2, v); }
+  set currency($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasCurrency() => $_has(2);
   @$pb.TagNumber(3)
-  void clearCurrency() => clearField(3);
+  void clearCurrency() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get reference => $_getSZ(3);
   @$pb.TagNumber(4)
-  set reference($core.String v) { $_setString(3, v); }
+  set reference($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasReference() => $_has(3);
   @$pb.TagNumber(4)
-  void clearReference() => clearField(4);
+  void clearReference() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get dueDate => $_getSZ(4);
   @$pb.TagNumber(5)
-  set dueDate($core.String v) { $_setString(4, v); }
+  set dueDate($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasDueDate() => $_has(4);
   @$pb.TagNumber(5)
-  void clearDueDate() => clearField(5);
+  void clearDueDate() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get description => $_getSZ(5);
   @$pb.TagNumber(6)
-  set description($core.String v) { $_setString(5, v); }
+  set description($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasDescription() => $_has(5);
   @$pb.TagNumber(6)
-  void clearDescription() => clearField(6);
+  void clearDescription() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.String get accountNumber => $_getSZ(6);
   @$pb.TagNumber(7)
-  set accountNumber($core.String v) { $_setString(6, v); }
+  set accountNumber($core.String value) => $_setString(6, value);
   @$pb.TagNumber(7)
   $core.bool hasAccountNumber() => $_has(6);
   @$pb.TagNumber(7)
-  void clearAccountNumber() => clearField(7);
+  void clearAccountNumber() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $core.String get routingNumber => $_getSZ(7);
   @$pb.TagNumber(8)
-  set routingNumber($core.String v) { $_setString(7, v); }
+  set routingNumber($core.String value) => $_setString(7, value);
   @$pb.TagNumber(8)
   $core.bool hasRoutingNumber() => $_has(7);
   @$pb.TagNumber(8)
-  void clearRoutingNumber() => clearField(8);
+  void clearRoutingNumber() => $_clearField(8);
 
   @$pb.TagNumber(9)
   $core.String get bankName => $_getSZ(8);
   @$pb.TagNumber(9)
-  set bankName($core.String v) { $_setString(8, v); }
+  set bankName($core.String value) => $_setString(8, value);
   @$pb.TagNumber(9)
   $core.bool hasBankName() => $_has(8);
   @$pb.TagNumber(9)
-  void clearBankName() => clearField(9);
+  void clearBankName() => $_clearField(9);
 
   @$pb.TagNumber(10)
-  $core.Map<$core.String, $core.String> get additionalFields => $_getMap(9);
+  $pb.PbMap<$core.String, $core.String> get additionalFields => $_getMap(9);
 
   @$pb.TagNumber(11)
   $core.double get confidenceScore => $_getN(10);
   @$pb.TagNumber(11)
-  set confidenceScore($core.double v) { $_setFloat(10, v); }
+  set confidenceScore($core.double value) => $_setFloat(10, value);
   @$pb.TagNumber(11)
   $core.bool hasConfidenceScore() => $_has(10);
   @$pb.TagNumber(11)
-  void clearConfidenceScore() => clearField(11);
+  void clearConfidenceScore() => $_clearField(11);
 }
 
 class ProcessImageResponse extends $pb.GeneratedMessage {
@@ -446,104 +466,104 @@ class ProcessImageResponse extends $pb.GeneratedMessage {
     $core.bool? success,
     $core.String? errorMessage,
   }) {
-    final $result = create();
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    if (extractedData != null) {
-      $result.extractedData = extractedData;
-    }
-    if (aiMessage != null) {
-      $result.aiMessage = aiMessage;
-    }
-    if (success != null) {
-      $result.success = success;
-    }
-    if (errorMessage != null) {
-      $result.errorMessage = errorMessage;
-    }
-    return $result;
+    final result = create();
+    if (sessionId != null) result.sessionId = sessionId;
+    if (extractedData != null) result.extractedData = extractedData;
+    if (aiMessage != null) result.aiMessage = aiMessage;
+    if (success != null) result.success = success;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    return result;
   }
-  ProcessImageResponse._() : super();
-  factory ProcessImageResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ProcessImageResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessImageResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  ProcessImageResponse._();
+
+  factory ProcessImageResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ProcessImageResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ProcessImageResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
-    ..aOM<ExtractedData>(2, _omitFieldNames ? '' : 'extractedData', subBuilder: ExtractedData.create)
+    ..aOM<ExtractedData>(2, _omitFieldNames ? '' : 'extractedData',
+        subBuilder: ExtractedData.create)
     ..aOS(3, _omitFieldNames ? '' : 'aiMessage')
     ..aOB(4, _omitFieldNames ? '' : 'success')
     ..aOS(5, _omitFieldNames ? '' : 'errorMessage')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  ProcessImageResponse clone() => ProcessImageResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ProcessImageResponse copyWith(void Function(ProcessImageResponse) updates) => super.copyWith((message) => updates(message as ProcessImageResponse)) as ProcessImageResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ProcessImageResponse clone() =>
+      ProcessImageResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ProcessImageResponse copyWith(void Function(ProcessImageResponse) updates) =>
+      super.copyWith((message) => updates(message as ProcessImageResponse))
+          as ProcessImageResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ProcessImageResponse create() => ProcessImageResponse._();
+  @$core.override
   ProcessImageResponse createEmptyInstance() => create();
-  static $pb.PbList<ProcessImageResponse> createRepeated() => $pb.PbList<ProcessImageResponse>();
+  static $pb.PbList<ProcessImageResponse> createRepeated() =>
+      $pb.PbList<ProcessImageResponse>();
   @$core.pragma('dart2js:noInline')
-  static ProcessImageResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessImageResponse>(create);
+  static ProcessImageResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ProcessImageResponse>(create);
   static ProcessImageResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get sessionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sessionId($core.String v) { $_setString(0, v); }
+  set sessionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSessionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSessionId() => clearField(1);
+  void clearSessionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   ExtractedData get extractedData => $_getN(1);
   @$pb.TagNumber(2)
-  set extractedData(ExtractedData v) { setField(2, v); }
+  set extractedData(ExtractedData value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasExtractedData() => $_has(1);
   @$pb.TagNumber(2)
-  void clearExtractedData() => clearField(2);
+  void clearExtractedData() => $_clearField(2);
   @$pb.TagNumber(2)
   ExtractedData ensureExtractedData() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.String get aiMessage => $_getSZ(2);
   @$pb.TagNumber(3)
-  set aiMessage($core.String v) { $_setString(2, v); }
+  set aiMessage($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasAiMessage() => $_has(2);
   @$pb.TagNumber(3)
-  void clearAiMessage() => clearField(3);
+  void clearAiMessage() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.bool get success => $_getBF(3);
   @$pb.TagNumber(4)
-  set success($core.bool v) { $_setBool(3, v); }
+  set success($core.bool value) => $_setBool(3, value);
   @$pb.TagNumber(4)
   $core.bool hasSuccess() => $_has(3);
   @$pb.TagNumber(4)
-  void clearSuccess() => clearField(4);
+  void clearSuccess() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get errorMessage => $_getSZ(4);
   @$pb.TagNumber(5)
-  set errorMessage($core.String v) { $_setString(4, v); }
+  set errorMessage($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasErrorMessage() => $_has(4);
   @$pb.TagNumber(5)
-  void clearErrorMessage() => clearField(5);
+  void clearErrorMessage() => $_clearField(5);
 }
 
 /// Chat Message
@@ -553,76 +573,81 @@ class SendChatMessageRequest extends $pb.GeneratedMessage {
     $core.String? userMessage,
     ExtractedData? contextData,
   }) {
-    final $result = create();
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    if (userMessage != null) {
-      $result.userMessage = userMessage;
-    }
-    if (contextData != null) {
-      $result.contextData = contextData;
-    }
-    return $result;
+    final result = create();
+    if (sessionId != null) result.sessionId = sessionId;
+    if (userMessage != null) result.userMessage = userMessage;
+    if (contextData != null) result.contextData = contextData;
+    return result;
   }
-  SendChatMessageRequest._() : super();
-  factory SendChatMessageRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SendChatMessageRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendChatMessageRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  SendChatMessageRequest._();
+
+  factory SendChatMessageRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SendChatMessageRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SendChatMessageRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
     ..aOS(2, _omitFieldNames ? '' : 'userMessage')
-    ..aOM<ExtractedData>(3, _omitFieldNames ? '' : 'contextData', subBuilder: ExtractedData.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<ExtractedData>(3, _omitFieldNames ? '' : 'contextData',
+        subBuilder: ExtractedData.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SendChatMessageRequest clone() => SendChatMessageRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SendChatMessageRequest copyWith(void Function(SendChatMessageRequest) updates) => super.copyWith((message) => updates(message as SendChatMessageRequest)) as SendChatMessageRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendChatMessageRequest clone() =>
+      SendChatMessageRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendChatMessageRequest copyWith(
+          void Function(SendChatMessageRequest) updates) =>
+      super.copyWith((message) => updates(message as SendChatMessageRequest))
+          as SendChatMessageRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static SendChatMessageRequest create() => SendChatMessageRequest._();
+  @$core.override
   SendChatMessageRequest createEmptyInstance() => create();
-  static $pb.PbList<SendChatMessageRequest> createRepeated() => $pb.PbList<SendChatMessageRequest>();
+  static $pb.PbList<SendChatMessageRequest> createRepeated() =>
+      $pb.PbList<SendChatMessageRequest>();
   @$core.pragma('dart2js:noInline')
-  static SendChatMessageRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SendChatMessageRequest>(create);
+  static SendChatMessageRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SendChatMessageRequest>(create);
   static SendChatMessageRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get sessionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sessionId($core.String v) { $_setString(0, v); }
+  set sessionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSessionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSessionId() => clearField(1);
+  void clearSessionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get userMessage => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userMessage($core.String v) { $_setString(1, v); }
+  set userMessage($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasUserMessage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearUserMessage() => clearField(2);
+  void clearUserMessage() => $_clearField(2);
 
   @$pb.TagNumber(3)
   ExtractedData get contextData => $_getN(2);
   @$pb.TagNumber(3)
-  set contextData(ExtractedData v) { setField(3, v); }
+  set contextData(ExtractedData value) => $_setField(3, value);
   @$pb.TagNumber(3)
   $core.bool hasContextData() => $_has(2);
   @$pb.TagNumber(3)
-  void clearContextData() => clearField(3);
+  void clearContextData() => $_clearField(3);
   @$pb.TagNumber(3)
   ExtractedData ensureContextData() => $_ensure(2);
 }
@@ -633,76 +658,80 @@ class SendChatMessageResponse extends $pb.GeneratedMessage {
     $core.String? aiResponse,
     $fixnum.Int64? timestamp,
   }) {
-    final $result = create();
-    if (messageId != null) {
-      $result.messageId = messageId;
-    }
-    if (aiResponse != null) {
-      $result.aiResponse = aiResponse;
-    }
-    if (timestamp != null) {
-      $result.timestamp = timestamp;
-    }
-    return $result;
+    final result = create();
+    if (messageId != null) result.messageId = messageId;
+    if (aiResponse != null) result.aiResponse = aiResponse;
+    if (timestamp != null) result.timestamp = timestamp;
+    return result;
   }
-  SendChatMessageResponse._() : super();
-  factory SendChatMessageResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SendChatMessageResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendChatMessageResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  SendChatMessageResponse._();
+
+  factory SendChatMessageResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SendChatMessageResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SendChatMessageResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'messageId')
     ..aOS(2, _omitFieldNames ? '' : 'aiResponse')
     ..aInt64(3, _omitFieldNames ? '' : 'timestamp')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SendChatMessageResponse clone() => SendChatMessageResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SendChatMessageResponse copyWith(void Function(SendChatMessageResponse) updates) => super.copyWith((message) => updates(message as SendChatMessageResponse)) as SendChatMessageResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendChatMessageResponse clone() =>
+      SendChatMessageResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SendChatMessageResponse copyWith(
+          void Function(SendChatMessageResponse) updates) =>
+      super.copyWith((message) => updates(message as SendChatMessageResponse))
+          as SendChatMessageResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static SendChatMessageResponse create() => SendChatMessageResponse._();
+  @$core.override
   SendChatMessageResponse createEmptyInstance() => create();
-  static $pb.PbList<SendChatMessageResponse> createRepeated() => $pb.PbList<SendChatMessageResponse>();
+  static $pb.PbList<SendChatMessageResponse> createRepeated() =>
+      $pb.PbList<SendChatMessageResponse>();
   @$core.pragma('dart2js:noInline')
-  static SendChatMessageResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SendChatMessageResponse>(create);
+  static SendChatMessageResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SendChatMessageResponse>(create);
   static SendChatMessageResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get messageId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set messageId($core.String v) { $_setString(0, v); }
+  set messageId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasMessageId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearMessageId() => clearField(1);
+  void clearMessageId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get aiResponse => $_getSZ(1);
   @$pb.TagNumber(2)
-  set aiResponse($core.String v) { $_setString(1, v); }
+  set aiResponse($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasAiResponse() => $_has(1);
   @$pb.TagNumber(2)
-  void clearAiResponse() => clearField(2);
+  void clearAiResponse() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $fixnum.Int64 get timestamp => $_getI64(2);
   @$pb.TagNumber(3)
-  set timestamp($fixnum.Int64 v) { $_setInt64(2, v); }
+  set timestamp($fixnum.Int64 value) => $_setInt64(2, value);
   @$pb.TagNumber(3)
   $core.bool hasTimestamp() => $_has(2);
   @$pb.TagNumber(3)
-  void clearTimestamp() => clearField(3);
+  void clearTimestamp() => $_clearField(3);
 }
 
 /// Generate Payment Instruction
@@ -712,78 +741,90 @@ class GeneratePaymentInstructionRequest extends $pb.GeneratedMessage {
     ExtractedData? extractedData,
     ScanType? scanType,
   }) {
-    final $result = create();
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    if (extractedData != null) {
-      $result.extractedData = extractedData;
-    }
-    if (scanType != null) {
-      $result.scanType = scanType;
-    }
-    return $result;
+    final result = create();
+    if (sessionId != null) result.sessionId = sessionId;
+    if (extractedData != null) result.extractedData = extractedData;
+    if (scanType != null) result.scanType = scanType;
+    return result;
   }
-  GeneratePaymentInstructionRequest._() : super();
-  factory GeneratePaymentInstructionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GeneratePaymentInstructionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GeneratePaymentInstructionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  GeneratePaymentInstructionRequest._();
+
+  factory GeneratePaymentInstructionRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GeneratePaymentInstructionRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GeneratePaymentInstructionRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
-    ..aOM<ExtractedData>(2, _omitFieldNames ? '' : 'extractedData', subBuilder: ExtractedData.create)
-    ..e<ScanType>(3, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE, defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED, valueOf: ScanType.valueOf, enumValues: ScanType.values)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<ExtractedData>(2, _omitFieldNames ? '' : 'extractedData',
+        subBuilder: ExtractedData.create)
+    ..e<ScanType>(3, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE,
+        defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED,
+        valueOf: ScanType.valueOf,
+        enumValues: ScanType.values)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GeneratePaymentInstructionRequest clone() => GeneratePaymentInstructionRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GeneratePaymentInstructionRequest copyWith(void Function(GeneratePaymentInstructionRequest) updates) => super.copyWith((message) => updates(message as GeneratePaymentInstructionRequest)) as GeneratePaymentInstructionRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GeneratePaymentInstructionRequest clone() =>
+      GeneratePaymentInstructionRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GeneratePaymentInstructionRequest copyWith(
+          void Function(GeneratePaymentInstructionRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as GeneratePaymentInstructionRequest))
+          as GeneratePaymentInstructionRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GeneratePaymentInstructionRequest create() => GeneratePaymentInstructionRequest._();
+  static GeneratePaymentInstructionRequest create() =>
+      GeneratePaymentInstructionRequest._();
+  @$core.override
   GeneratePaymentInstructionRequest createEmptyInstance() => create();
-  static $pb.PbList<GeneratePaymentInstructionRequest> createRepeated() => $pb.PbList<GeneratePaymentInstructionRequest>();
+  static $pb.PbList<GeneratePaymentInstructionRequest> createRepeated() =>
+      $pb.PbList<GeneratePaymentInstructionRequest>();
   @$core.pragma('dart2js:noInline')
-  static GeneratePaymentInstructionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GeneratePaymentInstructionRequest>(create);
+  static GeneratePaymentInstructionRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GeneratePaymentInstructionRequest>(
+          create);
   static GeneratePaymentInstructionRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get sessionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sessionId($core.String v) { $_setString(0, v); }
+  set sessionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSessionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSessionId() => clearField(1);
+  void clearSessionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   ExtractedData get extractedData => $_getN(1);
   @$pb.TagNumber(2)
-  set extractedData(ExtractedData v) { setField(2, v); }
+  set extractedData(ExtractedData value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasExtractedData() => $_has(1);
   @$pb.TagNumber(2)
-  void clearExtractedData() => clearField(2);
+  void clearExtractedData() => $_clearField(2);
   @$pb.TagNumber(2)
   ExtractedData ensureExtractedData() => $_ensure(1);
 
   @$pb.TagNumber(3)
   ScanType get scanType => $_getN(2);
   @$pb.TagNumber(3)
-  set scanType(ScanType v) { setField(3, v); }
+  set scanType(ScanType value) => $_setField(3, value);
   @$pb.TagNumber(3)
   $core.bool hasScanType() => $_has(2);
   @$pb.TagNumber(3)
-  void clearScanType() => clearField(3);
+  void clearScanType() => $_clearField(3);
 }
 
 class PaymentInstruction extends $pb.GeneratedMessage {
@@ -794,124 +835,122 @@ class PaymentInstruction extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? reference,
     $core.String? description,
-    $core.Map<$core.String, $core.String>? metadata,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>? metadata,
   }) {
-    final $result = create();
-    if (instructionId != null) {
-      $result.instructionId = instructionId;
-    }
-    if (recipient != null) {
-      $result.recipient = recipient;
-    }
-    if (amount != null) {
-      $result.amount = amount;
-    }
-    if (currency != null) {
-      $result.currency = currency;
-    }
-    if (reference != null) {
-      $result.reference = reference;
-    }
-    if (description != null) {
-      $result.description = description;
-    }
-    if (metadata != null) {
-      $result.metadata.addAll(metadata);
-    }
-    return $result;
+    final result = create();
+    if (instructionId != null) result.instructionId = instructionId;
+    if (recipient != null) result.recipient = recipient;
+    if (amount != null) result.amount = amount;
+    if (currency != null) result.currency = currency;
+    if (reference != null) result.reference = reference;
+    if (description != null) result.description = description;
+    if (metadata != null) result.metadata.addEntries(metadata);
+    return result;
   }
-  PaymentInstruction._() : super();
-  factory PaymentInstruction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PaymentInstruction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaymentInstruction', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  PaymentInstruction._();
+
+  factory PaymentInstruction.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PaymentInstruction.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PaymentInstruction',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'instructionId')
     ..aOS(2, _omitFieldNames ? '' : 'recipient')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'currency')
     ..aOS(5, _omitFieldNames ? '' : 'reference')
     ..aOS(6, _omitFieldNames ? '' : 'description')
-    ..m<$core.String, $core.String>(7, _omitFieldNames ? '' : 'metadata', entryClassName: 'PaymentInstruction.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('ai_scan'))
-    ..hasRequiredFields = false
-  ;
+    ..m<$core.String, $core.String>(7, _omitFieldNames ? '' : 'metadata',
+        entryClassName: 'PaymentInstruction.MetadataEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('ai_scan'))
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   PaymentInstruction clone() => PaymentInstruction()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  PaymentInstruction copyWith(void Function(PaymentInstruction) updates) => super.copyWith((message) => updates(message as PaymentInstruction)) as PaymentInstruction;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PaymentInstruction copyWith(void Function(PaymentInstruction) updates) =>
+      super.copyWith((message) => updates(message as PaymentInstruction))
+          as PaymentInstruction;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static PaymentInstruction create() => PaymentInstruction._();
+  @$core.override
   PaymentInstruction createEmptyInstance() => create();
-  static $pb.PbList<PaymentInstruction> createRepeated() => $pb.PbList<PaymentInstruction>();
+  static $pb.PbList<PaymentInstruction> createRepeated() =>
+      $pb.PbList<PaymentInstruction>();
   @$core.pragma('dart2js:noInline')
-  static PaymentInstruction getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PaymentInstruction>(create);
+  static PaymentInstruction getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PaymentInstruction>(create);
   static PaymentInstruction? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get instructionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set instructionId($core.String v) { $_setString(0, v); }
+  set instructionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasInstructionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearInstructionId() => clearField(1);
+  void clearInstructionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get recipient => $_getSZ(1);
   @$pb.TagNumber(2)
-  set recipient($core.String v) { $_setString(1, v); }
+  set recipient($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasRecipient() => $_has(1);
   @$pb.TagNumber(2)
-  void clearRecipient() => clearField(2);
+  void clearRecipient() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.double get amount => $_getN(2);
   @$pb.TagNumber(3)
-  set amount($core.double v) { $_setDouble(2, v); }
+  set amount($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(3)
   $core.bool hasAmount() => $_has(2);
   @$pb.TagNumber(3)
-  void clearAmount() => clearField(3);
+  void clearAmount() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get currency => $_getSZ(3);
   @$pb.TagNumber(4)
-  set currency($core.String v) { $_setString(3, v); }
+  set currency($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasCurrency() => $_has(3);
   @$pb.TagNumber(4)
-  void clearCurrency() => clearField(4);
+  void clearCurrency() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get reference => $_getSZ(4);
   @$pb.TagNumber(5)
-  set reference($core.String v) { $_setString(4, v); }
+  set reference($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasReference() => $_has(4);
   @$pb.TagNumber(5)
-  void clearReference() => clearField(5);
+  void clearReference() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get description => $_getSZ(5);
   @$pb.TagNumber(6)
-  set description($core.String v) { $_setString(5, v); }
+  set description($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasDescription() => $_has(5);
   @$pb.TagNumber(6)
-  void clearDescription() => clearField(6);
+  void clearDescription() => $_clearField(6);
 
   @$pb.TagNumber(7)
-  $core.Map<$core.String, $core.String> get metadata => $_getMap(6);
+  $pb.PbMap<$core.String, $core.String> get metadata => $_getMap(6);
 }
 
 class GeneratePaymentInstructionResponse extends $pb.GeneratedMessage {
@@ -920,78 +959,87 @@ class GeneratePaymentInstructionResponse extends $pb.GeneratedMessage {
     $core.bool? success,
     $core.String? errorMessage,
   }) {
-    final $result = create();
-    if (instruction != null) {
-      $result.instruction = instruction;
-    }
-    if (success != null) {
-      $result.success = success;
-    }
-    if (errorMessage != null) {
-      $result.errorMessage = errorMessage;
-    }
-    return $result;
+    final result = create();
+    if (instruction != null) result.instruction = instruction;
+    if (success != null) result.success = success;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    return result;
   }
-  GeneratePaymentInstructionResponse._() : super();
-  factory GeneratePaymentInstructionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GeneratePaymentInstructionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GeneratePaymentInstructionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
-    ..aOM<PaymentInstruction>(1, _omitFieldNames ? '' : 'instruction', subBuilder: PaymentInstruction.create)
+  GeneratePaymentInstructionResponse._();
+
+  factory GeneratePaymentInstructionResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GeneratePaymentInstructionResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GeneratePaymentInstructionResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
+    ..aOM<PaymentInstruction>(1, _omitFieldNames ? '' : 'instruction',
+        subBuilder: PaymentInstruction.create)
     ..aOB(2, _omitFieldNames ? '' : 'success')
     ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GeneratePaymentInstructionResponse clone() => GeneratePaymentInstructionResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GeneratePaymentInstructionResponse copyWith(void Function(GeneratePaymentInstructionResponse) updates) => super.copyWith((message) => updates(message as GeneratePaymentInstructionResponse)) as GeneratePaymentInstructionResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GeneratePaymentInstructionResponse clone() =>
+      GeneratePaymentInstructionResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GeneratePaymentInstructionResponse copyWith(
+          void Function(GeneratePaymentInstructionResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as GeneratePaymentInstructionResponse))
+          as GeneratePaymentInstructionResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GeneratePaymentInstructionResponse create() => GeneratePaymentInstructionResponse._();
+  static GeneratePaymentInstructionResponse create() =>
+      GeneratePaymentInstructionResponse._();
+  @$core.override
   GeneratePaymentInstructionResponse createEmptyInstance() => create();
-  static $pb.PbList<GeneratePaymentInstructionResponse> createRepeated() => $pb.PbList<GeneratePaymentInstructionResponse>();
+  static $pb.PbList<GeneratePaymentInstructionResponse> createRepeated() =>
+      $pb.PbList<GeneratePaymentInstructionResponse>();
   @$core.pragma('dart2js:noInline')
-  static GeneratePaymentInstructionResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GeneratePaymentInstructionResponse>(create);
+  static GeneratePaymentInstructionResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GeneratePaymentInstructionResponse>(
+          create);
   static GeneratePaymentInstructionResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   PaymentInstruction get instruction => $_getN(0);
   @$pb.TagNumber(1)
-  set instruction(PaymentInstruction v) { setField(1, v); }
+  set instruction(PaymentInstruction value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasInstruction() => $_has(0);
   @$pb.TagNumber(1)
-  void clearInstruction() => clearField(1);
+  void clearInstruction() => $_clearField(1);
   @$pb.TagNumber(1)
   PaymentInstruction ensureInstruction() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.bool get success => $_getBF(1);
   @$pb.TagNumber(2)
-  set success($core.bool v) { $_setBool(1, v); }
+  set success($core.bool value) => $_setBool(1, value);
   @$pb.TagNumber(2)
   $core.bool hasSuccess() => $_has(1);
   @$pb.TagNumber(2)
-  void clearSuccess() => clearField(2);
+  void clearSuccess() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get errorMessage => $_getSZ(2);
   @$pb.TagNumber(3)
-  set errorMessage($core.String v) { $_setString(2, v); }
+  set errorMessage($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasErrorMessage() => $_has(2);
   @$pb.TagNumber(3)
-  void clearErrorMessage() => clearField(3);
+  void clearErrorMessage() => $_clearField(3);
 }
 
 /// Process Payment
@@ -1001,76 +1049,81 @@ class ScanProcessPaymentRequest extends $pb.GeneratedMessage {
     $core.String? sessionId,
     PaymentInstruction? instruction,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    if (instruction != null) {
-      $result.instruction = instruction;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (sessionId != null) result.sessionId = sessionId;
+    if (instruction != null) result.instruction = instruction;
+    return result;
   }
-  ScanProcessPaymentRequest._() : super();
-  factory ScanProcessPaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ScanProcessPaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScanProcessPaymentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  ScanProcessPaymentRequest._();
+
+  factory ScanProcessPaymentRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ScanProcessPaymentRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ScanProcessPaymentRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'sessionId')
-    ..aOM<PaymentInstruction>(3, _omitFieldNames ? '' : 'instruction', subBuilder: PaymentInstruction.create)
-    ..hasRequiredFields = false
-  ;
+    ..aOM<PaymentInstruction>(3, _omitFieldNames ? '' : 'instruction',
+        subBuilder: PaymentInstruction.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  ScanProcessPaymentRequest clone() => ScanProcessPaymentRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ScanProcessPaymentRequest copyWith(void Function(ScanProcessPaymentRequest) updates) => super.copyWith((message) => updates(message as ScanProcessPaymentRequest)) as ScanProcessPaymentRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ScanProcessPaymentRequest clone() =>
+      ScanProcessPaymentRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ScanProcessPaymentRequest copyWith(
+          void Function(ScanProcessPaymentRequest) updates) =>
+      super.copyWith((message) => updates(message as ScanProcessPaymentRequest))
+          as ScanProcessPaymentRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ScanProcessPaymentRequest create() => ScanProcessPaymentRequest._();
+  @$core.override
   ScanProcessPaymentRequest createEmptyInstance() => create();
-  static $pb.PbList<ScanProcessPaymentRequest> createRepeated() => $pb.PbList<ScanProcessPaymentRequest>();
+  static $pb.PbList<ScanProcessPaymentRequest> createRepeated() =>
+      $pb.PbList<ScanProcessPaymentRequest>();
   @$core.pragma('dart2js:noInline')
-  static ScanProcessPaymentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ScanProcessPaymentRequest>(create);
+  static ScanProcessPaymentRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ScanProcessPaymentRequest>(create);
   static ScanProcessPaymentRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get sessionId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set sessionId($core.String v) { $_setString(1, v); }
+  set sessionId($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasSessionId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearSessionId() => clearField(2);
+  void clearSessionId() => $_clearField(2);
 
   @$pb.TagNumber(3)
   PaymentInstruction get instruction => $_getN(2);
   @$pb.TagNumber(3)
-  set instruction(PaymentInstruction v) { setField(3, v); }
+  set instruction(PaymentInstruction value) => $_setField(3, value);
   @$pb.TagNumber(3)
   $core.bool hasInstruction() => $_has(2);
   @$pb.TagNumber(3)
-  void clearInstruction() => clearField(3);
+  void clearInstruction() => $_clearField(3);
   @$pb.TagNumber(3)
   PaymentInstruction ensureInstruction() => $_ensure(2);
 }
@@ -1083,102 +1136,103 @@ class ScanProcessPaymentResponse extends $pb.GeneratedMessage {
     $core.String? errorMessage,
     $fixnum.Int64? timestamp,
   }) {
-    final $result = create();
-    if (transactionId != null) {
-      $result.transactionId = transactionId;
-    }
-    if (success != null) {
-      $result.success = success;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (errorMessage != null) {
-      $result.errorMessage = errorMessage;
-    }
-    if (timestamp != null) {
-      $result.timestamp = timestamp;
-    }
-    return $result;
+    final result = create();
+    if (transactionId != null) result.transactionId = transactionId;
+    if (success != null) result.success = success;
+    if (status != null) result.status = status;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    if (timestamp != null) result.timestamp = timestamp;
+    return result;
   }
-  ScanProcessPaymentResponse._() : super();
-  factory ScanProcessPaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ScanProcessPaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScanProcessPaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  ScanProcessPaymentResponse._();
+
+  factory ScanProcessPaymentResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ScanProcessPaymentResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ScanProcessPaymentResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'transactionId')
     ..aOB(2, _omitFieldNames ? '' : 'success')
     ..aOS(3, _omitFieldNames ? '' : 'status')
     ..aOS(4, _omitFieldNames ? '' : 'errorMessage')
     ..aInt64(5, _omitFieldNames ? '' : 'timestamp')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  ScanProcessPaymentResponse clone() => ScanProcessPaymentResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ScanProcessPaymentResponse copyWith(void Function(ScanProcessPaymentResponse) updates) => super.copyWith((message) => updates(message as ScanProcessPaymentResponse)) as ScanProcessPaymentResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ScanProcessPaymentResponse clone() =>
+      ScanProcessPaymentResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ScanProcessPaymentResponse copyWith(
+          void Function(ScanProcessPaymentResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ScanProcessPaymentResponse))
+          as ScanProcessPaymentResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ScanProcessPaymentResponse create() => ScanProcessPaymentResponse._();
+  @$core.override
   ScanProcessPaymentResponse createEmptyInstance() => create();
-  static $pb.PbList<ScanProcessPaymentResponse> createRepeated() => $pb.PbList<ScanProcessPaymentResponse>();
+  static $pb.PbList<ScanProcessPaymentResponse> createRepeated() =>
+      $pb.PbList<ScanProcessPaymentResponse>();
   @$core.pragma('dart2js:noInline')
-  static ScanProcessPaymentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ScanProcessPaymentResponse>(create);
+  static ScanProcessPaymentResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ScanProcessPaymentResponse>(create);
   static ScanProcessPaymentResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get transactionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set transactionId($core.String v) { $_setString(0, v); }
+  set transactionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasTransactionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTransactionId() => clearField(1);
+  void clearTransactionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.bool get success => $_getBF(1);
   @$pb.TagNumber(2)
-  set success($core.bool v) { $_setBool(1, v); }
+  set success($core.bool value) => $_setBool(1, value);
   @$pb.TagNumber(2)
   $core.bool hasSuccess() => $_has(1);
   @$pb.TagNumber(2)
-  void clearSuccess() => clearField(2);
+  void clearSuccess() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get status => $_getSZ(2);
   @$pb.TagNumber(3)
-  set status($core.String v) { $_setString(2, v); }
+  set status($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasStatus() => $_has(2);
   @$pb.TagNumber(3)
-  void clearStatus() => clearField(3);
+  void clearStatus() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get errorMessage => $_getSZ(3);
   @$pb.TagNumber(4)
-  set errorMessage($core.String v) { $_setString(3, v); }
+  set errorMessage($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasErrorMessage() => $_has(3);
   @$pb.TagNumber(4)
-  void clearErrorMessage() => clearField(4);
+  void clearErrorMessage() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $fixnum.Int64 get timestamp => $_getI64(4);
   @$pb.TagNumber(5)
-  set timestamp($fixnum.Int64 v) { $_setInt64(4, v); }
+  set timestamp($fixnum.Int64 value) => $_setInt64(4, value);
   @$pb.TagNumber(5)
   $core.bool hasTimestamp() => $_has(4);
   @$pb.TagNumber(5)
-  void clearTimestamp() => clearField(5);
+  void clearTimestamp() => $_clearField(5);
 }
 
 /// Scan History
@@ -1188,76 +1242,80 @@ class GetScanHistoryRequest extends $pb.GeneratedMessage {
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    if (page != null) {
-      $result.page = page;
-    }
-    if (pageSize != null) {
-      $result.pageSize = pageSize;
-    }
-    return $result;
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    return result;
   }
-  GetScanHistoryRequest._() : super();
-  factory GetScanHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetScanHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetScanHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  GetScanHistoryRequest._();
+
+  factory GetScanHistoryRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetScanHistoryRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetScanHistoryRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..a<$core.int>(2, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetScanHistoryRequest clone() => GetScanHistoryRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetScanHistoryRequest copyWith(void Function(GetScanHistoryRequest) updates) => super.copyWith((message) => updates(message as GetScanHistoryRequest)) as GetScanHistoryRequest;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetScanHistoryRequest clone() =>
+      GetScanHistoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetScanHistoryRequest copyWith(
+          void Function(GetScanHistoryRequest) updates) =>
+      super.copyWith((message) => updates(message as GetScanHistoryRequest))
+          as GetScanHistoryRequest;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetScanHistoryRequest create() => GetScanHistoryRequest._();
+  @$core.override
   GetScanHistoryRequest createEmptyInstance() => create();
-  static $pb.PbList<GetScanHistoryRequest> createRepeated() => $pb.PbList<GetScanHistoryRequest>();
+  static $pb.PbList<GetScanHistoryRequest> createRepeated() =>
+      $pb.PbList<GetScanHistoryRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetScanHistoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetScanHistoryRequest>(create);
+  static GetScanHistoryRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetScanHistoryRequest>(create);
   static GetScanHistoryRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String v) { $_setString(0, v); }
+  set userId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearUserId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.int get page => $_getIZ(1);
   @$pb.TagNumber(2)
-  set page($core.int v) { $_setSignedInt32(1, v); }
+  set page($core.int value) => $_setSignedInt32(1, value);
   @$pb.TagNumber(2)
   $core.bool hasPage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPage() => clearField(2);
+  void clearPage() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.int get pageSize => $_getIZ(2);
   @$pb.TagNumber(3)
-  set pageSize($core.int v) { $_setSignedInt32(2, v); }
+  set pageSize($core.int value) => $_setSignedInt32(2, value);
   @$pb.TagNumber(3)
   $core.bool hasPageSize() => $_has(2);
   @$pb.TagNumber(3)
-  void clearPageSize() => clearField(3);
+  void clearPageSize() => $_clearField(3);
 }
 
 class ScanSessionHistory extends $pb.GeneratedMessage {
@@ -1269,117 +1327,120 @@ class ScanSessionHistory extends $pb.GeneratedMessage {
     ExtractedData? extractedData,
     $core.String? transactionId,
   }) {
-    final $result = create();
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    if (scanType != null) {
-      $result.scanType = scanType;
-    }
-    if (status != null) {
-      $result.status = status;
-    }
-    if (createdAt != null) {
-      $result.createdAt = createdAt;
-    }
-    if (extractedData != null) {
-      $result.extractedData = extractedData;
-    }
-    if (transactionId != null) {
-      $result.transactionId = transactionId;
-    }
-    return $result;
+    final result = create();
+    if (sessionId != null) result.sessionId = sessionId;
+    if (scanType != null) result.scanType = scanType;
+    if (status != null) result.status = status;
+    if (createdAt != null) result.createdAt = createdAt;
+    if (extractedData != null) result.extractedData = extractedData;
+    if (transactionId != null) result.transactionId = transactionId;
+    return result;
   }
-  ScanSessionHistory._() : super();
-  factory ScanSessionHistory.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ScanSessionHistory.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScanSessionHistory', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
+  ScanSessionHistory._();
+
+  factory ScanSessionHistory.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ScanSessionHistory.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ScanSessionHistory',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
-    ..e<ScanType>(2, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE, defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED, valueOf: ScanType.valueOf, enumValues: ScanType.values)
-    ..e<ScanStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ScanStatus.SCAN_STATUS_UNSPECIFIED, valueOf: ScanStatus.valueOf, enumValues: ScanStatus.values)
+    ..e<ScanType>(2, _omitFieldNames ? '' : 'scanType', $pb.PbFieldType.OE,
+        defaultOrMaker: ScanType.SCAN_TYPE_UNSPECIFIED,
+        valueOf: ScanType.valueOf,
+        enumValues: ScanType.values)
+    ..e<ScanStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE,
+        defaultOrMaker: ScanStatus.SCAN_STATUS_UNSPECIFIED,
+        valueOf: ScanStatus.valueOf,
+        enumValues: ScanStatus.values)
     ..aInt64(4, _omitFieldNames ? '' : 'createdAt')
-    ..aOM<ExtractedData>(5, _omitFieldNames ? '' : 'extractedData', subBuilder: ExtractedData.create)
+    ..aOM<ExtractedData>(5, _omitFieldNames ? '' : 'extractedData',
+        subBuilder: ExtractedData.create)
     ..aOS(6, _omitFieldNames ? '' : 'transactionId')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   ScanSessionHistory clone() => ScanSessionHistory()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ScanSessionHistory copyWith(void Function(ScanSessionHistory) updates) => super.copyWith((message) => updates(message as ScanSessionHistory)) as ScanSessionHistory;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ScanSessionHistory copyWith(void Function(ScanSessionHistory) updates) =>
+      super.copyWith((message) => updates(message as ScanSessionHistory))
+          as ScanSessionHistory;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ScanSessionHistory create() => ScanSessionHistory._();
+  @$core.override
   ScanSessionHistory createEmptyInstance() => create();
-  static $pb.PbList<ScanSessionHistory> createRepeated() => $pb.PbList<ScanSessionHistory>();
+  static $pb.PbList<ScanSessionHistory> createRepeated() =>
+      $pb.PbList<ScanSessionHistory>();
   @$core.pragma('dart2js:noInline')
-  static ScanSessionHistory getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ScanSessionHistory>(create);
+  static ScanSessionHistory getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ScanSessionHistory>(create);
   static ScanSessionHistory? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get sessionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sessionId($core.String v) { $_setString(0, v); }
+  set sessionId($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasSessionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSessionId() => clearField(1);
+  void clearSessionId() => $_clearField(1);
 
   @$pb.TagNumber(2)
   ScanType get scanType => $_getN(1);
   @$pb.TagNumber(2)
-  set scanType(ScanType v) { setField(2, v); }
+  set scanType(ScanType value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasScanType() => $_has(1);
   @$pb.TagNumber(2)
-  void clearScanType() => clearField(2);
+  void clearScanType() => $_clearField(2);
 
   @$pb.TagNumber(3)
   ScanStatus get status => $_getN(2);
   @$pb.TagNumber(3)
-  set status(ScanStatus v) { setField(3, v); }
+  set status(ScanStatus value) => $_setField(3, value);
   @$pb.TagNumber(3)
   $core.bool hasStatus() => $_has(2);
   @$pb.TagNumber(3)
-  void clearStatus() => clearField(3);
+  void clearStatus() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $fixnum.Int64 get createdAt => $_getI64(3);
   @$pb.TagNumber(4)
-  set createdAt($fixnum.Int64 v) { $_setInt64(3, v); }
+  set createdAt($fixnum.Int64 value) => $_setInt64(3, value);
   @$pb.TagNumber(4)
   $core.bool hasCreatedAt() => $_has(3);
   @$pb.TagNumber(4)
-  void clearCreatedAt() => clearField(4);
+  void clearCreatedAt() => $_clearField(4);
 
   @$pb.TagNumber(5)
   ExtractedData get extractedData => $_getN(4);
   @$pb.TagNumber(5)
-  set extractedData(ExtractedData v) { setField(5, v); }
+  set extractedData(ExtractedData value) => $_setField(5, value);
   @$pb.TagNumber(5)
   $core.bool hasExtractedData() => $_has(4);
   @$pb.TagNumber(5)
-  void clearExtractedData() => clearField(5);
+  void clearExtractedData() => $_clearField(5);
   @$pb.TagNumber(5)
   ExtractedData ensureExtractedData() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get transactionId => $_getSZ(5);
   @$pb.TagNumber(6)
-  set transactionId($core.String v) { $_setString(5, v); }
+  set transactionId($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasTransactionId() => $_has(5);
   @$pb.TagNumber(6)
-  void clearTransactionId() => clearField(6);
+  void clearTransactionId() => $_clearField(6);
 }
 
 class GetScanHistoryResponse extends $pb.GeneratedMessage {
@@ -1389,85 +1450,90 @@ class GetScanHistoryResponse extends $pb.GeneratedMessage {
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final $result = create();
-    if (sessions != null) {
-      $result.sessions.addAll(sessions);
-    }
-    if (totalCount != null) {
-      $result.totalCount = totalCount;
-    }
-    if (page != null) {
-      $result.page = page;
-    }
-    if (pageSize != null) {
-      $result.pageSize = pageSize;
-    }
-    return $result;
+    final result = create();
+    if (sessions != null) result.sessions.addAll(sessions);
+    if (totalCount != null) result.totalCount = totalCount;
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    return result;
   }
-  GetScanHistoryResponse._() : super();
-  factory GetScanHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetScanHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetScanHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'), createEmptyInstance: create)
-    ..pc<ScanSessionHistory>(1, _omitFieldNames ? '' : 'sessions', $pb.PbFieldType.PM, subBuilder: ScanSessionHistory.create)
+  GetScanHistoryResponse._();
+
+  factory GetScanHistoryResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetScanHistoryResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetScanHistoryResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'ai_scan'),
+      createEmptyInstance: create)
+    ..pc<ScanSessionHistory>(
+        1, _omitFieldNames ? '' : 'sessions', $pb.PbFieldType.PM,
+        subBuilder: ScanSessionHistory.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetScanHistoryResponse clone() => GetScanHistoryResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetScanHistoryResponse copyWith(void Function(GetScanHistoryResponse) updates) => super.copyWith((message) => updates(message as GetScanHistoryResponse)) as GetScanHistoryResponse;
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetScanHistoryResponse clone() =>
+      GetScanHistoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetScanHistoryResponse copyWith(
+          void Function(GetScanHistoryResponse) updates) =>
+      super.copyWith((message) => updates(message as GetScanHistoryResponse))
+          as GetScanHistoryResponse;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetScanHistoryResponse create() => GetScanHistoryResponse._();
+  @$core.override
   GetScanHistoryResponse createEmptyInstance() => create();
-  static $pb.PbList<GetScanHistoryResponse> createRepeated() => $pb.PbList<GetScanHistoryResponse>();
+  static $pb.PbList<GetScanHistoryResponse> createRepeated() =>
+      $pb.PbList<GetScanHistoryResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetScanHistoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetScanHistoryResponse>(create);
+  static GetScanHistoryResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetScanHistoryResponse>(create);
   static GetScanHistoryResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<ScanSessionHistory> get sessions => $_getList(0);
+  $pb.PbList<ScanSessionHistory> get sessions => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.int get totalCount => $_getIZ(1);
   @$pb.TagNumber(2)
-  set totalCount($core.int v) { $_setSignedInt32(1, v); }
+  set totalCount($core.int value) => $_setSignedInt32(1, value);
   @$pb.TagNumber(2)
   $core.bool hasTotalCount() => $_has(1);
   @$pb.TagNumber(2)
-  void clearTotalCount() => clearField(2);
+  void clearTotalCount() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.int get page => $_getIZ(2);
   @$pb.TagNumber(3)
-  set page($core.int v) { $_setSignedInt32(2, v); }
+  set page($core.int value) => $_setSignedInt32(2, value);
   @$pb.TagNumber(3)
   $core.bool hasPage() => $_has(2);
   @$pb.TagNumber(3)
-  void clearPage() => clearField(3);
+  void clearPage() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.int get pageSize => $_getIZ(3);
   @$pb.TagNumber(4)
-  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  set pageSize($core.int value) => $_setSignedInt32(3, value);
   @$pb.TagNumber(4)
   $core.bool hasPageSize() => $_has(3);
   @$pb.TagNumber(4)
-  void clearPageSize() => clearField(4);
+  void clearPageSize() => $_clearField(4);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const $core.bool _omitFieldNames =
+    $core.bool.fromEnvironment('protobuf.omit_field_names');
+const $core.bool _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');

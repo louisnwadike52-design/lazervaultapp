@@ -16,6 +16,7 @@ class BatchTransferResultModel extends BatchTransferResult {
     super.destinationBankName,
     super.transferType,
     super.beneficiaryName,
+    super.recipientUserId,
   });
 
   factory BatchTransferResultModel.fromPaymentsProto(
@@ -40,6 +41,8 @@ class BatchTransferResultModel extends BatchTransferResult {
           proto.transferType.isNotEmpty ? proto.transferType : 'internal',
       beneficiaryName:
           proto.beneficiaryName.isNotEmpty ? proto.beneficiaryName : null,
+      recipientUserId:
+          proto.recipientUserId.isNotEmpty ? proto.recipientUserId : null,
     );
   }
 }

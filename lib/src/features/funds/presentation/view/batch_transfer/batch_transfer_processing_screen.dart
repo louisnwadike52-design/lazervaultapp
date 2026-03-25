@@ -353,6 +353,7 @@ class _BatchTransferProcessingScreenState
                 return {
                   'recipientName': resolvedName,
                   'beneficiaryName': beneficiary,
+                  'recipientUserId': r.recipientUserId,
                   'recipientAccount': r.recipientAccount ?? '',
                   'amount': r.amount.toDouble() / 100,
                   'fee': r.fee.toDouble() / 100,

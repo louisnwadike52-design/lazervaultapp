@@ -19,71 +19,54 @@ class CrowdfundCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16.r),
+      borderRadius: BorderRadius.circular(14.r),
       child: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
-        padding: EdgeInsets.all(16.w),
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-            ],
+            colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(14.r),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with status badge
+            // Header: status + code
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildStatusBadge(),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 8.w,
-                    vertical: 4.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A0A0A).withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(6.r),
-                  ),
-                  child: Text(
-                    crowdfund.crowdfundCode,
-                    style: TextStyle(
-                      color: const Color(0xFF6366F1),
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'monospace',
-                    ),
+                Text(
+                  crowdfund.crowdfundCode,
+                  style: TextStyle(
+                    color: const Color(0xFF6366F1),
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'monospace',
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
-            // Creator info
+            SizedBox(height: 8.h),
+            // Creator + title row
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Stack(
                   children: [
                     CircleAvatar(
-                      radius: 16.r,
-                      backgroundColor:
-                          const Color(0xFF6366F1).withValues(alpha: 0.2),
+                      radius: 14.r,
+                      backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
                       backgroundImage: crowdfund.creator.profilePicture != null
                           ? NetworkImage(crowdfund.creator.profilePicture!)
                           : null,
                       child: crowdfund.creator.profilePicture == null
                           ? Text(
                               crowdfund.creator.initials,
-                              style: TextStyle(
-                                color: const Color(0xFF6366F1),
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(color: const Color(0xFF6366F1), fontSize: 10.sp, fontWeight: FontWeight.bold),
                             )
                           : null,
                     ),
@@ -92,16 +75,9 @@ class CrowdfundCard extends StatelessWidget {
                         bottom: 0,
                         right: 0,
                         child: Container(
-                          padding: EdgeInsets.all(2.w),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF10B981),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.verified,
-                            color: Colors.white,
-                            size: 10.sp,
-                          ),
+                          padding: EdgeInsets.all(1.w),
+                          decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
+                          child: Icon(Icons.verified, color: Colors.white, size: 8.sp),
                         ),
                       ),
                   ],
@@ -111,217 +87,95 @@ class CrowdfundCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              '${crowdfund.creator.firstName} ${crowdfund.creator.lastName}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (crowdfund.creator.verified) ...[
-                            SizedBox(width: 4.w),
-                            Icon(
-                              Icons.verified,
-                              color: const Color(0xFF10B981),
-                              size: 14.sp,
-                            ),
-                          ],
-                        ],
-                      ),
                       Text(
-                        '@${crowdfund.creator.username}',
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 11.sp,
-                        ),
+                        crowdfund.title,
+                        style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        '${crowdfund.creator.firstName} ${crowdfund.creator.lastName}',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 11.sp),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
-            // Image (if available)
-            if (crowdfund.imageUrl != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: Image.network(
-                  crowdfund.imageUrl!,
-                  height: 160.h,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    height: 160.h,
-                    color: const Color(0xFF0A0A0A),
-                    child: Center(
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey[600],
-                        size: 48.sp,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 12.h),
-            ],
-            // Title
+            SizedBox(height: 8.h),
+            // Description (1 line)
             Text(
-              crowdfund.title,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 2,
+              crowdfund.description,
+              style: TextStyle(color: Colors.grey[400], fontSize: 12.sp, height: 1.3),
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             SizedBox(height: 8.h),
-            // Description
-            Text(
-              crowdfund.description,
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 13.sp,
-                height: 1.4,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: 12.h),
-            // Category badge
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 8.w,
-                vertical: 4.h,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-              child: Text(
-                crowdfund.category,
-                style: TextStyle(
-                  color: const Color(0xFF6366F1),
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            // Progress section
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Category + progress
+            Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Raised',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 11.sp,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            color: const Color(0xFF6366F1),
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Goal',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 11.sp,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          '${crowdfund.currency} ${crowdfund.targetAmount.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                  child: Text(
+                    crowdfund.category,
+                    style: TextStyle(color: const Color(0xFF6366F1), fontSize: 10.sp, fontWeight: FontWeight.w600),
+                  ),
                 ),
-                SizedBox(height: 12.h),
-                CrowdfundProgressIndicator(
-                  progressPercentage: crowdfund.progressPercentage,
+                const Spacer(),
+                Text(
+                  '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(0)}',
+                  style: TextStyle(color: const Color(0xFF6366F1), fontSize: 14.sp, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  ' / ${crowdfund.targetAmount.toStringAsFixed(0)}',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 11.sp),
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
-            // Footer info
+            SizedBox(height: 6.h),
+            CrowdfundProgressIndicator(progressPercentage: crowdfund.progressPercentage),
+            SizedBox(height: 6.h),
+            // Footer
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.people,
-                      color: Colors.grey[500],
-                      size: 16.sp,
-                    ),
-                    SizedBox(width: 4.w),
+                    Icon(Icons.people, color: Colors.grey[500], size: 14.sp),
+                    SizedBox(width: 3.w),
                     Text(
                       '${crowdfund.donorCount} ${crowdfund.donorCount == 1 ? 'donor' : 'donors'}',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 12.sp,
-                      ),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 11.sp),
                     ),
                   ],
                 ),
-                if (crowdfund.hasDeadline) ...[
+                if (crowdfund.hasDeadline)
                   Row(
                     children: [
                       Icon(
                         Icons.access_time,
-                        color: crowdfund.daysRemaining < 7
-                            ? const Color(0xFFF59E0B) // Warning orange
-                            : Colors.grey[500],
-                        size: 16.sp,
+                        color: crowdfund.daysRemaining < 7 ? const Color(0xFFF59E0B) : Colors.grey[500],
+                        size: 14.sp,
                       ),
-                      SizedBox(width: 4.w),
+                      SizedBox(width: 3.w),
                       Text(
                         crowdfund.isExpired
                             ? 'Expired'
                             : '${crowdfund.daysRemaining} ${crowdfund.daysRemaining == 1 ? 'day' : 'days'} left',
                         style: TextStyle(
-                          color: crowdfund.daysRemaining < 7
-                              ? const Color(0xFFF59E0B)
-                              : Colors.grey[400],
-                          fontSize: 12.sp,
-                          fontWeight: crowdfund.daysRemaining < 7
-                              ? FontWeight.w600
-                              : FontWeight.w400,
+                          color: crowdfund.daysRemaining < 7 ? const Color(0xFFF59E0B) : Colors.grey[400],
+                          fontSize: 11.sp,
+                          fontWeight: crowdfund.daysRemaining < 7 ? FontWeight.w600 : FontWeight.w400,
                         ),
                       ),
                     ],
                   ),
-                ],
               ],
             ),
           ],
@@ -364,31 +218,17 @@ class CrowdfundCard extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 10.w,
-        vertical: 6.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: textColor,
-            size: 14.sp,
-          ),
-          SizedBox(width: 4.w),
-          Text(
-            statusText,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Icon(icon, color: textColor, size: 12.sp),
+          SizedBox(width: 3.w),
+          Text(statusText, style: TextStyle(color: textColor, fontSize: 11.sp, fontWeight: FontWeight.w600)),
         ],
       ),
     );

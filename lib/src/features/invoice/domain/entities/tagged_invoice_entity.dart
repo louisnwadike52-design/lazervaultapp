@@ -87,7 +87,21 @@ class TaggedInvoice extends Equatable {
     return invoice!.dueDate!.isBefore(DateTime.now()) && isPending;
   }
 
-  String get displayName => taggerName ?? taggedUserName ?? 'Unknown';
+  String get displayName {
+    // For incoming invoices, prioritize taggerName (person who tagged you)
+    if (taggerName != null && taggerName!.isNotEmpty) {
+      return taggerName!;
+    }
+    if (taggerUsername != null && taggerUsername!.isNotEmpty) {
+      return '@${taggerUsername!}';
+    }
+    // Fallback: for outgoing invoices, use the tagged user's name
+    if (taggedUserName != null && taggedUserName!.isNotEmpty) {
+      return taggedUserName!;
+    }
+    // Last resort fallback
+    return 'Invoice Creator';
+  }
   String get displayUsername => taggerUsername ?? taggedUserUsername ?? '';
   String? get displayProfilePicture => taggerProfilePicture ?? taggedUserProfilePicture;
 

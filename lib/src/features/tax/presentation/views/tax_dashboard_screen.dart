@@ -191,7 +191,7 @@ class _TaxDashboardScreenState extends State<TaxDashboardScreen> {
         _buildSummaryCard(
           title: 'CIT Estimated',
           amount: citEstimated,
-          color: const Color(0xFF8B5CF6),
+          color: const Color.fromARGB(255, 78, 3, 208),
           icon: Icons.business,
         ),
       ],
@@ -595,7 +595,7 @@ class _TaxDashboardScreenState extends State<TaxDashboardScreen> {
       case TaxType.wht:
         return const Color(0xFFFB923C);
       case TaxType.cit:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 }

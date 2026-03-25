@@ -18,6 +18,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart' show AuthenticationSuccess;
+import '../notifiers/invoice_refresh_notifier.dart';
 
 class InvoicePaymentScreen extends StatefulWidget {
   final Invoice? invoice;
@@ -177,6 +178,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           Get.offNamed(AppRoutes.createInvoice, arguments: {'serviceFeeRef': state.serviceFeeRef});
         } else if (state is InvoiceUnlockSuccess) {
           setState(() => _isProcessingPayment = false);
+          // Notify the shared notifier so the home screen reloads on return
+          GetIt.I<InvoiceRefreshNotifier>().notifyRefresh();
           Get.offNamed(AppRoutes.invoiceProcessing, arguments: state.invoice ?? widget.invoice);
         } else if (state is InvoiceError) {
           setState(() => _isProcessingPayment = false);
@@ -301,7 +304,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           end: Alignment.bottomRight,
           colors: [
             Color(0xFF3B82F6).withValues(alpha: 0.1),
-            Color(0xFF8B5CF6).withValues(alpha: 0.1),
+            Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
@@ -476,14 +479,14 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           if (match.isNotEmpty) displayAccount = match.first;
         }
 
-        final hasEnough = displayAccount.balance >= widget.serviceFee;
+        final hasEnough = displayAccount.availableBalance >= widget.serviceFee;
 
         return _buildPaymentCategoryCard(
           isSelected: isSelected,
           icon: _getAccountIcon(displayAccount.accountType),
           iconColor: _getAccountColor(displayAccount.accountType),
           title: 'Pay with LazerVault Wallet',
-          subtitle: '${displayAccount.accountType} Account  •  $_currencySymbol${displayAccount.balance.toStringAsFixed(2)}',
+          subtitle: '${displayAccount.accountType} Account  •  $_currencySymbol${displayAccount.availableBalance.toStringAsFixed(2)}',
           insufficientFunds: isSelected && !hasEnough,
           trailing: isSelected
               ? Icon(Icons.check_circle, color: Color(0xFF3B82F6), size: 22.sp)
@@ -508,7 +511,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         title: 'Select LazerVault Wallet',
         children: accounts.map((account) {
           final isCurrent = _selectedAccountId == account.id;
-          final hasEnough = account.balance >= widget.serviceFee;
+          final hasEnough = account.availableBalance >= widget.serviceFee;
           final color = _getAccountColor(account.accountType);
           return _buildBottomSheetOption(
             icon: _getAccountIcon(account.accountType),
@@ -520,7 +523,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '$_currencySymbol${account.balance.toStringAsFixed(2)}',
+                  '$_currencySymbol${account.availableBalance.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     color: hasEnough ? Colors.white : Colors.red[400],
                     fontSize: 14.sp,
@@ -1044,7 +1047,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         accounts = accountState.accountSummaries;
       }
       final match = accounts.where((a) => a.id == _selectedAccountId);
-      if (match.isNotEmpty && match.first.balance < widget.serviceFee) {
+      if (match.isNotEmpty && match.first.availableBalance < widget.serviceFee) {
         _showErrorSnackbar(
           'Insufficient balance in this wallet. Please select a different wallet or payment method.',
         );
@@ -1098,18 +1101,21 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     // BlocListener handles navigation on success and error display on failure
     final cubit = context.read<InvoiceCubit>();
 
-    if (widget.isPrePayment) {
-      await cubit.payServiceFee(
-        accountId: _selectedAccountId.isNotEmpty ? _selectedAccountId : null,
-        verificationToken: pinResult.verificationToken,
-        transactionId: transactionId,
-      );
-    } else {
+    // Always use unlockInvoice to pay service fee and activate the invoice
+    if (widget.invoice != null) {
       await cubit.unlockInvoice(
         widget.invoice!.id,
         accountId: _selectedAccountId.isNotEmpty ? _selectedAccountId : null,
         verificationToken: pinResult.verificationToken,
         transactionId: transactionId,
+      );
+    } else {
+      // Should not happen - invoice should always be provided
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invoice information missing. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

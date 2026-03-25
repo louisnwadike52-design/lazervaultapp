@@ -83,6 +83,48 @@ class InterestCalculated extends LockFundsState {
   List<Object?> get props => [calculation];
 }
 
+class LockFundTopUpSuccess extends LockFundsState {
+  final LockFund updatedLockFund;
+  final double newBalance;
+  final String message;
+
+  const LockFundTopUpSuccess({
+    required this.updatedLockFund,
+    required this.newBalance,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [updatedLockFund, newBalance, message];
+}
+
+class PiggyVaultConfigsLoaded extends LockFundsState {
+  final List<PiggyVaultConfig> configs;
+
+  const PiggyVaultConfigsLoaded(this.configs);
+
+  @override
+  List<Object?> get props => [configs];
+}
+
+class AutoSaveLoaded extends LockFundsState {
+  final LockFundAutoSaveConfig? autoSave;
+
+  const AutoSaveLoaded(this.autoSave);
+
+  @override
+  List<Object?> get props => [autoSave];
+}
+
+class AutoSaveCreated extends LockFundsState {
+  final LockFundAutoSaveConfig autoSave;
+
+  const AutoSaveCreated(this.autoSave);
+
+  @override
+  List<Object?> get props => [autoSave];
+}
+
 class LockFundsError extends LockFundsState {
   final String message;
 

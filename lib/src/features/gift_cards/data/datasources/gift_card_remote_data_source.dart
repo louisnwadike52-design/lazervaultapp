@@ -1,10 +1,16 @@
+import '../../domain/entities/gift_card_entity.dart';
 import '../models/gift_card_model.dart';
 
 abstract class IGiftCardRemoteDataSource {
-  Future<List<GiftCardBrandModel>> getGiftCardBrands({
+  Future<GiftCardBrandsResult> getGiftCardBrands({
     String? category,
     String? countryCode,
+    String? searchQuery,
+    int page = 0,
+    int pageSize = 20,
   });
+
+  Future<List<GiftCardCountry>> getSupportedCountries();
 
   Future<GiftCardModel> buyGiftCard({
     required String brandId,
@@ -21,6 +27,8 @@ abstract class IGiftCardRemoteDataSource {
     String? idempotencyKey,
     int quantity,
     String? providerName,
+    double? senderAmount,
+    String? senderCurrency,
   });
 
   Future<List<GiftCardModel>> getUserGiftCards({
@@ -39,10 +47,11 @@ abstract class IGiftCardRemoteDataSource {
     int offset,
   });
 
-  Future<GiftCardModel> redeemGiftCard({
-    required String accountId,
-    required String cardNumber,
-    required String cardPin,
+  /// Fetches the merchant redeem code for a purchased gift card from the provider.
+  /// Returns a map with: redemptionCode, redemptionPin, transactionId, status, message
+  Future<Map<String, String>> getRedeemCode({
+    required String transactionId,
+    bool forceRefresh = false,
   });
 
   Future<GiftCardModel> transferGiftCard({
@@ -52,16 +61,13 @@ abstract class IGiftCardRemoteDataSource {
     required String message,
     required String transactionId,
     required String verificationToken,
-  });
-
-  Future<GiftCardBalanceModel> getGiftCardBalance({
-    required String cardNumber,
-    required String cardPin,
+    String? recipientUserId,
+    String transferType = 'email',
   });
 
   // Sell flow methods
 
-  Future<List<SellableCardModel>> getSellableCards();
+  Future<List<SellableCardModel>> getSellableCards({String? countryCode});
 
   Future<SellRateModel> getSellRate({
     required String cardType,
@@ -80,6 +86,15 @@ abstract class IGiftCardRemoteDataSource {
     List<String>? images,
     String? idempotencyKey,
     String? providerName,
+    String? cardCountry,
+    String? cardFormat,
+    List<String>? imageUrls,
+    List<String>? imageKeys,
+    String? ocrBrand,
+    String? ocrCardNumber,
+    String? ocrPin,
+    double? ocrDenomination,
+    String? ocrCurrency,
   });
 
   Future<GiftCardSaleModel> getSellStatus(String saleId);
@@ -88,5 +103,15 @@ abstract class IGiftCardRemoteDataSource {
     String? status,
     int limit,
     int offset,
+  });
+
+  Future<Map<String, String>> uploadSellImage({
+    required String imageData,
+    required String contentType,
+    required String filename,
+  });
+
+  Future<Map<String, dynamic>> extractCardDetails({
+    required List<String> imageUrls,
   });
 }

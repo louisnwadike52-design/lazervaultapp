@@ -21,11 +21,23 @@ class GiftCardBrandsLoaded extends GiftCardState {
   final List<GiftCardBrand> brands;
   final String? selectedCategory;
   final bool isStale;
+  final int currentPage;
+  final int totalPages;
+  final bool hasNext;
+  final bool isLoadingMore;
 
-  const GiftCardBrandsLoaded(this.brands, {this.selectedCategory, this.isStale = false});
+  const GiftCardBrandsLoaded(
+    this.brands, {
+    this.selectedCategory,
+    this.isStale = false,
+    this.currentPage = 0,
+    this.totalPages = 1,
+    this.hasNext = false,
+    this.isLoadingMore = false,
+  });
 
   @override
-  List<Object> get props => [brands, if (selectedCategory != null) selectedCategory!, isStale];
+  List<Object> get props => [brands, if (selectedCategory != null) selectedCategory!, isStale, currentPage, totalPages, hasNext, isLoadingMore];
 }
 
 class GiftCardBrandsSearched extends GiftCardState {
@@ -244,22 +256,29 @@ class GiftCardValidationError extends GiftCardState {
 }
 
 // ============================================
-// REDEEM FLOW STATES
+// GET REDEEM CODE STATES
 // ============================================
 
 class GiftCardRedeeming extends GiftCardState {}
 
-class GiftCardRedeemed extends GiftCardState {
-  final GiftCard giftCard;
-  final double amountRedeemed;
+/// The merchant redeem code was successfully retrieved from the provider
+class RedeemCodeLoaded extends GiftCardState {
+  final String redemptionCode;          // The actual merchant code (e.g., Amazon code)
+  final String redemptionPin;           // PIN code (if applicable)
+  final String transactionId;           // Provider transaction ID
+  final String status;                  // "available", "pending", "unavailable"
+  final String message;
 
-  const GiftCardRedeemed({
-    required this.giftCard,
-    required this.amountRedeemed,
+  const RedeemCodeLoaded({
+    required this.redemptionCode,
+    required this.redemptionPin,
+    required this.transactionId,
+    required this.status,
+    required this.message,
   });
 
   @override
-  List<Object> get props => [giftCard, amountRedeemed];
+  List<Object> get props => [redemptionCode, redemptionPin, transactionId, status, message];
 }
 
 class GiftCardRedeemError extends GiftCardState {
@@ -287,36 +306,6 @@ class GiftCardTransferred extends GiftCardState {
 class GiftCardTransferError extends GiftCardState {
   final String message;
   const GiftCardTransferError(this.message);
-  @override
-  List<Object> get props => [message];
-}
-
-// ============================================
-// BALANCE CHECK STATES
-// ============================================
-
-class GiftCardBalanceLoading extends GiftCardState {}
-
-class GiftCardBalanceLoaded extends GiftCardState {
-  final double balance;
-  final String brandName;
-  final String expiryDate;
-  final String status;
-
-  const GiftCardBalanceLoaded({
-    required this.balance,
-    required this.brandName,
-    required this.expiryDate,
-    required this.status,
-  });
-
-  @override
-  List<Object> get props => [balance, brandName, expiryDate, status];
-}
-
-class GiftCardBalanceError extends GiftCardState {
-  final String message;
-  const GiftCardBalanceError(this.message);
   @override
   List<Object> get props => [message];
 }
@@ -430,6 +419,89 @@ class SellQueued extends GiftCardState {
 
   const SellQueued({required this.message});
 
+  @override
+  List<Object> get props => [message];
+}
+
+class GiftCardBrandsLoadingMore extends GiftCardState {
+  final List<GiftCardBrand> currentBrands;
+  const GiftCardBrandsLoadingMore(this.currentBrands);
+  @override
+  List<Object> get props => [currentBrands];
+}
+
+class SupportedCountriesLoaded extends GiftCardState {
+  final List<GiftCardCountry> countries;
+  const SupportedCountriesLoaded(this.countries);
+  @override
+  List<Object> get props => [countries];
+}
+
+class GiftCardTimeoutError extends GiftCardState {
+  final String operation;
+  const GiftCardTimeoutError({this.operation = ''});
+  @override
+  List<Object> get props => [operation];
+}
+
+class GiftCardServerUnavailable extends GiftCardState {
+  final String operation;
+  const GiftCardServerUnavailable({this.operation = ''});
+  @override
+  List<Object> get props => [operation];
+}
+
+// ============================================
+// IMAGE UPLOAD STATES
+// ============================================
+
+class SellImageUploading extends GiftCardState {}
+
+class SellImageUploaded extends GiftCardState {
+  final String imageUrl;
+  final String imageKey;
+  const SellImageUploaded({required this.imageUrl, required this.imageKey});
+  @override
+  List<Object> get props => [imageUrl, imageKey];
+}
+
+class SellImageError extends GiftCardState {
+  final String message;
+  const SellImageError(this.message);
+  @override
+  List<Object> get props => [message];
+}
+
+// ============================================
+// OCR EXTRACTION STATES
+// ============================================
+
+class OCRExtracting extends GiftCardState {}
+
+class OCRExtracted extends GiftCardState {
+  final String brand;
+  final String cardNumber;
+  final String pin;
+  final double denomination;
+  final String currency;
+  final double confidence;
+  final String rawText;
+  const OCRExtracted({
+    required this.brand,
+    required this.cardNumber,
+    required this.pin,
+    required this.denomination,
+    required this.currency,
+    required this.confidence,
+    required this.rawText,
+  });
+  @override
+  List<Object> get props => [brand, cardNumber, pin, denomination, currency, confidence, rawText];
+}
+
+class OCRFailed extends GiftCardState {
+  final String message;
+  const OCRFailed(this.message);
   @override
   List<Object> get props => [message];
 }

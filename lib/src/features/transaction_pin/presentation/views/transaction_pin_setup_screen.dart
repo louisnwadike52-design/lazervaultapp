@@ -324,7 +324,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
 
   void _proceedToNextStep() {
     if (_fromLoginFlow) {
-      // Login flow — go directly to dashboard (no face setup on login)
+      // Login flow — go directly to dashboard
       Get.offAllNamed(AppRoutes.dashboard);
       return;
     }
@@ -335,53 +335,8 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
       return;
     }
 
-    // Signup flow — show face registration prompt
-    _showFaceRegistrationPrompt();
-  }
-
-  void _showFaceRegistrationPrompt() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(
-            'Setup Face Recognition?',
-            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'Would you like to enable Face Recognition for faster login?',
-            style: TextStyle(fontSize: 14.sp),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Get.offAllNamed(AppRoutes.dashboard);
-              },
-              child: Text(
-                'Skip for now',
-                style: TextStyle(fontSize: 14.sp, color: Colors.grey),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Get.offAllNamed(AppRoutes.faceScan);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-              child: Text(
-                'Setup Face Recognition',
-                style: TextStyle(fontSize: 14.sp),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    // Signup flow — proceed to KYC progressive onboarding
+    Get.offAllNamed(AppRoutes.kycProgressive);
   }
 
   String _getTitle() {

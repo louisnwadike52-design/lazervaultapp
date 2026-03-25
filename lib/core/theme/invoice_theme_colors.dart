@@ -12,8 +12,8 @@ class InvoiceThemeColors {
 
   // Primary Brand Colors
   static const Color primaryPurple = Color.fromARGB(255, 78, 3, 208); // Main purple
-  static const Color alternativePurple = Color(0xFF6C5CE7); // Payment screens
-  static const Color gradientPurple = Color(0xFF8B5CF6); // Gradient complement
+  static const Color alternativePurple = Color.fromARGB(255, 78, 3, 208); // Payment screens
+  static const Color gradientPurple = Color.fromARGB(255, 78, 3, 208); // Gradient complement
 
   // Status Colors
   static const Color successGreen = Color(0xFF10B981); // Completed/Paid

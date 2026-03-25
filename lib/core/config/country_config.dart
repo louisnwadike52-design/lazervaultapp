@@ -131,6 +131,9 @@ class CountryConfig {
   final List<String> regulatoryNotes;
   final bool isActive;
   final bool isBeta;
+  /// Tier-specific mandatory ID types (CBN compliance)
+  /// Maps KYC level to the ONLY accepted ID types for that tier
+  final Map<KycLevel, List<IdentityDocumentType>> tierIdTypes;
 
   const CountryConfig({
     required this.country,
@@ -142,6 +145,7 @@ class CountryConfig {
     required this.regulatoryNotes,
     this.isActive = true,
     this.isBeta = false,
+    this.tierIdTypes = const {},
   });
 
   /// Get document requirements for a specific KYC level
@@ -193,13 +197,17 @@ class CountryConfigs {
       IdentityDocumentType.driverLicense,
     ],
     defaultIdType: IdentityDocumentType.bvn,
+    tierIdTypes: {
+      KycLevel.standard: [IdentityDocumentType.bvn],  // CBN: BVN mandatory for Tier 2
+      KycLevel.advanced: [IdentityDocumentType.nin],   // CBN: NIN mandatory for Tier 3
+    },
     documentRequirements: [
       DocumentRequirement(
         documentTypeId: 'bvn',
         documentType: IdentityDocumentType.bvn,
         isRequired: true,
         description: '11-digit Bank Verification Number linked to your bank accounts',
-        needsOcrExtraction: false, // BVN is manual entry + API verification
+        needsOcrExtraction: false,
         needsFrontPhoto: false,
         needsBackPhoto: false,
         needsSelfie: false,
@@ -212,7 +220,8 @@ class CountryConfigs {
       KycLevel.advanced: 5000000, // ₦5,000,000
     },
     regulatoryNotes: [
-      'KYC via BVN/NIN verification required for all accounts',
+      'BVN verification required for Tier 2 (CBN mandate)',
+      'NIN + address proof required for Tier 3 (Enhanced KYC)',
       'Central Bank of Nigeria (CBN) regulated',
     ],
     isActive: true,

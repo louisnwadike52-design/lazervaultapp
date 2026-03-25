@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/provider_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/entities/beneficiary_entity.dart';

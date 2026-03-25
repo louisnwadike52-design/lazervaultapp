@@ -33,7 +33,7 @@ void showServiceChatBottomSheet(
   required String serviceName,
   required String sourceContext,
   String? agentDescription,
-  Color accentColor = const Color(0xFF8B5CF6),
+  Color accentColor = const Color.fromARGB(255, 78, 3, 208),
   bool isDirect = true,
 }) {
   // Read auth cubit from the widget tree (the actual authenticated instance),
@@ -77,7 +77,7 @@ class ServiceChatBottomSheet extends StatefulWidget {
     required this.serviceName,
     required this.sourceContext,
     this.agentDescription,
-    this.accentColor = const Color(0xFF8B5CF6),
+    this.accentColor = const Color.fromARGB(255, 78, 3, 208),
   });
 
   @override
@@ -466,7 +466,7 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
       builder: (context, state) {
         if (state is MicroserviceChatHistoryLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
+            child: CircularProgressIndicator(color: Color.fromARGB(255, 78, 3, 208)),
           );
         }
 

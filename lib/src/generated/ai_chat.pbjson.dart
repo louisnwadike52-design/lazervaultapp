@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: ai_chat.proto
-//
-// @dart = 2.12
+// Generated from ai_chat.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -20,9 +21,26 @@ const ProcessChatRequest$json = {
     {'1': 'query', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'query'},
     {'1': 'tx_history', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'txHistory'},
     {'1': 'user_id', '3': 3, '4': 1, '5': 13, '8': {}, '10': 'userId'},
-    {'1': 'uploaded_file', '3': 4, '4': 1, '5': 11, '6': '.pb.ChatFile', '8': {}, '9': 0, '10': 'uploadedFile', '17': true},
+    {
+      '1': 'uploaded_file',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ChatFile',
+      '8': {},
+      '9': 0,
+      '10': 'uploadedFile',
+      '17': true
+    },
     {'1': 'session_id', '3': 5, '4': 1, '5': 9, '8': {}, '10': 'sessionId'},
-    {'1': 'source_context', '3': 6, '4': 1, '5': 9, '8': {}, '10': 'sourceContext'},
+    {
+      '1': 'source_context',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'sourceContext'
+    },
     {'1': 'language', '3': 7, '4': 1, '5': 9, '8': {}, '10': 'language'},
     {'1': 'account_id', '3': 8, '4': 1, '5': 9, '8': {}, '10': 'accountId'},
     {'1': 'user_country', '3': 9, '4': 1, '5': 9, '8': {}, '10': 'userCountry'},
@@ -63,15 +81,69 @@ const ProcessChatResponse$json = {
     {'1': 'msg', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'msg'},
     {'1': 'query', '3': 3, '4': 1, '5': 9, '8': {}, '10': 'query'},
     {'1': 'response', '3': 4, '4': 1, '5': 9, '8': {}, '10': 'response'},
-    {'1': 'generated_files', '3': 5, '4': 3, '5': 11, '6': '.pb.ChatFile', '8': {}, '10': 'generatedFiles'},
-    {'1': 'file_analysis', '3': 6, '4': 1, '5': 11, '6': '.pb.FileAnalysis', '8': {}, '10': 'fileAnalysis'},
+    {
+      '1': 'generated_files',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.ChatFile',
+      '8': {},
+      '10': 'generatedFiles'
+    },
+    {
+      '1': 'file_analysis',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.FileAnalysis',
+      '8': {},
+      '10': 'fileAnalysis'
+    },
     {'1': 'intent', '3': 7, '4': 1, '5': 9, '8': {}, '10': 'intent'},
-    {'1': 'entities', '3': 8, '4': 3, '5': 11, '6': '.pb.ProcessChatResponse.EntitiesEntry', '8': {}, '10': 'entities'},
-    {'1': 'requires_confirmation', '3': 9, '4': 1, '5': 8, '8': {}, '10': 'requiresConfirmation'},
-    {'1': 'action_buttons', '3': 10, '4': 3, '5': 11, '6': '.pb.ActionButton', '8': {}, '10': 'actionButtons'},
+    {
+      '1': 'entities',
+      '3': 8,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.ProcessChatResponse.EntitiesEntry',
+      '8': {},
+      '10': 'entities'
+    },
+    {
+      '1': 'requires_confirmation',
+      '3': 9,
+      '4': 1,
+      '5': 8,
+      '8': {},
+      '10': 'requiresConfirmation'
+    },
+    {
+      '1': 'action_buttons',
+      '3': 10,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.ActionButton',
+      '8': {},
+      '10': 'actionButtons'
+    },
     {'1': 'session_id', '3': 11, '4': 1, '5': 9, '8': {}, '10': 'sessionId'},
-    {'1': 'confirmation_data', '3': 12, '4': 1, '5': 11, '6': '.pb.ConfirmationData', '8': {}, '10': 'confirmationData'},
-    {'1': 'conversation_state', '3': 13, '4': 1, '5': 9, '8': {}, '10': 'conversationState'},
+    {
+      '1': 'confirmation_data',
+      '3': 12,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ConfirmationData',
+      '8': {},
+      '10': 'confirmationData'
+    },
+    {
+      '1': 'conversation_state',
+      '3': 13,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'conversationState'
+    },
   ],
   '3': [ProcessChatResponse_EntitiesEntry$json],
   '7': {},
@@ -121,11 +193,25 @@ const ChatFile$json = {
   '2': [
     {'1': 'filename', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'filename'},
     {'1': 'content_type', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'contentType'},
-    {'1': 'file_content', '3': 3, '4': 1, '5': 12, '8': {}, '10': 'fileContent'},
+    {
+      '1': 'file_content',
+      '3': 3,
+      '4': 1,
+      '5': 12,
+      '8': {},
+      '10': 'fileContent'
+    },
     {'1': 'file_id', '3': 4, '4': 1, '5': 9, '8': {}, '10': 'fileId'},
     {'1': 'file_url', '3': 5, '4': 1, '5': 9, '8': {}, '10': 'fileUrl'},
     {'1': 'file_size', '3': 6, '4': 1, '5': 3, '8': {}, '10': 'fileSize'},
-    {'1': 'upload_timestamp', '3': 7, '4': 1, '5': 9, '8': {}, '10': 'uploadTimestamp'},
+    {
+      '1': 'upload_timestamp',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'uploadTimestamp'
+    },
   ],
   '7': {},
 };
@@ -150,7 +236,15 @@ final $typed_data.Uint8List chatFileDescriptor = $convert.base64Decode(
 const FileAnalysis$json = {
   '1': 'FileAnalysis',
   '2': [
-    {'1': 'results', '3': 1, '4': 3, '5': 11, '6': '.pb.FileAnalysisResult', '8': {}, '10': 'results'},
+    {
+      '1': 'results',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.FileAnalysisResult',
+      '8': {},
+      '10': 'results'
+    },
     {'1': 'summary', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'summary'},
   ],
   '7': {},
@@ -170,11 +264,47 @@ const FileAnalysisResult$json = {
   '2': [
     {'1': 'file_id', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'fileId'},
     {'1': 'filename', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'filename'},
-    {'1': 'analysis_type', '3': 3, '4': 1, '5': 9, '8': {}, '10': 'analysisType'},
-    {'1': 'analysis_result', '3': 4, '4': 1, '5': 9, '8': {}, '10': 'analysisResult'},
-    {'1': 'metadata', '3': 5, '4': 3, '5': 11, '6': '.pb.FileAnalysisResult.MetadataEntry', '8': {}, '10': 'metadata'},
-    {'1': 'processing_success', '3': 6, '4': 1, '5': 8, '8': {}, '10': 'processingSuccess'},
-    {'1': 'error_message', '3': 7, '4': 1, '5': 9, '8': {}, '10': 'errorMessage'},
+    {
+      '1': 'analysis_type',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'analysisType'
+    },
+    {
+      '1': 'analysis_result',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'analysisResult'
+    },
+    {
+      '1': 'metadata',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.FileAnalysisResult.MetadataEntry',
+      '8': {},
+      '10': 'metadata'
+    },
+    {
+      '1': 'processing_success',
+      '3': 6,
+      '4': 1,
+      '5': 8,
+      '8': {},
+      '10': 'processingSuccess'
+    },
+    {
+      '1': 'error_message',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'errorMessage'
+    },
   ],
   '3': [FileAnalysisResult_MetadataEntry$json],
   '7': {},
@@ -245,10 +375,11 @@ const IndexTransactionFileRequest$json = {
 };
 
 /// Descriptor for `IndexTransactionFileRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List indexTransactionFileRequestDescriptor = $convert.base64Decode(
-    'ChtJbmRleFRyYW5zYWN0aW9uRmlsZVJlcXVlc3Q6epJBdwp1Kh5JbmRleCBUcmFuc2FjdGlvbi'
-    'BGaWxlIFJlcXVlc3QyU1RyaWdnZXJzIHRoZSBpbmRleGluZyBwcm9jZXNzIGZvciB0aGUgYXV0'
-    'aGVudGljYXRlZCB1c2VyJ3MgbGF0ZXN0IHRyYW5zYWN0aW9uIGZpbGUu');
+final $typed_data.Uint8List indexTransactionFileRequestDescriptor =
+    $convert.base64Decode(
+        'ChtJbmRleFRyYW5zYWN0aW9uRmlsZVJlcXVlc3Q6epJBdwp1Kh5JbmRleCBUcmFuc2FjdGlvbi'
+        'BGaWxlIFJlcXVlc3QyU1RyaWdnZXJzIHRoZSBpbmRleGluZyBwcm9jZXNzIGZvciB0aGUgYXV0'
+        'aGVudGljYXRlZCB1c2VyJ3MgbGF0ZXN0IHRyYW5zYWN0aW9uIGZpbGUu');
 
 @$core.Deprecated('Use indexTransactionFileResponseDescriptor instead')
 const IndexTransactionFileResponse$json = {
@@ -305,7 +436,15 @@ final $typed_data.Uint8List getAIChatHistoryRequestDescriptor = $convert.base64D
 const GetAIChatHistoryResponse$json = {
   '1': 'GetAIChatHistoryResponse',
   '2': [
-    {'1': 'history', '3': 1, '4': 3, '5': 11, '6': '.pb.AIChatHistoryEntry', '8': {}, '10': 'history'},
+    {
+      '1': 'history',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.AIChatHistoryEntry',
+      '8': {},
+      '10': 'history'
+    },
   ],
   '7': {},
 };
@@ -344,10 +483,25 @@ const ConfirmationData$json = {
     {'1': 'action_type', '3': 1, '4': 1, '5': 9, '8': {}, '10': 'actionType'},
     {'1': 'amount', '3': 2, '4': 1, '5': 9, '8': {}, '10': 'amount'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '8': {}, '10': 'currency'},
-    {'1': 'recipient_name', '3': 4, '4': 1, '5': 9, '8': {}, '10': 'recipientName'},
+    {
+      '1': 'recipient_name',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '8': {},
+      '10': 'recipientName'
+    },
     {'1': 'recipient_id', '3': 5, '4': 1, '5': 9, '8': {}, '10': 'recipientId'},
     {'1': 'description', '3': 6, '4': 1, '5': 9, '8': {}, '10': 'description'},
-    {'1': 'extra', '3': 7, '4': 3, '5': 11, '6': '.pb.ConfirmationData.ExtraEntry', '8': {}, '10': 'extra'},
+    {
+      '1': 'extra',
+      '3': 7,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.ConfirmationData.ExtraEntry',
+      '8': {},
+      '10': 'extra'
+    },
   ],
   '3': [ConfirmationData_ExtraEntry$json],
 };
@@ -376,4 +530,3 @@ final $typed_data.Uint8List confirmationDataDescriptor = $convert.base64Decode(
     '9BZGRpdGlvbmFsIGtleS12YWx1ZSBkYXRhIGZvciB0aGUgY29uZmlybWF0aW9uLlIFZXh0cmEa'
     'OAoKRXh0cmFFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6Aj'
     'gB');
-

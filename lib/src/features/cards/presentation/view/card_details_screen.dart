@@ -402,7 +402,7 @@ class _CardDetailsScreenState extends State<CardDetailsScreen> {
       _CardAction(
         icon: Icons.lock,
         label: 'Set/Change PIN',
-        color: const Color(0xFF8B5CF6),
+        color: const Color.fromARGB(255, 78, 3, 208),
         onTap: isCancelled ? null : () => _showSetPINDialog(card),
       ),
       _CardAction(

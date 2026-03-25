@@ -371,7 +371,7 @@ class BudgetWarningWidget extends StatelessWidget {
       case BudgetStatus.noBudgetSet:
         return const Color(0xFF6B7280); // Gray
       case BudgetStatus.currencyMismatch:
-        return const Color(0xFF8B5CF6); // Purple
+        return const Color.fromARGB(255, 78, 3, 208); // Purple
       case BudgetStatus.expired:
         return const Color(0xFFEC4899); // Pink
     }
@@ -635,7 +635,7 @@ class CompactBudgetWarning extends StatelessWidget {
       case BudgetStatus.noBudgetSet:
         return const Color(0xFF6B7280);
       case BudgetStatus.currencyMismatch:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
       case BudgetStatus.expired:
         return const Color(0xFFEC4899);
     }

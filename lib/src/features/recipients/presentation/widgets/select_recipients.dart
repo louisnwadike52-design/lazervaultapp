@@ -131,6 +131,9 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
     // Add scroll listener for pagination
     _recipientsScrollController.addListener(_onRecipientsScroll);
+
+    // Load P2P conversations so the badge shows unread count
+    serviceLocator<P2PConversationsCubit>().loadConversations();
   }
 
   @override
@@ -293,11 +296,13 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             const MicroserviceChatIcon(
                               serviceName: 'Send Funds',
                               sourceContext: 'transfers',
-                              iconColor: Color(0xFF8B5CF6),
+                              iconColor: Colors.white,
+                              chatAccentColor: Color.fromARGB(255, 78, 3, 208),
                               isDirect: true,
                               agentDescription: 'I can help you send money, set up recurring transfers, check transfer history, view fees, and more.',
                               size: 38,
                               iconSize: 18,
+                              useDarkInner: true,
                             ),
                             SizedBox(width: 8.w),
                             // Financial Connections (P2P Chat) icon with unread badge
@@ -308,7 +313,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                     ? p2pState.totalUnread + p2pState.requestCount
                                     : 0;
                                 return GestureDetector(
-                                  onTap: () => Get.toNamed(AppRoutes.financialConnections),
+                                  onTap: () {
+                                    Get.toNamed(AppRoutes.financialConnections)?.then((_) {
+                                      // Refresh unread count after returning from connections
+                                      serviceLocator<P2PConversationsCubit>().loadConversations();
+                                    });
+                                  },
                                   child: Stack(
                                     clipBehavior: Clip.none,
                                     children: [

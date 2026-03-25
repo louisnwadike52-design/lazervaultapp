@@ -105,7 +105,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFFEC4899), Color(0xFF8B5CF6), Color(0xFF6366F1)],
+        colors: [Color(0xFFEC4899), Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
       ),
     ),
   ];

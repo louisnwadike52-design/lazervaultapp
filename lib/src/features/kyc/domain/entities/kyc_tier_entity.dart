@@ -474,3 +474,61 @@ class VerifyIDResponse extends Equatable {
         verificationId, sessionUrl, sessionToken,
       ];
 }
+
+/// Verification session from provider (Onfido/Persona/Smile ID)
+class VerificationSession {
+  final String verificationId;
+  final String? sessionUrl;
+  final String? sessionToken;
+  final String provider;
+  final KYCStatus status;
+
+  VerificationSession({
+    required this.verificationId,
+    this.sessionUrl,
+    this.sessionToken,
+    required this.provider,
+    required this.status,
+  }) : assert(verificationId.isNotEmpty, 'verificationId must not be empty');
+}
+
+/// Pre-signed URL for document upload
+class DocumentUploadURL {
+  final String uploadUrl;
+  final String storageKey;
+  final DateTime expiresAt;
+
+  const DocumentUploadURL({
+    required this.uploadUrl,
+    required this.storageKey,
+    required this.expiresAt,
+  });
+}
+
+/// Item for document submission batch
+class DocumentSubmissionItem {
+  final String storageKey;
+  final String documentType;
+  final String contentType;
+
+  const DocumentSubmissionItem({
+    required this.storageKey,
+    required this.documentType,
+    required this.contentType,
+  });
+}
+
+/// Result of confirming a verification session
+class ConfirmVerificationResult {
+  final bool success;
+  final KYCStatus status;
+  final KYCTier currentTier;
+  final String message;
+
+  const ConfirmVerificationResult({
+    required this.success,
+    required this.status,
+    required this.currentTier,
+    required this.message,
+  });
+}

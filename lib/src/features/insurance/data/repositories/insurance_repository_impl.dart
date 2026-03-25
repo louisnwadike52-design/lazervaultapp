@@ -3,6 +3,7 @@ import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../../domain/entities/insurance_product_entity.dart';
+import '../../domain/entities/mycover_management_entities.dart';
 import '../../domain/repositories/insurance_repository.dart';
 import '../datasources/insurance_remote_datasource.dart';
 import '../../../../../core/services/secure_storage_service.dart';
@@ -385,6 +386,228 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       throw _handleGrpcError(e);
     } catch (e) {
       throw Exception('Failed to get auxiliary data: $e');
+    }
+  }
+
+  // ===== MyCover Management APIs =====
+
+  @override
+  Future<({List<MyCoverCustomer> customers, int total})> getMyCoverCustomers({int page = 1, int limit = 20}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverCustomers(accessToken: accessToken, page: page, limit: limit);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load customers: $e');
+    }
+  }
+
+  @override
+  Future<MyCoverCustomer> getMyCoverCustomerById(String customerId) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverCustomerById(accessToken: accessToken, customerId: customerId);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load customer: $e');
+    }
+  }
+
+  @override
+  Future<({List<MyCoverPolicyDetail> policies, int total})> getMyCoverCustomerPolicies(String customerId, {int page = 1, int limit = 20}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverCustomerPolicies(accessToken: accessToken, customerId: customerId, page: page, limit: limit);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load customer policies: $e');
+    }
+  }
+
+  @override
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverCustomerPurchases(String customerId, {int page = 1, int limit = 20}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverCustomerPurchases(accessToken: accessToken, customerId: customerId, page: page, limit: limit);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load customer purchases: $e');
+    }
+  }
+
+  @override
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverPurchases({int page = 1, int limit = 20}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverPurchases(accessToken: accessToken, page: page, limit: limit);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load purchases: $e');
+    }
+  }
+
+  @override
+  Future<MyCoverPurchase> getMyCoverPurchaseById(String purchaseId) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverPurchaseById(accessToken: accessToken, purchaseId: purchaseId);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load purchase: $e');
+    }
+  }
+
+  @override
+  Future<({List<MyCoverProviderClaim> claims, int total})> getMyCoverClaims({String? status, int page = 1, int limit = 20}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverClaims(accessToken: accessToken, status: status, page: page, limit: limit);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load claims: $e');
+    }
+  }
+
+  @override
+  Future<MyCoverProviderClaim> getMyCoverClaimById(String claimId) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverClaimById(accessToken: accessToken, claimId: claimId);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load claim: $e');
+    }
+  }
+
+  @override
+  Future<({String claimId, String claimNumber, String status})> fileCreditLifeClaim({
+    required String policyId,
+    required String claimType,
+    required String description,
+    required double amount,
+    List<String>? documents,
+    Map<String, String>? additionalInfo,
+  }) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.fileCreditLifeClaim(
+        accessToken: accessToken,
+        policyId: policyId,
+        claimType: claimType,
+        description: description,
+        amount: amount,
+        documents: documents,
+        additionalInfo: additionalInfo,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to file claim: $e');
+    }
+  }
+
+  @override
+  Future<List<AuxiliaryItem>> getInsuranceStates() async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceStates(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load states: $e');
+    }
+  }
+
+  @override
+  Future<List<AuxiliaryItem>> getInsuranceVehicleMakes() async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceVehicleMakes(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load vehicle makes: $e');
+    }
+  }
+
+  @override
+  Future<List<MyCoverNotificationPref>> getMyCoverNotificationPreferences() async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverNotificationPreferences(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load notification preferences: $e');
+    }
+  }
+
+  @override
+  Future<void> updateMyCoverNotificationPreferences(List<MyCoverNotificationPref> preferences) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      await remoteDataSource.updateMyCoverNotificationPreferences(
+        preferences: preferences,
+        accessToken: accessToken,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to update notification preferences: $e');
+    }
+  }
+
+  @override
+  Future<MyCoverWalletBalance> getMyCoverWalletBalance() async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getMyCoverWalletBalance(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to load wallet balance: $e');
+    }
+  }
+
+  @override
+  Future<InsuranceRefund> requestInsuranceRefund({
+    required String policyReference,
+    required String reason,
+  }) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.requestInsuranceRefund(
+        policyReference: policyReference,
+        reason: reason,
+        accessToken: accessToken,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to request refund: $e');
+    }
+  }
+
+  @override
+  Future<InsuranceRefund> getInsuranceRefundStatus(String policyReference) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceRefundStatus(
+        policyReference: policyReference,
+        accessToken: accessToken,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to get refund status: $e');
     }
   }
 

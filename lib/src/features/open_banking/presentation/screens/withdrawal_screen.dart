@@ -129,7 +129,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: const Text('Withdraw Funds'),
-        backgroundColor: const Color(0xFF6C5CE7),
+        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -186,7 +186,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
             width: double.infinity,
             padding: EdgeInsets.all(20.w),
             decoration: const BoxDecoration(
-              color: Color(0xFF6C5CE7),
+              color: Color.fromARGB(255, 78, 3, 208),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,7 +265,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: Color(0xFF6C5CE7)),
+                        borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
                       ),
                     ),
                     style: TextStyle(
@@ -369,7 +369,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: Color(0xFF6C5CE7)),
+                        borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
                       ),
                       suffixIcon: _isResolvingAccount
                           ? Padding(
@@ -379,7 +379,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                                 height: 20.w,
                                 child: const CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Color(0xFF6C5CE7),
+                                  color: Color.fromARGB(255, 78, 3, 208),
                                 ),
                               ),
                             )
@@ -476,7 +476,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
-                        borderSide: const BorderSide(color: Color(0xFF6C5CE7)),
+                        borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
                       ),
                     ),
                   ),
@@ -499,7 +499,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6C5CE7),
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: Colors.grey[300],
                         shape: RoundedRectangleBorder(
@@ -681,7 +681,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                         (match) => '${match[1]},',
                       )}',
                   isHighlighted: true,
-                  valueColor: const Color(0xFF6C5CE7),
+                  valueColor: const Color.fromARGB(255, 78, 3, 208),
                 ),
                 if (_narrationController.text.isNotEmpty) ...[
                   Divider(height: 24.h),
@@ -735,9 +735,9 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
               onPressed:
                   state is OpenBankingLoading ? null : _initiateWithdrawal,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.6),
+                disabledBackgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.r),
                 ),

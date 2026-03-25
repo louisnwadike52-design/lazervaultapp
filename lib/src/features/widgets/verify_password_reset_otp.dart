@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
-import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:pinput/pinput.dart';
 
@@ -24,7 +23,6 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
 
   bool _isLoading = false;
   bool _isResending = false;
-  bool _isCodeComplete = false;
   String? _errorMessage;
   int _expiresInSeconds = 900; // 15 minutes default
   String _maskedContact = '';
@@ -51,12 +49,11 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
     });
 
     _pinController.addListener(() {
-      setState(() {
-        _isCodeComplete = _pinController.text.length == 6;
-        if (_errorMessage != null && _pinController.text.length == 6) {
-          _errorMessage = null; // Clear error when user completes entering code
-        }
-      });
+      if (_errorMessage != null && _pinController.text.length == 6) {
+        setState(() {
+          _errorMessage = null;
+        });
+      }
     });
 
     _focusNode.requestFocus();
@@ -138,10 +135,11 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
             _errorMessage = failure.message;
             _isLoading = false;
           });
-          // Shake animation for wrong code
+          // Clear and refocus for retry
+          _pinController.clear();
           _focusNode.unfocus();
           Future.delayed(const Duration(milliseconds: 100), () {
-            _focusNode.requestFocus();
+            if (mounted) _focusNode.requestFocus();
           });
         },
         (data) {
@@ -213,7 +211,6 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
             _expiresInSeconds = data.expiresInSeconds;
             _remainingSeconds = data.expiresInSeconds;
             _pinController.clear();
-            _isCodeComplete = false;
           });
           _startExpiryTimer();
         },

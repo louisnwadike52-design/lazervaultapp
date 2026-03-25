@@ -162,7 +162,7 @@ class InsuranceTermsScreen extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(16.r),
       ),
@@ -361,7 +361,7 @@ class InsuranceTermsScreen extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 16.h),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
           ),
           borderRadius: BorderRadius.circular(16.r),
         ),

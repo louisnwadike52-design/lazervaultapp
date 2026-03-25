@@ -281,7 +281,7 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
               gradient: LinearGradient(
                 colors: [
                   const Color(0xFF3B82F6),
-                  const Color(0xFF8B5CF6),
+                  const Color.fromARGB(255, 78, 3, 208),
                 ],
               ),
               borderRadius: BorderRadius.circular(30.r),
@@ -346,7 +346,7 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
           QuickActionButton(
             icon: Icons.receipt_long_outlined,
             label: 'Orders',
-            color: const Color(0xFF8B5CF6),
+            color: const Color.fromARGB(255, 78, 3, 208),
             onTap: () => Get.toNamed(AppRoutes.stockOrders),
           ),
         ],

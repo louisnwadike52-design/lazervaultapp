@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_carousel_screen.dart';
 
 /// Voice Activation Manager
@@ -48,8 +53,8 @@ class VoiceActivationManager {
 
     if (!isEnrolled) {
       if (!context.mounted) return false;
-      // User needs to enroll first
-      return _showEnrollmentPrompt(context, userId, onSuccess);
+      // User needs to enroll first — awaits dialog + enrollment flow
+      return await _showEnrollmentPrompt(context, userId, onSuccess);
     }
 
     // User is enrolled - verification will happen in background during session
@@ -57,96 +62,162 @@ class VoiceActivationManager {
     return true;
   }
 
-  /// Show enrollment prompt with explanation
-  bool _showEnrollmentPrompt(
+  /// Show enrollment prompt with explanation.
+  /// Returns true if user completed enrollment, false if cancelled or backed out.
+  Future<bool> _showEnrollmentPrompt(
     BuildContext context,
     String userId,
     VoidCallback? onEnrollmentSuccess,
-  ) {
-    showDialog(
+  ) async {
+    final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.mic_rounded, color: Colors.blue[700], size: 24),
+              child: Icon(Icons.mic_rounded, color: InvoiceThemeColors.primaryPurple, size: 24),
             ),
-            const SizedBox(width: 12),
-            const Expanded(child: Text('Voice Activation Required')),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                'Voice Activation',
+                style: GoogleFonts.inter(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'To use voice commands for secure banking, you need to activate your voice first.',
-              style: TextStyle(fontSize: 14),
+              'Set up voice commands for secure, hands-free banking.',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: Colors.white70,
+                height: 1.4,
+              ),
             ),
-            SizedBox(height: 16),
-            Text(
-              'Voice activation allows you to:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-            SizedBox(height: 8),
-            BulletPoint(text: 'Securely verify your identity'),
-            BulletPoint(text: 'Execute banking commands by voice'),
-            BulletPoint(text: 'Check balances and make transfers'),
-            BulletPoint(text: 'Pay bills and manage investments'),
-            SizedBox(height: 16),
-            Text(
-              'The process takes less than a minute and requires recording 3 voice samples.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            SizedBox(height: 16.h),
+            _buildFeatureRow(Icons.shield_rounded, 'Verify your identity by voice'),
+            SizedBox(height: 10.h),
+            _buildFeatureRow(Icons.send_rounded, 'Send money with voice commands'),
+            SizedBox(height: 10.h),
+            _buildFeatureRow(Icons.account_balance_wallet_rounded, 'Check balances hands-free'),
+            SizedBox(height: 10.h),
+            _buildFeatureRow(Icons.receipt_long_rounded, 'Pay bills and manage investments'),
+            SizedBox(height: 16.h),
+            Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.timer_outlined, color: Color(0xFF9CA3AF), size: 16),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Takes less than a minute — just 3 voice samples.',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              // Signal that activation was canceled
-            },
-            child: const Text('Later'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              // Navigate to enrollment screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VoiceEnrollmentCarouselScreen(
-                    userId: userId,
-                    onEnrollmentComplete: () {
-                      // Navigate back after enrollment and call success callback
-                      Navigator.pop(context);
-                      // Call the original success callback to continue with voice flow
-                      if (onEnrollmentSuccess != null) {
-                        onEnrollmentSuccess();
-                      }
-                    },
-                  ),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              'Later',
+              style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
             ),
-            child: const Text('Activate Now'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            icon: const Icon(Icons.mic_rounded, size: 18),
+            label: Text(
+              'Activate Now',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: InvoiceThemeColors.primaryPurple,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            ),
           ),
         ],
       ),
     );
 
-    return false;
+    // User pressed "Later" or dialog was dismissed
+    if (result != true || !context.mounted) {
+      return false;
+    }
+
+    // Track whether enrollment actually completed via the callback
+    bool enrollmentCompleted = false;
+
+    // Navigate to enrollment screen and await it closing
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          create: (_) => GetIt.I<VoiceEnrollmentCubit>(),
+          child: VoiceEnrollmentCarouselScreen(
+            userId: userId,
+            onEnrollmentComplete: () {
+              enrollmentCompleted = true;
+              Navigator.pop(context);
+              if (onEnrollmentSuccess != null) {
+                onEnrollmentSuccess();
+              }
+            },
+          ),
+        ),
+      ),
+    );
+
+    // User may have backed out without completing enrollment
+    return enrollmentCompleted;
+  }
+
+  Widget _buildFeatureRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: InvoiceThemeColors.primaryPurple, size: 18),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              color: Colors.white70,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   /// Quick check enrollment without prompting
@@ -213,8 +284,11 @@ class VoiceActivationManager {
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => VoiceEnrollmentCarouselScreen(
-            userId: userId,
+          builder: (context) => BlocProvider(
+            create: (_) => GetIt.I<VoiceEnrollmentCubit>(),
+            child: VoiceEnrollmentCarouselScreen(
+              userId: userId,
+            ),
           ),
         ),
       );
@@ -278,7 +352,7 @@ class VoiceActivationStatusBadge extends StatelessWidget {
         icon = Icons.mic_off_rounded;
         break;
       case VoiceActivationStatus.enrolled:
-        color = Colors.blue;
+        color = InvoiceThemeColors.primaryPurple;
         label = 'Voice Active';
         icon = Icons.mic_rounded;
         break;

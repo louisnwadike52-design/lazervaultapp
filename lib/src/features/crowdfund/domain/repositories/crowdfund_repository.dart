@@ -54,7 +54,8 @@ abstract class CrowdfundRepository {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    String? sourceAccountId,
+    required String sourceAccountId,
+    required String transactionPin,
   });
 
   Future<List<CrowdfundDonation>> getCrowdfundDonations({
@@ -116,6 +117,7 @@ abstract class CrowdfundRepository {
     String? slackWebhookUrl,
     String? slackWorkspaceName,
     String? slackChannelName,
+    String? whatsappRecipientId,
     List<NotificationEventType>? enabledEvents,
   });
 

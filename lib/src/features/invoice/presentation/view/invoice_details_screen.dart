@@ -19,6 +19,8 @@ import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../widgets/invoice_shimmer.dart';
+import 'package:get_it/get_it.dart';
+import '../notifiers/invoice_refresh_notifier.dart';
 
 class InvoiceDetailsScreen extends StatefulWidget {
   final String invoiceId;
@@ -1644,6 +1646,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             onPressed: () {
               Navigator.pop(ctx);
               context.read<InvoiceCubit>().cancelInvoice(invoice.id);
+              GetIt.I<InvoiceRefreshNotifier>().notifyRefresh();
               Get.back();
             },
             child: Text('Cancel Invoice', style: GoogleFonts.inter(color: InvoiceThemeColors.errorRed)),

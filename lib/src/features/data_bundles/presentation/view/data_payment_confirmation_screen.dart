@@ -23,6 +23,7 @@ class _DataPaymentConfirmationScreenState
     with TransactionPinMixin {
   final _currencyFormat = NumberFormat('#,##0', 'en_NG');
   bool _isProcessing = false;
+  bool _autoRenewEnabled = false;
 
   @override
   ITransactionPinService get transactionPinService =>
@@ -66,6 +67,7 @@ class _DataPaymentConfirmationScreenState
             'transactionId': transactionId,
             'verificationToken': verificationToken,
             'idempotencyKey': idempotencyKey,
+            'autoRenewEnabled': _autoRenewEnabled,
           },
         );
       },
@@ -207,6 +209,75 @@ class _DataPaymentConfirmationScreenState
                               color: Colors.white,
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Auto-renew toggle (non-expiring data)
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F1F1F),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: _autoRenewEnabled
+                              ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                              : const Color(0xFF2D2D2D),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.autorenew,
+                                    color: _autoRenewEnabled
+                                        ? const Color(0xFF10B981)
+                                        : const Color(0xFF9CA3AF),
+                                    size: 20.sp,
+                                  ),
+                                  SizedBox(width: 10.w),
+                                  Text(
+                                    'Non-Expiring Data',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Switch(
+                                value: _autoRenewEnabled,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _autoRenewEnabled = value;
+                                  });
+                                },
+                                activeColor: const Color(0xFF10B981),
+                                inactiveThumbColor: const Color(0xFF9CA3AF),
+                                inactiveTrackColor:
+                                    const Color(0xFF2D2D2D),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            _autoRenewEnabled
+                                ? 'Your data will auto-renew before expiry. Your balance will be charged automatically.'
+                                : 'Enable to auto-renew this plan before it expires, keeping your data active.',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 12.sp,
+                              height: 1.4,
                             ),
                           ),
                         ],

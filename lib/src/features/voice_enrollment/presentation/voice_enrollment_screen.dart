@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 // Note: voice_enrollment_state.dart is a part of voice_enrollment_cubit.dart, no need to import separately
@@ -24,7 +26,7 @@ class VoiceEnrollmentScreen extends StatefulWidget {
 }
 
 class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _pulseController;
   late AnimationController _waveController;
   late Animation<double> _pulseAnimation;
@@ -33,6 +35,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     // Pulse animation for mic button
     _pulseController = AnimationController(
@@ -68,9 +71,22 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pulseController.dispose();
     _waveController.dispose();
     super.dispose();
+  }
+
+  /// Handle app lifecycle changes — stop recording if user backgrounds the app
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      final cubit = context.read<VoiceEnrollmentCubit>();
+      final currentState = cubit.state;
+      if (currentState is VoiceEnrollmentRecording) {
+        cubit.stopRecording();
+      }
+    }
   }
 
   @override
@@ -83,8 +99,13 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
           listener: (context, state) {
             if (state is VoiceEnrollmentSuccess) {
               _showSuccessDialog(context, state);
+            } else if (state is VoiceEnrollmentPoorQuality) {
+              _showPoorQualityDialog(context, state);
+            } else if (state is VoiceEnrollmentSkipped) {
+              widget.onEnrollmentComplete?.call();
+              Navigator.of(context).pop();
             } else if (state is VoiceEnrollmentError) {
-              _showErrorDialog(context, state.message);
+              _showErrorDialog(context, state);
             } else if (state is VoiceEnrollmentPermissionDenied) {
               _showPermissionDialog(context);
             }
@@ -98,8 +119,13 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               return _buildProcessingStep(context, state);
             } else if (state is VoiceEnrollmentLoading) {
               return _buildFinalizingStep(context);
+            } else if (state is VoiceEnrollmentReplacing) {
+              return _buildReplacingStep(context, state);
             } else if (state is VoiceEnrollmentPermissionDenied) {
               return _buildPermissionDenied(context);
+            } else if (state is VoiceEnrollmentError) {
+              // Show a fallback UI behind the error dialog
+              return _buildFinalizingStep(context);
             }
 
             return const SizedBox.shrink();
@@ -495,6 +521,60 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
     );
   }
 
+  Widget _buildReplacingStep(BuildContext context, VoiceEnrollmentReplacing state) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 100.w,
+            height: 100.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+            ),
+            child: Icon(
+              Icons.swap_horiz_rounded,
+              size: 60.sp,
+              color: const Color(0xFF3B82F6),
+            ),
+          ),
+
+          SizedBox(height: 32.h),
+
+          Text(
+            state.message,
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          SizedBox(height: 16.h),
+
+          Text(
+            'Removing old voice data and re-enrolling...',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.grey[600],
+            ),
+          ),
+
+          SizedBox(height: 48.h),
+
+          SizedBox(
+            width: 40.w,
+            height: 40.w,
+            child: const CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation(Color(0xFF3B82F6)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPermissionDenied(BuildContext context) {
     return Center(
       child: Padding(
@@ -602,6 +682,105 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _buildSuccessBottomSheet(context, sheetContext, state),
+    );
+  }
+
+  void _showPoorQualityDialog(
+    BuildContext context,
+    VoiceEnrollmentPoorQuality state,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_rounded, color: Color(0xFFFB923C), size: 24),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'Voice Quality Too Low',
+                style: GoogleFonts.inter(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Text(
+                '${(state.qualityScore * 100).toStringAsFixed(0)}% quality',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFEF4444),
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'Your voice sample quality is too low for secure authentication. This usually happens on emulators or in noisy environments.\n\nYou can set up again or skip for now.',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                color: Colors.white70,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Voice authentication will not be used to secure your transactions. You can set it up later in Settings.',
+                    style: GoogleFonts.inter(fontSize: 13),
+                  ),
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+              context.read<VoiceEnrollmentCubit>().skipEnrollment();
+            },
+            child: Text(
+              'Skip',
+              style: GoogleFonts.inter(color: Colors.white54),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              context.read<VoiceEnrollmentCubit>().reEnroll();
+            },
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: Text(
+              'Set Up Again',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: InvoiceThemeColors.primaryPurple,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -786,35 +965,54 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                           ),
                         ),
                         SizedBox(height: 12.h),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 6.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: InvoiceThemeColors.successGreen.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.verified_rounded,
-                                color: InvoiceThemeColors.successGreen,
-                                size: 18,
-                              ),
-                              SizedBox(width: 6.w),
-                              Text(
-                                'Excellent Match',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: InvoiceThemeColors.successGreen,
+                        Builder(builder: (context) {
+                          final score = state.qualityScore;
+                          final String label;
+                          final Color color;
+                          final IconData icon;
+                          if (score >= 0.7) {
+                            label = 'Excellent Match';
+                            color = InvoiceThemeColors.successGreen;
+                            icon = Icons.verified_rounded;
+                          } else if (score >= 0.4) {
+                            label = 'Good Match';
+                            color = InvoiceThemeColors.successGreen;
+                            icon = Icons.check_circle_rounded;
+                          } else if (score >= 0.15) {
+                            label = 'Fair Match';
+                            color = const Color(0xFFFB923C);
+                            icon = Icons.info_rounded;
+                          } else {
+                            label = 'Poor Quality — Try on a real device';
+                            color = const Color(0xFFEF4444);
+                            icon = Icons.warning_rounded;
+                          }
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12.w,
+                              vertical: 6.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(icon, color: color, size: 18),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  label,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: color,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
+                              ],
+                            ),
+                          );
+                        }),
                       ],
                     ),
                   ),
@@ -917,7 +1115,12 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(sheetContext).pop();
-                      Navigator.of(context).pop(); // Close enrollment screen
+                      widget.onEnrollmentComplete?.call();
+                      // Navigate to dashboard and auto-open voice command sheet
+                      Get.offAllNamed(
+                        AppRoutes.dashboard,
+                        arguments: {'openVoiceSheet': true},
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -929,7 +1132,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                       elevation: 0,
                     ),
                     child: Text(
-                      'Get Started',
+                      'Start Conversation',
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
@@ -977,27 +1180,149 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
     );
   }
 
-  void _showErrorDialog(BuildContext context, String message) {
+  void _showErrorDialog(BuildContext context, VoiceEnrollmentError errorState) {
+    final IconData icon;
+    final Color iconColor;
+    final String title;
+    final String? hint;
+    final bool canRetry;
+
+    switch (errorState.errorCode) {
+      case 'SERVICE_UNAVAILABLE':
+        icon = Icons.cloud_off_rounded;
+        iconColor = const Color(0xFFFB923C);
+        title = 'Service Unavailable';
+        hint = 'The voice processing service is temporarily down. Your progress has been saved.';
+        canRetry = true;
+      case 'POOR_AUDIO':
+        icon = Icons.graphic_eq_rounded;
+        iconColor = const Color(0xFFEF4444);
+        title = 'Audio Quality Issue';
+        hint = 'Tips: move to a quiet room, hold the phone close, and speak at a normal volume.';
+        canRetry = true;
+      case 'ALREADY_ENROLLED':
+        icon = Icons.person_rounded;
+        iconColor = const Color(0xFF3B82F6);
+        title = 'Could Not Replace Profile';
+        hint = 'The existing voice profile could not be replaced automatically. Try again or contact support.';
+        canRetry = true;
+      case 'DELETE_FAILED':
+        icon = Icons.warning_amber_rounded;
+        iconColor = const Color(0xFFFB923C);
+        title = 'Replacement Failed';
+        hint = 'Could not remove the existing voice profile. Please try again.';
+        canRetry = true;
+      default:
+        icon = Icons.error_outline_rounded;
+        iconColor = const Color(0xFFEF4444);
+        title = 'Enrollment Failed';
+        hint = null;
+        canRetry = true;
+    }
+
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Enrollment Failed'),
-        content: Text(message),
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            Icon(icon, color: iconColor, size: 24),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              errorState.message,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: Colors.white70,
+                height: 1.4,
+              ),
+            ),
+            if (hint != null) ...[
+              SizedBox(height: 12.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(color: iconColor.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.lightbulb_outline_rounded, color: iconColor, size: 18),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        hint,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.white60,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<VoiceEnrollmentCubit>().retryStep();
-            },
-            child: const Text('Retry'),
-          ),
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               Navigator.of(context).pop();
             },
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: Colors.white54),
+            ),
           ),
+          if (canRetry)
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (errorState.errorCode == 'POOR_AUDIO' ||
+                    errorState.errorCode == 'ALREADY_ENROLLED' ||
+                    errorState.errorCode == 'DELETE_FAILED') {
+                  context.read<VoiceEnrollmentCubit>().reEnroll();
+                } else {
+                  context.read<VoiceEnrollmentCubit>().retryStep();
+                }
+              },
+              icon: Icon(
+                errorState.errorCode == 'POOR_AUDIO'
+                    ? Icons.refresh_rounded
+                    : Icons.replay_rounded,
+                size: 18,
+              ),
+              label: Text(
+                errorState.errorCode == 'POOR_AUDIO' ? 'Re-record' : 'Try Again',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: InvoiceThemeColors.primaryPurple,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+              ),
+            ),
         ],
       ),
     );

@@ -204,6 +204,7 @@ message MakeDonationRequest {
   string message = 3;
   bool is_anonymous = 4;
   string source_account_id = 5;
+  string transaction_pin = 6;
 }
 
 message MakeDonationResponse {

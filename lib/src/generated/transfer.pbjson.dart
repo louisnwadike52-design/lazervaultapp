@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: transfer.proto
-//
-// @dart = 2.12
+// Generated from transfer.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -59,10 +60,24 @@ const TransferTransaction$json = {
     {'1': 'to_recipient_id', '3': 4, '4': 1, '5': 9, '10': 'toRecipientId'},
     {'1': 'amount', '3': 5, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
-    {'1': 'transfer_type', '3': 7, '4': 1, '5': 14, '6': '.pb.TransferType', '10': 'transferType'},
+    {
+      '1': 'transfer_type',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.TransferType',
+      '10': 'transferType'
+    },
     {'1': 'category', '3': 8, '4': 1, '5': 9, '10': 'category'},
     {'1': 'description', '3': 9, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'created_at',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
   ],
 };
 
@@ -85,9 +100,23 @@ const InitiateTransferRequest$json = {
     {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'category', '3': 3, '4': 1, '5': 9, '10': 'category'},
     {'1': 'reference', '3': 4, '4': 1, '5': 9, '10': 'reference'},
-    {'1': 'scheduled_at', '3': 5, '4': 1, '5': 9, '9': 0, '10': 'scheduledAt', '17': true},
+    {
+      '1': 'scheduled_at',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'scheduledAt',
+      '17': true
+    },
     {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transaction_id'},
-    {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verification_token'},
+    {
+      '1': 'verification_token',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'verification_token'
+    },
     {'1': 'to_account_id', '3': 10, '4': 1, '5': 4, '10': 'to_account_id'},
     {'1': 'recipient_id', '3': 11, '4': 1, '5': 4, '10': 'recipient_id'},
   ],
@@ -117,7 +146,14 @@ const InitiateTransferResponse$json = {
     {'1': 'amount', '3': 3, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'fee', '3': 4, '4': 1, '5': 4, '10': 'fee'},
     {'1': 'total_amount', '3': 5, '4': 1, '5': 4, '10': 'totalAmount'},
-    {'1': 'created_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'created_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
   ],
 };
 
@@ -132,7 +168,14 @@ final $typed_data.Uint8List initiateTransferResponseDescriptor = $convert.base64
 const TimeSeriesPoint$json = {
   '1': 'TimeSeriesPoint',
   '2': [
-    {'1': 'timestamp', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
+    {
+      '1': 'timestamp',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'timestamp'
+    },
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
   ],
 };
@@ -179,7 +222,13 @@ const ComparisonData$json = {
     {'1': 'current_income', '3': 1, '4': 1, '5': 1, '10': 'currentIncome'},
     {'1': 'previous_income', '3': 2, '4': 1, '5': 1, '10': 'previousIncome'},
     {'1': 'current_expenses', '3': 3, '4': 1, '5': 1, '10': 'currentExpenses'},
-    {'1': 'previous_expenses', '3': 4, '4': 1, '5': 1, '10': 'previousExpenses'},
+    {
+      '1': 'previous_expenses',
+      '3': 4,
+      '4': 1,
+      '5': 1,
+      '10': 'previousExpenses'
+    },
     {'1': 'current_savings', '3': 5, '4': 1, '5': 1, '10': 'currentSavings'},
     {'1': 'previous_savings', '3': 6, '4': 1, '5': 1, '10': 'previousSavings'},
   ],
@@ -197,7 +246,14 @@ final $typed_data.Uint8List comparisonDataDescriptor = $convert.base64Decode(
 const GetStatisticsRequest$json = {
   '1': 'GetStatisticsRequest',
   '2': [
-    {'1': 'time_period', '3': 1, '4': 1, '5': 14, '6': '.pb.TimePeriod', '10': 'timePeriod'},
+    {
+      '1': 'time_period',
+      '3': 1,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.TimePeriod',
+      '10': 'timePeriod'
+    },
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
   ],
   '7': {},
@@ -215,11 +271,46 @@ const GetStatisticsResponse$json = {
   '2': [
     {'1': 'total_income', '3': 1, '4': 1, '5': 1, '10': 'totalIncome'},
     {'1': 'total_expenses', '3': 2, '4': 1, '5': 1, '10': 'totalExpenses'},
-    {'1': 'expense_timeseries', '3': 3, '4': 3, '5': 11, '6': '.pb.TimeSeriesPoint', '10': 'expenseTimeseries'},
-    {'1': 'expense_breakdown', '3': 4, '4': 3, '5': 11, '6': '.pb.CategorySummary', '10': 'expenseBreakdown'},
-    {'1': 'income_breakdown', '3': 5, '4': 3, '5': 11, '6': '.pb.CategorySummary', '10': 'incomeBreakdown'},
-    {'1': 'monthly_overview', '3': 6, '4': 3, '5': 11, '6': '.pb.MonthlyData', '10': 'monthlyOverview'},
-    {'1': 'comparison_metrics', '3': 7, '4': 1, '5': 11, '6': '.pb.ComparisonData', '10': 'comparisonMetrics'},
+    {
+      '1': 'expense_timeseries',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.TimeSeriesPoint',
+      '10': 'expenseTimeseries'
+    },
+    {
+      '1': 'expense_breakdown',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.CategorySummary',
+      '10': 'expenseBreakdown'
+    },
+    {
+      '1': 'income_breakdown',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.CategorySummary',
+      '10': 'incomeBreakdown'
+    },
+    {
+      '1': 'monthly_overview',
+      '3': 6,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.MonthlyData',
+      '10': 'monthlyOverview'
+    },
+    {
+      '1': 'comparison_metrics',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ComparisonData',
+      '10': 'comparisonMetrics'
+    },
   ],
 };
 
@@ -243,9 +334,10 @@ const GetTransferDetailsRequest$json = {
 };
 
 /// Descriptor for `GetTransferDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getTransferDetailsRequestDescriptor = $convert.base64Decode(
-    'ChlHZXRUcmFuc2ZlckRldGFpbHNSZXF1ZXN0EiAKC3RyYW5zZmVyX2lkGAEgASgEUgt0cmFuc2'
-    'Zlcl9pZA==');
+final $typed_data.Uint8List getTransferDetailsRequestDescriptor =
+    $convert.base64Decode(
+        'ChlHZXRUcmFuc2ZlckRldGFpbHNSZXF1ZXN0EiAKC3RyYW5zZmVyX2lkGAEgASgEUgt0cmFuc2'
+        'Zlcl9pZA==');
 
 @$core.Deprecated('Use getTransferDetailsResponseDescriptor instead')
 const GetTransferDetailsResponse$json = {
@@ -263,10 +355,39 @@ const GetTransferDetailsResponse$json = {
     {'1': 'status', '3': 10, '4': 1, '5': 9, '10': 'status'},
     {'1': 'reference', '3': 11, '4': 1, '5': 9, '10': 'reference'},
     {'1': 'category', '3': 12, '4': 1, '5': 9, '10': 'category'},
-    {'1': 'created_at', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'created_at'},
-    {'1': 'scheduled_at', '3': 14, '4': 1, '5': 9, '9': 0, '10': 'scheduled_at', '17': true},
-    {'1': 'completed_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completed_at'},
-    {'1': 'failed_at', '3': 16, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'failed_at'},
+    {
+      '1': 'created_at',
+      '3': 13,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'created_at'
+    },
+    {
+      '1': 'scheduled_at',
+      '3': 14,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'scheduled_at',
+      '17': true
+    },
+    {
+      '1': 'completed_at',
+      '3': 15,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'completed_at'
+    },
+    {
+      '1': 'failed_at',
+      '3': 16,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'failed_at'
+    },
     {'1': 'failure_reason', '3': 17, '4': 1, '5': 9, '10': 'failure_reason'},
   ],
   '8': [
@@ -334,8 +455,22 @@ final $typed_data.Uint8List listTransfersRequestDescriptor = $convert.base64Deco
 const ListTransfersResponse$json = {
   '1': 'ListTransfersResponse',
   '2': [
-    {'1': 'transfers', '3': 1, '4': 3, '5': 11, '6': '.pb.GetTransferDetailsResponse', '10': 'transfers'},
-    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.TransferPaginationInfo', '10': 'pagination'},
+    {
+      '1': 'transfers',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.GetTransferDetailsResponse',
+      '10': 'transfers'
+    },
+    {
+      '1': 'pagination',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.TransferPaginationInfo',
+      '10': 'pagination'
+    },
   ],
 };
 
@@ -344,4 +479,3 @@ final $typed_data.Uint8List listTransfersResponseDescriptor = $convert.base64Dec
     'ChVMaXN0VHJhbnNmZXJzUmVzcG9uc2USPAoJdHJhbnNmZXJzGAEgAygLMh4ucGIuR2V0VHJhbn'
     'NmZXJEZXRhaWxzUmVzcG9uc2VSCXRyYW5zZmVycxI6CgpwYWdpbmF0aW9uGAIgASgLMhoucGIu'
     'VHJhbnNmZXJQYWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbg==');
-

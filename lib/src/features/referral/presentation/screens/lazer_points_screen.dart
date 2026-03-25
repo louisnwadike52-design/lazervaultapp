@@ -334,7 +334,7 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
       'referral' => const Color(0xFF3B82F6),
       'signup_bonus' => const Color(0xFF10B981),
       'first_transaction' => const Color(0xFFF59E0B),
-      'monthly_active' => const Color(0xFF8B5CF6),
+      'monthly_active' => const Color.fromARGB(255, 78, 3, 208),
       'achievement' => const Color(0xFFF97316),
       'redemption' => const Color(0xFFEF4444),
       _ => const Color(0xFF6B7280),
@@ -553,7 +553,7 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
       'platinum' => _TierInfo(
           label: 'Platinum',
           icon: Icons.diamond_rounded,
-          gradientStart: const Color(0xFF8B5CF6),
+          gradientStart: const Color.fromARGB(255, 78, 3, 208),
           gradientEnd: const Color(0xFF6D28D9),
         ),
       _ => _TierInfo(

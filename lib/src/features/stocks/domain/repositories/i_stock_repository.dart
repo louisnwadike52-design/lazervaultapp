@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../entities/stock_entity.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 
 abstract class IStockRepository {
   // Stock Data
@@ -34,6 +34,9 @@ abstract class IStockRepository {
     required OrderSide side,
     required int quantity,
     double? price,
+    double? quantityExact,
+    String? transactionId,
+    String? verificationToken,
   });
   
   Future<Either<Failure, List<StockOrder>>> getOrders({

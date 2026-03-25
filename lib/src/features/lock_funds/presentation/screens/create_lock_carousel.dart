@@ -110,10 +110,8 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    } else {
-      // First page - go back to list screen
-      Navigator.of(context).pop();
     }
+    // On first page, back button is hidden - use X button to close
   }
 
   Future<void> _proceedToCreateLock() async {
@@ -224,7 +222,7 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
               ),
               SizedBox(height: 16.h),
               Text(
-                'Creating Lock Fund...',
+                'Creating PiggyVault...',
                 style: GoogleFonts.inter(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
@@ -311,7 +309,7 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
 
           // Show error snackbar
           Get.snackbar(
-            'Lock Fund Failed',
+            'PiggyVault Failed',
             state.message,
             backgroundColor: const Color(0xFFEF4444),
             colorText: Colors.white,
@@ -349,23 +347,30 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
     );
   }
 
+  /// Close the carousel and go back to lock funds landing page
+  void _closeCarousel() {
+    Navigator.of(context).pop();
+  }
+
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: const Color(0xFF0A0A0A),
       elevation: 0,
-      leading: IconButton(
-        icon: Icon(
-          Icons.arrow_back,
-          color: Colors.white,
-          size: 24.sp,
-        ),
-        onPressed: _goToPreviousPage,
-      ),
+      leading: _currentPage > 0
+          ? IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 24.sp,
+              ),
+              onPressed: _goToPreviousPage,
+            )
+          : const SizedBox.shrink(),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Create Lock Fund',
+            'Create PiggyVault',
             style: GoogleFonts.inter(
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
@@ -382,6 +387,18 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
           ),
         ],
       ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.close,
+            color: Colors.white,
+            size: 24.sp,
+          ),
+          onPressed: _closeCarousel,
+          tooltip: 'Close',
+        ),
+        SizedBox(width: 4.w),
+      ],
     );
   }
 
@@ -409,7 +426,7 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -486,7 +503,7 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

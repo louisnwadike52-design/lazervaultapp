@@ -185,7 +185,7 @@ class _AddFundsCarouselState extends State<AddFundsCarousel> {
                           colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
                         )
                       : const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                         ),
                   borderRadius: BorderRadius.circular(2.r),
                 ),

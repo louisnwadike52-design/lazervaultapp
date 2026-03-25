@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/cache/cache_config.dart';
 import '../../../../../core/cache/swr_cache_manager.dart';
+import '../../../../../core/utils/user_friendly_error.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/usecases/crowdfund_usecases.dart';
 import 'leaderboard_state.dart';
@@ -65,7 +66,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
               isStale: result.isStale,
             ));
           } else if (result.hasError) {
-            emit(LeaderboardError(result.error.toString()));
+            emit(LeaderboardError(getUserFriendlyErrorMessage(result.error)));
           }
         }
       } else {

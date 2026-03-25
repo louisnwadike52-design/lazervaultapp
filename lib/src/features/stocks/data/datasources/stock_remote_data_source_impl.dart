@@ -104,9 +104,14 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
   @override
   Future<List<StockModel>> getTopMovers({String? market}) async {
     try {
-      // Get both gainers and losers
-      final gainers = await _getTopGainers();
-      final losers = await _getTopLosers();
+      // Get both gainers and losers in parallel for better performance
+      final results = await Future.wait([
+        _getTopGainers(),
+        _getTopLosers(),
+      ]);
+
+      final gainers = results[0] as List<StockModel>;
+      final losers = results[1] as List<StockModel>;
 
       // Combine and sort by absolute change
       final allMovers = [...gainers, ...losers];
@@ -204,6 +209,9 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
     required OrderSide side,
     required int quantity,
     double? price,
+    double? quantityExact,
+    String? transactionId,
+    String? verificationToken,
   }) async {
     try {
       final uri = Uri.parse('$baseUrl/orders');
@@ -211,8 +219,10 @@ class StockRemoteDataSourceRealImpl implements IStockRemoteDataSource {
         'symbol': symbol.toUpperCase(),
         'type': type.toString().split('.').last,
         'side': side.toString().split('.').last,
-        'quantity': quantity,
+        'quantity': quantityExact ?? quantity,
         if (price != null) 'price': price,
+        if (transactionId != null) 'transaction_id': transactionId,
+        if (verificationToken != null) 'verification_token': verificationToken,
       };
 
       final response = await client.post(

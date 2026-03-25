@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/inventory/domain/entities/inventory_adjustment_entity.dart';
 import 'package:lazervault/src/features/inventory/domain/entities/inventory_item_entity.dart';
 import '../cubit/inventory_cubit.dart';
@@ -712,7 +713,7 @@ class _InventoryItemDetailsScreenState
                     ? null
                     : () async {
                         final result = await Get.toNamed(
-                          '/inventory/items/edit',
+                          AppRoutes.editInventoryItem,
                           arguments: _item,
                         );
                         if (result == true && mounted) _refreshItem();

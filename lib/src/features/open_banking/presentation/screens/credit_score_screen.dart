@@ -1259,7 +1259,7 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
       'payment' => const Color(0xFF3B82F6),
       'income' => const Color(0xFF10B981),
       'spending' => const Color(0xFFFB923C),
-      'balance' => const Color(0xFF8B5CF6),
+      'balance' => const Color.fromARGB(255, 78, 3, 208),
       _ => const Color(0xFF9CA3AF),
     };
   }

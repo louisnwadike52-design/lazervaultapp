@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/qr_payment_entity.dart';
 import '../../domain/entities/qr_transaction_entity.dart';
 import '../../domain/repositories/qr_payment_repository.dart';
@@ -30,7 +30,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to generate QR code',
+          message: friendlyGrpcError(e, 'Failed to generate QR code'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -47,7 +47,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to get QR details',
+          message: friendlyGrpcError(e, 'Failed to get QR details'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -74,7 +74,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to process QR payment',
+          message: friendlyGrpcError(e, 'Failed to process QR payment'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -97,7 +97,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to get generated QR codes',
+          message: friendlyGrpcError(e, 'Failed to get generated QR codes'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -118,7 +118,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to get QR payments',
+          message: friendlyGrpcError(e, 'Failed to get QR payments'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -135,7 +135,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
       return const Right(null);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to cancel QR code',
+          message: friendlyGrpcError(e, 'Failed to cancel QR code'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(
@@ -154,7 +154,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-          message: e.message ?? 'Failed to get transaction receipt',
+          message: friendlyGrpcError(e, 'Failed to get transaction receipt'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(

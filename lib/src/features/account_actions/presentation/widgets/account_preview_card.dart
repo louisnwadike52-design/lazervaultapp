@@ -15,9 +15,13 @@ class AccountPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final balance = (accountArgs['balance'] as double?) ?? 0.0;
+    final availableBalance = (accountArgs['availableBalance'] as double?) ?? balance;
+    final reservedBalance = (accountArgs['reservedBalance'] as double?) ?? 0.0;
     final currency = (accountArgs['currency'] as String?) ?? 'NGN';
     final status = (accountArgs['status'] as String?) ?? 'active';
     final accountType = (accountArgs['accountType'] as String?) ?? 'Personal';
+    final pendingBalance = balance - availableBalance;
+    final hasPendingFunds = pendingBalance > 0.01;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -32,80 +36,166 @@ class AccountPreviewCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(16.r),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon
-          Container(
-            width: 48.w,
-            height: 48.w,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              _getIconForAccountType(accountType),
-              color: Colors.white,
-              size: 24.sp,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  _getIconForAccountType(accountType),
+                  color: Colors.white,
+                  size: 24.sp,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _formatAccountType(accountType),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    // Show available balance as primary (what user can spend)
+                    Text(
+                      '$currencySymbol${availableBalance.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'Available Balance',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 10.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(status).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6.w,
+                      height: 6.w,
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(status),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      _formatStatus(status),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: 16.w),
-          // Info
-          Expanded(
+          // Always show account breakdown
+          SizedBox(height: 12.h),
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _formatAccountType(accountType),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
+                _buildBalanceRow(
+                  'Total Balance',
                   '$currencySymbol${balance.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  Colors.white,
                 ),
-              ],
-            ),
-          ),
-          // Status
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: _getStatusColor(status).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6.w,
-                  height: 6.w,
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(status),
-                    shape: BoxShape.circle,
-                  ),
+                SizedBox(height: 6.h),
+                _buildBalanceRow(
+                  'Available',
+                  '$currencySymbol${availableBalance.toStringAsFixed(2)}',
+                  const Color(0xFF10B981),
                 ),
-                SizedBox(width: 6.w),
-                Text(
-                  _formatStatus(status),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
+                if (hasPendingFunds) ...[
+                  SizedBox(height: 6.h),
+                  _buildBalanceRow(
+                    'Pending / In Transit',
+                    '$currencySymbol${pendingBalance.toStringAsFixed(2)}',
+                    const Color(0xFFFB923C),
                   ),
-                ),
+                ],
+                if (reservedBalance > 0.01) ...[
+                  SizedBox(height: 6.h),
+                  _buildBalanceRow(
+                    'Held (Reserved)',
+                    '$currencySymbol${reservedBalance.toStringAsFixed(2)}',
+                    const Color(0xFFF59E0B),
+                  ),
+                ],
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBalanceRow(String label, String value, Color dotColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 6.w,
+              height: 6.w,
+              decoration: BoxDecoration(
+                color: dotColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 11.sp,
+              ),
+            ),
+          ],
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 

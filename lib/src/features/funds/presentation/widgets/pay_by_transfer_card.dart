@@ -40,7 +40,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
     Get.snackbar(
       'Copied',
       '$label copied to clipboard',
-      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.9),
+      backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.9),
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 2),
@@ -449,7 +449,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6C5CE7), Color(0xFF4834D4)],
+                    colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF4834D4)],
                   ),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -531,12 +531,12 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
               child: Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Icon(
                   Icons.copy,
-                  color: const Color(0xFF6C5CE7),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                   size: 16.sp,
                 ),
               ),

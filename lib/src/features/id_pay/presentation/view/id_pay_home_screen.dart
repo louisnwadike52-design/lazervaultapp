@@ -132,6 +132,12 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
               onTap: () {
                 final accountId =
                     GetIt.I<AccountManager>().activeAccountId ?? '';
+                if (accountId.isEmpty) {
+                  Get.snackbar('Error', 'No active account selected',
+                      colorText: Colors.white,
+                      backgroundColor: const Color(0xFFEF4444));
+                  return;
+                }
                 Get.toNamed(AppRoutes.idPayOrganizations,
                     arguments: {'accountId': accountId});
               },

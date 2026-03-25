@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/multi_country/domain/entities/locale_account_group.dart';
 import 'package:lazervault/src/features/multi_country/domain/repositories/i_multi_country_repository.dart';
@@ -46,7 +47,7 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
       ));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to fetch accounts by locale.',
+        message: friendlyGrpcError(e, 'Failed to fetch accounts by locale.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -84,7 +85,7 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
       return Right(LocaleAccountEntity.fromProto(response.account));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to create locale account.',
+        message: friendlyGrpcError(e, 'Failed to create locale account.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -111,7 +112,7 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
       return Right(locales);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to fetch supported locales.',
+        message: friendlyGrpcError(e, 'Failed to fetch supported locales.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -139,7 +140,7 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
       ));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get user locale.',
+        message: friendlyGrpcError(e, 'Failed to get user locale.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -162,7 +163,7 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
       return Right(response.locale);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to set user locale.',
+        message: friendlyGrpcError(e, 'Failed to set user locale.'),
         statusCode: e.code,
       ));
     } catch (e) {
@@ -190,7 +191,7 @@ class MultiCountryRepositoryImpl implements IMultiCountryRepository {
       ));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get account creation status.',
+        message: friendlyGrpcError(e, 'Failed to get account creation status.'),
         statusCode: e.code,
       ));
     } catch (e) {

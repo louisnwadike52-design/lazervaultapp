@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../domain/entities/transaction_entity.dart';
 import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
 import '../widgets/exchange_transaction_tile.dart';
@@ -13,22 +14,70 @@ class ExchangeHistoryScreen extends StatefulWidget {
   State<ExchangeHistoryScreen> createState() => _ExchangeHistoryScreenState();
 }
 
-class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
-  ExchangeHistoryFilter _selectedFilter = ExchangeHistoryFilter.all;
+class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  _StatusFilter _statusFilter = _StatusFilter.all;
 
   @override
   void initState() {
     super.initState();
+    // Determine initial tab from arguments
+    final args = Get.arguments;
+    final initialIndex =
+        (args is Map<String, dynamic> && args['tab'] == 'international') ? 1 : 0;
+
+    _tabController = TabController(length: 2, vsync: this, initialIndex: initialIndex);
+    _tabController.addListener(_onTabChanged);
     context.read<ExchangeCubit>().loadHistory();
   }
 
-  void _onFilterChanged(ExchangeHistoryFilter filter) {
-    setState(() => _selectedFilter = filter);
-    context.read<ExchangeCubit>().loadHistory(filter: filter);
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    // Reset status filter when switching tabs
+    setState(() => _statusFilter = _StatusFilter.all);
+  }
+
+  void _onStatusFilterChanged(_StatusFilter filter) {
+    setState(() => _statusFilter = filter);
   }
 
   Future<void> _refresh() async {
-    await context.read<ExchangeCubit>().loadHistory(filter: _selectedFilter);
+    await context.read<ExchangeCubit>().loadHistory();
+  }
+
+  /// Filter transactions by tab type and status.
+  List<CurrencyTransaction> _filterTransactions(
+    List<CurrencyTransaction> all,
+    bool isConversionsTab,
+  ) {
+    // First filter by type (tab)
+    final byType = all.where((tx) {
+      if (isConversionsTab) {
+        return tx.type == TransactionType.exchange;
+      } else {
+        return tx.type == TransactionType.send;
+      }
+    }).toList();
+
+    // Then filter by status
+    switch (_statusFilter) {
+      case _StatusFilter.all:
+        return byType;
+      case _StatusFilter.pending:
+        return byType.where((t) => t.isPending || t.isProcessing).toList();
+      case _StatusFilter.completed:
+        return byType.where((t) => t.isCompleted).toList();
+      case _StatusFilter.failed:
+        return byType.where((t) => t.isFailed).toList();
+    }
   }
 
   @override
@@ -51,24 +100,37 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
           ),
         ),
         centerTitle: true,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: const Color(0xFF3B82F6),
+          indicatorWeight: 3,
+          labelColor: Colors.white,
+          unselectedLabelColor: const Color(0xFF9CA3AF),
+          labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+          tabs: const [
+            Tab(text: 'Conversions'),
+            Tab(text: 'International'),
+          ],
+        ),
       ),
       body: Column(
         children: [
-          // Filter chips
+          // Status filter chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Row(
-              children: ExchangeHistoryFilter.values.map((filter) {
-                final isSelected = filter == _selectedFilter;
+              children: _StatusFilter.values.map((filter) {
+                final isSelected = filter == _statusFilter;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
                     selected: isSelected,
-                    label: Text(_filterLabel(filter)),
+                    label: Text(_statusLabel(filter)),
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                     backgroundColor: const Color(0xFF1F1F1F),
@@ -82,14 +144,15 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
                             : const Color(0xFF2D2D2D),
                       ),
                     ),
-                    onSelected: (_) => _onFilterChanged(filter),
+                    onSelected: (_) => _onStatusFilterChanged(filter),
                   ),
                 );
               }).toList(),
             ),
           ),
           const Divider(color: Color(0xFF2D2D2D), height: 1),
-          // Transaction list
+
+          // Tab content
           Expanded(
             child: BlocBuilder<ExchangeCubit, ExchangeState>(
               builder: (context, state) {
@@ -104,29 +167,18 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
                 }
 
                 if (state is ExchangeHistoryLoaded) {
-                  if (state.transactions.isEmpty) {
-                    return _buildEmptyState();
-                  }
-                  return RefreshIndicator(
-                    onRefresh: _refresh,
-                    color: const Color(0xFF3B82F6),
-                    backgroundColor: const Color(0xFF1F1F1F),
-                    child: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16),
-                      itemCount: state.transactions.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final tx = state.transactions[index];
-                        return ExchangeTransactionTile(
-                          transaction: tx,
-                          onTap: () => Get.toNamed(
-                            AppRoutes.exchangeDetail,
-                            arguments: tx,
-                          ),
-                        );
-                      },
-                    ),
+                  return TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildTransactionList(
+                        _filterTransactions(state.transactions, true),
+                        isConversions: true,
+                      ),
+                      _buildTransactionList(
+                        _filterTransactions(state.transactions, false),
+                        isConversions: false,
+                      ),
+                    ],
                   );
                 }
 
@@ -139,31 +191,75 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: [
-        const SizedBox(height: 120),
-        const Icon(Icons.swap_horiz, color: Color(0xFF2D2D2D), size: 56),
-        const SizedBox(height: 16),
-        Text(
-          _selectedFilter == ExchangeHistoryFilter.all
-              ? 'No exchanges yet'
-              : 'No ${_filterLabel(_selectedFilter).toLowerCase()} exchanges',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+  Widget _buildTransactionList(
+    List<CurrencyTransaction> transactions, {
+    required bool isConversions,
+  }) {
+    if (transactions.isEmpty) {
+      return _buildEmptyState(isConversions: isConversions);
+    }
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      color: const Color(0xFF3B82F6),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        itemCount: transactions.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (context, index) {
+          final tx = transactions[index];
+          return ExchangeTransactionTile(
+            transaction: tx,
+            onTap: () => Get.toNamed(
+              AppRoutes.exchangeDetail,
+              arguments: tx,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState({required bool isConversions}) {
+    final typeLabel = isConversions ? 'conversion' : 'international';
+    final statusLabel = _statusFilter == _StatusFilter.all
+        ? ''
+        : ' ${_statusLabel(_statusFilter).toLowerCase()}';
+
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      color: const Color(0xFF3B82F6),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: 120),
+          Icon(
+            isConversions ? Icons.swap_horiz : Icons.send,
+            color: const Color(0xFF2D2D2D),
+            size: 56,
           ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Your exchange history will appear here',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
-        ),
-      ],
+          const SizedBox(height: 16),
+          Text(
+            'No$statusLabel $typeLabel transactions',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF9CA3AF),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isConversions
+                ? 'Your wallet conversion history will appear here'
+                : 'Your international transfer history will appear here',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+          ),
+        ],
+      ),
     );
   }
 
@@ -198,20 +294,24 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
     );
   }
 
-  String _filterLabel(ExchangeHistoryFilter filter) {
+  String _statusLabel(_StatusFilter filter) {
     switch (filter) {
-      case ExchangeHistoryFilter.all:
+      case _StatusFilter.all:
         return 'All';
-      case ExchangeHistoryFilter.conversions:
-        return 'Conversions';
-      case ExchangeHistoryFilter.international:
-        return 'International';
-      case ExchangeHistoryFilter.pending:
+      case _StatusFilter.pending:
         return 'Pending';
-      case ExchangeHistoryFilter.completed:
+      case _StatusFilter.completed:
         return 'Completed';
-      case ExchangeHistoryFilter.failed:
+      case _StatusFilter.failed:
         return 'Failed';
     }
   }
+}
+
+/// Status-only filter (type filtering is done by tabs).
+enum _StatusFilter {
+  all,
+  pending,
+  completed,
+  failed,
 }

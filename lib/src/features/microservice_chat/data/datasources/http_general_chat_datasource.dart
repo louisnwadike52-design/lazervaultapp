@@ -106,6 +106,7 @@ class GeneralChatResponse {
   final String? previousService;
   final String timestamp;
   final Map<String, dynamic>? receiptData;
+  final Map<String, dynamic>? metadata;
 
   GeneralChatResponse({
     required this.response,
@@ -116,9 +117,16 @@ class GeneralChatResponse {
     this.previousService,
     required this.timestamp,
     this.receiptData,
+    this.metadata,
   });
 
   factory GeneralChatResponse.fromJson(Map<String, dynamic> json) {
+    // Debug log receipt data
+    print('🧾 [fromJson] JSON keys: ${json.keys.toList()}');
+    print('🧾 [fromJson] Has receipt_data key: ${json.containsKey('receipt_data')}');
+    if (json.containsKey('receipt_data')) {
+      print('🧾 [fromJson] receipt_data value: ${json['receipt_data']}');
+    }
     return GeneralChatResponse(
       response: json['response'] as String? ?? '',
       serviceRoutedTo: json['service_routed_to'] as String? ?? 'gateway',
@@ -132,6 +140,7 @@ class GeneralChatResponse {
       previousService: json['previous_service'] as String?,
       timestamp: json['timestamp'] as String? ?? '',
       receiptData: json['receipt_data'] as Map<String, dynamic>?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
 }
@@ -152,7 +161,7 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
 
   // Production configuration — optimized for poor network (Nigeria 2G/3G)
   static const Duration _connectionTimeout = Duration(seconds: 30);
-  static const Duration _receiveTimeout = Duration(seconds: 60);
+  static const Duration _receiveTimeout = Duration(seconds: 75);
   static const Duration _sendTimeout = Duration(seconds: 30);
   // Media messages get extended timeouts (set per-request in processChat)
   static const Duration _mediaSendTimeout = Duration(seconds: 120);
@@ -242,8 +251,15 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
       );
 
       if (response.statusCode == 200) {
+        final responseData = response.data as Map<String, dynamic>;
+        // Debug log entire response
+        print('🧾 [DATASOURCE] Full response keys: ${responseData.keys.toList()}');
+        print('🧾 [DATASOURCE] Has receipt_data: ${responseData.containsKey('receipt_data')}');
+        if (responseData.containsKey('receipt_data')) {
+          print('🧾 [DATASOURCE] receipt_data: ${responseData['receipt_data']}');
+        }
         return GeneralChatResponse.fromJson(
-          response.data as Map<String, dynamic>,
+          responseData,
         );
       } else {
         throw ChatGatewayException(

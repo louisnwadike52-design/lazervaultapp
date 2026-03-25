@@ -417,7 +417,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
         statusColor = const Color(0xFFEF4444);
         break;
       case ClaimStatus.settled:
-        statusColor = const Color(0xFF8B5CF6);
+        statusColor = const Color.fromARGB(255, 78, 3, 208);
         break;
       case ClaimStatus.cancelled:
         statusColor = const Color(0xFF6B7280);
@@ -513,7 +513,7 @@ class _InsurancePolicyDetailViewState extends State<InsurancePolicyDetailView>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

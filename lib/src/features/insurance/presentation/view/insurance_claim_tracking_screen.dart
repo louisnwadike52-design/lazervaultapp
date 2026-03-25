@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../cubit/insurance_cubit.dart';
-import '../cubit/insurance_state.dart';
 
 class InsuranceClaimTrackingScreen extends StatefulWidget {
   final InsuranceClaim claim;
@@ -246,7 +245,7 @@ class _InsuranceClaimTrackingScreenState
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
@@ -356,7 +355,7 @@ class _InsuranceClaimTrackingScreenState
         color = const Color(0xFFEF4444);
         break;
       case ClaimStatus.settled:
-        color = const Color(0xFF8B5CF6);
+        color = const Color.fromARGB(255, 78, 3, 208);
         break;
       case ClaimStatus.cancelled:
         color = const Color(0xFF6B7280);
@@ -915,7 +914,7 @@ class _InsuranceClaimTrackingScreenState
             child: Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                 ),
                 borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [

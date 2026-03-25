@@ -120,8 +120,12 @@ class _SortCodeFormatter extends TextInputFormatter {
       return oldValue;
     }
     // Count how many raw digits are before the cursor in the new input
-    final cursorPos = newValue.selection.baseOffset.clamp(0, newValue.text.length);
-    int digitsBefore = newValue.text.substring(0, cursorPos).replaceAll(RegExp(r'[^0-9]'), '').length;
+    final cursorPos =
+        newValue.selection.baseOffset.clamp(0, newValue.text.length);
+    int digitsBefore = newValue.text
+        .substring(0, cursorPos)
+        .replaceAll(RegExp(r'[^0-9]'), '')
+        .length;
 
     final buffer = StringBuffer();
     for (int i = 0; i < digits.length; i++) {
@@ -162,8 +166,12 @@ class _IbanFormatter extends TextInputFormatter {
       return oldValue;
     }
     // Count how many alphanumeric chars are before the cursor
-    final cursorPos = newValue.selection.baseOffset.clamp(0, newValue.text.length);
-    int charsBefore = newValue.text.substring(0, cursorPos).replaceAll(RegExp(r'[^A-Za-z0-9]'), '').length;
+    final cursorPos =
+        newValue.selection.baseOffset.clamp(0, newValue.text.length);
+    int charsBefore = newValue.text
+        .substring(0, cursorPos)
+        .replaceAll(RegExp(r'[^A-Za-z0-9]'), '')
+        .length;
 
     final buffer = StringBuffer();
     for (int i = 0; i < cleaned.length; i++) {
@@ -224,6 +232,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   final _nameController = TextEditingController();
   final _swiftController = TextEditingController();
   final _emailController = TextEditingController();
+  final _addressController = TextEditingController();
 
   // Generic fallback controllers
   final _genericBankNameController = TextEditingController();
@@ -236,7 +245,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   // Verification state
   String? _verifiedAccountName;
   bool _isManualNameEntry = false;
-  String? _lastVerifiedAccountNumber; // Track what was verified to avoid spurious resets
+  String?
+      _lastVerifiedAccountNumber; // Track what was verified to avoid spurious resets
   String? _lastVerifiedBankCode;
 
   // Validation error state (replaces hidden validators)
@@ -317,6 +327,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     _nameController.dispose();
     _swiftController.dispose();
     _emailController.dispose();
+    _addressController.dispose();
     _genericBankNameController.dispose();
     _genericCountryController.dispose();
     super.dispose();
@@ -426,7 +437,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     if (_rate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Exchange rate unavailable. Please go back and refresh.'),
+          content:
+              Text('Exchange rate unavailable. Please go back and refresh.'),
           backgroundColor: Color(0xFFEF4444),
         ),
       );
@@ -436,10 +448,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     FocusScope.of(context).unfocus();
     final cubit = context.read<ExchangeCubit>();
 
-    if (!cubit.checkRateValidity()) {
-      setState(() => _isRateExpired = true);
-      return;
-    }
+    // No need to check rate validity here — the cubit always fetches a
+    // fresh rate in initiateTransfer() before submitting to the backend.
 
     setState(() => _isSubmitting = true);
 
@@ -522,6 +532,10 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                 ? _emailController.text.trim()
                 : null,
             purposeOfPayment: _purposeOfPayment,
+            recipientRoutingNumber: recipientBankCode,
+            recipientAddress: _addressController.text.trim().isNotEmpty
+                ? _addressController.text.trim()
+                : null,
           );
 
           final currentState = cubit.state;
@@ -558,9 +572,15 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     }
   }
 
-  void _refreshRate() {
-    context.read<ExchangeCubit>().fetchRate();
-    setState(() => _isRateExpired = false);
+  Future<void> _refreshRate() async {
+    await context.read<ExchangeCubit>().fetchRate();
+    if (!mounted) return;
+    final cubit = context.read<ExchangeCubit>();
+    final rate = cubit.currentRate;
+    setState(() {
+      _rate = rate;
+      _isRateExpired = rate == null || rate.isExpired;
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -625,8 +645,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                       decoration: InputDecoration(
                         hintText: 'Search banks...',
                         hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-                        prefixIcon: const Icon(Icons.search,
-                            color: Color(0xFF6B7280)),
+                        prefixIcon:
+                            const Icon(Icons.search, color: Color(0xFF6B7280)),
                         filled: true,
                         fillColor: const Color(0xFF2D2D2D),
                         border: OutlineInputBorder(
@@ -636,8 +656,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 12),
                       ),
-                      onChanged: (v) =>
-                          setSheetState(() => searchQuery = v),
+                      onChanged: (v) => setSheetState(() => searchQuery = v),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -667,8 +686,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (_, i) {
                           final bank = popular[i];
-                          final isSelected =
-                              bank['code'] == _selectedBankCode;
+                          final isSelected = bank['code'] == _selectedBankCode;
                           return GestureDetector(
                             onTap: () {
                               _onBankSelected(bank['name']!, bank['code']!);
@@ -684,8 +702,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                                     : const Color(0xFF2D2D2D),
                                 borderRadius: BorderRadius.circular(20),
                                 border: isSelected
-                                    ? Border.all(
-                                        color: const Color(0xFF3B82F6))
+                                    ? Border.all(color: const Color(0xFF3B82F6))
                                     : null,
                               ),
                               child: Text(
@@ -746,8 +763,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                                         color: Color(0xFF3B82F6), size: 20)
                                     : null,
                                 onTap: () {
-                                  _onBankSelected(
-                                      bank['name']!, bank['code']!);
+                                  _onBankSelected(bank['name']!, bank['code']!);
                                   Navigator.pop(sheetContext);
                                 },
                               );
@@ -777,7 +793,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       height: 36,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -1473,12 +1489,14 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                       ),
                     const SizedBox(height: 16),
 
-                    // SWIFT/BIC for non-African countries
-                    if (_countryConfig.fieldType != _FieldType.african) ...[
+                    // SWIFT/BIC — required for USD, GBP, EUR; hidden for African currencies
+                    if (_countryConfig.fieldType == _FieldType.us ||
+                        _countryConfig.fieldType == _FieldType.uk ||
+                        _countryConfig.fieldType == _FieldType.eu) ...[
                       _buildField(
                         controller: _swiftController,
-                        label: 'SWIFT/BIC Code (optional)',
-                        hint: 'e.g. BARCGB22',
+                        label: 'SWIFT/BIC Code',
+                        hint: 'e.g. CHASUS33',
                         textCapitalization: TextCapitalization.characters,
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
@@ -1487,7 +1505,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                         ],
                         validator: (v) {
                           final val = (v ?? '').trim();
-                          if (val.isEmpty) return null; // optional
+                          if (val.isEmpty) return 'SWIFT/BIC code is required';
                           if (val.length != 8 && val.length != 11) {
                             return 'SWIFT code must be 8 or 11 characters';
                           }
@@ -1497,7 +1515,22 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                       const SizedBox(height: 16),
                     ],
 
-                    // Email
+                    // Address — required for USD, GBP, EUR
+                    if (_countryConfig.fieldType == _FieldType.us ||
+                        _countryConfig.fieldType == _FieldType.uk ||
+                        _countryConfig.fieldType == _FieldType.eu) ...[
+                      _buildField(
+                        controller: _addressController,
+                        label: 'Recipient Address',
+                        hint: 'Street address, city, state/country',
+                        validator: (v) => (v ?? '').trim().isEmpty
+                            ? 'Address is required for international transfers'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Email — optional for all, but helpful for notifications
                     _buildField(
                       controller: _emailController,
                       label: 'Recipient Email (optional)',
@@ -1540,8 +1573,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444)
-                                .withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFFEF4444).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Row(
@@ -1568,8 +1601,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color:
-                            const Color(0xFF10B981).withValues(alpha: 0.1),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -1754,8 +1786,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
-                child: _buildAmountDisplay(
-                    _amount, _fromCurrency, 'You send'),
+                child: _buildAmountDisplay(_amount, _fromCurrency, 'You send'),
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),

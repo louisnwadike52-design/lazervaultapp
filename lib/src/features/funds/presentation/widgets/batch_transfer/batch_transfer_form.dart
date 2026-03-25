@@ -2097,11 +2097,11 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
     // Balance check
     if (_accounts.isNotEmpty && _selectedAccountIndex < _accounts.length) {
       final selectedAccount = _accounts[_selectedAccountIndex];
-      if (_totalAmount > selectedAccount.balance) {
+      if (_totalAmount > selectedAccount.availableBalance) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Insufficient balance. Available: $_currencySymbol${selectedAccount.balance.toStringAsFixed(2)}',
+              'Insufficient balance. Available: $_currencySymbol${selectedAccount.availableBalance.toStringAsFixed(2)}',
               style: GoogleFonts.inter(fontWeight: FontWeight.w600),
             ),
             backgroundColor: btRed,
@@ -2115,17 +2115,25 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
 
     final recipients = _selectedRecipients.map((item) {
       final refText = item.referenceController.text.trim();
+      final recipientName = item.beneficiaryName ?? item.recipient.name;
+      final userNarration = refText.isNotEmpty
+          ? refText.substring(0, min(200, refText.length))
+          : null;
+      // For external bank transfers, use CBN/NIBSS-compliant default narration
+      final narration = userNarration
+          ?? (item.isExternal
+              ? 'LazerVault/$recipientName'
+              : 'Transfer to $recipientName');
       return BatchTransferRecipient(
         toAccountNumber: item.recipient.accountNumber,
         amount: Int64((item.amount * 100).round()),
-        reference: refText.isNotEmpty
-            ? refText.substring(0, min(200, refText.length))
-            : null,
+        description: narration,
+        reference: userNarration,
         category: _categoryController.text.trim().isNotEmpty
             ? _categoryController.text.trim()
             : null,
         destinationBankCode: item.bankCode,
-        beneficiaryName: item.beneficiaryName ?? item.recipient.name,
+        beneficiaryName: recipientName,
         destinationBankName: item.bankName ?? (item.recipient.type == 'internal' ? 'LazerVault' : null),
       );
     }).toList();
@@ -2436,7 +2444,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   Row(
                     children: [
                       Text(
-                        '${CurrencyUtils.getSymbol(account.currency)}${account.balance.toStringAsFixed(2)}',
+                        '${CurrencyUtils.getSymbol(account.currency)}${account.availableBalance.toStringAsFixed(2)}',
                         style: GoogleFonts.inter(
                           color: btTextPrimary,
                           fontSize: 16.sp,
@@ -2604,7 +2612,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                                 ),
                                 SizedBox(height: 2.h),
                                 Text(
-                                  '${CurrencyUtils.getSymbol(account.currency)}${account.balance.toStringAsFixed(2)} \u2022 \u2022\u2022\u2022\u2022 ${account.accountNumberLast4}',
+                                  '${CurrencyUtils.getSymbol(account.currency)}${account.availableBalance.toStringAsFixed(2)} \u2022 \u2022\u2022\u2022\u2022 ${account.accountNumberLast4}',
                                   style: GoogleFonts.inter(
                                     color: btTextSecondary,
                                     fontSize: 13.sp,
@@ -2633,7 +2641,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
   Widget _buildTotalSection() {
     final hasInsufficientBalance = _accounts.isNotEmpty &&
         _selectedAccountIndex < _accounts.length &&
-        _totalAmount > _accounts[_selectedAccountIndex].balance;
+        _totalAmount > _accounts[_selectedAccountIndex].availableBalance;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -2696,7 +2704,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Insufficient balance. Available: $_currencySymbol${_accounts[_selectedAccountIndex].balance.toStringAsFixed(2)}',
+                      'Insufficient balance. Available: $_currencySymbol${_accounts[_selectedAccountIndex].availableBalance.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         color: btRed,
                         fontSize: 12.sp,
@@ -3015,9 +3023,9 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                     controller: recipientItem.referenceController,
                     style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
                     decoration: InputDecoration(
-                      labelText: 'Reference (Optional)',
+                      labelText: 'Narration (Optional)',
                       labelStyle: GoogleFonts.inter(color: btTextSecondary, fontSize: 14.sp),
-                      hintText: 'e.g., Payment for services',
+                      hintText: 'e.g., Salary payment',
                       hintStyle: GoogleFonts.inter(color: btTextTertiary, fontSize: 14.sp),
                       filled: true,
                       fillColor: btBackground,

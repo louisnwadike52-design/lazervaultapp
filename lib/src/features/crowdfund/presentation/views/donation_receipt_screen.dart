@@ -149,13 +149,13 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
             padding: EdgeInsets.all(24.w),
             child: Column(
               children: [
-                SizedBox(height: 40.h),
+                SizedBox(height: 20.h),
                 // Success animation
                 ScaleTransition(
                   scale: _scaleAnimation,
                   child: Container(
-                    width: 100.w,
-                    height: 100.h,
+                    width: 80.w,
+                    height: 80.h,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
@@ -166,41 +166,41 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                          blurRadius: 30,
-                          spreadRadius: 10,
+                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
                         ),
                       ],
                     ),
                     child: Icon(
                       Icons.check_circle,
                       color: Colors.white,
-                      size: 60.sp,
+                      size: 44.sp,
                     ),
                   ),
                 ),
-                SizedBox(height: 24.h),
+                SizedBox(height: 16.h),
                 Text(
                   'Donation Successful!',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24.sp,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 4.h),
                 Text(
                   'Thank you for your generous support',
                   style: TextStyle(
                     color: Colors.grey[400],
-                    fontSize: 14.sp,
+                    fontSize: 13.sp,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 40.h),
+                SizedBox(height: 24.h),
                 // Receipt card
                 Container(
-                  padding: EdgeInsets.all(20.w),
+                  padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(16.r),
@@ -234,7 +234,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                           ],
                         ),
                       ),
-                      SizedBox(height: 24.h),
+                      SizedBox(height: 16.h),
                       if (widget.receipt != null) ...[
                         _buildReceiptRow(
                           'Receipt Number',
@@ -330,7 +330,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                     ],
                   ),
                 ),
-                SizedBox(height: 32.h),
+                SizedBox(height: 20.h),
                 // Action buttons
                 Row(
                   children: [
@@ -485,7 +485,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
         color = const Color(0xFFEF4444);
         break;
       case DonationStatus.refunded:
-        color = const Color(0xFF8B5CF6);
+        color = const Color.fromARGB(255, 78, 3, 208);
         break;
     }
 

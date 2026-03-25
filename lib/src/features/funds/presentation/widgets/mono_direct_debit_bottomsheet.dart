@@ -134,7 +134,7 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: const BoxDecoration(
-                color: Color(0xFF6C5CE7),
+                color: Color.fromARGB(255, 78, 3, 208),
               ),
               child: Row(
                 children: [
@@ -257,12 +257,12 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF6C5CE7), Color(0xFF8E7CF3)],
+                        colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF8E7CF3)],
                       ),
                       borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -288,7 +288,7 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
                       children: const [
                         TextSpan(
                           text: 'Lazervault ',
-                          style: TextStyle(color: Color(0xFF6C5CE7)),
+                          style: TextStyle(color: Color.fromARGB(255, 78, 3, 208)),
                         ),
                         TextSpan(
                           text: 'uses ',

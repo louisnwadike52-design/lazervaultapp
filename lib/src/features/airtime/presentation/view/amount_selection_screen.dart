@@ -74,7 +74,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
   }
 
   bool get _isAmountValid =>
-      selectedAmount != null && selectedAmount! >= 50 && selectedAmount! <= 50000;
+      selectedAmount != null && selectedAmount! > 0 && selectedAmount! >= 50 && selectedAmount! <= 50000;
 
   void _validateAndProceed() {
     if (selectedAmount == null) {
@@ -231,6 +231,22 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
               ],
             ),
           ),
+          GestureDetector(
+            onTap: () => Get.until((route) => route.settings.name == AppRoutes.airtime || route.isFirst),
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(
+                Icons.close,
+                color: const Color(0xFF9CA3AF),
+                size: 20.sp,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -262,7 +278,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             ),
             child: Center(
               child: Text(
-                networkProvider!.name.substring(0, 1),
+                networkProvider!.name.isNotEmpty ? networkProvider!.name[0] : '?',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,

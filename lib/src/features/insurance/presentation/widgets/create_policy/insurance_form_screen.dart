@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
@@ -73,6 +74,13 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   TextEditingController _getController(String name, String initialValue) {
     if (!_controllers.containsKey(name)) {
       _controllers[name] = TextEditingController(text: initialValue);
+    } else if (_controllers[name]!.text != initialValue && initialValue.isNotEmpty) {
+      // Sync controller text if form data was updated externally (e.g., auto-fill)
+      // Only update if initialValue is non-empty to avoid clearing user input
+      final controller = _controllers[name]!;
+      if (controller.text.isEmpty && initialValue.isNotEmpty) {
+        controller.text = initialValue;
+      }
     }
     return _controllers[name]!;
   }
@@ -81,35 +89,43 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<CreatePolicyCubit, CreatePolicyState>(
       builder: (context, state) {
-        if (state is! InsuranceProductSelected) {
-          return Center(child: Text('Please select a product first',
-            style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))));
+        // Handle InsuranceProductSelected directly
+        if (state is InsuranceProductSelected) {
+          return _buildForm(state.product, state.formData, state.formErrors);
         }
 
-        final product = state.product;
-        final formData = state.formData;
-        final formErrors = state.formErrors;
+        // Also handle states that occur while form is still visible
+        // (e.g. quote loading after pressing Continue, or late SWR emission)
+        final cubit = context.read<CreatePolicyCubit>();
+        if (cubit.selectedProduct != null) {
+          return _buildForm(cubit.selectedProduct!, cubit.formData, const {});
+        }
 
-        return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 8.h),
-              _buildProductHeader(product),
-              SizedBox(height: 24.h),
-              Text('Your Details', style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-              SizedBox(height: 4.h),
-              Text('Fill in the required information for your insurance',
-                style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-              SizedBox(height: 20.h),
-              ...product.formFields.map((field) =>
-                _buildFormField(context, field, formData[field.name] ?? '', formErrors[field.name])),
-              SizedBox(height: 20.h),
-            ],
-          ),
-        );
+        return Center(child: Text('Please select a product first',
+          style: GoogleFonts.inter(color: const Color(0xFF9CA3AF))));
       },
+    );
+  }
+
+  Widget _buildForm(InsuranceProduct product, Map<String, String> formData, Map<String, String> formErrors) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 8.h),
+          _buildProductHeader(product),
+          SizedBox(height: 24.h),
+          Text('Your Details', style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+          SizedBox(height: 4.h),
+          Text('Fill in the required information for your insurance',
+            style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+          SizedBox(height: 20.h),
+          ...product.formFields.map((field) =>
+            _buildFormField(context, field, formData[field.name] ?? '', formErrors[field.name])),
+          SizedBox(height: 20.h),
+        ],
+      ),
     );
   }
 
@@ -134,8 +150,148 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
           Text(product.name, style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
           Text(product.providerName, style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF))),
         ])),
+        GestureDetector(
+          onTap: () => _showProductInfoSheet(context, product),
+          child: Container(
+            width: 32.w,
+            height: 32.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+            ),
+            child: Icon(Icons.info_outline, color: const Color(0xFF6366F1), size: 18.sp),
+          ),
+        ),
       ]),
     );
+  }
+
+  void _showProductInfoSheet(BuildContext context, InsuranceProduct product) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.85,
+        minChildSize: 0.35,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 12.h),
+                width: 40.w, height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2.r)),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: EdgeInsets.all(20.w),
+                  children: [
+                    Row(children: [
+                      Container(
+                        width: 48.w, height: 48.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12.r)),
+                        child: Icon(product.category.icon, size: 26.sp, color: const Color(0xFF6366F1)),
+                      ),
+                      SizedBox(width: 14.w),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(product.name, style: GoogleFonts.inter(
+                          fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                        SizedBox(height: 2.h),
+                        Text(product.providerName, style: GoogleFonts.inter(
+                          fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+                      ])),
+                    ]),
+                    SizedBox(height: 16.h),
+                    // Premium + category
+                    Row(children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.premiumRange, style: GoogleFonts.inter(
+                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF10B981))),
+                      ),
+                      SizedBox(width: 8.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6.r)),
+                        child: Text(product.category.displayName, style: GoogleFonts.inter(
+                          fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+                      ),
+                    ]),
+                    SizedBox(height: 20.h),
+                    // Description
+                    _buildInfoSectionTitle('About'),
+                    SizedBox(height: 8.h),
+                    _buildInfoRichContent(product.description),
+                    // How It Works
+                    if (product.howItWorks.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      _buildInfoSectionTitle('How It Works'),
+                      SizedBox(height: 8.h),
+                      _buildInfoRichContent(product.howItWorks),
+                    ],
+                    // Benefits
+                    if (product.benefits.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      _buildInfoSectionTitle('Benefits'),
+                      SizedBox(height: 8.h),
+                      ...product.benefits.map((b) => Padding(
+                        padding: EdgeInsets.only(bottom: 8.h),
+                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Icon(Icons.check_circle, size: 16.sp, color: const Color(0xFF10B981)),
+                          SizedBox(width: 8.w),
+                          Expanded(child: Text(b, style: GoogleFonts.inter(
+                            fontSize: 13.sp, color: Colors.white, height: 1.4))),
+                        ]),
+                      )),
+                    ],
+                    // Full Benefits
+                    if (product.fullBenefits.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      _buildInfoSectionTitle('Full Coverage Details'),
+                      SizedBox(height: 8.h),
+                      _buildInfoRichContent(product.fullBenefits),
+                    ],
+                    SizedBox(height: 20.h),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoSectionTitle(String title) {
+    return Text(title, style: GoogleFonts.inter(
+      fontSize: 15.sp, fontWeight: FontWeight.w700, color: Colors.white));
+  }
+
+  Widget _buildInfoRichContent(String content) {
+    if (content.contains('<') && content.contains('>')) {
+      return HtmlWidget(
+        content,
+        textStyle: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5),
+        customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'},
+      );
+    }
+    return Text(content, style: GoogleFonts.inter(
+      fontSize: 14.sp, color: const Color(0xFF9CA3AF), height: 1.5));
   }
 
   Widget _buildFormField(BuildContext context, InsuranceProductFormField field, String value, String? error) {
@@ -198,7 +354,10 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         ]),
         if (field.description.isNotEmpty)
           Padding(padding: EdgeInsets.only(top: 2.h),
-            child: Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
+            child: field.description.contains('<') && field.description.contains('>')
+              ? HtmlWidget(field.description, textStyle: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
+                  customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'})
+              : Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
         SizedBox(height: 8.h),
         TextFormField(
           controller: controller, keyboardType: keyboardType,
@@ -273,7 +432,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
               builder: (context, child) => Theme(
                 data: ThemeData.dark().copyWith(colorScheme: const ColorScheme.dark(primary: Color(0xFF6366F1), surface: Color(0xFF1F1F1F))),
                 child: child!));
-            if (date != null) {
+            if (date != null && mounted) {
               final formatted = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
               cubit.updateFormField(field.name, formatted);
               controller.text = formatted;
@@ -307,7 +466,10 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
           if (field.description.isNotEmpty)
-            Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF))),
+            field.description.contains('<') && field.description.contains('>')
+              ? HtmlWidget(field.description, textStyle: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
+                  customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'})
+              : Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF))),
         ])),
         Switch(
           value: value.toLowerCase() == 'true' || value == '1' || value.toLowerCase() == 'yes',
@@ -334,7 +496,10 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         ]),
         if (field.description.isNotEmpty)
           Padding(padding: EdgeInsets.only(top: 2.h),
-            child: Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
+            child: field.description.contains('<') && field.description.contains('>')
+              ? HtmlWidget(field.description, textStyle: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
+                  customStylesBuilder: (_) => {'color': 'rgba(156,163,175,1)', 'background-color': 'transparent'})
+              : Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
         SizedBox(height: 8.h),
         GestureDetector(
           onTap: isUploading ? null : () => _pickAndUploadFile(cubit, field),
@@ -379,6 +544,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
     if (result == null || result.files.isEmpty || result.files.first.bytes == null) return;
 
+    if (!mounted) return;
     setState(() => _fileUploading[field.name] = true);
 
     try {

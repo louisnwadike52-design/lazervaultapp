@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: multi_country.proto
-//
-// @dart = 2.12
+// Generated from multi_country.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -23,7 +24,14 @@ const LocaleAccountGroup$json = {
     {'1': 'currency_code', '3': 4, '4': 1, '5': 9, '10': 'currencyCode'},
     {'1': 'currency_symbol', '3': 5, '4': 1, '5': 9, '10': 'currencySymbol'},
     {'1': 'flag_emoji', '3': 6, '4': 1, '5': 9, '10': 'flagEmoji'},
-    {'1': 'accounts', '3': 7, '4': 3, '5': 11, '6': '.accounts.Account', '10': 'accounts'},
+    {
+      '1': 'accounts',
+      '3': 7,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.Account',
+      '10': 'accounts'
+    },
     {'1': 'total_balance', '3': 8, '4': 1, '5': 1, '10': 'totalBalance'},
     {'1': 'has_accounts', '3': 9, '4': 1, '5': 8, '10': 'hasAccounts'},
     {'1': 'is_signup_locale', '3': 10, '4': 1, '5': 8, '10': 'isSignupLocale'},
@@ -49,18 +57,32 @@ const GetAccountsByLocaleRequest$json = {
 };
 
 /// Descriptor for `GetAccountsByLocaleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAccountsByLocaleRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRBY2NvdW50c0J5TG9jYWxlUmVxdWVzdBIWCgZzdGF0dXMYASABKAlSBnN0YXR1cw==');
+final $typed_data.Uint8List getAccountsByLocaleRequestDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRBY2NvdW50c0J5TG9jYWxlUmVxdWVzdBIWCgZzdGF0dXMYASABKAlSBnN0YXR1cw==');
 
 @$core.Deprecated('Use getAccountsByLocaleResponseDescriptor instead')
 const GetAccountsByLocaleResponse$json = {
   '1': 'GetAccountsByLocaleResponse',
   '2': [
-    {'1': 'locales', '3': 1, '4': 3, '5': 11, '6': '.accounts.LocaleAccountGroup', '10': 'locales'},
+    {
+      '1': 'locales',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.LocaleAccountGroup',
+      '10': 'locales'
+    },
     {'1': 'active_locale', '3': 2, '4': 1, '5': 9, '10': 'activeLocale'},
     {'1': 'signup_locale', '3': 3, '4': 1, '5': 9, '10': 'signupLocale'},
     {'1': 'total_locales', '3': 4, '4': 1, '5': 5, '10': 'totalLocales'},
-    {'1': 'locales_with_accounts', '3': 5, '4': 1, '5': 5, '10': 'localesWithAccounts'},
+    {
+      '1': 'locales_with_accounts',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '10': 'localesWithAccounts'
+    },
   ],
 };
 
@@ -83,26 +105,35 @@ const CreateLocaleAccountRequest$json = {
 };
 
 /// Descriptor for `CreateLocaleAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createLocaleAccountRequestDescriptor = $convert.base64Decode(
-    'ChpDcmVhdGVMb2NhbGVBY2NvdW50UmVxdWVzdBIWCgZsb2NhbGUYASABKAlSBmxvY2FsZRIhCg'
-    'xhY2NvdW50X3R5cGUYAiABKAlSC2FjY291bnRUeXBlEiEKDGFjY291bnRfbmFtZRgDIAEoCVIL'
-    'YWNjb3VudE5hbWU=');
+final $typed_data.Uint8List createLocaleAccountRequestDescriptor =
+    $convert.base64Decode(
+        'ChpDcmVhdGVMb2NhbGVBY2NvdW50UmVxdWVzdBIWCgZsb2NhbGUYASABKAlSBmxvY2FsZRIhCg'
+        'xhY2NvdW50X3R5cGUYAiABKAlSC2FjY291bnRUeXBlEiEKDGFjY291bnRfbmFtZRgDIAEoCVIL'
+        'YWNjb3VudE5hbWU=');
 
 @$core.Deprecated('Use createLocaleAccountResponseDescriptor instead')
 const CreateLocaleAccountResponse$json = {
   '1': 'CreateLocaleAccountResponse',
   '2': [
-    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
+    {
+      '1': 'account',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.accounts.Account',
+      '10': 'account'
+    },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'created', '3': 3, '4': 1, '5': 8, '10': 'created'},
   ],
 };
 
 /// Descriptor for `CreateLocaleAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createLocaleAccountResponseDescriptor = $convert.base64Decode(
-    'ChtDcmVhdGVMb2NhbGVBY2NvdW50UmVzcG9uc2USKwoHYWNjb3VudBgBIAEoCzIRLmFjY291bn'
-    'RzLkFjY291bnRSB2FjY291bnQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIYCgdjcmVhdGVk'
-    'GAMgASgIUgdjcmVhdGVk');
+final $typed_data.Uint8List createLocaleAccountResponseDescriptor =
+    $convert.base64Decode(
+        'ChtDcmVhdGVMb2NhbGVBY2NvdW50UmVzcG9uc2USKwoHYWNjb3VudBgBIAEoCzIRLmFjY291bn'
+        'RzLkFjY291bnRSB2FjY291bnQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIYCgdjcmVhdGVk'
+        'GAMgASgIUgdjcmVhdGVk');
 
 @$core.Deprecated('Use supportedLocaleDescriptor instead')
 const SupportedLocale$json = {
@@ -116,7 +147,13 @@ const SupportedLocale$json = {
     {'1': 'flag_emoji', '3': 6, '4': 1, '5': 9, '10': 'flagEmoji'},
     {'1': 'is_active', '3': 7, '4': 1, '5': 8, '10': 'isActive'},
     {'1': 'is_beta', '3': 8, '4': 1, '5': 8, '10': 'isBeta'},
-    {'1': 'available_account_types', '3': 9, '4': 3, '5': 9, '10': 'availableAccountTypes'},
+    {
+      '1': 'available_account_types',
+      '3': 9,
+      '4': 3,
+      '5': 9,
+      '10': 'availableAccountTypes'
+    },
     {'1': 'user_has_account', '3': 10, '4': 1, '5': 8, '10': 'userHasAccount'},
   ],
 };
@@ -137,21 +174,29 @@ const GetSupportedLocalesRequest$json = {
 };
 
 /// Descriptor for `GetSupportedLocalesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSupportedLocalesRequestDescriptor = $convert.base64Decode(
-    'ChpHZXRTdXBwb3J0ZWRMb2NhbGVzUmVxdWVzdA==');
+final $typed_data.Uint8List getSupportedLocalesRequestDescriptor =
+    $convert.base64Decode('ChpHZXRTdXBwb3J0ZWRMb2NhbGVzUmVxdWVzdA==');
 
 @$core.Deprecated('Use getSupportedLocalesResponseDescriptor instead')
 const GetSupportedLocalesResponse$json = {
   '1': 'GetSupportedLocalesResponse',
   '2': [
-    {'1': 'locales', '3': 1, '4': 3, '5': 11, '6': '.accounts.SupportedLocale', '10': 'locales'},
+    {
+      '1': 'locales',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.SupportedLocale',
+      '10': 'locales'
+    },
   ],
 };
 
 /// Descriptor for `GetSupportedLocalesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSupportedLocalesResponseDescriptor = $convert.base64Decode(
-    'ChtHZXRTdXBwb3J0ZWRMb2NhbGVzUmVzcG9uc2USMwoHbG9jYWxlcxgBIAMoCzIZLmFjY291bn'
-    'RzLlN1cHBvcnRlZExvY2FsZVIHbG9jYWxlcw==');
+final $typed_data.Uint8List getSupportedLocalesResponseDescriptor =
+    $convert.base64Decode(
+        'ChtHZXRTdXBwb3J0ZWRMb2NhbGVzUmVzcG9uc2USMwoHbG9jYWxlcxgBIAMoCzIZLmFjY291bn'
+        'RzLlN1cHBvcnRlZExvY2FsZVIHbG9jYWxlcw==');
 
 @$core.Deprecated('Use getUserLocaleRequestDescriptor instead')
 const GetUserLocaleRequest$json = {
@@ -159,8 +204,8 @@ const GetUserLocaleRequest$json = {
 };
 
 /// Descriptor for `GetUserLocaleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserLocaleRequestDescriptor = $convert.base64Decode(
-    'ChRHZXRVc2VyTG9jYWxlUmVxdWVzdA==');
+final $typed_data.Uint8List getUserLocaleRequestDescriptor =
+    $convert.base64Decode('ChRHZXRVc2VyTG9jYWxlUmVxdWVzdA==');
 
 @$core.Deprecated('Use getUserLocaleResponseDescriptor instead')
 const GetUserLocaleResponse$json = {
@@ -188,8 +233,9 @@ const SetUserLocaleRequest$json = {
 };
 
 /// Descriptor for `SetUserLocaleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List setUserLocaleRequestDescriptor = $convert.base64Decode(
-    'ChRTZXRVc2VyTG9jYWxlUmVxdWVzdBIWCgZsb2NhbGUYASABKAlSBmxvY2FsZQ==');
+final $typed_data.Uint8List setUserLocaleRequestDescriptor =
+    $convert.base64Decode(
+        'ChRTZXRVc2VyTG9jYWxlUmVxdWVzdBIWCgZsb2NhbGUYASABKAlSBmxvY2FsZQ==');
 
 @$core.Deprecated('Use setUserLocaleResponseDescriptor instead')
 const SetUserLocaleResponse$json = {
@@ -215,9 +261,10 @@ const TriggerMultiCountryCreationRequest$json = {
 };
 
 /// Descriptor for `TriggerMultiCountryCreationRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List triggerMultiCountryCreationRequestDescriptor = $convert.base64Decode(
-    'CiJUcmlnZ2VyTXVsdGlDb3VudHJ5Q3JlYXRpb25SZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBn'
-    'VzZXJJZBIjCg1zaWdudXBfbG9jYWxlGAIgASgJUgxzaWdudXBMb2NhbGU=');
+final $typed_data.Uint8List triggerMultiCountryCreationRequestDescriptor =
+    $convert.base64Decode(
+        'CiJUcmlnZ2VyTXVsdGlDb3VudHJ5Q3JlYXRpb25SZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBn'
+        'VzZXJJZBIjCg1zaWdudXBfbG9jYWxlGAIgASgJUgxzaWdudXBMb2NhbGU=');
 
 @$core.Deprecated('Use triggerMultiCountryCreationResponseDescriptor instead')
 const TriggerMultiCountryCreationResponse$json = {
@@ -230,10 +277,11 @@ const TriggerMultiCountryCreationResponse$json = {
 };
 
 /// Descriptor for `TriggerMultiCountryCreationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List triggerMultiCountryCreationResponseDescriptor = $convert.base64Decode(
-    'CiNUcmlnZ2VyTXVsdGlDb3VudHJ5Q3JlYXRpb25SZXNwb25zZRIcCgl0cmlnZ2VyZWQYASABKA'
-    'hSCXRyaWdnZXJlZBIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEhUKBmpvYl9pZBgDIAEoCVIF'
-    'am9iSWQ=');
+final $typed_data.Uint8List triggerMultiCountryCreationResponseDescriptor =
+    $convert.base64Decode(
+        'CiNUcmlnZ2VyTXVsdGlDb3VudHJ5Q3JlYXRpb25SZXNwb25zZRIcCgl0cmlnZ2VyZWQYASABKA'
+        'hSCXRyaWdnZXJlZBIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEhUKBmpvYl9pZBgDIAEoCVIF'
+        'am9iSWQ=');
 
 @$core.Deprecated('Use localeAccountCreationStatusDescriptor instead')
 const LocaleAccountCreationStatus$json = {
@@ -243,8 +291,22 @@ const LocaleAccountCreationStatus$json = {
     {'1': 'country_code', '3': 2, '4': 1, '5': 9, '10': 'countryCode'},
     {'1': 'status', '3': 3, '4': 1, '5': 9, '10': 'status'},
     {'1': 'error_message', '3': 4, '4': 1, '5': 9, '10': 'errorMessage'},
-    {'1': 'created_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'completed_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completedAt'},
+    {
+      '1': 'created_at',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'completed_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'completedAt'
+    },
   ],
 };
 
@@ -265,9 +327,10 @@ const GetAccountCreationStatusRequest$json = {
 };
 
 /// Descriptor for `GetAccountCreationStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAccountCreationStatusRequestDescriptor = $convert.base64Decode(
-    'Ch9HZXRBY2NvdW50Q3JlYXRpb25TdGF0dXNSZXF1ZXN0EhUKBmpvYl9pZBgBIAEoCVIFam9iSW'
-    'Q=');
+final $typed_data.Uint8List getAccountCreationStatusRequestDescriptor =
+    $convert.base64Decode(
+        'Ch9HZXRBY2NvdW50Q3JlYXRpb25TdGF0dXNSZXF1ZXN0EhUKBmpvYl9pZBgBIAEoCVIFam9iSW'
+        'Q=');
 
 @$core.Deprecated('Use getAccountCreationStatusResponseDescriptor instead')
 const GetAccountCreationStatusResponse$json = {
@@ -275,8 +338,21 @@ const GetAccountCreationStatusResponse$json = {
   '2': [
     {'1': 'overall_status', '3': 1, '4': 1, '5': 9, '10': 'overallStatus'},
     {'1': 'total_locales', '3': 2, '4': 1, '5': 5, '10': 'totalLocales'},
-    {'1': 'completed_locales', '3': 3, '4': 1, '5': 5, '10': 'completedLocales'},
-    {'1': 'locale_statuses', '3': 4, '4': 3, '5': 11, '6': '.accounts.LocaleAccountCreationStatus', '10': 'localeStatuses'},
+    {
+      '1': 'completed_locales',
+      '3': 3,
+      '4': 1,
+      '5': 5,
+      '10': 'completedLocales'
+    },
+    {
+      '1': 'locale_statuses',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.LocaleAccountCreationStatus',
+      '10': 'localeStatuses'
+    },
   ],
 };
 
@@ -287,4 +363,3 @@ final $typed_data.Uint8List getAccountCreationStatusResponseDescriptor = $conver
     'KwoRY29tcGxldGVkX2xvY2FsZXMYAyABKAVSEGNvbXBsZXRlZExvY2FsZXMSTgoPbG9jYWxlX3'
     'N0YXR1c2VzGAQgAygLMiUuYWNjb3VudHMuTG9jYWxlQWNjb3VudENyZWF0aW9uU3RhdHVzUg5s'
     'b2NhbGVTdGF0dXNlcw==');
-

@@ -9,7 +9,9 @@ import 'package:lazervault/src/features/authentication/domain/entities/user.dart
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
+import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
@@ -264,15 +266,55 @@ class DashboardHeader extends StatelessWidget {
     );
   }
 
-  void _showVoiceCommandSheet(BuildContext context) {
+  void _showVoiceCommandSheet(BuildContext context) async {
+    final activationManager = VoiceActivationManager();
+
+    // Check if voice service is available first
+    final isAvailable = await activationManager.isServiceAvailable();
+    if (!isAvailable) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Voice service is currently unavailable. Please try again later.',
+            style: GoogleFonts.inter(fontSize: 13),
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
+    // Get user ID from auth state
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final userId = authState.profile.userId;
+
+    // Check enrollment status
+    final isEnrolled = await activationManager.isVoiceEnrolled(userId);
+
+    if (!context.mounted) return;
+
+    if (!isEnrolled) {
+      // Show enrollment prompt dialog FIRST (not inside a bottom sheet)
+      final activated = await activationManager.activateVoice(
+        context,
+        userId,
+      );
+      if (!activated || !context.mounted) return;
+    }
+
+    // Only open the bottom sheet after enrollment is confirmed
     Get.bottomSheet(
       FractionallySizedBox(
         heightFactor: 0.85,
-        child: VoiceCommandSheet(),
+        child: VoiceCommandSheet(skipActivationCheck: true),
       ),
       isScrollControlled: true,
-      enableDrag: true,
-      isDismissible: true,
+      enableDrag: false,
+      isDismissible: false,
       backgroundColor: Colors.transparent,
       enterBottomSheetDuration: const Duration(milliseconds: 300),
       exitBottomSheetDuration: const Duration(milliseconds: 200),

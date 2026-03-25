@@ -224,7 +224,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             return;
           }
           // Refresh list in case a new beneficiary was added
-          if (!mounted) return;
+          if (!context.mounted) return;
           context.read<BeneficiaryCubit>().getBeneficiaries();
         },
         backgroundColor: const Color(0xFF4E03D0),

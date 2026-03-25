@@ -24,7 +24,6 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
-  String _selectedDeliveryMethod = 'email';
 
   @override
   void initState() {
@@ -32,7 +31,6 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       setState(() {
-        _selectedDeliveryMethod = _tabController.index == 0 ? 'email' : 'sms';
         _errorMessage = null;
       });
     });

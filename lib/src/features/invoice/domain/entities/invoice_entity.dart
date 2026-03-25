@@ -397,6 +397,10 @@ class Invoice extends Equatable {
   }
 
   String get statusDisplayName {
+    // If invoice is unlocked (service fee paid), show Pending instead of Draft
+    if (status == InvoiceStatus.draft && isUnlocked) {
+      return 'Pending';
+    }
     switch (status) {
       case InvoiceStatus.draft:
         return 'Draft';

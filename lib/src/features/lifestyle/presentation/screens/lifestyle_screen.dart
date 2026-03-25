@@ -17,6 +17,10 @@ import 'package:lazervault/src/features/lifestyle/presentation/screens/flight_se
 import 'package:lazervault/src/features/lifestyle/presentation/screens/hotel_search_screen.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/partner_webview_screen.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/tour_search_screen.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/screens/plan_my_day_screen.dart';
+import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
+import 'package:lazervault/src/features/sprayme/presentation/screens/sprayme_home_screen.dart';
 
 // ─── Icon mapping for backend categories ───────────────────────────────────────
 const _categoryIcons = <String, IconData>{
@@ -81,7 +85,10 @@ const _promos = [
 
 // ─── Main Screen ───────────────────────────────────────────────────────────────
 class NewLifestyleScreen extends StatefulWidget {
-  const NewLifestyleScreen({super.key});
+  /// Optional callback to switch the parent dashboard to a specific tab.
+  final void Function(int tabIndex)? onSwitchTab;
+
+  const NewLifestyleScreen({super.key, this.onSwitchTab});
 
   @override
   State<NewLifestyleScreen> createState() => _NewLifestyleScreenState();
@@ -408,6 +415,14 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
           _buildPromotionsCarousel(),
           SizedBox(height: 24.h),
 
+          // SprayMe entry banner
+          _buildSprayMeBanner(),
+          SizedBox(height: 16.h),
+
+          // Plan My Day entry banner
+          _buildPlanMyDayBanner(),
+          SizedBox(height: 24.h),
+
           // Categories from backend
           _buildSectionHeader('Explore Categories'),
           SizedBox(height: 12.h),
@@ -472,6 +487,164 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
         color: Colors.white,
         fontSize: 18.sp,
         fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  // ── SprayMe banner ─────────────────────────────────────────────────────────
+
+  Widget _buildSprayMeBanner() {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        Navigator.push<int>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => serviceLocator<SprayMeCubit>(),
+              child: const SprayMeHomeScreen(),
+            ),
+          ),
+        ).then((tabIndex) {
+          if (tabIndex != null && widget.onSwitchTab != null) {
+            widget.onSwitchTab!(tabIndex);
+          }
+        });
+      },
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF6B00), Color(0xFFFF2D87)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFF6B00).withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'SprayMe',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Spray money, send gifts & celebrate together in real-time',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                '\u{1F389}',
+                style: TextStyle(fontSize: 28.sp),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Plan My Day banner ─────────────────────────────────────────────────────────
+
+  Widget _buildPlanMyDayBanner() {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => serviceLocator<PlanMyDayCubit>(),
+              child: const PlanMyDayScreen(),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Plan My Day',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Organize tasks, events & boost your productivity',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                '\u{1F4C5}',
+                style: TextStyle(fontSize: 28.sp),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

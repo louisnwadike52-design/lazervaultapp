@@ -39,6 +39,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
   int _currentPage = 0;
   final int _totalPages = 6;
   bool _isProcessing = false;
+  bool _isImageUploading = false;
 
   final List<String> _pageNames = [
     'Basic Info',
@@ -135,6 +136,10 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
         isValid = _validateFundingGoal();
         break;
       case 2:
+        if (_isImageUploading) {
+          _showErrorSnackBar('Please wait for the image to finish uploading');
+          return;
+        }
         isValid = true; // Story and media are optional
         break;
       case 3:
@@ -218,6 +223,11 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
   }
 
   Future<void> _proceedToCreateCrowdfund() async {
+    if (_isImageUploading) {
+      _showErrorSnackBar('Please wait for the image to finish uploading');
+      return;
+    }
+
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       _showErrorSnackBar('Please log in to create a campaign');
@@ -280,12 +290,23 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           currency: _selectedCurrency,
           deadline: _selectedDeadline,
           category: _selectedCategory,
-          imageUrl: _imageUrlController.text.trim().isEmpty
-              ? null
-              : _imageUrlController.text.trim(),
+          imageUrl: _getValidImageUrl(),
           visibility: _selectedVisibility,
           metadata: metadata.isNotEmpty ? metadata : null,
         );
+  }
+
+  /// Returns the image URL only if it's a valid remote URL.
+  /// Strips out local file paths that weren't uploaded.
+  String? _getValidImageUrl() {
+    final url = _imageUrlController.text.trim();
+    if (url.isEmpty) return null;
+    // Only accept http/https URLs — reject local file paths
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // Local file path leaked through — ignore it
+    return null;
   }
 
   void _showErrorSnackBar(String message) {
@@ -375,6 +396,11 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                     onImagePicked: (path) {
                       setState(() {
                         // Image picked, state updated in controller
+                      });
+                    },
+                    onUploadStateChanged: (isUploading) {
+                      setState(() {
+                        _isImageUploading = isUploading;
                       });
                     },
                   ),
@@ -477,7 +503,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
 
   Widget _buildProgressIndicators() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Column(
         children: [
           // Linear progress bar
@@ -499,7 +525,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -573,7 +599,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

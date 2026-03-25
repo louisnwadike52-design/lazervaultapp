@@ -35,7 +35,14 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     _tabController.addListener(_onTabChanged);
     _searchController.addListener(_onSearchTextChanged);
     _browseScrollController.addListener(_onBrowseScroll);
-    _loadCrowdfunds();
+    // Data loading is triggered by the route's BlocProvider (..loadCrowdfunds())
+    // Only reload if cubit is in initial state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = context.read<CrowdfundCubit>().state;
+      if (state is CrowdfundInitial) {
+        _loadCrowdfunds();
+      }
+    });
   }
 
   @override
@@ -147,36 +154,26 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              width: 44.w,
-              height: 44.w,
+              width: 38.w,
+              height: 38.w,
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(22.r),
+                borderRadius: BorderRadius.circular(19.r),
               ),
-              child: Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.white,
-                size: 18.sp,
-              ),
+              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16.sp),
             ),
           ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Text(
-              'Campaigns',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 24.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+          SizedBox(width: 12.w),
+          Text(
+            'Campaigns',
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -185,8 +182,8 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
 
   Widget _buildSearchBar() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      margin: EdgeInsets.only(bottom: 8.h),
       child: TextField(
         controller: _searchController,
         onChanged: _onSearchChanged,
@@ -234,7 +231,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
 
   Widget _buildTabBar() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
@@ -267,11 +264,11 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
 
   Widget _buildFilterChips() {
     return Container(
-      height: 48.h,
-      padding: EdgeInsets.symmetric(vertical: 8.h),
+      height: 40.h,
+      padding: EdgeInsets.symmetric(vertical: 6.h),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         itemCount: _filters.length,
         separatorBuilder: (_, __) => SizedBox(width: 8.w),
         itemBuilder: (context, index) {

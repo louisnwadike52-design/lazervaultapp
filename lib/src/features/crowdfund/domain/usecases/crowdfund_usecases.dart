@@ -142,7 +142,8 @@ class MakeDonationUseCase {
     required double amount,
     String? message,
     bool isAnonymous = false,
-    String? sourceAccountId,
+    required String sourceAccountId,
+    required String transactionPin,
   }) {
     return repository.makeDonation(
       crowdfundId: crowdfundId,
@@ -150,6 +151,7 @@ class MakeDonationUseCase {
       message: message,
       isAnonymous: isAnonymous,
       sourceAccountId: sourceAccountId,
+      transactionPin: transactionPin,
     );
   }
 }
@@ -330,6 +332,7 @@ class ConnectNotificationChannelUseCase {
     String? slackWebhookUrl,
     String? slackWorkspaceName,
     String? slackChannelName,
+    String? whatsappRecipientId,
     List<NotificationEventType>? enabledEvents,
   }) {
     return repository.connectNotificationChannel(
@@ -343,6 +346,7 @@ class ConnectNotificationChannelUseCase {
       slackWebhookUrl: slackWebhookUrl,
       slackWorkspaceName: slackWorkspaceName,
       slackChannelName: slackChannelName,
+      whatsappRecipientId: whatsappRecipientId,
       enabledEvents: enabledEvents,
     );
   }

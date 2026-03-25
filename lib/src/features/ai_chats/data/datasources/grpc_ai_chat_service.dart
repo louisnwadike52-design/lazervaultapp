@@ -1,5 +1,6 @@
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import 'package:lazervault/src/generated/ai_chat.pbgrpc.dart';
 
 abstract class IAiChatDataSource {
@@ -62,7 +63,7 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
       );
       return response;
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to communicate with AI service'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to communicate with AI service'));
     } catch (e) {
       throw Exception('An unexpected error occurred calling AI service.');
     }
@@ -81,7 +82,7 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
       );
       return response;
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get chat history'}');
+      throw Exception(friendlyGrpcError(e, 'Failed to get chat history'));
     } catch (e) {
       throw Exception('An unexpected error occurred fetching chat history.');
     }

@@ -5,10 +5,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
+import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'widgets/gift_card_error_widget.dart';
 
 class GiftCardPurchaseProcessingScreen extends StatefulWidget {
-  const GiftCardPurchaseProcessingScreen({super.key});
+  final GiftCardPurchaseArgs purchaseArgs;
+
+  const GiftCardPurchaseProcessingScreen({
+    super.key,
+    required this.purchaseArgs,
+  });
 
   @override
   State<GiftCardPurchaseProcessingScreen> createState() =>
@@ -19,6 +26,12 @@ class _GiftCardPurchaseProcessingScreenState
     extends State<GiftCardPurchaseProcessingScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  bool _purchaseStarted = false;
+  bool _hasError = false;
+  String _errorTitle = '';
+  String _errorMessage = '';
+  IconData _errorIcon = Icons.error_outline;
+  Color _errorIconColor = const Color(0xFFEF4444);
 
   @override
   void initState() {
@@ -35,8 +48,44 @@ class _GiftCardPurchaseProcessingScreenState
     super.dispose();
   }
 
+  void _startPurchase(BuildContext context) {
+    if (_purchaseStarted) return;
+    _purchaseStarted = true;
+
+    final args = widget.purchaseArgs;
+    context.read<GiftCardCubit>().purchaseGiftCardWithToken(
+      brandId: args.brand.id,
+      amount: args.amount,
+      brand: args.brand,
+      userBalance: args.userBalance,
+      transactionId: args.transactionId,
+      verificationToken: args.verificationToken,
+      productId: args.productId,
+      countryCode: args.countryCode,
+      providerName: args.providerName,
+      senderAmount: args.senderAmount,
+      senderCurrency: args.senderCurrency,
+    );
+  }
+
+  void _retryPurchase() {
+    setState(() {
+      _hasError = false;
+      _purchaseStarted = false;
+    });
+    _animationController.repeat();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startPurchase(context);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Start the purchase after the first frame so the cubit is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startPurchase(context);
+    });
+
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -44,6 +93,7 @@ class _GiftCardPurchaseProcessingScreenState
         body: BlocListener<GiftCardCubit, GiftCardState>(
           listener: (context, state) {
             if (state is GiftCardPurchaseCompleted) {
+              _animationController.stop();
               Get.offNamed(
                 AppRoutes.giftCardDetails,
                 arguments: state.giftCard,
@@ -51,12 +101,19 @@ class _GiftCardPurchaseProcessingScreenState
             } else if (state is GiftCardPurchaseError ||
                 state is GiftCardInsufficientFunds ||
                 state is GiftCardNetworkError ||
-                state is GiftCardSoldOut) {
-              _showErrorDialog(state);
+                state is GiftCardSoldOut ||
+                state is GiftCardTimeoutError ||
+                state is GiftCardServerUnavailable ||
+                state is GiftCardValidationError ||
+                state is GiftCardNotFound) {
+              _animationController.stop();
+              _setErrorState(state);
             }
           },
           child: BlocBuilder<GiftCardCubit, GiftCardState>(
             builder: (context, state) {
+              if (_hasError) return _buildErrorView();
+
               double progress = 0.0;
               String currentStep = 'Initializing...';
 
@@ -296,7 +353,7 @@ class _GiftCardPurchaseProcessingScreenState
     );
   }
 
-  void _showErrorDialog(GiftCardState state) {
+  void _setErrorState(GiftCardState state) {
     String title = 'Purchase Failed';
     String message = 'An error occurred while processing your purchase.';
     IconData icon = Icons.error_outline;
@@ -314,60 +371,136 @@ class _GiftCardPurchaseProcessingScreenState
       icon = Icons.inventory_2_outlined;
     } else if (state is GiftCardNetworkError) {
       title = 'Network Error';
-      message = state.message;
+      message = friendlyGiftCardError(state.message);
       icon = Icons.wifi_off;
+    } else if (state is GiftCardTimeoutError) {
+      title = 'Request Timed Out';
+      message =
+          'The purchase request timed out. Your funds have not been charged. Please try again.';
+      icon = Icons.timer_off_outlined;
+      iconColor = const Color(0xFFFB923C);
+    } else if (state is GiftCardServerUnavailable) {
+      title = 'Service Unavailable';
+      message =
+          'The gift card service is temporarily unavailable. Please try again in a few moments.';
+      icon = Icons.cloud_off_outlined;
+      iconColor = const Color(0xFFFB923C);
+    } else if (state is GiftCardValidationError) {
+      title = 'Validation Error';
+      message = friendlyGiftCardError(state.message);
+      icon = Icons.warning_amber_rounded;
+      iconColor = const Color(0xFFFB923C);
+    } else if (state is GiftCardNotFound) {
+      title = 'Not Found';
+      message = 'The gift card brand could not be found. It may have been removed from the catalog.';
+      icon = Icons.search_off_rounded;
     } else if (state is GiftCardPurchaseError) {
-      message = state.message;
+      message = friendlyGiftCardError(state.message);
     }
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        title: Row(
+    setState(() {
+      _hasError = true;
+      _errorTitle = title;
+      _errorMessage = message;
+      _errorIcon = icon;
+      _errorIconColor = iconColor;
+    });
+  }
+
+  Widget _buildErrorView() {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.all(20.w),
+        child: Column(
           children: [
-            Icon(icon, color: iconColor, size: 24.sp),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+            SizedBox(height: 60.h),
+            Container(
+              width: 100.w,
+              height: 100.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _errorIconColor.withValues(alpha: 0.1),
+              ),
+              child: Center(
+                child: Icon(
+                  _errorIcon,
+                  size: 48.sp,
+                  color: _errorIconColor,
                 ),
               ),
             ),
-          ],
-        ),
-        content: Text(
-          message,
-          style: GoogleFonts.inter(
-            fontSize: 14.sp,
-            color: const Color(0xFF9CA3AF),
-            height: 1.5,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Get.back();
-            },
-            child: Text(
-              'Go Back',
+            SizedBox(height: 32.h),
+            Text(
+              _errorTitle,
+              style: GoogleFonts.inter(
+                fontSize: 22.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              _errorMessage,
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF9CA3AF),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: GestureDetector(
+                onTap: _retryPurchase,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Try Again',
+                      style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Get.offAllNamed(AppRoutes.giftCards),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                ),
+                child: Text(
+                  'Back to Gift Cards',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+          ],
+        ),
       ),
     );
   }

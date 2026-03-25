@@ -59,7 +59,7 @@ class AnalyticsSummaryCards extends StatelessWidget {
                 label: 'Transactions',
                 count: current.transactionCount,
                 changePercent: null,
-                color: const Color(0xFF8B5CF6),
+                color: const Color.fromARGB(255, 78, 3, 208),
               ),
             ],
           ),

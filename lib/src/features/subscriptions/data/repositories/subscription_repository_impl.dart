@@ -28,7 +28,7 @@ class SubscriptionRepositoryImpl implements ISubscriptionRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get active subscriptions',
+        message: friendlyGrpcError(e, 'Failed to get active subscriptions'),
         statusCode: e.codeName,
       ));
     } catch (e) {
@@ -47,7 +47,7 @@ class SubscriptionRepositoryImpl implements ISubscriptionRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get subscription summary',
+        message: friendlyGrpcError(e, 'Failed to get subscription summary'),
         statusCode: e.codeName,
       ));
     } catch (e) {
@@ -69,7 +69,7 @@ class SubscriptionRepositoryImpl implements ISubscriptionRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
-        message: e.message ?? 'Failed to get subscription spending',
+        message: friendlyGrpcError(e, 'Failed to get subscription spending'),
         statusCode: e.codeName,
       ));
     } catch (e) {

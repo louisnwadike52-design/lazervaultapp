@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
 import '../../../../../core/offline/mutation_queue.dart';
 import '../../../../../core/offline/mutation.dart';
+import 'package:lazervault/core/utils/grpc_error_handler.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import '../../domain/repositories/tag_pay_repository.dart';
 import '../../domain/entities/user_search_result_entity.dart';
@@ -51,7 +52,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       emit(TagPayLoaded(result));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -69,7 +70,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -88,7 +89,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -101,7 +102,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       emit(TagPaySearchResults(results));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -129,9 +130,20 @@ class TagPayCubit extends Cubit<TagPayState> {
         transaction: transaction,
         message: 'Money sent successfully',
       ));
+    } on GrpcError catch (e) {
+      if (isClosed) return;
+      final pinFailure = GrpcErrorHandler.extractPinFailure(e);
+      if (pinFailure != null) {
+        emit(TagPayPinFailure(pinInfo: pinFailure));
+      } else {
+        emit(TagPayError(
+          GrpcErrorHandler.userFriendlyMessage(e),
+          isRetryable: GrpcErrorHandler.isRetryable(e),
+        ));
+      }
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -157,7 +169,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -173,7 +185,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       emit(TagPayTransactionsLoaded(transactions));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -194,7 +206,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       emit(MoneyRequestsLoaded(requests));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -216,9 +228,20 @@ class TagPayCubit extends Cubit<TagPayState> {
         transaction: transaction,
         message: 'Money request accepted',
       ));
+    } on GrpcError catch (e) {
+      if (isClosed) return;
+      final pinFailure = GrpcErrorHandler.extractPinFailure(e);
+      if (pinFailure != null) {
+        emit(TagPayPinFailure(pinInfo: pinFailure));
+      } else {
+        emit(TagPayError(
+          GrpcErrorHandler.userFriendlyMessage(e),
+          isRetryable: GrpcErrorHandler.isRetryable(e),
+        ));
+      }
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -237,7 +260,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       await getPendingRequests();
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -262,7 +285,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -316,7 +339,7 @@ class TagPayCubit extends Cubit<TagPayState> {
         }
       }
 
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -329,7 +352,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       emit(MyTagsLoaded(result.tags));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -342,7 +365,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       emit(MyOutgoingTagsLoaded(result.tags, total: result.total, page: result.page, totalPages: result.totalPages));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -355,7 +378,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       emit(MyIncomingTagsLoaded(result.tags, total: result.total, page: result.page, totalPages: result.totalPages));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -379,6 +402,20 @@ class TagPayCubit extends Cubit<TagPayState> {
         transaction: transaction,
         message: 'Tag paid successfully!',
       ));
+    } on GrpcError catch (e) {
+      print('❌ [TagPayCubit] Tag payment failed: $e');
+      if (isClosed) return;
+
+      // Check for PIN-specific failure first
+      final pinFailure = GrpcErrorHandler.extractPinFailure(e);
+      if (pinFailure != null) {
+        emit(TagPayPinFailure(pinInfo: pinFailure));
+      } else {
+        emit(TagPayError(
+          GrpcErrorHandler.userFriendlyMessage(e),
+          isRetryable: GrpcErrorHandler.isRetryable(e),
+        ));
+      }
     } catch (e) {
       print('❌ [TagPayCubit] Tag payment failed: $e');
       if (isClosed) return;
@@ -386,9 +423,12 @@ class TagPayCubit extends Cubit<TagPayState> {
       // For financial operations, show clear error and let user retry manually
       // NEVER queue payments offline - security tokens expire, balances change
       if (_isNetworkError(e)) {
-        emit(const TagPayError('No internet connection. Please check your network and try again.'));
+        emit(const TagPayError(
+          'No internet connection. Please check your network and try again.',
+          isRetryable: true,
+        ));
       } else {
-        emit(TagPayError(e.toString()));
+        emit(TagPayError(_friendlyMessage(e)));
       }
     }
   }
@@ -415,7 +455,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -470,7 +510,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -512,7 +552,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -554,7 +594,16 @@ class TagPayCubit extends Cubit<TagPayState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+      emit(TagPayError(_friendlyMessage(e)));
     }
+  }
+
+  /// Convert any error to a user-friendly message.
+  /// Uses [GrpcErrorHandler] for gRPC errors, generic fallback otherwise.
+  String _friendlyMessage(dynamic error) {
+    if (error is GrpcError) {
+      return GrpcErrorHandler.userFriendlyMessage(error);
+    }
+    return 'Something went wrong. Please try again.';
   }
 }

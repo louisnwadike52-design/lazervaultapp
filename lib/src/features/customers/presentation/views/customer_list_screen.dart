@@ -286,7 +286,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
       case CustomerSegment.wholesale:
         return const Color(0xFF10B981); // green
       case CustomerSegment.government:
-        return const Color(0xFF8B5CF6); // purple
+        return const Color.fromARGB(255, 78, 3, 208); // purple
       case CustomerSegment.overdue:
         return const Color(0xFFEF4444); // red
       case CustomerSegment.none:

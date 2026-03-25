@@ -202,7 +202,7 @@ void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration con
             offset: const Offset(0, -8),
           ),
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             blurRadius: 60,
             spreadRadius: 0,
             offset: const Offset(0, -4),
@@ -218,7 +218,7 @@ void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration con
             height: 4,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF4E03D0), Color(0xFF6C5CE7)],
+                colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
               ),
               borderRadius: BorderRadius.circular(2),
             ),

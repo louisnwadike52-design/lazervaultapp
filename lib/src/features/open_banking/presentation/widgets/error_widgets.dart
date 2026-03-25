@@ -56,6 +56,10 @@ class BankingErrorWidget extends StatelessWidget {
           onRetry: null,
           onDismiss: onDismiss,
         ),
+      BankingErrorType.reauthorizationRequired => _UnauthorizedContent(
+          error: error,
+          onLogin: onLogin,
+        ),
       BankingErrorType.general => _GeneralErrorContent(
           error: error,
           onRetry: error.isRetryable ? onRetry : null,

@@ -23,6 +23,8 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../data/repositories/invoice_repository_grpc_impl.dart';
 import '../../domain/repositories/invoice_repository.dart';
+import 'package:get_it/get_it.dart';
+import '../notifiers/invoice_refresh_notifier.dart';
 
 /// Main carousel controller for invoice creation
 ///
@@ -57,6 +59,7 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
   bool _showFieldChipsRecipient = false;
   bool _showFieldChipsPayer = false;
   bool _showFieldChipsItems = false;
+  bool _isCreating = false;
 
   @override
   void initState() {
@@ -156,9 +159,13 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
   }
 
   Future<void> _createInvoice() async {
+    if (_isCreating) return;
+    setState(() => _isCreating = true);
+
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       _showErrorSnackBar('Authentication required');
+      setState(() => _isCreating = false);
       return;
     }
 
@@ -176,10 +183,13 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         if (cubit.payerImage != null) {
           try {
             final file = cubit.payerImage!;
-            final bytes = await file.readAsBytes();
-            final fileName = 'payer_logo_${DateTime.now().millisecondsSinceEpoch}.${file.path.split('.').last}';
-            final contentType = file.path.endsWith('.png') ? 'image/png' : 'image/jpeg';
-            payerLogoUrl = await grpcRepo.uploadInvoiceImage(bytes, fileName, contentType);
+            if (await file.exists()) {
+              final bytes = await file.readAsBytes();
+              final ext = file.path.split('.').last.toLowerCase();
+              final fileName = 'payer_logo_${DateTime.now().millisecondsSinceEpoch}.$ext';
+              final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
+              payerLogoUrl = await grpcRepo.uploadInvoiceImage(bytes, fileName, contentType);
+            }
           } catch (e) {
             // Non-fatal: continue without logo
           }
@@ -188,10 +198,13 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         if (cubit.recipientImage != null) {
           try {
             final file = cubit.recipientImage!;
-            final bytes = await file.readAsBytes();
-            final fileName = 'recipient_logo_${DateTime.now().millisecondsSinceEpoch}.${file.path.split('.').last}';
-            final contentType = file.path.endsWith('.png') ? 'image/png' : 'image/jpeg';
-            recipientLogoUrl = await grpcRepo.uploadInvoiceImage(bytes, fileName, contentType);
+            if (await file.exists()) {
+              final bytes = await file.readAsBytes();
+              final ext = file.path.split('.').last.toLowerCase();
+              final fileName = 'recipient_logo_${DateTime.now().millisecondsSinceEpoch}.$ext';
+              final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
+              recipientLogoUrl = await grpcRepo.uploadInvoiceImage(bytes, fileName, contentType);
+            }
           } catch (e) {
             // Non-fatal: continue without logo
           }
@@ -211,12 +224,18 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       final stateCompleter = Completer<InvoiceState>();
       late final StreamSubscription<InvoiceState> sub;
       sub = invoiceCubit.stream.where((s) =>
-          s is InvoiceOperationSuccess || s is InvoiceError).listen((s) {
+          s is InvoiceOperationSuccess || s is InvoiceError || s is InvoiceCreationQueued).listen((s) {
         if (!stateCompleter.isCompleted) {
           stateCompleter.complete(s);
         }
         sub.cancel();
       });
+
+      // Cancel subscription if widget unmounts before completion
+      if (!mounted) {
+        sub.cancel();
+        return;
+      }
 
       invoiceCubit.createInvoice(
         title: invoice.title,
@@ -266,16 +285,29 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
 
       final resultState = await stateCompleter.future.timeout(
         const Duration(seconds: 30),
-        onTimeout: () => const InvoiceError(message: 'Invoice creation timed out'),
+        onTimeout: () {
+          sub.cancel();
+          return const InvoiceError(message: 'Invoice creation timed out');
+        },
       );
 
-      if (!mounted) return;
+      if (!mounted) {
+        sub.cancel();
+        return;
+      }
+
+      if (resultState is InvoiceCreationQueued) {
+        _showErrorSnackBar(resultState.message);
+        if (mounted) setState(() => _isCreating = false);
+        return;
+      }
 
       if (resultState is! InvoiceOperationSuccess || resultState.invoice == null) {
         final errorMsg = resultState is InvoiceError
             ? resultState.message
             : 'Failed to create invoice';
         _showErrorSnackBar(errorMsg);
+        if (mounted) setState(() => _isCreating = false);
         return;
       }
 
@@ -290,12 +322,21 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
 
       cubit.reset();
 
-      // Reload invoices in background for the home screen
-      invoiceCubit.loadInvoices();
+      // Notify the shared notifier so the home screen reloads on return
+      GetIt.I<InvoiceRefreshNotifier>().notifyRefresh();
 
-      Get.offNamed(AppRoutes.invoiceProcessing, arguments: createdInvoice);
+      // Navigate to payment screen for service fee unlock, then processing, then preview
+      Get.offNamed(
+        AppRoutes.invoicePayment,
+        arguments: {
+          'invoice': createdInvoice,
+          'isPrePayment': true,
+          'serviceFee': 99.99,
+        },
+      );
     } catch (e) {
       _showErrorSnackBar('Failed to create invoice: ${e.toString()}');
+      if (mounted) setState(() => _isCreating = false);
     }
   }
 
@@ -562,6 +603,19 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
           ),
         ],
       ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.close,
+            color: Colors.white,
+            size: 24.sp,
+          ),
+          onPressed: () {
+            // Close carousel and return to invoice home/landing page
+            Get.back();
+          },
+        ),
+      ],
     );
   }
 
@@ -588,7 +642,7 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF3B82F6), const Color(0xFF8B5CF6)],
+                        : [const Color(0xFF3B82F6), const Color.fromARGB(255, 78, 3, 208)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -690,8 +744,20 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        if (isLastPage && _isCreating)
+                          SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        if (isLastPage && _isCreating) SizedBox(width: 8.w),
                         Text(
-                          isLastPage ? 'Create Invoice' : 'Continue',
+                          isLastPage
+                              ? (_isCreating ? 'Creating...' : 'Create Invoice')
+                              : 'Continue',
                           style: GoogleFonts.inter(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,

@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../entities/microservice_chat_message_entity.dart';
 import '../repositories/microservice_chat_repository.dart';
 

@@ -268,13 +268,8 @@ class _VoiceLanguagePickerState extends State<VoiceLanguagePicker> {
                           fontSize: 12.sp,
                         ),
                       ),
-                      // Provider badge
-                      if (lang.provider.isNotEmpty) ...[
-                        SizedBox(width: 6.w),
-                        _buildProviderBadge(lang.provider),
-                      ],
                       // Voice count
-                      SizedBox(width: 8.w),
+                      SizedBox(width: 6.w),
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 6.w,
@@ -356,40 +351,4 @@ class _VoiceLanguagePickerState extends State<VoiceLanguagePicker> {
     );
   }
 
-  Widget _buildProviderBadge(String provider) {
-    Color badgeColor;
-    String label;
-    switch (provider) {
-      case 'elevenlabs':
-        badgeColor = const Color(0xFF3B82F6);
-        label = 'ElevenLabs';
-        break;
-      case 'yarngpt':
-        badgeColor = const Color(0xFF10B981);
-        label = 'YarnGPT';
-        break;
-      case 'openai':
-        badgeColor = const Color(0xFF8B5CF6);
-        label = 'OpenAI';
-        break;
-      default:
-        badgeColor = const Color(0xFF6B7280);
-        label = provider;
-    }
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-      decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(4.r),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.inter(
-          color: badgeColor.withValues(alpha: 0.8),
-          fontSize: 9.sp,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
 }

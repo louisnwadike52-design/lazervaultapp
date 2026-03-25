@@ -165,7 +165,7 @@ class PaymentHistoryCard extends StatelessWidget {
       case PaymentStatus.cancelled:
         return const Color(0xFF6B7280);
       case PaymentStatus.refunded:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 

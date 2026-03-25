@@ -31,6 +31,8 @@ import 'package:lazervault/src/features/authentication/cubit/email_verification_
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_verification_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_settings_tile.dart';
 
 class SettingsScreen extends StatelessWidget{
   const SettingsScreen({super.key});
@@ -116,6 +118,11 @@ class _SettingsViewState extends State<_SettingsView> {
 
                       // Profile Section
                       _buildProfileSection(state),
+
+                      SizedBox(height: 16.h),
+
+                      // Verification & Limits Section
+                      _buildVerificationSection(),
 
                       SizedBox(height: 16.h),
 
@@ -942,6 +949,19 @@ class _SettingsViewState extends State<_SettingsView> {
           onTap: () {
             _showAboutDialog();
           },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVerificationSection() {
+    return _buildSection(
+      title: 'Verification & Limits',
+      icon: Icons.verified_user_outlined,
+      children: [
+        BlocProvider(
+          create: (_) => serviceLocator<KYCCubit>(),
+          child: const KYCSettingsTile(),
         ),
       ],
     );

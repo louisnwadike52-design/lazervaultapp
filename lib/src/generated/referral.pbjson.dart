@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: referral.proto
-//
-// @dart = 2.12
+// Generated from referral.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -58,8 +59,22 @@ const ReferralCode$json = {
     {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
     {'1': 'code', '3': 3, '4': 1, '5': 9, '10': 'code'},
     {'1': 'is_active', '3': 4, '4': 1, '5': 8, '10': 'isActive'},
-    {'1': 'created_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'created_at',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
   ],
 };
 
@@ -77,19 +92,82 @@ const ReferralTransaction$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 4, '10': 'id'},
     {'1': 'referrer_user_id', '3': 2, '4': 1, '5': 4, '10': 'referrerUserId'},
     {'1': 'referee_user_id', '3': 3, '4': 1, '5': 4, '10': 'refereeUserId'},
-    {'1': 'referral_code_used', '3': 4, '4': 1, '5': 9, '10': 'referralCodeUsed'},
-    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.ReferralStatus', '10': 'status'},
-    {'1': 'referrer_reward_amount', '3': 6, '4': 1, '5': 5, '10': 'referrerRewardAmount'},
-    {'1': 'referee_reward_amount', '3': 7, '4': 1, '5': 5, '10': 'refereeRewardAmount'},
+    {
+      '1': 'referral_code_used',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'referralCodeUsed'
+    },
+    {
+      '1': 'status',
+      '3': 5,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.ReferralStatus',
+      '10': 'status'
+    },
+    {
+      '1': 'referrer_reward_amount',
+      '3': 6,
+      '4': 1,
+      '5': 5,
+      '10': 'referrerRewardAmount'
+    },
+    {
+      '1': 'referee_reward_amount',
+      '3': 7,
+      '4': 1,
+      '5': 5,
+      '10': 'refereeRewardAmount'
+    },
     {'1': 'currency', '3': 8, '4': 1, '5': 9, '10': 'currency'},
-    {'1': 'created_at', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'completed_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completedAt'},
+    {
+      '1': 'created_at',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'completed_at',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'completedAt'
+    },
     {'1': 'failure_reason', '3': 11, '4': 1, '5': 9, '10': 'failureReason'},
-    {'1': 'referee_first_name', '3': 12, '4': 1, '5': 9, '10': 'refereeFirstName'},
-    {'1': 'referee_last_name', '3': 13, '4': 1, '5': 9, '10': 'refereeLastName'},
+    {
+      '1': 'referee_first_name',
+      '3': 12,
+      '4': 1,
+      '5': 9,
+      '10': 'refereeFirstName'
+    },
+    {
+      '1': 'referee_last_name',
+      '3': 13,
+      '4': 1,
+      '5': 9,
+      '10': 'refereeLastName'
+    },
     {'1': 'referee_username', '3': 14, '4': 1, '5': 9, '10': 'refereeUsername'},
-    {'1': 'referrer_username', '3': 15, '4': 1, '5': 9, '10': 'referrerUsername'},
-    {'1': 'referee_has_joined', '3': 16, '4': 1, '5': 8, '10': 'refereeHasJoined'},
+    {
+      '1': 'referrer_username',
+      '3': 15,
+      '4': 1,
+      '5': 9,
+      '10': 'referrerUsername'
+    },
+    {
+      '1': 'referee_has_joined',
+      '3': 16,
+      '4': 1,
+      '5': 8,
+      '10': 'refereeHasJoined'
+    },
   ],
 };
 
@@ -120,8 +198,22 @@ const CountryRewardConfig$json = {
     {'1': 'referrer_reward', '3': 4, '4': 1, '5': 5, '10': 'referrerReward'},
     {'1': 'referee_reward', '3': 5, '4': 1, '5': 5, '10': 'refereeReward'},
     {'1': 'is_active', '3': 6, '4': 1, '5': 8, '10': 'isActive'},
-    {'1': 'created_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'created_at',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
   ],
 };
 
@@ -139,11 +231,29 @@ const ReferralStats$json = {
   '1': 'ReferralStats',
   '2': [
     {'1': 'total_referrals', '3': 1, '4': 1, '5': 3, '10': 'totalReferrals'},
-    {'1': 'total_rewards_earned', '3': 2, '4': 1, '5': 5, '10': 'totalRewardsEarned'},
+    {
+      '1': 'total_rewards_earned',
+      '3': 2,
+      '4': 1,
+      '5': 5,
+      '10': 'totalRewardsEarned'
+    },
     {'1': 'pending_rewards', '3': 3, '4': 1, '5': 5, '10': 'pendingRewards'},
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
-    {'1': 'pending_referrals', '3': 5, '4': 1, '5': 5, '10': 'pendingReferrals'},
-    {'1': 'completed_referrals', '3': 6, '4': 1, '5': 5, '10': 'completedReferrals'},
+    {
+      '1': 'pending_referrals',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '10': 'pendingReferrals'
+    },
+    {
+      '1': 'completed_referrals',
+      '3': 6,
+      '4': 1,
+      '5': 5,
+      '10': 'completedReferrals'
+    },
   ],
 };
 
@@ -165,7 +275,13 @@ const LeaderboardEntry$json = {
     {'1': 'username', '3': 4, '4': 1, '5': 9, '10': 'username'},
     {'1': 'total_referrals', '3': 5, '4': 1, '5': 3, '10': 'totalReferrals'},
     {'1': 'rank', '3': 6, '4': 1, '5': 5, '10': 'rank'},
-    {'1': 'total_rewards_earned', '3': 7, '4': 1, '5': 5, '10': 'totalRewardsEarned'},
+    {
+      '1': 'total_rewards_earned',
+      '3': 7,
+      '4': 1,
+      '5': 5,
+      '10': 'totalRewardsEarned'
+    },
     {'1': 'currency', '3': 8, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'profile_picture', '3': 9, '4': 1, '5': 9, '10': 'profilePicture'},
   ],
@@ -187,10 +303,24 @@ const PointTransaction$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 4, '10': 'id'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
     {'1': 'points', '3': 3, '4': 1, '5': 5, '10': 'points'},
-    {'1': 'source', '3': 4, '4': 1, '5': 14, '6': '.pb.PointSource', '10': 'source'},
+    {
+      '1': 'source',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.PointSource',
+      '10': 'source'
+    },
     {'1': 'reference_id', '3': 5, '4': 1, '5': 9, '10': 'referenceId'},
     {'1': 'description', '3': 6, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'created_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'created_at',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
   ],
 };
 
@@ -245,8 +375,9 @@ const ValidateReferralCodeRequest$json = {
 };
 
 /// Descriptor for `ValidateReferralCodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List validateReferralCodeRequestDescriptor = $convert.base64Decode(
-    'ChtWYWxpZGF0ZVJlZmVycmFsQ29kZVJlcXVlc3QSEgoEY29kZRgBIAEoCVIEY29kZQ==');
+final $typed_data.Uint8List validateReferralCodeRequestDescriptor =
+    $convert.base64Decode(
+        'ChtWYWxpZGF0ZVJlZmVycmFsQ29kZVJlcXVlc3QSEgoEY29kZRgBIAEoCVIEY29kZQ==');
 
 @$core.Deprecated('Use validateReferralCodeResponseDescriptor instead')
 const ValidateReferralCodeResponse$json = {
@@ -258,9 +389,10 @@ const ValidateReferralCodeResponse$json = {
 };
 
 /// Descriptor for `ValidateReferralCodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List validateReferralCodeResponseDescriptor = $convert.base64Decode(
-    'ChxWYWxpZGF0ZVJlZmVycmFsQ29kZVJlc3BvbnNlEhkKCGlzX3ZhbGlkGAEgASgIUgdpc1ZhbG'
-    'lkEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List validateReferralCodeResponseDescriptor =
+    $convert.base64Decode(
+        'ChxWYWxpZGF0ZVJlZmVycmFsQ29kZVJlc3BvbnNlEhkKCGlzX3ZhbGlkGAEgASgIUgdpc1ZhbG'
+        'lkEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use getMyReferralCodeRequestDescriptor instead')
 const GetMyReferralCodeRequest$json = {
@@ -268,21 +400,29 @@ const GetMyReferralCodeRequest$json = {
 };
 
 /// Descriptor for `GetMyReferralCodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyReferralCodeRequestDescriptor = $convert.base64Decode(
-    'ChhHZXRNeVJlZmVycmFsQ29kZVJlcXVlc3Q=');
+final $typed_data.Uint8List getMyReferralCodeRequestDescriptor =
+    $convert.base64Decode('ChhHZXRNeVJlZmVycmFsQ29kZVJlcXVlc3Q=');
 
 @$core.Deprecated('Use getMyReferralCodeResponseDescriptor instead')
 const GetMyReferralCodeResponse$json = {
   '1': 'GetMyReferralCodeResponse',
   '2': [
-    {'1': 'referral_code', '3': 1, '4': 1, '5': 11, '6': '.pb.ReferralCode', '10': 'referralCode'},
+    {
+      '1': 'referral_code',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ReferralCode',
+      '10': 'referralCode'
+    },
   ],
 };
 
 /// Descriptor for `GetMyReferralCodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyReferralCodeResponseDescriptor = $convert.base64Decode(
-    'ChlHZXRNeVJlZmVycmFsQ29kZVJlc3BvbnNlEjUKDXJlZmVycmFsX2NvZGUYASABKAsyEC5wYi'
-    '5SZWZlcnJhbENvZGVSDHJlZmVycmFsQ29kZQ==');
+final $typed_data.Uint8List getMyReferralCodeResponseDescriptor =
+    $convert.base64Decode(
+        'ChlHZXRNeVJlZmVycmFsQ29kZVJlc3BvbnNlEjUKDXJlZmVycmFsX2NvZGUYASABKAsyEC5wYi'
+        '5SZWZlcnJhbENvZGVSDHJlZmVycmFsQ29kZQ==');
 
 @$core.Deprecated('Use getMyReferralStatsRequestDescriptor instead')
 const GetMyReferralStatsRequest$json = {
@@ -290,21 +430,29 @@ const GetMyReferralStatsRequest$json = {
 };
 
 /// Descriptor for `GetMyReferralStatsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyReferralStatsRequestDescriptor = $convert.base64Decode(
-    'ChlHZXRNeVJlZmVycmFsU3RhdHNSZXF1ZXN0');
+final $typed_data.Uint8List getMyReferralStatsRequestDescriptor =
+    $convert.base64Decode('ChlHZXRNeVJlZmVycmFsU3RhdHNSZXF1ZXN0');
 
 @$core.Deprecated('Use getMyReferralStatsResponseDescriptor instead')
 const GetMyReferralStatsResponse$json = {
   '1': 'GetMyReferralStatsResponse',
   '2': [
-    {'1': 'stats', '3': 1, '4': 1, '5': 11, '6': '.pb.ReferralStats', '10': 'stats'},
+    {
+      '1': 'stats',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ReferralStats',
+      '10': 'stats'
+    },
   ],
 };
 
 /// Descriptor for `GetMyReferralStatsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyReferralStatsResponseDescriptor = $convert.base64Decode(
-    'ChpHZXRNeVJlZmVycmFsU3RhdHNSZXNwb25zZRInCgVzdGF0cxgBIAEoCzIRLnBiLlJlZmVycm'
-    'FsU3RhdHNSBXN0YXRz');
+final $typed_data.Uint8List getMyReferralStatsResponseDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRNeVJlZmVycmFsU3RhdHNSZXNwb25zZRInCgVzdGF0cxgBIAEoCzIRLnBiLlJlZmVycm'
+        'FsU3RhdHNSBXN0YXRz');
 
 @$core.Deprecated('Use getMyReferralsRequestDescriptor instead')
 const GetMyReferralsRequest$json = {
@@ -325,7 +473,14 @@ final $typed_data.Uint8List getMyReferralsRequestDescriptor = $convert.base64Dec
 const GetMyReferralsResponse$json = {
   '1': 'GetMyReferralsResponse',
   '2': [
-    {'1': 'referrals', '3': 1, '4': 3, '5': 11, '6': '.pb.ReferralTransaction', '10': 'referrals'},
+    {
+      '1': 'referrals',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.ReferralTransaction',
+      '10': 'referrals'
+    },
     {'1': 'page', '3': 2, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 3, '4': 1, '5': 5, '10': 'pageSize'},
     {'1': 'total_count', '3': 4, '4': 1, '5': 5, '10': 'totalCount'},
@@ -347,21 +502,30 @@ const GetReferralLeaderboardRequest$json = {
 };
 
 /// Descriptor for `GetReferralLeaderboardRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getReferralLeaderboardRequestDescriptor = $convert.base64Decode(
-    'Ch1HZXRSZWZlcnJhbExlYWRlcmJvYXJkUmVxdWVzdBIUCgVsaW1pdBgBIAEoBVIFbGltaXQ=');
+final $typed_data.Uint8List getReferralLeaderboardRequestDescriptor =
+    $convert.base64Decode(
+        'Ch1HZXRSZWZlcnJhbExlYWRlcmJvYXJkUmVxdWVzdBIUCgVsaW1pdBgBIAEoBVIFbGltaXQ=');
 
 @$core.Deprecated('Use getReferralLeaderboardResponseDescriptor instead')
 const GetReferralLeaderboardResponse$json = {
   '1': 'GetReferralLeaderboardResponse',
   '2': [
-    {'1': 'entries', '3': 1, '4': 3, '5': 11, '6': '.pb.LeaderboardEntry', '10': 'entries'},
+    {
+      '1': 'entries',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.LeaderboardEntry',
+      '10': 'entries'
+    },
   ],
 };
 
 /// Descriptor for `GetReferralLeaderboardResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getReferralLeaderboardResponseDescriptor = $convert.base64Decode(
-    'Ch5HZXRSZWZlcnJhbExlYWRlcmJvYXJkUmVzcG9uc2USLgoHZW50cmllcxgBIAMoCzIULnBiLk'
-    'xlYWRlcmJvYXJkRW50cnlSB2VudHJpZXM=');
+final $typed_data.Uint8List getReferralLeaderboardResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRSZWZlcnJhbExlYWRlcmJvYXJkUmVzcG9uc2USLgoHZW50cmllcxgBIAMoCzIULnBiLk'
+        'xlYWRlcmJvYXJkRW50cnlSB2VudHJpZXM=');
 
 @$core.Deprecated('Use getCountryRewardConfigRequestDescriptor instead')
 const GetCountryRewardConfigRequest$json = {
@@ -372,22 +536,31 @@ const GetCountryRewardConfigRequest$json = {
 };
 
 /// Descriptor for `GetCountryRewardConfigRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCountryRewardConfigRequestDescriptor = $convert.base64Decode(
-    'Ch1HZXRDb3VudHJ5UmV3YXJkQ29uZmlnUmVxdWVzdBIhCgxjb3VudHJ5X2NvZGUYASABKAlSC2'
-    'NvdW50cnlDb2Rl');
+final $typed_data.Uint8List getCountryRewardConfigRequestDescriptor =
+    $convert.base64Decode(
+        'Ch1HZXRDb3VudHJ5UmV3YXJkQ29uZmlnUmVxdWVzdBIhCgxjb3VudHJ5X2NvZGUYASABKAlSC2'
+        'NvdW50cnlDb2Rl');
 
 @$core.Deprecated('Use getCountryRewardConfigResponseDescriptor instead')
 const GetCountryRewardConfigResponse$json = {
   '1': 'GetCountryRewardConfigResponse',
   '2': [
-    {'1': 'config', '3': 1, '4': 1, '5': 11, '6': '.pb.CountryRewardConfig', '10': 'config'},
+    {
+      '1': 'config',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.CountryRewardConfig',
+      '10': 'config'
+    },
   ],
 };
 
 /// Descriptor for `GetCountryRewardConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCountryRewardConfigResponseDescriptor = $convert.base64Decode(
-    'Ch5HZXRDb3VudHJ5UmV3YXJkQ29uZmlnUmVzcG9uc2USLwoGY29uZmlnGAEgASgLMhcucGIuQ2'
-    '91bnRyeVJld2FyZENvbmZpZ1IGY29uZmln');
+final $typed_data.Uint8List getCountryRewardConfigResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5HZXRDb3VudHJ5UmV3YXJkQ29uZmlnUmVzcG9uc2USLwoGY29uZmlnGAEgASgLMhcucGIuQ2'
+        '91bnRyeVJld2FyZENvbmZpZ1IGY29uZmln');
 
 @$core.Deprecated('Use recordReferralRequestDescriptor instead')
 const RecordReferralRequest$json = {
@@ -409,7 +582,14 @@ const RecordReferralResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'transaction', '3': 3, '4': 1, '5': 11, '6': '.pb.ReferralTransaction', '10': 'transaction'},
+    {
+      '1': 'transaction',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.ReferralTransaction',
+      '10': 'transaction'
+    },
   ],
 };
 
@@ -428,9 +608,10 @@ const CreditReferralRewardsRequest$json = {
 };
 
 /// Descriptor for `CreditReferralRewardsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List creditReferralRewardsRequestDescriptor = $convert.base64Decode(
-    'ChxDcmVkaXRSZWZlcnJhbFJld2FyZHNSZXF1ZXN0EiUKDnRyYW5zYWN0aW9uX2lkGAEgASgEUg'
-    '10cmFuc2FjdGlvbklk');
+final $typed_data.Uint8List creditReferralRewardsRequestDescriptor =
+    $convert.base64Decode(
+        'ChxDcmVkaXRSZWZlcnJhbFJld2FyZHNSZXF1ZXN0EiUKDnRyYW5zYWN0aW9uX2lkGAEgASgEUg'
+        '10cmFuc2FjdGlvbklk');
 
 @$core.Deprecated('Use creditReferralRewardsResponseDescriptor instead')
 const CreditReferralRewardsResponse$json = {
@@ -442,9 +623,10 @@ const CreditReferralRewardsResponse$json = {
 };
 
 /// Descriptor for `CreditReferralRewardsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List creditReferralRewardsResponseDescriptor = $convert.base64Decode(
-    'Ch1DcmVkaXRSZWZlcnJhbFJld2FyZHNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
-    'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List creditReferralRewardsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1DcmVkaXRSZWZlcnJhbFJld2FyZHNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+        'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use getMyPointsBalanceRequestDescriptor instead')
 const GetMyPointsBalanceRequest$json = {
@@ -452,21 +634,29 @@ const GetMyPointsBalanceRequest$json = {
 };
 
 /// Descriptor for `GetMyPointsBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyPointsBalanceRequestDescriptor = $convert.base64Decode(
-    'ChlHZXRNeVBvaW50c0JhbGFuY2VSZXF1ZXN0');
+final $typed_data.Uint8List getMyPointsBalanceRequestDescriptor =
+    $convert.base64Decode('ChlHZXRNeVBvaW50c0JhbGFuY2VSZXF1ZXN0');
 
 @$core.Deprecated('Use getMyPointsBalanceResponseDescriptor instead')
 const GetMyPointsBalanceResponse$json = {
   '1': 'GetMyPointsBalanceResponse',
   '2': [
-    {'1': 'balance', '3': 1, '4': 1, '5': 11, '6': '.pb.PointsBalance', '10': 'balance'},
+    {
+      '1': 'balance',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.PointsBalance',
+      '10': 'balance'
+    },
   ],
 };
 
 /// Descriptor for `GetMyPointsBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyPointsBalanceResponseDescriptor = $convert.base64Decode(
-    'ChpHZXRNeVBvaW50c0JhbGFuY2VSZXNwb25zZRIrCgdiYWxhbmNlGAEgASgLMhEucGIuUG9pbn'
-    'RzQmFsYW5jZVIHYmFsYW5jZQ==');
+final $typed_data.Uint8List getMyPointsBalanceResponseDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRNeVBvaW50c0JhbGFuY2VSZXNwb25zZRIrCgdiYWxhbmNlGAEgASgLMhEucGIuUG9pbn'
+        'RzQmFsYW5jZVIHYmFsYW5jZQ==');
 
 @$core.Deprecated('Use getMyPointsHistoryRequestDescriptor instead')
 const GetMyPointsHistoryRequest$json = {
@@ -478,15 +668,23 @@ const GetMyPointsHistoryRequest$json = {
 };
 
 /// Descriptor for `GetMyPointsHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyPointsHistoryRequestDescriptor = $convert.base64Decode(
-    'ChlHZXRNeVBvaW50c0hpc3RvcnlSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGwoJcGFnZV'
-    '9zaXplGAIgASgFUghwYWdlU2l6ZQ==');
+final $typed_data.Uint8List getMyPointsHistoryRequestDescriptor =
+    $convert.base64Decode(
+        'ChlHZXRNeVBvaW50c0hpc3RvcnlSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGwoJcGFnZV'
+        '9zaXplGAIgASgFUghwYWdlU2l6ZQ==');
 
 @$core.Deprecated('Use getMyPointsHistoryResponseDescriptor instead')
 const GetMyPointsHistoryResponse$json = {
   '1': 'GetMyPointsHistoryResponse',
   '2': [
-    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.pb.PointTransaction', '10': 'transactions'},
+    {
+      '1': 'transactions',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.PointTransaction',
+      '10': 'transactions'
+    },
     {'1': 'page', '3': 2, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 3, '4': 1, '5': 5, '10': 'pageSize'},
     {'1': 'total_count', '3': 4, '4': 1, '5': 5, '10': 'totalCount'},
@@ -506,19 +704,26 @@ const GetPointsConfigRequest$json = {
 };
 
 /// Descriptor for `GetPointsConfigRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPointsConfigRequestDescriptor = $convert.base64Decode(
-    'ChZHZXRQb2ludHNDb25maWdSZXF1ZXN0');
+final $typed_data.Uint8List getPointsConfigRequestDescriptor =
+    $convert.base64Decode('ChZHZXRQb2ludHNDb25maWdSZXF1ZXN0');
 
 @$core.Deprecated('Use getPointsConfigResponseDescriptor instead')
 const GetPointsConfigResponse$json = {
   '1': 'GetPointsConfigResponse',
   '2': [
-    {'1': 'configs', '3': 1, '4': 3, '5': 11, '6': '.pb.PointsConfigEntry', '10': 'configs'},
+    {
+      '1': 'configs',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.PointsConfigEntry',
+      '10': 'configs'
+    },
   ],
 };
 
 /// Descriptor for `GetPointsConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPointsConfigResponseDescriptor = $convert.base64Decode(
-    'ChdHZXRQb2ludHNDb25maWdSZXNwb25zZRIvCgdjb25maWdzGAEgAygLMhUucGIuUG9pbnRzQ2'
-    '9uZmlnRW50cnlSB2NvbmZpZ3M=');
-
+final $typed_data.Uint8List getPointsConfigResponseDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRQb2ludHNDb25maWdSZXNwb25zZRIvCgdjb25maWdzGAEgAygLMhUucGIuUG9pbnRzQ2'
+        '9uZmlnRW50cnlSB2NvbmZpZ3M=');

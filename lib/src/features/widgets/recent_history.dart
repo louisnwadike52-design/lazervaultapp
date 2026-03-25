@@ -55,7 +55,7 @@ class _RecentHistoryState extends State<RecentHistory> {
     return BlocProvider.value(
       value: _cubit,
       child: Container(
-        padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w, 12.w),
+        padding: EdgeInsets.fromLTRB(20.w, 14.w, 20.w, 10.w),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20.r),

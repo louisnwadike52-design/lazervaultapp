@@ -6,6 +6,7 @@ class MicroserviceChatMessageEntity extends Equatable {
   final DateTime timestamp;
   final String? serviceRoutedTo;
   final Map<String, dynamic>? sentiment;
+  final Map<String, dynamic>? metadata; // receipt_data, visual_feedback, etc.
   final String? mediaType; // 'image' | 'voice' | null
   final String? mediaUrl; // Server URL for stored media
   final String? localMediaPath; // Local file path (before upload / for preview)
@@ -18,6 +19,7 @@ class MicroserviceChatMessageEntity extends Equatable {
     required this.timestamp,
     this.serviceRoutedTo,
     this.sentiment,
+    this.metadata,
     this.mediaType,
     this.mediaUrl,
     this.localMediaPath,
@@ -32,6 +34,7 @@ class MicroserviceChatMessageEntity extends Equatable {
         timestamp,
         serviceRoutedTo,
         sentiment,
+        metadata,
         mediaType,
         mediaUrl,
         localMediaPath,
@@ -45,6 +48,7 @@ class MicroserviceChatMessageEntity extends Equatable {
     DateTime? timestamp,
     String? serviceRoutedTo,
     Map<String, dynamic>? sentiment,
+    Map<String, dynamic>? metadata,
     String? mediaType,
     String? mediaUrl,
     String? localMediaPath,
@@ -57,6 +61,7 @@ class MicroserviceChatMessageEntity extends Equatable {
       timestamp: timestamp ?? this.timestamp,
       serviceRoutedTo: serviceRoutedTo ?? this.serviceRoutedTo,
       sentiment: sentiment ?? this.sentiment,
+      metadata: metadata ?? this.metadata,
       mediaType: mediaType ?? this.mediaType,
       mediaUrl: mediaUrl ?? this.mediaUrl,
       localMediaPath: localMediaPath ?? this.localMediaPath,

@@ -261,7 +261,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
                   gradient: LinearGradient(
                     colors: [
                       const Color(0xFF3B82F6),
-                      const Color(0xFF8B5CF6),
+                      const Color.fromARGB(255, 78, 3, 208),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(25.r),
@@ -337,7 +337,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
         gradient: LinearGradient(
           colors: [
             const Color(0xFF3B82F6),
-            const Color(0xFF8B5CF6),
+            const Color.fromARGB(255, 78, 3, 208),
           ],
         ),
         borderRadius: BorderRadius.circular(25.r),
@@ -666,7 +666,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen>
               height: 56.h,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                 ),
                 borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [

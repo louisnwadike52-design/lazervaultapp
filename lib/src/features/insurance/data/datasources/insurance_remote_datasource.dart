@@ -4,6 +4,7 @@ import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../../domain/entities/insurance_product_entity.dart';
+import '../../domain/entities/mycover_management_entities.dart';
 
 abstract class InsuranceRemoteDataSource {
   Future<List<Insurance>> getUserInsurances({
@@ -161,6 +162,97 @@ abstract class InsuranceRemoteDataSource {
     required String accessToken,
     required String utilityId,
     String? query,
+  });
+
+  // MyCover Management APIs
+  Future<({List<MyCoverCustomer> customers, int total})> getMyCoverCustomers({
+    required String accessToken,
+    int page = 1,
+    int limit = 20,
+  });
+
+  Future<MyCoverCustomer> getMyCoverCustomerById({
+    required String accessToken,
+    required String customerId,
+  });
+
+  Future<({List<MyCoverPolicyDetail> policies, int total})> getMyCoverCustomerPolicies({
+    required String accessToken,
+    required String customerId,
+    int page = 1,
+    int limit = 20,
+  });
+
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverCustomerPurchases({
+    required String accessToken,
+    required String customerId,
+    int page = 1,
+    int limit = 20,
+  });
+
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverPurchases({
+    required String accessToken,
+    int page = 1,
+    int limit = 20,
+  });
+
+  Future<MyCoverPurchase> getMyCoverPurchaseById({
+    required String accessToken,
+    required String purchaseId,
+  });
+
+  Future<({List<MyCoverProviderClaim> claims, int total})> getMyCoverClaims({
+    required String accessToken,
+    String? status,
+    int page = 1,
+    int limit = 20,
+  });
+
+  Future<MyCoverProviderClaim> getMyCoverClaimById({
+    required String accessToken,
+    required String claimId,
+  });
+
+  Future<({String claimId, String claimNumber, String status})> fileCreditLifeClaim({
+    required String accessToken,
+    required String policyId,
+    required String claimType,
+    required String description,
+    required double amount,
+    List<String>? documents,
+    Map<String, String>? additionalInfo,
+  });
+
+  Future<List<AuxiliaryItem>> getInsuranceStates({
+    required String accessToken,
+  });
+
+  Future<List<AuxiliaryItem>> getInsuranceVehicleMakes({
+    required String accessToken,
+  });
+
+  Future<List<MyCoverNotificationPref>> getMyCoverNotificationPreferences({
+    required String accessToken,
+  });
+
+  Future<void> updateMyCoverNotificationPreferences({
+    required List<MyCoverNotificationPref> preferences,
+    required String accessToken,
+  });
+
+  Future<MyCoverWalletBalance> getMyCoverWalletBalance({
+    required String accessToken,
+  });
+
+  Future<InsuranceRefund> requestInsuranceRefund({
+    required String policyReference,
+    required String reason,
+    required String accessToken,
+  });
+
+  Future<InsuranceRefund> getInsuranceRefundStatus({
+    required String policyReference,
+    required String accessToken,
   });
 }
 
@@ -673,6 +765,15 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
 
   // Conversion Helpers
 
+  DateTime _safeParseDate(String dateStr, [DateTime? fallback]) {
+    if (dateStr.isEmpty) return fallback ?? DateTime.now();
+    try {
+      return DateTime.parse(dateStr);
+    } catch (_) {
+      return fallback ?? DateTime.now();
+    }
+  }
+
   Insurance _insuranceFromProto(pb.Insurance proto) {
     return Insurance(
       id: proto.id,
@@ -686,16 +787,16 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       premiumAmount: proto.premiumAmount,
       coverageAmount: proto.coverageAmount,
       currency: proto.currency,
-      startDate: DateTime.parse(proto.startDate),
-      endDate: DateTime.parse(proto.endDate),
-      nextPaymentDate: DateTime.parse(proto.nextPaymentDate),
+      startDate: _safeParseDate(proto.startDate),
+      endDate: _safeParseDate(proto.endDate),
+      nextPaymentDate: _safeParseDate(proto.nextPaymentDate),
       status: _parseInsuranceStatus(proto.status),
       beneficiaries: proto.beneficiaries.toList(),
       coverageDetails: Map<String, dynamic>.from(proto.coverageDetails),
       description: proto.description.isEmpty ? null : proto.description,
       userId: proto.userId,
-      createdAt: DateTime.parse(proto.createdAt),
-      updatedAt: DateTime.parse(proto.updatedAt),
+      createdAt: _safeParseDate(proto.createdAt),
+      updatedAt: _safeParseDate(proto.updatedAt),
     );
   }
 
@@ -735,15 +836,15 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       status: _parsePaymentStatus(proto.status),
       transactionId: proto.transactionId.isEmpty ? null : proto.transactionId,
       referenceNumber: proto.referenceNumber.isEmpty ? null : proto.referenceNumber,
-      paymentDate: proto.paymentDate.isEmpty ? DateTime.now() : DateTime.parse(proto.paymentDate),
-      dueDate: DateTime.parse(proto.dueDate),
-      processedAt: proto.processedAt.isEmpty ? null : DateTime.parse(proto.processedAt),
+      paymentDate: _safeParseDate(proto.paymentDate),
+      dueDate: _safeParseDate(proto.dueDate),
+      processedAt: proto.processedAt.isEmpty ? null : _safeParseDate(proto.processedAt),
       paymentDetails: proto.paymentDetails.isEmpty ? {} : Map<String, dynamic>.from(proto.paymentDetails),
       failureReason: proto.failureReason.isEmpty ? null : proto.failureReason,
       receiptUrl: proto.receiptUrl.isEmpty ? null : proto.receiptUrl,
       userId: proto.userId,
-      createdAt: DateTime.parse(proto.createdAt),
-      updatedAt: DateTime.parse(proto.updatedAt),
+      createdAt: _safeParseDate(proto.createdAt),
+      updatedAt: _safeParseDate(proto.updatedAt),
     );
   }
 
@@ -782,17 +883,17 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       claimAmount: proto.claimAmount,
       approvedAmount: proto.approvedAmount == 0 ? null : proto.approvedAmount,
       currency: proto.currency,
-      incidentDate: DateTime.parse(proto.incidentDate),
+      incidentDate: _safeParseDate(proto.incidentDate),
       incidentLocation: proto.incidentLocation,
       attachments: proto.attachments.toList(),
       documents: proto.documents.toList(),
       additionalInfo: Map<String, dynamic>.from(proto.additionalInfo),
       rejectionReason: proto.rejectionReason.isEmpty ? null : proto.rejectionReason,
-      settlementDate: proto.settlementDate.isEmpty ? null : DateTime.parse(proto.settlementDate),
+      settlementDate: proto.settlementDate.isEmpty ? null : _safeParseDate(proto.settlementDate),
       settlementDetails: proto.settlementDetails.isEmpty ? null : proto.settlementDetails,
       userId: proto.userId,
-      createdAt: DateTime.parse(proto.createdAt),
-      updatedAt: DateTime.parse(proto.updatedAt),
+      createdAt: _safeParseDate(proto.createdAt),
+      updatedAt: _safeParseDate(proto.updatedAt),
     );
   }
 
@@ -828,6 +929,286 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     } catch (e) {
       return InsuranceType.health; // Default fallback
     }
+  }
+
+  // ===== MyCover Management API Implementations =====
+
+  @override
+  Future<({List<MyCoverCustomer> customers, int total})> getMyCoverCustomers({
+    required String accessToken,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverCustomers(
+      pb.GetMyCoverCustomersRequest(page: page, limit: limit),
+      options: options,
+    );
+    return (
+      customers: response.customers.map(_protoToMyCoverCustomer).toList(),
+      total: response.total,
+    );
+  }
+
+  @override
+  Future<MyCoverCustomer> getMyCoverCustomerById({
+    required String accessToken,
+    required String customerId,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverCustomerById(
+      pb.GetMyCoverCustomerByIdRequest(customerId: customerId),
+      options: options,
+    );
+    return _protoToMyCoverCustomer(response.customer);
+  }
+
+  @override
+  Future<({List<MyCoverPolicyDetail> policies, int total})> getMyCoverCustomerPolicies({
+    required String accessToken,
+    required String customerId,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverCustomerPolicies(
+      pb.GetMyCoverCustomerPoliciesRequest(customerId: customerId, page: page, limit: limit),
+      options: options,
+    );
+    return (
+      policies: response.policies.map(_protoToMyCoverPolicyDetail).toList(),
+      total: response.total,
+    );
+  }
+
+  @override
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverCustomerPurchases({
+    required String accessToken,
+    required String customerId,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverCustomerPurchases(
+      pb.GetMyCoverCustomerPurchasesRequest(customerId: customerId, page: page, limit: limit),
+      options: options,
+    );
+    return (
+      purchases: response.purchases.map(_protoToMyCoverPurchase).toList(),
+      total: response.total,
+    );
+  }
+
+  @override
+  Future<({List<MyCoverPurchase> purchases, int total})> getMyCoverPurchases({
+    required String accessToken,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverPurchases(
+      pb.GetMyCoverPurchasesRequest(page: page, limit: limit),
+      options: options,
+    );
+    return (
+      purchases: response.purchases.map(_protoToMyCoverPurchase).toList(),
+      total: response.total,
+    );
+  }
+
+  @override
+  Future<MyCoverPurchase> getMyCoverPurchaseById({
+    required String accessToken,
+    required String purchaseId,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverPurchaseById(
+      pb.GetMyCoverPurchaseByIdRequest(purchaseId: purchaseId),
+      options: options,
+    );
+    return _protoToMyCoverPurchase(response.purchase);
+  }
+
+  @override
+  Future<({List<MyCoverProviderClaim> claims, int total})> getMyCoverClaims({
+    required String accessToken,
+    String? status,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverClaims(
+      pb.GetMyCoverClaimsRequest(status: status ?? '', page: page, limit: limit),
+      options: options,
+    );
+    return (
+      claims: response.claims.map(_protoToMyCoverProviderClaim).toList(),
+      total: response.total,
+    );
+  }
+
+  @override
+  Future<MyCoverProviderClaim> getMyCoverClaimById({
+    required String accessToken,
+    required String claimId,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverClaimById(
+      pb.GetMyCoverClaimByIdRequest(claimId: claimId),
+      options: options,
+    );
+    return _protoToMyCoverProviderClaim(response.claim);
+  }
+
+  @override
+  Future<({String claimId, String claimNumber, String status})> fileCreditLifeClaim({
+    required String accessToken,
+    required String policyId,
+    required String claimType,
+    required String description,
+    required double amount,
+    List<String>? documents,
+    Map<String, String>? additionalInfo,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final req = pb.FileCreditLifeClaimRequest(
+      policyId: policyId,
+      claimType: claimType,
+      description: description,
+      amount: amount,
+      documents: documents ?? [],
+    );
+    if (additionalInfo != null && additionalInfo.isNotEmpty) {
+      req.additionalInfo.addAll(additionalInfo);
+    }
+    final response = await _client.fileCreditLifeClaim(req, options: options);
+    return (
+      claimId: response.claimId,
+      claimNumber: response.claimNumber,
+      status: response.status,
+    );
+  }
+
+  @override
+  Future<List<AuxiliaryItem>> getInsuranceStates({
+    required String accessToken,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsuranceStates(
+      pb.GetInsuranceStatesRequest(),
+      options: options,
+    );
+    return response.states
+        .map((s) => AuxiliaryItem(label: s.label, value: s.value))
+        .toList();
+  }
+
+  @override
+  Future<List<AuxiliaryItem>> getInsuranceVehicleMakes({
+    required String accessToken,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsuranceVehicleMakes(
+      pb.GetInsuranceVehicleMakesRequest(),
+      options: options,
+    );
+    return response.makes
+        .map((m) => AuxiliaryItem(label: m.label, value: m.value))
+        .toList();
+  }
+
+  // ===== MyCover Proto Converters =====
+
+  MyCoverCustomer _protoToMyCoverCustomer(pb.MyCoverCustomerInfo c) {
+    return MyCoverCustomer(
+      id: c.id,
+      firstName: c.firstName,
+      lastName: c.lastName,
+      email: c.email,
+      phoneNumber: c.phoneNumber,
+      gender: c.gender,
+      dateOfBirth: c.dateOfBirth,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    );
+  }
+
+  MyCoverPurchase _protoToMyCoverPurchase(pb.MyCoverPurchaseInfo p) {
+    return MyCoverPurchase(
+      id: p.id,
+      appMode: p.appMode,
+      isRenewal: p.isRenewal,
+      amount: p.amount,
+      customerId: p.customerId,
+      distributorId: p.distributorId,
+      paymentChannel: p.paymentChannel,
+      paymentOption: p.paymentOption,
+      policyId: p.policyId,
+      productCategoryId: p.productCategoryId,
+      productId: p.productId,
+      providerId: p.providerId,
+      countryId: p.countryId,
+      currencyId: p.currencyId,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+      customerName: p.customerName,
+      customerEmail: p.customerEmail,
+      customerPhone: p.customerPhone,
+      policyNumber: p.policyNumber,
+      certificateUrl: p.certificateUrl,
+      policyIsActive: p.policyIsActive,
+      policyAmount: p.policyAmount,
+      providerName: p.providerName,
+      productName: p.productName,
+      productCategoryName: p.productCategoryName,
+    );
+  }
+
+  MyCoverPolicyDetail _protoToMyCoverPolicyDetail(pb.MyCoverPolicyDetailInfo p) {
+    return MyCoverPolicyDetail(
+      id: p.id,
+      appMode: p.appMode,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      email: p.email,
+      phoneNumber: p.phoneNumber,
+      dateOfBirth: p.dateOfBirth,
+      activationDate: p.activationDate,
+      startDate: p.startDate,
+      expirationDate: p.expirationDate,
+      amount: p.amount,
+      isActive: p.isActive,
+      isSubmittedToProvider: p.isSubmittedToProvider,
+      customerId: p.customerId,
+      productId: p.productId,
+      productCategoryId: p.productCategoryId,
+      providerId: p.providerId,
+      purchaseId: p.purchaseId,
+      policyNumber: p.policyNumber,
+      certificateUrl: p.certificateUrl,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+      providerName: p.providerName,
+      productName: p.productName,
+    );
+  }
+
+  MyCoverProviderClaim _protoToMyCoverProviderClaim(pb.MyCoverClaimInfo c) {
+    return MyCoverProviderClaim(
+      id: c.id,
+      status: c.status,
+      type: c.type,
+      amount: c.amount,
+      description: c.description,
+      policyId: c.policyId,
+      customerId: c.customerId,
+      claimNumber: c.claimNumber,
+      documents: c.documents.toList(),
+      rejectionReason: c.rejectionReason,
+      approvedAmount: c.approvedAmount,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    );
   }
 
   InsuranceStatus _parseInsuranceStatus(String status) {
@@ -868,5 +1249,107 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     } catch (e) {
       return ClaimStatus.submitted; // Default fallback
     }
+  }
+
+  @override
+  Future<List<MyCoverNotificationPref>> getMyCoverNotificationPreferences({
+    required String accessToken,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverNotificationPreferences(
+      pb.GetMyCoverNotificationPreferencesRequest(),
+      options: options,
+    );
+    return response.preferences
+        .map((p) => MyCoverNotificationPref(
+              key: p.key,
+              category: p.category,
+              label: p.label,
+              description: p.description,
+              enabled: p.enabled,
+            ))
+        .toList();
+  }
+
+  @override
+  Future<void> updateMyCoverNotificationPreferences({
+    required List<MyCoverNotificationPref> preferences,
+    required String accessToken,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final protoPrefs = preferences
+        .map((p) => pb.MyCoverNotificationPreference(
+              key: p.key,
+              category: p.category,
+              label: p.label,
+              description: p.description,
+              enabled: p.enabled,
+            ))
+        .toList();
+    await _client.updateMyCoverNotificationPreferences(
+      pb.UpdateMyCoverNotificationPreferencesRequest(preferences: protoPrefs),
+      options: options,
+    );
+  }
+
+  @override
+  Future<MyCoverWalletBalance> getMyCoverWalletBalance({
+    required String accessToken,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getMyCoverWalletBalance(
+      pb.GetMyCoverWalletBalanceRequest(),
+      options: options,
+    );
+    return MyCoverWalletBalance(
+      balance: response.balance,
+      currency: response.currency.isNotEmpty ? response.currency : 'NGN',
+    );
+  }
+
+  @override
+  Future<InsuranceRefund> requestInsuranceRefund({
+    required String policyReference,
+    required String reason,
+    required String accessToken,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.requestInsuranceRefund(
+      pb.RequestInsuranceRefundRequest(
+        policyReference: policyReference,
+        reason: reason,
+      ),
+      options: options,
+    );
+    return _protoToInsuranceRefund(response.refund);
+  }
+
+  @override
+  Future<InsuranceRefund> getInsuranceRefundStatus({
+    required String policyReference,
+    required String accessToken,
+  }) async {
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsuranceRefundStatus(
+      pb.GetInsuranceRefundStatusRequest(policyReference: policyReference),
+      options: options,
+    );
+    return _protoToInsuranceRefund(response.refund);
+  }
+
+  InsuranceRefund _protoToInsuranceRefund(pb.InsuranceRefundInfo r) {
+    return InsuranceRefund(
+      refundId: r.refundId,
+      policyReference: r.policyReference,
+      status: r.status,
+      amount: r.amount,
+      currency: r.currency.isNotEmpty ? r.currency : 'NGN',
+      providerRefunded: r.providerRefunded,
+      walletCredited: r.walletCredited,
+      reason: r.reason,
+      failureReason: r.failureReason,
+      initiatedAt: r.initiatedAt,
+      completedAt: r.completedAt,
+    );
   }
 }

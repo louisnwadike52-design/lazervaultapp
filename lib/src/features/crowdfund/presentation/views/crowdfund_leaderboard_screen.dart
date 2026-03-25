@@ -93,33 +93,33 @@ class _CrowdfundLeaderboardScreenState
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Get.back(),
             child: Container(
-              width: 44.w,
-              height: 44.w,
+              width: 38.w,
+              height: 38.w,
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(22.r),
+                borderRadius: BorderRadius.circular(19.r),
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
                 color: Colors.white,
-                size: 18.sp,
+                size: 16.sp,
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               'Leaderboard',
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 24.sp,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -131,7 +131,7 @@ class _CrowdfundLeaderboardScreenState
 
   Widget _buildTabBar() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),

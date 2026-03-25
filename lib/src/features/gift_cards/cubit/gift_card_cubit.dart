@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
@@ -18,6 +19,17 @@ class GiftCardCubit extends Cubit<GiftCardState> {
   final MutationQueue _mutationQueue;
   final Debouncer _searchDebouncer = Debouncer.search();
 
+  // Pagination state for brands
+  List<GiftCardBrand> _accumulatedBrands = [];
+  int _currentPage = 0;
+  bool _hasNextPage = false;
+  int _totalPages = 1;
+
+  /// Whether more pages are available (for search results infinite scroll)
+  bool get hasNextPage => _hasNextPage;
+  String? _lastCountryCode;
+  String? _lastCategory;
+
   GiftCardCubit({
     required IGiftCardRepository repository,
     required SWRCacheManager cacheManager,
@@ -27,42 +39,80 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         _mutationQueue = mutationQueue,
         super(GiftCardInitial());
 
-  Future<void> loadGiftCardBrands({String? countryCode, String? category}) async {
+  String? _lastSearchQuery;
+
+  Future<void> loadGiftCardBrands({
+    String? countryCode,
+    String? category,
+    String? searchQuery,
+    int page = 0,
+    int pageSize = 20,
+  }) async {
     try {
       if (isClosed) return;
-      emit(GiftCardBrandsLoading());
 
-      final cacheKey = 'gift_card_brands_${countryCode ?? 'all'}_${category ?? 'all'}';
+      final isLoadMore = page > 0;
 
-      await for (final result in _cacheManager.get<List<GiftCardBrand>>(
-        key: cacheKey,
-        fetcher: () async {
-          final r = await _repository.getGiftCardBrands(
-            category: category,
-            countryCode: countryCode,
-          );
-          return r.fold(
-            (failure) => throw Exception(failure.message),
-            (brands) => brands,
-          );
+      if (!isLoadMore) {
+        _accumulatedBrands = [];
+        _currentPage = 0;
+        emit(GiftCardBrandsLoading());
+      } else {
+        emit(GiftCardBrandsLoadingMore(_accumulatedBrands));
+      }
+
+      _lastCountryCode = countryCode;
+      _lastCategory = category;
+      _lastSearchQuery = searchQuery;
+
+      final result = await _repository.getGiftCardBrands(
+        category: category,
+        countryCode: countryCode,
+        searchQuery: searchQuery,
+        page: page,
+        pageSize: pageSize,
+      );
+
+      if (isClosed) return;
+
+      result.fold(
+        (failure) {
+          final msg = failure.message;
+          if (msg.contains('timed out') || msg.contains('TimeoutException')) {
+            emit(GiftCardTimeoutError(operation: 'Loading brands'));
+          } else if (msg.contains('unavailable') || msg.contains('UNAVAILABLE')) {
+            emit(GiftCardServerUnavailable(operation: 'Loading brands'));
+          } else {
+            emit(GiftCardNetworkError(
+              message: msg,
+              canRetry: true,
+              operation: 'Loading brands',
+            ));
+          }
         },
-        config: CacheConfig.giftCardBrands,
-        serializer: (brands) => jsonEncode(brands.map((b) => b.toJson()).toList()),
-        deserializer: (json) {
-          final list = jsonDecode(json) as List;
-          return list.map((j) => GiftCardBrand.fromJson(j as Map<String, dynamic>)).toList();
-        },
-      )) {
-        if (isClosed) return;
-        if (result.data != null) {
-          final brands = result.data!;
-          if (brands.isEmpty) {
+        (paginated) {
+          if (isLoadMore) {
+            _accumulatedBrands = [..._accumulatedBrands, ...paginated.brands];
+          } else {
+            _accumulatedBrands = [...paginated.brands];
+          }
+          _currentPage = paginated.currentPage;
+          _hasNextPage = paginated.hasNext;
+          _totalPages = paginated.totalPages;
+
+          if (_accumulatedBrands.isEmpty) {
             emit(GiftCardBrandsEmpty(category: category));
           } else {
-            emit(GiftCardBrandsLoaded(brands, selectedCategory: category, isStale: result.isStale));
+            emit(GiftCardBrandsLoaded(
+              _accumulatedBrands,
+              selectedCategory: category,
+              currentPage: _currentPage,
+              totalPages: _totalPages,
+              hasNext: _hasNextPage,
+            ));
           }
-        }
-      }
+        },
+      );
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardNetworkError(
@@ -70,6 +120,38 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         canRetry: true,
         operation: 'Loading brands',
       ));
+    }
+  }
+
+  bool _isLoadingMore = false;
+
+  /// Load more brands for infinite scroll pagination
+  Future<void> loadMoreBrands() async {
+    if (!_hasNextPage || _isLoadingMore) return;
+    _isLoadingMore = true;
+    try {
+      await loadGiftCardBrands(
+        countryCode: _lastCountryCode,
+        category: _lastCategory,
+        searchQuery: _lastSearchQuery,
+        page: _currentPage + 1,
+      );
+    } finally {
+      _isLoadingMore = false;
+    }
+  }
+
+  /// Load countries supported for gift cards
+  Future<void> loadSupportedCountries() async {
+    try {
+      final result = await _repository.getSupportedCountries();
+      if (isClosed) return;
+      result.fold(
+        (failure) => null, // Silently fail - countries selector has fallback
+        (countries) => emit(SupportedCountriesLoaded(countries)),
+      );
+    } catch (_) {
+      // Silently fail - UI will use fallback
     }
   }
 
@@ -83,20 +165,23 @@ class GiftCardCubit extends Cubit<GiftCardState> {
   Future<void> searchGiftCardBrands(String query, {String? countryCode}) async {
     try {
       if (query.trim().isEmpty) {
-        if (isClosed) return;
-        emit(const GiftCardValidationError(
-          message: 'Search query cannot be empty',
-          field: 'query',
-        ));
+        // Clear search — reload brands for current country
+        await loadGiftCardBrands(
+          countryCode: countryCode ?? _lastCountryCode,
+          category: _lastCategory,
+        );
         return;
       }
 
       if (isClosed) return;
       emit(GiftCardBrandsLoading());
 
-      // Use getGiftCardBrands and filter client-side for search
+      // Server-side search via Reloadly /products?productName=query
       final result = await _repository.getGiftCardBrands(
-        countryCode: countryCode,
+        countryCode: countryCode ?? _lastCountryCode,
+        searchQuery: query.trim(),
+        page: 0,
+        pageSize: 20,
       );
       if (isClosed) return;
 
@@ -106,18 +191,17 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           canRetry: true,
           operation: 'Searching brands',
         )),
-        (brands) {
-          final lowerQuery = query.toLowerCase();
-          final filtered = brands
-              .where((b) =>
-                  b.name.toLowerCase().contains(lowerQuery) ||
-                  b.description.toLowerCase().contains(lowerQuery) ||
-                  b.category.toLowerCase().contains(lowerQuery))
-              .toList();
-          if (filtered.isEmpty) {
+        (paginated) {
+          _accumulatedBrands = [...paginated.brands];
+          _currentPage = paginated.currentPage;
+          _hasNextPage = paginated.hasNext;
+          _totalPages = paginated.totalPages;
+          _lastSearchQuery = query.trim();
+
+          if (paginated.brands.isEmpty) {
             emit(GiftCardBrandsEmpty(searchQuery: query));
           } else {
-            emit(GiftCardBrandsSearched(filtered, query));
+            emit(GiftCardBrandsSearched(paginated.brands, query));
           }
         },
       );
@@ -161,6 +245,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     String? idempotencyKey,
     int quantity = 1,
     String? providerName,
+    double? senderAmount,
+    String? senderCurrency,
   }) async {
     try {
       // Validate purchase request before processing
@@ -233,6 +319,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         idempotencyKey: effectiveIdempotencyKey,
         quantity: quantity,
         providerName: providerName,
+        senderAmount: senderAmount,
+        senderCurrency: senderCurrency,
       );
       if (isClosed) return;
 
@@ -246,24 +334,33 @@ class GiftCardCubit extends Cubit<GiftCardState> {
             ));
             return;
           }
-          if (failure.message.contains('Insufficient funds')) {
+          final msg = failure.message;
+          if (msg.contains('Insufficient funds')) {
             emit(GiftCardInsufficientFunds(
               required: amount,
               available: userBalance,
               brandName: brand.name,
             ));
-          } else if (failure.message.contains('not found')) {
+          } else if (msg.contains('not found')) {
             emit(GiftCardNotFound(
               identifier: brandId,
               type: 'brand',
             ));
-          } else if (failure.message.contains('unavailable')) {
+          } else if (msg.contains('sold out')) {
             emit(GiftCardSoldOut(
               brandId: brandId,
               brandName: brand.name,
             ));
+          } else if (msg.contains('temporarily unavailable')) {
+            emit(GiftCardPurchaseError(
+              '${brand.name} is temporarily unavailable. Please try again shortly.',
+            ));
+          } else if (msg.contains('already being processed')) {
+            emit(GiftCardPurchaseError(
+              'This order is already being processed. Check your gift cards.',
+            ));
           } else {
-            emit(GiftCardPurchaseError(failure.message));
+            emit(GiftCardPurchaseError(msg));
           }
         },
         (giftCard) async {
@@ -294,20 +391,18 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
-  /// Redeem a gift card — credits the card balance to the user's account
-  Future<void> redeemGiftCard({
-    required String accountId,
-    required String cardNumber,
-    required String cardPin,
+  /// Get the merchant redeem code for a purchased gift card (fetches from provider)
+  Future<void> getRedeemCode({
+    required String transactionId,
+    bool forceRefresh = false,
   }) async {
     try {
       if (isClosed) return;
       emit(GiftCardRedeeming());
 
-      final result = await _repository.redeemGiftCard(
-        accountId: accountId,
-        cardNumber: cardNumber,
-        cardPin: cardPin,
+      final result = await _repository.getRedeemCode(
+        transactionId: transactionId,
+        forceRefresh: forceRefresh,
       );
       if (isClosed) return;
 
@@ -315,26 +410,19 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         (failure) {
           if (failure.message.contains('not found')) {
             emit(const GiftCardRedeemError('Gift card not found'));
-          } else if (failure.message.contains('invalid PIN') ||
-              failure.message.contains('Invalid PIN')) {
-            emit(const GiftCardRedeemError('Invalid PIN'));
-          } else if (failure.message.contains('not active')) {
-            emit(const GiftCardRedeemError('This gift card is no longer active'));
-          } else if (failure.message.contains('zero balance')) {
-            emit(const GiftCardRedeemError('This gift card has no remaining balance'));
-          } else if (failure.message.contains('expired')) {
-            emit(const GiftCardRedeemError('This gift card has expired'));
+          } else if (failure.message.contains('unauthorized')) {
+            emit(const GiftCardRedeemError('You can only view your own gift cards'));
           } else {
             emit(GiftCardRedeemError(failure.message));
           }
         },
-        (giftCard) {
-          // Invalidate cache after redemption
-          _cacheManager.invalidate('my_gift_cards');
-
-          emit(GiftCardRedeemed(
-            giftCard: giftCard,
-            amountRedeemed: giftCard.currentBalance,
+        (data) {
+          emit(RedeemCodeLoaded(
+            redemptionCode: data['redemptionCode'] ?? '',
+            redemptionPin: data['redemptionPin'] ?? '',
+            transactionId: data['transactionId'] ?? '',
+            status: data['status'] ?? 'unavailable',
+            message: data['message'] ?? '',
           ));
         },
       );
@@ -344,7 +432,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
-  /// Transfer a gift card to another user
+  /// Transfer a gift card to another user (platform or email)
   Future<void> transferGiftCard({
     required String giftCardId,
     required String recipientEmail,
@@ -352,9 +440,35 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     required String message,
     required String transactionId,
     required String verificationToken,
+    String? recipientUserId,
+    String transferType = 'email',
   }) async {
     try {
       if (isClosed) return;
+
+      // Pre-validate inputs
+      if (giftCardId.isEmpty) {
+        emit(const GiftCardTransferError('Gift card ID is missing'));
+        return;
+      }
+
+      if (transferType == 'platform') {
+        if (recipientUserId == null || recipientUserId.isEmpty) {
+          emit(const GiftCardTransferError('Recipient user is required'));
+          return;
+        }
+      } else {
+        if (recipientEmail.isEmpty || !_isValidEmail(recipientEmail)) {
+          emit(const GiftCardTransferError('Please enter a valid email address'));
+          return;
+        }
+      }
+
+      if (recipientName.trim().isEmpty) {
+        emit(const GiftCardTransferError('Recipient name is required'));
+        return;
+      }
+
       emit(GiftCardTransferring());
 
       final result = await _repository.transferGiftCard(
@@ -364,6 +478,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         message: message,
         transactionId: transactionId,
         verificationToken: verificationToken,
+        recipientUserId: recipientUserId,
+        transferType: transferType,
       );
       if (isClosed) return;
 
@@ -376,6 +492,8 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           } else if (failure.message.contains('not active') ||
               failure.message.contains('only transfer active')) {
             emit(const GiftCardTransferError('Only active gift cards can be transferred'));
+          } else if (failure.message.contains('cannot transfer gift card to yourself')) {
+            emit(const GiftCardTransferError('You cannot transfer a gift card to yourself'));
           } else {
             emit(GiftCardTransferError(failure.message));
           }
@@ -390,45 +508,6 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     } catch (e) {
       if (isClosed) return;
       emit(GiftCardTransferError(e.toString()));
-    }
-  }
-
-  /// Check the balance of a gift card by card number and PIN
-  Future<void> checkGiftCardBalance({
-    required String cardNumber,
-    required String cardPin,
-  }) async {
-    try {
-      if (isClosed) return;
-      emit(GiftCardBalanceLoading());
-
-      final result = await _repository.getGiftCardBalance(
-        cardNumber: cardNumber,
-        cardPin: cardPin,
-      );
-      if (isClosed) return;
-
-      result.fold(
-        (failure) {
-          if (failure.message.contains('not found')) {
-            emit(const GiftCardBalanceError('Gift card not found'));
-          } else if (failure.message.contains('Invalid') ||
-              failure.message.contains('invalid')) {
-            emit(const GiftCardBalanceError('Invalid card number or PIN'));
-          } else {
-            emit(GiftCardBalanceError(failure.message));
-          }
-        },
-        (balance) => emit(GiftCardBalanceLoaded(
-          balance: balance.balance,
-          brandName: balance.brandName,
-          expiryDate: balance.expiryDate,
-          status: balance.status,
-        )),
-      );
-    } catch (e) {
-      if (isClosed) return;
-      emit(GiftCardBalanceError(e.toString()));
     }
   }
 
@@ -470,6 +549,19 @@ class GiftCardCubit extends Cubit<GiftCardState> {
             emit(const UserGiftCardsEmpty());
           } else {
             emit(MyGiftCardsLoaded(giftCards));
+          }
+        } else if (result.error != null) {
+          final errorMsg = result.error.toString();
+          if (errorMsg.contains('timed out') || errorMsg.contains('TimeoutException')) {
+            emit(GiftCardTimeoutError(operation: 'Loading your gift cards'));
+          } else if (errorMsg.contains('unavailable') || errorMsg.contains('UNAVAILABLE')) {
+            emit(GiftCardServerUnavailable(operation: 'Loading your gift cards'));
+          } else {
+            emit(GiftCardNetworkError(
+              message: errorMsg,
+              canRetry: true,
+              operation: 'Loading your gift cards',
+            ));
           }
         }
       }
@@ -528,12 +620,12 @@ class GiftCardCubit extends Cubit<GiftCardState> {
   // SELL FLOW METHODS
   // ============================================
 
-  Future<void> loadSellableCards() async {
+  Future<void> loadSellableCards({String? countryCode}) async {
     try {
       if (isClosed) return;
       emit(SellableCardsLoading());
 
-      final result = await _repository.getSellableCards();
+      final result = await _repository.getSellableCards(countryCode: countryCode);
       if (isClosed) return;
 
       result.fold(
@@ -597,6 +689,15 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     List<String>? images,
     String? idempotencyKey,
     String? providerName,
+    String? cardCountry,
+    String? cardFormat,
+    List<String>? imageUrls,
+    List<String>? imageKeys,
+    String? ocrBrand,
+    String? ocrCardNumber,
+    String? ocrPin,
+    double? ocrDenomination,
+    String? ocrCurrency,
   }) async {
     try {
       // Generate idempotency key if not provided
@@ -629,6 +730,15 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         images: images,
         idempotencyKey: effectiveIdempotencyKey,
         providerName: providerName,
+        cardCountry: cardCountry,
+        cardFormat: cardFormat,
+        imageUrls: imageUrls,
+        imageKeys: imageKeys,
+        ocrBrand: ocrBrand,
+        ocrCardNumber: ocrCardNumber,
+        ocrPin: ocrPin,
+        ocrDenomination: ocrDenomination,
+        ocrCurrency: ocrCurrency,
       );
       if (isClosed) return;
 
@@ -736,6 +846,19 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           } else {
             emit(MySalesLoaded(sales));
           }
+        } else if (result.error != null) {
+          final errorMsg = result.error.toString();
+          if (errorMsg.contains('timed out') || errorMsg.contains('TimeoutException')) {
+            emit(GiftCardTimeoutError(operation: 'Loading your sales'));
+          } else if (errorMsg.contains('unavailable') || errorMsg.contains('UNAVAILABLE')) {
+            emit(GiftCardServerUnavailable(operation: 'Loading your sales'));
+          } else {
+            emit(GiftCardNetworkError(
+              message: errorMsg,
+              canRetry: true,
+              operation: 'Loading your sales',
+            ));
+          }
         }
       }
     } catch (e) {
@@ -786,8 +909,64 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
+  // ============================================
+  // IMAGE UPLOAD & OCR METHODS
+  // ============================================
+
+  Future<void> uploadSellImage({required Uint8List imageBytes, required String filename}) async {
+    try {
+      if (isClosed) return;
+      emit(SellImageUploading());
+      final base64Data = base64Encode(imageBytes);
+      final contentType = filename.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      final result = await _repository.uploadSellImage(
+        imageData: base64Data,
+        contentType: contentType,
+        filename: filename,
+      );
+      if (isClosed) return;
+      result.fold(
+        (failure) => emit(SellImageError(failure.message)),
+        (data) => emit(SellImageUploaded(imageUrl: data['imageUrl']!, imageKey: data['imageKey']!)),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(SellImageError(e.toString()));
+    }
+  }
+
+  Future<void> extractCardDetails({required List<String> imageUrls}) async {
+    try {
+      if (isClosed) return;
+      emit(OCRExtracting());
+      final result = await _repository.extractCardDetails(imageUrls: imageUrls);
+      if (isClosed) return;
+      result.fold(
+        (failure) => emit(OCRFailed(failure.message)),
+        (data) => emit(OCRExtracted(
+          brand: data['brand'] ?? '',
+          cardNumber: data['cardNumber'] ?? '',
+          pin: data['pin'] ?? '',
+          denomination: (data['denomination'] as num?)?.toDouble() ?? 0.0,
+          currency: data['currency'] ?? '',
+          confidence: (data['confidence'] as num?)?.toDouble() ?? 0.0,
+          rawText: data['rawText'] ?? '',
+        )),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(OCRFailed(e.toString()));
+    }
+  }
+
+  static bool _isValidEmail(String email) {
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(email);
+  }
+
   @override
   Future<void> close() {
+    _searchDebouncer.cancel();
     _searchDebouncer.dispose();
     return super.close();
   }

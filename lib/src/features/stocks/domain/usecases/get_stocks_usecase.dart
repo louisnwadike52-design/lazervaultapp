@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../entities/stock_entity.dart';
 import '../repositories/i_stock_repository.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 
 class GetStocksUseCase {
   final IStockRepository repository;

@@ -8,6 +8,7 @@ import '../domain/usecases/get_portfolio_usecase.dart';
 import '../domain/usecases/place_order_usecase.dart';
 import '../domain/usecases/get_watchlists_usecase.dart';
 import '../domain/repositories/i_stock_repository.dart';
+import 'package:lazervault/core/utils/user_friendly_error.dart';
 import 'stock_state.dart';
 
 class StockCubit extends Cubit<StockState> {
@@ -73,7 +74,7 @@ class StockCubit extends Cubit<StockState> {
           if (result.hasData) {
             emit(StockLoaded(result.data!, sector: sector, isStale: result.isStale));
           } else if (result.hasError) {
-            emit(StockError(result.error.toString()));
+            emit(StockError(getUserFriendlyErrorMessage(result.error)));
           }
         }
         return;
@@ -227,7 +228,7 @@ class StockCubit extends Cubit<StockState> {
           if (result.hasData) {
             emit(PortfolioLoaded(result.data!, isStale: result.isStale));
           } else if (result.hasError) {
-            emit(PortfolioError(result.error.toString()));
+            emit(PortfolioError(getUserFriendlyErrorMessage(result.error)));
           }
         }
         return;
@@ -277,7 +278,7 @@ class StockCubit extends Cubit<StockState> {
           if (result.hasData) {
             emit(HoldingsLoaded(result.data!, isStale: result.isStale));
           } else if (result.hasError) {
-            emit(HoldingsError(result.error.toString()));
+            emit(HoldingsError(getUserFriendlyErrorMessage(result.error)));
           }
         }
         return;
@@ -309,6 +310,9 @@ class StockCubit extends Cubit<StockState> {
     required int quantity,
     double? price,
     String? notes,
+    double? quantityExact,
+    String? transactionId,
+    String? verificationToken,
   }) async {
     try {
       // Input validation
@@ -316,8 +320,9 @@ class StockCubit extends Cubit<StockState> {
         emit(const OrderFailed(message: 'Invalid stock symbol'));
         return;
       }
-      if (quantity <= 0 || quantity > 100000) {
-        emit(const OrderFailed(message: 'Quantity must be between 1 and 100,000'));
+      final qty = quantityExact ?? quantity.toDouble();
+      if (qty <= 0 || qty > 100000) {
+        emit(const OrderFailed(message: 'Quantity must be between 0 and 100,000'));
         return;
       }
       if (price != null && (price <= 0 || price > 1000000)) {
@@ -334,6 +339,9 @@ class StockCubit extends Cubit<StockState> {
         side: side,
         quantity: quantity,
         price: price,
+        quantityExact: quantityExact,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
       );
 
       result.fold(

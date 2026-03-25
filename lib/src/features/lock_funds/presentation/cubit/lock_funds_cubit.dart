@@ -201,6 +201,127 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     }
   }
 
+  /// Top up an existing lock fund
+  Future<void> topUpLockFund({
+    required String lockFundId,
+    required double amount,
+    required String sourceAccountId,
+    String transactionPin = '',
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(const LockFundsLoading());
+
+      final result = await _repository.topUpLockFund(
+        lockFundId: lockFundId,
+        amount: amount,
+        sourceAccountId: sourceAccountId,
+        transactionPin: transactionPin,
+      );
+      if (isClosed) return;
+
+      emit(LockFundTopUpSuccess(
+        updatedLockFund: result.updatedLockFund,
+        newBalance: result.newBalance,
+        message: result.message,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(LockFundsError(e.toString()));
+    }
+  }
+
+  /// Load PiggyVault product configs from backend
+  Future<void> loadPiggyVaultConfigs({String? currency}) async {
+    try {
+      if (isClosed) return;
+      final configs = await _repository.getPiggyVaultConfigs(currency: currency);
+      if (isClosed) return;
+      emit(PiggyVaultConfigsLoaded(configs));
+    } catch (e) {
+      if (isClosed) return;
+      // Don't emit error — fallback to hardcoded values in UI
+    }
+  }
+
+  /// Create auto-save for a lock fund
+  Future<void> createAutoSave({
+    required String lockFundId,
+    required String sourceAccountId,
+    required double amount,
+    required String frequency,
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(const LockFundsLoading());
+
+      final autoSave = await _repository.createAutoSave(
+        lockFundId: lockFundId,
+        sourceAccountId: sourceAccountId,
+        amount: amount,
+        frequency: frequency,
+      );
+      if (isClosed) return;
+
+      emit(AutoSaveCreated(autoSave));
+    } catch (e) {
+      if (isClosed) return;
+      emit(LockFundsError(e.toString()));
+    }
+  }
+
+  /// Get auto-save for a lock fund
+  Future<void> loadAutoSave({required String lockFundId}) async {
+    try {
+      if (isClosed) return;
+      final autoSave = await _repository.getAutoSave(lockFundId: lockFundId);
+      if (isClosed) return;
+      emit(AutoSaveLoaded(autoSave));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AutoSaveLoaded(null));
+    }
+  }
+
+  /// Update auto-save
+  Future<void> updateAutoSave({
+    required String autoSaveId,
+    double? amount,
+    String? frequency,
+    String? status,
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(const LockFundsLoading());
+
+      final autoSave = await _repository.updateAutoSave(
+        autoSaveId: autoSaveId,
+        amount: amount,
+        frequency: frequency,
+        status: status,
+      );
+      if (isClosed) return;
+
+      emit(AutoSaveCreated(autoSave));
+    } catch (e) {
+      if (isClosed) return;
+      emit(LockFundsError(e.toString()));
+    }
+  }
+
+  /// Delete auto-save
+  Future<void> deleteAutoSave({required String autoSaveId}) async {
+    try {
+      if (isClosed) return;
+      await _repository.deleteAutoSave(autoSaveId: autoSaveId);
+      if (isClosed) return;
+      emit(AutoSaveLoaded(null));
+    } catch (e) {
+      if (isClosed) return;
+      emit(LockFundsError(e.toString()));
+    }
+  }
+
   void clearError() {
     if (isClosed) return;
     if (state is LockFundsError) {

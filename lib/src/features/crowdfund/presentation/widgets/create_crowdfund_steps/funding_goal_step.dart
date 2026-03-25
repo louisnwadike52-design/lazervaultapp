@@ -83,7 +83,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
               height: 80.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -169,7 +169,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
               gradient: LinearGradient(
                 colors: [
                   const Color(0xFF6366F1).withValues(alpha: 0.1),
-                  const Color(0xFF8B5CF6).withValues(alpha: 0.05),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

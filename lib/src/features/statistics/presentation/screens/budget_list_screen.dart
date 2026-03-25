@@ -65,10 +65,34 @@ class BudgetListView extends StatelessWidget {
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: const Color(0xFFEF4444),
+                        action: SnackBarAction(
+                          label: 'Retry',
+                          textColor: Colors.white,
+                          onPressed: () => context.read<BudgetCubit>().loadBudgets(),
+                        ),
+                      ),
+                    );
+                  } else if (state is BudgetCreated) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: const Color(0xFF10B981),
+                      ),
+                    );
+                  } else if (state is BudgetDeleted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: const Color(0xFF10B981),
                       ),
                     );
                   }
                 },
+                buildWhen: (prev, curr) =>
+                    curr is BudgetLoading ||
+                    curr is BudgetsLoaded ||
+                    curr is BudgetInitial ||
+                    curr is BudgetError,
                 builder: (context, state) {
                   if (state is BudgetLoading) {
                     return _LoadingView(message: state.message);
@@ -85,9 +109,46 @@ class BudgetListView extends StatelessWidget {
                     );
                   }
 
-                  // Initial state - load budgets
+                  if (state is BudgetError) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.w),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 48.sp, color: const Color(0xFFEF4444)),
+                            SizedBox(height: 16.h),
+                            const Text(
+                              'Failed to load budgets',
+                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              state.message,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                            ),
+                            SizedBox(height: 24.h),
+                            ElevatedButton.icon(
+                              onPressed: () => context.read<BudgetCubit>().loadBudgets(),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Retry'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Initial state - trigger load once
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.read<BudgetCubit>().loadBudgets();
+                    if (context.mounted) {
+                      context.read<BudgetCubit>().loadBudgets();
+                    }
                   });
 
                   return const _LoadingView(message: 'Loading budgets...');
@@ -399,13 +460,34 @@ class _BudgetCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${CurrencySymbols.formatAmount(budget.spentAmount)} spent',
-                  style: const TextStyle(
-                    color: Color(0xFF9CA3AF),
-                    fontSize: 14,
+                Expanded(
+                  child: Text(
+                    '${CurrencySymbols.formatAmount(budget.spentAmount)} spent',
+                    style: const TextStyle(
+                      color: Color(0xFF9CA3AF),
+                      fontSize: 14,
+                    ),
                   ),
                 ),
+                if (budget.enforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT)
+                  Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        'STRICT',
+                        style: TextStyle(
+                          color: const Color(0xFFEF4444),
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
                 Text(
                   '${CurrencySymbols.formatAmount(budget.amount)} budget',
                   style: const TextStyle(

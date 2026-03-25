@@ -38,4 +38,43 @@ abstract class KYCRepository {
     required String userId,
     bool skipTier2 = true,
   });
+
+  /// Create a verification session with a provider (Onfido/Persona/Smile ID)
+  Future<Either<Failure, VerificationSession>> createVerificationSession({
+    required String userId,
+    required KYCTier targetTier,
+    required String countryCode,
+    required IDType idType,
+    required String idNumber,
+    required String firstName,
+    required String lastName,
+    required String dateOfBirth,
+    String? phoneNumber,
+  });
+
+  /// Confirm a verification session after provider callback
+  Future<Either<Failure, ConfirmVerificationResult>> confirmVerification({
+    required String verificationId,
+    required String provider,
+    String? providerAuthCode,
+    Map<String, String>? metadata,
+  });
+
+  /// Get a pre-signed URL to upload a document
+  Future<Either<Failure, DocumentUploadURL>> getDocumentUploadURL({
+    required String documentType,
+    required String contentType,
+  });
+
+  /// Submit uploaded documents for review
+  Future<Either<Failure, String>> submitDocumentsForReview({
+    required String userId,
+    required List<DocumentSubmissionItem> documents,
+  });
+
+  /// Confirm BVN name after reconciliation
+  Future<Either<Failure, String>> confirmBVNName({
+    required String verificationId,
+    required String action,
+  });
 }

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 import '../../domain/entities/crypto_entity.dart';
+import '../../domain/entities/price_point.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../../stocks/domain/entities/stock_entity.dart';
@@ -105,6 +106,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   void initState() {
     super.initState();
     _initializeChart();
+    // Load real price history from backend
+    _loadChartData();
   }
 
   void _initializeChart() {
@@ -112,6 +115,28 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     _startIndex = 0;
     _currentScale = 1.0;
     _baseScale = 1.0;
+  }
+
+  void _loadChartData() {
+    context.read<CryptoCubit>().loadCryptoDetails(
+      widget.crypto.id,
+      timeframe: _timeframeToRange(_selectedTimeframe),
+    );
+  }
+
+  String _timeframeToRange(String timeframe) {
+    switch (timeframe) {
+      case '1m': return '1';
+      case '5m': return '1';
+      case '15m': return '1';
+      case '30m': return '1';
+      case '1H': return '1';
+      case '4H': return '7';
+      case '1D': return '30';
+      case '1W': return '90';
+      case '1M': return '365';
+      default: return '30';
+    }
   }
 
   @override
@@ -123,8 +148,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
           if (state is CryptoLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
-          final priceHistory = _generateMockCryptoPriceHistory();
+
+          // Use real price history from gRPC backend
+          final priceHistory = _convertPriceHistoryFromState(state);
           
           return Stack(
             children: [
@@ -202,7 +228,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            widget.crypto.symbol.substring(0, 1),
+                            widget.crypto.symbol.isNotEmpty
+                                ? widget.crypto.symbol.substring(0, 1)
+                                : '?',
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 12.sp,
@@ -500,8 +528,24 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     );
   }
 
-  // Generate mock crypto price history
-  List<CryptoPrice> _generateMockCryptoPriceHistory() {
+  // Convert real price history from CryptoDetailsLoaded state to CryptoPrice list
+  List<CryptoPrice> _convertPriceHistoryFromState(CryptoState state) {
+    if (state is CryptoDetailsLoaded && state.priceHistory.isNotEmpty) {
+      return state.priceHistory.map((point) => CryptoPrice(
+        timestamp: point.timestamp,
+        open: point.open ?? point.price,
+        high: point.high ?? point.price,
+        low: point.low ?? point.price,
+        close: point.close ?? point.price,
+        volume: point.volume ?? 0.0,
+      )).toList();
+    }
+    // Fallback: generate from current price if no data available yet
+    return _generateFallbackPriceHistory();
+  }
+
+  // Fallback price history when backend data is not yet available
+  List<CryptoPrice> _generateFallbackPriceHistory() {
     return _generateRealisticCryptoPriceHistory();
   }
 
@@ -1317,6 +1361,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             setState(() {
                         _selectedTimeframe = timeframe;
                       });
+                      _loadChartData();
                       Navigator.pop(context);
                     },
                     child: Container(

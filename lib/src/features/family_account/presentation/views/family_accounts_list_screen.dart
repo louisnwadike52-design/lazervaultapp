@@ -604,6 +604,31 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                 },
               ),
             ),
+            SizedBox(height: 16.h),
+            SizedBox(
+              width: double.infinity,
+              height: 44.h,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close bottom sheet
+                  Get.toNamed(AppRoutes.familyInvitations);
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF3B82F6),
+                  side: const BorderSide(color: Color(0xFF3B82F6)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'View All Invitations',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

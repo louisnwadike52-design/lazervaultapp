@@ -684,4 +684,420 @@ service InsuranceService {
             get: "/v1/insurance/auxiliary/{utility_id}"
         };
     }
+
+    // ===== MyCover.ai Management APIs =====
+
+    // Get MyCover customers
+    rpc GetMyCoverCustomers(GetMyCoverCustomersRequest) returns (GetMyCoverCustomersResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/customers"
+        };
+    }
+
+    // Get specific MyCover customer
+    rpc GetMyCoverCustomerById(GetMyCoverCustomerByIdRequest) returns (GetMyCoverCustomerByIdResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/customers/{customer_id}"
+        };
+    }
+
+    // Get policies for a MyCover customer
+    rpc GetMyCoverCustomerPolicies(GetMyCoverCustomerPoliciesRequest) returns (GetMyCoverCustomerPoliciesResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/customers/{customer_id}/policies"
+        };
+    }
+
+    // Get purchases for a MyCover customer
+    rpc GetMyCoverCustomerPurchases(GetMyCoverCustomerPurchasesRequest) returns (GetMyCoverCustomerPurchasesResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/customers/{customer_id}/purchases"
+        };
+    }
+
+    // Get all MyCover purchases
+    rpc GetMyCoverPurchases(GetMyCoverPurchasesRequest) returns (GetMyCoverPurchasesResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/purchases"
+        };
+    }
+
+    // Get specific MyCover purchase
+    rpc GetMyCoverPurchaseById(GetMyCoverPurchaseByIdRequest) returns (GetMyCoverPurchaseByIdResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/purchases/{purchase_id}"
+        };
+    }
+
+    // Get MyCover provider claims
+    rpc GetMyCoverClaims(GetMyCoverClaimsRequest) returns (GetMyCoverClaimsResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/mycover/claims"
+        };
+    }
+
+    // Get specific MyCover provider claim
+    rpc GetMyCoverClaimById(GetMyCoverClaimByIdRequest) returns (GetMyCoverClaimByIdResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/mycover/claims/{claim_id}"
+        };
+    }
+
+    // File a credit-life claim
+    rpc FileCreditLifeClaim(FileCreditLifeClaimRequest) returns (FileCreditLifeClaimResponse) {
+        option (google.api.http) = {
+            post: "/v1/insurance/claims/credit-life"
+            body: "*"
+        };
+    }
+
+    // Get Nigerian states
+    rpc GetInsuranceStates(GetInsuranceStatesRequest) returns (GetInsuranceStatesResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/auxiliary/states"
+        };
+    }
+
+    // Get vehicle makes
+    rpc GetInsuranceVehicleMakes(GetInsuranceVehicleMakesRequest) returns (GetInsuranceVehicleMakesResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/auxiliary/vehicle-makes"
+        };
+    }
+
+    // ===== Notification Preferences =====
+
+    // Get notification preferences
+    rpc GetMyCoverNotificationPreferences(GetMyCoverNotificationPreferencesRequest) returns (GetMyCoverNotificationPreferencesResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/notifications/preferences"
+        };
+    }
+
+    // Update notification preferences
+    rpc UpdateMyCoverNotificationPreferences(UpdateMyCoverNotificationPreferencesRequest) returns (UpdateMyCoverNotificationPreferencesResponse) {
+        option (google.api.http) = {
+            put: "/v1/insurance/notifications/preferences"
+            body: "*"
+        };
+    }
+
+    // ===== Wallet & Refund =====
+
+    // Get MyCover wallet balance
+    rpc GetMyCoverWalletBalance(GetMyCoverWalletBalanceRequest) returns (GetMyCoverWalletBalanceResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/wallet/balance"
+        };
+    }
+
+    // Request insurance refund
+    rpc RequestInsuranceRefund(RequestInsuranceRefundRequest) returns (RequestInsuranceRefundResponse) {
+        option (google.api.http) = {
+            post: "/v1/insurance/refund"
+            body: "*"
+        };
+    }
+
+    // Get insurance refund status
+    rpc GetInsuranceRefundStatus(GetInsuranceRefundStatusRequest) returns (GetInsuranceRefundStatusResponse) {
+        option (google.api.http) = {
+            get: "/v1/insurance/refund/{policy_reference}"
+        };
+    }
+}
+
+// ===== MyCover Management Messages =====
+
+// MyCover Customer
+message MyCoverCustomerInfo {
+    string id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string email = 4;
+    string phone_number = 5;
+    string gender = 6;
+    string date_of_birth = 7;
+    string created_at = 8;
+    string updated_at = 9;
+}
+
+// MyCover Purchase
+message MyCoverPurchaseInfo {
+    string id = 1;
+    string app_mode = 2;
+    bool is_renewal = 3;
+    string amount = 4;
+    string customer_id = 5;
+    string distributor_id = 6;
+    string payment_channel = 7;
+    string payment_option = 8;
+    string policy_id = 9;
+    string product_category_id = 10;
+    string product_id = 11;
+    string provider_id = 12;
+    string country_id = 13;
+    string currency_id = 14;
+    string created_at = 15;
+    string updated_at = 16;
+    string customer_name = 17;
+    string customer_email = 18;
+    string customer_phone = 19;
+    string policy_number = 20;
+    string certificate_url = 21;
+    bool policy_is_active = 22;
+    string policy_amount = 23;
+    string provider_name = 24;
+    string product_name = 25;
+    string product_category_name = 26;
+}
+
+// MyCover Policy Detail
+message MyCoverPolicyDetailInfo {
+    string id = 1;
+    string app_mode = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string email = 5;
+    string phone_number = 6;
+    string date_of_birth = 7;
+    string activation_date = 8;
+    string start_date = 9;
+    string expiration_date = 10;
+    string amount = 11;
+    bool is_active = 12;
+    bool is_submitted_to_provider = 13;
+    string customer_id = 14;
+    string product_id = 15;
+    string product_category_id = 16;
+    string provider_id = 17;
+    string purchase_id = 18;
+    string policy_number = 19;
+    string certificate_url = 20;
+    string created_at = 21;
+    string updated_at = 22;
+    string provider_name = 23;
+    string product_name = 24;
+}
+
+// MyCover Claim
+message MyCoverClaimInfo {
+    string id = 1;
+    string status = 2;
+    string type = 3;
+    double amount = 4;
+    string description = 5;
+    string policy_id = 6;
+    string customer_id = 7;
+    string claim_number = 8;
+    repeated string documents = 9;
+    string rejection_reason = 10;
+    double approved_amount = 11;
+    string created_at = 12;
+    string updated_at = 13;
+}
+
+// Customers
+message GetMyCoverCustomersRequest {
+    int32 page = 1;
+    int32 limit = 2;
+}
+
+message GetMyCoverCustomersResponse {
+    repeated MyCoverCustomerInfo customers = 1;
+    int32 total = 2;
+    bool success = 3;
+    string msg = 4;
+}
+
+message GetMyCoverCustomerByIdRequest {
+    string customer_id = 1;
+}
+
+message GetMyCoverCustomerByIdResponse {
+    MyCoverCustomerInfo customer = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message GetMyCoverCustomerPoliciesRequest {
+    string customer_id = 1;
+    int32 page = 2;
+    int32 limit = 3;
+}
+
+message GetMyCoverCustomerPoliciesResponse {
+    repeated MyCoverPolicyDetailInfo policies = 1;
+    int32 total = 2;
+    bool success = 3;
+    string msg = 4;
+}
+
+message GetMyCoverCustomerPurchasesRequest {
+    string customer_id = 1;
+    int32 page = 2;
+    int32 limit = 3;
+}
+
+message GetMyCoverCustomerPurchasesResponse {
+    repeated MyCoverPurchaseInfo purchases = 1;
+    int32 total = 2;
+    bool success = 3;
+    string msg = 4;
+}
+
+// Purchases
+message GetMyCoverPurchasesRequest {
+    int32 page = 1;
+    int32 limit = 2;
+}
+
+message GetMyCoverPurchasesResponse {
+    repeated MyCoverPurchaseInfo purchases = 1;
+    int32 total = 2;
+    bool success = 3;
+    string msg = 4;
+}
+
+message GetMyCoverPurchaseByIdRequest {
+    string purchase_id = 1;
+}
+
+message GetMyCoverPurchaseByIdResponse {
+    MyCoverPurchaseInfo purchase = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+// MyCover Claims
+message GetMyCoverClaimsRequest {
+    string status = 1;
+    int32 page = 2;
+    int32 limit = 3;
+}
+
+message GetMyCoverClaimsResponse {
+    repeated MyCoverClaimInfo claims = 1;
+    int32 total = 2;
+    bool success = 3;
+    string msg = 4;
+}
+
+message GetMyCoverClaimByIdRequest {
+    string claim_id = 1;
+}
+
+message GetMyCoverClaimByIdResponse {
+    MyCoverClaimInfo claim = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+// Credit-Life Claim
+message FileCreditLifeClaimRequest {
+    string policy_id = 1;
+    string claim_type = 2;
+    string description = 3;
+    double amount = 4;
+    repeated string documents = 5;
+    map<string, string> additional_info = 6;
+}
+
+message FileCreditLifeClaimResponse {
+    string claim_id = 1;
+    string claim_number = 2;
+    string status = 3;
+    string message = 4;
+    bool success = 5;
+}
+
+// Auxiliary: States
+message GetInsuranceStatesRequest {}
+
+message GetInsuranceStatesResponse {
+    repeated InsuranceAuxiliaryItem states = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+// Auxiliary: Vehicle Makes
+message GetInsuranceVehicleMakesRequest {}
+
+message GetInsuranceVehicleMakesResponse {
+    repeated InsuranceAuxiliaryItem makes = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+// ===== Notification Preferences =====
+
+message MyCoverNotificationPreference {
+    string key = 1;
+    string category = 2;
+    string label = 3;
+    string description = 4;
+    bool enabled = 5;
+}
+
+message GetMyCoverNotificationPreferencesRequest {}
+
+message GetMyCoverNotificationPreferencesResponse {
+    repeated MyCoverNotificationPreference preferences = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message UpdateMyCoverNotificationPreferencesRequest {
+    repeated MyCoverNotificationPreference preferences = 1;
+}
+
+message UpdateMyCoverNotificationPreferencesResponse {
+    bool success = 1;
+    string msg = 2;
+}
+
+// ===== Wallet & Refund =====
+
+message GetMyCoverWalletBalanceRequest {}
+
+message GetMyCoverWalletBalanceResponse {
+    double balance = 1;
+    string currency = 2;
+    bool success = 3;
+    string msg = 4;
+}
+
+message RequestInsuranceRefundRequest {
+    string policy_reference = 1;
+    string reason = 2;
+}
+
+message RequestInsuranceRefundResponse {
+    InsuranceRefundInfo refund = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message GetInsuranceRefundStatusRequest {
+    string policy_reference = 1;
+}
+
+message GetInsuranceRefundStatusResponse {
+    InsuranceRefundInfo refund = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message InsuranceRefundInfo {
+    string refund_id = 1;
+    string policy_reference = 2;
+    string status = 3;
+    double amount = 4;
+    string currency = 5;
+    bool provider_refunded = 6;
+    bool wallet_credited = 7;
+    string reason = 8;
+    string failure_reason = 9;
+    string initiated_at = 10;
+    string completed_at = 11;
 }

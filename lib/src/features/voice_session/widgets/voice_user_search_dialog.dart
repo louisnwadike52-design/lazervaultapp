@@ -87,6 +87,31 @@ class VoiceUserSearchDialog extends StatelessWidget {
           Divider(color: const Color(0xFF2D2D2D), height: 1),
 
           // User list
+          if (users.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 20.w),
+              child: Column(
+                children: [
+                  Icon(Icons.search_off_rounded, color: const Color(0xFF9CA3AF), size: 48.sp),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'No users found',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Try saying the name again more clearly',
+                    style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )
+          else
           Flexible(
             child: ListView.separated(
               shrinkWrap: true,

@@ -8,13 +8,17 @@ class GetGiftCardBrandsUseCase {
 
   GetGiftCardBrandsUseCase(this._repository);
 
-  Future<Either<Failure, List<GiftCardBrand>>> call({
+  Future<Either<Failure, PaginatedBrands>> call({
     String? category,
     String? countryCode,
+    int page = 0,
+    int pageSize = 20,
   }) async {
     return await _repository.getGiftCardBrands(
       category: category,
       countryCode: countryCode,
+      page: page,
+      pageSize: pageSize,
     );
   }
 }

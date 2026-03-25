@@ -7,6 +7,8 @@ class VoiceLanguage {
   final String? flagEmoji;
   final String ttsProvider;
   final bool supportsCustomVoice;
+  final bool supportsVoiceCloning;
+  final String? cloningProvider;
   final bool requiresTranslation;
   final int displayOrder;
 
@@ -18,6 +20,8 @@ class VoiceLanguage {
     this.flagEmoji,
     required this.ttsProvider,
     required this.supportsCustomVoice,
+    this.supportsVoiceCloning = false,
+    this.cloningProvider,
     required this.requiresTranslation,
     required this.displayOrder,
   });
@@ -31,6 +35,8 @@ class VoiceLanguage {
       flagEmoji: json['flag_emoji'] as String?,
       ttsProvider: json['tts_provider'] as String,
       supportsCustomVoice: json['supports_custom_voice'] as bool? ?? false,
+      supportsVoiceCloning: json['supports_voice_cloning'] as bool? ?? false,
+      cloningProvider: json['cloning_provider'] as String?,
       requiresTranslation: json['requires_translation'] as bool? ?? false,
       displayOrder: json['display_order'] as int? ?? 0,
     );
@@ -45,6 +51,8 @@ class VoiceLanguage {
       'flag_emoji': flagEmoji,
       'tts_provider': ttsProvider,
       'supports_custom_voice': supportsCustomVoice,
+      'supports_voice_cloning': supportsVoiceCloning,
+      'cloning_provider': cloningProvider,
       'requires_translation': requiresTranslation,
       'display_order': displayOrder,
     };
@@ -108,169 +116,42 @@ class VoiceOption {
   }
 }
 
-/// User's voice settings for a language
-class UserVoiceSetting {
-  final int id;
-  final String userId;
-  final String languageCode;
-  final String voiceProvider;
-  final String? voiceId;
-  final bool useCustomVoice;
-  final String? customVoiceUrl;
-  final double voiceTemperature;
+/// Custom voice cloning status (from voice-agent-gateway)
+class CustomVoiceStatus {
+  final bool hasCustomVoice;
+  final String? customVoiceId;
+  final String? customVoiceProvider;
+  final String customVoiceStatus; // none/pending/ready/failed/disabled
+  final int? customVoiceCreatedAt;
+  final String? customVoiceError;
+  final bool enabled;
 
-  UserVoiceSetting({
-    required this.id,
-    required this.userId,
-    required this.languageCode,
-    required this.voiceProvider,
-    this.voiceId,
-    required this.useCustomVoice,
-    this.customVoiceUrl,
-    required this.voiceTemperature,
+  CustomVoiceStatus({
+    required this.hasCustomVoice,
+    this.customVoiceId,
+    this.customVoiceProvider,
+    required this.customVoiceStatus,
+    this.customVoiceCreatedAt,
+    this.customVoiceError,
+    required this.enabled,
   });
 
-  factory UserVoiceSetting.fromJson(Map<String, dynamic> json) {
-    return UserVoiceSetting(
-      id: json['id'] as int,
-      userId: json['user_id'] as String,
-      languageCode: json['language_code'] as String,
-      voiceProvider: json['voice_provider'] as String,
-      voiceId: json['voice_id'] as String?,
-      useCustomVoice: json['use_custom_voice'] as bool? ?? false,
-      customVoiceUrl: json['custom_voice_url'] as String?,
-      voiceTemperature: (json['voice_temperature'] as num?)?.toDouble() ?? 0.7,
+  factory CustomVoiceStatus.fromJson(Map<String, dynamic> json) {
+    return CustomVoiceStatus(
+      hasCustomVoice: json['has_custom_voice'] as bool? ?? false,
+      customVoiceId: json['custom_voice_id'] as String?,
+      customVoiceProvider: json['custom_voice_provider'] as String?,
+      customVoiceStatus: json['custom_voice_status'] as String? ?? 'none',
+      customVoiceCreatedAt: json['custom_voice_created_at'] as int?,
+      customVoiceError: json['custom_voice_error'] as String?,
+      enabled: json['enabled'] as bool? ?? false,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'user_id': userId,
-      'language_code': languageCode,
-      'voice_provider': voiceProvider,
-      'voice_id': voiceId,
-      'use_custom_voice': useCustomVoice,
-      'custom_voice_url': customVoiceUrl,
-      'voice_temperature': voiceTemperature,
-    };
-  }
-
-  UserVoiceSetting copyWith({
-    String? voiceProvider,
-    String? voiceId,
-    bool? useCustomVoice,
-    String? customVoiceUrl,
-    double? voiceTemperature,
-  }) {
-    return UserVoiceSetting(
-      id: id,
-      userId: userId,
-      languageCode: languageCode,
-      voiceProvider: voiceProvider ?? this.voiceProvider,
-      voiceId: voiceId ?? this.voiceId,
-      useCustomVoice: useCustomVoice ?? this.useCustomVoice,
-      customVoiceUrl: customVoiceUrl ?? this.customVoiceUrl,
-      voiceTemperature: voiceTemperature ?? this.voiceTemperature,
-    );
-  }
+  bool get isReady => customVoiceStatus == 'ready';
+  bool get isPending => customVoiceStatus == 'pending';
+  bool get isFailed => customVoiceStatus == 'failed';
+  bool get isDisabled => customVoiceStatus == 'disabled';
+  bool get isNone => customVoiceStatus == 'none';
 }
 
-/// Voice enrollment session
-class VoiceEnrollmentSession {
-  final String sessionToken;
-  final int currentStep;
-  final int totalSteps;
-  final String status; // pending, in_progress, completed, failed
-  final List<String> audioSampleUrls;
-  final List<double> qualityScores;
-  final DateTime? completedAt;
-
-  VoiceEnrollmentSession({
-    required this.sessionToken,
-    required this.currentStep,
-    required this.totalSteps,
-    required this.status,
-    required this.audioSampleUrls,
-    required this.qualityScores,
-    this.completedAt,
-  });
-
-  double get progress => totalSteps > 0 ? currentStep / totalSteps : 0;
-  bool get isCompleted => status == 'completed';
-  double get averageQuality {
-    if (qualityScores.isEmpty) return 0;
-    return qualityScores.reduce((a, b) => a + b) / qualityScores.length;
-  }
-
-  factory VoiceEnrollmentSession.fromJson(Map<String, dynamic> json) {
-    return VoiceEnrollmentSession(
-      sessionToken: json['session_token'] as String,
-      currentStep: json['current_step'] as int,
-      totalSteps: json['total_steps'] as int,
-      status: json['status'] as String,
-      audioSampleUrls: (json['audio_sample_urls'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
-      qualityScores: (json['quality_scores'] as List<dynamic>?)
-              ?.map((e) => (e as num).toDouble())
-              .toList() ??
-          [],
-      completedAt: json['completed_at'] != null
-          ? DateTime.parse(json['completed_at'] as String)
-          : null,
-    );
-  }
-}
-
-/// Voice authentication result
-class VoiceAuthenticationResult {
-  final bool success;
-  final String? userId;
-  final double confidence;
-  final String message;
-
-  VoiceAuthenticationResult({
-    required this.success,
-    this.userId,
-    required this.confidence,
-    required this.message,
-  });
-
-  factory VoiceAuthenticationResult.fromJson(Map<String, dynamic> json) {
-    return VoiceAuthenticationResult(
-      success: json['success'] as bool,
-      userId: json['user_id'] as String?,
-      confidence: (json['confidence'] as num).toDouble(),
-      message: json['message'] as String,
-    );
-  }
-}
-
-/// Custom voice generation response
-class CustomVoiceGenerationResponse {
-  final bool success;
-  final String? voiceId;
-  final String? voiceUrl;
-  final int? estimatedEta;
-  final String message;
-
-  CustomVoiceGenerationResponse({
-    required this.success,
-    this.voiceId,
-    this.voiceUrl,
-    this.estimatedEta,
-    required this.message,
-  });
-
-  factory CustomVoiceGenerationResponse.fromJson(Map<String, dynamic> json) {
-    return CustomVoiceGenerationResponse(
-      success: json['success'] as bool,
-      voiceId: json['voice_id'] as String?,
-      voiceUrl: json['voice_url'] as String?,
-      estimatedEta: json['estimated_eta_seconds'] as int?,
-      message: json['message'] as String,
-    );
-  }
-}

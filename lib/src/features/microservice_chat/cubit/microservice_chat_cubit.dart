@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import '../domain/entities/microservice_chat_message_entity.dart';
 import '../domain/usecases/send_microservice_chat_message_usecase.dart';
 import '../domain/usecases/send_direct_chat_message_usecase.dart';
@@ -58,6 +60,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     }
     _currentMessages = [];
     _entities = {};
+    _isSending = false;
     emit(MicroserviceChatInitial(messages: _currentMessages));
   }
 
@@ -133,9 +136,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         return;
       }
 
-      // Add user message immediately
+      // Add user message immediately — mask PIN-like input for display security
+      final displayText = maskIfPin(text);
       final userMessage = MicroserviceChatMessageEntity(
-        text: text,
+        text: displayText,
         isUser: true,
         timestamp: DateTime.now(),
       );
@@ -147,13 +151,18 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
 
       // Use direct path if enabled and use case available
       if (isDirect && directMessageUseCase != null) {
+        // For PIN messages, send empty entities to let Go proxy use its
+        // authoritative server-side session entities. This prevents desync
+        // where Flutter's local _entities are stale (e.g. after cancel).
+        final entitiesToSend = isPinText(text.trim()) ? <String, dynamic>{} : _entities;
+
         final result = await directMessageUseCase!(
           message: text,
           sessionId: _sessionId,
           userId: authState.profile.user.id,
           accessToken: '',
           sourceContext: sourceContext,
-          entities: _entities,
+          entities: entitiesToSend,
           accountId: '',  // Resolved from JWT by Go gateway
           userCountry: authState.profile.user.country ?? '',
           currency: authState.profile.user.currency ?? '',
@@ -174,11 +183,20 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             // Always replace, even with empty map (agent clears state after completed operations)
             _entities = Map<String, dynamic>.from(chatResponse.entities);
 
+            // Extract transient receipt_data from entities (not round-tripped)
+            final receiptData = _entities.remove('_receipt_data');
+            Map<String, dynamic>? messageMetadata;
+            if (receiptData is Map<String, dynamic>) {
+              messageMetadata = {'receipt_data': receiptData};
+              _invalidateTransferRelatedCaches();
+            }
+
             final botMessage = MicroserviceChatMessageEntity(
               text: chatResponse.response,
               isUser: false,
               timestamp: DateTime.now(),
               serviceRoutedTo: chatResponse.serviceRoutedTo,
+              metadata: messageMetadata,
             );
             _currentMessages.add(botMessage);
 
@@ -188,7 +206,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         return;
       }
 
-      // Standard path (Python gateway) — clear entities since this path doesn't support them
+      // Standard path (Python gateway) — clear entities since this path doesn't support round-tripping
       _entities = {};
 
       final result = await sendMessageUseCase(
@@ -209,11 +227,21 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             messages: List.from(_currentMessages),
           ));
         },
-        (response) {
+        (chatResponse) {
+          // Extract transient receipt_data from entities (same pattern as direct path)
+          final responseEntities = Map<String, dynamic>.from(chatResponse.entities);
+          final receiptData = responseEntities.remove('_receipt_data');
+          Map<String, dynamic>? messageMetadata;
+          if (receiptData is Map<String, dynamic>) {
+            messageMetadata = {'receipt_data': receiptData};
+            _invalidateTransferRelatedCaches();
+          }
+
           final botMessage = MicroserviceChatMessageEntity(
-            text: response,
+            text: chatResponse.response,
             isUser: false,
             timestamp: DateTime.now(),
+            metadata: messageMetadata,
           );
           _currentMessages.add(botMessage);
 
@@ -237,6 +265,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     String text = '',
     int? audioDurationMs,
   }) async {
+    if (_isSending) return;
+    _isSending = true;
+
+    try {
     final authState = authCubit.state;
     if (authState is! AuthenticationSuccess) {
       emit(MicroserviceChatMessageError(
@@ -318,21 +350,49 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           messages: List.from(_currentMessages),
         ));
       },
-      (response) {
+      (chatResponse) {
+        // Extract transient receipt_data (same pattern as sendMessage)
+        final responseEntities = Map<String, dynamic>.from(chatResponse.entities);
+        final receiptData = responseEntities.remove('_receipt_data');
+        Map<String, dynamic>? messageMetadata;
+        if (receiptData is Map<String, dynamic>) {
+          messageMetadata = {'receipt_data': receiptData};
+          _invalidateTransferRelatedCaches();
+        }
+
         final botMessage = MicroserviceChatMessageEntity(
-          text: response,
+          text: chatResponse.response,
           isUser: false,
           timestamp: DateTime.now(),
+          metadata: messageMetadata,
         );
         _currentMessages.add(botMessage);
         emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));
       },
     );
+    } finally {
+      _isSending = false;
+    }
+  }
+
+  /// Invalidate caches that may be stale after a successful chatbot transfer.
+  /// Called when receipt_data is present (indicates a transfer completed and
+  /// may have auto-saved a new recipient).
+  void _invalidateTransferRelatedCaches() {
+    try {
+      final cacheManager = serviceLocator<SWRCacheManager>();
+      cacheManager.invalidatePattern('recipients:');
+      cacheManager.invalidatePattern('accounts:');
+      cacheManager.invalidatePattern('transactions:');
+    } catch (_) {
+      // Cache manager may not be registered; non-blocking
+    }
   }
 
   void clearChat() {
     _currentMessages = [];
     _entities = {};
+    _isSending = false;
     emit(MicroserviceChatInitial(messages: _currentMessages));
   }
 }

@@ -24,7 +24,23 @@ class AmountDurationSelector extends StatefulWidget {
 
 class _AmountDurationSelectorState extends State<AmountDurationSelector> {
   final TextEditingController _amountController = TextEditingController();
-  final List<int> _durations = [7, 15, 30, 60, 90, 180, 365];
+  static const List<int> _allDurations = [7, 15, 30, 60, 90, 180, 365];
+
+  /// Filter duration options based on backend config min/max for the selected lock type
+  List<int> get _durations {
+    final cubit = context.read<CreateLockCubit>();
+    final lockType = cubit.lockType;
+    if (lockType == null) return _allDurations;
+
+    final minDays = cubit.getMinDuration(lockType);
+    final maxDays = cubit.getMaxDuration(lockType);
+
+    return _allDurations.where((d) {
+      if (minDays > 0 && d < minDays) return false;
+      if (maxDays > 0 && d > maxDays) return false;
+      return true;
+    }).toList();
+  }
   late String _userCurrency;
   StreamSubscription<String>? _currencySubscription;
 
@@ -129,7 +145,7 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                   gradient: LinearGradient(
                     colors: [
                       const Color(0xFF6366F1).withValues(alpha: 0.15),
-                      const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                      const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -339,7 +355,7 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: isSelected
-                              ? [const Color(0xFF6366F1), const Color(0xFF8B5CF6)]
+                              ? [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)]
                               : [const Color(0xFF2A2A3E), const Color(0xFF1F1F35)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -381,6 +397,38 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                   );
                 }).toList(),
               ),
+              // Config-driven rate info
+              if (cubit.lockType != null && selectedDuration != null) ...[
+                SizedBox(height: 12.h),
+                Builder(builder: (context) {
+                  final lt = cubit.lockType!;
+                  final baseRate = cubit.getBaseRate(lt);
+                  final maxRate = cubit.getMaxRate(lt);
+                  final rateInfo = maxRate > baseRate
+                      ? '${baseRate.toStringAsFixed(0)}% base rate (up to ${maxRate.toStringAsFixed(0)}% with longer duration)'
+                      : '${baseRate.toStringAsFixed(0)}% p.a.';
+                  return Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.info_outline, color: const Color(0xFF10B981), size: 14.sp),
+                        SizedBox(width: 6.w),
+                        Flexible(
+                          child: Text(
+                            rateInfo,
+                            style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF10B981)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
               SizedBox(height: 32.h),
 
               // Interest Calculation Preview
@@ -429,6 +477,12 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
 
                   if (lockState is InterestCalculated) {
                     final calc = lockState.calculation;
+                    // Store interest calculation in cubit for use in review/receipt
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        cubit.updateInterestCalculation(calc);
+                      }
+                    });
                     return Container(
                       padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
@@ -472,7 +526,7 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                           SizedBox(height: 16.h),
                           _buildCalculationRow(
                             'Interest Rate',
-                            '${calc.interestRate.toStringAsFixed(2)}% APY',
+                            '${(calc.interestRate * 100).toStringAsFixed(1)}% p.a.',
                           ),
                           SizedBox(height: 8.h),
                           _buildCalculationRow(
@@ -487,6 +541,36 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                             '${CurrencySymbols.getSymbol(_userCurrency)}${calc.totalAmount.toStringAsFixed(2)}',
                             isTotal: true,
                           ),
+                          if (calc.qualifiesForUpfrontInterest) ...[
+                            SizedBox(height: 12.h),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.bolt_rounded,
+                                    color: const Color(0xFF6366F1),
+                                    size: 16.sp,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Expanded(
+                                    child: Text(
+                                      'Interest paid upfront to your account',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF6366F1),
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     );

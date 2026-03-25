@@ -131,12 +131,12 @@ class SpendingLimitsTab extends StatelessWidget {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
                   icon,
-                  color: const Color(0xFF8B5CF6),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                   size: 20.sp,
                 ),
               ),
@@ -217,7 +217,7 @@ class SpendingLimitsTab extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     const Color(0xFF3B82F6),
-                    const Color(0xFF8B5CF6),
+                    const Color.fromARGB(255, 78, 3, 208),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(4.r),

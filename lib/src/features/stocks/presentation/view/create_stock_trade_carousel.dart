@@ -201,7 +201,7 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
                     gradient: LinearGradient(
                       colors: _currentPage == _totalPages - 1
                           ? [Colors.green, Colors.green.shade700]
-                          : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                          : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
                     ),
                   ),
                 ),

@@ -17,6 +17,7 @@
     <!-- Required permissions for screen share -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     
     <!-- Storage permissions for PDF download and sharing -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
@@ -78,12 +80,16 @@ class _BatchTransferHistoryScreenState
               child: BlocConsumer<BatchTransferCubit, BatchTransferState>(
                 listener: (context, state) {
                   if (state is BatchTransferHistoryLoaded) {
+                    final activeCurrency = GetIt.I<LocaleManager>().currentCurrency;
+                    final filtered = state.batches
+                        .where((b) => b.currency.toUpperCase() == activeCurrency.toUpperCase())
+                        .toList();
                     setState(() {
                       _isLoadingMore = false;
                       if (state.page == 1) {
                         _batches.clear();
                       }
-                      _batches.addAll(state.batches);
+                      _batches.addAll(filtered);
                       _hasMore = _batches.length < state.total;
                     });
                   }

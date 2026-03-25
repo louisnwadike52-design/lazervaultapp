@@ -19,6 +19,8 @@ import '../widgets/invoice_pagination_bar.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:get_it/get_it.dart';
+import '../notifiers/invoice_refresh_notifier.dart';
 
 class InvoiceHomeScreen extends StatefulWidget {
   const InvoiceHomeScreen({super.key});
@@ -30,6 +32,7 @@ class InvoiceHomeScreen extends StatefulWidget {
 class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late InvoiceRefreshNotifier _refreshNotifier;
   String _selectedFilter = 'All';
 
   static const _receivedFilters = ['All', 'Pending', 'Paid', 'Overdue', 'Cancelled'];
@@ -67,7 +70,23 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
+    _refreshNotifier = GetIt.I<InvoiceRefreshNotifier>();
+    _refreshNotifier.addListener(_onExternalRefresh);
     _initializeData();
+  }
+
+  void _onExternalRefresh() {
+    if (!mounted) return;
+    // Ensure userId is set before reloading (it may be cleared on auth changes)
+    final invoiceCubit = context.read<InvoiceCubit>();
+    if (invoiceCubit.currentUserId == null) {
+      final authState = context.read<AuthenticationCubit>().state;
+      if (authState is AuthenticationSuccess) {
+        invoiceCubit.setUserId(authState.profile.userId);
+      }
+    }
+    invoiceCubit.loadInvoicesPage(page: 1);
+    context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
   }
 
   void _initializeData() {
@@ -82,6 +101,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
 
   @override
   void dispose() {
+    _refreshNotifier.removeListener(_onExternalRefresh);
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
@@ -149,7 +169,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
       backgroundColor: InvoiceThemeColors.primaryBackground,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Get.toNamed(AppRoutes.invoicePayment, arguments: {'isPrePayment': true});
+          await Get.toNamed(AppRoutes.createInvoice);
           if (context.mounted) {
             context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
             context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
@@ -217,7 +237,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             serviceName: 'Invoices',
             sourceContext: 'invoices',
             icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF8B5CF6),
+            iconColor: const Color.fromARGB(255, 78, 3, 208),
           ),
           SizedBox(width: 8.w),
           BlocBuilder<AuthenticationCubit, AuthenticationState>(
@@ -252,7 +272,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   height: 44.w,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                      colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

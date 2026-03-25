@@ -28,6 +28,9 @@ class TransferReceiptData {
   final int fee;
   final String feeDisplay;
   final DateTime timestamp;
+  final String? receiptUrl; // Backend-generated PDF URL
+  final String description; // Human-readable description (e.g. "Bill Payment", "Stock Trade")
+  final Map<String, dynamic> details; // Operation-specific extra fields
 
   const TransferReceiptData({
     required this.receiptId,
@@ -47,30 +50,57 @@ class TransferReceiptData {
     this.fee = 0,
     this.feeDisplay = '0.00',
     required this.timestamp,
+    this.receiptUrl,
+    this.description = '',
+    this.details = const {},
   });
+
+  /// Parse an int from a value that may be num, String, or null.
+  static int _parseIntSafe(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 
   factory TransferReceiptData.fromJson(Map<String, dynamic> json) {
     return TransferReceiptData(
-      receiptId: json['receipt_id'] as String? ?? '',
-      type: json['type'] as String? ?? 'transfer',
-      transferType: json['transfer_type'] as String? ?? 'internal',
-      status: json['status'] as String? ?? 'unknown',
-      amount: (json['amount'] as num?)?.toInt() ?? 0,
-      amountDisplay: json['amount_display'] as String? ?? '0.00',
-      currency: json['currency'] as String? ?? 'NGN',
-      reference: json['reference'] as String? ?? '',
-      recipientName: json['recipient_name'] as String? ?? '',
-      recipientBank: json['recipient_bank'] as String? ?? '',
-      recipientAccount: json['recipient_account'] as String? ?? '',
-      senderAccountId: json['sender_account_id'] as String? ?? '',
-      newBalance: (json['new_balance'] as num?)?.toInt() ?? 0,
-      newBalanceDisplay: json['new_balance_display'] as String? ?? '',
-      fee: (json['fee'] as num?)?.toInt() ?? 0,
-      feeDisplay: json['fee_display'] as String? ?? '0.00',
-      timestamp: json['timestamp'] != null
-          ? DateTime.tryParse(json['timestamp'] as String) ?? DateTime.now()
-          : DateTime.now(),
+      receiptId: json['receipt_id']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'transfer',
+      transferType: json['transfer_type']?.toString() ?? 'internal',
+      status: json['status']?.toString() ?? 'unknown',
+      amount: _parseIntSafe(json['amount']),
+      amountDisplay: json['amount_display']?.toString() ?? '0.00',
+      currency: json['currency']?.toString() ?? 'NGN',
+      reference: json['reference']?.toString() ?? '',
+      recipientName: json['recipient_name']?.toString() ?? '',
+      recipientBank: json['recipient_bank']?.toString() ?? '',
+      recipientAccount: json['recipient_account']?.toString() ?? '',
+      senderAccountId: json['sender_account_id']?.toString() ?? '',
+      newBalance: _parseIntSafe(json['new_balance']),
+      newBalanceDisplay: json['new_balance_display']?.toString() ?? '',
+      fee: _parseIntSafe(json['fee']),
+      feeDisplay: json['fee_display']?.toString() ?? '0.00',
+      timestamp: _parseTimestamp(json['timestamp']),
+      receiptUrl: _rewriteUrlForEmulator(json['receipt_url']?.toString()),
+      description: json['description']?.toString() ?? '',
+      details: json['details'] is Map ? Map<String, dynamic>.from(json['details'] as Map) : const {},
     );
+  }
+
+  static DateTime _parseTimestamp(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
+  }
+
+  /// Rewrite localhost URLs to 10.0.2.2 for Android emulator access.
+  static String? _rewriteUrlForEmulator(String? url) {
+    if (url == null) return null;
+    if (Platform.isAndroid && url.contains('://localhost')) {
+      return url.replaceFirst('://localhost', '://10.0.2.2');
+    }
+    return url;
   }
 
   String get currencySymbol {
@@ -89,32 +119,293 @@ class TransferReceiptData {
   }
 
   String get transferTypeDisplay {
-    switch (transferType) {
-      case 'internal':
-        return 'LazerVault Transfer';
-      case 'domestic':
-        return 'Bank Transfer';
-      case 'international':
-        return 'International Transfer';
-      case 'phone':
-        return 'Phone Transfer';
+    // Handle non-transfer receipt types
+    switch (type) {
+      case 'bill_payment':
+        return 'Bill Payment';
+      case 'tagpay':
+        return 'TagPay';
+      case 'invoice_payment':
+        return 'Invoice Payment';
+      case 'qr_payment':
+        return 'QR Payment';
+      case 'stock_trade':
+        return 'Stock Trade';
+      case 'crypto_trade':
+        return 'Crypto Trade';
+      case 'currency_exchange':
+        return 'Currency Exchange';
+      case 'deposit':
+        return 'Deposit';
+      case 'withdrawal':
+        return 'Withdrawal';
+      case 'insurance_purchase':
+        return 'Insurance';
+      case 'payroll_disbursement':
+        return 'Payroll';
+      case 'group_contribution':
+        return 'Group Contribution';
+      case 'spray_send':
+        return 'SprayMe';
+      case 'wallet_fund':
+        return 'Wallet Funding';
+      case 'transfer':
+        // Sub-type from transferType field
+        switch (transferType) {
+          case 'internal':
+            return 'LazerVault Transfer';
+          case 'domestic':
+            return 'Bank Transfer';
+          case 'international':
+            return 'International Transfer';
+          case 'phone':
+            return 'Phone Transfer';
+          default:
+            return 'Transfer';
+        }
       default:
-        return 'Transfer';
+        // Fallback: try transferType for legacy data
+        switch (transferType) {
+          case 'internal':
+            return 'LazerVault Transfer';
+          case 'domestic':
+            return 'Bank Transfer';
+          case 'international':
+            return 'International Transfer';
+          default:
+            return 'Transaction';
+        }
     }
   }
 
   bool get isSuccess =>
       status.toLowerCase() == 'completed' || status.toLowerCase() == 'success';
+
+  /// Create a copy with updated receiptUrl
+  TransferReceiptData copyWith({String? receiptUrl}) {
+    return TransferReceiptData(
+      receiptId: receiptId,
+      type: type,
+      transferType: transferType,
+      status: status,
+      amount: amount,
+      amountDisplay: amountDisplay,
+      currency: currency,
+      reference: reference,
+      recipientName: recipientName,
+      recipientBank: recipientBank,
+      recipientAccount: recipientAccount,
+      senderAccountId: senderAccountId,
+      newBalance: newBalance,
+      newBalanceDisplay: newBalanceDisplay,
+      fee: fee,
+      feeDisplay: feeDisplay,
+      timestamp: timestamp,
+      receiptUrl: receiptUrl ?? this.receiptUrl,
+      description: description,
+      details: details,
+    );
+  }
+}
+
+/// Loading skeleton shown while receipt data is being fetched or loaded.
+class ChatReceiptLoadingCard extends StatelessWidget {
+  const ChatReceiptLoadingCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header skeleton
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 60,
+                      height: 11,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D2D3D),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Amount skeleton
+          Container(
+            width: 120,
+            height: 24,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2D2D3D),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Info text
+          Row(
+            children: [
+              const Icon(
+                Icons.receipt_long,
+                color: Color(0xFF9CA3AF),
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Loading receipt...',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Compact receipt card shown inline in the chat bubble (Revolut-style).
-class ChatReceiptCard extends StatelessWidget {
+/// Shows a loading skeleton initially, then lazily loads the receipt data.
+class ChatReceiptCard extends StatefulWidget {
   final TransferReceiptData receipt;
 
   const ChatReceiptCard({super.key, required this.receipt});
 
   @override
+  State<ChatReceiptCard> createState() => _ChatReceiptCardState();
+}
+
+class _ChatReceiptCardState extends State<ChatReceiptCard> {
+  bool _isLoading = true;
+  TransferReceiptData? _loadedReceipt;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    // Show loading skeleton first, then load receipt data
+    _loadReceiptData();
+  }
+
+  Future<void> _loadReceiptData() async {
+    // Simulate a brief delay to show the loading skeleton
+    // In production, this would fetch the receipt URL or validate it
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    if (!mounted) return;
+
+    // If receiptUrl is provided, validate it by checking if it's accessible
+    if (widget.receipt.receiptUrl != null && widget.receipt.receiptUrl!.isNotEmpty) {
+      try {
+        final response = await http.head(
+          Uri.parse(widget.receipt.receiptUrl!),
+        ).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => http.Response('Timeout', 408),
+        );
+
+        if (mounted) {
+          if (response.statusCode == 200) {
+            // Receipt URL is valid
+            setState(() {
+              _isLoading = false;
+              _loadedReceipt = widget.receipt;
+            });
+          } else {
+            // URL not accessible, still show receipt but without PDF preview
+            setState(() {
+              _isLoading = false;
+              _loadedReceipt = widget.receipt;
+              _errorMessage = 'PDF unavailable';
+            });
+          }
+        }
+      } catch (e) {
+        // Network error, still show the receipt
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _loadedReceipt = widget.receipt;
+            _errorMessage = 'Connection error';
+          });
+        }
+      }
+    } else {
+      // No receipt URL provided, just show the receipt data
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loadedReceipt = widget.receipt;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Show loading skeleton while data is being fetched
+    if (_isLoading) {
+      return const ChatReceiptLoadingCard();
+    }
+
+    // Show error state if loading failed
+    if (_errorMessage != null) {
+      return _buildReceiptCard(_loadedReceipt!, showError: true);
+    }
+
+    // Show the actual receipt card
+    return _buildReceiptCard(_loadedReceipt!);
+  }
+
+  Widget _buildReceiptCard(TransferReceiptData r, {bool showError = false}) {
     return GestureDetector(
       onTap: () => _openFullScreenReceipt(context),
       child: Container(
@@ -124,7 +415,7 @@ class ChatReceiptCard extends StatelessWidget {
           color: const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: receipt.isSuccess
+            color: r.isSuccess
                 ? const Color(0xFF10B981).withValues(alpha: 0.3)
                 : const Color(0xFFEF4444).withValues(alpha: 0.3),
           ),
@@ -136,7 +427,7 @@ class ChatReceiptCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: receipt.isSuccess
+                color: r.isSuccess
                     ? const Color(0xFF10B981).withValues(alpha: 0.1)
                     : const Color(0xFFEF4444).withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.only(
@@ -150,14 +441,14 @@ class ChatReceiptCard extends StatelessWidget {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: receipt.isSuccess
+                      color: r.isSuccess
                           ? const Color(0xFF10B981).withValues(alpha: 0.2)
                           : const Color(0xFFEF4444).withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      receipt.isSuccess ? Icons.check : Icons.close,
-                      color: receipt.isSuccess
+                      r.isSuccess ? Icons.check : Icons.close,
+                      color: r.isSuccess
                           ? const Color(0xFF10B981)
                           : const Color(0xFFEF4444),
                       size: 18,
@@ -169,11 +460,11 @@ class ChatReceiptCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          receipt.isSuccess
-                              ? 'Transfer Successful'
-                              : 'Transfer ${receipt.status}',
+                          r.isSuccess
+                              ? '${r.transferTypeDisplay} Successful'
+                              : '${r.transferTypeDisplay} ${r.status}',
                           style: TextStyle(
-                            color: receipt.isSuccess
+                            color: r.isSuccess
                                 ? const Color(0xFF10B981)
                                 : const Color(0xFFEF4444),
                             fontSize: 13,
@@ -181,7 +472,7 @@ class ChatReceiptCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          receipt.transferTypeDisplay,
+                          r.transferTypeDisplay,
                           style: const TextStyle(
                             color: Color(0xFF9CA3AF),
                             fontSize: 11,
@@ -203,7 +494,7 @@ class ChatReceiptCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Text(
-                '${receipt.currencySymbol} ${receipt.amountDisplay}',
+                '${r.currencySymbol} ${r.amountDisplay}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -222,7 +513,7 @@ class ChatReceiptCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      receipt.recipientName,
+                      r.recipientName,
                       style: const TextStyle(
                         color: Color(0xFFD1D5DB),
                         fontSize: 14,
@@ -242,7 +533,7 @@ class ChatReceiptCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    receipt.reference,
+                    r.reference,
                     style: const TextStyle(
                       color: Color(0xFF6B7280),
                       fontSize: 11,
@@ -250,7 +541,7 @@ class ChatReceiptCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    DateFormat('HH:mm').format(receipt.timestamp.toLocal()),
+                    DateFormat('HH:mm').format(r.timestamp.toLocal()),
                     style: const TextStyle(
                       color: Color(0xFF6B7280),
                       fontSize: 11,
@@ -260,7 +551,7 @@ class ChatReceiptCard extends StatelessWidget {
               ),
             ),
 
-            // Tap to view
+            // Tap to view / Loading indicator
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -269,16 +560,36 @@ class ChatReceiptCard extends StatelessWidget {
                   top: BorderSide(color: Color(0xFF2D2D3D)),
                 ),
               ),
-              child: const Center(
-                child: Text(
-                  'Tap to view receipt',
-                  style: TextStyle(
-                    color: Color(0xFF3B82F6),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+              child: showError
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Tap to view receipt',
+                          style: TextStyle(
+                            color: Color(0xFFF59E0B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const Center(
+                      child: Text(
+                        'Tap to view receipt',
+                        style: TextStyle(
+                          color: Color(0xFF3B82F6),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -289,7 +600,7 @@ class ChatReceiptCard extends StatelessWidget {
   void _openFullScreenReceipt(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => FullScreenReceiptView(receipt: receipt),
+        builder: (_) => FullScreenReceiptView(receipt: _loadedReceipt ?? widget.receipt),
       ),
     );
   }
@@ -505,7 +816,10 @@ class _FullScreenReceiptViewState extends State<FullScreenReceiptView> {
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          _buildDetailRow('To', r.recipientName),
+                          if (r.description.isNotEmpty)
+                            _buildDetailRow('Description', r.description),
+                          if (r.recipientName.isNotEmpty)
+                            _buildDetailRow('To', r.recipientName),
                           if (r.recipientBank.isNotEmpty)
                             _buildDetailRow('Bank', r.recipientBank),
                           if (r.recipientAccount.isNotEmpty)
@@ -522,6 +836,8 @@ class _FullScreenReceiptViewState extends State<FullScreenReceiptView> {
                               'New Balance',
                               '${r.currencySymbol} ${r.newBalanceDisplay}',
                             ),
+                          // Render operation-specific details (bill PINs, trade info, etc.)
+                          ..._buildDetailsEntries(r.details),
                         ],
                       ),
                     ),
@@ -592,6 +908,64 @@ class _FullScreenReceiptViewState extends State<FullScreenReceiptView> {
     );
   }
 
+  /// Renders entries from the `details` map as detail rows.
+  /// Handles special keys like "pins" (list of token/PIN strings for bill payments).
+  List<Widget> _buildDetailsEntries(Map<String, dynamic> details) {
+    if (details.isEmpty) return [];
+    final widgets = <Widget>[];
+
+    // Show divider before extra details
+    widgets.add(
+      const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Divider(color: Color(0xFF2D2D2D), height: 1),
+      ),
+    );
+
+    for (final entry in details.entries) {
+      final key = entry.key;
+      final value = entry.value;
+
+      // Skip internal/private keys
+      if (key.startsWith('_')) continue;
+
+      // Humanize key: "bill_type" -> "Bill Type"
+      final label = key
+          .replaceAll('_', ' ')
+          .split(' ')
+          .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+          .join(' ');
+
+      if (key == 'pins' && value is List) {
+        // Bill payment PINs / tokens
+        for (var i = 0; i < value.length; i++) {
+          widgets.add(_buildDetailRow(
+            value.length == 1 ? 'Token/PIN' : 'Token ${i + 1}',
+            value[i].toString(),
+          ));
+        }
+      } else if (value is Map) {
+        // Nested map — show each sub-entry
+        for (final sub in (value as Map<String, dynamic>).entries) {
+          if (sub.value != null && sub.value.toString().isNotEmpty) {
+            final subLabel = sub.key
+                .replaceAll('_', ' ')
+                .split(' ')
+                .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+                .join(' ');
+            widgets.add(_buildDetailRow(subLabel, sub.value.toString()));
+          }
+        }
+      } else if (value is List) {
+        widgets.add(_buildDetailRow(label, value.join(', ')));
+      } else if (value != null && value.toString().isNotEmpty) {
+        widgets.add(_buildDetailRow(label, value.toString()));
+      }
+    }
+
+    return widgets;
+  }
+
   Widget _buildActionButton({
     required IconData icon,
     required String label,
@@ -645,11 +1019,36 @@ class _FullScreenReceiptViewState extends State<FullScreenReceiptView> {
     if (_isDownloading) return;
     setState(() => _isDownloading = true);
     try {
-      final pdfBytes = await _generateReceiptPdf();
       final directory = await getTemporaryDirectory();
       final fileName =
           'transfer_receipt_${widget.receipt.reference.replaceAll(RegExp(r'[^a-zA-Z0-9-]'), '_')}.pdf';
       final file = File('${directory.path}/$fileName');
+
+      // Try to download from backend URL first
+      if (widget.receipt.receiptUrl != null && widget.receipt.receiptUrl!.isNotEmpty) {
+        try {
+          final response = await http.get(Uri.parse(widget.receipt.receiptUrl!));
+          if (response.statusCode == 200) {
+            await file.writeAsBytes(response.bodyBytes);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Receipt saved: $fileName'),
+                  backgroundColor: const Color(0xFF10B981),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+            return;
+          }
+        } catch (e) {
+          // Fall back to client-side generation if download fails
+          debugPrint('Failed to download receipt from URL: $e');
+        }
+      }
+
+      // Fallback: Generate PDF client-side
+      final pdfBytes = await _generateReceiptPdf();
       await file.writeAsBytes(pdfBytes);
 
       if (mounted) {
@@ -680,10 +1079,30 @@ class _FullScreenReceiptViewState extends State<FullScreenReceiptView> {
     if (_isSharing) return;
     setState(() => _isSharing = true);
     try {
-      final pdfBytes = await _generateReceiptPdf();
       final directory = await getTemporaryDirectory();
       final fileName = 'LazerVault_Receipt_${widget.receipt.reference.replaceAll(RegExp(r'[^a-zA-Z0-9-]'), '_')}.pdf';
       final file = File('${directory.path}/$fileName');
+
+      // Try to download from backend URL first
+      if (widget.receipt.receiptUrl != null && widget.receipt.receiptUrl!.isNotEmpty) {
+        try {
+          final response = await http.get(Uri.parse(widget.receipt.receiptUrl!));
+          if (response.statusCode == 200) {
+            await file.writeAsBytes(response.bodyBytes);
+            // ignore: deprecated_member_use
+            await Share.shareXFiles(
+              [XFile(file.path)],
+              subject: 'LazerVault Transfer Receipt - ${widget.receipt.reference}',
+            );
+            return;
+          }
+        } catch (e) {
+          debugPrint('Failed to download receipt from URL: $e');
+        }
+      }
+
+      // Fallback: Generate PDF client-side
+      final pdfBytes = await _generateReceiptPdf();
       await file.writeAsBytes(pdfBytes);
       // ignore: deprecated_member_use
       await Share.shareXFiles(

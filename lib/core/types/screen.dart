@@ -184,6 +184,9 @@ class Screen {
           create: (context) => serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),
           child: const CrowdfundListScreen(),
         );
+      case ScreenName.planMyDay:
+        // Placeholder - implement PlanMyDay screen when needed
+        return const SizedBox.shrink();
     }
   }
 }
@@ -217,6 +220,7 @@ enum ScreenName {
   currencyExchange('Currency Exchange'),
   moveMoney('Beam'),
   lifeStyle('Life Style'),
+  planMyDay('Plan My Day'),
   crowdfund('Crowdfunding');
 
   final String displayName;

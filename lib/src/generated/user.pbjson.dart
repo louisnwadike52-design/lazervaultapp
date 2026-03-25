@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: user.proto
-//
-// @dart = 2.12
+// Generated from user.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -133,8 +134,8 @@ const GetUserProfileRequest$json = {
 };
 
 /// Descriptor for `GetUserProfileRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserProfileRequestDescriptor = $convert.base64Decode(
-    'ChVHZXRVc2VyUHJvZmlsZVJlcXVlc3Q=');
+final $typed_data.Uint8List getUserProfileRequestDescriptor =
+    $convert.base64Decode('ChVHZXRVc2VyUHJvZmlsZVJlcXVlc3Q=');
 
 @$core.Deprecated('Use getUserProfileResponseDescriptor instead')
 const GetUserProfileResponse$json = {
@@ -143,7 +144,14 @@ const GetUserProfileResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'user', '3': 3, '4': 1, '5': 11, '6': '.pb.User', '10': 'user'},
-    {'1': 'preferences', '3': 4, '4': 1, '5': 11, '6': '.pb.UserPreferences', '10': 'preferences'},
+    {
+      '1': 'preferences',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.UserPreferences',
+      '10': 'preferences'
+    },
   ],
 };
 
@@ -215,21 +223,46 @@ const UpdatePasswordResponse$json = {
 };
 
 /// Descriptor for `UpdatePasswordResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updatePasswordResponseDescriptor = $convert.base64Decode(
-    'ChZVcGRhdGVQYXNzd29yZFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
-    'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List updatePasswordResponseDescriptor =
+    $convert.base64Decode(
+        'ChZVcGRhdGVQYXNzd29yZFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
+        'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use updatePreferencesRequestDescriptor instead')
 const UpdatePreferencesRequest$json = {
   '1': 'UpdatePreferencesRequest',
   '2': [
-    {'1': 'push_notifications', '3': 1, '4': 1, '5': 8, '10': 'pushNotifications'},
-    {'1': 'email_notifications', '3': 2, '4': 1, '5': 8, '10': 'emailNotifications'},
-    {'1': 'sms_notifications', '3': 3, '4': 1, '5': 8, '10': 'smsNotifications'},
+    {
+      '1': 'push_notifications',
+      '3': 1,
+      '4': 1,
+      '5': 8,
+      '10': 'pushNotifications'
+    },
+    {
+      '1': 'email_notifications',
+      '3': 2,
+      '4': 1,
+      '5': 8,
+      '10': 'emailNotifications'
+    },
+    {
+      '1': 'sms_notifications',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '10': 'smsNotifications'
+    },
     {'1': 'dark_mode', '3': 4, '4': 1, '5': 8, '10': 'darkMode'},
     {'1': 'language', '3': 5, '4': 1, '5': 9, '10': 'language'},
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
-    {'1': 'preferred_countries', '3': 7, '4': 3, '5': 9, '10': 'preferredCountries'},
+    {
+      '1': 'preferred_countries',
+      '3': 7,
+      '4': 3,
+      '5': 9,
+      '10': 'preferredCountries'
+    },
     {'1': 'active_country', '3': 8, '4': 1, '5': 9, '10': 'activeCountry'},
   ],
 };
@@ -250,7 +283,14 @@ const UpdatePreferencesResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'preferences', '3': 3, '4': 1, '5': 11, '6': '.pb.UserPreferences', '10': 'preferences'},
+    {
+      '1': 'preferences',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.UserPreferences',
+      '10': 'preferences'
+    },
   ],
 };
 
@@ -265,14 +305,38 @@ const UserPreferences$json = {
   '1': 'UserPreferences',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {'1': 'push_notifications', '3': 2, '4': 1, '5': 8, '10': 'pushNotifications'},
-    {'1': 'email_notifications', '3': 3, '4': 1, '5': 8, '10': 'emailNotifications'},
-    {'1': 'sms_notifications', '3': 4, '4': 1, '5': 8, '10': 'smsNotifications'},
+    {
+      '1': 'push_notifications',
+      '3': 2,
+      '4': 1,
+      '5': 8,
+      '10': 'pushNotifications'
+    },
+    {
+      '1': 'email_notifications',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '10': 'emailNotifications'
+    },
+    {
+      '1': 'sms_notifications',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '10': 'smsNotifications'
+    },
     {'1': 'dark_mode', '3': 5, '4': 1, '5': 8, '10': 'darkMode'},
     {'1': 'language', '3': 6, '4': 1, '5': 9, '10': 'language'},
     {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'country', '3': 8, '4': 1, '5': 9, '10': 'country'},
-    {'1': 'preferred_countries', '3': 9, '4': 3, '5': 9, '10': 'preferredCountries'},
+    {
+      '1': 'preferred_countries',
+      '3': 9,
+      '4': 3,
+      '5': 9,
+      '10': 'preferredCountries'
+    },
     {'1': 'active_country', '3': 10, '4': 1, '5': 9, '10': 'activeCountry'},
   ],
 };
@@ -293,19 +357,59 @@ const IDDocument$json = {
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
-    {'1': 'document_type', '3': 3, '4': 1, '5': 14, '6': '.pb.DocumentType', '10': 'documentType'},
+    {
+      '1': 'document_type',
+      '3': 3,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.DocumentType',
+      '10': 'documentType'
+    },
     {'1': 'document_number', '3': 4, '4': 1, '5': 9, '10': 'documentNumber'},
     {'1': 'full_name', '3': 5, '4': 1, '5': 9, '10': 'fullName'},
     {'1': 'date_of_birth', '3': 6, '4': 1, '5': 9, '10': 'dateOfBirth'},
     {'1': 'issue_date', '3': 7, '4': 1, '5': 9, '10': 'issueDate'},
     {'1': 'expiry_date', '3': 8, '4': 1, '5': 9, '10': 'expiryDate'},
     {'1': 'issuing_country', '3': 9, '4': 1, '5': 9, '10': 'issuingCountry'},
-    {'1': 'document_front_url', '3': 10, '4': 1, '5': 9, '10': 'documentFrontUrl'},
-    {'1': 'document_back_url', '3': 11, '4': 1, '5': 9, '10': 'documentBackUrl'},
-    {'1': 'verification_status', '3': 12, '4': 1, '5': 14, '6': '.pb.VerificationStatus', '10': 'verificationStatus'},
+    {
+      '1': 'document_front_url',
+      '3': 10,
+      '4': 1,
+      '5': 9,
+      '10': 'documentFrontUrl'
+    },
+    {
+      '1': 'document_back_url',
+      '3': 11,
+      '4': 1,
+      '5': 9,
+      '10': 'documentBackUrl'
+    },
+    {
+      '1': 'verification_status',
+      '3': 12,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.VerificationStatus',
+      '10': 'verificationStatus'
+    },
     {'1': 'rejection_reason', '3': 13, '4': 1, '5': 9, '10': 'rejectionReason'},
-    {'1': 'created_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'verified_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'verifiedAt'},
+    {
+      '1': 'created_at',
+      '3': 14,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'verified_at',
+      '3': 15,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'verifiedAt'
+    },
   ],
 };
 
@@ -328,7 +432,14 @@ final $typed_data.Uint8List iDDocumentDescriptor = $convert.base64Decode(
 const UploadIDDocumentRequest$json = {
   '1': 'UploadIDDocumentRequest',
   '2': [
-    {'1': 'document_type', '3': 1, '4': 1, '5': 14, '6': '.pb.DocumentType', '10': 'documentType'},
+    {
+      '1': 'document_type',
+      '3': 1,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.DocumentType',
+      '10': 'documentType'
+    },
     {'1': 'front_image', '3': 2, '4': 1, '5': 12, '10': 'frontImage'},
     {'1': 'back_image', '3': 3, '4': 1, '5': 12, '10': 'backImage'},
   ],
@@ -346,7 +457,14 @@ const UploadIDDocumentResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'document', '3': 3, '4': 1, '5': 11, '6': '.pb.IDDocument', '10': 'document'},
+    {
+      '1': 'document',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.IDDocument',
+      '10': 'document'
+    },
   ],
 };
 
@@ -362,8 +480,8 @@ const GetIDDocumentsRequest$json = {
 };
 
 /// Descriptor for `GetIDDocumentsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getIDDocumentsRequestDescriptor = $convert.base64Decode(
-    'ChVHZXRJRERvY3VtZW50c1JlcXVlc3Q=');
+final $typed_data.Uint8List getIDDocumentsRequestDescriptor =
+    $convert.base64Decode('ChVHZXRJRERvY3VtZW50c1JlcXVlc3Q=');
 
 @$core.Deprecated('Use getIDDocumentsResponseDescriptor instead')
 const GetIDDocumentsResponse$json = {
@@ -371,7 +489,14 @@ const GetIDDocumentsResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'documents', '3': 3, '4': 3, '5': 11, '6': '.pb.IDDocument', '10': 'documents'},
+    {
+      '1': 'documents',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.IDDocument',
+      '10': 'documents'
+    },
   ],
 };
 
@@ -390,9 +515,10 @@ const VerifyIDDocumentRequest$json = {
 };
 
 /// Descriptor for `VerifyIDDocumentRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List verifyIDDocumentRequestDescriptor = $convert.base64Decode(
-    'ChdWZXJpZnlJRERvY3VtZW50UmVxdWVzdBIfCgtkb2N1bWVudF9pZBgBIAEoCVIKZG9jdW1lbn'
-    'RJZA==');
+final $typed_data.Uint8List verifyIDDocumentRequestDescriptor =
+    $convert.base64Decode(
+        'ChdWZXJpZnlJRERvY3VtZW50UmVxdWVzdBIfCgtkb2N1bWVudF9pZBgBIAEoCVIKZG9jdW1lbn'
+        'RJZA==');
 
 @$core.Deprecated('Use verifyIDDocumentResponseDescriptor instead')
 const VerifyIDDocumentResponse$json = {
@@ -400,7 +526,14 @@ const VerifyIDDocumentResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'document', '3': 3, '4': 1, '5': 11, '6': '.pb.IDDocument', '10': 'document'},
+    {
+      '1': 'document',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.IDDocument',
+      '10': 'document'
+    },
   ],
 };
 
@@ -420,8 +553,22 @@ const FacialData$json = {
     {'1': 'face_encoding', '3': 4, '4': 1, '5': 9, '10': 'faceEncoding'},
     {'1': 'image_url', '3': 5, '4': 1, '5': 9, '10': 'imageUrl'},
     {'1': 'is_verified', '3': 6, '4': 1, '5': 8, '10': 'isVerified'},
-    {'1': 'created_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'last_verified_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastVerifiedAt'},
+    {
+      '1': 'created_at',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'last_verified_at',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastVerifiedAt'
+    },
   ],
 };
 
@@ -443,9 +590,10 @@ const UserRegisterFaceRequest$json = {
 };
 
 /// Descriptor for `UserRegisterFaceRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List userRegisterFaceRequestDescriptor = $convert.base64Decode(
-    'ChdVc2VyUmVnaXN0ZXJGYWNlUmVxdWVzdBIdCgpmYWNlX2ltYWdlGAEgASgMUglmYWNlSW1hZ2'
-    'U=');
+final $typed_data.Uint8List userRegisterFaceRequestDescriptor =
+    $convert.base64Decode(
+        'ChdVc2VyUmVnaXN0ZXJGYWNlUmVxdWVzdBIdCgpmYWNlX2ltYWdlGAEgASgMUglmYWNlSW1hZ2'
+        'U=');
 
 @$core.Deprecated('Use userRegisterFaceResponseDescriptor instead')
 const UserRegisterFaceResponse$json = {
@@ -453,7 +601,14 @@ const UserRegisterFaceResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'facial_data', '3': 3, '4': 1, '5': 11, '6': '.pb.FacialData', '10': 'facialData'},
+    {
+      '1': 'facial_data',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.FacialData',
+      '10': 'facialData'
+    },
   ],
 };
 
@@ -498,8 +653,8 @@ const GetFacialDataRequest$json = {
 };
 
 /// Descriptor for `GetFacialDataRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getFacialDataRequestDescriptor = $convert.base64Decode(
-    'ChRHZXRGYWNpYWxEYXRhUmVxdWVzdA==');
+final $typed_data.Uint8List getFacialDataRequestDescriptor =
+    $convert.base64Decode('ChRHZXRGYWNpYWxEYXRhUmVxdWVzdA==');
 
 @$core.Deprecated('Use getFacialDataResponseDescriptor instead')
 const GetFacialDataResponse$json = {
@@ -507,7 +662,14 @@ const GetFacialDataResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'facial_data', '3': 3, '4': 1, '5': 11, '6': '.pb.FacialData', '10': 'facialData'},
+    {
+      '1': 'facial_data',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.pb.FacialData',
+      '10': 'facialData'
+    },
   ],
 };
 
@@ -554,8 +716,9 @@ const VerifyPasscodeRequest$json = {
 };
 
 /// Descriptor for `VerifyPasscodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List verifyPasscodeRequestDescriptor = $convert.base64Decode(
-    'ChVWZXJpZnlQYXNzY29kZVJlcXVlc3QSGgoIcGFzc2NvZGUYASABKAlSCHBhc3Njb2Rl');
+final $typed_data.Uint8List verifyPasscodeRequestDescriptor =
+    $convert.base64Decode(
+        'ChVWZXJpZnlQYXNzY29kZVJlcXVlc3QSGgoIcGFzc2NvZGUYASABKAlSCHBhc3Njb2Rl');
 
 @$core.Deprecated('Use verifyPasscodeResponseDescriptor instead')
 const VerifyPasscodeResponse$json = {
@@ -568,9 +731,10 @@ const VerifyPasscodeResponse$json = {
 };
 
 /// Descriptor for `VerifyPasscodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List verifyPasscodeResponseDescriptor = $convert.base64Decode(
-    'ChZWZXJpZnlQYXNzY29kZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
-    'Vzc2FnZRgCIAEoCVIHbWVzc2FnZRIZCghpc192YWxpZBgDIAEoCFIHaXNWYWxpZA==');
+final $typed_data.Uint8List verifyPasscodeResponseDescriptor =
+    $convert.base64Decode(
+        'ChZWZXJpZnlQYXNzY29kZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
+        'Vzc2FnZRgCIAEoCVIHbWVzc2FnZRIZCghpc192YWxpZBgDIAEoCFIHaXNWYWxpZA==');
 
 @$core.Deprecated('Use removePasscodeRequestDescriptor instead')
 const RemovePasscodeRequest$json = {
@@ -581,8 +745,9 @@ const RemovePasscodeRequest$json = {
 };
 
 /// Descriptor for `RemovePasscodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List removePasscodeRequestDescriptor = $convert.base64Decode(
-    'ChVSZW1vdmVQYXNzY29kZVJlcXVlc3QSGgoIcGFzc3dvcmQYASABKAlSCHBhc3N3b3Jk');
+final $typed_data.Uint8List removePasscodeRequestDescriptor =
+    $convert.base64Decode(
+        'ChVSZW1vdmVQYXNzY29kZVJlcXVlc3QSGgoIcGFzc3dvcmQYASABKAlSCHBhc3N3b3Jk');
 
 @$core.Deprecated('Use removePasscodeResponseDescriptor instead')
 const RemovePasscodeResponse$json = {
@@ -594,9 +759,10 @@ const RemovePasscodeResponse$json = {
 };
 
 /// Descriptor for `RemovePasscodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List removePasscodeResponseDescriptor = $convert.base64Decode(
-    'ChZSZW1vdmVQYXNzY29kZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
-    'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List removePasscodeResponseDescriptor =
+    $convert.base64Decode(
+        'ChZSZW1vdmVQYXNzY29kZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
+        'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use checkPasscodeExistsRequestDescriptor instead')
 const CheckPasscodeExistsRequest$json = {
@@ -604,8 +770,8 @@ const CheckPasscodeExistsRequest$json = {
 };
 
 /// Descriptor for `CheckPasscodeExistsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List checkPasscodeExistsRequestDescriptor = $convert.base64Decode(
-    'ChpDaGVja1Bhc3Njb2RlRXhpc3RzUmVxdWVzdA==');
+final $typed_data.Uint8List checkPasscodeExistsRequestDescriptor =
+    $convert.base64Decode('ChpDaGVja1Bhc3Njb2RlRXhpc3RzUmVxdWVzdA==');
 
 @$core.Deprecated('Use checkPasscodeExistsResponseDescriptor instead')
 const CheckPasscodeExistsResponse$json = {
@@ -617,17 +783,32 @@ const CheckPasscodeExistsResponse$json = {
 };
 
 /// Descriptor for `CheckPasscodeExistsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List checkPasscodeExistsResponseDescriptor = $convert.base64Decode(
-    'ChtDaGVja1Bhc3Njb2RlRXhpc3RzUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-    'IhCgxoYXNfcGFzc2NvZGUYAiABKAhSC2hhc1Bhc3Njb2Rl');
+final $typed_data.Uint8List checkPasscodeExistsResponseDescriptor =
+    $convert.base64Decode(
+        'ChtDaGVja1Bhc3Njb2RlRXhpc3RzUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+        'IhCgxoYXNfcGFzc2NvZGUYAiABKAhSC2hhc1Bhc3Njb2Rl');
 
 @$core.Deprecated('Use devicePermissionDescriptor instead')
 const DevicePermission$json = {
   '1': 'DevicePermission',
   '2': [
-    {'1': 'permission_type', '3': 1, '4': 1, '5': 14, '6': '.pb.PermissionType', '10': 'permissionType'},
+    {
+      '1': 'permission_type',
+      '3': 1,
+      '4': 1,
+      '5': 14,
+      '6': '.pb.PermissionType',
+      '10': 'permissionType'
+    },
     {'1': 'is_granted', '3': 2, '4': 1, '5': 8, '10': 'isGranted'},
-    {'1': 'granted_at', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'grantedAt'},
+    {
+      '1': 'granted_at',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'grantedAt'
+    },
   ],
 };
 
@@ -642,14 +823,22 @@ final $typed_data.Uint8List devicePermissionDescriptor = $convert.base64Decode(
 const UpdateDevicePermissionsRequest$json = {
   '1': 'UpdateDevicePermissionsRequest',
   '2': [
-    {'1': 'permissions', '3': 1, '4': 3, '5': 11, '6': '.pb.DevicePermission', '10': 'permissions'},
+    {
+      '1': 'permissions',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.DevicePermission',
+      '10': 'permissions'
+    },
   ],
 };
 
 /// Descriptor for `UpdateDevicePermissionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateDevicePermissionsRequestDescriptor = $convert.base64Decode(
-    'Ch5VcGRhdGVEZXZpY2VQZXJtaXNzaW9uc1JlcXVlc3QSNgoLcGVybWlzc2lvbnMYASADKAsyFC'
-    '5wYi5EZXZpY2VQZXJtaXNzaW9uUgtwZXJtaXNzaW9ucw==');
+final $typed_data.Uint8List updateDevicePermissionsRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5VcGRhdGVEZXZpY2VQZXJtaXNzaW9uc1JlcXVlc3QSNgoLcGVybWlzc2lvbnMYASADKAsyFC'
+        '5wYi5EZXZpY2VQZXJtaXNzaW9uUgtwZXJtaXNzaW9ucw==');
 
 @$core.Deprecated('Use updateDevicePermissionsResponseDescriptor instead')
 const UpdateDevicePermissionsResponse$json = {
@@ -661,9 +850,10 @@ const UpdateDevicePermissionsResponse$json = {
 };
 
 /// Descriptor for `UpdateDevicePermissionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateDevicePermissionsResponseDescriptor = $convert.base64Decode(
-    'Ch9VcGRhdGVEZXZpY2VQZXJtaXNzaW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
-    'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List updateDevicePermissionsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9VcGRhdGVEZXZpY2VQZXJtaXNzaW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
+        'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getDevicePermissionsRequestDescriptor instead')
 const GetDevicePermissionsRequest$json = {
@@ -671,8 +861,8 @@ const GetDevicePermissionsRequest$json = {
 };
 
 /// Descriptor for `GetDevicePermissionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDevicePermissionsRequestDescriptor = $convert.base64Decode(
-    'ChtHZXREZXZpY2VQZXJtaXNzaW9uc1JlcXVlc3Q=');
+final $typed_data.Uint8List getDevicePermissionsRequestDescriptor =
+    $convert.base64Decode('ChtHZXREZXZpY2VQZXJtaXNzaW9uc1JlcXVlc3Q=');
 
 @$core.Deprecated('Use getDevicePermissionsResponseDescriptor instead')
 const GetDevicePermissionsResponse$json = {
@@ -680,13 +870,20 @@ const GetDevicePermissionsResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'permissions', '3': 3, '4': 3, '5': 11, '6': '.pb.DevicePermission', '10': 'permissions'},
+    {
+      '1': 'permissions',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.DevicePermission',
+      '10': 'permissions'
+    },
   ],
 };
 
 /// Descriptor for `GetDevicePermissionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDevicePermissionsResponseDescriptor = $convert.base64Decode(
-    'ChxHZXREZXZpY2VQZXJtaXNzaW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
-    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRI2CgtwZXJtaXNzaW9ucxgDIAMoCzIULnBiLkRl'
-    'dmljZVBlcm1pc3Npb25SC3Blcm1pc3Npb25z');
-
+final $typed_data.Uint8List getDevicePermissionsResponseDescriptor =
+    $convert.base64Decode(
+        'ChxHZXREZXZpY2VQZXJtaXNzaW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+        'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRI2CgtwZXJtaXNzaW9ucxgDIAMoCzIULnBiLkRl'
+        'dmljZVBlcm1pc3Npb25SC3Blcm1pc3Npb25z');

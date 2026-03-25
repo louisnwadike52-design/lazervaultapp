@@ -6,6 +6,7 @@ import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_enti
 import 'package:lazervault/src/features/crowdfund/domain/usecases/crowdfund_usecases.dart';
 import 'package:lazervault/src/features/group_account/data/models/group_account_models.dart';
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
+import '../../../../../core/utils/user_friendly_error.dart';
 import 'discovery_state.dart';
 
 class DiscoveryCubit extends Cubit<DiscoveryState> {
@@ -60,7 +61,7 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
               isStale: result.isStale,
             ));
           } else if (result.hasError) {
-            emit(DiscoveryError(result.error.toString()));
+            emit(DiscoveryError(getUserFriendlyErrorMessage(result.error)));
           }
         }
       } else {
@@ -120,7 +121,7 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
               isStale: result.isStale,
             ));
           } else if (result.hasError) {
-            emit(DiscoveryError(result.error.toString()));
+            emit(DiscoveryError(getUserFriendlyErrorMessage(result.error)));
           }
         }
       } else {

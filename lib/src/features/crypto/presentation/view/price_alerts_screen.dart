@@ -12,39 +12,8 @@ class PriceAlertsScreen extends StatefulWidget {
 }
 
 class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
-  // Mock price alerts data
-  final List<PriceAlert> _alerts = [
-    PriceAlert(
-      id: '1',
-      cryptoSymbol: 'BTC',
-      cryptoName: 'Bitcoin',
-      targetPrice: 75000,
-      currentPrice: 70000,
-      alertType: AlertType.above,
-      isActive: true,
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    PriceAlert(
-      id: '2',
-      cryptoSymbol: 'ETH',
-      cryptoName: 'Ethereum',
-      targetPrice: 1400,
-      currentPrice: 1544,
-      alertType: AlertType.below,
-      isActive: false,
-      createdAt: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    PriceAlert(
-      id: '3',
-      cryptoSymbol: 'SOL',
-      cryptoName: 'Solana',
-      targetPrice: 200,
-      currentPrice: 156,
-      alertType: AlertType.above,
-      isActive: true,
-      createdAt: DateTime.now().subtract(const Duration(hours: 6)),
-    ),
-  ];
+  // Price alerts - will be populated from backend when feature is ready
+  final List<PriceAlert> _alerts = [];
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +29,8 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _buildComingSoonBanner(),
+                    SizedBox(height: 24.h),
                     _buildActiveAlertsSection(),
                     SizedBox(height: 24.h),
                     _buildInactiveAlertsSection(),
@@ -74,8 +45,56 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreateAlertBottomSheet,
-        backgroundColor: const Color(0xFF6C5CE7),
+        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
         child: Icon(Icons.add_alert, color: Colors.white, size: 24.sp),
+      ),
+    );
+  }
+
+  Widget _buildComingSoonBanner() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+            const Color(0xFF1F1F1F),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.rocket_launch, color: const Color.fromARGB(255, 78, 3, 208), size: 28.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Coming Soon',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Real-time price alerts with push notifications are being developed.',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -161,7 +180,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
               ),
               Icon(
                 Icons.notifications_active,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 size: 20.sp,
               ),
             ],
@@ -352,7 +371,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
               Switch(
                 value: alert.isActive,
                 onChanged: (value) => _toggleAlert(alert.id, value),
-                activeThumbColor: const Color(0xFF6C5CE7),
+                activeThumbColor: const Color.fromARGB(255, 78, 3, 208),
               ),
             ],
           ),
@@ -374,12 +393,12 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Icon(
                         Icons.edit,
-                        color: const Color(0xFF6C5CE7),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                         size: 16.sp,
                       ),
                     ),
@@ -468,7 +487,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, color: const Color(0xFF6C5CE7), size: 24.sp),
+          Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp),
           SizedBox(height: 8.h),
           Text(
             value,
@@ -740,7 +759,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   margin: EdgeInsets.only(bottom: 8.h),
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : const Color(0xFF0A0A0A),
+                    color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2) : const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
           BoxShadow(
@@ -826,7 +845,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: _selectedAlertType == AlertType.above 
-                        ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) 
+                        ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2) 
                         : const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
@@ -867,7 +886,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: _selectedAlertType == AlertType.below 
-                        ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) 
+                        ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2) 
                         : const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
@@ -963,7 +982,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
       child: ElevatedButton(
         onPressed: _createAlert,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6C5CE7),
+          backgroundColor: const Color.fromARGB(255, 78, 3, 208),
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),

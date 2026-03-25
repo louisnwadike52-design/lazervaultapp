@@ -178,7 +178,11 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
             options: await _grpcClient.callOptions,
           );
 
-      return LockFundModel.interestFromProto(response, principalAmount: amount);
+      return LockFundModel.interestFromProto(
+        response,
+        principalAmount: amount,
+        lockDurationDays: lockDurationDays,
+      );
     } catch (e) {
       throw Exception('Failed to calculate interest: $e');
     }
@@ -240,7 +244,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
     try {
       final request = pb.GetLockFundsRequest()
         ..page = 1
-        ..perPage = 100; // Get all for statistics
+        ..perPage = 100;
 
       final response = await _grpcClient.lockFundsClient.getLockFunds(
         request,
@@ -256,5 +260,169 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
     } catch (e) {
       throw Exception('Failed to fetch statistics: $e');
     }
+  }
+
+  @override
+  Future<TopUpResult> topUpLockFund({
+    required String lockFundId,
+    required double amount,
+    required String sourceAccountId,
+    String transactionPin = '',
+  }) async {
+    try {
+      final request = pb.TopUpLockFundRequest()
+        ..lockFundId = lockFundId
+        ..amount = amount
+        ..sourceAccountId = sourceAccountId
+        ..transactionPin = transactionPin;
+
+      final response = await _grpcClient.lockFundsClient.topUpLockFund(
+        request,
+        options: await _grpcClient.callOptions,
+      );
+
+      return TopUpResult(
+        updatedLockFund: LockFundModel.fromProto(response.updatedLockFund),
+        newBalance: response.newBalance,
+        message: response.message,
+      );
+    } catch (e) {
+      throw Exception('Failed to top up: $e');
+    }
+  }
+
+  @override
+  Future<List<PiggyVaultConfig>> getPiggyVaultConfigs({String? currency}) async {
+    try {
+      final request = pb.GetPiggyVaultConfigsRequest();
+      if (currency != null) request.currency = currency;
+
+      final response = await _grpcClient.lockFundsClient.getPiggyVaultConfigs(
+        request,
+        options: await _grpcClient.callOptions,
+      );
+
+      return response.configs.map((c) => PiggyVaultConfig(
+        id: c.id,
+        lockType: c.lockType,
+        currency: c.currency,
+        displayName: c.displayName,
+        baseInterestRate: c.baseInterestRate,
+        maxInterestRate: c.maxInterestRate,
+        earlyWithdrawalPenalty: c.earlyWithdrawalPenalty,
+        minDurationDays: c.minDurationDays,
+        maxDurationDays: c.maxDurationDays,
+        minAmount: c.minAmount,
+        maxAmount: c.maxAmount,
+        allowsEarlyWithdrawal: c.allowsEarlyWithdrawal,
+        supportsAutoRenew: c.supportsAutoRenew,
+        supportsTopUp: c.supportsTopUp,
+        supportsAutoSave: c.supportsAutoSave,
+        supportsUpfrontInterest: c.supportsUpfrontInterest,
+        durationBonusTiers: c.durationBonusTiers,
+        isActive: c.isActive,
+        description: c.description,
+      )).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch configs: $e');
+    }
+  }
+
+  @override
+  Future<LockFundAutoSaveConfig> createAutoSave({
+    required String lockFundId,
+    required String sourceAccountId,
+    required double amount,
+    required String frequency,
+  }) async {
+    try {
+      final request = pb.CreateLockFundAutoSaveRequest()
+        ..lockFundId = lockFundId
+        ..sourceAccountId = sourceAccountId
+        ..amount = amount
+        ..frequency = frequency;
+
+      final response = await _grpcClient.lockFundsClient.createLockFundAutoSave(
+        request,
+        options: await _grpcClient.callOptions,
+      );
+
+      return _mapAutoSaveProto(response.autosave);
+    } catch (e) {
+      throw Exception('Failed to create auto-save: $e');
+    }
+  }
+
+  @override
+  Future<LockFundAutoSaveConfig?> getAutoSave({required String lockFundId}) async {
+    try {
+      final request = pb.GetLockFundAutoSaveRequest()
+        ..lockFundId = lockFundId;
+
+      final response = await _grpcClient.lockFundsClient.getLockFundAutoSave(
+        request,
+        options: await _grpcClient.callOptions,
+      );
+
+      if (!response.hasAutosave()) return null;
+      return _mapAutoSaveProto(response.autosave);
+    } catch (e) {
+      return null; // No auto-save configured
+    }
+  }
+
+  @override
+  Future<LockFundAutoSaveConfig> updateAutoSave({
+    required String autoSaveId,
+    double? amount,
+    String? frequency,
+    String? status,
+  }) async {
+    try {
+      final request = pb.UpdateLockFundAutoSaveRequest()
+        ..autosaveId = autoSaveId;
+      if (amount != null) request.amount = amount;
+      if (frequency != null) request.frequency = frequency;
+      if (status != null) request.status = status;
+
+      final response = await _grpcClient.lockFundsClient.updateLockFundAutoSave(
+        request,
+        options: await _grpcClient.callOptions,
+      );
+
+      return _mapAutoSaveProto(response.autosave);
+    } catch (e) {
+      throw Exception('Failed to update auto-save: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteAutoSave({required String autoSaveId}) async {
+    try {
+      final request = pb.DeleteLockFundAutoSaveRequest()
+        ..autosaveId = autoSaveId;
+
+      await _grpcClient.lockFundsClient.deleteLockFundAutoSave(
+        request,
+        options: await _grpcClient.callOptions,
+      );
+    } catch (e) {
+      throw Exception('Failed to delete auto-save: $e');
+    }
+  }
+
+  LockFundAutoSaveConfig _mapAutoSaveProto(pb.LockFundAutoSave a) {
+    return LockFundAutoSaveConfig(
+      id: a.id,
+      lockFundId: a.lockFundId,
+      sourceAccountId: a.sourceAccountId,
+      amount: a.amount,
+      frequency: a.frequency,
+      status: a.status,
+      nextRunAt: a.nextRunAt.isNotEmpty ? DateTime.tryParse(a.nextRunAt) : null,
+      lastRunAt: a.lastRunAt.isNotEmpty ? DateTime.tryParse(a.lastRunAt) : null,
+      totalSaved: a.totalSaved,
+      runCount: a.runCount,
+    );
   }
 }

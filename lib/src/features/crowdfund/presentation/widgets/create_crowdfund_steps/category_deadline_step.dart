@@ -37,7 +37,7 @@ class CategoryDeadlineStep extends StatelessWidget {
               height: 80.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -91,7 +91,7 @@ class CategoryDeadlineStep extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: isSelected
                         ? const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           )
@@ -178,7 +178,7 @@ class CategoryDeadlineStep extends StatelessWidget {
                       ? LinearGradient(
                           colors: [
                             const Color(0xFF6366F1).withValues(alpha: 0.2),
-                            const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -240,7 +240,7 @@ class CategoryDeadlineStep extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [
                   const Color(0xFF6366F1).withValues(alpha: 0.1),
-                  const Color(0xFF8B5CF6).withValues(alpha: 0.05),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

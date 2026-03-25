@@ -6,6 +6,8 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
 
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_product_entity.dart';
 import '../../domain/repositories/insurance_repository.dart';
@@ -22,25 +24,30 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   final InsuranceRepository _repository;
   final SWRCacheManager _cacheManager;
   final MutationQueue _mutationQueue;
+  final LocaleManager? _localeManager;
 
   CreatePolicyCubit({
     required InsuranceRepository repository,
     required SWRCacheManager cacheManager,
     required MutationQueue mutationQueue,
+    LocaleManager? localeManager,
   })  : _repository = repository,
         _cacheManager = cacheManager,
         _mutationQueue = mutationQueue,
+        _localeManager = localeManager,
         super(const CreatePolicyInitial());
 
   // Marketplace state
   String _locale = 'NG';
   InsuranceProductCategory? _selectedCategory;
+  InsuranceCategoryInfo? _selectedCategoryInfo;
   List<InsuranceProduct> _products = [];
   List<InsuranceCategoryInfo> _categories = [];
   InsuranceProduct? _selectedProduct;
   Map<String, String> _formData = {};
   InsuranceQuote? _quote;
   String? _selectedAccountId;
+  bool _agreedToTerms = false;
   bool _quotePending = false;
   bool _isPurchasing = false;
   String? _lastIdempotencyKey;
@@ -65,12 +72,14 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   // Marketplace getters
   String get locale => _locale;
   InsuranceProductCategory? get selectedCategory => _selectedCategory;
+  InsuranceCategoryInfo? get selectedCategoryInfo => _selectedCategoryInfo;
   List<InsuranceProduct> get products => List.unmodifiable(_products);
   List<InsuranceCategoryInfo> get categories => List.unmodifiable(_categories);
   InsuranceProduct? get selectedProduct => _selectedProduct;
   Map<String, String> get formData => Map.unmodifiable(_formData);
   InsuranceQuote? get quote => _quote;
   String? get selectedAccountId => _selectedAccountId;
+  bool get agreedToTerms => _agreedToTerms;
 
   // Legacy getters
   InsuranceType get insuranceType => _insuranceType;
@@ -93,14 +102,24 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   // MyCover.ai Marketplace Methods
   // ============================================================
 
+  /// The active currency from LocaleManager (reactive source of truth from dashboard)
+  String get activeCurrency => _localeManager?.currentCurrency ?? _currency;
+
   /// Initialize with user data - derives locale and loads categories
   void initializeWithUserData(User user) {
     if (isClosed) return;
     emit(const CreatePolicyLoading());
 
-    // Derive locale from user currency
-    _locale = _deriveLocale(user.currency ?? 'NGN');
-    _currency = user.currency ?? 'NGN';
+    // Use LocaleManager as primary source (reflects dashboard locale picker)
+    final lm = _localeManager;
+    if (lm != null) {
+      _currency = lm.currentCurrency;
+      _locale = lm.currentCountry;
+    } else {
+      // Fallback to user profile
+      _currency = user.currency ?? 'NGN';
+      _locale = _deriveLocale(_currency);
+    }
 
     // Auto-fill legacy form fields
     _policyHolderName = '${user.firstName} ${user.lastName}'.trim();
@@ -153,7 +172,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
           message: 'Unable to connect to insurance service. Please check your connection and try again.',
         ));
       } else {
-        emit(CreatePolicyError(message: 'Failed to load categories: ${e.message ?? e.toString()}'));
+        emit(CreatePolicyError(message: friendlyGrpcError(e, 'Failed to load categories')));
       }
     } catch (e) {
       if (isClosed) return;
@@ -174,22 +193,36 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
   }
 
-  /// Load products for a category with SWR caching
+  /// Load products for a category with SWR caching.
+  /// Always requires a category — pass the category UUID directly to the
+  /// backend so it skips the extra GetCategories() name→UUID resolution call.
   Future<void> loadProducts({InsuranceProductCategory? category}) async {
     if (isClosed) return;
 
+    // Clear selected product when changing categories to avoid stale UI
+    _selectedProduct = null;
     _selectedCategory = category;
+
+    // Resolve the InsuranceCategoryInfo to get the UUID for the backend
+    _selectedCategoryInfo = category != null
+        ? _categories.cast<InsuranceCategoryInfo?>().firstWhere(
+            (c) => c!.category == category,
+            orElse: () => null,
+          )
+        : null;
+
     emit(InsuranceProductsLoading(category: category));
 
-    final cacheKey = 'insurance_products_${_locale}_${category?.name ?? 'all'}';
-    final categoryStr = category?.name;
+    // Pass category UUID (id) to backend to avoid the extra GetCategories() call
+    final categoryId = _selectedCategoryInfo?.id;
+    final cacheKey = 'insurance_products_${_locale}_${categoryId ?? category?.name ?? 'all'}';
 
     try {
       await for (final result in _cacheManager.get<List<InsuranceProduct>>(
         key: cacheKey,
         fetcher: () => _repository.getInsuranceProducts(
           locale: _locale,
-          category: categoryStr,
+          category: categoryId ?? category?.name,
         ),
         config: CacheConfig.insuranceProducts,
         serializer: (products) => jsonEncode(
@@ -271,6 +304,9 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         },
       )) {
         if (isClosed) return;
+        // If user already selected a product, don't overwrite that state
+        // with a late SWR revalidation emission
+        if (_selectedProduct != null) return;
         if (result.data != null) {
           _products = result.data!;
           emit(InsuranceProductsLoaded(
@@ -284,8 +320,25 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(CreatePolicyError(message: 'Failed to load products: $e'));
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('connection') || msg.contains('unavailable') || msg.contains('socket')) {
+        emit(const CreatePolicyError(message: 'Unable to connect. Please check your connection and try again.'));
+      } else if (msg.contains('timeout') || msg.contains('deadline')) {
+        emit(const CreatePolicyError(message: 'Request timed out. Please try again.'));
+      } else {
+        emit(const CreatePolicyError(message: 'Failed to load insurance products. Please try again.'));
+      }
     }
+  }
+
+  /// Navigate back to the category grid without losing loaded categories
+  void backToCategories() {
+    if (isClosed) return;
+    _selectedProduct = null;
+    _selectedCategory = null;
+    _selectedCategoryInfo = null;
+    _products = [];
+    emit(InsuranceCategoriesLoaded(categories: _categories, locale: _locale));
   }
 
   /// Select a product and prepare for form filling
@@ -323,6 +376,12 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     // Trim text values (not dropdowns/booleans)
     final trimmedValue = (value == 'true' || value == 'false') ? value : value.trim();
     _formData = {..._formData, name: trimmedValue};
+
+    // Clear dependent vehicle_model when vehicle_make changes
+    if (name == 'vehicle_make' || name == 'make') {
+      _formData.remove('vehicle_model');
+      _formData.remove('model');
+    }
 
     if (_selectedProduct != null) {
       emit(InsuranceProductSelected(
@@ -374,19 +433,23 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     if (!validateFormFields()) return;
 
     _quotePending = true;
-    emit(InsuranceQuoteLoading(product: _selectedProduct!));
+    // Reset idempotency key when requesting a new quote (even if it fails)
+    _lastIdempotencyKey = null;
+
+    final product = _selectedProduct!;
+    emit(InsuranceQuoteLoading(product: product));
 
     try {
       _quote = await _repository.getInsuranceQuote(
-        productId: _selectedProduct!.id,
+        productId: product.id,
         formData: _formData,
         locale: _locale,
       );
 
-      // Reset idempotency key when a new quote is obtained
-      _lastIdempotencyKey = null;
-
       if (isClosed) return;
+      // Re-check _selectedProduct after async gap — user may have navigated away
+      if (_selectedProduct == null || _quote == null) return;
+
       emit(InsuranceQuoteLoaded(
         quote: _quote!,
         product: _selectedProduct!,
@@ -394,7 +457,16 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(CreatePolicyError(message: 'Failed to get quote: $e'));
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('connection') || msg.contains('unavailable') || msg.contains('socket')) {
+        emit(const CreatePolicyError(message: 'Unable to connect. Please check your connection and try again.'));
+      } else if (msg.contains('timeout') || msg.contains('deadline')) {
+        emit(const CreatePolicyError(message: 'Quote request timed out. Please try again.'));
+      } else if (msg.contains('not found')) {
+        emit(const CreatePolicyError(message: 'This product is currently unavailable. Please try another plan.'));
+      } else {
+        emit(const CreatePolicyError(message: 'Failed to get quote. Please try again.'));
+      }
     } finally {
       _quotePending = false;
     }
@@ -402,6 +474,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
   /// Set the selected account for payment
   void selectAccount(String accountId) {
+    if (isClosed) return;
     _selectedAccountId = accountId;
     // Re-emit current state so UI can update
     if (_quote != null && _selectedProduct != null) {
@@ -411,6 +484,11 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         formData: _formData,
       ));
     }
+  }
+
+  /// Set terms agreement
+  void setTermsAgreed(bool agreed) {
+    _agreedToTerms = agreed;
   }
 
   /// Check if an error is a network/connectivity error
@@ -430,38 +508,42 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     required String transactionPin,
   }) async {
     if (isClosed || _selectedProduct == null || _quote == null) return;
-    if (_isPurchasing) return;
 
-    // Check quote expiry
+    // Check quote expiry BEFORE the isPurchasing guard so user always gets feedback
     if (_quote!.isExpired) {
       emit(const CreatePolicyError(message: 'Quote has expired. Please get a new quote.'));
       return;
     }
 
+    if (_isPurchasing) return;
     _isPurchasing = true;
 
     _selectedAccountId = accountId;
 
+    // Capture references before async gap — protects against null after await
+    final quote = _quote!;
+    final product = _selectedProduct!;
+
     // Reuse idempotency key on retry, generate new one for genuinely new purchases
     _lastIdempotencyKey ??= _generateIdempotencyKey(
-      _quote!.quoteId,
-      _selectedProduct!.id,
-      _quote!.premium,
+      quote.quoteId,
+      product.id,
+      quote.premium,
     );
     final idempotencyKey = _lastIdempotencyKey!;
 
     // Emit initial processing state
     emit(InsurancePurchaseProcessing(
       step: InsuranceProcessingStep.initiated,
-      product: _selectedProduct!,
-      quote: _quote!,
+      product: product,
+      quote: quote,
       progress: 0.1,
     ));
 
     try {
       final result = await _repository.purchaseInsurance(
-        quoteId: _quote!.quoteId,
-        productId: _selectedProduct!.id,
+        quoteId: quote.quoteId,
+        productId: product.id,
         accountId: accountId,
         transactionPin: transactionPin,
         idempotencyKey: idempotencyKey,
@@ -476,8 +558,8 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
       emit(InsurancePurchaseSuccess(
         purchaseResult: result,
-        product: _selectedProduct!,
-        quote: _quote!,
+        product: product,
+        quote: quote,
       ));
 
       // Invalidate product cache since user now has a policy
@@ -485,30 +567,53 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     } on GrpcError catch (e) {
       if (isClosed) return;
       if (_isNetworkError(e)) {
-        // Queue for offline retry
         await _mutationQueue.enqueue(QueuedMutation.create(
           type: MutationType.generic,
           payload: {
             'action': 'purchase_insurance',
-            'quoteId': _quote!.quoteId,
-            'productId': _selectedProduct!.id,
+            'quoteId': quote.quoteId,
+            'productId': product.id,
             'accountId': accountId,
             'idempotencyKey': idempotencyKey,
             'formData': _formData,
             'locale': _locale,
           },
-          description: 'Insurance purchase: ${_selectedProduct!.name}',
+          description: 'Insurance purchase: ${product.name}',
         ));
         emit(const InsurancePurchaseQueued());
       } else {
         emit(CreatePolicyError(
-          message: e.message ?? 'Failed to purchase insurance',
+          message: friendlyGrpcError(e, 'Failed to purchase insurance'),
           errorCode: e.code.toString(),
         ));
       }
     } catch (e) {
       if (isClosed) return;
-      emit(CreatePolicyError(message: 'Failed to purchase insurance: $e'));
+      if (_isNetworkError(e)) {
+        await _mutationQueue.enqueue(QueuedMutation.create(
+          type: MutationType.generic,
+          payload: {
+            'action': 'purchase_insurance',
+            'quoteId': quote.quoteId,
+            'productId': product.id,
+            'accountId': accountId,
+            'idempotencyKey': idempotencyKey,
+            'formData': _formData,
+            'locale': _locale,
+          },
+          description: 'Insurance purchase: ${product.name}',
+        ));
+        emit(const InsurancePurchaseQueued());
+      } else {
+        final msg = e.toString().toLowerCase();
+        if (msg.contains('insufficient') || msg.contains('balance')) {
+          emit(const CreatePolicyError(message: 'Insufficient balance. Please fund your account and try again.'));
+        } else if (msg.contains('pin') || msg.contains('permission')) {
+          emit(const CreatePolicyError(message: 'Invalid transaction PIN. Please try again.'));
+        } else {
+          emit(const CreatePolicyError(message: 'Purchase failed. Please try again.'));
+        }
+      }
     } finally {
       _isPurchasing = false;
     }
@@ -786,11 +891,13 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
     // Reset marketplace state
     _selectedCategory = null;
+    _selectedCategoryInfo = null;
     _products = [];
     _selectedProduct = null;
     _formData = {};
     _quote = null;
     _selectedAccountId = null;
+    _agreedToTerms = false;
 
     if (isClosed) return;
     emit(const CreatePolicyInitial());

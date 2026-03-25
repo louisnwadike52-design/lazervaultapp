@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: support.proto
-//
-// @dart = 2.12
+// Generated from support.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -77,15 +78,64 @@ const SupportTicket$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 5, '10': 'userId'},
     {'1': 'ticket_number', '3': 3, '4': 1, '5': 9, '10': 'ticketNumber'},
-    {'1': 'category', '3': 4, '4': 1, '5': 14, '6': '.lazervault.TicketCategory', '10': 'category'},
+    {
+      '1': 'category',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.lazervault.TicketCategory',
+      '10': 'category'
+    },
     {'1': 'subject', '3': 5, '4': 1, '5': 9, '10': 'subject'},
     {'1': 'description', '3': 6, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'status', '3': 7, '4': 1, '5': 14, '6': '.lazervault.TicketStatus', '10': 'status'},
-    {'1': 'priority', '3': 8, '4': 1, '5': 14, '6': '.lazervault.TicketPriority', '10': 'priority'},
-    {'1': 'created_at', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
-    {'1': 'resolved_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'resolvedAt'},
-    {'1': 'replies', '3': 12, '4': 3, '5': 11, '6': '.lazervault.TicketReply', '10': 'replies'},
+    {
+      '1': 'status',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.lazervault.TicketStatus',
+      '10': 'status'
+    },
+    {
+      '1': 'priority',
+      '3': 8,
+      '4': 1,
+      '5': 14,
+      '6': '.lazervault.TicketPriority',
+      '10': 'priority'
+    },
+    {
+      '1': 'created_at',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
+    {
+      '1': 'resolved_at',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'resolvedAt'
+    },
+    {
+      '1': 'replies',
+      '3': 12,
+      '4': 3,
+      '5': 11,
+      '6': '.lazervault.TicketReply',
+      '10': 'replies'
+    },
   ],
 };
 
@@ -111,7 +161,14 @@ const TicketReply$json = {
     {'1': 'user_id', '3': 3, '4': 1, '5': 5, '10': 'userId'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
     {'1': 'is_staff', '3': 5, '4': 1, '5': 8, '10': 'isStaff'},
-    {'1': 'created_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'created_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
   ],
 };
 
@@ -133,7 +190,14 @@ const ContactMessage$json = {
     {'1': 'subject', '3': 5, '4': 1, '5': 9, '10': 'subject'},
     {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
     {'1': 'user_id', '3': 7, '4': 1, '5': 5, '10': 'userId'},
-    {'1': 'created_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {
+      '1': 'created_at',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
     {'1': 'is_read', '3': 9, '4': 1, '5': 8, '10': 'isRead'},
   ],
 };
@@ -150,17 +214,25 @@ final $typed_data.Uint8List contactMessageDescriptor = $convert.base64Decode(
 const CreateSupportTicketRequest$json = {
   '1': 'CreateSupportTicketRequest',
   '2': [
-    {'1': 'category', '3': 1, '4': 1, '5': 14, '6': '.lazervault.TicketCategory', '10': 'category'},
+    {
+      '1': 'category',
+      '3': 1,
+      '4': 1,
+      '5': 14,
+      '6': '.lazervault.TicketCategory',
+      '10': 'category'
+    },
     {'1': 'subject', '3': 2, '4': 1, '5': 9, '10': 'subject'},
     {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
   ],
 };
 
 /// Descriptor for `CreateSupportTicketRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createSupportTicketRequestDescriptor = $convert.base64Decode(
-    'ChpDcmVhdGVTdXBwb3J0VGlja2V0UmVxdWVzdBI2CghjYXRlZ29yeRgBIAEoDjIaLmxhemVydm'
-    'F1bHQuVGlja2V0Q2F0ZWdvcnlSCGNhdGVnb3J5EhgKB3N1YmplY3QYAiABKAlSB3N1YmplY3QS'
-    'IAoLZGVzY3JpcHRpb24YAyABKAlSC2Rlc2NyaXB0aW9u');
+final $typed_data.Uint8List createSupportTicketRequestDescriptor =
+    $convert.base64Decode(
+        'ChpDcmVhdGVTdXBwb3J0VGlja2V0UmVxdWVzdBI2CghjYXRlZ29yeRgBIAEoDjIaLmxhemVydm'
+        'F1bHQuVGlja2V0Q2F0ZWdvcnlSCGNhdGVnb3J5EhgKB3N1YmplY3QYAiABKAlSB3N1YmplY3QS'
+        'IAoLZGVzY3JpcHRpb24YAyABKAlSC2Rlc2NyaXB0aW9u');
 
 @$core.Deprecated('Use createSupportTicketResponseDescriptor instead')
 const CreateSupportTicketResponse$json = {
@@ -168,15 +240,23 @@ const CreateSupportTicketResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'ticket', '3': 3, '4': 1, '5': 11, '6': '.lazervault.SupportTicket', '10': 'ticket'},
+    {
+      '1': 'ticket',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.lazervault.SupportTicket',
+      '10': 'ticket'
+    },
   ],
 };
 
 /// Descriptor for `CreateSupportTicketResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createSupportTicketResponseDescriptor = $convert.base64Decode(
-    'ChtDcmVhdGVTdXBwb3J0VGlja2V0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjEKBnRpY2tldBgDIAEoCzIZLmxhemVydmF1bHQu'
-    'U3VwcG9ydFRpY2tldFIGdGlja2V0');
+final $typed_data.Uint8List createSupportTicketResponseDescriptor =
+    $convert.base64Decode(
+        'ChtDcmVhdGVTdXBwb3J0VGlja2V0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjEKBnRpY2tldBgDIAEoCzIZLmxhemVydmF1bHQu'
+        'U3VwcG9ydFRpY2tldFIGdGlja2V0');
 
 @$core.Deprecated('Use getSupportTicketsRequestDescriptor instead')
 const GetSupportTicketsRequest$json = {
@@ -184,7 +264,14 @@ const GetSupportTicketsRequest$json = {
   '2': [
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
-    {'1': 'status_filter', '3': 3, '4': 1, '5': 14, '6': '.lazervault.TicketStatus', '10': 'statusFilter'},
+    {
+      '1': 'status_filter',
+      '3': 3,
+      '4': 1,
+      '5': 14,
+      '6': '.lazervault.TicketStatus',
+      '10': 'statusFilter'
+    },
   ],
 };
 
@@ -200,7 +287,14 @@ const GetSupportTicketsResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'tickets', '3': 3, '4': 3, '5': 11, '6': '.lazervault.SupportTicket', '10': 'tickets'},
+    {
+      '1': 'tickets',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.lazervault.SupportTicket',
+      '10': 'tickets'
+    },
     {'1': 'total_count', '3': 4, '4': 1, '5': 5, '10': 'totalCount'},
     {'1': 'page', '3': 5, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 6, '4': 1, '5': 5, '10': 'pageSize'},
@@ -223,8 +317,9 @@ const GetSupportTicketRequest$json = {
 };
 
 /// Descriptor for `GetSupportTicketRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSupportTicketRequestDescriptor = $convert.base64Decode(
-    'ChdHZXRTdXBwb3J0VGlja2V0UmVxdWVzdBIbCgl0aWNrZXRfaWQYASABKAlSCHRpY2tldElk');
+final $typed_data.Uint8List getSupportTicketRequestDescriptor =
+    $convert.base64Decode(
+        'ChdHZXRTdXBwb3J0VGlja2V0UmVxdWVzdBIbCgl0aWNrZXRfaWQYASABKAlSCHRpY2tldElk');
 
 @$core.Deprecated('Use getSupportTicketResponseDescriptor instead')
 const GetSupportTicketResponse$json = {
@@ -232,7 +327,14 @@ const GetSupportTicketResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'ticket', '3': 3, '4': 1, '5': 11, '6': '.lazervault.SupportTicket', '10': 'ticket'},
+    {
+      '1': 'ticket',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.lazervault.SupportTicket',
+      '10': 'ticket'
+    },
   ],
 };
 
@@ -247,7 +349,14 @@ const UpdateTicketStatusRequest$json = {
   '1': 'UpdateTicketStatusRequest',
   '2': [
     {'1': 'ticket_id', '3': 1, '4': 1, '5': 9, '10': 'ticketId'},
-    {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.lazervault.TicketStatus', '10': 'status'},
+    {
+      '1': 'status',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.lazervault.TicketStatus',
+      '10': 'status'
+    },
     {'1': 'resolution_note', '3': 3, '4': 1, '5': 9, '10': 'resolutionNote'},
   ],
 };
@@ -264,15 +373,23 @@ const UpdateTicketStatusResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'ticket', '3': 3, '4': 1, '5': 11, '6': '.lazervault.SupportTicket', '10': 'ticket'},
+    {
+      '1': 'ticket',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.lazervault.SupportTicket',
+      '10': 'ticket'
+    },
   ],
 };
 
 /// Descriptor for `UpdateTicketStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateTicketStatusResponseDescriptor = $convert.base64Decode(
-    'ChpVcGRhdGVUaWNrZXRTdGF0dXNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-    'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USMQoGdGlja2V0GAMgASgLMhkubGF6ZXJ2YXVsdC5T'
-    'dXBwb3J0VGlja2V0UgZ0aWNrZXQ=');
+final $typed_data.Uint8List updateTicketStatusResponseDescriptor =
+    $convert.base64Decode(
+        'ChpVcGRhdGVUaWNrZXRTdGF0dXNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USMQoGdGlja2V0GAMgASgLMhkubGF6ZXJ2YXVsdC5T'
+        'dXBwb3J0VGlja2V0UgZ0aWNrZXQ=');
 
 @$core.Deprecated('Use addTicketReplyRequestDescriptor instead')
 const AddTicketReplyRequest$json = {
@@ -294,7 +411,14 @@ const AddTicketReplyResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'reply', '3': 3, '4': 1, '5': 11, '6': '.lazervault.TicketReply', '10': 'reply'},
+    {
+      '1': 'reply',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.lazervault.TicketReply',
+      '10': 'reply'
+    },
   ],
 };
 
@@ -328,7 +452,14 @@ const SubmitContactFormResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'contact_message', '3': 3, '4': 1, '5': 11, '6': '.lazervault.ContactMessage', '10': 'contactMessage'},
+    {
+      '1': 'contact_message',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.lazervault.ContactMessage',
+      '10': 'contactMessage'
+    },
   ],
 };
 
@@ -337,4 +468,3 @@ final $typed_data.Uint8List submitContactFormResponseDescriptor = $convert.base6
     'ChlTdWJtaXRDb250YWN0Rm9ybVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
     'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRJDCg9jb250YWN0X21lc3NhZ2UYAyABKAsyGi5sYXpl'
     'cnZhdWx0LkNvbnRhY3RNZXNzYWdlUg5jb250YWN0TWVzc2FnZQ==');
-

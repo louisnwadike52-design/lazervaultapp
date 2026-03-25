@@ -473,8 +473,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF6C5CE7).withValues(alpha: 0.2),
-                const Color(0xFF6C5CE7).withValues(alpha: 0.05),
+                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -491,7 +491,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                     height: 48.w,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF6C5CE7), Color(0xFF8E7CF3)],
+                        colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF8E7CF3)],
                       ),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -543,7 +543,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                 child: ElevatedButton(
                   onPressed: isLoading ? null : () => _launchNGNMonoBottomsheet(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C5CE7),
+                    backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
@@ -693,7 +693,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       children: [
         Icon(
           icon,
-          color: const Color(0xFF6C5CE7),
+          color: const Color.fromARGB(255, 78, 3, 208),
           size: 16.sp,
         ),
         SizedBox(width: 8.w),

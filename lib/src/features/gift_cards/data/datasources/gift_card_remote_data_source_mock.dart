@@ -1,6 +1,6 @@
 import 'dart:math';
-import '../models/gift_card_model.dart';
 import '../../domain/entities/gift_card_entity.dart';
+import '../models/gift_card_model.dart';
 import 'gift_card_remote_data_source.dart';
 
 /// Mock implementation of the gift card remote data source for development/testing
@@ -26,9 +26,12 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
   }
 
   @override
-  Future<List<GiftCardBrandModel>> getGiftCardBrands({
+  Future<GiftCardBrandsResult> getGiftCardBrands({
     String? category,
     String? countryCode,
+    String? searchQuery,
+    int page = 0,
+    int pageSize = 20,
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
@@ -40,7 +43,34 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     if (countryCode != null && countryCode.isNotEmpty) {
       brands = brands.where((b) => b.countryCode == countryCode || b.countryCode.isEmpty).toList();
     }
-    return brands;
+
+    final total = brands.length;
+    final totalPages = (total / pageSize).ceil();
+    final start = page * pageSize;
+    final end = start + pageSize > total ? total : start + pageSize;
+    final pagedBrands = start < total ? brands.sublist(start, end) : <GiftCardBrandModel>[];
+
+    return GiftCardBrandsResult(
+      brands: pagedBrands,
+      total: total,
+      totalPages: totalPages > 0 ? totalPages : 1,
+      currentPage: page,
+      hasNext: page < totalPages - 1,
+    );
+  }
+
+  @override
+  Future<List<GiftCardCountry>> getSupportedCountries() async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+
+    return const [
+      GiftCardCountry(isoCode: 'NG', name: 'Nigeria', currencyCode: 'NGN', currencyName: 'Nigerian Naira'),
+      GiftCardCountry(isoCode: 'US', name: 'United States', currencyCode: 'USD', currencyName: 'US Dollar'),
+      GiftCardCountry(isoCode: 'GB', name: 'United Kingdom', currencyCode: 'GBP', currencyName: 'British Pound'),
+      GiftCardCountry(isoCode: 'GH', name: 'Ghana', currencyCode: 'GHS', currencyName: 'Ghanaian Cedi'),
+      GiftCardCountry(isoCode: 'KE', name: 'Kenya', currencyCode: 'KES', currencyName: 'Kenyan Shilling'),
+    ];
   }
 
   @override
@@ -59,6 +89,8 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     String? idempotencyKey,
     int quantity = 1,
     String? providerName,
+    double? senderAmount,
+    String? senderCurrency,
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
@@ -83,9 +115,8 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
       brandName: brand.name,
       logoUrl: brand.logoUrl,
       originalAmount: amount,
-      currentBalance: amount,
       currency: brand.currencyCode.isNotEmpty ? brand.currencyCode : 'NGN',
-      status: 'active',
+      status: 'available',
       purchaseDate: DateTime.now().toIso8601String(),
       expiryDate: DateTime.now().add(const Duration(days: 365)).toIso8601String(),
       recipientEmail: recipientEmail,
@@ -188,7 +219,7 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
   final List<GiftCardSaleModel> _userSales = [];
 
   @override
-  Future<List<SellableCardModel>> getSellableCards() async {
+  Future<List<SellableCardModel>> getSellableCards({String? countryCode}) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
     return _mockSellableCards;
@@ -236,6 +267,15 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     List<String>? images,
     String? idempotencyKey,
     String? providerName,
+    String? cardCountry,
+    String? cardFormat,
+    List<String>? imageUrls,
+    List<String>? imageKeys,
+    String? ocrBrand,
+    String? ocrCardNumber,
+    String? ocrPin,
+    double? ocrDenomination,
+    String? ocrCurrency,
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
@@ -284,34 +324,18 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
   }
 
   @override
-  Future<GiftCardModel> redeemGiftCard({
-    required String accountId,
-    required String cardNumber,
-    required String cardPin,
+  Future<Map<String, String>> getRedeemCode({
+    required String transactionId,
+    bool forceRefresh = false,
   }) async {
     await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    // Find a card matching the code, or create a mock redeemed card
-    final card = GiftCardModel(
-      id: 'gc_redeem_${DateTime.now().millisecondsSinceEpoch}',
-      brandId: 'amazon',
-      brandName: 'Amazon',
-      logoUrl: 'https://logo.clearbit.com/amazon.com',
-      originalAmount: 10000,
-      currentBalance: 10000,
-      currency: 'NGN',
-      status: 'active',
-      purchaseDate: DateTime.now().toIso8601String(),
-      expiryDate: DateTime.now().add(const Duration(days: 365)).toIso8601String(),
-      redemptionCode: cardNumber,
-      redemptionPin: cardPin,
-      createdAt: DateTime.now().toIso8601String(),
-      updatedAt: DateTime.now().toIso8601String(),
-    );
-
-    _userGiftCards.add(card);
-    return card;
+    return {
+      'redemptionCode': 'MOCK-XXXX-YYYY-ZZZZ',
+      'redemptionPin': '1234',
+      'transactionId': transactionId,
+      'status': 'available',
+      'message': 'Mock redeem code',
+    };
   }
 
   @override
@@ -322,6 +346,8 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     required String message,
     required String transactionId,
     required String verificationToken,
+    String? recipientUserId,
+    String transferType = 'email',
   }) async {
     await _simulateNetworkDelay();
     _simulateRandomFailure();
@@ -334,7 +360,6 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
         brandName: card.brandName,
         logoUrl: card.logoUrl,
         originalAmount: card.originalAmount,
-        currentBalance: card.currentBalance,
         currency: card.currency,
         status: 'transferred',
         purchaseDate: card.purchaseDate,
@@ -351,22 +376,6 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     } catch (e) {
       throw Exception('Gift card not found');
     }
-  }
-
-  @override
-  Future<GiftCardBalanceModel> getGiftCardBalance({
-    required String cardNumber,
-    required String cardPin,
-  }) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    return GiftCardBalanceModel(
-      balance: 10000 + _random.nextInt(40000).toDouble(),
-      brandName: 'Amazon',
-      expiryDate: DateTime.now().add(const Duration(days: 180)).toIso8601String(),
-      status: 'active',
-    );
   }
 
   @override
@@ -437,6 +446,38 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
       maxDenomination: 200,
     ),
   ];
+
+  @override
+  Future<Map<String, String>> uploadSellImage({
+    required String imageData,
+    required String contentType,
+    required String filename,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+    final key = 'mock_${DateTime.now().millisecondsSinceEpoch}';
+    return {
+      'imageUrl': 'https://storage.example.com/$key',
+      'imageKey': key,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> extractCardDetails({
+    required List<String> imageUrls,
+  }) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+    return {
+      'brand': 'Amazon',
+      'cardNumber': 'XXXX-XXXX-XXXX-1234',
+      'pin': '5678',
+      'denomination': 50.0,
+      'currency': 'USD',
+      'confidence': 0.92,
+      'rawText': 'Amazon Gift Card \$50 Code: XXXX-XXXX-XXXX-1234 PIN: 5678',
+    };
+  }
 
   // Mock brand data
   static final List<GiftCardBrandModel> _mockBrands = [

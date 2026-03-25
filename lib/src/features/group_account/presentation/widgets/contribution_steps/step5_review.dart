@@ -60,7 +60,7 @@ class Step5Review extends StatelessWidget {
               _buildReviewSection(
                 title: 'Details',
                 icon: Icons.info_outline,
-                iconColor: const Color(0xFF8B5CF6),
+                iconColor: const Color.fromARGB(255, 78, 3, 208),
                 children: [
                   _buildReviewItem('Title', formState.title),
                   _buildReviewItem('Description', formState.description, isLong: true),

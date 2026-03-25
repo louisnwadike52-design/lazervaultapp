@@ -98,7 +98,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
     if (account.currency.toUpperCase() != currency.toUpperCase()) {
       return false;
     }
-    return account.balance >= (totalAmount ?? amount ?? 0);
+    return account.availableBalance >= (totalAmount ?? amount ?? 0);
   }
 
   /// Process payment with transaction PIN validation — payment runs inside PIN modal
@@ -120,7 +120,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
         final needed = totalAmount ?? amount ?? 0;
         Get.snackbar(
           'Insufficient Balance',
-          'Your ${selectedAccount.accountType} account has ${currency} ${selectedAccount.balance.toStringAsFixed(2)} but you need ${currency} ${needed.toStringAsFixed(2)}',
+          'Your ${selectedAccount.accountType} account has $currency ${selectedAccount.availableBalance.toStringAsFixed(2)} but you need $currency ${needed.toStringAsFixed(2)}',
           backgroundColor: const Color(0xFFEF4444),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
@@ -151,23 +151,23 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
           subscription = cubit.stream.listen((state) {
             if (state is AirtimePaymentSuccess) {
               subscription?.cancel();
-              // Show success in PIN modal
               pinModalKey.currentState?.setSuccess();
-              // Wait for success animation, then close modal and navigate
               Future.delayed(const Duration(milliseconds: 1500), () {
                 if (mounted) {
-                  Navigator.of(context).pop(); // Close PIN modal
+                  Navigator.of(context).pop();
                   Get.offNamed(AppRoutes.airtimePaymentConfirmation, arguments: {
                     'transaction': state.transaction,
                     'isSuccess': true,
                   });
                 }
               });
-              completer.complete();
+              if (!completer.isCompleted) completer.complete();
             } else if (state is AirtimePaymentFailed) {
               subscription?.cancel();
               pinModalKey.currentState?.setFailed(state.message);
-              completer.completeError(Exception(state.message));
+              if (!completer.isCompleted) {
+                completer.completeError(Exception(state.message));
+              }
             }
           });
 
@@ -185,7 +185,15 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
             reloadlyOperatorId: networkProvider!.reloadlyOperatorId,
           );
 
-          await completer.future;
+          await completer.future.timeout(
+            const Duration(seconds: 90),
+            onTimeout: () {
+              subscription?.cancel();
+              if (!completer.isCompleted) {
+                pinModalKey.currentState?.setFailed('Request timed out. Check your transaction history.');
+              }
+            },
+          );
         },
       );
 
@@ -327,7 +335,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
                               ),
                             ),
                             Text(
-                              '${account.currency} ${account.balance.toStringAsFixed(2)}',
+                              '${account.currency} ${account.availableBalance.toStringAsFixed(2)}',
                               style: TextStyle(
                                 color: !hasSufficientBalance
                                     ? const Color(0xFF9CA3AF).withValues(alpha: 0.5)
@@ -468,6 +476,22 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
               ],
             ),
           ),
+          GestureDetector(
+            onTap: () => Get.until((route) => route.settings.name == AppRoutes.airtime || route.isFirst),
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(
+                Icons.close,
+                color: const Color(0xFF9CA3AF),
+                size: 20.sp,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -508,7 +532,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
                 ),
                 child: Center(
                   child: Text(
-                    networkProvider!.name.substring(0, 1),
+                    networkProvider!.name.isNotEmpty ? networkProvider!.name[0] : '?',
                     style: TextStyle(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w700,
@@ -779,7 +803,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
                             ),
                           ),
                           Text(
-                            '${selectedAccount.currency} ${selectedAccount.balance.toStringAsFixed(2)}',
+                            '${selectedAccount.currency} ${selectedAccount.availableBalance.toStringAsFixed(2)}',
                             style: TextStyle(
                               color: const Color(0xFF9CA3AF),
                               fontSize: 12.sp,

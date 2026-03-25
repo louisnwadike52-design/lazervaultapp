@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/document_upload_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/id_verification_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/kyc_provider_webview_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/mono_identity_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/verification_badge.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/data_reconciliation_dialog.dart';
 import 'package:lazervault/core/shared_widgets/app_loading_button.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 
@@ -27,8 +35,19 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
       ),
       body: BlocConsumer<KYCCubit, KYCState>(
         listener: (context, state) {
+          if (!mounted) return;
           if (state is IDVerificationSuccess) {
             _showVerificationSuccessDialog(context, state.response);
+          } else if (state is VerificationSessionCreated) {
+            _handleSessionCreated(context, state.session);
+          } else if (state is VerificationConfirmed) {
+            _handleVerificationConfirmed(context, state.result);
+          } else if (state is DocumentsSubmitted) {
+            _handleDocumentsSubmitted(context, state.message);
+          } else if (state is NameConfirmationRequired) {
+            _handleNameConfirmation(context, state);
+          } else if (state is BVNNameConfirmed) {
+            _handleBVNNameConfirmed(context, state.message);
           } else if (state is KYCError) {
             _showErrorDialog(context, state);
           } else if (state is KYCSkipped) {
@@ -83,6 +102,10 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
           const SizedBox(height: 24),
           if (profile.nextTier != null) _buildUpgradeCard(context, profile),
           const SizedBox(height: 16),
+          if (profile.currentTier == KYCTier.tier2 && profile.nextTier == KYCTier.tier3)
+            _buildTier3UpgradeCard(context, profile),
+          if (profile.currentTier == KYCTier.tier2 && profile.nextTier == KYCTier.tier3)
+            const SizedBox(height: 16),
           if (profile.documents.isNotEmpty) _buildDocumentsSection(context, profile),
         ],
       ),
@@ -285,7 +308,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
           width: double.infinity,
           child: AppLoadingButton(
             onPressed: () => _startVerification(context),
-            text: 'Start Verification',
+            text: 'Verify with BVN',
           ),
         ),
       ],
@@ -347,6 +370,64 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
               child: ElevatedButton(
                 onPressed: () => _startVerification(context),
                 child: const Text('Upgrade Now'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTier3UpgradeCard(BuildContext context, UserKYCProfile profile) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 2,
+      color: const Color(0xFF10B981).withValues(alpha: 0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFF10B981), width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.workspace_premium, color: Color(0xFF10B981)),
+                const SizedBox(width: 12),
+                Text(
+                  'Upgrade to Tier 3',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF10B981),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Verify your NIN and upload proof of address to unlock the highest transaction limits.',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Required: NIN (11 digits) + Address proof (utility bill, bank statement, or government letter dated within 3 months)',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _startVerification(context, targetTier: KYCTier.tier3),
+                icon: const Icon(Icons.badge),
+                label: const Text('Verify NIN & Upload Documents'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
+                ),
               ),
             ),
           ],
@@ -522,16 +603,153 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
     }
   }
 
-  void _startVerification(BuildContext context) {
-    // Get the user's country code from the auth state
+  void _startVerification(BuildContext context, {KYCTier? targetTier}) {
     final authCubit = context.read<AuthenticationCubit>();
     final countryCode = authCubit.currentProfile?.user.country ?? 'NG';
+    final tier = targetTier ?? KYCTier.tier2;
 
-    // Pass the country code to the ID verification screen
-    Navigator.of(context).pushNamed(
-      '/kyc/verify-id',
-      arguments: {'countryCode': countryCode},
+    // Navigate to ID verification screen for data collection,
+    // which will call createVerificationSession with the user's input
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<KYCCubit>(),
+          child: IdVerificationScreen(
+            targetTier: tier,
+            countryCode: countryCode,
+          ),
+        ),
+      ),
     );
+  }
+
+  void _startTier3Upgrade(BuildContext context) {
+    final authCubit = context.read<AuthenticationCubit>();
+    final userId = authCubit.userId ?? '';
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<KYCCubit>(),
+          child: DocumentUploadScreen(userId: userId),
+        ),
+      ),
+    );
+  }
+
+  void _handleSessionCreated(BuildContext context, VerificationSession session) {
+    if (!mounted) return;
+    final authCubit = context.read<AuthenticationCubit>();
+    final cubit = context.read<KYCCubit>();
+
+    switch (session.provider) {
+      case 'mono':
+        if (session.sessionToken == null || session.sessionToken!.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session not available. Please try again.')),
+          );
+          return;
+        }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => MonoIdentityScreen(
+              sessionToken: session.sessionToken!,
+              verificationId: session.verificationId,
+              userName: '${authCubit.currentProfile?.user.firstName ?? ''} ${authCubit.currentProfile?.user.lastName ?? ''}'.trim(),
+              userEmail: authCubit.currentProfile?.user.email ?? '',
+              onSuccess: (authCode) {
+                cubit.confirmVerification(
+                  verificationId: session.verificationId,
+                  provider: session.provider,
+                  providerAuthCode: authCode,
+                );
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              onClose: () => Navigator.of(context).pop(),
+            ),
+          ),
+        );
+        break;
+      case 'smile_id':
+      case 'persona':
+      case 'onfido':
+        if (session.sessionUrl == null || session.sessionUrl!.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Verification URL not available.')),
+          );
+          return;
+        }
+        Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => KYCProviderWebViewScreen(
+                sessionUrl: session.sessionUrl!,
+                provider: session.provider,
+                verificationId: session.verificationId,
+                onComplete: (success) {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  if (success) {
+                    cubit.confirmVerification(
+                      verificationId: session.verificationId,
+                      provider: session.provider,
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Verification was not completed. Please try again.'),
+                        backgroundColor: Colors.orange,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          );
+        break;
+      default:
+        // Unknown provider — show in-progress message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Verification in progress. We\'ll notify you when it\'s complete.'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
+  }
+
+  void _handleVerificationConfirmed(BuildContext context, ConfirmVerificationResult result) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message.isNotEmpty ? result.message : 'Verification confirmed successfully!'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    // Refresh KYC status
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    if (userId.isNotEmpty) {
+      context.read<KYCCubit>().getKYCStatus(userId);
+    }
+  }
+
+  void _handleDocumentsSubmitted(BuildContext context, String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message.isNotEmpty ? message : 'Documents submitted — Under Review'),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    // Refresh KYC status
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    if (userId.isNotEmpty) {
+      context.read<KYCCubit>().getKYCStatus(userId);
+    }
   }
 
   void _skipForNow(BuildContext context) {
@@ -541,28 +759,70 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
   }
 
   void _showUpgradeDialog(BuildContext context, UserKYCProfile profile) {
+    final nextTier = profile.nextTier ?? KYCTier.tier2;
+    final isTier3 = nextTier == KYCTier.tier3;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Upgrade to Tier ${profile.nextTier?.index ?? 2}'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Upgrade to Tier ${nextTier.index}'),
         content: Text(
-          'To upgrade, you\'ll need to provide additional verification documents.',
+          isTier3
+              ? 'To upgrade to Tier 3, you\'ll need to upload proof of address and additional identity documents.'
+              : 'To upgrade, you\'ll need to verify your identity with a government-issued ID.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              _startVerification(context);
+              Navigator.of(dialogContext).pop();
+              if (isTier3) {
+                _startTier3Upgrade(context);
+              } else {
+                _startVerification(context, targetTier: nextTier);
+              }
             },
             child: const Text('Continue'),
           ),
         ],
       ),
     );
+  }
+
+  void _handleNameConfirmation(BuildContext context, NameConfirmationRequired state) async {
+    final action = await showDataReconciliationDialog(
+      context,
+      verifiedName: state.verifiedName,
+      profileName: state.profileName,
+      matchScore: state.matchScore,
+    );
+
+    if (action != null && mounted) {
+      context.read<KYCCubit>().confirmBVNName(
+        verificationId: state.verificationId,
+        action: action,
+      );
+    }
+  }
+
+  void _handleBVNNameConfirmed(BuildContext context, String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message.isNotEmpty ? message : 'Identity verified successfully!'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    // Refresh KYC status
+    final userId = context.read<AuthenticationCubit>().userId ?? '';
+    if (userId.isNotEmpty) {
+      context.read<KYCCubit>().getKYCStatus(userId);
+    }
   }
 
   void _showVerificationSuccessDialog(
@@ -592,7 +852,15 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
         ),
         actions: [
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () async {
+              Navigator.of(context).pop();
+              // Clear onboarding flag after successful verification
+              const storage = FlutterSecureStorage(
+                aOptions: AndroidOptions(encryptedSharedPreferences: true, resetOnError: true),
+              );
+              await storage.delete(key: 'kyc_onboarding_pending');
+              Get.offAllNamed(AppRoutes.dashboard);
+            },
             child: const Text('Done'),
           ),
         ],
@@ -629,18 +897,22 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
     );
   }
 
-  void _showSkippedDialog(BuildContext context, SkipKYCResponse response) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(response.message),
-        backgroundColor: Colors.orange,
-        action: SnackBarAction(
-          label: 'Complete Later',
-          textColor: Colors.white,
-          onPressed: () {},
-        ),
-      ),
+  Future<void> _showSkippedDialog(BuildContext context, SkipKYCResponse response) async {
+    // Clear onboarding flags before navigating
+    const storage = FlutterSecureStorage(
+      aOptions: AndroidOptions(encryptedSharedPreferences: true, resetOnError: true),
+    );
+    await storage.write(key: 'has_skipped_kyc', value: 'true');
+    await storage.delete(key: 'kyc_onboarding_pending');
+
+    if (!mounted) return;
+    Get.offAllNamed(AppRoutes.dashboard);
+    Get.snackbar(
+      'KYC Skipped',
+      response.message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
     );
   }
 }

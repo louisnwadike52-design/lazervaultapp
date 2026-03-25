@@ -59,6 +59,7 @@ class ChatMessageEntity extends Equatable {
   final String? localMediaPath;
   final int? audioDurationMs;
   final String? transcript;
+  final Map<String, dynamic>? receiptData;
 
   const ChatMessageEntity({
     required this.text,
@@ -77,6 +78,7 @@ class ChatMessageEntity extends Equatable {
     this.localMediaPath,
     this.audioDurationMs,
     this.transcript,
+    this.receiptData,
   });
 
   ChatMessageEntity copyWith({
@@ -96,6 +98,7 @@ class ChatMessageEntity extends Equatable {
     String? localMediaPath,
     int? audioDurationMs,
     String? transcript,
+    Map<String, dynamic>? receiptData,
   }) {
     return ChatMessageEntity(
       text: text ?? this.text,
@@ -114,6 +117,7 @@ class ChatMessageEntity extends Equatable {
       localMediaPath: localMediaPath ?? this.localMediaPath,
       audioDurationMs: audioDurationMs ?? this.audioDurationMs,
       transcript: transcript ?? this.transcript,
+      receiptData: receiptData ?? this.receiptData,
     );
   }
 
@@ -129,5 +133,6 @@ class ChatMessageEntity extends Equatable {
         sessionId,
         mediaType,
         localMediaPath,
+        receiptData,
       ];
 }

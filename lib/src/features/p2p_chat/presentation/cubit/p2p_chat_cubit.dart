@@ -4,11 +4,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_state.dart';
+import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_conversations_cubit.dart';
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:uuid/uuid.dart';
 
@@ -18,6 +21,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   final SecureStorageService _secureStorage;
   final AccountsGrpcClient _accountsClient;
   final AccountManager _accountManager;
+  final LocaleManager _localeManager;
   String _currentUserId;
 
   StreamSubscription? _messageSubscription;
@@ -38,12 +42,14 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     required SecureStorageService secureStorage,
     required AccountsGrpcClient accountsClient,
     required AccountManager accountManager,
+    required LocaleManager localeManager,
     required String currentUserId,
   })  : _repository = repository,
         _wsService = wsService,
         _secureStorage = secureStorage,
         _accountsClient = accountsClient,
         _accountManager = accountManager,
+        _localeManager = localeManager,
         _currentUserId = currentUserId,
         super(P2PChatInitial()) {
     // Provide fresh token for WebSocket reconnection
@@ -157,6 +163,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
             try {
               _repository.markRead(_conversationId!, message.id);
               _wsService.markRead(_conversationId!, message.id);
+              _refreshConversationsCubit();
             } catch (_) {
               // Silently handle mark-read failures
             }
@@ -284,8 +291,20 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     try {
       _repository.markRead(_conversationId!, lastOtherMessage.id);
       _wsService.markRead(_conversationId!, lastOtherMessage.id);
+      // Refresh conversations cubit so unread badges update across the app
+      _refreshConversationsCubit();
     } catch (_) {
       // Non-critical — unread badge may not clear but chat still works
+    }
+  }
+
+  /// Refresh the shared P2PConversationsCubit singleton so unread counts
+  /// and badge numbers update on select_recipients and financial_connections.
+  void _refreshConversationsCubit() {
+    try {
+      serviceLocator<P2PConversationsCubit>().loadConversations();
+    } catch (_) {
+      // Cubit may not be registered yet — non-critical
     }
   }
 
@@ -444,6 +463,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
 
     final response = await _accountsClient.getTransactionHistory(
       accountId: accountId,
+      locale: _localeManager.currentLocale,
       category: 'transfer',
       limit: 50,
     );
@@ -596,6 +616,8 @@ class P2PChatCubit extends Cubit<P2PChatState> {
 
   @override
   Future<void> close() {
+    // Refresh conversations list so unread badges update after leaving chat
+    _refreshConversationsCubit();
     _messageSubscription?.cancel();
     _deliverySubscription?.cancel();
     _readReceiptSubscription?.cancel();

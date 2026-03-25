@@ -44,11 +44,11 @@ class QuickActionsCard extends StatelessWidget {
                   title: 'Buy Airtime',
                   subtitle: 'Top up your phone',
                   gradient: LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  onTap: () => Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {'country': DefaultCountries.nigeria}),
+                  onTap: () => Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {'country': DefaultCountries.nigeria, 'isBuyForSelf': true}),
                 ),
               ),
 
@@ -64,7 +64,7 @@ class QuickActionsCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  onTap: () => Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {'country': DefaultCountries.nigeria}),
+                  onTap: () => Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {'country': DefaultCountries.nigeria, 'isBuyForSelf': false}),
                 ),
               ),
             ],

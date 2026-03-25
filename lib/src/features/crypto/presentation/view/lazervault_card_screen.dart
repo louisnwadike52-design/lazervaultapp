@@ -85,6 +85,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
           child: Column(
             children: [
               _buildHeader(),
+              _buildComingSoonBanner(),
               _buildTabBar(),
               Expanded(
                 child: PageView(
@@ -100,6 +101,55 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildComingSoonBanner() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+            const Color(0xFF1F1F1F),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.rocket_launch, color: const Color.fromARGB(255, 78, 3, 208), size: 28.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Coming Soon',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'LazerVault crypto debit card is coming. Spend your crypto anywhere.',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -180,7 +230,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF6C5CE7) : Colors.transparent,
+                  color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.transparent,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Center(
@@ -247,7 +297,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF6C5CE7),
+                    const Color.fromARGB(255, 78, 3, 208),
                     const Color(0xFF1A237E),
                     const Color(0xFF000000),
                   ],
@@ -255,7 +305,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -426,12 +476,12 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
         Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12.r),
           ),
           child: Icon(
             icon,
-            color: const Color(0xFF6C5CE7),
+            color: const Color.fromARGB(255, 78, 3, 208),
             size: 24.sp,
           ),
         ),
@@ -540,7 +590,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
           child: ElevatedButton(
             onPressed: _startApplication,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               padding: EdgeInsets.symmetric(vertical: 18.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.r),
@@ -596,7 +646,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
             'Instant Crypto Conversion',
             'Your crypto is instantly converted to GBP at the point of sale with real-time exchange rates.',
             Icons.swap_horiz,
-            const Color(0xFF6C5CE7),
+            const Color.fromARGB(255, 78, 3, 208),
           ),
           SizedBox(height: 16.h),
           _buildBenefitCard(
@@ -758,7 +808,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
             children: [
               Icon(
                 icon,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 size: 24.sp,
               ),
               SizedBox(width: 12.w),
@@ -900,7 +950,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
             children: [
               Icon(
                 Icons.credit_card,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 size: 48.sp,
               ),
               SizedBox(height: 16.h),
@@ -927,7 +977,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                 child: ElevatedButton(
                   onPressed: () => Get.back(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6C5CE7),
+                    backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.r),

@@ -259,7 +259,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
           end: Alignment.bottomRight,
           colors: [
             const Color(0xFF3B82F6).withValues(alpha: 0.1),
-            const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
@@ -476,7 +476,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
             return Column(
               children: accounts.map((account) {
                 final isSelected = _selectedAccountId == account.id;
-                final hasSufficientBalance = account.balance >= _totalAmount;
+                final hasSufficientBalance = account.availableBalance >= _totalAmount;
 
                 return GestureDetector(
                   onTap: hasSufficientBalance
@@ -526,7 +526,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                '$_currencySymbol${account.balance.toStringAsFixed(2)}',
+                                '$_currencySymbol${account.availableBalance.toStringAsFixed(2)}',
                                 style: GoogleFonts.inter(
                                   color: hasSufficientBalance
                                       ? const Color(0xFF10B981)

@@ -27,6 +27,14 @@ abstract class LockFundsRepository {
     bool forceEarlyUnlock = false,
   });
 
+  /// Top up an existing lock fund
+  Future<TopUpResult> topUpLockFund({
+    required String lockFundId,
+    required double amount,
+    required String sourceAccountId,
+    String transactionPin = '',
+  });
+
   /// Get transactions for lock funds
   Future<List<LockTransaction>> getTransactions({
     String? lockFundId,
@@ -55,6 +63,31 @@ abstract class LockFundsRepository {
 
   /// Get lock funds statistics
   Future<LockFundsStatistics> getStatistics();
+
+  /// Get all PiggyVault product configs (backend-configurable rates)
+  Future<List<PiggyVaultConfig>> getPiggyVaultConfigs({String? currency});
+
+  /// Create auto-save for a lock fund
+  Future<LockFundAutoSaveConfig> createAutoSave({
+    required String lockFundId,
+    required String sourceAccountId,
+    required double amount,
+    required String frequency,
+  });
+
+  /// Get auto-save for a lock fund
+  Future<LockFundAutoSaveConfig?> getAutoSave({required String lockFundId});
+
+  /// Update auto-save
+  Future<LockFundAutoSaveConfig> updateAutoSave({
+    required String autoSaveId,
+    double? amount,
+    String? frequency,
+    String? status,
+  });
+
+  /// Delete auto-save
+  Future<void> deleteAutoSave({required String autoSaveId});
 }
 
 class UnlockResult {
@@ -68,6 +101,18 @@ class UnlockResult {
     required this.penaltyAmount,
     required this.interestEarned,
     required this.updatedLockFund,
+  });
+}
+
+class TopUpResult {
+  final LockFund updatedLockFund;
+  final double newBalance;
+  final String message;
+
+  const TopUpResult({
+    required this.updatedLockFund,
+    required this.newBalance,
+    required this.message,
   });
 }
 

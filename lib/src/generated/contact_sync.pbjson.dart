@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: contact_sync.proto
-//
-// @dart = 2.12
+// Generated from contact_sync.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -40,12 +41,44 @@ const SyncedContact$json = {
     {'1': 'phone_numbers', '3': 4, '4': 3, '5': 9, '10': 'phoneNumbers'},
     {'1': 'emails', '3': 5, '4': 3, '5': 9, '10': 'emails'},
     {'1': 'photo_url', '3': 6, '4': 1, '5': 9, '10': 'photoUrl'},
-    {'1': 'created_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
-    {'1': 'updated_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {
+      '1': 'created_at',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'createdAt'
+    },
+    {
+      '1': 'updated_at',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'updatedAt'
+    },
     {'1': 'device_contact_id', '3': 9, '4': 1, '5': 9, '10': 'deviceContactId'},
-    {'1': 'is_lazervault_user', '3': 10, '4': 1, '5': 8, '10': 'isLazervaultUser'},
-    {'1': 'lazervault_user_id', '3': 11, '4': 1, '5': 9, '10': 'lazervaultUserId'},
-    {'1': 'lazervault_username', '3': 12, '4': 1, '5': 9, '10': 'lazervaultUsername'},
+    {
+      '1': 'is_lazervault_user',
+      '3': 10,
+      '4': 1,
+      '5': 8,
+      '10': 'isLazervaultUser'
+    },
+    {
+      '1': 'lazervault_user_id',
+      '3': 11,
+      '4': 1,
+      '5': 9,
+      '10': 'lazervaultUserId'
+    },
+    {
+      '1': 'lazervault_username',
+      '3': 12,
+      '4': 1,
+      '5': 9,
+      '10': 'lazervaultUsername'
+    },
   ],
 };
 
@@ -65,7 +98,14 @@ final $typed_data.Uint8List syncedContactDescriptor = $convert.base64Decode(
 const SyncContactsRequest$json = {
   '1': 'SyncContactsRequest',
   '2': [
-    {'1': 'contacts', '3': 1, '4': 3, '5': 11, '6': '.lazervault.contact.ContactToSync', '10': 'contacts'},
+    {
+      '1': 'contacts',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.lazervault.contact.ContactToSync',
+      '10': 'contacts'
+    },
     {'1': 'replace_all', '3': 2, '4': 1, '5': 8, '10': 'replaceAll'},
   ],
 };
@@ -97,10 +137,30 @@ final $typed_data.Uint8List contactToSyncDescriptor = $convert.base64Decode(
 const SyncContactsResponse$json = {
   '1': 'SyncContactsResponse',
   '2': [
-    {'1': 'synced_contacts', '3': 1, '4': 3, '5': 11, '6': '.lazervault.contact.SyncedContact', '10': 'syncedContacts'},
+    {
+      '1': 'synced_contacts',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.lazervault.contact.SyncedContact',
+      '10': 'syncedContacts'
+    },
     {'1': 'total_synced', '3': 2, '4': 1, '5': 5, '10': 'totalSynced'},
-    {'1': 'total_matched_users', '3': 3, '4': 1, '5': 5, '10': 'totalMatchedUsers'},
-    {'1': 'matched_users', '3': 4, '4': 3, '5': 11, '6': '.lazervault.contact.LazerVaultUserMatch', '10': 'matchedUsers'},
+    {
+      '1': 'total_matched_users',
+      '3': 3,
+      '4': 1,
+      '5': 5,
+      '10': 'totalMatchedUsers'
+    },
+    {
+      '1': 'matched_users',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.lazervault.contact.LazerVaultUserMatch',
+      '10': 'matchedUsers'
+    },
   ],
 };
 
@@ -141,7 +201,13 @@ const GetSyncedContactsRequest$json = {
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
     {'1': 'search_query', '3': 3, '4': 1, '5': 9, '10': 'searchQuery'},
-    {'1': 'only_lazervault_users', '3': 4, '4': 1, '5': 8, '10': 'onlyLazervaultUsers'},
+    {
+      '1': 'only_lazervault_users',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '10': 'onlyLazervaultUsers'
+    },
   ],
 };
 
@@ -155,7 +221,14 @@ final $typed_data.Uint8List getSyncedContactsRequestDescriptor = $convert.base64
 const GetSyncedContactsResponse$json = {
   '1': 'GetSyncedContactsResponse',
   '2': [
-    {'1': 'contacts', '3': 1, '4': 3, '5': 11, '6': '.lazervault.contact.SyncedContact', '10': 'contacts'},
+    {
+      '1': 'contacts',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.lazervault.contact.SyncedContact',
+      '10': 'contacts'
+    },
     {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
     {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
@@ -179,9 +252,10 @@ const DeleteSyncedContactsRequest$json = {
 };
 
 /// Descriptor for `DeleteSyncedContactsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteSyncedContactsRequestDescriptor = $convert.base64Decode(
-    'ChtEZWxldGVTeW5jZWRDb250YWN0c1JlcXVlc3QSHwoLY29udGFjdF9pZHMYASADKAlSCmNvbn'
-    'RhY3RJZHMSHQoKZGVsZXRlX2FsbBgCIAEoCFIJZGVsZXRlQWxs');
+final $typed_data.Uint8List deleteSyncedContactsRequestDescriptor =
+    $convert.base64Decode(
+        'ChtEZWxldGVTeW5jZWRDb250YWN0c1JlcXVlc3QSHwoLY29udGFjdF9pZHMYASADKAlSCmNvbn'
+        'RhY3RJZHMSHQoKZGVsZXRlX2FsbBgCIAEoCFIJZGVsZXRlQWxs');
 
 @$core.Deprecated('Use deleteSyncedContactsResponseDescriptor instead')
 const DeleteSyncedContactsResponse$json = {
@@ -193,9 +267,10 @@ const DeleteSyncedContactsResponse$json = {
 };
 
 /// Descriptor for `DeleteSyncedContactsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteSyncedContactsResponseDescriptor = $convert.base64Decode(
-    'ChxEZWxldGVTeW5jZWRDb250YWN0c1Jlc3BvbnNlEiMKDWRlbGV0ZWRfY291bnQYASABKAVSDG'
-    'RlbGV0ZWRDb3VudBIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNz');
+final $typed_data.Uint8List deleteSyncedContactsResponseDescriptor =
+    $convert.base64Decode(
+        'ChxEZWxldGVTeW5jZWRDb250YWN0c1Jlc3BvbnNlEiMKDWRlbGV0ZWRfY291bnQYASABKAVSDG'
+        'RlbGV0ZWRDb3VudBIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNz');
 
 @$core.Deprecated('Use convertContactToRecipientRequestDescriptor instead')
 const ConvertContactToRecipientRequest$json = {
@@ -209,7 +284,13 @@ const ConvertContactToRecipientRequest$json = {
     {'1': 'account_number', '3': 6, '4': 1, '5': 9, '10': 'accountNumber'},
     {'1': 'bank_name', '3': 7, '4': 1, '5': 9, '10': 'bankName'},
     {'1': 'sort_code', '3': 8, '4': 1, '5': 9, '10': 'sortCode'},
-    {'1': 'auto_detect_lazervault', '3': 9, '4': 1, '5': 8, '10': 'autoDetectLazervault'},
+    {
+      '1': 'auto_detect_lazervault',
+      '3': 9,
+      '4': 1,
+      '5': 8,
+      '10': 'autoDetectLazervault'
+    },
   ],
 };
 
@@ -228,10 +309,35 @@ const ConvertContactToRecipientResponse$json = {
   '1': 'ConvertContactToRecipientResponse',
   '2': [
     {'1': 'recipient_id', '3': 1, '4': 1, '5': 9, '10': 'recipientId'},
-    {'1': 'is_lazervault_user', '3': 2, '4': 1, '5': 8, '10': 'isLazervaultUser'},
-    {'1': 'lazervault_user_id', '3': 3, '4': 1, '5': 9, '10': 'lazervaultUserId'},
-    {'1': 'lazervault_username', '3': 4, '4': 1, '5': 9, '10': 'lazervaultUsername'},
-    {'1': 'recipient', '3': 5, '4': 1, '5': 11, '6': '.lazervault.contact.RecipientDetails', '10': 'recipient'},
+    {
+      '1': 'is_lazervault_user',
+      '3': 2,
+      '4': 1,
+      '5': 8,
+      '10': 'isLazervaultUser'
+    },
+    {
+      '1': 'lazervault_user_id',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'lazervaultUserId'
+    },
+    {
+      '1': 'lazervault_username',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'lazervaultUsername'
+    },
+    {
+      '1': 'recipient',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.lazervault.contact.RecipientDetails',
+      '10': 'recipient'
+    },
   ],
 };
 
@@ -276,31 +382,47 @@ const FindLazerVaultUsersRequest$json = {
 };
 
 /// Descriptor for `FindLazerVaultUsersRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List findLazerVaultUsersRequestDescriptor = $convert.base64Decode(
-    'ChpGaW5kTGF6ZXJWYXVsdFVzZXJzUmVxdWVzdBIjCg1waG9uZV9udW1iZXJzGAEgAygJUgxwaG'
-    '9uZU51bWJlcnMSFgoGZW1haWxzGAIgAygJUgZlbWFpbHM=');
+final $typed_data.Uint8List findLazerVaultUsersRequestDescriptor =
+    $convert.base64Decode(
+        'ChpGaW5kTGF6ZXJWYXVsdFVzZXJzUmVxdWVzdBIjCg1waG9uZV9udW1iZXJzGAEgAygJUgxwaG'
+        '9uZU51bWJlcnMSFgoGZW1haWxzGAIgAygJUgZlbWFpbHM=');
 
 @$core.Deprecated('Use findLazerVaultUsersResponseDescriptor instead')
 const FindLazerVaultUsersResponse$json = {
   '1': 'FindLazerVaultUsersResponse',
   '2': [
-    {'1': 'matched_users', '3': 1, '4': 3, '5': 11, '6': '.lazervault.contact.LazerVaultUserMatch', '10': 'matchedUsers'},
+    {
+      '1': 'matched_users',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.lazervault.contact.LazerVaultUserMatch',
+      '10': 'matchedUsers'
+    },
     {'1': 'total_matches', '3': 2, '4': 1, '5': 5, '10': 'totalMatches'},
   ],
 };
 
 /// Descriptor for `FindLazerVaultUsersResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List findLazerVaultUsersResponseDescriptor = $convert.base64Decode(
-    'ChtGaW5kTGF6ZXJWYXVsdFVzZXJzUmVzcG9uc2USTAoNbWF0Y2hlZF91c2VycxgBIAMoCzInLm'
-    'xhemVydmF1bHQuY29udGFjdC5MYXplclZhdWx0VXNlck1hdGNoUgxtYXRjaGVkVXNlcnMSIwoN'
-    'dG90YWxfbWF0Y2hlcxgCIAEoBVIMdG90YWxNYXRjaGVz');
+final $typed_data.Uint8List findLazerVaultUsersResponseDescriptor =
+    $convert.base64Decode(
+        'ChtGaW5kTGF6ZXJWYXVsdFVzZXJzUmVzcG9uc2USTAoNbWF0Y2hlZF91c2VycxgBIAMoCzInLm'
+        'xhemVydmF1bHQuY29udGFjdC5MYXplclZhdWx0VXNlck1hdGNoUgxtYXRjaGVkVXNlcnMSIwoN'
+        'dG90YWxfbWF0Y2hlcxgCIAEoBVIMdG90YWxNYXRjaGVz');
 
 @$core.Deprecated('Use updateSyncPreferencesRequestDescriptor instead')
 const UpdateSyncPreferencesRequest$json = {
   '1': 'UpdateSyncPreferencesRequest',
   '2': [
     {'1': 'auto_sync_enabled', '3': 1, '4': 1, '5': 8, '10': 'autoSyncEnabled'},
-    {'1': 'sync_frequency', '3': 2, '4': 1, '5': 14, '6': '.lazervault.contact.SyncFrequency', '10': 'syncFrequency'},
+    {
+      '1': 'sync_frequency',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.lazervault.contact.SyncFrequency',
+      '10': 'syncFrequency'
+    },
     {'1': 'match_with_users', '3': 3, '4': 1, '5': 8, '10': 'matchWithUsers'},
     {'1': 'sync_photos', '3': 4, '4': 1, '5': 8, '10': 'syncPhotos'},
   ],
@@ -318,16 +440,24 @@ final $typed_data.Uint8List updateSyncPreferencesRequestDescriptor = $convert.ba
 const UpdateSyncPreferencesResponse$json = {
   '1': 'UpdateSyncPreferencesResponse',
   '2': [
-    {'1': 'preferences', '3': 1, '4': 1, '5': 11, '6': '.lazervault.contact.SyncPreferences', '10': 'preferences'},
+    {
+      '1': 'preferences',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.lazervault.contact.SyncPreferences',
+      '10': 'preferences'
+    },
     {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
   ],
 };
 
 /// Descriptor for `UpdateSyncPreferencesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateSyncPreferencesResponseDescriptor = $convert.base64Decode(
-    'Ch1VcGRhdGVTeW5jUHJlZmVyZW5jZXNSZXNwb25zZRJFCgtwcmVmZXJlbmNlcxgBIAEoCzIjLm'
-    'xhemVydmF1bHQuY29udGFjdC5TeW5jUHJlZmVyZW5jZXNSC3ByZWZlcmVuY2VzEhgKB3N1Y2Nl'
-    'c3MYAiABKAhSB3N1Y2Nlc3M=');
+final $typed_data.Uint8List updateSyncPreferencesResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1VcGRhdGVTeW5jUHJlZmVyZW5jZXNSZXNwb25zZRJFCgtwcmVmZXJlbmNlcxgBIAEoCzIjLm'
+        'xhemVydmF1bHQuY29udGFjdC5TeW5jUHJlZmVyZW5jZXNSC3ByZWZlcmVuY2VzEhgKB3N1Y2Nl'
+        'c3MYAiABKAhSB3N1Y2Nlc3M=');
 
 @$core.Deprecated('Use syncPreferencesDescriptor instead')
 const SyncPreferences$json = {
@@ -335,12 +465,38 @@ const SyncPreferences$json = {
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'auto_sync_enabled', '3': 2, '4': 1, '5': 8, '10': 'autoSyncEnabled'},
-    {'1': 'sync_frequency', '3': 3, '4': 1, '5': 14, '6': '.lazervault.contact.SyncFrequency', '10': 'syncFrequency'},
+    {
+      '1': 'sync_frequency',
+      '3': 3,
+      '4': 1,
+      '5': 14,
+      '6': '.lazervault.contact.SyncFrequency',
+      '10': 'syncFrequency'
+    },
     {'1': 'match_with_users', '3': 4, '4': 1, '5': 8, '10': 'matchWithUsers'},
     {'1': 'sync_photos', '3': 5, '4': 1, '5': 8, '10': 'syncPhotos'},
-    {'1': 'last_sync_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastSyncAt'},
-    {'1': 'total_synced_contacts', '3': 7, '4': 1, '5': 5, '10': 'totalSyncedContacts'},
-    {'1': 'total_matched_users', '3': 8, '4': 1, '5': 5, '10': 'totalMatchedUsers'},
+    {
+      '1': 'last_sync_at',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastSyncAt'
+    },
+    {
+      '1': 'total_synced_contacts',
+      '3': 7,
+      '4': 1,
+      '5': 5,
+      '10': 'totalSyncedContacts'
+    },
+    {
+      '1': 'total_matched_users',
+      '3': 8,
+      '4': 1,
+      '5': 5,
+      '10': 'totalMatchedUsers'
+    },
   ],
 };
 
@@ -354,4 +510,3 @@ final $typed_data.Uint8List syncPreferencesDescriptor = $convert.base64Decode(
     'ltZXN0YW1wUgpsYXN0U3luY0F0EjIKFXRvdGFsX3N5bmNlZF9jb250YWN0cxgHIAEoBVITdG90'
     'YWxTeW5jZWRDb250YWN0cxIuChN0b3RhbF9tYXRjaGVkX3VzZXJzGAggASgFUhF0b3RhbE1hdG'
     'NoZWRVc2Vycw==');
-

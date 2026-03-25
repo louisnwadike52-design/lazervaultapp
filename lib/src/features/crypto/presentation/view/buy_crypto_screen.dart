@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -95,6 +96,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     if (_isAmountInCrypto) {
       return amount;
     }
+    if (_selectedCrypto!.currentPrice <= 0) return 0.0; // Guard division by zero
     return amount / _selectedCrypto!.currentPrice;
   }
 
@@ -242,7 +244,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             children: [
               Icon(
                 Icons.currency_bitcoin,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -371,7 +373,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   ],
                   Icon(
                     Icons.keyboard_arrow_down,
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     size: 20.sp,
                   ),
                 ],
@@ -413,7 +415,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 children: [
                   Icon(
                     Icons.account_balance_wallet,
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     size: 20.sp,
                   ),
                   SizedBox(width: 8.w),
@@ -435,8 +437,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFF6C5CE7).withValues(alpha: 0.3),
-                          const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+                          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                          const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20.r),
@@ -454,7 +456,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       children: [
                         Icon(
                           Icons.swap_horiz,
-                          color: const Color(0xFF6C5CE7),
+                          color: const Color.fromARGB(255, 78, 3, 208),
                           size: 14.sp,
                         ),
                         SizedBox(width: 4.w),
@@ -462,7 +464,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                           _isAmountInCrypto ? CurrencySymbols.currentCurrency : 'Crypto',
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
-                            color: const Color(0xFF6C5CE7),
+                            color: const Color.fromARGB(255, 78, 3, 208),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -497,7 +499,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       style: GoogleFonts.inter(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF6C5CE7),
+                        color: const Color.fromARGB(255, 78, 3, 208),
                       ),
                     ),
                     SizedBox(width: 8.w),
@@ -505,6 +507,9 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       child: TextField(
                         controller: _amountController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                        ],
                         style: GoogleFonts.inter(
                           fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
@@ -576,8 +581,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF6C5CE7).withValues(alpha: 0.1),
-                const Color(0xFF6C5CE7).withValues(alpha: 0.05),
+                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(8.r),
@@ -596,7 +601,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
               ),
             ),
           ),
@@ -730,7 +735,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             children: [
               Icon(
                 Icons.payment,
-                color: const Color(0xFF6C5CE7),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -765,15 +770,15 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             gradient: isSelected 
               ? LinearGradient(
                   colors: [
-                    const Color(0xFF6C5CE7).withValues(alpha: 0.2),
-                    const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                   ],
                 )
               : null,
             color: isSelected ? null : const Color(0xFF0A0A0A),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withValues(alpha: 0.1),
+              color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.white.withValues(alpha: 0.1),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -783,13 +788,13 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: isSelected 
-                    ? const Color(0xFF6C5CE7).withValues(alpha: 0.2)
+                    ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2)
                     : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   method['icon'],
-                  color: isSelected ? const Color(0xFF6C5CE7) : Colors.white,
+                  color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
                   size: 20.sp,
                 ),
               ),
@@ -820,7 +825,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 Container(
                   padding: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6C5CE7),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -906,7 +911,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               gradient: isEnabled 
                 ? LinearGradient(
                     colors: [
-                      const Color(0xFF6C5CE7),
+                      const Color.fromARGB(255, 78, 3, 208),
                       const Color(0xFF8B7CF6),
                     ],
                     begin: Alignment.topLeft,
@@ -921,7 +926,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: isEnabled ? [
                 BoxShadow(
-                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -1181,10 +1186,12 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
 
   void _processBuyOrder() {
     if (_selectedCrypto == null || _isLoading) return;
+    final fiat = _fiatAmount;
+    if (fiat <= 0) return; // Guard against zero/negative amount
 
     // Create transaction details
-    final fee = _fiatAmount * 0.015; // 1.5% fee
-    final total = _fiatAmount + fee;
+    final fee = fiat * 0.015; // 1.5% fee
+    final total = fiat + fee;
 
     final transactionDetails = CryptoTransactionDetails(
       type: CryptoTransactionType.buy,

@@ -30,7 +30,6 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
   bool _hasDigit = false;
   bool _hasSpecialChar = false;
   String _resetToken = '';
-  String _email = '';
   String _deliveryMethod = 'email';
   String? _errorMessage;
 
@@ -42,7 +41,6 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
       final args = Get.arguments as Map<String, dynamic>?;
       if (args != null) {
         setState(() {
-          _email = args['email'] as String? ?? '';
           _resetToken = args['resetToken'] as String? ?? args['token'] as String? ?? '';
           _requireToken = args['requireToken'] as bool? ?? false;
           _deliveryMethod = args['deliveryMethod'] as String? ?? 'email';
@@ -198,25 +196,19 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
     return BlocListener<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
         if (state is PasswordResetSuccess) {
-          // Show success and navigate will be handled by the listener
-          Get.snackbar(
-            'Password Reset',
-            'Your password has been reset successfully',
-            backgroundColor: Colors.green.withValues(alpha: 0.8),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.TOP,
-            margin: EdgeInsets.all(15.w),
-            borderRadius: 10.r,
-          );
-          // Navigate to login after a delay
-          Future.delayed(const Duration(seconds: 2), () {
+          // Success snackbar already shown by cubit
+          Future.delayed(const Duration(seconds: 1), () {
             if (mounted) {
               Get.offAllNamed(AppRoutes.emailSignIn);
             }
           });
-        } else if (state is AuthenticationError && !_isLoading) {
+        } else if (state is AuthenticationError) {
           // Show error from state
           _showErrorSnackbar('Error', state.message);
+          setState(() {
+            _errorMessage = state.message;
+            _isLoading = false;
+          });
         }
       },
       child: Column(
@@ -247,7 +239,7 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
           if (_requireToken) ...[
             BuildFormField(
               name: 'resetToken',
-              placeholder: 'Reset Token from ${_deliveryMethod == 'sms' ? 'Email' : 'Email'}',
+              placeholder: 'Reset Token from ${_deliveryMethod == 'sms' ? 'SMS Verification' : 'Email'}',
               textInputType: TextInputType.text,
               prefixIcon: const Icon(
                 Icons.key,

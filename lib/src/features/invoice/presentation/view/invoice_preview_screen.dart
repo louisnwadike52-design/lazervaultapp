@@ -11,6 +11,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -21,7 +22,17 @@ import '../../services/invoice_qr_service.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../contacts/data/repositories/contact_sync_repository.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 import '../../../profile/cubit/profile_cubit.dart';
+import '../cubit/invoice_cubit.dart';
+import '../cubit/invoice_state.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:get_it/get_it.dart';
 
 String _getCurrencySymbolFromCode(String code) {
   switch (code.toUpperCase()) {
@@ -41,30 +52,69 @@ String _getCurrencySymbolFromCode(String code) {
 class InvoicePreviewScreen extends StatefulWidget {
   final Invoice invoice;
   final bool showTaggedUsers;
+  final bool isNewlyCreated;
 
   const InvoicePreviewScreen({
     super.key,
     required this.invoice,
     this.showTaggedUsers = true,
+    this.isNewlyCreated = false,
   });
 
   @override
   State<InvoicePreviewScreen> createState() => _InvoicePreviewScreenState();
 }
 
-class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
+class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
+    with TickerProviderStateMixin, TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   late Invoice invoice;
   final TextEditingController _emailController = TextEditingController();
   bool _isSendingEmail = false;
+  bool _isProcessingPayment = false;
+  String? _selectedAccountId;
+
+  // Get the invoice from arguments (handles both direct invoice and wrapped in map)
+  Invoice get _invoice {
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args != null && args.containsKey('invoice')) {
+      return args['invoice'] as Invoice;
+    }
+    return widget.invoice;
+  }
+
+  bool get _isNewlyCreated {
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args != null && args.containsKey('isNewlyCreated')) {
+      return args['isNewlyCreated'] as bool;
+    }
+    return widget.isNewlyCreated;
+  }
 
   @override
   void initState() {
     super.initState();
-    invoice = widget.invoice;
+    invoice = _invoice;
     // Pre-fill email if available
     if (invoice.toEmail != null && invoice.toEmail!.isNotEmpty) {
       _emailController.text = invoice.toEmail!;
     }
+    // Set default account
+    _fetchAccounts();
+  }
+
+  void _fetchAccounts() {
+    try {
+      final authState = Get.find<AuthenticationCubit>().state;
+      if (authState is AuthenticationSuccess) {
+        Get.find<AccountCardsSummaryCubit>().fetchAccountSummaries(
+          userId: authState.profile.userId,
+        );
+      }
+    } catch (_) {}
   }
 
   @override
@@ -87,26 +137,30 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: InvoiceThemeColors.primaryBackground,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  children: [
-                    _buildInvoicePreview(),
-                  ],
+    return BlocBuilder<InvoiceCubit, InvoiceState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: InvoiceThemeColors.primaryBackground,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(context),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      children: [
+                        _buildInvoicePreview(),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                _buildActions(context),
+              ],
             ),
-            _buildActions(context),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -859,8 +913,79 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
       ),
       child: Column(
         children: [
+          // Pay Service Fee CTA for newly created invoices
+          if (_isNewlyCreated)
+            BlocListener<InvoiceCubit, InvoiceState>(
+              listener: (context, state) {
+                if (state is InvoiceUnlockSuccess) {
+                  setState(() => _isProcessingPayment = false);
+                  // Show receipt and remove "newly created" flag
+                  Get.offAllNamed(AppRoutes.invoicePaymentReceipt, arguments: {
+                    'invoice_id': invoice.id,
+                    'payment_reference': state.invoice != null ? 'UNLOCK-${state.invoice!.id.substring(0, 8)}' : 'UNLOCK-${DateTime.now().millisecondsSinceEpoch}',
+                    'amount': 99.99,
+                    'currency': invoice.currency,
+                    'status': 'completed',
+                  });
+                } else if (state is InvoiceServiceFeePaid) {
+                  setState(() => _isProcessingPayment = false);
+                  // Show receipt and remove "newly created" flag
+                  Get.offAllNamed(AppRoutes.invoicePaymentReceipt, arguments: {
+                    'invoice_id': invoice.id,
+                    'payment_reference': state.serviceFeeRef,
+                    'amount': 99.99,
+                    'currency': invoice.currency,
+                    'status': 'completed',
+                  });
+                } else if (state is InvoiceError) {
+                  setState(() => _isProcessingPayment = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: Container(
+                width: double.infinity,
+                height: 56.h,
+                margin: EdgeInsets.only(bottom: 12.h),
+                child: ElevatedButton.icon(
+                  onPressed: _isProcessingPayment ? null : _handleServiceFeePayment,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.6),
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  icon: _isProcessingPayment
+                      ? SizedBox(
+                          width: 20.w,
+                          height: 20.w,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Icon(Icons.lock_outline, color: Colors.white, size: 20.sp),
+                  label: Text(
+                    _isProcessingPayment
+                        ? 'Processing Payment...'
+                        : 'Pay Service Fee (₦99.99)',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           // View Payment Receipt CTA for paid invoices
-          if (invoice.status == InvoiceStatus.paid && invoice.paymentReference != null)
+          if (invoice.status == InvoiceStatus.paid && invoice.paymentReference != null && !_isNewlyCreated)
             Container(
               width: double.infinity,
               height: 48.h,
@@ -988,14 +1113,14 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
                 width: 52.w,
                 height: 52.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: IconButton(
                   onPressed: () => _downloadInvoice(context),
                   icon: Icon(
                     Icons.download_outlined,
-                    color: const Color(0xFF8B5CF6),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     size: 22.sp,
                   ),
                 ),
@@ -2014,6 +2139,78 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
+
+  Future<void> _handleServiceFeePayment() async {
+    // Get the default account for payment
+    try {
+      final accountState = Get.find<AccountCardsSummaryCubit>().state;
+      if (accountState is AccountCardsSummaryLoaded && accountState.accountSummaries.isNotEmpty) {
+        _selectedAccountId = accountState.accountSummaries.first.id;
+      }
+    } catch (_) {
+      _showErrorSnackbar('Could not load account information');
+      return;
+    }
+
+    if (_selectedAccountId == null || _selectedAccountId!.isEmpty) {
+      _showErrorSnackbar('No account available for payment');
+      return;
+    }
+
+    HapticFeedback.mediumImpact();
+
+    // Generate transaction ID
+    final transactionId = 'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}';
+
+    // Show PIN bottomsheet and verify
+    final pinResult = await validatePinOnly(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'invoice_unlock',
+      amount: 99.99,
+      currency: invoice.currency,
+    );
+
+    if (pinResult == null || !pinResult.success) return;
+
+    // Set the selected account on AccountManager so x-account-id metadata is sent
+    try {
+      GetIt.I<AccountManager>().setActiveAccount(_selectedAccountId!);
+    } catch (_) {}
+
+    setState(() {
+      _isProcessingPayment = true;
+    });
+
+    // Process the payment - unlock the invoice by paying service fee
+    final cubit = Get.find<InvoiceCubit>();
+    await cubit.unlockInvoice(
+      invoice.id,
+      accountId: _selectedAccountId,
+      verificationToken: pinResult.verificationToken,
+      transactionId: transactionId,
+    );
+
+    // Reset processing state
+    if (mounted) {
+      setState(() {
+        _isProcessingPayment = false;
+      });
+    }
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: InvoiceThemeColors.errorRed,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 }
 
 class _TagUserBottomSheet extends StatefulWidget {
@@ -2026,7 +2223,11 @@ class _TagUserBottomSheet extends StatefulWidget {
 }
 
 class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -2040,6 +2241,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   final Set<String> _selectedEmails = {};
   final Set<String> _selectedPhones = {};
   Set<String> _alreadyTaggedUserIds = {};
+
+  // Payment-related properties
+  String? _selectedAccountId;
+  bool _isProcessingPayment = false;
+
+  Invoice get invoice => widget.invoice;
 
   List<InvoiceUser> _searchResults = [];
   List<Map<String, dynamic>> _contacts = [];
@@ -3501,6 +3708,58 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         ),
         behavior: SnackBarBehavior.floating,
       ),
+    );
+  }
+
+  Future<void> _handleServiceFeePayment() async {
+    // Get the default account for payment
+    try {
+      final accountState = Get.find<AccountCardsSummaryCubit>().state;
+      if (accountState is AccountCardsSummaryLoaded && accountState.accountSummaries.isNotEmpty) {
+        _selectedAccountId = accountState.accountSummaries.first.id;
+      }
+    } catch (_) {
+      _showErrorSnackbar('Could not load account information');
+      return;
+    }
+
+    if (_selectedAccountId == null || _selectedAccountId!.isEmpty) {
+      _showErrorSnackbar('No account available for payment');
+      return;
+    }
+
+    HapticFeedback.mediumImpact();
+
+    // Generate transaction ID
+    final transactionId = 'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}';
+
+    // Show PIN bottomsheet and verify
+    final pinResult = await validatePinOnly(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'invoice_unlock',
+      amount: 99.99,
+      currency: invoice.currency,
+    );
+
+    if (pinResult == null || !pinResult.success) return;
+
+    // Set the selected account on AccountManager so x-account-id metadata is sent
+    try {
+      GetIt.I<AccountManager>().setActiveAccount(_selectedAccountId!);
+    } catch (_) {}
+
+    setState(() {
+      _isProcessingPayment = true;
+    });
+
+    // Process the payment - unlock the invoice by paying service fee
+    final cubit = Get.find<InvoiceCubit>();
+    await cubit.unlockInvoice(
+      invoice.id,
+      accountId: _selectedAccountId,
+      verificationToken: pinResult.verificationToken,
+      transactionId: transactionId,
     );
   }
 } 

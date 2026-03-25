@@ -18,19 +18,50 @@ class BudgetDetailScreen extends StatefulWidget {
 }
 
 class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
-  final String? budgetId = (Get.arguments as Map<String, dynamic>?)?['budgetId'] as String?;
+  late final String? budgetId;
+  bool _isDeleting = false;
 
   @override
   void initState() {
     super.initState();
-    if (budgetId != null) {
-      // Load budget by ID - for now, just refresh list
+    final args = Get.arguments as Map<String, dynamic>?;
+    budgetId = args?['budgetId'] as String?;
+
+    if (budgetId == null) {
+      // Invalid navigation — go back on next frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.back();
+      });
+      return;
+    }
+
+    // Only load if we don't already have budgets in state
+    final currentState = context.read<BudgetCubit>().state;
+    if (currentState is! BudgetsLoaded) {
       context.read<BudgetCubit>().loadBudgets();
+    }
+  }
+
+  pb.BudgetMessage? _findBudget(BudgetState state) {
+    if (state is! BudgetsLoaded || state.budgets.isEmpty || budgetId == null) {
+      return null;
+    }
+    try {
+      return state.budgets.firstWhere((b) => b.id == budgetId);
+    } catch (_) {
+      return null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (budgetId == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF10B981))),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
@@ -51,27 +82,108 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
             color: const Color(0xFF1F1F1F),
             onSelected: (value) {
               if (value == 'edit') {
-                Get.toNamed(AppRoutes.createBudget, arguments: {'budgetId': budgetId});
+                final budget = _findBudget(context.read<BudgetCubit>().state);
+                if (budget != null) {
+                  Get.toNamed(AppRoutes.createBudget, arguments: {'budget': budget});
+                }
               } else if (value == 'delete') {
                 _showDeleteDialog(context);
               }
             },
             itemBuilder: (context) => [
               const PopupMenuItem(value: 'edit', child: Text('Edit Budget')),
-              const PopupMenuItem(value: 'delete', child: Text('Delete Budget')),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete Budget', style: TextStyle(color: Color(0xFFEF4444))),
+              ),
             ],
           ),
         ],
       ),
-      body: BlocBuilder<BudgetCubit, BudgetState>(
-        builder: (context, state) {
-          if (state is BudgetsLoaded && state.budgets.isNotEmpty) {
-            final budget = state.budgets.firstWhere(
-              (b) => b.id == budgetId,
-              orElse: () => state.budgets.first,
+      body: BlocConsumer<BudgetCubit, BudgetState>(
+        listener: (context, state) {
+          if (state is BudgetDeleted) {
+            Get.back(); // Navigate back after successful delete
+            Get.snackbar(
+              'Deleted',
+              state.message,
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM,
             );
+          } else if (state is BudgetUpdated) {
+            Get.snackbar(
+              'Updated',
+              state.message,
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM,
+            );
+          } else if (state is BudgetError) {
+            Get.snackbar(
+              'Error',
+              state.message,
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM,
+            );
+            // Retry loading
+            context.read<BudgetCubit>().loadBudgets();
+          }
+        },
+        builder: (context, state) {
+          if (state is BudgetLoading) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: Color(0xFF10B981)),
+                  SizedBox(height: 16.h),
+                  Text(
+                    state.message ?? 'Loading...',
+                    style: const TextStyle(color: Color(0xFF9CA3AF)),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final budget = _findBudget(state);
+          if (budget != null) {
             return _BudgetDetailView(budget: budget);
           }
+
+          // Budget not found — may have been deleted or not yet loaded
+          if (state is BudgetsLoaded) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.search_off, size: 48.sp, color: const Color(0xFF9CA3AF)),
+                  SizedBox(height: 16.h),
+                  const Text(
+                    'Budget not found',
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8.h),
+                  const Text(
+                    'This budget may have been deleted.',
+                    style: TextStyle(color: Color(0xFF9CA3AF)),
+                  ),
+                  SizedBox(height: 24.h),
+                  ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            );
+          }
+
           return const Center(
             child: CircularProgressIndicator(color: Color(0xFF10B981)),
           );
@@ -87,19 +199,19 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
   }
 
   void _showDeleteDialog(BuildContext context) {
+    if (_isDeleting) return;
     Get.defaultDialog(
       title: 'Delete Budget',
-      middleText: 'Are you sure you want to delete this budget?',
+      middleText: 'Are you sure you want to delete this budget? This action cannot be undone.',
       textConfirm: 'Delete',
       textCancel: 'Cancel',
       confirmTextColor: Colors.white,
       cancelTextColor: const Color(0xFF9CA3AF),
       buttonColor: const Color(0xFFEF4444),
       onConfirm: () {
-        if (budgetId != null) {
-          context.read<BudgetCubit>().deleteBudget(budgetId!);
-          Get.back();
-        }
+        _isDeleting = true;
+        Get.back(); // Close dialog
+        context.read<BudgetCubit>().deleteBudget(budgetId!);
       },
     );
   }
@@ -220,6 +332,11 @@ class _BudgetDetailView extends StatelessWidget {
               _DetailRow(
                   label: 'Status',
                   value: ExpenseCategoryHelpers.getStatusDisplayName(budget.status)),
+              _DetailRow(
+                  label: 'Enforcement',
+                  value: budget.enforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT
+                      ? 'Strict (blocks transactions)'
+                      : 'Flexible (warns only)'),
               _DetailRow(label: 'Alerts', value: budget.enableAlerts ? 'Enabled' : 'Disabled'),
             ],
           ),
